@@ -1,12 +1,18 @@
 <Styles xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
   <Design.PreviewWith>
     <Border Padding="0" Background="White">
-      <NotificationCard Classes="error" Content="Testing" />
+      <StackPanel Orientation="Vertical">
+        <NotificationCard Classes="Error" Content="Testing" />
+        <NotificationCard Classes="Warning" Content="Testing" />
+        <NotificationCard Classes="Success" Content="Testing" />
+      </StackPanel>
+
     </Border>
   </Design.PreviewWith>
   <Style Selector="NotificationCard">
     <Setter Property="UseLayoutRounding" Value="True" />
-    <Setter Property="Width" Value="350" />
+    <Setter Property="MinWidth" Value="350" />
+    <Setter Property="Width" Value="NaN" />
     <Setter Property="FontSize" Value="14" />
     <Setter Property="Foreground" Value="White" />
     <Setter Property="RenderTransformOrigin" Value="50%,75%" />
@@ -101,19 +107,13 @@
     </Style.Animations>
   </Style>
 
-  <Style Selector="NotificationCard /template/ Panel#PART_HeaderBar">
-    <Setter Property="Background" Value="{DynamicResource NotificationCardProgressBackgroundBrush}" />
+  <Style Selector="NotificationCard.Success">
+    <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}" />
   </Style>
-  <Style Selector="NotificationCard:information /template/ Panel#PART_HeaderBar">
-    <Setter Property="Background" Value="{DynamicResource NotificationCardInformationBackgroundBrush}" />
+  <Style Selector="NotificationCard.Warning">
+    <Setter Property="Background" Value="Goldenrod" />
   </Style>
-  <Style Selector="NotificationCard:success /template/ Panel#PART_HeaderBar">
-    <Setter Property="Background" Value="{DynamicResource NotificationCardSuccessBackgroundBrush}" />
-  </Style>
-  <Style Selector="NotificationCard:warning /template/ Panel#PART_HeaderBar">
-    <Setter Property="Background" Value="{DynamicResource NotificationCardWarningBackgroundBrush}" />
-  </Style>
-  <Style Selector="NotificationCard:error">
-    <Setter Property="Background" Value="Red" />
+  <Style Selector="NotificationCard.Error">
+    <Setter Property="Background" Value="Salmon" />
   </Style>
 </Styles>

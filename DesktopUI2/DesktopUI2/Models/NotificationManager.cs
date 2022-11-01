@@ -127,7 +127,7 @@ namespace DesktopUI2.Models
         return;
       }
 
-      await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(5));
+      await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(7));
 
       notificationControl.Close();
     }

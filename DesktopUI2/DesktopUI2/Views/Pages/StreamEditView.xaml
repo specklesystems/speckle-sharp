@@ -123,7 +123,7 @@
             Classes="SpeckleFont"
             FontSize="18"
             Text="Data Exchange" />
-          <TabControl Grid.Row="1" Background="Transparent">
+          <TabControl Grid.Row="1" Background="Transparent" SelectedIndex="{Binding IsReceiver}">
             <!--  SEND  -->
             <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" ToolTip.Tip="Send">
               <TabItem.Header>
@@ -197,7 +197,7 @@
             Text="Collaborators" />
           <c:CollaboratorsControl
             Grid.Row="1"
-            Margin="10,0"
+            Margin="10,0,10,10"
             Padding="5"
             DataContext="{Binding Collaborators}" />
         </Grid>
@@ -272,7 +272,7 @@
             <!--  SUMMARY AND OPERATION ERRORS  -->
             <TextBlock
               Grid.Row="0"
-              Margin="10,0,0,0"
+              Margin="20,0"
               VerticalAlignment="Center"
               Text="{Binding Log}"
               TextWrapping="Wrap" />
@@ -362,90 +362,6 @@
       </TabItem>
 
     </TabControl>
-
-    <!--  NOTIFICATION  -->
-    <m:ColorZone
-      Grid.Row="2"
-      Margin="0,0,0,10"
-      assists:ShadowAssist.ShadowDepth="Depth0"
-      CornerRadius="25"
-      IsVisible="{Binding ShowNotification}"
-      Mode="PrimaryMid">
-      <Grid ColumnDefinitions="*, auto">
-        <Button
-          Margin="0,0,3,0"
-          VerticalAlignment="Center"
-          Classes="Flat"
-          Command="{Binding LaunchNotificationCommand}"
-          CornerRadius="25,0,0,25"
-          ToolTip.Tip="View online">
-          <StackPanel Orientation="Horizontal">
-            <TextBlock
-              VerticalAlignment="Center"
-              Classes="Overline"
-              FontWeight="Medium"
-              Foreground="White"
-              Text="{Binding Notification}"
-              TextWrapping="Wrap" />
-            <icons:MaterialIcon
-              Margin="5,0"
-              VerticalAlignment="Center"
-              Foreground="White"
-              Kind="ExternalLink" />
-          </StackPanel>
-        </Button>
-        <m:FloatingButton
-          Grid.Column="1"
-          VerticalAlignment="Center"
-          Background="Transparent"
-          Classes="Mini"
-          Command="{Binding CloseNotificationCommand}"
-          ToolTip.Tip="Close notification">
-          <Button.Content>
-            <icons:MaterialIcon
-              Width="15"
-              Height="15"
-              Foreground="White"
-              Kind="Close" />
-          </Button.Content>
-        </m:FloatingButton>
-      </Grid>
-    </m:ColorZone>
-
-    <!--  SHARE PROMPT  -->
-    <m:ColorZone
-      Grid.Row="3"
-      Margin="0,0,0,10"
-      assists:ShadowAssist.ShadowDepth="Depth0"
-      CornerRadius="25"
-      IsVisible="{Binding ShowSharePrompt}"
-      Mode="PrimaryLight">
-      <Grid ColumnDefinitions="*, auto">
-        <Button
-          Margin="0,0,3,0"
-          VerticalAlignment="Center"
-          Classes="Flat"
-          Command="{Binding ShareCommand}"
-          CornerRadius="25,0,0,25"
-          ToolTip.Tip="Share stream">
-          <StackPanel Orientation="Horizontal">
-            <TextBlock
-              VerticalAlignment="Center"
-              Classes="Overline"
-              FontWeight="Medium"
-              Foreground="White"
-              Text="Enable multiplayer mode!"
-              TextWrapping="Wrap" />
-            <icons:MaterialIcon
-              Margin="5,0"
-              VerticalAlignment="Center"
-              Foreground="White"
-              Kind="UsersAdd" />
-          </StackPanel>
-        </Button>
-      </Grid>
-    </m:ColorZone>
-
   </Grid>
 
 </UserControl>

@@ -11,7 +11,7 @@ namespace DesktopUI2.ViewModels
     public string Message { get; set; }
 
     //Can't get these to work when implementing INotification
-    public TimeSpan Expiration { get; set; }
+    public TimeSpan Expiration { get; set; } = TimeSpan.FromSeconds(7);
 
     public NotificationType Type { get; set; }
 

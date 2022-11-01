@@ -845,7 +845,7 @@ namespace DesktopUI2.ViewModels
         Message = $"The account has been removed from all your Connectors!",
         Expiration = TimeSpan.Zero,
         Type = Avalonia.Controls.Notifications.NotificationType.Error
-      }); ;
+      });
 
       //var dialog = new ImportExportAlert();
       //dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
