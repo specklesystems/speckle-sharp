@@ -86,6 +86,12 @@ namespace ConnectorGrasshopper.Streams
         
         Task.Run(async () =>
         {
+          if (!await Helpers.UserHasInternet())
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You are not connected to the internet");
+            Message = "Error";
+            return;
+          }
           try
           {
             var client = new Client(account);

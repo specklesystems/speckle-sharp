@@ -26,7 +26,7 @@ namespace Objects.Converter.CSI
       }
       else
       {
-        Structural.Materials.Material material = new Structural.Materials.Material("default", Structural.MaterialType.Steel, "Grade 50", "United States", "ASTM A992");
+        Structural.Materials.StructuralMaterial material = new Structural.Materials.StructuralMaterial("default", Structural.MaterialType.Steel, "Grade 50", "United States", "ASTM A992");
         property1D.material = material;
         MaterialToNative(property1D.material);
       }

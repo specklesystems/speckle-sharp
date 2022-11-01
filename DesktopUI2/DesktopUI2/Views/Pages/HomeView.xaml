@@ -59,30 +59,28 @@
 
   </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
-    <m:Card Padding="10,7" CornerRadius="0">
+    <m:Card
+      Padding="15,10"
+      Background="{DynamicResource PrimaryHueMidBrush}"
+      CornerRadius="0">
       <Grid ColumnDefinitions="auto,*">
         <StackPanel
           VerticalAlignment="Bottom"
           Orientation="Horizontal"
           Spacing="6">
           <Image Height="30" Source="../../Assets/logo.png" />
-          <!--<TextBlock
-            FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf"
-            FontSize="18"
-            FontWeight="Bold"
-            Foreground="{DynamicResource PrimaryHueMidBrush}"
-            Text="SPECKLE" />-->
           <TextBlock
-            FontFamily="../../Assets/SpaceGrotesk-VariableFont_wght.ttf"
+            Classes="SpeckleFont"
             FontSize="18"
             FontWeight="Medium"
+            Foreground="White"
             Text="{Binding Title}" />
 
           <TextBlock
-            Margin="0,0,0,4"
+            Margin="0,0,0,8"
             VerticalAlignment="Bottom"
             FontSize="8"
-            Foreground="Gray"
+            Foreground="White"
             Text="{Binding Version}" />
         </StackPanel>
 
@@ -92,6 +90,25 @@
           VerticalAlignment="Bottom"
           Orientation="Horizontal"
           Spacing="6">
+
+          <!--<m:FloatingButton
+            Grid.Column="1"
+            VerticalAlignment="Center"
+            assists:ShadowAssist.ShadowDepth="Depth0"
+            Background="Transparent"
+            Classes="Mini"
+            Command="{Binding TestCommand}"
+            ToolTip.Tip="Test stuff">
+            <Button.Content>
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                assists:ShadowAssist.ShadowDepth="0"
+                Foreground="{DynamicResource MaterialDesignBody}"
+                Kind="Bomb" />
+
+            </Button.Content>
+          </m:FloatingButton>-->
           <m:FloatingButton
             Grid.Column="1"
             VerticalAlignment="Center"
@@ -105,7 +122,7 @@
                 Width="15"
                 Height="15"
                 assists:ShadowAssist.ShadowDepth="0"
-                Foreground="{DynamicResource MaterialDesignBody}"
+                Foreground="White"
                 Kind="SunMoonStars" />
 
             </Button.Content>
@@ -123,7 +140,7 @@
                 Width="15"
                 Height="15"
                 assists:ShadowAssist.ShadowDepth="0"
-                Foreground="{DynamicResource MaterialDesignBody}"
+                Foreground="White"
                 Kind="Refresh" />
             </Button.Content>
           </m:FloatingButton>
@@ -175,6 +192,7 @@
             <MenuItem
               Width="30"
               Height="30"
+              Foreground="White"
               Header="{icons:MaterialIconExt AccountMultiple}">
 
               <MenuItem
@@ -233,7 +251,7 @@
     </m:Card>
     <Grid
       Grid.Row="1"
-      Margin="15"
+      Margin="5,10,5,5"
       IsVisible="{Binding HasAccounts}"
       RowDefinitions="auto,auto, auto,auto, *">
 
@@ -292,14 +310,7 @@
                           Kind="FilterVariant" />
                       </Grid>
                     </MenuItem.Header>
-                    <!--<ListBox>
 
-                      <TextBlock Text="all" />
-                      <TextBlock Text="owner" />
-                      <TextBlock Text="contributor" />
-                      <TextBlock Text="reviewer" />
-                      <icons:MaterialIcon VerticalAlignment="Center" Kind="Heart" />
-                    </ListBox>-->
                     <RadioButton
                       HorizontalContentAlignment="Center"
                       Classes="Button"
@@ -434,162 +445,123 @@
                 Text="No streams found 😅&#x0a;&#x0a;You can create a new one or add a public stream by ID or URL."
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
-              <ListBox
+              <ItemsRepeater
                 Background="Transparent"
-                BorderThickness="0"
-                Classes="NoScroll"
                 IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}}"
                 IsVisible="{Binding HasStreams}"
-                Items="{Binding FilteredStreams}"
-                SelectedItem="{Binding SelectedStream}">
-                <ListBox.Styles>
-                  <Style Selector="ListBoxItem:not(:pointerover) StackPanel#HoverButtons">
+                Items="{Binding FilteredStreams}">
+                <ItemsRepeater.Styles>
+                  <Style Selector="Button.Invisible:not(:pointerover) StackPanel#HoverButtons">
                     <Setter Property="IsVisible" Value="False" />
                   </Style>
-                  <Style Selector="ListBoxItem:pointerover StackPanel#HoverButtons">
+                  <Style Selector="Button.Invisible:pointerover StackPanel#HoverButtons">
                     <Setter Property="IsVisible" Value="True" />
                   </Style>
-
-
-                </ListBox.Styles>
-                <ListBox.ItemTemplate>
+                </ItemsRepeater.Styles>
+                <ItemsRepeater.ItemTemplate>
                   <DataTemplate>
-                    <Grid
-                      Margin="4,0"
-                      ColumnDefinitions="*,Auto"
-                      RowDefinitions="auto, auto">
-                      <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,auto">
-                        <TextBlock
-                          Classes="Grotesk"
-                          Text="{Binding Stream.name}"
-                          TextTrimming="CharacterEllipsis" />
-                        <icons:MaterialIcon
-                          Grid.Column="1"
-                          Width="10"
-                          Height="10"
-                          Margin="5,0,0,0"
-                          VerticalAlignment="Center"
-                          IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                          Kind="Heart"
-                          ToolTip.Tip="This is a favorite stream" />
-                      </Grid>
+                    <Button
+                      Padding="5,7"
+                      Classes="Invisible"
+                      Command="{Binding $parent[local:HomeView].DataContext.OpenStreamCommand}"
+                      CommandParameter="{Binding}">
                       <Grid
-                        Grid.Row="1"
-                        Grid.Column="0"
-                        RowDefinitions="15,15, auto">
-
-
-                        <TextBlock
-                          Grid.Row="0"
-                          Margin="0,3,0,0"
-                          Classes="Caption"
-                          MaxLines="1"
-                          Text="{Binding Stream.description}"
-                          TextTrimming="CharacterEllipsis" />
-
-                        <sc:StreamDetails Grid.Row="1" />
-
-                        <Grid
-                          Grid.Row="2"
-                          Margin="0,3,0,0"
-                          ColumnDefinitions="auto,auto,*"
-                          IsVisible="{Binding $parent[local:HomeView].DataContext.HasOneAccount, Converter={x:Static BoolConverters.Not}}">
-                          <Grid.Styles>
-                            <Style Selector="TextBlock">
-                              <Setter Property="Foreground" Value="LightGray" />
-                            </Style>
-                          </Grid.Styles>
+                        Margin="4,0"
+                        ColumnDefinitions="*,Auto"
+                        RowDefinitions="auto, auto">
+                        <Grid Grid.ColumnSpan="2" ColumnDefinitions="*,auto">
                           <TextBlock
-                            Classes="Overline"
-                            Text="{Binding Account.userInfo.email}"
+                            Classes="Medium"
+                            Text="{Binding Stream.name}"
                             TextTrimming="CharacterEllipsis" />
-                          <TextBlock
-                            Grid.Column="1"
-                            Classes="Overline"
-                            Text=" | " />
-                          <TextBlock
-                            Grid.Column="2"
-                            Classes="Overline"
-                            Text="{Binding Account.serverInfo.url}"
-                            TextTrimming="CharacterEllipsis" />
-                        </Grid>
-
-
-                      </Grid>
-                      <StackPanel
-                        Name="HoverButtons"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Margin="0,0,0,0"
-                        VerticalAlignment="Top"
-                        Orientation="Horizontal"
-                        Spacing="10">
-
-                        <m:FloatingButton
-                          VerticalAlignment="Center"
-                          assists:ShadowAssist.ShadowDepth="0"
-                          Background="Transparent"
-                          Classes="Mini"
-                          Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
-                          CommandParameter="{Binding}"
-                          ToolTip.Tip="View online">
-                          <Button.Content>
-                            <icons:MaterialIcon
-                              Width="15"
-                              Height="15"
-                              Foreground="Gray"
-                              Kind="ExternalLink" />
-
-                          </Button.Content>
-                        </m:FloatingButton>
-                        <!--<m:FloatingButton
-                        VerticalAlignment="Center"
-                        Classes="Mini"
-                        Command="{Binding $parent[local:HomeView].DataContext.SendCommand}"
-                        CommandParameter="{Binding}"
-                        IsEnabled="{Binding role, Converter={StaticResource RoleCanSendValueConverter}}"
-                        ToolTip.Tip="Send to this stream">
-                        <Button.Content>
                           <icons:MaterialIcon
-                            Width="15"
-                            Height="15"
-                            Foreground="White"
-                            Kind="CubeSend">
-                            <icons:MaterialIcon.RenderTransform>
-                              <RotateTransform Angle="-30" />
-                            </icons:MaterialIcon.RenderTransform>
-                          </icons:MaterialIcon>
-
-                        </Button.Content>
-                      </m:FloatingButton>
-
-                      <m:FloatingButton
-                        VerticalAlignment="Center"
-                        Classes="Mini"
-                        Command="{Binding $parent[local:HomeView].DataContext.ReceiveCommand}"
-                        CommandParameter="{Binding}"
-                        ToolTip.Tip="Receive from this stream">
-                        <Button.Content>
-                          <icons:MaterialIcon Foreground="White" Kind="CubeSend">
-                            <icons:MaterialIcon.RenderTransform>
-                              <TransformGroup>
-                                <RotateTransform Angle="30" />
-                                <ScaleTransform ScaleX="-1" />
-                              </TransformGroup>
-                            </icons:MaterialIcon.RenderTransform>
-                          </icons:MaterialIcon>
-
-                        </Button.Content>
-                      </m:FloatingButton>-->
-                      </StackPanel>
-                    </Grid>
+                            Grid.Column="1"
+                            Width="10"
+                            Height="10"
+                            Margin="5,0,0,0"
+                            VerticalAlignment="Center"
+                            IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                            Kind="Heart"
+                            ToolTip.Tip="This is a favorite stream" />
+                        </Grid>
+                        <Grid
+                          Grid.Row="1"
+                          Grid.Column="0"
+                          RowDefinitions="15,15, auto">
 
 
+                          <TextBlock
+                            Grid.Row="0"
+                            Margin="0,3,0,0"
+                            Classes="Caption"
+                            MaxLines="1"
+                            Text="{Binding Stream.description}"
+                            TextTrimming="CharacterEllipsis" />
 
+                          <sc:StreamDetails Grid.Row="1" />
+
+                          <Grid
+                            Grid.Row="2"
+                            Margin="0,3,0,0"
+                            ColumnDefinitions="auto,auto,*"
+                            IsVisible="{Binding $parent[local:HomeView].DataContext.HasOneAccount, Converter={x:Static BoolConverters.Not}}">
+                            <Grid.Styles>
+                              <Style Selector="TextBlock">
+                                <Setter Property="Foreground" Value="LightGray" />
+                              </Style>
+                            </Grid.Styles>
+                            <TextBlock
+                              Classes="Overline"
+                              Text="{Binding Account.userInfo.email}"
+                              TextTrimming="CharacterEllipsis" />
+                            <TextBlock
+                              Grid.Column="1"
+                              Classes="Overline"
+                              Text=" | " />
+                            <TextBlock
+                              Grid.Column="2"
+                              Classes="Overline"
+                              Text="{Binding Account.serverInfo.url}"
+                              TextTrimming="CharacterEllipsis" />
+                          </Grid>
+
+
+                        </Grid>
+                        <StackPanel
+                          Name="HoverButtons"
+                          Grid.Row="1"
+                          Grid.Column="1"
+                          Margin="0,0,0,0"
+                          VerticalAlignment="Top"
+                          Orientation="Horizontal"
+                          Spacing="10">
+
+                          <m:FloatingButton
+                            VerticalAlignment="Center"
+                            assists:ShadowAssist.ShadowDepth="0"
+                            Background="Transparent"
+                            Classes="Mini"
+                            Command="{Binding $parent[local:HomeView].DataContext.ViewOnlineCommand}"
+                            CommandParameter="{Binding}"
+                            ToolTip.Tip="View online">
+                            <Button.Content>
+                              <icons:MaterialIcon
+                                Width="15"
+                                Height="15"
+                                Foreground="Gray"
+                                Kind="ExternalLink" />
+
+                            </Button.Content>
+                          </m:FloatingButton>
+                        </StackPanel>
+                      </Grid>
+
+
+                    </Button>
                   </DataTemplate>
-                </ListBox.ItemTemplate>
+                </ItemsRepeater.ItemTemplate>
 
-              </ListBox>
+              </ItemsRepeater>
             </Grid>
           </Expander>
 

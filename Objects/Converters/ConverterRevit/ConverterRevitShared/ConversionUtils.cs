@@ -15,6 +15,7 @@ using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
+using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
 
@@ -74,14 +75,13 @@ namespace Objects.Converter.Revit
           continue;
         }
 
-        ContextObjects.RemoveAt(isSelectedInContextObjects);
-
         ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
         if (CanConvertToSpeckle(element))
         {
           var obj = ConvertToSpeckle(element);
           if (obj != null)
           {
+            ContextObjects.RemoveAt(isSelectedInContextObjects);
             reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
             convertedHostedElements.Add(obj);
             ConvertedObjectsList.Add(obj.applicationId);
@@ -190,6 +190,24 @@ namespace Objects.Converter.Revit
       speckleElement["units"] = ModelUnits;
       speckleElement["isRevitLinkedModel"] = revitElement.Document.IsLinked;
       speckleElement["revitLinkedModelPath"] = revitElement.Document.PathName;
+
+      Phase phaseCreated = Doc.GetElement(revitElement.CreatedPhaseId) as Phase;
+      if (phaseCreated != null)
+        speckleElement["phaseCreated"] = phaseCreated.Name;
+
+      var category = revitElement.Category;
+      if (category != null)
+      {
+        if (speckleElement["category"] is RevitCategory)
+        {
+          speckleElement["category"] = Categories.GetSchemaBuilderCategoryFromBuiltIn(category.Name);
+        }
+        else
+        {
+          speckleElement["category"] = category.Name;
+        }
+      }
+        
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -330,6 +348,10 @@ namespace Objects.Converter.Revit
       if (speckleParameters == null || speckleParameters.GetDynamicMemberNames().Count() == 0)
         return;
 
+      // Set the phaseCreated parameter
+      if (speckleElement["phaseCreated"] is string phaseCreated && !string.IsNullOrEmpty(phaseCreated))
+        TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phaseCreated));
+
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
       // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
@@ -348,7 +370,6 @@ namespace Objects.Converter.Revit
       // We only loop params we can set and that actually exist on the revit element
       var filteredSpeckleParameters = speckleParameters.GetMembers()
         .Where(x => revitParameterById.ContainsKey(x.Key) || revitParameterByName.ContainsKey(x.Key));
-
 
       foreach (var spk in filteredSpeckleParameters)
       {
@@ -478,6 +499,31 @@ namespace Objects.Converter.Revit
       }
     }
 
+    /// <summary>
+    /// Queries a Revit Document for phases by the given name.
+    /// </summary>
+    /// <param name="document"></param>
+    /// <param name="phaseName">The name of the Phase</param>
+    /// <returns>the phase which has the same name. null if none or multiple phases were found.</returns>
+    private Phase GetRevitPhase(DB.Document document, string phaseName)
+    {
+      // cache the phases if we haven't already done so
+      if (Phases.Count == 0)
+      {
+        var phases = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_Phases).ToList();
+        foreach (var phase in phases)
+        {
+          Phases[phase.Name] = phase as Phase;
+        }
+      }
+      if (Phases.ContainsKey(phaseName))
+        return Phases[phaseName];
+
+      return null;
+    }
+
+
+
     #endregion
 
     #region  element types
@@ -553,12 +599,13 @@ namespace Objects.Converter.Revit
       var family = element["family"] as string;
       var type = element["type"] as string;
 
-      ElementType match = null;
+      // if the object is structural, we keep the type name in a different location
+      if (element is OSG.Element1D element1D)
+        type = element1D.property.name.Replace('X', 'x');
+      else if (element is OSG.Element2D element2D)
+        type = element2D.property.name;
 
-      //if (family == null && type == null)
-      //{
-      //  match = types.First();
-      //}
+      ElementType match = null;
 
       if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
         match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
@@ -607,6 +654,14 @@ namespace Objects.Converter.Revit
 
     private ElementFilter GetCategoryFilter(Base element)
     {
+      if (element is OSG.Element1D element1D)
+      {
+        if (element1D.type == OSG.ElementType1D.Column)
+          return new ElementMulticategoryFilter(Categories.columnCategories);
+        else if (element1D.type == OSG.ElementType1D.Beam || element1D.type == OSG.ElementType1D.Brace)
+          return new ElementMulticategoryFilter(Categories.beamCategories);
+      }
+
       switch (element)
       {
         case BuiltElements.Wall _:
@@ -619,6 +674,7 @@ namespace Objects.Converter.Revit
         case Duct _:
           return new ElementMulticategoryFilter(Categories.ductCategories);
         case Floor _:
+        case OSG.Element2D _:
           return new ElementMulticategoryFilter(Categories.floorCategories);
         case Pipe _:
           return new ElementMulticategoryFilter(Categories.pipeCategories);
@@ -660,13 +716,44 @@ namespace Objects.Converter.Revit
         //eg: user sends some objects, moves them, receives them 
         element = Doc.GetElement(applicationId);
       }
-      else
+      else if(@ref.CreatedIds.Any())
       {
         //return the cached object, if it's still in the model
-        element = Doc.GetElement(@ref.CreatedIds.FirstOrDefault());
+        element = Doc.GetElement(@ref.CreatedIds.First());
       }
 
       return element;
+    }
+
+    public List<DB.Element> GetExistingElementsByApplicationId(string applicationId)
+    {
+      var elements = new List<Element>();
+      if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+        return elements;
+
+      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
+
+      if (@ref == null)
+      {
+        //element was not cached in a PreviousContex but might exist in the model
+        //eg: user sends some objects, moves them, receives them 
+        var revElement = Doc.GetElement(applicationId);
+        if (revElement != null)
+          elements.Add(revElement);
+      }
+      else
+      {
+        //return the cached objects, if they are still in the model
+        foreach (var id in @ref.CreatedIds)
+        {
+          var revElement = Doc.GetElement(id);
+          if (revElement != null)
+            elements.Add(revElement);
+        }
+
+      }
+
+      return elements;
     }
 
     /// <summary>
@@ -950,16 +1037,18 @@ namespace Objects.Converter.Revit
     {
       if (speckleMaterial == null) return ElementId.InvalidElementId;
 
+      string matName = RemoveProhibitedCharacters(speckleMaterial.name);
+
       // Try and find an existing material
       var existing = new FilteredElementCollector(Doc)
         .OfClass(typeof(DB.Material))
         .Cast<DB.Material>()
-        .FirstOrDefault(m => string.Equals(m.Name, speckleMaterial.name, StringComparison.CurrentCultureIgnoreCase));
+        .FirstOrDefault(m => string.Equals(m.Name, matName, StringComparison.CurrentCultureIgnoreCase));
 
       if (existing != null) return existing.Id;
 
       // Create new material
-      ElementId materialId = DB.Material.Create(Doc, speckleMaterial.name ?? Guid.NewGuid().ToString());
+      ElementId materialId = DB.Material.Create(Doc, matName ?? Guid.NewGuid().ToString());
       DB.Material mat = Doc.GetElement(materialId) as DB.Material;
 
       var sysColor = System.Drawing.Color.FromArgb(speckleMaterial.diffuse);
@@ -1143,6 +1232,13 @@ namespace Objects.Converter.Revit
         Doc.Delete(docObj.Id);
 
       return null;
+    }
+
+    private string RemoveProhibitedCharacters(string s)
+    {
+      if (string.IsNullOrEmpty(s))
+        return s;
+      return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
     }
   }
 }

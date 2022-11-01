@@ -9,7 +9,7 @@ using Objects.Structural.Properties;
 
 namespace Objects.Structural.Geometry
 {
-    public class Element2D : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+    public class Element2D : Base, IDisplayValue<List<Mesh>>
     {        
         public string name { get; set; }
 
@@ -45,13 +45,5 @@ namespace Objects.Structural.Geometry
             this.offset = offset;
             this.orientationAngle = orientationAngle;
         }
-        
-        #region Obsolete
-        [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-        public Mesh displayMesh {
-            get => displayValue?.FirstOrDefault();
-            set => displayValue = new List<Mesh> {value};
-        }
-        #endregion
     }
 }

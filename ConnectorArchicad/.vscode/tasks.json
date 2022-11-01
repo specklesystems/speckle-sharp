@@ -15,7 +15,7 @@
     {
       "label": "Move Connector Files (win)",
       "type": "shell",
-      "command": "cp -a ./AddOn/Build/Debug/. 'C:/Program Files/GRAPHISOFT/ARCHICAD 25/Add-Ons/ConnectorArchicad'; cp -a ./speckle-sharp/ConnectorArchicad/bin/Debug/net5.0/. 'C:/Program Files/GRAPHISOFT/ARCHICAD 25/Add-Ons/ConnectorArchicad/ConnectorArchicad'",
+      "command": "cp -a ./AddOn/Build/Debug/. 'C:/Program Files/GRAPHISOFT/ARCHICAD 25/Add-Ons/ConnectorArchicad'; cp -a ./speckle-sharp/ConnectorArchicad/bin/Debug/net6.0/. 'C:/Program Files/GRAPHISOFT/ARCHICAD 25/Add-Ons/ConnectorArchicad/ConnectorArchicad'",
       "problemMatcher": []
     }
   ]

@@ -26,7 +26,7 @@ namespace Objects.Converter.CSI
 
       if (model.materials != null)
       {
-        foreach (Structural.Materials.Material material in model.materials)
+        foreach (Structural.Materials.StructuralMaterial material in model.materials)
         {
           MaterialToNative(material);
         }

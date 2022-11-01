@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -12,14 +12,31 @@ using Objects.Primitive;
 
 namespace Objects.Geometry
 {
-  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<Brep>, IDisplayMesh, IDisplayValue<List<Mesh>>
+  /// <summary>
+  /// Represents a "Boundary Representation" Solid
+  /// </summary>
+  public class Brep : Base, IHasArea, IHasVolume, IHasBoundingBox, ITransformable<Brep>, IDisplayValue<List<Mesh>>
   {
     public string provenance { get; set; }
+
+    /// <inheritdoc/>
     public Box bbox { get; set; }
+
+    /// <inheritdoc/>
     public double area { get; set; }
+
+    /// <inheritdoc/>
     public double volume { get; set; }
+
+    /// <summary>
+    /// The unit's this object's coordinates are in.
+    /// </summary>
+    /// <remarks>
+    /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
+    /// </remarks>
     public string units { get; set; }
-    
+
+    /// <inheritdoc/>
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -28,7 +45,10 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<Surface> Surfaces { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s surfaces.
+    /// </summary>
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> SurfacesValue
@@ -43,6 +63,7 @@ namespace Objects.Geometry
             list.AddRange(srf.ToList());
           }
         }
+
         return list;
       }
       set
@@ -51,13 +72,14 @@ namespace Objects.Geometry
         var list = new List<Surface>();
         var done = false;
         var currentIndex = 0;
-        while(!done)
+        while (!done)
         {
           var len = (int)value[currentIndex];
           list.Add(Surface.FromList(value.GetRange(currentIndex + 1, len)));
           currentIndex += len + 1;
           done = currentIndex >= value.Count;
         }
+
         Surfaces = list;
       }
     }
@@ -67,15 +89,18 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<ICurve> Curve3D { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s 3D curves.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for the <see cref="Brep"/> class serialisation/deserialisation. You should use <see cref="Brep.Curve3D"/> instead.
+    /// </remarks>
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> Curve3DValues
     {
-      get
-      {
-        return CurveArrayEncodingExtensions.ToArray(Curve3D);
-      }
+      get { return CurveArrayEncodingExtensions.ToArray(Curve3D); }
       set
       {
         if (value != null)
@@ -88,15 +113,18 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<ICurve> Curve2D { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s 2D curves.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for the <see cref="Brep"/> class serialisation/deserialisation. You should use <see cref="Brep.Curve2D"/> instead.
+    /// </remarks>
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> Curve2DValues
     {
-      get
-      {
-        return CurveArrayEncodingExtensions.ToArray(Curve2D);
-      }
+      get { return CurveArrayEncodingExtensions.ToArray(Curve2D); }
       set
       {
         if (value != null)
@@ -109,7 +137,13 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<Point> Vertices { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s vertices.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for the <see cref="Brep"/> class serialisation/deserialisation. You should use <see cref="Brep.Vertices"/> instead.
+    /// </remarks>
     [DetachProperty, SchemaIgnore]
     [Chunkable(31250)]
     public List<double> VerticesValue
@@ -122,6 +156,7 @@ namespace Objects.Geometry
         {
           list.AddRange(vertex.ToList());
         }
+
         return list;
       }
       set
@@ -142,7 +177,13 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<BrepEdge> Edges { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s edges.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for the <see cref="Brep"/> class serialisation/deserialisation. You should use <see cref="Brep.Edges"/> instead.
+    /// </remarks>
     [DetachProperty, SchemaIgnore]
     [Chunkable(62500)]
     public List<double?> EdgesValue
@@ -200,7 +241,13 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore]
     public List<BrepLoop> Loops { get; set; }
-    
+
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s loops.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for the <see cref="Brep"/> class serialisation/deserialisation. You should use <see cref="Brep.Loops"/> instead.
+    /// </remarks>
     [DetachProperty, SchemaIgnore]
     [Chunkable(62500)]
     public List<int> LoopsValue
@@ -236,14 +283,19 @@ namespace Objects.Geometry
       }
     }
 
-    
     /// <summary>
     /// Gets or sets the list of UV trim segments for each surface in this <see cref="Brep"/> instance.
     /// </summary>
     [JsonIgnore]
     public List<BrepTrim> Trims { get; set; }
+
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s trims.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for the <see cref="Brep"/> class serialisation/deserialisation. You should use <see cref="Brep.Trims"/> instead.
+    /// </remarks>
     [DetachProperty, SchemaIgnore]
-    
     [Chunkable(62500)]
     public List<int> TrimsValue
     {
@@ -262,6 +314,7 @@ namespace Objects.Geometry
           list.Add((int)trim.TrimType);
           list.Add(trim.IsReversed ? 1 : 0);
         }
+
         return list;
       }
       set
@@ -284,6 +337,7 @@ namespace Objects.Geometry
           };
           list.Add(trim);
         }
+
         Trims = list;
       }
     }
@@ -294,6 +348,12 @@ namespace Objects.Geometry
     [JsonIgnore]
     public List<BrepFace> Faces { get; set; }
 
+    /// <summary>
+    /// Gets or sets the flat list of numbers representing the <see cref="Brep"/>'s faces.
+    /// </summary>
+    /// <remarks>
+    /// This is only used for the <see cref="Brep"/> class serialisation/deserialisation. You should use <see cref="Brep.Faces"/> instead.
+    /// </remarks>
     [DetachProperty, SchemaIgnore]
     [Chunkable(62500)]
     public List<int> FacesValue
@@ -359,12 +419,14 @@ namespace Objects.Geometry
       IsClosed = false;
       Orientation = BrepOrientation.None;
     }
-    
+
     public Brep(string provenance, Mesh displayValue, string units = Units.Meters, string applicationId = null)
-      : this(provenance, new List<Mesh>{displayValue}, units, applicationId)
-    { }
-    
-    public Brep(string provenance, List<Mesh> displayValues, string units = Units.Meters, string applicationId = null) : this()
+      : this(provenance, new List<Mesh> { displayValue }, units, applicationId)
+    {
+    }
+
+    public Brep(string provenance, List<Mesh> displayValues, string units = Units.Meters,
+                string applicationId = null) : this()
     {
       this.provenance = provenance;
       this.displayValue = displayValues;
@@ -377,7 +439,7 @@ namespace Objects.Geometry
     internal void OnDeserialized(StreamingContext context)
     {
       Surfaces.ForEach(s => s.units = units);
-      
+
       for (var i = 0; i < Edges.Count; i++)
       {
         var e = Edges[i];
@@ -391,11 +453,11 @@ namespace Objects.Geometry
           else
             e.Brep = this;
       }
-      
-      for(var i = 0; i < Loops.Count; i++)
+
+      for (var i = 0; i < Loops.Count; i++)
       {
         var l = Loops[i];
-        lock(l)
+        lock (l)
           if (l.Brep != null)
           {
             l = new BrepLoop(this, l.FaceIndex, l.TrimIndices, l.Type);
@@ -408,7 +470,7 @@ namespace Objects.Geometry
       for (var i = 0; i < Trims.Count; i++)
       {
         var t = Trims[i];
-        lock(t)
+        lock (t)
           if (t.Brep != null)
           {
             t = new BrepTrim(this, t.EdgeIndex, t.FaceIndex, t.LoopIndex, t.CurveIndex, t.IsoStatus, t.TrimType,
@@ -422,7 +484,7 @@ namespace Objects.Geometry
       for (var i = 0; i < Faces.Count; i++)
       {
         var f = Faces[i];
-        lock(f)
+        lock (f)
           if (f.Brep != null)
           {
             f = new BrepFace(this, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed);
@@ -433,11 +495,7 @@ namespace Objects.Geometry
       }
     }
 
-    /// <summary>
-    /// Returns a new transformed Brep.
-    /// </summary>
-    /// <param name="transform"></param>
-    /// <returns></returns>
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out Brep brep)
     {
       var displayValues = new List<Mesh>(displayValue.Count);
@@ -448,7 +506,7 @@ namespace Objects.Geometry
       }
 
       var surfaces = new List<Surface>(Surfaces.Count);
-      foreach ( var srf in Surfaces )
+      foreach (var srf in Surfaces)
       {
         srf.TransformTo(transform, out Surface surface);
         surfaces.Add(surface);
@@ -472,32 +530,25 @@ namespace Objects.Geometry
         applicationId = applicationId ?? id
       };
 
-      foreach ( var e in Edges )
+      foreach (var e in Edges)
         brep.Edges.Add(new BrepEdge(brep, e.Curve3dIndex, e.TrimIndices, e.StartIndex, e.EndIndex,
           e.ProxyCurveIsReversed,
           e.Domain));
 
-      foreach ( var l in Loops )
+      foreach (var l in Loops)
         brep.Loops.Add(new BrepLoop(brep, l.FaceIndex, l.TrimIndices, l.Type));
 
-      foreach ( var t in Trims )
+      foreach (var t in Trims)
         brep.Trims.Add(new BrepTrim(brep, t.EdgeIndex, t.FaceIndex, t.LoopIndex, t.CurveIndex, t.IsoStatus, t.TrimType,
           t.IsReversed, t.StartIndex, t.EndIndex));
 
-      foreach ( var f in Faces )
+      foreach (var f in Faces)
         brep.Faces.Add(new BrepFace(brep, f.SurfaceIndex, f.LoopIndices, f.OuterLoopIndex, f.OrientationReversed));
 
       return success3D;
     }
     
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
-
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Brep brep);
@@ -511,9 +562,16 @@ namespace Objects.Geometry
   /// </summary>
   public enum BrepOrientation
   {
+    /// Brep has no specific orientation
     None = 0,
+
+    /// Brep faces inward
     Inward = -1,
+
+    /// Brep faces outward
     Outward = 1,
+
+    /// Orientation is not known
     Unknown = 2
   }
 
@@ -523,14 +581,28 @@ namespace Objects.Geometry
   /// </summary>
   public enum BrepLoopType
   {
+    /// Loop type is not known
     Unknown,
+
+    /// Loop is the outer loop of a face
     Outer,
+
+    /// Loop is an inner loop of a face
     Inner,
+
+    /// Loop is a closed curve with no area.
     Slit,
+
+    /// Loop represents a curve on a surface
     CurveOnSurface,
+
+    /// Loop is collapsed to a point.
     PointOnSurface,
   }
 
+  /// <summary>
+  /// Represents the type of a trim in a <see cref="Brep"/>'s loop.
+  /// </summary>
   public enum BrepTrimType
   {
     Unknown,

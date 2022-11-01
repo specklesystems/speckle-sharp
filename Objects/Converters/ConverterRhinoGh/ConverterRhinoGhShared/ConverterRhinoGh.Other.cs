@@ -386,9 +386,20 @@ namespace Objects.Converter.RhinoGh
       Guid instanceId = Doc.Objects.AddInstanceObject(definition.Index, transform);
 
       if (instanceId == Guid.Empty)
+      {
+        notes.Add("Could not add instance to doc");
         return null;
+      }
 
-      return Doc.Objects.FindId(instanceId) as InstanceObject;
+      var _instance = Doc.Objects.FindId(instanceId) as InstanceObject;
+      // add application id
+      try
+      {
+        _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId);
+      }
+      catch { }
+
+      return _instance;
     }
 
     public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)

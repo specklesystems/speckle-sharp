@@ -5,7 +5,9 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Tests\TestsUnit.csproj" />
     <ProjectReference Include="..\Core\Core.csproj" />

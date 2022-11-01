@@ -15,7 +15,9 @@ namespace DesktopUI2.Views.Converters
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-      throw new NotSupportedException();
+      if (value == null)
+        return null;
+      return "stream:" + value.ToString();
     }
   }
 }

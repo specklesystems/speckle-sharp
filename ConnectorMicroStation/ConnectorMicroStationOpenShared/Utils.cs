@@ -1,33 +1,31 @@
-﻿using System;
+﻿using Bentley.DgnPlatformNET;
+using Bentley.GeometryNET;
+using Bentley.MstnPlatformNET;
+using Speckle.Core.Kits;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-
-using Speckle.Core.Kits;
-
-using Bentley.DgnPlatformNET;
-using Bentley.GeometryNET;
-using Bentley.MstnPlatformNET;
 
 namespace Speckle.ConnectorMicroStationOpen
 {
   public static class Utils
   {
 #if MICROSTATION
-    public static string VersionedAppName = VersionedHostApplications.MicroStation;
+    public static string VersionedAppName = HostApplications.MicroStation.GetVersion(HostAppVersion.v);
     public static string AppName = HostApplications.MicroStation.Name;
     public static string Slug = HostApplications.MicroStation.Slug;
 #elif OPENROADS
-    public static string VersionedAppName = VersionedHostApplications.OpenRoads;
+    public static string VersionedAppName = HostApplications.OpenRoads.GetVersion(HostAppVersion.v);
     public static string AppName = HostApplications.OpenRoads.Name;
     public static string Slug = HostApplications.OpenRoads.Slug;
 #elif OPENRAIL
-    public static string VersionedAppName = VersionedHostApplications.OpenRail;
+    public static string VersionedAppName = HostApplications.OpenRail.GetVersion(HostAppVersion.v);
     public static string AppName = HostApplications.OpenRail.Name;
     public static string Slug = HostApplications.OpenRail.Slug;
 #elif OPENBUILDINGS
-    public static string VersionedAppName = VersionedHostApplications.OpenBuildings;
+    public static string VersionedAppName = HostApplications.OpenBuildings.GetVersion(HostAppVersion.v);
     public static string AppName = HostApplications.OpenBuildings.Name;
     public static string Slug = HostApplications.OpenBuildings.Slug;
 #endif

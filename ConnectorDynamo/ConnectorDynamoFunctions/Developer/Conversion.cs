@@ -16,6 +16,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     {
       Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Speckle" } });
       var converter = new BatchConverter();
+      converter.OnError += (sender, args) => throw args.Error;
       return converter.ConvertRecursivelyToSpeckle(data);
     }
 
@@ -28,6 +29,7 @@ namespace Speckle.ConnectorDynamo.Functions.Developer
     {
       Analytics.TrackEvent(Analytics.Events.NodeRun, new Dictionary<string, object>() { { "name", "Convert To Native" } });
       var converter = new BatchConverter();
+      converter.OnError += (sender, args) => throw args.Error;
       return converter.ConvertRecursivelyToNative(@base);
     }
   }

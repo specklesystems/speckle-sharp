@@ -6,12 +6,15 @@
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
+    <Product>ConnectorRhino6</Product>
     <RhinoMacLauncher>/Applications/Rhinoceros.app</RhinoMacLauncher>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <Version>2.0.0-dev</Version>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,10 +29,6 @@
     <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-    <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
     </PackageReference>
     <PackageReference Include="RhinoCommon" Version="6.28.20199.17141">
@@ -55,6 +54,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>TRACE;RHINO6</DefineConstants>
+  
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
     <DefineConstants>TRACE;RHINO6;MAC</DefineConstants>

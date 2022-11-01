@@ -13,7 +13,7 @@ namespace Speckle.ConnectorDynamo.Functions
     internal static string GetAppName()
     {
       if (Globals.RevitDocument == null)
-        return VersionedHostApplications.DynamoSandbox;
+        return HostApplications.Dynamo.GetVersion(HostAppVersion.vSandbox);
       else
       {
         try
@@ -24,19 +24,21 @@ namespace Speckle.ConnectorDynamo.Functions
           System.Type type2 = app.GetType();
           var version = (string)type2.GetProperty("VersionNumber").GetValue(app, null);
 
+          if (version.Contains("2024"))
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2024);
           if (version.Contains("2023"))
-            return VersionedHostApplications.DynamoRevit2023;
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2023);
           if (version.Contains("2022"))
-            return VersionedHostApplications.DynamoRevit2022;
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2022);
           if (version.Contains("2021"))
-            return VersionedHostApplications.DynamoRevit2021;
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit2021);
           else
-            return VersionedHostApplications.DynamoRevit;
+            return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
 
         }
         catch (Exception e)
         {
-          return VersionedHostApplications.DynamoRevit;
+          return HostApplications.Dynamo.GetVersion(HostAppVersion.vRevit);
         }
       }
     }

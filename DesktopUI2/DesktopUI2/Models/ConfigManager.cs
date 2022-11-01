@@ -33,6 +33,7 @@ namespace DesktopUI2.Models
   public class Config
   {
     public bool DarkTheme { set; get; }
+    public bool ShowImportExportAlert { set; get; } = true;
   }
 
 

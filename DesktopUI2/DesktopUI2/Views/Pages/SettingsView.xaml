@@ -25,7 +25,7 @@
       Margin="0,0,0,7"
       Padding="0"
       assists:ShadowAssist.ShadowDepth="Depth2"
-      Background="{DynamicResource MaterialDesignCardBackground}">
+      Background="{DynamicResource PrimaryHueMidBrush}">
       <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
         <m:FloatingButton
           VerticalAlignment="Center"
@@ -42,7 +42,7 @@
               <icons:MaterialIcon
                 Width="24"
                 Height="24"
-                Foreground="{DynamicResource MaterialDesignBody}"
+                Foreground="White"
                 Kind="ChevronLeft" />
             </Viewbox>
           </Button.Content>
@@ -51,8 +51,9 @@
           Grid.Column="1"
           Margin="15,0,0,0"
           VerticalAlignment="Center"
-          Classes="Grotesk"
+          Classes="Medium"
           FontSize="20"
+          Foreground="White"
           Text="Settings"
           TextTrimming="CharacterEllipsis" />
 
@@ -76,9 +77,9 @@
         Orientation="Horizontal">
         <Button
           Margin="0,0,10,0"
-          CornerRadius="25 "
           Command="{Binding SaveCommand}"
           Content="Save"
+          CornerRadius="25 "
           ToolTip.Tip="Save these settings" />
       </StackPanel>
     </Grid>

@@ -16,21 +16,27 @@ namespace Archicad.Launcher
 
     public static void Main(string[] args)
     {
-      if (args.Length == 0)
+      if (args.Length != 2)
       {
         System.Diagnostics.Debug.Fail("Communication port number is missing!");
         return;
       }
 
-      if (!uint.TryParse(args.First(), out uint portNumber))
+      if (!uint.TryParse(args[0], out uint portNumber))
       {
         System.Diagnostics.Debug.Fail("Invalid communication port number!");
         return;
       }
 
+      if (!uint.TryParse(args[1], out uint archicadVersion))
+      {
+        System.Diagnostics.Debug.Fail("Invalid Archicad version number!");
+        return;
+      }
+
       Communication.ConnectionManager.Instance.Start(portNumber);
 
-      Bindings = new ArchicadBinding();
+      Bindings = new ArchicadBinding(archicadVersion);
       CreateOrFocusSpeckle(args);
       // BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
     }
@@ -47,8 +53,8 @@ namespace Archicad.Launcher
     public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
       .UsePlatformDetect()
       .With(new X11PlatformOptions { UseGpu = false })
-      .With(new MacOSPlatformOptions { ShowInDock = true })
-      .With(new AvaloniaNativePlatformOptions { AvaloniaNativeLibraryPath = GetAvaloniaNativeLibraryPath() })
+      .With(new MacOSPlatformOptions { ShowInDock = true, DisableDefaultApplicationMenuItems = true, DisableNativeMenus = true })
+      .With(new AvaloniaNativePlatformOptions { UseGpu = false, UseDeferredRendering = true })
       .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
       .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
       .LogToTrace()
@@ -60,12 +66,6 @@ namespace Archicad.Launcher
       MainWindow = new MainWindow { DataContext = viewModel };
 
       app.Run(MainWindow);
-    }
-
-    private static string? GetAvaloniaNativeLibraryPath()
-    {
-      string path = Path.GetDirectoryName(typeof(DesktopUI2.App).Assembly.Location);
-      return path is null ? null : Path.Combine(path, "Native", "libAvalonia.Native.OSX.dylib");
     }
   }
 }

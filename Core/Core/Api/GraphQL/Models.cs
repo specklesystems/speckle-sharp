@@ -40,6 +40,7 @@ namespace Speckle.Core.Api
     public string userId { get; set; }
     public string email { get; set; }
     public string message { get; set; }
+    public string role { get; set; }
   }
 
   public class BranchCreateInput

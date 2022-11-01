@@ -1,18 +1,18 @@
-﻿using System;
 ﻿using Speckle.Core.Kits;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
+using System;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using BE = Objects.BuiltElements;
-using Speckle.Core.Logging;
-using Tekla.Structures.Model;
+using System.Text;
 using Tekla.Structures;
+using Tekla.Structures.Model;
+using BE = Objects.BuiltElements;
 using GE = Objects.Geometry;
-using Speckle.Core.Models.Extensions;
 
 
 namespace Objects.Converter.TeklaStructures
@@ -20,9 +20,9 @@ namespace Objects.Converter.TeklaStructures
   public partial class ConverterTeklaStructures : ISpeckleConverter
   {
 #if TeklaStructures2021
-    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2021;
+    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2021);
 #elif TeklaStructures2020
-    public static string TeklaStructuresAppName = VersionedHostApplications.TeklaStructures2020;
+    public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2020);
 #else
     public static string TeklaStructuresAppName = HostApplications.TeklaStructures.Name;
 #endif
@@ -131,8 +131,9 @@ namespace Objects.Converter.TeklaStructures
         try
         {
           var bases = BaseExtensions.Flatten(@object);
-          foreach(var @base in bases){
-          try
+          foreach (var @base in bases)
+          {
+            try
             {
               List<GE.Mesh> displayValues = new List<GE.Mesh> { };
               var meshes = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<GE.Mesh>;
@@ -140,9 +141,10 @@ namespace Objects.Converter.TeklaStructures
               //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
               MeshToNative(@base, meshes);
             }
-          catch{
+            catch
+            {
 
-          }
+            }
           }
           return true;
         }

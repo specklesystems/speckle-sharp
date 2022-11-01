@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Newtonsoft.Json;
 using Revit.Async;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
@@ -60,7 +63,7 @@ namespace Speckle.ConnectorRevit.UI
           // show custom mapping dialog if the settings corrospond to what is being received
           if (newTypesExist || receiveMappings == everyReceive)
           {
-            var vm = new MappingViewModel(Mapping, hostTypesDict, progress, newTypesExist && !isFirstTimeReceiving);
+            var vm = new MappingViewModel(Mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
             MappingViewDialog mappingView = new MappingViewDialog
             {
               DataContext = vm
@@ -68,7 +71,23 @@ namespace Speckle.ConnectorRevit.UI
 
             Mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
 
-            receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(Mapping); ;
+            while (vm.DoneMapping == false)
+            {
+              hostTypesDict = await ImportFamilyTypes(hostTypesDict);
+
+              vm = new MappingViewModel(Mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
+              mappingView = new MappingViewDialog
+              {
+                DataContext = vm
+              };
+
+              Mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
+            }
+
+            // close the dialog
+            MainViewModel.CloseDialog();
+
+            receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(Mapping);
 
           }
           // update the mapping object for the user mapped types
@@ -185,21 +204,45 @@ namespace Speckle.ConnectorRevit.UI
       return d[n, m];
     }
 
-    private string TypeCatMaterials = "Materials";
-    private string TypeCatFloors = "Floors";
-    private string TypeCatWalls = "Walls";
-    private string TypeCatFraming = "Framing";
-    private string TypeCatColumns = "Columns";
-    private string TypeCatMisc = "Miscellaneous"; // Warning, this string need to be the same as the strings in the MappingViewModel
+    private const string TypeCatMaterials = "Materials";
+    private const string TypeCatFloors = "Floors";
+    private const string TypeCatWalls = "Walls";
+    private const string TypeCatFraming = "Framing";
+    private const string TypeCatColumns = "Columns";
+    private const string TypeCatMisc = "Miscellaneous"; // Warning, this string need to be the same as the strings in the MappingViewModel
+    private List<string> allTypeCategories = new List<string>
+    {
+      TypeCatColumns,
+      TypeCatFloors,
+      TypeCatFraming,
+      TypeCatMaterials,
+      TypeCatMisc,
+      TypeCatWalls
+    };
 
     /// <summary>
     /// Gets the category of a given base object
     /// </summary>
     /// <param name="obj"></param>
     /// <returns>name of category type as string</returns>
-    private string GetTypeCategory(Base obj)
+    private string GetTypeCategory(object @object)
     {
-      string speckleType = obj.speckle_type.Split('.').LastOrDefault().ToLower();
+      string speckleType = null;
+      Base obj = null;
+
+      if (@object is Base baseObj)
+      {
+        obj = baseObj;
+        speckleType = baseObj.speckle_type.Split('.').LastOrDefault().ToLower();
+      }
+      else if (@object is string s)
+      {
+        speckleType = s.ToLower();
+      }
+      else
+      {
+        throw new Exception("@object must be base obj or string obj");
+      }
 
       switch (speckleType)
       {
@@ -239,6 +282,7 @@ namespace Speckle.ConnectorRevit.UI
         #region General
         case string a when a.Contains("beam"):
         case string b when b.Contains("brace"):
+        case string c when c.Contains("framing"):
           return TypeCatFraming;
 
         case string a when a.Contains("column"):
@@ -265,9 +309,9 @@ namespace Speckle.ConnectorRevit.UI
     {
       public string key;
       public Type objectClass;
-      public List<BuiltInCategory> categories;
+      public ICollection<BuiltInCategory> categories;
 
-      public customTypesFilter(string key, Type objectClass = null, List<BuiltInCategory> categories = null)
+      public customTypesFilter(string key, Type objectClass = null, ICollection<BuiltInCategory> categories = null)
       {
         this.key = key;
         this.objectClass = objectClass;
@@ -281,43 +325,64 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>A dictionary where the keys are type categories and the value is a list of all the revit types that fit that category in the existing project</returns>
     private Dictionary<string, List<string>> GetHostTypes()
     {
-      var customHostTypesFilter = new List<customTypesFilter>
-      {
-        new customTypesFilter(TypeCatMaterials, typeof(Autodesk.Revit.DB.Material)),
-        new customTypesFilter(TypeCatFloors, typeof(FloorType)),
-        new customTypesFilter(TypeCatWalls, typeof(WallType)),
-        new customTypesFilter(TypeCatFraming, typeof(FamilySymbol), new List<BuiltInCategory>{ BuiltInCategory.OST_StructuralFraming}),
-        new customTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory>{ BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns}),
-        new customTypesFilter(TypeCatMisc), 
-      };
-
       var returnDict = new Dictionary<string, List<string>>();
       var exclusionFilterIds = new List<ElementId>();
-      FilteredElementCollector list = null;
-      foreach (var customType in customHostTypesFilter)
+      foreach (var customType in allTypeCategories)
       {
         var collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-
-        if (customType.categories != null && customType.categories.Count > 0)
-        {
-          var filter = new ElementMulticategoryFilter(customType.categories);
-          list = collector.OfClass(typeof(FamilySymbol)).WherePasses(filter);
-        }
-        else if (customType.objectClass != null)
-        {
-          list = collector.OfClass(customType.objectClass);
-        }
-        else
-        {
-          list = collector;
-        }
+        FilteredElementCollector list = GetFilteredElements(customType, collector);
 
         var types = list.Select(o => o.Name).Distinct().ToList();
         exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-        returnDict[customType.key] = types;
+        returnDict[customType] = types;
       }
-
       return returnDict;
+    }
+
+    private customTypesFilter GetCustomTypeFilter(string category)
+    {
+      switch (category)
+      {
+        case TypeCatMaterials:
+          return new customTypesFilter(TypeCatMaterials, typeof(Autodesk.Revit.DB.Material));
+        case TypeCatFloors:
+          return new customTypesFilter(TypeCatFloors, typeof(FloorType));
+        case TypeCatWalls:
+          return new customTypesFilter(TypeCatWalls, typeof(WallType));
+        case TypeCatFraming:
+          return new customTypesFilter(TypeCatFraming, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming });
+        case TypeCatColumns:
+          return new customTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns });
+        case TypeCatMisc:
+        default:
+          return new customTypesFilter(TypeCatMisc);
+      }
+    }
+
+    private FilteredElementCollector GetFilteredElements(string category, FilteredElementCollector? collector)
+    {
+      if (!allTypeCategories.Contains(category))
+        throw new Exception($"Category string {category} is not a recognized category");
+
+      collector ??= new FilteredElementCollector(CurrentDoc.Document);
+
+      FilteredElementCollector list = null;
+      var customTypeFilter = GetCustomTypeFilter(category);
+
+      if (customTypeFilter.categories != null && customTypeFilter.categories.Count > 0)
+      {
+        var filter = new ElementMulticategoryFilter(customTypeFilter.categories);
+        list = collector.OfClass(customTypeFilter.objectClass).WherePasses(filter);
+      }
+      else if (customTypeFilter.objectClass != null)
+      {
+        list = collector.OfClass(customTypeFilter.objectClass);
+      }
+      else
+      {
+        list = collector;
+      }
+      return list;
     }
 
     /// <summary>
@@ -333,7 +398,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         var @object = StoredObjects[obj.OriginalId];
         string type = null;
-        
+
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "etabs":
@@ -393,8 +458,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <summary>
     /// Update receive object to include the user's custom mapping
     /// </summary>
-    private void SetMappedValues(Dictionary<string,List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
+    private void SetMappedValues(Dictionary<string, List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
     {
+
       string typeCategory = null;
       List<string> mappedValues = new List<string>();
 
@@ -471,6 +537,8 @@ namespace Speckle.ConnectorRevit.UI
             break;
         }
       }
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Mappings Applied" } });
     }
 
     /// <summary>
@@ -524,50 +592,193 @@ namespace Speckle.ConnectorRevit.UI
     /// </returns>
     public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
     {
-      FileOpenDialog dialog = new FileOpenDialog("Revit Families (*.rfa)|*.rfa");
-      dialog.ShowPreview = true;
-      var result = dialog.Show();
+      return Mapping;
+    }
 
-      if (result == ItemSelectionDialogResult.Canceled)
+    /// <summary>
+    /// Imports new family types into Revit
+    /// </summary>
+    /// <param name="hostTypesDict"></param>
+    /// <returns>
+    /// New host types dictionary with newly imported types added (if applicable)
+    /// </returns>
+    public async Task<Dictionary<string, List<string>>> ImportFamilyTypes(Dictionary<string, List<string>> hostTypesDict)
+    {
+      var windowsDialog = new OpenFileDialog();
+      windowsDialog.Title = "Choose Revit Families";
+      windowsDialog.Filter = "Revit Families (*.rfa)|*.rfa";
+      windowsDialog.Multiselect = true;
+      var result = windowsDialog.ShowDialog();
+
+      if (result == DialogResult.Cancel)
       {
-        return Mapping;
+        return hostTypesDict;
       }
 
-      string path = "";
-      path = ModelPathUtils.ConvertModelPathToUserVisiblePath(dialog.GetSelectedModelPath());
+      var allSymbols = new Dictionary<string, List<Symbol>>();
+      var familyInfo = new Dictionary<string, FamilyInfo>();
 
-      return await RevitTask.RunAsync(app =>
+      foreach (var path in windowsDialog.FileNames)
       {
-        using (var t = new Transaction(CurrentDoc.Document, $"Imported family symbols"))
+        string pathClone = string.Copy(path);
+
+        //open family file as xml to extract all family symbols without loading all of them into the project
+        var symbols = new List<string>();
+        CurrentDoc.Document.Application.ExtractPartAtomFromFamilyFile(path, path + ".xml");
+        XmlDocument xmlDoc = new XmlDocument(); // Create an XML document object
+        xmlDoc.Load(path + ".xml");
+
+        XmlNamespaceManager nsman = new XmlNamespaceManager(xmlDoc.NameTable);
+        nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
+
+        string familyName = pathClone.Split('\\').LastOrDefault().Split('.').FirstOrDefault();
+        if (string.IsNullOrEmpty(familyName))
+          continue;
+
+        Family match = null;
+        var catRoot = xmlDoc.GetElementsByTagName("category");
+        var category = TypeCatMisc;
+
+        foreach (var node in catRoot)
+        {
+          if (node is XmlElement xmlNode)
+          {
+            var term = xmlNode.SelectSingleNode("ab:term", nsman);
+            if (term != null)
+            {
+              category = GetTypeCategory(term.InnerText);
+              if (category == TypeCatMisc)
+                continue;
+
+              var filter = GetCustomTypeFilter(category);
+              var families = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(Family));
+              var list = families.ToElements().Cast<Family>().ToList();
+
+              match = list.FirstOrDefault(x => x.Name == familyName && filter.categories.Contains((BuiltInCategory)x.FamilyCategory?.Id.IntegerValue));
+              if (match != null)
+                break;
+            }
+          }
+        }
+
+        familyInfo.Add(familyName, new FamilyInfo(path, category));
+
+        // see which types have already been loaded into the project from the selected family
+        var loadedSymbols = new List<string>();
+        if (match != null) //family exists in project
+        {
+          var symbolIds = match.GetFamilySymbolIds();
+          foreach (var id in symbolIds)
+          {
+            var sym = CurrentDoc.Document.GetElement(id);
+            loadedSymbols.Add(sym.Name);
+          }
+        }
+
+        // get all types from XML document
+        XmlNodeList familySymbols;
+        try
+        {
+          var familyRoot = xmlDoc.GetElementsByTagName("A:family");
+          if (familyRoot.Count == 1)
+          {
+            nsman.AddNamespace("A", familyRoot[0].NamespaceURI);
+            nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
+            familySymbols = familyRoot[0].SelectNodes("A:part/ab:title", nsman);
+            if (familySymbols.Count > 0)
+              allSymbols[familyName] = new List<Symbol>();
+            foreach (var symbol in familySymbols)
+            {
+              if (symbol is XmlElement el)
+              {
+                if (loadedSymbols.Contains(el.InnerText))
+                  allSymbols[familyName].Add(new Symbol(el.InnerText, familyName, true));
+                else
+                  allSymbols[familyName].Add(new Symbol(el.InnerText, familyName));
+              }
+            }
+          }
+        }
+        catch (Exception e)
+        { }
+
+        // delete the newly created xml file
+        try
+        {
+          System.IO.File.Delete(path + ".xml");
+        }
+        catch (Exception ex)
+        { }
+      }
+
+      //close current dialog body
+      MainViewModel.CloseDialog();
+
+      var vm = new ImportFamiliesDialogViewModel(allSymbols);
+      var importFamilies = new ImportFamiliesDialog
+      {
+        DataContext = vm
+      };
+
+      await importFamilies.ShowDialog<object>();
+
+      if (vm.selectedFamilySymbols.Count == 0)
+      {
+        //close current dialog body
+        MainViewModel.CloseDialog();
+        return hostTypesDict;
+      }
+
+      var newHostTypes = await RevitTask.RunAsync(app =>
+      {
+        using (var t = new Transaction(CurrentDoc.Document, $"Import family types"))
         {
           t.Start();
           bool symbolLoaded = false;
 
-          foreach (var category in Mapping.Keys)
+          foreach (var symbol in vm.selectedFamilySymbols)
           {
-            foreach (var mappingValue in Mapping[category])
+            bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name);
+            if (successfullyImported)
             {
-              if (!mappingValue.Imported)
-              {
-                bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(path, mappingValue.IncomingType);
-
-                if (successfullyImported)
-                {
-                  mappingValue.Imported = true;
-                  mappingValue.OutgoingType = mappingValue.IncomingType;
-                  symbolLoaded = true;
-                }
-              }
+              symbolLoaded = true;
+              // add newly imported type to host types dict
+              hostTypesDict[familyInfo[symbol.FamilyName].Category].Add(symbol.Name);
             }
           }
 
           if (symbolLoaded)
+          {
             t.Commit();
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
+              { "name", "Mappings Import Families" },
+              { "count", vm.selectedFamilySymbols.Count }});
+          }
+
           else
             t.RollBack();
-          return Mapping;
+          return hostTypesDict;
         }
       });
+
+
+
+
+      //close current dialog body
+      MainViewModel.CloseDialog();
+
+      return newHostTypes;
+    }
+
+    public class FamilyInfo
+    {
+      public string Path { get; set; }
+      public string Category { get; set; }
+      public FamilyInfo(string path, string category)
+      {
+        Path = path;
+        Category = category;
+      }
     }
   }
 }

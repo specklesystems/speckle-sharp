@@ -6,7 +6,7 @@ using Objects.Geometry;
 
 namespace Objects.Structural.Materials
 {
-  public class Timber : Material
+  public class Timber : StructuralMaterial
   {
     //missing timber-specific properties? parallel to grain, perpendicular to grain
     public string species { get; set; }

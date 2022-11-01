@@ -50,7 +50,10 @@ namespace DesktopUI2.Views.Windows.Dialogs
     {
       _dialogResult = dialogResult;
       Closed?.Invoke(this, null);
-      MainViewModel.Instance.DialogBody = null;
+
+      // wait for file dialog (if the user is importing types) to close before calling
+      // "MainViewModel.Instance.DialogBody = null"
+
     }
     #endregion
     public MappingViewDialog()
@@ -65,35 +68,5 @@ namespace DesktopUI2.Views.Windows.Dialogs
 
     public static MappingViewDialog Instance { get; private set; }
 
-    //public MappingViewDialog() { }
-
-    //public MappingViewDialog(List<AccountViewModel> accounts)
-    //{
-    //  InitializeComponent();
-    //  var combo = this.FindControl<ComboBox>("accounts");
-    //  combo.Items = accounts;
-    //  combo.SelectedIndex = 0;
-    //}
-
-    //private void InitializeComponent()
-    //{
-    //  AvaloniaXamlLoader.Load(this);
-    //}
-
-    //public void Create_Click(object sender, RoutedEventArgs e)
-    //{
-    //  var isPublic = this.FindControl<ToggleSwitch>("isPublic").IsChecked;
-    //  //too lazy to create a view model for this or properly style the Dialogs
-    //  Account = (this.FindControl<ComboBox>("accounts").SelectedItem as AccountViewModel).Account;
-    //  StreamName = this.FindControl<TextBox>("name").Text;
-    //  Description = this.FindControl<TextBox>("description").Text;
-    //  IsPublic = isPublic.HasValue ? isPublic.Value : false;
-    //  this.Close(true);
-    //}
-
-    //public void Close_Click(object sender, RoutedEventArgs e)
-    //{
-    //  this.Close(false);
-    //}
   }
 }

@@ -19,6 +19,9 @@ namespace Objects.BuiltElements
 
     public string units { get; set; }
 
+    [DetachProperty]
+    public Polyline displayValue { get; set; }
+
     public Featureline() { }
 
   }

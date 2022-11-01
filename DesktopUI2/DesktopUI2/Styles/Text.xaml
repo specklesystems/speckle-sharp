@@ -1,6 +1,7 @@
 ﻿<Styles
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles">
   <Design.PreviewWith>
     <Border
@@ -13,21 +14,32 @@
           VerticalAlignment="Center"
           Content="Hello!" />
 
-        <TextBlock Classes="Grotesk" Text="Test Text" />
+        <TextBlock Classes="Medium SpeckleFont" Text="Test Text" />
       </StackPanel>
     </Border>
   </Design.PreviewWith>
-  <Style Selector="TextBlock.Grotesk">
-    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />
+  <Style Selector="TextBlock.Medium">
     <Setter Property="FontWeight" Value="Medium" />
     <Setter Property="FontSize" Value="14" />
   </Style>
 
+  <Style Selector="TextBlock.SpeckleFont">
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk" />
+  </Style>
+
   <Style Selector="Button &gt; TextBlock, TextBlock.ButtonText">
-    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf" />
+    <Setter Property="FontFamily" Value="/Assets/SpaceGrotesk-VariableFont_wght.ttf#Space Grotesk" />
     <Setter Property="FontSize" Value="14" />
     <Setter Property="FontWeight" Value="Medium" />
   </Style>
+
+
+  <Style Selector="icons|MaterialIcon.StreamCard">
+    <Setter Property="Foreground" Value="Gray" />
+    <Setter Property="Width" Value="12" />
+    <Setter Property="Height" Value="12" />
+  </Style>
+
 
 
   <!--<Style Selector="TextBox.Search TextPresenter">
