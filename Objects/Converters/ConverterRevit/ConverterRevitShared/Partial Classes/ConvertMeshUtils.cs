@@ -270,7 +270,7 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids, Document d)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
-
+      
       var MeshMap = new Dictionary<Mesh, List<DB.Mesh>>();
       foreach (Solid solid in solids)
       {
@@ -280,7 +280,7 @@ namespace Objects.Converter.Revit
           Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
           if (!MeshMap.ContainsKey(m))
           {
-              MeshMap.Add(m, new List<DB.Mesh>());
+            MeshMap.Add(m, new List<DB.Mesh>());
           }
           MeshMap[m].Add(face.Triangulate());
         }
@@ -304,7 +304,7 @@ namespace Objects.Converter.Revit
           ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices);
         }
       }
-
+      
       return meshBuildHelper.GetAllValidMeshes();
     }
 
