@@ -19,6 +19,7 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _role, value);
     }
     public string Id { get; }
+    public bool Pending { get; }
 
     public Account Account { get; private set; }
 
@@ -71,7 +72,15 @@ namespace DesktopUI2.ViewModels
       Id = user.id;
       AvatarUrl = user.avatar;
       Role = user.role;
+    }
 
+    public AccountViewModel(PendingStreamCollaborator user)
+    {
+      Name = user.title;
+      Id = user.id;
+      AvatarUrl = user?.user?.avatar;
+      Role = user.role;
+      Pending = true;
     }
 
 
@@ -157,6 +166,7 @@ namespace DesktopUI2.ViewModels
     {
       System.IO.Stream stream = new MemoryStream(bytes);
       AvatarImage = new Avalonia.Media.Imaging.Bitmap(stream);
+      this.RaisePropertyChanged(nameof(AvatarImage));
 
     }
   }

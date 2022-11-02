@@ -296,7 +296,7 @@ namespace Objects.Converter.Revit
       if (revitFi.Location is LocationPoint)
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
 
-      speckleFi.displayValue = GetElementMesh(revitFi, GetAllFamSubElements(revitFi));
+      speckleFi.displayValue = GetElementMesh(revitFi);
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitFi);
 
@@ -333,8 +333,6 @@ namespace Objects.Converter.Revit
 
 #endregion
 
-      // TODO:
-      // revitFi.GetSubelements();
       return speckleFi;
     }
 

@@ -75,6 +75,7 @@ namespace DesktopUI2.ViewModels
       Locator.CurrentMutable.Register(() => new OneClickView(), typeof(IViewFor<OneClickViewModel>));
       Locator.CurrentMutable.Register(() => new CollaboratorsView(), typeof(IViewFor<CollaboratorsViewModel>));
       Locator.CurrentMutable.Register(() => new SettingsView(), typeof(IViewFor<SettingsPageViewModel>));
+      Locator.CurrentMutable.Register(() => new NotificationsView(), typeof(IViewFor<NotificationsViewModel>));
       Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
 
       RouterInstance = Router; // makes the router available app-wide

@@ -15,7 +15,7 @@ namespace Objects.BuiltElements
   public class Fitting : Base, IDisplayValue<List<Mesh>>
   {
     public FittingType type { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -30,6 +30,7 @@ namespace Objects.BuiltElements
     Elbow,
     Tap,
     Tee,
+    Transition,
     Union,
     Unknown
   }

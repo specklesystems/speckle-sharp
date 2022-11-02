@@ -812,6 +812,68 @@ namespace Speckle.Core.Api
       }
     }
 
+
+    /// <summary>
+    /// Gets the pending collaborators of a stream by id.
+    /// Requires the user to be an owner of the stream.
+    /// </summary>
+    /// <param name="id">Id of the stream to get</param>
+    /// <returns></returns>
+    public Task<Stream> StreamGetPendingCollaborators(string id)
+    {
+      return StreamGetPendingCollaborators(CancellationToken.None, id);
+    }
+
+    /// <summary>
+    /// Gets the pending collaborators of a stream by id.
+    /// Requires the user to be an owner of the stream.
+    /// </summary>
+    /// <param name="id">Id of the stream to get</param>
+    /// <param name="branchesLimit">Max number of branches to retrieve</param>
+    /// <returns></returns>
+    public async Task<Stream> StreamGetPendingCollaborators(CancellationToken cancellationToken, string id)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"query Stream($id: String!) {{
+                      stream(id: $id) {{
+                        id
+                        pendingCollaborators {{
+                          id
+                          inviteId
+                          title
+                          role
+                          user {{
+                            avatar
+                          }}
+                        }}
+                      }}
+                    }}",
+          Variables = new
+          {
+            id
+          }
+        };
+
+        var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+
+        if (res.Errors != null)
+          throw new SpeckleException("Could not get stream", res.Errors);
+
+        return res.Data.stream;
+      }
+      catch (SpeckleException se)
+      {
+        throw se;
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException("Could not get stream", e);
+      }
+    }
+
     /// <summary>
     /// Sends an email invite to join a stream and assigns them a collaborator role.
     /// </summary>
@@ -861,6 +923,45 @@ namespace Speckle.Core.Api
         throw new SpeckleException(e.Message, e);
       }
     }
+
+
+    /// <summary>
+    /// Cancels an invite to join a stream.
+    /// </summary>
+    /// <param name="streamId">Id of the stream</param>
+    /// <param name="inviteId">Id of the invite to cancel</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<bool> StreamInviteCancel(string streamId, string inviteId, CancellationToken cancellationToken = default)
+    {
+      await _CheckStreamInvitesSupported(cancellationToken);
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query =
+            @"
+            mutation streamInviteCancel( $streamId: String!, $inviteId: String! ) {
+              streamInviteCancel(streamId: $streamId, inviteId: $inviteId)
+            }",
+          Variables = new { streamId, inviteId }
+        };
+
+        var res = await GQLClient.SendMutationAsync<Dictionary<string, object>>(request).ConfigureAwait(false);
+
+        if (res.Errors != null)
+          throw new SpeckleException(
+            $"Could not cancel the invite for stream {streamId}",
+            res.Errors);
+
+        return (bool)res.Data["streamInviteCancel"];
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
 
     /// <summary>
     /// Checks if Speckle Server version is at least v2.6.4 meaning stream invites are supported.

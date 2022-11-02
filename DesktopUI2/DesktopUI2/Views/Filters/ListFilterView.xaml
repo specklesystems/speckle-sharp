@@ -50,13 +50,13 @@
         SelectionMode="Multiple, Toggle" />
     </ScrollViewer>
 
-    <TextBlock
+    <!--<TextBlock
       Grid.Row="3"
       Margin="0,20,0,8"
       FontSize="14"
       FontWeight="Medium"
       Text="Current selection:" />
-    <TextBlock Grid.Row="4" Text="{Binding Summary}" />
+    <TextBlock Grid.Row="4" Text="{Binding Summary}" />-->
 
   </Grid>
 </UserControl>

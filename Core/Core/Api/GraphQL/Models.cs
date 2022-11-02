@@ -117,6 +117,7 @@ namespace Speckle.Core.Api
     public int favoritesCount { get; set; }
 
     public List<Collaborator> collaborators { get; set; }
+    public List<PendingStreamCollaborator> pendingCollaborators { get; set; } = new List<PendingStreamCollaborator>();
     public Branches branches { get; set; }
 
     /// <summary>
@@ -170,6 +171,7 @@ namespace Speckle.Core.Api
     public string title { get; set; }
     public string role { get; set; }
     public User invitedBy { get; set; }
+    public User user { get; set; }
     public string token { get; set; }
   }
 

@@ -10,7 +10,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public List<Mesh> GetElementMesh(DB.Element element, List<DB.Element> subElements = null)
+    public List<Mesh> GetElementMesh(DB.Element element)
     {
       var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
       if (!allSolids.Any()) //it's a mesh!
@@ -19,12 +19,7 @@ namespace Objects.Converter.Revit
         return GetMeshes(geom, element.Document);
       }
 
-      if (subElements != null)
-        foreach (var sb in subElements)
-          allSolids.AddRange(GetElementSolids(sb));
-
       return GetMeshesFromSolids(allSolids, element.Document);
-
     }
 
     /// <summary>

@@ -30,9 +30,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Styles\NotificationCard.xaml" />
+    <None Remove="Styles\NotificationManager.xaml" />
+    <None Remove="Views\Controls\CollaboratorsControl.xaml" />
     <None Remove="Views\Controls\PreviewButton.xaml" />
-    <None Remove="Views\Controls\ReceiveButton.xaml" />
-    <None Remove="Views\Controls\SendButton.xaml" />
     <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\ChipListBox.xaml" />
     <None Remove="Styles\ComboBox.xaml" />
@@ -52,6 +53,7 @@
     <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\NotificationsView.xaml" />
     <None Remove="Views\Pages\OneClickView.xaml" />
     <None Remove="Views\Controls\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Controls\StreamEditControls\Comments.xaml" />
@@ -115,13 +117,16 @@
     <AvaloniaXaml Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Styles\NotificationCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Styles\NotificationManager.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Controls\CollaboratorsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Controls\PreviewButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\ReceiveButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\SendButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Styles\MenuItem.xaml" />
@@ -138,6 +143,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\MainUserControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\NotificationsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\OneClickView.xaml">
@@ -246,14 +254,11 @@
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Controls\CollaboratorsControl.xaml.cs">
+      <DependentUpon>CollaboratorsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Controls\PreviewButton.xaml.cs">
       <DependentUpon>PreviewButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\ReceiveButton.xaml.cs">
-      <DependentUpon>ReceiveButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\SendButton.xaml.cs">
-      <DependentUpon>SendButton.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Filters\AllFilterView.xaml.cs">
       <DependentUpon>AllFilterView.xaml</DependentUpon>
@@ -266,6 +271,9 @@
     </Compile>
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\NotificationsView.xaml.cs">
+      <DependentUpon>NotificationsView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\OneClickView.xaml.cs">
       <DependentUpon>OneClickView.xaml</DependentUpon>

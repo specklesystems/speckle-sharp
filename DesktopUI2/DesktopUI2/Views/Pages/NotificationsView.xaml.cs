@@ -1,3 +1,4 @@
+using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
@@ -5,15 +6,9 @@ using ReactiveUI;
 
 namespace DesktopUI2.Views.Pages
 {
-  public partial class CollaboratorsView : ReactiveUserControl<CollaboratorsViewModel>
+  public partial class NotificationsView : ReactiveUserControl<NotificationsViewModel>
   {
-
-    public CollaboratorsView()
-    {
-      InitializeComponent();
-    }
-
-    private void InitializeComponent()
+    public NotificationsView()
     {
       this.WhenActivated(disposables => { });
       AvaloniaXamlLoader.Load(this);

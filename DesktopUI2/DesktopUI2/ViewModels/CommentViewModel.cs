@@ -21,7 +21,7 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        return string.Join("", Comment.text.Doc.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
+        return string.Join("", Comment.text.Doc?.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
       }
     }
 

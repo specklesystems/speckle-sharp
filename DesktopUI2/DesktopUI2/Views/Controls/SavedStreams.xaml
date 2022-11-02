@@ -241,9 +241,9 @@
                   </m:FloatingButton>
 
                   <!--  RECEIVE BTN  -->
-                  <c:ReceiveButton IsVisible="{Binding IsReceiver}" />
+                  <Button Classes="Receive" IsVisible="{Binding IsReceiver}" />
                   <!--  SEND BTN  -->
-                  <c:SendButton IsVisible="{Binding !IsReceiver}" />
+                  <Button Classes="Send" IsVisible="{Binding !IsReceiver}" />
 
                 </StackPanel>
 
