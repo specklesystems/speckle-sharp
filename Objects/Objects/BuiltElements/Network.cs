@@ -82,12 +82,22 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitNetworkElement : NetworkElement
   {
-    public bool isConnectorBased { get; set; }
-    public bool isCurve { get; set; }
+    /// <summary>
+    /// Indicates if this element was constructed from an MEP curve
+    /// </summary>
+    public bool isCurveBased { get; set; }
+
+    /// <summary>
+    /// Indicates if this element needs temporary placeholder objects to be created first when receiving
+    /// </summary>
+    /// <remarks>
+    /// This is a utility property used to track network creation state on receive. Deprecate if possible. 
+    /// For example, some fittings cannot be created based on connectors, and so will be created similarly to mechanical equipment
+    /// </remarks>
+    [JsonIgnore] public bool needsPlaceholders { get; set; }
 
     public RevitNetworkElement() { }
   }
-
   public class RevitNetworkLink : NetworkLink
   {
     public double height { get; set; }
