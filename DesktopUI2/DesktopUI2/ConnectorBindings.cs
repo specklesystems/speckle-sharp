@@ -3,6 +3,7 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Sentry.Reflection;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -35,6 +36,11 @@ namespace DesktopUI2
     #endregion
 
     public virtual bool CanSelectObjects()
+    {
+      return false;
+    }
+
+    public virtual bool CanOpen3DView()
     {
       return false;
     }
@@ -159,6 +165,13 @@ namespace DesktopUI2
     /// <returns></returns>
     public abstract Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress);
 
+
+    /// <summary>
+    /// Opens a 3D view in the host application
+    /// </summary>
+    /// <returns></returns>
+    public abstract Task Open3DView(Location location, List<double> camPos);
+
     /// <summary>
     /// Adds the current selection to the provided client.
     /// </summary>
@@ -206,7 +219,7 @@ namespace DesktopUI2
     /// Imports family symbols in Revit 
     /// </summary>
     /// <returns></returns>
-    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string,List<MappingValue>> Mapping);
+    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping);
     #endregion
   }
 }

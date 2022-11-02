@@ -796,7 +796,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-
+          Log.CaptureException(ex, Sentry.SentryLevel.Error);
         }
       }
     }

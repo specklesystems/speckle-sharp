@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,6 +13,7 @@ namespace DesktopUI2.ViewModels
 {
   public class CommentViewModel : ReactiveObject
   {
+    private ConnectorBindings Bindings;
     public CommentItem Comment { get; set; }
     public string StreamId { get; private set; }
     public Task<AccountViewModel> Author => GetAuthorAsync();
@@ -59,6 +61,10 @@ namespace DesktopUI2.ViewModels
       Comment = item;
       StreamId = streamId;
       _client = client;
+
+      //use dependency injection to get bindings
+      Bindings = Locator.Current.GetService<ConnectorBindings>();
+
       if (Comment.replies != null)
       {
         foreach (var r in Comment.replies.items)
@@ -67,6 +73,11 @@ namespace DesktopUI2.ViewModels
           Replies.Add(reply);
         }
       }
+    }
+
+    public void OpenCommentView()
+    {
+      Bindings.Open3DView(Comment.data.location, Comment.data.camPos);
     }
 
     public void OpenComment()

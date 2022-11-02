@@ -38,6 +38,9 @@ namespace DesktopUI2.ViewModels
     public StreamState StreamState { get; set; }
     public IScreen HostScreen { get; set; }
 
+
+    #region bindings
+
     private ConnectorBindings Bindings;
 
 
@@ -61,8 +64,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _previewOn, value);
       }
     }
-
-    #region bindings
     private Stream _stream;
     public Stream Stream
     {
