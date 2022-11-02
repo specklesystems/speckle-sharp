@@ -6,6 +6,7 @@ using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -152,7 +153,7 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
-      if (@base["elements"] != null && @base["elements"] is List<object> elements)
+      if (@base["elements"] != null && @base["elements"] is IList elements)
       {
         CurrentHostElement = host;
 

@@ -259,15 +259,6 @@ namespace Objects.Converter.Revit
           break;
       }
 
-      //if (returnObject != null && !string.IsNullOrEmpty(id))
-      //{
-      //  var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == id);
-      //  if (elementIndex != -1)
-      //  {
-      //    ContextObjects.RemoveAt(elementIndex);
-      //  }
-      //}
-
       // NOTE: Only try generic method assignment if there is no existing render material from conversions;
       // we might want to try later on to capture it more intelligently from inside conversion routines.
       if (returnObject != null
