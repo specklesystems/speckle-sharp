@@ -103,46 +103,17 @@ namespace Objects.Converter.Revit
               appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Object is work plane based but does not have a host element");
               return appObj;
             }
-            if (CurrentHostElement is Element wall)
+            if (CurrentHostElement is Element el)
             {
               Doc.Regenerate();
 
               Options op = new Options();
               op.ComputeReferences = true;
-              GeometryElement wallGeom = wall.get_Geometry(op);
+              GeometryElement geomElement = el.get_Geometry(op);
               Reference faceRef = null;
+              var planeDist = double.MaxValue;
 
-              foreach (var geom in wallGeom)
-              {
-                if (geom is Solid solid)
-                {
-                  FaceArray faceArray = solid.Faces;
-
-                  double planeDist = double.PositiveInfinity;
-                  foreach (Face face in faceArray)
-                  {
-                    if (face is PlanarFace planarFace)
-                    {
-                      // some family instance base points may lie on the intersection of faces
-                      // this makes it so family instance families can only be placed on the
-                      // faces of walls
-                      //if (NormalsAlign(planarFace.FaceNormal, wall.Orientation))
-                      //{
-                        double newPlaneDist = ComputePlaneDistance(planarFace.Origin, planarFace.FaceNormal, basePoint);
-                        if (newPlaneDist < planeDist)
-                        {
-                          planeDist = newPlaneDist;
-                          faceRef = planarFace.Reference;
-                        }
-                      //}
-                    }
-                  }
-                }
-              }
-
-              // last resort, just guess a face
-              //if (faceRef == null)
-              //  faceRef = HostObjectUtils.GetSideFaces(wall, ShellLayerType.Interior)[0];
+              GetReferencePlane(geomElement, basePoint, ref faceRef, ref planeDist);
 
               XYZ norm = new XYZ(0, 0, 0);
               familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
@@ -152,7 +123,7 @@ namespace Objects.Converter.Revit
               IList<Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
 
               if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
-                InstanceVoidCutUtils.AddInstanceVoidCut(Doc, wall, familyInstance);
+                InstanceVoidCutUtils.AddInstanceVoidCut(Doc, el, familyInstance);
               if (lvlParams.ElementAtOrDefault(0) != null)
                 lvlParams[0].Set(level.Id);
             }
@@ -211,6 +182,41 @@ namespace Objects.Converter.Revit
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
       return appObj;
+    }
+
+    private void GetReferencePlane(GeometryElement geomElement, XYZ basePoint, ref Reference faceRef, ref double planeDist)
+    {
+      foreach (var geom in geomElement)
+      {
+        if (geom is Solid solid)
+        {
+          FaceArray faceArray = solid.Faces;
+
+          foreach (Face face in faceArray)
+          {
+            if (face is PlanarFace planarFace)
+            {
+              // some family instance base points may lie on the intersection of faces
+              // this makes it so family instance families can only be placed on the
+              // faces of walls
+              //if (NormalsAlign(planarFace.FaceNormal, wall.Orientation))
+              //{
+              double newPlaneDist = ComputePlaneDistance(planarFace.Origin, planarFace.FaceNormal, basePoint);
+              if (newPlaneDist < planeDist)
+              {
+                planeDist = newPlaneDist;
+                faceRef = planarFace.Reference;
+              }
+              //}
+            }
+          }
+        }
+        else if (geom is GeometryInstance geomInst)
+        {
+          GeometryElement transformedGeom = geomInst.GetInstanceGeometry(geomInst.Transform);
+          GetReferencePlane(transformedGeom, basePoint, ref faceRef, ref planeDist);
+        }
+      }
     }
 
     /// <summary>

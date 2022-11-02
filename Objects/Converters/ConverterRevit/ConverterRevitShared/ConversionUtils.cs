@@ -152,15 +152,14 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
-      var x = @base["elements"] as List<Base>;
-      var y = x.GetType();
-      if (@base["elements"] != null && @base["elements"] is List<Base> elements)
+      if (@base["elements"] != null && @base["elements"] is List<object> elements)
       {
         CurrentHostElement = host;
 
-        foreach (var obj in elements)
+        foreach (var el in elements)
         {
-          if (obj == null) continue;
+          if (el == null) continue;
+          if (!(el is Base obj)) continue;
 
           if (!CanConvertToNative(obj))
           {
