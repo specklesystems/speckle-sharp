@@ -53,7 +53,7 @@ namespace DesktopUI2.Models.Filters
         }
         else
         {
-          throw new SpeckleException($"Unknown setting type: {type}. Please add a case in DesktopUI2.Models.Settings.SettingsConverter.cs");
+          continue;
         }
 
         serializer.Populate(jsonObject.CreateReader(), setting);
