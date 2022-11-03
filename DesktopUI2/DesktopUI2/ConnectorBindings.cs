@@ -35,36 +35,44 @@ namespace DesktopUI2
 
     #endregion
 
-    public virtual bool CanSelectObjects()
-    {
-      return false;
-    }
+    #region virtual methods & properties
+    public virtual bool CanSelectObjects => false;
 
-    public virtual bool CanOpen3DView()
-    {
-      return false;
-    }
-
-    public virtual bool CanTogglePreview()
-    {
-      return false;
-    }
-
-    #region abstract properties
+    public virtual bool CanTogglePreview => false;
 
     /// <summary>
     /// Indicates if previewing send has been implemented
     /// </summary>
     /// <returns></returns>
-    public abstract bool CanPreviewSend { get; }
+    public virtual bool CanPreviewSend => false;
 
     /// <summary>
     /// Indicates if previewing receive has been implemented
     /// </summary>
     /// <returns></returns>
-    public abstract bool CanPreviewReceive { get; }
+    public virtual bool CanPreviewReceive => false;
+
+
+    /// <summary>
+    /// Returns true if the <see cref="Open3DView"/> method is overwritten and implemented. 
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool CanOpen3DView => false;
+
+
+    /// <summary>
+    /// Opens a 3D view in the host application
+    /// </summary>
+    /// <param name="viewCoordinates">First three values are the camera position, second three the target. TODO: update to use <see cref="Base"/></param>
+    /// <param name="viewName">Id or Name of the view</param>
+    /// <returns></returns>
+    public virtual Task Open3DView(List<double> viewCoordinates, string viewName = "")
+    {
+      return Task.CompletedTask;
+    }
 
     #endregion
+
 
 
     #region abstract methods
@@ -164,13 +172,6 @@ namespace DesktopUI2
     /// <param name="progress"></param>
     /// <returns></returns>
     public abstract Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress);
-
-
-    /// <summary>
-    /// Opens a 3D view in the host application
-    /// </summary>
-    /// <returns></returns>
-    public abstract Task Open3DView(List<double> viewCoordinates, string viewName = "");
 
     /// <summary>
     /// Adds the current selection to the provided client.

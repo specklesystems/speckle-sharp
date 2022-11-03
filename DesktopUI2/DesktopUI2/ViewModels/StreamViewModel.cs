@@ -529,7 +529,7 @@ namespace DesktopUI2.ViewModels
 
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
-        CanOpenCommentsIn3DView = Bindings.CanOpen3DView();
+        CanOpenCommentsIn3DView = Bindings.CanOpen3DView;
 
         if (Client == null)
         {
