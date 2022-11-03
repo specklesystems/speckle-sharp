@@ -165,6 +165,8 @@ namespace Speckle.Core.Kits
     public const string OpenBuildings = "OpenBuildings";
     public const string ETABSv18 = "ETABSv18";
     public const string ETABSv19 = "ETABSv19";
+    public const string ETABSv20 = "ETABSv20";
+    public const string TeklaStructures2022 = "TeklaStructures2022";
     public const string TeklaStructures2021 = "TeklaStructures2021";
     public const string TeklaStructures2020 = "TeklaStructures2020";
     public const string Archicad = "Archicad";
@@ -213,6 +215,7 @@ namespace Speckle.Core.Kits
     public const string CSIBridge = "CSIBridge";
     public const string SAFE = "SAFE";
     public const string CSI = "CSI";
+    public const string TeklaStructures2022 = "TeklaStructures2022";
     public const string TeklaStructures2021 = "TeklaStructures2021";
     public const string TeklaStructures2020 = "TeklaStructures2020";
     public const string Script = "Script";

@@ -23,6 +23,9 @@ namespace Objects.Converter.TeklaStructures
     public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2021);
 #elif TeklaStructures2020
     public static string TeklaStructuresAppName = HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2020);
+#elif TeklaStructures2022
+    public static string TeklaStructuresAppName =  HostApplications.TeklaStructures.GetVersion(HostAppVersion.v2022);
+
 #else
     public static string TeklaStructuresAppName = HostApplications.TeklaStructures.Name;
 #endif
