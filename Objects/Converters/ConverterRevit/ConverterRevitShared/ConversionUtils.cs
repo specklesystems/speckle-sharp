@@ -83,7 +83,6 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
       notes = new List<string>();
-      //var hostedElementIds = host.FindInserts(true, false, false, false);
       var hostedElementIds = GetDependentElementIds(host);
       var convertedHostedElements = new List<Base>();
 
@@ -141,6 +140,9 @@ namespace Objects.Converter.Revit
 
     public IList<ElementId> GetDependentElementIds(Element host)
     {
+      //if (host is HostObject hostObject)
+      //  return hostObject.FindInserts(true, false, false, false);
+
       var typeFilter = new ElementIsElementTypeFilter(true);
       var categoryFilter = new ElementMulticategoryFilter(
         new List<BuiltInCategory>()
