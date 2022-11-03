@@ -37,8 +37,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures202
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2020", "..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2020\ConverterTeklaStructures2020.csproj", "{FD0C136E-E3F0-487F-B372-44E9E1640038}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures2022", "ConnectorTeklaStructures2022\ConnectorTeklaStructures2022.csproj", "{A10B82DB-614E-445B-9DED-DFE2CED390CE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2022", "..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2022\ConverterTeklaStructures2022.csproj", "{24A6123C-E8F6-465E-8B47-FF627CA0C82F}"
+EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{24a6123c-e8f6-465e-8b47-ff627ca0c82f}*SharedItemsImports = 5
 		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{28e2ea7f-ffd1-4e13-9165-0243b5ac82f5}*SharedItemsImports = 13
 		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{3af1ef30-0906-4926-a02c-4e3ad666352a}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{3af1ef30-0906-4926-a02c-4e3ad666352a}*SharedItemsImports = 4
@@ -46,6 +51,8 @@ Global
 		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{7ffdab72-145d-4490-9892-fac5f1d72b17}*SharedItemsImports = 13
+		ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{a10b82db-614e-445b-9ded-dfe2ced390ce}*SharedItemsImports = 4
+		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{a10b82db-614e-445b-9ded-dfe2ced390ce}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{fd0c136e-e3f0-487f-b372-44e9e1640038}*SharedItemsImports = 5
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -85,6 +92,14 @@ Global
 		{FD0C136E-E3F0-487F-B372-44E9E1640038}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD0C136E-E3F0-487F-B372-44E9E1640038}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD0C136E-E3F0-487F-B372-44E9E1640038}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A10B82DB-614E-445B-9DED-DFE2CED390CE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A10B82DB-614E-445B-9DED-DFE2CED390CE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A10B82DB-614E-445B-9DED-DFE2CED390CE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A10B82DB-614E-445B-9DED-DFE2CED390CE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24A6123C-E8F6-465E-8B47-FF627CA0C82F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24A6123C-E8F6-465E-8B47-FF627CA0C82F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24A6123C-E8F6-465E-8B47-FF627CA0C82F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24A6123C-E8F6-465E-8B47-FF627CA0C82F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -100,6 +115,8 @@ Global
 		{28E2EA7F-FFD1-4E13-9165-0243B5AC82F5} = {7971F1F8-9B64-4BC5-A2F6-2E6277745440}
 		{67157264-AAA5-46A8-A38B-16254B49B892} = {7971F1F8-9B64-4BC5-A2F6-2E6277745440}
 		{FD0C136E-E3F0-487F-B372-44E9E1640038} = {D82F9B5B-E018-422F-B3E3-B08FF5B27858}
+		{A10B82DB-614E-445B-9DED-DFE2CED390CE} = {7971F1F8-9B64-4BC5-A2F6-2E6277745440}
+		{24A6123C-E8F6-465E-8B47-FF627CA0C82F} = {D82F9B5B-E018-422F-B3E3-B08FF5B27858}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DDE456ED-2D08-4CD4-85D3-58340974B612}
