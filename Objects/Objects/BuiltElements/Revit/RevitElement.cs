@@ -18,8 +18,6 @@ namespace Objects.BuiltElements.Revit
     public string category { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
-    public Point basePoint { get; set; }
-    public Line baseLine { get; set; }
 
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }

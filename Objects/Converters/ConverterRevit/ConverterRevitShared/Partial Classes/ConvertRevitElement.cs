@@ -26,10 +26,10 @@ namespace Objects.Converter.Revit
 
       var baseGeometry = LocationToSpeckle(revitElement);
       if (baseGeometry is Geometry.Point point)
-        speckleElement.basePoint = point;
+        speckleElement["basePoint"] = point;
       else if (baseGeometry is Geometry.Line line)
-        speckleElement.baseLine = line;
-      
+        speckleElement["baseLine"] = line;
+
       speckleElement.category = revitElement.Category.Name;
       speckleElement.displayValue = GetElementDisplayMesh(revitElement, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
