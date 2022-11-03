@@ -78,6 +78,7 @@ namespace DesktopUI2.ViewModels
     public void OpenCommentView()
     {
       Bindings.Open3DView(Comment.data.camPos, Comment.id);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment Open 3D View" } });
     }
 
     public void OpenComment()
