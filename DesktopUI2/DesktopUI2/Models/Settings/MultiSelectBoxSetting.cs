@@ -35,7 +35,7 @@ namespace DesktopUI2.Models.Settings
     public string Selection { get; set; }
 
 
-
+    //note this selection is not restored but it does not affect the functionality
     public SelectionModel<string> SelectionModel { get; }
     public void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
@@ -46,23 +46,11 @@ namespace DesktopUI2.Models.Settings
     public Type ViewType { get; } = typeof(MultiSelectBoxSettingView);
     [JsonProperty]
     public string Summary { get; set; }
-    [JsonConstructor]
+
     public MultiSelectBoxSetting()
     {
       SelectionModel = new SelectionModel<string>();
       SelectionModel.SingleSelect = false;
-
-      if (Selection != null)
-      {
-        var indices = Selection.Split(',').Select(x => Values.IndexOf(x));
-        foreach (var i in indices)
-        {
-          SelectionModel.Select(i);
-        }
-      }
-      this.RaisePropertyChanged("Selection");
-
-
       SelectionModel.SelectionChanged += SelectionChanged;
     }
 
