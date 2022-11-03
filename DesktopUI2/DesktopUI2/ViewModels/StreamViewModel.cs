@@ -531,14 +531,14 @@ namespace DesktopUI2.ViewModels
         {
           NoAccess = true;
 
-          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
-          {
-            Title = "✋ No Access",
-            Message = $"You do not have access to this Stream.",
-            Expiration = TimeSpan.Zero,
-            OnClick = () => OpenUrl($"{streamState.ServerUrl}/streams/{streamState.StreamId}"),
-            Type = Avalonia.Controls.Notifications.NotificationType.Warning
-          });
+          //MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          //{
+          //  Title = "✋ No Access",
+          //  Message = $"You do not have access to this Stream.",
+          //  Expiration = TimeSpan.Zero,
+          //  OnClick = () => OpenUrl($"{streamState.ServerUrl}/streams/{streamState.StreamId}"),
+          //  Type = Avalonia.Controls.Notifications.NotificationType.Warning
+          //});
 
           return;
         }
