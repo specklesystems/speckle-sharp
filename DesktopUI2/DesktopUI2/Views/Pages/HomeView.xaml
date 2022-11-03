@@ -332,12 +332,16 @@
         IsEnabled="{Binding InProgress, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
         <StackPanel Margin="5,0,5,5" Orientation="Vertical">
           <!--  SAVED STREAMS  -->
-          <Expander Margin="0,7,0,0" IsExpanded="True">
+          <Expander
+            Margin="0,7,0,0"
+            IsExpanded="True"
+            IsVisible="{Binding HasSavedStreams}">
             <Expander.Header>
               <TextBlock
                 Margin="-8,0,0,0"
                 Classes="Overline"
                 Foreground="Gray"
+                IsVisible="{Binding HasSavedStreams}"
                 Text="SAVED STREAMS:" />
             </Expander.Header>
             <c:SavedStreams />
