@@ -6,6 +6,7 @@
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
@@ -86,6 +87,7 @@
                   Margin="0,0,0,10"
                   assists:ShadowAssist.ShadowDepth="Depth0"
                   CornerRadius="25"
+                  IsVisible="{Binding $parent[local:StreamEditView].DataContext.CanOpenCommentsIn3DView}"
                   Mode="PrimaryMid">
                   <Button
                     Margin="0,0,3,0"
@@ -100,7 +102,7 @@
                         Classes="Overline"
                         FontWeight="Medium"
                         Foreground="White"
-                        Text="VIEW"
+                        Text="OPEN VIEW"
                         TextWrapping="Wrap" />
                       <icons:MaterialIcon
                         Margin="5,0"

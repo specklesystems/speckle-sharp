@@ -481,7 +481,7 @@ namespace DesktopUI2
       return new Dictionary<string, List<MappingValue>>();
     }
 
-    public override Task Open3DView(Location location, List<double> camPos)
+    public override Task Open3DView(List<double> viewCoordinates, string viewName = "")
     {
       throw new NotImplementedException();
     }

@@ -170,7 +170,7 @@ namespace DesktopUI2
     /// Opens a 3D view in the host application
     /// </summary>
     /// <returns></returns>
-    public abstract Task Open3DView(Location location, List<double> camPos);
+    public abstract Task Open3DView(List<double> viewCoordinates, string viewName = "");
 
     /// <summary>
     /// Adds the current selection to the provided client.

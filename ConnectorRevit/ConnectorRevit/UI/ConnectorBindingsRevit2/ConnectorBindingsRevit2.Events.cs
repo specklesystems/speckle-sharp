@@ -256,7 +256,12 @@ namespace Speckle.ConnectorRevit.UI
     }
 
 
-    public override async Task Open3DView(Speckle.Core.Api.Location location, List<double> camPos)
+    public override bool CanOpen3DView()
+    {
+      return true;
+    }
+
+    public override async Task Open3DView(List<double> viewCoordinates, string viewName = "")
     {
       try
       {
@@ -271,7 +276,7 @@ namespace Speckle.ConnectorRevit.UI
         //making a dummy one here
         var speckleCamera = new Base();
         speckleCamera["isHackySpeckleCamera"] = true;
-        speckleCamera["coordinates"] = camPos;
+        speckleCamera["coordinates"] = viewCoordinates;
 
 
 

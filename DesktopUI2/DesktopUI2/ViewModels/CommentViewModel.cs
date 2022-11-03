@@ -77,7 +77,7 @@ namespace DesktopUI2.ViewModels
 
     public void OpenCommentView()
     {
-      Bindings.Open3DView(Comment.data.location, Comment.data.camPos);
+      Bindings.Open3DView(Comment.data.camPos, Comment.id);
     }
 
     public void OpenComment()
