@@ -2,6 +2,7 @@
 using Avalonia.Controls.Selection;
 using DesktopUI2.Views.Settings;
 using ReactiveUI;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -11,55 +12,60 @@ using System.Windows.Input;
 
 namespace DesktopUI2.Models.Settings
 {
+  [JsonObject(MemberSerialization.OptIn)]
   public class MultiSelectBoxSetting : ReactiveObject, ISetting
   {
+    [JsonProperty]
     public string Type => typeof(MultiSelectBoxSetting).ToString();
+    [JsonProperty]
     public string Name { get; set; }
+    [JsonProperty]
     public string Slug { get; set; }
+    [JsonProperty]
     public string Icon { get; set; }
+    [JsonProperty]
     public string Description { get; set; }
-    public string DefaultValue = "None";
+
+    [JsonProperty]
     public List<string> Values { get; set; }
 
-    private string _selection;
-    public string Selection
-    {
-      get
-      {
-        if (Selections.Count == 0)
-          return DefaultValue;
-        return string.Join(", ", Selections);
-      }
-      set => this.RaiseAndSetIfChanged(ref _selection, value);
-    }
+
+
+    [JsonProperty]
+    public string Selection { get; set; }
+
+
 
     public SelectionModel<string> SelectionModel { get; }
     public void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
-      try
-      {
-        foreach (var sel in e.SelectedItems)
-          if (!Selections.Contains(sel))
-            Selections.Add(sel as string);
-        foreach (var unsel in e.DeselectedItems)
-          Selections.Remove(unsel as string);
-
-        this.RaisePropertyChanged("Selection");
-      }
-      catch (Exception ex)
-      {
-
-      }
+      Selection = string.Join(",", SelectionModel.SelectedItems);
+      this.RaisePropertyChanged("Selection");
     }
-    public ObservableCollection<string> Selections { get; set; } = new ObservableCollection<string>();
+
     public Type ViewType { get; } = typeof(MultiSelectBoxSettingView);
+    [JsonProperty]
     public string Summary { get; set; }
+    [JsonConstructor]
     public MultiSelectBoxSetting()
     {
       SelectionModel = new SelectionModel<string>();
       SelectionModel.SingleSelect = false;
+
+      if (Selection != null)
+      {
+        var indices = Selection.Split(',').Select(x => Values.IndexOf(x));
+        foreach (var i in indices)
+        {
+          SelectionModel.Select(i);
+        }
+      }
+      this.RaisePropertyChanged("Selection");
+
+
       SelectionModel.SelectionChanged += SelectionChanged;
     }
+
 
   }
 }
