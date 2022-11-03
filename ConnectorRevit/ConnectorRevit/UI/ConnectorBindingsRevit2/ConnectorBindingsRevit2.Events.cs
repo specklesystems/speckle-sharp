@@ -276,7 +276,8 @@ namespace Speckle.ConnectorRevit.UI
         speckleCamera["coordinates"] = viewCoordinates;
 
 
-
+        //when in a perspective view, it's not possible to open any transaction (txs adsk)
+        //so we're switching to any other non perspective view here
         if (CurrentDoc.ActiveView.ViewType == ViewType.ThreeD)
         {
           var activeView = CurrentDoc.ActiveView as View3D;
@@ -311,7 +312,6 @@ namespace Speckle.ConnectorRevit.UI
             perspView.SetOrientation(viewOrientation3D);
             perspView.CropBoxActive = false;
             perspView.CropBoxVisible = false;
-
             perspView.DisplayStyle = DisplayStyle.Shading;
 
             // the default phase was not looking good, picking the one of the View3D
@@ -321,13 +321,11 @@ namespace Speckle.ConnectorRevit.UI
               perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
             }
 
-
-
             t.Commit();
           }
           // needs to be outside the transaction
           CurrentDoc.ActiveView = perspView;
-          // "refresh" the active view
+          // "refresh" the active view, txs Connor
           var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(perspView.Id));
           uiView.Zoom(1);
         });
