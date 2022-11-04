@@ -17,5 +17,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorTeklaStructuresUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Util\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Util\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Util\MainPlugin.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Util\MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>
