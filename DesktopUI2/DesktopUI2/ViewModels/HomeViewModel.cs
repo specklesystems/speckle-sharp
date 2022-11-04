@@ -184,8 +184,8 @@ namespace DesktopUI2.ViewModels
 
 
     private StreamViewModel _selectedSavedStream = null;
-    private ObservableCollection<StreamViewModel> _savedStreams = new ObservableCollection<StreamViewModel>();
-    public ObservableCollection<StreamViewModel> SavedStreams
+    private List<StreamViewModel> _savedStreams = new List<StreamViewModel>();
+    public List<StreamViewModel> SavedStreams
     {
       get => _savedStreams;
       set
@@ -239,15 +239,13 @@ namespace DesktopUI2.ViewModels
         HostScreen = screen;
         RemoveSavedStreamCommand = ReactiveCommand.Create<string>(RemoveSavedStream);
 
-        SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
-
         Bindings = Locator.Current.GetService<ConnectorBindings>();
 
         Bindings.UpdateSavedStreams = UpdateSavedStreams;
         Bindings.UpdateSelectedStream = UpdateSelectedStream;
 
 
-        this.RaisePropertyChanged("SavedStreams");
+
         streamSearchDebouncer = Utils.Debounce(SearchStreams, 500);
         Init();
       }
@@ -265,11 +263,11 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        SavedStreams.CollectionChanged -= SavedStreams_CollectionChanged;
-        SavedStreams = new ObservableCollection<StreamViewModel>();
+        SavedStreams.Clear();
         streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
+        this.RaisePropertyChanged("SavedStreams");
         this.RaisePropertyChanged("HasSavedStreams");
-        SavedStreams.CollectionChanged += SavedStreams_CollectionChanged;
+
 
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Saved Streams Load" }, { "count", streams.Count } });
       }
@@ -292,13 +290,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    //write changes to file every time they happen
-    //this is because if there is an active document change we need to swap saved streams and restore them later
-    //even if the doc has not been saved
-    private void SavedStreams_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
-    {
-      WriteStreamsToFile();
-    }
 
     internal void WriteStreamsToFile()
     {
@@ -314,7 +305,6 @@ namespace DesktopUI2.ViewModels
         if (savedStream != null)
         {
           savedStream = stream;
-          WriteStreamsToFile();
         }
         //it's a new saved stream
         else
@@ -324,6 +314,7 @@ namespace DesktopUI2.ViewModels
 
         }
 
+        WriteStreamsToFile();
         this.RaisePropertyChanged("HasSavedStreams");
       }
       catch (Exception ex)
@@ -545,6 +536,7 @@ namespace DesktopUI2.ViewModels
             Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
         }
 
+        WriteStreamsToFile();
         this.RaisePropertyChanged("HasSavedStreams");
       }
       catch (Exception ex)
@@ -796,7 +788,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-
+          Log.CaptureException(ex, Sentry.SentryLevel.Error);
         }
       }
     }

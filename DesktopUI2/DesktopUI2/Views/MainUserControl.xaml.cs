@@ -13,7 +13,7 @@ namespace DesktopUI2.Views
 {
   public partial class MainUserControl : ReactiveUserControl<MainViewModel>
   {
-    internal static NotificationManager NotificationManager;
+    public static NotificationManager NotificationManager;
     public MainUserControl()
     {
       this.WhenActivated(disposables => { });
