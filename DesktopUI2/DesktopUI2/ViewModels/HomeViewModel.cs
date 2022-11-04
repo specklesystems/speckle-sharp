@@ -229,6 +229,8 @@ namespace DesktopUI2.ViewModels
       get => Accounts != null && Accounts.Any();
     }
 
+    private List<Client> _subscribedClientsStreamAddRemove = new List<Client>();
+
     #endregion
 
     public HomeViewModel(IScreen screen)
@@ -354,7 +356,6 @@ namespace DesktopUI2.ViewModels
 
           try
           {
-            var client = new Client(account.Account);
             var result = new List<Stream>();
 
             //NO SEARCH
@@ -362,9 +363,9 @@ namespace DesktopUI2.ViewModels
             {
 
               if (SelectedFilter == Filter.favorite)
-                result = await client.FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25);
+                result = await account.Client.FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25);
               else
-                result = await client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
+                result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
             }
             //SEARCH
             else
@@ -372,7 +373,7 @@ namespace DesktopUI2.ViewModels
               //do not search favorite streams, too much hassle
               if (SelectedFilter == Filter.favorite)
                 SelectedFilter = Filter.all;
-              result = await client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
+              result = await account.Client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
             }
 
             if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -419,11 +420,10 @@ namespace DesktopUI2.ViewModels
         {
           try
           {
-            var client = new Client(account.Account);
-            var result = await client.GetAllPendingInvites();
+            var result = await account.Client.GetAllPendingInvites();
             foreach (var r in result)
             {
-              Notifications.Add(new NotificationViewModel(r, client.ServerUrl));
+              Notifications.Add(new NotificationViewModel(r, account.Client.ServerUrl));
             }
 
           }
@@ -455,6 +455,10 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
+        //prevent subscriptions from being registered multiple times
+        _subscribedClientsStreamAddRemove.ForEach(x => x.Dispose());
+        _subscribedClientsStreamAddRemove.Clear();
+
         Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
 
         GetStreams();
@@ -469,13 +473,48 @@ namespace DesktopUI2.ViewModels
         }
         catch { }
 
+        foreach (var account in Accounts)
+        {
 
+          account.Client.SubscribeUserStreamAdded();
+          account.Client.OnUserStreamAdded += Client_OnUserStreamAdded;
+
+          account.Client.SubscribeUserStreamRemoved();
+          account.Client.OnUserStreamRemoved += Client_OnUserStreamRemoved;
+
+          _subscribedClientsStreamAddRemove.Add(account.Client);
+
+        }
 
       }
       catch (Exception ex)
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
+    }
+
+    private void Client_OnUserStreamAdded(object sender, Speckle.Core.Api.SubscriptionModels.StreamInfo e)
+    {
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "🥳 You have a new Stream!",
+          Message = e.sharedBy == null ? $"You have created '{e.name}'." : $"'{e.name}' has been shared with you.",
+        }); ;
+      });
+    }
+
+    private void Client_OnUserStreamRemoved(object sender, Speckle.Core.Api.SubscriptionModels.StreamInfo e)
+    {
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "❌ Stream removed!",
+          Message = $"'{e.name}' has been deleted or un-shared.",
+        }); ;
+      });
     }
 
     private void GenerateMenuItems()

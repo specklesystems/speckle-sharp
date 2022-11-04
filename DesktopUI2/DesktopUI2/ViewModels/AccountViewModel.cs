@@ -23,6 +23,18 @@ namespace DesktopUI2.ViewModels
 
     public Account Account { get; private set; }
 
+    private Client _client { get; set; }
+    public Client Client
+    {
+      get
+      {
+        if (_client == null)
+          _client = new Client(Account);
+        return _client;
+
+      }
+    }
+
     public string SimpleName
     {
       get
