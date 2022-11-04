@@ -38,6 +38,9 @@ namespace DesktopUI2.ViewModels
     public StreamState StreamState { get; set; }
     public IScreen HostScreen { get; set; }
 
+
+    #region bindings
+
     private ConnectorBindings Bindings;
 
 
@@ -61,8 +64,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _previewOn, value);
       }
     }
-
-    #region bindings
     private Stream _stream;
     public Stream Stream
     {
@@ -470,6 +471,8 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _previewImage360, value);
     }
 
+    public bool CanOpenCommentsIn3DView { get; set; } = false;
+
     #endregion
 
     private string Url
@@ -526,6 +529,7 @@ namespace DesktopUI2.ViewModels
 
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
+        CanOpenCommentsIn3DView = Bindings.CanOpen3DView;
 
         if (Client == null)
         {
