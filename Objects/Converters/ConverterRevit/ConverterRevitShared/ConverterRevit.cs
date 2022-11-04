@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -123,6 +123,9 @@ namespace Objects.Converter.Revit
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
+          break;
+        case DB.FabricationPart o:
+          returnObject = FabricationPartToSpeckle(o, out notes);
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
@@ -618,6 +621,7 @@ namespace Objects.Converter.Revit
         DB.ElementType _ => true,
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
+        DB.FabricationPart _ => true,
 #if !REVIT2023
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
