@@ -49,7 +49,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     docker:
-      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet 
+      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet
       # - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
       # Node, redis, postgres and speckle-server images for test server
       - image: "cimg/node:16.15"
@@ -344,7 +344,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
+            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zipS
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
       - when:
           condition: << pipeline.git.tag >>
           steps:
