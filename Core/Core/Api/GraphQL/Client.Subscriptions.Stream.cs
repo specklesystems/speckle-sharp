@@ -4,8 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Sentry;
-using Speckle.Core.Logging;
 using Speckle.Core.Api.SubscriptionModels;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api
 {
@@ -135,6 +135,49 @@ namespace Speckle.Core.Api
       get
       {
         return UserStreamRemovedSubscription != null;
+      }
+    }
+    #endregion
+
+    #region CommentActivity
+    public delegate void CommentActivityHandler(object sender, CommentItem e);
+    public event CommentActivityHandler OnCommentActivity;
+    public IDisposable CommentActivitySubscription;
+
+    /// <summary>
+    /// Subscribe to new comment events
+    /// </summary>
+    ///
+    public void SubscribeCommentActivity(string streamId)
+    {
+      try
+      {
+        var request = new GraphQLRequest
+        {
+          Query = $@"subscription {{ commentActivity( streamId: ""{streamId}"") {{ type comment {{ id authorId archived screenshot rawText }} }} }}",
+        };
+
+        var res = GQLClient.CreateSubscriptionStream<CommentActivityResponse>(request);
+        CommentActivitySubscription = res.Subscribe(response =>
+        {
+          if (response.Errors != null)
+            throw new SpeckleException("Could not subscribe to commentActivity", response.Errors);
+
+          if (response.Data != null)
+            OnCommentActivity(this, response.Data.commentActivity.comment);
+        });
+      }
+      catch (Exception e)
+      {
+        throw new SpeckleException(e.Message, e);
+      }
+    }
+
+    public bool HasSubscribedCommentActivity
+    {
+      get
+      {
+        return CommentActivitySubscription != null;
       }
     }
     #endregion

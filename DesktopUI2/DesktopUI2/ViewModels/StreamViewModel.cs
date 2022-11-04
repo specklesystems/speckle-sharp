@@ -138,6 +138,14 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private int _selectedTab = 0;
+    public int SelectedTab
+    {
+      get => _selectedTab;
+      private set => this.RaiseAndSetIfChanged(ref _selectedTab, value);
+
+    }
+
     public string UrlPathSegment { get; } = "stream";
 
     internal Client Client { get; }
@@ -688,8 +696,7 @@ namespace DesktopUI2.ViewModels
 
       if (HasReportItems) // activate report tab
       {
-        var tabControl = StreamEditView.Instance.FindControl<TabControl>("tabStreamEdit");
-        tabControl.SelectedIndex = tabControl.ItemCount - 1;
+        SelectedTab = 4;
       }
 
       // report filter selection
@@ -721,7 +728,7 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private async void GetComments()
+    private async Task GetComments()
     {
       try
       {
@@ -845,10 +852,48 @@ namespace DesktopUI2.ViewModels
       Client.OnBranchUpdated += Client_OnBranchChange;
       Client.OnBranchDeleted += Client_OnBranchChange;
 
+      Client.SubscribeCommentActivity(StreamState.StreamId);
+      Client.OnCommentActivity += Client_OnCommentActivity;
+
       Client.SubscribeStreamUpdated(StreamState.StreamId);
       Client.OnStreamUpdated += Client_OnStreamUpdated;
     }
 
+    private async void Client_OnCommentActivity(object sender, CommentItem e)
+    {
+      await GetComments();
+
+      var authorName = "you";
+      if (e.authorId != Client.Account.userInfo.id)
+      {
+        var author = await Client.OtherUserGet(e.id);
+        authorName = author.name;
+      }
+
+      bool openStream = true;
+      var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
+      if (svm != null && svm.Stream.id == Stream.id)
+        openStream = false;
+
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = $"🆕 New comment by {authorName}:",
+          Message = e.rawText,
+          OnClick = () =>
+          {
+            if (openStream)
+              MainViewModel.RouterInstance.Navigate.Execute(this);
+
+            SelectedTab = 3;
+          }
+          ,
+          Type = Avalonia.Controls.Notifications.NotificationType.Success,
+          Expiration = TimeSpan.FromSeconds(15)
+        });
+      });
+    }
 
     private async void Client_OnBranchChange(object sender, Speckle.Core.Api.SubscriptionModels.BranchInfo info)
     {

@@ -19,13 +19,8 @@ namespace DesktopUI2.ViewModels
     public Task<AccountViewModel> Author => GetAuthorAsync();
     public Task<Avalonia.Media.Imaging.Bitmap> Screenshot => GetScreenshotAsync();
 
-    public string Text
-    {
-      get
-      {
-        return string.Join("", Comment.text.Doc?.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
-      }
-    }
+    //return string.Join("", Comment.text.Doc?.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
+    public string Text { get; private set; }
 
     private async Task<AccountViewModel> GetAuthorAsync()
     {
@@ -61,6 +56,7 @@ namespace DesktopUI2.ViewModels
       Comment = item;
       StreamId = streamId;
       _client = client;
+      Text = Comment.rawText;
 
       //use dependency injection to get bindings
       Bindings = Locator.Current.GetService<ConnectorBindings>();
