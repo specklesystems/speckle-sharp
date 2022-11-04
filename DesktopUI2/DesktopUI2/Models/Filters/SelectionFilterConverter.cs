@@ -47,7 +47,7 @@ namespace DesktopUI2.Models.Filters
       }
       else
       {
-        throw new SpeckleException($"Unknown filter type: {type}. Please add a case in DesktopUI2.Models.Filters.FilerUtils.cs");
+        throw new SpeckleException($"Unknown filter type: {type}. Please add a case in DesktopUI2.Models.Filters.SelectionFilterConverter.cs");
       }
 
       serializer.Populate(jsonObject.CreateReader(), filter);
