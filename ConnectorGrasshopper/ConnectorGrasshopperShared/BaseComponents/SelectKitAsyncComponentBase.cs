@@ -114,7 +114,7 @@ namespace ConnectorGrasshopper.Objects
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
         (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      Converter.SetContextDocument(Loader.GetCurrentDocument());
       Message = $"Using the {Kit.Name} Converter";
     }
 
@@ -134,7 +134,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void BeforeSolveInstance()
     {
-      Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      Converter?.SetContextDocument(Loader.GetCurrentDocument());
       base.BeforeSolveInstance();
     }
 

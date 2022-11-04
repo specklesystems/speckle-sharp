@@ -78,7 +78,7 @@ namespace Objects.Converter.RhinoGh
       return new[] { RhinoAppName };
     }
 
-    public RhinoDoc Doc { get; private set; } = Rhino.RhinoDoc.ActiveDoc ?? null;
+    public RhinoDoc Doc { get; private set; }
 
     public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 

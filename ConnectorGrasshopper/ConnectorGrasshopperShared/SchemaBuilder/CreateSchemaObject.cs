@@ -357,7 +357,7 @@ namespace ConnectorGrasshopper
         Tracker.TrackNodeRun("Create Schema Object", Name);
 
 
-      var units = Units.GetUnitsFromString(Rhino.RhinoDoc.ActiveDoc.ModelUnitSystem.ToString());
+      var units = Units.GetUnitsFromString(Loader.GetCurrentDocument().ModelUnitSystem.ToString());
 
       List<object> cParamsValues = new List<object>();
       var cParams = SelectedConstructor.GetParameters();
@@ -621,7 +621,7 @@ namespace ConnectorGrasshopper
 
     protected override void BeforeSolveInstance()
     {
-      Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      Converter?.SetContextDocument(Loader.GetCurrentDocument());
       base.BeforeSolveInstance();
     }
   }

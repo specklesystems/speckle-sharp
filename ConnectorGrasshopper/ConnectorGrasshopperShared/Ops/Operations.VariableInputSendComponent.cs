@@ -368,7 +368,7 @@ namespace ConnectorGrasshopper.Ops
         }
 
         //the active document may have changed
-        sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        sendComponent.Converter.SetContextDocument(Loader.GetCurrentDocument());
       
         if (!Helpers.UserHasInternet().Result)
         {

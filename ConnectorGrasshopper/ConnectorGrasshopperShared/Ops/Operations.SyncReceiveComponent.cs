@@ -249,7 +249,7 @@ namespace ConnectorGrasshopper.Ops
         ReceivedObjectId = @base.id;
 
         //the active document may have changed
-        Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
+        Converter?.SetContextDocument(Loader.GetCurrentDocument());
 
 
         var data = Extras.Utilities.ConvertToTree(Converter, @base, AddRuntimeMessage, true);

@@ -314,6 +314,12 @@ namespace ConnectorGrasshopper
     }
 
     private static RhinoDoc _headlessDoc;
+
+    public static void DisposeHeadlessDoc()
+    {
+      _headlessDoc.Dispose();
+      _headlessDoc = null;
+    }
     
     /// <summary>
     /// Get the current document for this Grasshopper instance.
@@ -322,6 +328,7 @@ namespace ConnectorGrasshopper
     /// <returns></returns>
     public static RhinoDoc GetCurrentDocument()
     {
+      // Get the active doc, can be null if running headless
       var doc = RhinoDoc.ActiveDoc;
 #if RHINO7
       if (doc != null) return doc; // If there's an ActiveDoc, use that.

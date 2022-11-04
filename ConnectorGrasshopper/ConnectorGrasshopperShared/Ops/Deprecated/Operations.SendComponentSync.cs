@@ -176,7 +176,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        Converter.SetContextDocument(Loader.GetCurrentDocument());
         foundKit = true;
       }
       catch
@@ -211,7 +211,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
         DA.GetDataTree(0, out dataInput);
 
         //the active document may have changed
-        Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        Converter.SetContextDocument(Loader.GetCurrentDocument());
 
         // Note: this method actually converts the objects to speckle too
         converted = Extras.Utilities.DataTreeToNestedLists(dataInput, Converter, source.Token, () =>

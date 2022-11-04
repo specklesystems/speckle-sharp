@@ -350,7 +350,7 @@ namespace ConnectorGrasshopper.Ops
         }
 
         //the active document may have changed
-        sendComponent.Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        sendComponent.Converter.SetContextDocument(Loader.GetCurrentDocument());
 
         // Note: this method actually converts the objects to speckle too
         ObjectToSend = new Base();

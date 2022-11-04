@@ -772,7 +772,7 @@ namespace ConnectorGrasshopper.Ops
 
       //the active document may have changed
       var converter = parent.Converter;
-      converter?.SetContextDocument(RhinoDoc.ActiveDoc);
+      converter?.SetContextDocument(Loader.GetCurrentDocument());
       parent.PrevReceivedData = new Dictionary<string, GH_Structure<IGH_Goo>>();
 
       if (!parent.ExpandOutput || (converter != null && converter.CanConvertToNative(ReceivedObject)))

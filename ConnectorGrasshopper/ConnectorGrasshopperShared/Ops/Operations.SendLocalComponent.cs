@@ -63,7 +63,7 @@ namespace ConnectorGrasshopper.Ops
       {
         Parent.Message = "Sending...";
         var converter = (Parent as SendLocalComponent)?.Converter;
-        converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        converter?.SetContextDocument(Loader.GetCurrentDocument());
         var converted = Utilities.DataTreeToNestedLists(data, converter);
         var ObjectToSend = new Base();
         ObjectToSend["@data"] = converted;

@@ -669,7 +669,7 @@ namespace ConnectorGrasshopper.Ops
       //the active document may have changed
       var converter = parent.Converter;
 
-      converter?.SetContextDocument(RhinoDoc.ActiveDoc);
+      converter?.SetContextDocument(Loader.GetCurrentDocument());
 
       var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
       var receiveComponent = (ReceiveComponent)this.Parent;
