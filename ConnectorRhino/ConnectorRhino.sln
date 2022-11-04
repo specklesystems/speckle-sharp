@@ -60,6 +60,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiskTransport", "..\Core\Tr
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorGrasshopperShared", "..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.shproj", "{0F1FD0C3-875F-4689-9C4A-C56E9AB31102}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopper6", "..\ConnectorGrasshopper\ConnectorGrasshopper6\ConnectorGrasshopper6.csproj", "{86920221-416E-4A66-A601-3418207E2401}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -167,6 +169,14 @@ Global
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release Mac|Any CPU.Build.0 = Release|Any CPU
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86920221-416E-4A66-A601-3418207E2401}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -187,6 +197,7 @@ Global
 		{109B3382-634B-408A-8A5C-4CD09CB92641} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
+		{86920221-416E-4A66-A601-3418207E2401} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1BFED19F-741B-4E11-95C0-753E2058B3D2}
