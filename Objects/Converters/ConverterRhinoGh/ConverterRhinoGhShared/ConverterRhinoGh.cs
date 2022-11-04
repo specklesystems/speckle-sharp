@@ -94,19 +94,7 @@ namespace Objects.Converter.RhinoGh
 
     public void SetContextDocument(object doc)
     {
-#if RHINO6
         Doc = (RhinoDoc)doc;
-#else
-      if (doc != null)
-        Doc = (RhinoDoc)doc;
-      else
-      {
-        var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template", "headless.3dm");
-        Doc = File.Exists(templatePath) 
-          ? RhinoDoc.OpenHeadless(templatePath) 
-          : RhinoDoc.CreateHeadless(null);
-      }
-#endif
     }
 
     // speckle user string for custom schemas

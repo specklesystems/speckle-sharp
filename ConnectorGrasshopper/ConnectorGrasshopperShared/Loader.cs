@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Timers;
 using System.Windows.Forms;
 using Grasshopper.Kernel;
 using Rhino;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
@@ -309,7 +311,22 @@ namespace ConnectorGrasshopper
         item.MouseEnter += (o, e) => ctl.DropDown.AutoClose = false;
         item.MouseLeave += (o, e) => ctl.DropDown.AutoClose = true;
       }
+    }
 
+    public static RhinoDoc FindCurrentDocument()
+    {
+      var doc = RhinoDoc.ActiveDoc;
+      #if RHINO6
+        return doc;
+      #else
+        if (doc != null)
+          return doc;
+
+          var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template", "headless.3dm");
+          return File.Exists(templatePath)
+            ? RhinoDoc.OpenHeadless(templatePath)
+            : RhinoDoc.CreateHeadless(null);
+#endif
     }
   }
 }
