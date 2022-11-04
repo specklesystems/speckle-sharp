@@ -50,13 +50,14 @@ namespace ConnectorGrasshopper
       }
 
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
-      
+#if RHINO7
       if(Grasshopper.Instances.RunningHeadless)
       {
         // If GH is running headless, we listen for document added/removed events.
         Grasshopper.Instances.DocumentServer.DocumentAdded += OnDocumentAdded;
         Grasshopper.Instances.DocumentServer.DocumentRemoved += OnDocumentRemoved;
       }
+#endif
 
       
       Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON,
@@ -360,11 +361,13 @@ namespace ConnectorGrasshopper
     
     public static void SetupHeadlessDoc()
     {
+#if RHINO7
       var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template",
         SpeckleGHSettings.HeadlessTemplateFilename);
       _headlessDoc = File.Exists(templatePath)
         ? RhinoDoc.OpenHeadless(templatePath)
         : RhinoDoc.CreateHeadless(null);
+#endif
     }
 
     /// <summary>
