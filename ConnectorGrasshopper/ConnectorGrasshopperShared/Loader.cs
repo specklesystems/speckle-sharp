@@ -313,19 +313,32 @@ namespace ConnectorGrasshopper
       }
     }
 
-    public static RhinoDoc FindCurrentDocument()
+    private static RhinoDoc _headlessDoc;
+    
+    /// <summary>
+    /// Get the current document for this Grasshopper instance.
+    /// This will correspond to the `ActiveDoc` on normal Rhino usage, while in headless mode it will try to load
+    /// </summary>
+    /// <returns></returns>
+    public static RhinoDoc GetCurrentDocument()
     {
       var doc = RhinoDoc.ActiveDoc;
-      #if RHINO6
-        return doc;
-      #else
-        if (doc != null)
-          return doc;
-
-          var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template", "headless.3dm");
-          return File.Exists(templatePath)
-            ? RhinoDoc.OpenHeadless(templatePath)
-            : RhinoDoc.CreateHeadless(null);
+#if RHINO7
+      if (doc != null) return doc; // If there's an ActiveDoc, use that.
+      if (_headlessDoc != null) return _headlessDoc; // Return the already initialized headless doc if it exists.
+      
+      // If there is no active doc and no existing headless doc, we
+      // - First try to find an existing template in the `Template` folder inside `%appdata%/Speckle` and open that.
+      // - If the template does not exist, we open a brand new headless doc.
+      var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template",
+        SpeckleGHSettings.HeadlessTemplateFilename);
+      _headlessDoc = File.Exists(templatePath)
+        ? RhinoDoc.OpenHeadless(templatePath)
+        : RhinoDoc.CreateHeadless(null);
+      
+      return _headlessDoc;
+#else
+      return doc;
 #endif
     }
   }

@@ -8,6 +8,7 @@ namespace ConnectorGrasshopper
     private const string MESH_SETTINGS = "Speckle2:kit.meshing.settings";
     private const string USE_SCHEMA_TAG_STRATEGY = "Speckle2:conversion.schema.tag";
     private const string SHOW_DEV_COMPONENTS = "Speckle2:dev.components.show";
+    private const string HEADLESS_TEMPLATE_FILENAME = "Speckle2:headless.template.name";
     /// <summary>
     /// Gets or sets the default selected kit name to be used in this Grasshopper instance.
     /// </summary>
@@ -57,6 +58,15 @@ namespace ConnectorGrasshopper
       }
     }
     
+    public static string HeadlessTemplateFilename
+    {
+      get => Grasshopper.Instances.Settings.GetValue(HEADLESS_TEMPLATE_FILENAME, "headless.3dm");
+      set
+      {
+        Grasshopper.Instances.Settings.SetValue(HEADLESS_TEMPLATE_FILENAME, value);
+        Grasshopper.Instances.Settings.WritePersistentSettings();
+      }
+    }
     public static bool GetTabVisibility(string name)
     {
       var tabVisibility = Grasshopper.Instances.Settings.GetValue($"Speckle2:tabs.{name}", false);
