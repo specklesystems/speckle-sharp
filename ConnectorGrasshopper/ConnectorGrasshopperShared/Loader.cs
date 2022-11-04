@@ -50,6 +50,15 @@ namespace ConnectorGrasshopper
       }
 
       Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
+      
+      if(Grasshopper.Instances.RunningHeadless)
+      {
+        // If GH is running headless, we listen for document added/removed events.
+        Grasshopper.Instances.DocumentServer.DocumentAdded += OnDocumentAdded;
+        Grasshopper.Instances.DocumentServer.DocumentRemoved += OnDocumentRemoved;
+      }
+
+      
       Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON,
         Properties.Resources.speckle_logo);
       Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.PRIMARY_RIBBON, 'S');
@@ -58,6 +67,32 @@ namespace ConnectorGrasshopper
       Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.SECONDARY_RIBBON, 'S');
       return GH_LoadingInstruction.Proceed;
     }
+
+    private void OnDocumentAdded(GH_DocumentServer sender, GH_Document doc)
+    {
+      // Add events for solution start and end
+      doc.SolutionStart += DocumentOnSolutionStart;
+      doc.SolutionEnd += DocumentOnSolutionEnd;
+    }
+
+    private void OnDocumentRemoved(GH_DocumentServer sender, GH_Document doc)
+    {
+      // Remove events for solution start and end
+      doc.SolutionStart -= DocumentOnSolutionStart;
+      doc.SolutionEnd -= DocumentOnSolutionEnd;
+    }
+
+    private void DocumentOnSolutionStart(object sender, GH_SolutionEventArgs e)
+    {
+      SetupHeadlessDoc();
+    }
+
+    private void DocumentOnSolutionEnd(object sender, GH_SolutionEventArgs e)
+    {
+      DisposeHeadlessDoc();
+    }
+
+
 
     private static DialogResult ShowLoadErrorMessageBox()
     {
@@ -317,10 +352,21 @@ namespace ConnectorGrasshopper
 
     public static void DisposeHeadlessDoc()
     {
-      _headlessDoc.Dispose();
+#if RHINO7
+      _headlessDoc?.Dispose();
+#endif
       _headlessDoc = null;
     }
     
+    public static void SetupHeadlessDoc()
+    {
+      var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template",
+        SpeckleGHSettings.HeadlessTemplateFilename);
+      _headlessDoc = File.Exists(templatePath)
+        ? RhinoDoc.OpenHeadless(templatePath)
+        : RhinoDoc.CreateHeadless(null);
+    }
+
     /// <summary>
     /// Get the current document for this Grasshopper instance.
     /// This will correspond to the `ActiveDoc` on normal Rhino usage, while in headless mode it will try to load
@@ -331,19 +377,7 @@ namespace ConnectorGrasshopper
       // Get the active doc, can be null if running headless
       var doc = RhinoDoc.ActiveDoc;
 #if RHINO7
-      if (doc != null) return doc; // If there's an ActiveDoc, use that.
-      if (_headlessDoc != null) return _headlessDoc; // Return the already initialized headless doc if it exists.
-      
-      // If there is no active doc and no existing headless doc, we
-      // - First try to find an existing template in the `Template` folder inside `%appdata%/Speckle` and open that.
-      // - If the template does not exist, we open a brand new headless doc.
-      var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template",
-        SpeckleGHSettings.HeadlessTemplateFilename);
-      _headlessDoc = File.Exists(templatePath)
-        ? RhinoDoc.OpenHeadless(templatePath)
-        : RhinoDoc.CreateHeadless(null);
-      
-      return _headlessDoc;
+      return doc ?? _headlessDoc;
 #else
       return doc;
 #endif
