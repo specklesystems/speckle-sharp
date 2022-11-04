@@ -14,6 +14,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
 
   {
+    public void OpenTeklaStructures()
+    {
+      var streams = GetStreamsInFile();
+      if (UpdateSavedStreams != null)
+        UpdateSavedStreams(streams);
+    }
     public static Model Model { get; set; }
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
     public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
@@ -22,7 +28,9 @@ namespace Speckle.ConnectorTeklaStructures.UI
     public ConnectorBindingsTeklaStructures(Model model)
     {
       Model = model;
- 
+
+
+
     }
 
     public override List<ReceiveMode> GetReceiveModes()

@@ -10,4 +10,6 @@
   <StyleInclude Source="/Styles/TextBox.xaml" />
   <StyleInclude Source="/Styles/Expander.xaml" />
   <StyleInclude Source="/Styles/ChipListBox.xaml" />
+	<StyleInclude Source="/Styles/NotificationCard.xaml" />
+	<StyleInclude Source="/Styles/NotificationManager.xaml" />
 </Styles>

@@ -559,6 +559,15 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
+        case Base b:
+          var boo = b["isHackySpeckleCamera"] as bool?;
+          if (boo == true)
+            return ViewOrientation3DToNative(b);
+          return null;
+
+
         default:
           return null;
       }

@@ -1,16 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Rhino;
-using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper
 {
@@ -49,7 +50,7 @@ namespace ConnectorGrasshopper
         Log.CaptureException(e);
       }
 
-      Grasshopper.Instances.DocumentServer.DocumentAdded += CanvasCreatedEvent;
+      Grasshopper.Instances.CanvasCreated += OnCanvasCreated;
 #if RHINO7
       if(Grasshopper.Instances.RunningHeadless)
       {
@@ -59,7 +60,7 @@ namespace ConnectorGrasshopper
       }
 #endif
 
-      
+
       Grasshopper.Instances.ComponentServer.AddCategoryIcon(ComponentCategories.PRIMARY_RIBBON,
         Properties.Resources.speckle_logo);
       Grasshopper.Instances.ComponentServer.AddCategorySymbolName(ComponentCategories.PRIMARY_RIBBON, 'S');
@@ -93,6 +94,37 @@ namespace ConnectorGrasshopper
       DisposeHeadlessDoc();
     }
 
+    private void OnCanvasCreated(GH_Canvas canvas)
+    {
+      Grasshopper.Instances.DocumentEditor.Load += OnDocumentEditorLoad;
+
+      if (canvas == null) return;
+
+      canvas.KeyDown += (s, e) =>
+      {
+        if (e.KeyCode == Keys.Tab && !KeyWatcher.TabPressed)
+          KeyWatcher.TabPressed = true;
+      };
+
+      canvas.KeyUp += (s, e) =>
+      {
+        if (KeyWatcher.TabPressed && e.KeyCode == Keys.Tab)
+          KeyWatcher.TabPressed = false;
+      };
+    }
+
+    private void OnDocumentEditorLoad(object sender, EventArgs e)
+    {
+      try
+      {
+        var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
+        AddSpeckleMenu(mainMenu);
+      }
+      catch (Exception ex)
+      {
+        ShowLoadErrorMessageBox();
+      }
+    }
 
 
     private static DialogResult ShowLoadErrorMessageBox()
@@ -107,33 +139,6 @@ namespace ConnectorGrasshopper
         "If the problem persists, please reach out to our Community Forum (https://speckle.community)",
         "Speckle Error",
         MessageBoxButtons.OK);
-    }
-
-    private void CanvasCreatedEvent(GH_DocumentServer server, GH_Document doc)
-    {
-      try
-      {
-        AddSpeckleMenu(null, null);
-      }
-      catch (Exception e)
-      {
-        ShowLoadErrorMessageBox();
-      }
-
-      if (Grasshopper.Instances.ActiveCanvas != null)
-      {
-        Grasshopper.Instances.ActiveCanvas.KeyDown += (s, e) =>
-        {
-          if (e.KeyCode == Keys.Tab && !KeyWatcher.TabPressed)
-            KeyWatcher.TabPressed = true;
-        };
-
-        Grasshopper.Instances.ActiveCanvas.KeyUp += (s, e) =>
-        {
-          if (KeyWatcher.TabPressed && e.KeyCode == Keys.Tab)
-            KeyWatcher.TabPressed = false;
-        };
-      }
     }
 
     private void HandleKitSelectedEvent(object sender, EventArgs args)
@@ -155,40 +160,17 @@ namespace ConnectorGrasshopper
       }
     }
 
-    private void AddSpeckleMenu(object sender, ElapsedEventArgs e)
+    private void AddSpeckleMenu(MenuStrip mainMenu)
     {
-      if (Grasshopper.Instances.DocumentEditor == null || MenuHasBeenAdded) return;
-      var mainMenu = Grasshopper.Instances.DocumentEditor.MainMenuStrip;
+      if (MenuHasBeenAdded) return;
+      // Double check that the menu does not exist.
       var menuName = "Speckle 2";
       if (mainMenu.Items.ContainsKey(menuName))
         mainMenu.Items.RemoveByKey(menuName);
 
       speckleMenu = new ToolStripMenuItem(menuName);
 
-      var kitHeader = speckleMenu.DropDown.Items.Add("Select the converter you want to use.");
-      kitHeader.Enabled = false;
-
-      try
-      {
-        loadedKits = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName());
-
-        var kitItems = new List<ToolStripItem>();
-        loadedKits.ToList().ForEach(kit =>
-        {
-          var item = speckleMenu.DropDown.Items.Add("  " + kit.Name);
-
-          item.Click += HandleKitSelectedEvent;
-          kitItems.Add(item);
-        });
-        kitMenuItems = kitItems;
-      }
-      catch (Exception exception)
-      {
-        Log.CaptureException(exception);
-        var errItem = speckleMenu.DropDown.Items.Add("An error occurred while fetching Kits");
-        errItem.Enabled = false;
-      }
-
+      CreateKitSelectionMenu(speckleMenu);
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateSchemaConversionMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
@@ -213,27 +195,60 @@ namespace ConnectorGrasshopper
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo,
         (o, args) => Process.Start("speckle://"));
 
-      try
-      {
-        Grasshopper.Instances.DocumentEditor.Invoke(new Action(() =>
-        {
-          if (!MenuHasBeenAdded)
-          {
-            mainMenu.Items.Add(speckleMenu);
-            // Select the first kit by default.
-            if (speckleMenu.DropDown.Items.Count > 0)
-              HandleKitSelectedEvent(kitMenuItems.FirstOrDefault(k => k.Text.Trim() == "Objects"), null);
-          }
-        }));
-      }
-      catch (Exception err)
-      {
-        Log.CaptureException(err);
-        var errItem = speckleMenu.DropDown.Items.Add("An error occurred while fetching Kits", null);
-        errItem.Enabled = false;
-      }
+
+      if (!MenuHasBeenAdded)
+        mainMenu.Items.Add(speckleMenu);
 
       MenuHasBeenAdded = true;
+    }
+
+    private void CreateKitSelectionMenu(ToolStripMenuItem menu)
+    {
+      var header = new ToolStripMenuItem("Select the converter you want to use.") { Enabled = false };
+      var loading = new ToolStripMenuItem("   Loading Kits...") { Enabled = false };
+
+      menu.DropDown.Items.Add(header);
+      menu.DropDown.Items.Add(loading);
+
+      Task.Run(() =>
+      {
+        loadedKits = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName());
+
+        var kitItems = new List<ToolStripItem>();
+
+        loadedKits.ToList().ForEach(kit =>
+        {
+          var item = new ToolStripMenuItem("  " + kit.Name);
+          item.Click += HandleKitSelectedEvent;
+          kitItems.Add(item);
+        });
+        kitMenuItems = kitItems;
+      }).ContinueWith(task =>
+      {
+        if (task.Exception != null)
+        {
+          Log.CaptureException(task.Exception);
+          var errItem = new ToolStripMenuItem("An error occurred while fetching Kits");
+          errItem.DropDown.Items.Add(task.Exception.ToFormattedString());
+
+          RhinoApp.InvokeOnUiThread((Action)delegate
+          {
+            menu.DropDown.Items.Remove(loading);
+            menu.DropDown.Items.Insert(1, errItem);
+            Grasshopper.Instances.DocumentEditor.Refresh();
+          });
+          return;
+        }
+        RhinoApp.InvokeOnUiThread((Action)delegate
+        {
+          var current = 1;
+          menu.DropDown.Items.Remove(loading);
+          foreach (var item in kitMenuItems)
+            menu.DropDown.Items.Insert(current++, item);
+          HandleKitSelectedEvent(kitMenuItems.FirstOrDefault(k => k.Text.Trim() == "Objects"), null);
+          Grasshopper.Instances.DocumentEditor.Refresh();
+        });
+      });
     }
 
     private void CreateTabsMenu()
@@ -358,7 +373,7 @@ namespace ConnectorGrasshopper
 #endif
       _headlessDoc = null;
     }
-    
+
     public static void SetupHeadlessDoc()
     {
 #if RHINO7

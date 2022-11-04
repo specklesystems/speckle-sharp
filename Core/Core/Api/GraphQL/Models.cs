@@ -117,6 +117,7 @@ namespace Speckle.Core.Api
     public int favoritesCount { get; set; }
 
     public List<Collaborator> collaborators { get; set; }
+    public List<PendingStreamCollaborator> pendingCollaborators { get; set; } = new List<PendingStreamCollaborator>();
     public Branches branches { get; set; }
 
     /// <summary>
@@ -170,6 +171,7 @@ namespace Speckle.Core.Api
     public string title { get; set; }
     public string role { get; set; }
     public User invitedBy { get; set; }
+    public User user { get; set; }
     public string token { get; set; }
   }
 
@@ -271,20 +273,30 @@ namespace Speckle.Core.Api
     public List<Stream> items { get; set; }
   }
 
-  public class User
+  public class UserBase
   {
     public string id { get; set; }
-    public string email { get; set; }
     public string name { get; set; }
     public string bio { get; set; }
     public string company { get; set; }
     public string avatar { get; set; }
-
     public bool verified { get; set; }
-
-    //public object profiles { get; set; }
     public string role { get; set; }
     public Streams streams { get; set; }
+  }
+
+  public class LimitedUser: UserBase
+  {
+    public override string ToString()
+    {
+      return $"Other user profile: ({name} | {id})";
+    }
+
+  }
+
+  public class User: UserBase
+  {
+    public string email { get; set; }
     public Streams favoriteStreams { get; set; }
 
     public override string ToString()
@@ -376,6 +388,30 @@ namespace Speckle.Core.Api
     public User user { get; set; }
   }
 
+
+  /// <summary>
+  /// GraphQL DTO model for active user data
+  /// </summary>
+  public class ActiveUserData
+  {
+    /// <summary>
+    ///  User profile of the active user.
+    /// </summary>
+    public User activeUser { get; set; }
+  }
+
+
+  /// <summary>
+  /// GraphQL DTO model for limited user data. Mostly referring to other user's profile.
+  /// </summary>
+  public class LimitedUserData
+  {
+    /// <summary>
+    /// The limited user profile of another (non active user)
+    /// </summary>
+    public LimitedUser otherUser { get; set; }
+  }
+
   public class UserSearchData
   {
     public UserSearch userSearch { get; set; }
@@ -384,7 +420,7 @@ namespace Speckle.Core.Api
   public class UserSearch
   {
     public string cursor { get; set; }
-    public List<User> items { get; set; }
+    public List<LimitedUser> items { get; set; }
   }
 
   public class ServerInfoResponse

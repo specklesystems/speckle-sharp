@@ -1,6 +1,8 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Selection;
+using Avalonia.Metadata;
 using DesktopUI2.Models;
+using DesktopUI2.Views.Controls;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
@@ -20,8 +22,6 @@ namespace DesktopUI2.ViewModels
   {
     public IScreen HostScreen { get; }
     public string UrlPathSegment { get; } = "collaborators";
-
-    private ConnectorBindings Bindings;
 
     #region bindings
 
@@ -68,8 +68,7 @@ namespace DesktopUI2.ViewModels
         {
           AddedUsers.Add(value);
           SearchQuery = "";
-          this.RaisePropertyChanged("AddedUsers");
-          this.RaisePropertyChanged("HasAddedUsers");
+          this.RaisePropertyChanged(nameof(AddedUsers));
         }
 
       }
@@ -83,6 +82,16 @@ namespace DesktopUI2.ViewModels
       private set
       {
         this.RaiseAndSetIfChanged(ref _dropDownOpen, value);
+      }
+    }
+
+    private bool _isDialog;
+    public bool IsDialog
+    {
+      get => _isDialog;
+      private set
+      {
+        this.RaiseAndSetIfChanged(ref _isDialog, value);
       }
     }
 
@@ -106,11 +115,6 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    public bool HasAddedUsers
-    {
-      get => AddedUsers.Any();
-    }
-
     public bool HasSelectedUsers
     {
       get => SelectionModel.SelectedItems.Any();
@@ -121,12 +125,12 @@ namespace DesktopUI2.ViewModels
 
     private StreamViewModel _stream;
 
+
     public CollaboratorsViewModel(IScreen screen, StreamViewModel stream)
     {
       HostScreen = screen;
       _stream = stream;
       Role = stream.Stream.role;
-      Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       userSearchDebouncer = Utils.Debounce(SearchUsers);
 
@@ -134,13 +138,29 @@ namespace DesktopUI2.ViewModels
       SelectionModel.SingleSelect = false;
       SelectionModel.SelectionChanged += SelectionModel_SelectionChanged;
 
-      foreach (var collab in stream.Stream.collaborators)
+      IsDialog = MainViewModel.RouterInstance.NavigationStack.Last() is CollaboratorsViewModel;
+
+      ReloadUsers();
+
+    }
+
+    internal void ReloadUsers()
+    {
+      AddedUsers = new ObservableCollection<AccountViewModel>();
+      foreach (var collab in _stream.Stream.collaborators)
       {
         //skip myself
-        if (_stream.StreamState.Client.Account.userInfo.id == collab.id)
-          continue;
+        //if (_stream.StreamState.Client.Account.userInfo.id == collab.id)
+        //  continue;
         AddedUsers.Add(new AccountViewModel(collab));
       }
+
+      foreach (var collab in _stream.Stream.pendingCollaborators)
+      {
+        AddedUsers.Add(new AccountViewModel(collab));
+      }
+
+      this.RaisePropertyChanged(nameof(AddedUsers));
     }
 
     private void Search()
@@ -175,7 +195,7 @@ namespace DesktopUI2.ViewModels
     private void Focus()
     {
       DropDownOpen = false;
-      var searchBox = CollaboratorsView.Instance.FindControl<TextBox>("SearchBox");
+      var searchBox = CollaboratorsControl.Instance.FindControl<TextBox>("SearchBox");
       searchBox.Focus();
     }
 
@@ -201,13 +221,42 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    private async void SaveCommand()
+    [DependsOn(nameof(AddedUsers))]
+    bool CanSaveCommand(object parameter)
+    {
+      foreach (var user in AddedUsers)
+      {
+        if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
+          return true;
+        if (!_stream.Stream.collaborators.Any(x => x.id == user.Id) && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id))
+          return true;
+        if (!_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role))
+          return true;
+      }
+      foreach (var user in _stream.Stream.collaborators)
+      {
+        if (!AddedUsers.Any(x => x.Id == user.id))
+          return true;
+      }
+      foreach (var user in _stream.Stream.pendingCollaborators)
+      {
+        if (!AddedUsers.Any(x => x.Id == user.id))
+          return true;
+      }
+      return false;
+    }
+
+    async void SaveCommand()
     {
 
       foreach (var user in AddedUsers)
       {
+        //mismatch between roles set within the dropdown and existing ones
+        if (!user.Role.StartsWith("stream:"))
+          user.Role = "stream:" + user.Role;
+
         //invite users by email
-        if (Utils.IsValidEmail(user.Name))
+        if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
         {
           try
           {
@@ -216,33 +265,33 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception e)
           {
-
+            new SpeckleException("Error inviting user", e, true, Sentry.SentryLevel.Error);
           }
         }
         //add new collaborators
-        else if (!_stream.Stream.collaborators.Any(x => x.id == user.Id))
+        else if (!_stream.Stream.collaborators.Any(x => x.id == user.Id) && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id))
         {
           try
           {
-            await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { userId = user.Id, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!", role = "stream:" + user.Role });
+            await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { userId = user.Id, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!", role = user.Role });
             Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Invite User" } });
           }
           catch (Exception e)
           {
-
+            new SpeckleException("Error adding collaborator", e, true, Sentry.SentryLevel.Error);
           }
         }
-        //update permissions
-        else
+        //update permissions, only if changed
+        else if (!_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role))
         {
           try
           {
-            await _stream.StreamState.Client.StreamUpdatePermission(new StreamPermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = "stream:" + user.Role });
+            await _stream.StreamState.Client.StreamUpdatePermission(new StreamPermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = user.Role });
             Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Update Permissions" } });
           }
           catch (Exception e)
           {
-
+            new SpeckleException("Error updating permissions", e, true, Sentry.SentryLevel.Error);
           }
         }
       }
@@ -259,7 +308,24 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception e)
           {
+            new SpeckleException("Error updating permissions", e, true, Sentry.SentryLevel.Error);
+          }
+        }
+      }
 
+      //revoke invites
+      foreach (var user in _stream.Stream.pendingCollaborators)
+      {
+        if (!AddedUsers.Any(x => x.Id == user.id))
+        {
+          try
+          {
+            await _stream.StreamState.Client.StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId);
+            Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Cancel Invite" } });
+          }
+          catch (Exception e)
+          {
+            new SpeckleException("Error updating permissions", e, true, Sentry.SentryLevel.Error);
           }
         }
       }
@@ -267,14 +333,20 @@ namespace DesktopUI2.ViewModels
       try
       {
         _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId);
+        var pc = await _stream.StreamState.Client.StreamGetPendingCollaborators(_stream.StreamState.StreamId);
+        _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
         _stream.StreamState.CachedStream = _stream.Stream;
 
+        ReloadUsers();
       }
       catch (Exception e)
       {
       }
 
-      MainViewModel.RouterInstance.NavigateBack.Execute();
+      if (IsDialog)
+        MainViewModel.RouterInstance.NavigateBack.Execute();
+
+      this.RaisePropertyChanged(nameof(AddedUsers));
     }
 
     private async void CloseCommand()
@@ -296,7 +368,8 @@ namespace DesktopUI2.ViewModels
       }
 
       this.RaisePropertyChanged("HasSelectedUsers");
-      this.RaisePropertyChanged("HasAddedUsers");
+      this.RaisePropertyChanged(nameof(AddedUsers));
+
     }
 
     private async void ChangeRoleSeletedUsersCommand()
@@ -312,6 +385,7 @@ namespace DesktopUI2.ViewModels
         }
       }
 
+      this.RaisePropertyChanged(nameof(AddedUsers));
     }
   }
 }

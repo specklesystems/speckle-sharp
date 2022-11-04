@@ -6,6 +6,7 @@ using Avalonia.Metadata;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using DynamicData;
@@ -37,9 +38,14 @@ namespace DesktopUI2.ViewModels
     public StreamState StreamState { get; set; }
     public IScreen HostScreen { get; set; }
 
+
+    #region bindings
+
     private ConnectorBindings Bindings;
 
-    private List<MenuItemViewModel> _menuItems = new List<MenuItemViewModel>();
+
+
+    private CollaboratorsViewModel Collaborators { get; set; }
 
     public ICommand RemoveSavedStreamCommand { get; }
 
@@ -58,8 +64,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _previewOn, value);
       }
     }
-
-    #region bindings
     private Stream _stream;
     public Stream Stream
     {
@@ -73,6 +77,8 @@ namespace DesktopUI2.ViewModels
       get => _progress;
       set => this.RaiseAndSetIfChanged(ref _progress, value);
     }
+
+    private List<MenuItemViewModel> _menuItems = new List<MenuItemViewModel>();
     public List<MenuItemViewModel> MenuItems
     {
       get => _menuItems;
@@ -104,31 +110,6 @@ namespace DesktopUI2.ViewModels
         StreamState.LastUsed = value;
         this.RaisePropertyChanged("LastUsed");
       }
-    }
-
-    public string NotificationUrl { get; set; }
-    public bool SuccessfulSend { get; set; } = false;
-
-    private string _notification;
-    public string Notification
-    {
-      get => _notification;
-      set
-      {
-        this.RaiseAndSetIfChanged(ref _notification, value);
-        this.RaisePropertyChanged("ShowNotification");
-        this.RaisePropertyChanged("ShowSharePrompt");
-      }
-    }
-
-    public bool ShowNotification
-    {
-      get => !string.IsNullOrEmpty(Notification);
-    }
-
-    public bool ShowSharePrompt
-    {
-      get => !string.IsNullOrEmpty(Notification) && !IsReceiver && SuccessfulSend && Stream.collaborators.Count == 1;
     }
 
     private bool _isRemovingStream;
@@ -490,6 +471,8 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _previewImage360, value);
     }
 
+    public bool CanOpenCommentsIn3DView { get; set; } = false;
+
     #endregion
 
     private string Url
@@ -542,15 +525,25 @@ namespace DesktopUI2.ViewModels
 
         HostScreen = hostScreen;
         RemoveSavedStreamCommand = removeSavedStreamCommand;
+        Collaborators = new CollaboratorsViewModel(HostScreen, this);
 
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
+        CanOpenCommentsIn3DView = Bindings.CanOpen3DView;
 
         if (Client == null)
         {
           NoAccess = true;
-          Notification = "You do not have access to this Stream.";
-          NotificationUrl = $"{streamState.ServerUrl}/streams/{streamState.StreamId}";
+
+          //MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          //{
+          //  Title = "✋ No Access",
+          //  Message = $"You do not have access to this Stream.",
+          //  Expiration = TimeSpan.Zero,
+          //  OnClick = () => OpenUrl($"{streamState.ServerUrl}/streams/{streamState.StreamId}"),
+          //  Type = Avalonia.Controls.Notifications.NotificationType.Warning
+          //});
+
           return;
         }
 
@@ -564,7 +557,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error creating stream view model", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -573,7 +566,6 @@ namespace DesktopUI2.ViewModels
       try
       {
         GetStream().ConfigureAwait(false);
-
         GetBranchesAndRestoreState();
         GetActivity();
         GetReport();
@@ -582,7 +574,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error creating stream view model", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -612,7 +604,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error generating menu items", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -620,7 +612,14 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        Stream = await Client.StreamGet(StreamState.StreamId);
+        Stream = await Client.StreamGet(StreamState.StreamId, 25);
+        if (Stream.role == "stream:owner")
+        {
+          var streamPendingCollaborators = await Client.StreamGetPendingCollaborators(StreamState.StreamId);
+          Stream.pendingCollaborators = streamPendingCollaborators.pendingCollaborators;
+        }
+        Collaborators.ReloadUsers(); ;
+
         StreamState.CachedStream = Stream;
 
         //subscription
@@ -629,6 +628,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception e)
       {
+        new SpeckleException("Error retrieving stream", e, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -685,7 +685,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error restoring stream state", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -730,7 +730,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error getting activity", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -749,7 +749,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error getting comments", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -794,7 +794,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error updating state", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -822,7 +822,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error getting commits", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -837,8 +837,15 @@ namespace DesktopUI2.ViewModels
         var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
         var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
 
-        Notification = $"{cinfo.authorName} sent to {info.branchName}: {info.message}";
-        NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}";
+
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "🆕 New commit",
+          Message = $"{cinfo.authorName} sent to {info.branchName}: {info.message}",
+          OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}"),
+          Type = Avalonia.Controls.Notifications.NotificationType.Success
+        });
+
         ScrollToBottom();
 
         if (AutoReceive)
@@ -932,6 +939,7 @@ namespace DesktopUI2.ViewModels
         catch (Exception e)
         {
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          new SpeckleException("Error creating branch", e, true, Sentry.SentryLevel.Error);
         }
       }
       else
@@ -953,31 +961,6 @@ namespace DesktopUI2.ViewModels
       SearchQuery = "";
     }
 
-    public void ShareCommand()
-    {
-      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
-
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
-    }
-
-    public void CloseNotificationCommand(bool track = true)
-    {
-      Notification = "";
-      NotificationUrl = "";
-
-      if (track)
-        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
-    }
-
-    public void LaunchNotificationCommand()
-    {
-      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
-
-      if (!string.IsNullOrEmpty(NotificationUrl))
-        Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
-
-      CloseNotificationCommand(false);
-    }
 
     public void EditSavedStreamCommand()
     {
@@ -989,9 +972,15 @@ namespace DesktopUI2.ViewModels
     {
       //ensure click transition has finished
       await Task.Delay(100);
-      //to open urls in .net core must set UseShellExecute = true
-      Process.Start(new ProcessStartInfo(Url) { UseShellExecute = true });
+
+      OpenUrl(Url);
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
+    }
+
+    private void OpenUrl(string url)
+    {
+      //to open urls in .net core must set UseShellExecute = true
+      Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
     }
 
     public async void CopyStreamURLCommand()
@@ -1006,7 +995,6 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        SuccessfulSend = true;
         UpdateStreamState();
 
         HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
@@ -1032,13 +1020,22 @@ namespace DesktopUI2.ViewModels
             { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
           });
 
-          Notification = $"Sent successfully, view online";
-          NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
-          SuccessfulSend = true;
+          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          {
+            Title = "👌 Data sent",
+            Message = $"Sent to '{Stream.name}', view it online",
+            OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}"),
+            Type = Avalonia.Controls.Notifications.NotificationType.Success
+          });
         }
         else
         {
-          Notification = "Nothing sent!";
+          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          {
+            Title = "😖 Send Error",
+            Message = $"Something went wrong",
+            Type = Avalonia.Controls.Notifications.NotificationType.Error
+          });
         }
 
         GetActivity();
@@ -1046,7 +1043,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error sending", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -1076,7 +1073,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-
+          new SpeckleException("Error preview", ex, true, Sentry.SentryLevel.Error);
         }
       }
       else
@@ -1125,14 +1122,12 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error receiving", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
     private void Reset()
     {
-      Notification = "";
-      NotificationUrl = "";
       Progress = new ProgressViewModel();
     }
 
@@ -1142,7 +1137,13 @@ namespace DesktopUI2.ViewModels
       Reset();
       string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
-      Notification = IsReceiver ? "Cancelled Receive" : "Cancelled Send";
+
+      MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+      {
+        Title = "❌ Operation cancelled",
+        Message = IsReceiver ? "Nothing was received" : "Nothing was sent",
+        Type = Avalonia.Controls.Notifications.NotificationType.Success
+      });
     }
 
     public void CancelPreviewCommand()
@@ -1166,10 +1167,17 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Receiver Add" } });
         else
           Analytics.TrackEvent(Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Sender Add" } });
+
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "💾 Stream Saved",
+          Message = "This stream has been saved to this file",
+          Type = Avalonia.Controls.Notifications.NotificationType.Success
+        });
       }
       catch (Exception ex)
       {
-
+        new SpeckleException("Error saving", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
