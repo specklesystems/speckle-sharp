@@ -24,6 +24,8 @@ namespace DesktopUI2.ViewModels
 
     internal static MainViewModel Instance { get; private set; }
 
+    public static HomeViewModel Home { get; private set; }
+
     public bool DialogVisible
     {
       get => _dialogBody != null;
@@ -84,7 +86,7 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       ChangeTheme(config.DarkTheme);
 
-      var home = new HomeViewModel(this);
+      Home = new HomeViewModel(this);
 
       if (config.OneClickMode)
       {
@@ -92,7 +94,7 @@ namespace DesktopUI2.ViewModels
       }
       else
       {
-        Router.Navigate.Execute(home);
+        Router.Navigate.Execute(Home);
       }
     }
 
@@ -111,7 +113,7 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       if (!config.OneClickMode)
       {
-        RouterInstance.Navigate.Execute(new HomeViewModel(Instance));
+        RouterInstance.Navigate.Execute(Home);
       }
     }
 
