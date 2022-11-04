@@ -266,7 +266,11 @@ namespace DesktopUI2.ViewModels
       try
       {
         SavedStreams.Clear();
-        streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
+        foreach (StreamState stream in streams)
+        {
+          SavedStreams.Add(new StreamViewModel(stream, HostScreen, RemoveSavedStreamCommand));
+        }
+
         this.RaisePropertyChanged("SavedStreams");
         this.RaisePropertyChanged("HasSavedStreams");
 
@@ -279,6 +283,9 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    /// <summary>
+    /// Binding from host app when the saved stream needs to refresh filters & such
+    /// </summary>
     internal void UpdateSelectedStream()
     {
       try
@@ -311,9 +318,7 @@ namespace DesktopUI2.ViewModels
         //it's a new saved stream
         else
         {
-          //triggers => SavedStreams_CollectionChanged
           SavedStreams.Add(stream);
-
         }
 
         WriteStreamsToFile();
@@ -324,6 +329,7 @@ namespace DesktopUI2.ViewModels
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
+
 
     private async Task GetStreams()
     {
@@ -500,10 +506,27 @@ namespace DesktopUI2.ViewModels
     {
       Avalonia.Threading.Dispatcher.UIThread.Post(() =>
       {
+        var streamName = Streams.FirstOrDefault(x => x.Stream.id == e.id)?.Stream?.name;
+        if (streamName == null)
+          streamName = SavedStreams.FirstOrDefault(x => x.Stream.id == e.id)?.Stream?.name;
+        if (streamName == null)
+          return;
+
+        var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
+        if (svm != null && svm.Stream.id == e.id)
+          MainViewModel.GoHome();
+
+        //remove all saved streams matching this id
+        foreach (var stateId in SavedStreams.Where(x => x.Stream.id == e.id).Select(y => y.StreamState.Id).ToList())
+          RemoveSavedStream(stateId);
+
+        GetStreams().ConfigureAwait(false);
+
+
         MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
         {
           Title = "❌ Stream removed!",
-          Message = $"'{e.name}' has been deleted or un-shared.",
+          Message = $"'{streamName}' has been deleted or un-shared.",
         }); ;
       });
     }
@@ -563,20 +586,22 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private void RemoveSavedStream(string id)
+    private void RemoveSavedStream(string stateId)
     {
       try
       {
-        var s = SavedStreams.FirstOrDefault(x => x.StreamState.Id == id);
-        if (s != null)
-        {
-          SavedStreams.Remove(s);
-          if (s.StreamState.Client != null)
-            Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
-        }
+        var i = SavedStreams.FindIndex(x => x.StreamState.Id == stateId);
+        if (i == -1)
+          return;
+        SavedStreams[i].Dispose();
+        SavedStreams.RemoveAt(i);
 
         WriteStreamsToFile();
+
+        this.RaisePropertyChanged("SavedStreams");
         this.RaisePropertyChanged("HasSavedStreams");
+
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
       }
       catch (Exception ex)
       {

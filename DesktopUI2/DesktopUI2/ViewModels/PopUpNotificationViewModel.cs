@@ -19,6 +19,11 @@ namespace DesktopUI2.ViewModels
 
     public Action OnClick { get; set; }
 
+    public void ViewCommand()
+    {
+      OnClick.Invoke();
+    }
+
     public PopUpNotificationViewModel()
     {
 

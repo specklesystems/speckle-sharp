@@ -99,7 +99,7 @@
             Margin="5,10,0,10"
             HorizontalAlignment="Stretch"
             VerticalAlignment="Center"
-            IsEnabled="{Binding HasCommits}"
+            IsEnabled="{Binding Commits.Count}"
             Items="{Binding Commits}"
             PlaceholderText="Select a commit"
             SelectedIndex="0"
@@ -195,11 +195,11 @@
       Classes="Mini">
       <StackPanel>
         <TextBlock
-          IsVisible="{Binding HasCommits, Converter={x:Static BoolConverters.Not}}"
+          IsVisible="{Binding !Commits.Count}"
           Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
           TextWrapping="Wrap" />
         <!--  360 preview and hide logic in Receive.xaml.cs  -->
-        <Grid>
+        <Grid IsVisible="{Binding Commits.Count}">
           <Image
             x:Name="ImageBasic"
             Height="200"
