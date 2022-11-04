@@ -99,9 +99,9 @@
 
     <!--  Background="{DynamicResource MaterialDesignCardBackground}"  -->
     <TabControl
-      Name="tabStreamEdit"
       Grid.Row="1"
-      Background="Transparent">
+      Background="Transparent"
+      SelectedIndex="{Binding SelectedTab}">
       <TabItem ToolTip.Tip="Data Exchange">
         <TabItem.Header>
           <StackPanel Orientation="Horizontal">
@@ -123,7 +123,10 @@
             Classes="SpeckleFont"
             FontSize="18"
             Text="Data Exchange" />
-          <TabControl Grid.Row="1" Background="Transparent" SelectedIndex="{Binding IsReceiver}">
+          <TabControl
+            Grid.Row="1"
+            Background="Transparent"
+            SelectedIndex="{Binding IsReceiver}">
             <!--  SEND  -->
             <TabItem IsEnabled="{Binding Stream.role, Converter={StaticResource RoleCanSendValueConverter}}" ToolTip.Tip="Send">
               <TabItem.Header>

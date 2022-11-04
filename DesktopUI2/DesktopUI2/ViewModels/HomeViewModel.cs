@@ -229,6 +229,8 @@ namespace DesktopUI2.ViewModels
       get => Accounts != null && Accounts.Any();
     }
 
+    private List<Client> _subscribedClientsStreamAddRemove = new List<Client>();
+
     #endregion
 
     public HomeViewModel(IScreen screen)
@@ -264,7 +266,11 @@ namespace DesktopUI2.ViewModels
       try
       {
         SavedStreams.Clear();
-        streams.ForEach(x => SavedStreams.Add(new StreamViewModel(x, HostScreen, RemoveSavedStreamCommand)));
+        foreach (StreamState stream in streams)
+        {
+          SavedStreams.Add(new StreamViewModel(stream, HostScreen, RemoveSavedStreamCommand));
+        }
+
         this.RaisePropertyChanged("SavedStreams");
         this.RaisePropertyChanged("HasSavedStreams");
 
@@ -277,6 +283,9 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    /// <summary>
+    /// Binding from host app when the saved stream needs to refresh filters & such
+    /// </summary>
     internal void UpdateSelectedStream()
     {
       try
@@ -309,9 +318,7 @@ namespace DesktopUI2.ViewModels
         //it's a new saved stream
         else
         {
-          //triggers => SavedStreams_CollectionChanged
           SavedStreams.Add(stream);
-
         }
 
         WriteStreamsToFile();
@@ -322,6 +329,7 @@ namespace DesktopUI2.ViewModels
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
     }
+
 
     private async Task GetStreams()
     {
@@ -345,7 +353,6 @@ namespace DesktopUI2.ViewModels
 
           try
           {
-            var client = new Client(account.Account);
             var result = new List<Stream>();
 
             //NO SEARCH
@@ -353,9 +360,9 @@ namespace DesktopUI2.ViewModels
             {
 
               if (SelectedFilter == Filter.favorite)
-                result = await client.FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25);
+                result = await account.Client.FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25);
               else
-                result = await client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
+                result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
             }
             //SEARCH
             else
@@ -363,7 +370,7 @@ namespace DesktopUI2.ViewModels
               //do not search favorite streams, too much hassle
               if (SelectedFilter == Filter.favorite)
                 SelectedFilter = Filter.all;
-              result = await client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
+              result = await account.Client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
             }
 
             if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -410,11 +417,10 @@ namespace DesktopUI2.ViewModels
         {
           try
           {
-            var client = new Client(account.Account);
-            var result = await client.GetAllPendingInvites();
+            var result = await account.Client.GetAllPendingInvites();
             foreach (var r in result)
             {
-              Notifications.Add(new NotificationViewModel(r, client.ServerUrl));
+              Notifications.Add(new NotificationViewModel(r, account.Client.ServerUrl));
             }
 
           }
@@ -446,6 +452,10 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
+        //prevent subscriptions from being registered multiple times
+        _subscribedClientsStreamAddRemove.ForEach(x => x.Dispose());
+        _subscribedClientsStreamAddRemove.Clear();
+
         Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
 
         GetStreams();
@@ -460,13 +470,65 @@ namespace DesktopUI2.ViewModels
         }
         catch { }
 
+        foreach (var account in Accounts)
+        {
 
+          account.Client.SubscribeUserStreamAdded();
+          account.Client.OnUserStreamAdded += Client_OnUserStreamAdded;
+
+          account.Client.SubscribeUserStreamRemoved();
+          account.Client.OnUserStreamRemoved += Client_OnUserStreamRemoved;
+
+          _subscribedClientsStreamAddRemove.Add(account.Client);
+
+        }
 
       }
       catch (Exception ex)
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
+    }
+
+    private void Client_OnUserStreamAdded(object sender, Speckle.Core.Api.SubscriptionModels.StreamInfo e)
+    {
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "🥳 You have a new Stream!",
+          Message = e.sharedBy == null ? $"You have created '{e.name}'." : $"'{e.name}' has been shared with you.",
+        }); ;
+      });
+    }
+
+    private void Client_OnUserStreamRemoved(object sender, Speckle.Core.Api.SubscriptionModels.StreamInfo e)
+    {
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        var streamName = Streams.FirstOrDefault(x => x.Stream.id == e.id)?.Stream?.name;
+        if (streamName == null)
+          streamName = SavedStreams.FirstOrDefault(x => x.Stream.id == e.id)?.Stream?.name;
+        if (streamName == null)
+          return;
+
+        var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
+        if (svm != null && svm.Stream.id == e.id)
+          MainViewModel.GoHome();
+
+        //remove all saved streams matching this id
+        foreach (var stateId in SavedStreams.Where(x => x.Stream.id == e.id).Select(y => y.StreamState.Id).ToList())
+          RemoveSavedStream(stateId);
+
+        GetStreams().ConfigureAwait(false);
+
+
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "❌ Stream removed!",
+          Message = $"'{streamName}' has been deleted or un-shared.",
+        }); ;
+      });
     }
 
     private void GenerateMenuItems()
@@ -524,20 +586,22 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private void RemoveSavedStream(string id)
+    private void RemoveSavedStream(string stateId)
     {
       try
       {
-        var s = SavedStreams.FirstOrDefault(x => x.StreamState.Id == id);
-        if (s != null)
-        {
-          SavedStreams.Remove(s);
-          if (s.StreamState.Client != null)
-            Analytics.TrackEvent(s.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
-        }
+        var i = SavedStreams.FindIndex(x => x.StreamState.Id == stateId);
+        if (i == -1)
+          return;
+        SavedStreams[i].Dispose();
+        SavedStreams.RemoveAt(i);
 
         WriteStreamsToFile();
+
+        this.RaisePropertyChanged("SavedStreams");
         this.RaisePropertyChanged("HasSavedStreams");
+
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Remove" } });
       }
       catch (Exception ex)
       {
