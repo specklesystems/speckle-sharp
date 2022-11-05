@@ -17,6 +17,20 @@
     <PlatformTarget>x64</PlatformTarget>
     <Platforms>AnyCPU</Platforms>
     <DefineConstants>TRACE;RHINO7</DefineConstants>
+    <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DefineConstants>TRACE;RHINO7</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
+    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DefineConstants>TRACE;RHINO7</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
+    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
   </PropertyGroup>
   
   <ItemGroup>

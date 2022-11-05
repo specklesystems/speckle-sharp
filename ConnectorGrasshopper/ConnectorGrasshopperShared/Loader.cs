@@ -233,11 +233,11 @@ namespace ConnectorGrasshopper
         
         if (!Directory.Exists(path))
           Directory.CreateDirectory(path);
-        
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-          Process.Start("explorer.exe", "/select, " + path );
-        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        #if MAC
           Process.Start("file://" + path);
+        #else
+          Process.Start("explorer.exe", "/select, " + path );
+        #endif
       });
     }
 
@@ -293,14 +293,11 @@ namespace ConnectorGrasshopper
     private void CreateTabsMenu()
     {
       var tabsMenu = speckleMenu.DropDown.Items.Add("Show/Hide Components") as ToolStripMenuItem;
-      var warn = tabsMenu.DropDown.Items.Add("Changes require restarting Rhino to take effect.");
-      warn.Enabled = false;
       new List<string>
       {
         "BIM",
         "Revit",
         "Structural",
-        "ETABS",
         "GSA",
         "Tekla",
         "CSI"
