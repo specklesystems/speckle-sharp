@@ -4,9 +4,12 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
+using Grasshopper;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Rhino;
@@ -166,6 +169,7 @@ namespace ConnectorGrasshopper
     {
       if (MenuHasBeenAdded) return;
       // Double check that the menu does not exist.
+      
       var menuName = "Speckle 2";
       if (mainMenu.Items.ContainsKey(menuName))
         mainMenu.Items.RemoveByKey(menuName);
@@ -177,6 +181,8 @@ namespace ConnectorGrasshopper
       CreateSchemaConversionMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateMeshingSettingsMenu();
+      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      CreateHeadlessTemplateMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateTabsMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
@@ -202,6 +208,37 @@ namespace ConnectorGrasshopper
         mainMenu.Items.Add(speckleMenu);
 
       MenuHasBeenAdded = true;
+    }
+
+    private DebounceDispatcher headlessTemplateNameDebounceDispatcher = new DebounceDispatcher();
+
+    private void CreateHeadlessTemplateMenu()
+    {
+      var main = speckleMenu.DropDown.Items.Add("Rhino.Compute") as ToolStripMenuItem;
+      var head = main.DropDown.Items.Add("Default 3dm filename");
+      head.Enabled = false;
+      head.ToolTipText =
+        @"The file name of the default file to be used when running on Rhino.Compute. They should be placed in `%appdata%/Speckle/Templates/. If no file is found with that name, an empty file will be opened";
+      var textbox = new ToolStripTextBox("Default file name");
+      main.DropDown.Items.Add(textbox);
+      textbox.Text = SpeckleGHSettings.HeadlessTemplateFilename;
+      textbox.AutoSize = false;
+      textbox.Width = Global_Proc.UiAdjust(200);
+      textbox.TextChanged += (sender, text) =>
+        headlessTemplateNameDebounceDispatcher.Debounce(400, o => SpeckleGHSettings.HeadlessTemplateFilename = textbox.Text);
+      main.DropDown.Items.Add(new ToolStripSeparator());
+      main.DropDown.Items.Add("Open Templates folder", null, (sender, args) =>
+      {
+        var path = Path.Combine(Helpers.InstallSpeckleFolderPath, "Templates");
+        
+        if (!Directory.Exists(path))
+          Directory.CreateDirectory(path);
+        
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+          Process.Start("explorer.exe", "/select, " + path );
+        else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+          Process.Start("file://" + path);
+      });
     }
 
     private void CreateKitSelectionMenu(ToolStripMenuItem menu)
