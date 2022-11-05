@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
@@ -12,15 +12,15 @@ using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino
 {
-  #if !MAC
-  public class SpeckleCommandWin : Command
+#if !MAC
+  public class SpeckleMappingsCommandWin : Command
   {
 
-    public static SpeckleCommandWin Instance { get; private set; }
+    public static SpeckleMappingsCommandWin Instance { get; private set; }
 
-    public override string EnglishName => "Speckle";
+    public override string EnglishName => "SpeckleMappings";
 
-    public SpeckleCommandWin()
+    public SpeckleMappingsCommandWin()
     {
       Instance = this;
     }
@@ -31,7 +31,7 @@ namespace SpeckleRhino
       try
       {
 
-        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(DuiPanel).GUID);
         return Result.Success;
       }
       catch (Exception e)

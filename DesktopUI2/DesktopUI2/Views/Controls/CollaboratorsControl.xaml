@@ -29,6 +29,7 @@
       IsVisible="{Binding Role, Converter={StaticResource RoleCannotShareValueConverter}}"
       Text="You don't have permission to manage collaborators on this stream."
       TextWrapping="Wrap" />
+
     <Grid
       Grid.Row="1"
       Margin="0,15,0,0"
@@ -98,8 +99,9 @@
           </TextBox.InnerLeftContent>
         </TextBox>
       </m:Card>
-
     </Grid>
+
+
     <ProgressBar
       Grid.Row="2"
       Margin="12,5"

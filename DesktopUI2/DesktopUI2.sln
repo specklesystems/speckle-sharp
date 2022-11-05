@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2.WPF", "DesktopUI
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "AvaloniaHwndHost\AvaloniaHwndHost.csproj", "{421B0919-F7DB-4283-A5A2-009267428776}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -61,6 +63,14 @@ Global
 		{421B0919-F7DB-4283-A5A2-009267428776}.Release|Any CPU.Build.0 = Release|Any CPU
 		{421B0919-F7DB-4283-A5A2-009267428776}.Release|x86.ActiveCfg = Release|Any CPU
 		{421B0919-F7DB-4283-A5A2-009267428776}.Release|x86.Build.0 = Release|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Debug|x86.Build.0 = Debug|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Release|x86.ActiveCfg = Release|Any CPU
+		{0CA85D2B-2B7E-40DB-B821-D215F46EAA9B}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

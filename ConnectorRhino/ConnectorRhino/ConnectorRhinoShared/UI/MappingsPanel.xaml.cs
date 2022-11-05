@@ -10,9 +10,9 @@ namespace SpeckleRhino
   /// Interaction logic for Page1.xaml
   /// </summary>
   [System.Runtime.InteropServices.Guid("3EA3FEE1-216D-4076-9A06-949DE4C0E8AF")]
-  public partial class Panel : UserControl
+  public partial class MappingsPanel : UserControl
   {
-    public Panel()
+    public MappingsPanel()
     {
       try
       {

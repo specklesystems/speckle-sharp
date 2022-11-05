@@ -393,11 +393,14 @@ namespace DesktopUI2.ViewModels
 
         Streams = streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
 
-        InProgress = false;
       }
       catch (Exception ex)
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
+      }
+      finally
+      {
+        InProgress = false;
       }
     }
 

@@ -1,14 +1,15 @@
 ﻿<Styles
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles">
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple">
   <Design.PreviewWith>
     <Border
       Width="360"
       Height="200"
       Padding="20">
       <StackPanel VerticalAlignment="Center">
-        <ListBox>
+        <ListBox Classes="no-ripple" SelectionMode="AlwaysSelected">
           <ListBox.Items>
             <ListBoxItem Content="Item 1" IsSelected="True" />
             <ListBoxItem Content="Item 2" />
@@ -19,8 +20,12 @@
       </StackPanel>
     </Border>
   </Design.PreviewWith>
-  <Style Selector="ListBoxItem:selected /template/ ContentPresenter">
-    <Setter Property="Background" Value="{DynamicResource SpeckleBlue}" />
+
+  <Style Selector="ListBox.no-ripple ListBoxItem/template/ ripple|RippleEffect#Ripple">
+    <Setter Property="IsEnabled" Value="False" />
   </Style>
+  <!--<Style Selector="ListBoxItem:selected /template/ ContentPresenter">
+    <Setter Property="Background" Value="{DynamicResource SpeckleBlue}" />
+  </Style>-->
 
 </Styles>

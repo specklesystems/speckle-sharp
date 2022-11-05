@@ -1,0 +1,85 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Controls.StreamSelector"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <StackPanel Orientation="Vertical">
+    <Grid Grid.Row="1" Margin="0,15,0,0">
+      <m:Card Padding="0" CornerRadius="25">
+        <!--  SEARCH STREAMS  -->
+        <TextBox
+          Name="SearchBox"
+          Margin="0"
+          Padding="0"
+          Classes="Solo Small"
+          Text="{Binding SearchQuery}"
+          Watermark="Search streams">
+          <TextBox.InnerRightContent>
+            <Button
+              Width="{Binding $self.Bounds.Height}"
+              Padding="4"
+              Classes="Flat"
+              Command="{Binding ClearSearchCommand}"
+              Content="{icons:MaterialIconExt CloseCircle,
+                                              Size=15}" />
+          </TextBox.InnerRightContent>
+          <TextBox.InnerLeftContent>
+            <icons:MaterialIcon
+              Width="15"
+              Height="15"
+              Margin="10,0,0,0"
+              Kind="Search" />
+          </TextBox.InnerLeftContent>
+        </TextBox>
+      </m:Card>
+
+      <Popup
+        Width="{Binding #SearchBox.Bounds.Width}"
+        MaxHeight="300"
+        IsLightDismissEnabled="True"
+        IsOpen="{Binding #SearchBox.IsKeyboardFocusWithin}">
+
+        <m:Card Margin="20,0" CornerRadius="0">
+          <StackPanel Orientation="Vertical">
+            <ProgressBar
+              Grid.Row="2"
+              Margin="12,5"
+              IsIndeterminate="True"
+              IsVisible="{Binding ShowProgress, FallbackValue=True}" />
+            <ListBox
+              Classes="no-ripple"
+              Items="{Binding Streams}"
+              SelectedItem="{Binding SelectedStream}"
+              SelectionMode="Single">
+              <ListBox.ItemTemplate>
+                <DataTemplate>
+                  <Grid ColumnDefinitions="auto,*">
+                    <TextBlock
+                      Grid.Column="1"
+                      Margin="5,0,0,0"
+                      VerticalAlignment="Center"
+                      Text="{Binding Stream.name}"
+                      TextTrimming="CharacterEllipsis" />
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </StackPanel>
+
+
+        </m:Card>
+      </Popup>
+
+
+    </Grid>
+
+
+  </StackPanel>
+
+</UserControl>

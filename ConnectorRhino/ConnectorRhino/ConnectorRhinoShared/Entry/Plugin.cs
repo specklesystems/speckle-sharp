@@ -63,17 +63,17 @@ namespace SpeckleRhino
 
     public static void InitAvaloniaMac()
     {
-        var rhinoMenuPtr = MacOSHelpers.MainMenu;
-        var rhinoDelegate = MacOSHelpers.AppDelegate;
-        var titlePtr = MacOSHelpers.MenuItemGetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)));
+      var rhinoMenuPtr = MacOSHelpers.MainMenu;
+      var rhinoDelegate = MacOSHelpers.AppDelegate;
+      var titlePtr = MacOSHelpers.MenuItemGetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)));
 
-        appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
+      appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
 
-        // don't use Avalonia's AppDelegate.. not sure what consequences this might have to Avalonia functionality
-        MacOSHelpers.AppDelegate = rhinoDelegate;
-        MacOSHelpers.MainMenu = rhinoMenuPtr;
-        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
-        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
+      // don't use Avalonia's AppDelegate.. not sure what consequences this might have to Avalonia functionality
+      MacOSHelpers.AppDelegate = rhinoDelegate;
+      MacOSHelpers.MainMenu = rhinoMenuPtr;
+      MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
+      MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
 
     }
 
@@ -117,7 +117,7 @@ namespace SpeckleRhino
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
         }
 #else
-        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(DuiPanel).GUID);
 #endif
 
       }
@@ -155,7 +155,7 @@ namespace SpeckleRhino
       Init();
 
 #if !MAC
-      System.Type panelType = typeof(Panel);     
+      System.Type panelType = typeof(DuiPanel);
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.

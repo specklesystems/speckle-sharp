@@ -11,7 +11,8 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementCommands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommandWin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMappingsCommandWin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
@@ -21,24 +22,33 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MacOSHelpers.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\ConnectorRhinoCommandMac.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandMac.cs" />
   </ItemGroup>
-
-  <ItemGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='Release'">
-    <Page Include="$(MSBuildThisFileDirectory)UI\Panel.xaml">
+  <ItemGroup >
+    <Page Include="$(MSBuildThisFileDirectory)UI\DuiPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Compile Include="$(MSBuildThisFileDirectory)UI\Panel.xaml.cs">
-        <DependentUpon>Panel.xaml</DependentUpon>
+    <Compile Include="$(MSBuildThisFileDirectory)UI\DuiPanel.xaml.cs">
+      <DependentUpon>DuiPanel.xaml</DependentUpon>
     </Compile>
+
+     <Page Include="$(MSBuildThisFileDirectory)UI\MappingsPanel.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Compile Include="$(MSBuildThisFileDirectory)UI\MappingsPanel.xaml.cs">
+      <DependentUpon>MappingsPanel.xaml</DependentUpon>
+    </Compile>
+
+
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
+
     <None Include="$(MSBuildThisFileDirectory)Resources\icon.ico" />
   </ItemGroup>
+
 </Project>
