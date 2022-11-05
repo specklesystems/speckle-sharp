@@ -12,7 +12,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
 { 
     public override List<ISetting> GetSettings()
     {
-    
+
 
       return new List<ISetting>
       {

@@ -23,11 +23,14 @@
   </UserControl.Styles>
   <StackPanel Margin="0,4" Spacing="10">
     <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
-    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+    <StackPanel
+      HorizontalAlignment="Center"
+      Orientation="Horizontal"
+      Spacing="10">
       <Button
+        Width="150"
         Background="{DynamicResource PrimaryHueMidBrush}"
         Classes="Outline"
-				Width="150"
         Command="{Binding SetObjectSelection}"
         Foreground="White"
         ToolTip.Tip="Sets the currently selected objects.">
@@ -60,9 +63,9 @@
     </Button>-->
 
       <Button
+        Width="150"
         BorderBrush="OrangeRed"
         Classes="Outline"
-				Width="150"
         Command="{Binding ClearObjectSelection}"
         Foreground="OrangeRed"
         ToolTip.Tip="Removes all selected objects.">
@@ -72,12 +75,12 @@
         </StackPanel>
       </Button>
     </StackPanel>
-    <TextBlock
+    <!--<TextBlock
       Margin="0,12,0,8"
       FontSize="14"
       FontWeight="Medium"
       Text="Current selection:" />
-    <TextBlock Text="{Binding Summary}" />
+    <TextBlock Text="{Binding Summary}" />-->
 
   </StackPanel>
 

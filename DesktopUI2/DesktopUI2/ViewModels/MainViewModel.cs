@@ -24,6 +24,8 @@ namespace DesktopUI2.ViewModels
 
     internal static MainViewModel Instance { get; private set; }
 
+    public static HomeViewModel Home { get; private set; }
+
     public bool DialogVisible
     {
       get => _dialogBody != null;
@@ -75,6 +77,7 @@ namespace DesktopUI2.ViewModels
       Locator.CurrentMutable.Register(() => new OneClickView(), typeof(IViewFor<OneClickViewModel>));
       Locator.CurrentMutable.Register(() => new CollaboratorsView(), typeof(IViewFor<CollaboratorsViewModel>));
       Locator.CurrentMutable.Register(() => new SettingsView(), typeof(IViewFor<SettingsPageViewModel>));
+      Locator.CurrentMutable.Register(() => new NotificationsView(), typeof(IViewFor<NotificationsViewModel>));
       Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
 
       RouterInstance = Router; // makes the router available app-wide
@@ -83,7 +86,7 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       ChangeTheme(config.DarkTheme);
 
-      var home = new HomeViewModel(this);
+      Home = new HomeViewModel(this);
 
       if (config.OneClickMode)
       {
@@ -91,7 +94,7 @@ namespace DesktopUI2.ViewModels
       }
       else
       {
-        Router.Navigate.Execute(home);
+        Router.Navigate.Execute(Home);
       }
     }
 
@@ -110,7 +113,7 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       if (!config.OneClickMode)
       {
-        RouterInstance.Navigate.Execute(new HomeViewModel(Instance));
+        RouterInstance.Navigate.Execute(Home);
       }
     }
 
