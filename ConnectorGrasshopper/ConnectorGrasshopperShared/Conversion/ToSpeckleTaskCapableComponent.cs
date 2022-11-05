@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -21,6 +22,14 @@ namespace ConnectorGrasshopper.Conversion
       ComponentCategories.SECONDARY_RIBBON,
       ComponentCategories.CONVERSION)
     {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
+        if (proxy == null) return;
+        proxy.Exposure = Exposure;
+      };
     }
 
     private CancellationTokenSource source;

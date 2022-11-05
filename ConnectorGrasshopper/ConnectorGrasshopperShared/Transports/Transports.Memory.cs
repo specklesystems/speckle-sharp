@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Grasshopper.Kernel;
 using Speckle.Core.Transports;
 using Logging = Speckle.Core.Logging;
@@ -15,7 +16,19 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
-    public MemoryTransportComponent() : base("Memory Transport", "Memory", "Creates a Memory Transport. This is useful for debugging, or just sending data around one grasshopper defintion. We don't recommend you use it!", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public MemoryTransportComponent() : base("Memory Transport", "Memory",
+      "Creates a Memory Transport. This is useful for debugging, or just sending data around one grasshopper defintion. We don't recommend you use it!",
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS)
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
+        if (proxy == null) return;
+        proxy.Exposure = Exposure;
+      };
+    }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {

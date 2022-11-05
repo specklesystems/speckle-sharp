@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -17,8 +18,19 @@ namespace ConnectorGrasshopper
 
     public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
-    public DeserializeTaskCapableComponent(): base("Deserialize", "Deserialize", "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.CONVERSION)
-    {}    
+    public DeserializeTaskCapableComponent() : base("Deserialize", "Deserialize",
+      "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON,
+      ComponentCategories.CONVERSION)
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
+        if (proxy == null) return;
+        proxy.Exposure = Exposure;
+      };
+    }    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddTextParameter("Json", "J", "Serialized base objects in JSON format.", GH_ParamAccess.item);

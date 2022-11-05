@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
@@ -19,7 +20,19 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
-    public SendReceiveTransport() : base("Send To Transports", "ST", "Sends an object to a list of given transports: the object will be stored in each of them. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions, so ensure that the object input already has converted speckle objects inside.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public SendReceiveTransport() : base("Send To Transports", "ST",
+      "Sends an object to a list of given transports: the object will be stored in each of them. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions, so ensure that the object input already has converted speckle objects inside.",
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS)
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
+        if (proxy == null) return;
+        proxy.Exposure = Exposure;
+      };
+    }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -75,7 +88,19 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
-    public ReceiveFromTransport() : base("Receive From Transports", "RT", "Receives a list of objects from a given transport. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions on the output.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public ReceiveFromTransport() : base("Receive From Transports", "RT",
+      "Receives a list of objects from a given transport. Please use this component with caution: it can freeze your defintion. It also does not perform any conversions on the output.",
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS)
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
+        if (proxy == null) return;
+        proxy.Exposure = Exposure;
+      };
+    }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {

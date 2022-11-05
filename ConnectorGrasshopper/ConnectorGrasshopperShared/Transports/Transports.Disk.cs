@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Grasshopper.Kernel;
 using Logging = Speckle.Core.Logging;
 
@@ -14,7 +15,19 @@ namespace ConnectorGrasshopper.Transports
 
     public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
 
-    public DiskTransportComponent() : base("Disk Transport", "Disk", "Creates a Disk Transport. This transport will store objects in files in a folder that you can specify (including one on a network drive!). It's useful for understanding how Speckle's decomposition api works. It's not meant to be performant - it's useful for debugging purposes - e.g., when developing a new class/object model you can understand easily the relative sizes of the resulting objects.", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    public DiskTransportComponent() : base("Disk Transport", "Disk",
+      "Creates a Disk Transport. This transport will store objects in files in a folder that you can specify (including one on a network drive!). It's useful for understanding how Speckle's decomposition api works. It's not meant to be performant - it's useful for debugging purposes - e.g., when developing a new class/object model you can understand easily the relative sizes of the resulting objects.",
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS)
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
+        if (proxy == null) return;
+        proxy.Exposure = Exposure;
+      };
+    }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
