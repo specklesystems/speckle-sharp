@@ -21,6 +21,6 @@ namespace DesktopUI2
     /// <summary>
     /// Sets the mappings on the current selection
     /// </summary>
-    public abstract void SetMappings();
+    public abstract void SetMappings(List<object> objects, string schema);
   }
 }

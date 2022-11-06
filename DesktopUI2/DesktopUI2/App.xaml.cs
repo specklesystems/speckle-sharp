@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using DesktopUI2.ViewModels;
+using DesktopUI2.ViewModels.MappingTool;
 using DesktopUI2.Views;
 using Material.Styles.Themes;
 

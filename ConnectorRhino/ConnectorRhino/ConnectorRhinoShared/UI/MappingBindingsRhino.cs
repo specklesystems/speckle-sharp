@@ -28,8 +28,10 @@ using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 
 namespace SpeckleRhino
 {
+
   public partial class MappingBindingsRhino : MappingsBindings
   {
+    static string SpeckleSchemaKey = "SpeckleMapping";
 
     public MappingBindingsRhino()
     {
@@ -63,9 +65,10 @@ namespace SpeckleRhino
       return speckleObjects;
     }
 
-    public override void SetMappings()
+    public override void SetMappings(List<object> objects, string schema)
     {
-
+      foreach (var obj in objects)
+        (obj as RhinoObject).Attributes.SetUserString(SpeckleSchemaKey, schema);
     }
   }
 }

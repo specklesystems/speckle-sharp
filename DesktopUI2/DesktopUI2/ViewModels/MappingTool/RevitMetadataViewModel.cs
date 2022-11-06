@@ -4,9 +4,9 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DesktopUI2.ViewModels
+namespace DesktopUI2.ViewModels.MappingTool
 {
-  public class RevitMappingViewModel : ReactiveObject
+  public class RevitMetadataViewModel : ReactiveObject
   {
     private string _category;
 
@@ -24,7 +24,7 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _types, value);
     }
 
-    public RevitMappingViewModel()
+    public RevitMetadataViewModel()
     {
 
     }

@@ -12,9 +12,20 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
+  xmlns:s="clr-namespace:DesktopUI2.ViewModels.MappingTool"
   d:DesignHeight="650"
   d:DesignWidth="400"
   mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="ContentControl#MainUserControl">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+      <Setter Property="TextBox.Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="TextBox.FontWeight" Value="Medium" />
+      <Setter Property="TextBox.FontSize" Value="14" />
+    </Style>
+  </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
     <!--  HEADER  -->
     <Border
@@ -69,113 +80,164 @@
 
     <TabControl Grid.Row="1">
       <TabItem Header="To Revit" ToolTip.Tip="Map to Revit BIM elements">
-        <StackPanel Orientation="Vertical">
+        <ScrollViewer>
+          <StackPanel Orientation="Vertical">
 
-          <!--  STREAM SELECTOR  -->
-          <c:StreamSelector
-            Grid.ColumnSpan="2"
-            Padding="10,0,10,10"
-            DataContext="{Binding StreamSelector}" />
+            <!--  STREAM SELECTOR  -->
+            <c:StreamSelector
+              Grid.ColumnSpan="2"
+              Padding="10,0,10,10"
+              DataContext="{Binding StreamSelector}" />
 
-          <!--  BRANCH SELECTOR  -->
-          <m:Card Margin="10,0,10,10" IsEnabled="{Binding StreamSelector.SelectedStream, Converter={x:Static ObjectConverters.IsNotNull}}">
-            <Grid ColumnDefinitions="*,*" RowDefinitions="auto,auto">
-              <StackPanel Orientation="Horizontal">
-                <icons:MaterialIcon
-                  Grid.Column="2"
-                  Margin="0"
-                  VerticalAlignment="Center"
-                  Foreground="Gray"
-                  Kind="InfoCircle"
-                  ToolTip.Tip="Select a branch coming from Revit&#x0a;whose last commit contains a set of Project Information" />
+            <!--  BRANCH SELECTOR  -->
+            <m:Card Margin="10,0,10,10" IsEnabled="{Binding StreamSelector.SelectedStream, Converter={x:Static ObjectConverters.IsNotNull}}">
+              <Grid ColumnDefinitions="*,*" RowDefinitions="auto,auto">
+                <StackPanel Orientation="Horizontal">
+                  <icons:MaterialIcon
+                    Grid.Column="2"
+                    Margin="0"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Kind="InfoCircle"
+                    ToolTip.Tip="Select a branch coming from Revit&#x0a;whose last commit contains a set of Project Information" />
+                  <TextBlock
+                    Grid.ColumnSpan="2"
+                    Margin="5"
+                    Classes="Overline"
+                    Foreground="Gray"
+                    Text="MAPPING DATA SOURCE" />
+                </StackPanel>
+
+
                 <TextBlock
-                  Grid.ColumnSpan="2"
+                  Grid.Row="1"
+                  Grid.Column="0"
                   Margin="5"
-                  Classes="Overline"
-                  Foreground="Gray"
-                  Text="MAPPING DATA SOURCE" />
-              </StackPanel>
-
-
-              <TextBlock
-                Grid.Row="1"
-                Grid.Column="0"
-                Margin="5"
-                VerticalAlignment="Center"
-                IsVisible="{Binding StreamSelector.SelectedStream}"
-                Text="{Binding StreamSelector.SelectedStream.Stream.name}"
-                TextTrimming="CharacterEllipsis" />
-
-              <ComboBox
-                Grid.Row="1"
-                Grid.Column="1"
-                HorizontalAlignment="Stretch"
-                VerticalAlignment="Center"
-                Items="{Binding StreamSelector.Branches}"
-                PlaceholderText="Select a branch"
-                SelectedItem="{Binding StreamSelector.SelectedBranch, Mode=TwoWay}">
-                <ComboBox.ItemTemplate>
-                  <DataTemplate>
-                    <TextBlock
-                      Grid.Column="1"
-                      Text="{Binding name}"
-                      TextTrimming="CharacterEllipsis" />
-                  </DataTemplate>
-                </ComboBox.ItemTemplate>
-              </ComboBox>
-
-            </Grid>
-
-          </m:Card>
-
-          <ProgressBar
-            Grid.Row="2"
-            Margin="10,0"
-            IsIndeterminate="True"
-            IsVisible="{Binding ShowProgress, FallbackValue=True}" />
-
-          <!--  PARAMETERS  -->
-          <m:Card Margin="10,0,10,10" IsEnabled="{Binding RevitMappings.Count}">
-
-            <Grid ColumnDefinitions="auto,*" RowDefinitions="auto,auto,auto,auto">
-
-              <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal">
-                <icons:MaterialIcon
-                  Grid.Column="2"
-                  Margin="0"
                   VerticalAlignment="Center"
-                  Foreground="Gray"
-                  Kind="InfoCircle"
-                  ToolTip.Tip="Set the Revit parameters to assign when creating&#x0a;BIM elements from the selected objects" />
+                  IsVisible="{Binding StreamSelector.SelectedStream}"
+                  Text="{Binding StreamSelector.SelectedStream.Stream.name}"
+                  TextTrimming="CharacterEllipsis" />
+
+                <ComboBox
+                  Grid.Row="1"
+                  Grid.Column="1"
+                  HorizontalAlignment="Stretch"
+                  VerticalAlignment="Center"
+                  Items="{Binding StreamSelector.Branches}"
+                  PlaceholderText="Select a branch"
+                  SelectedItem="{Binding StreamSelector.SelectedBranch, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock
+                        Grid.Column="1"
+                        Text="{Binding name}"
+                        TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+
+              </Grid>
+
+            </m:Card>
+
+            <ProgressBar
+              Grid.Row="2"
+              Margin="10,0"
+              IsIndeterminate="True"
+              IsVisible="{Binding ShowProgress, FallbackValue=True}" />
+
+
+
+
+            <!--  PARAMETERS  -->
+            <m:Card Margin="10,0,10,10">
+
+              <Grid ColumnDefinitions="100,*" RowDefinitions="auto,auto,auto,auto">
+
+                <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal">
+                  <icons:MaterialIcon
+                    Grid.Column="2"
+                    Margin="0"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Kind="InfoCircle"
+                    ToolTip.Tip="Set the Revit parameters to assign when creating&#x0a;BIM elements from the selected objects" />
+                  <TextBlock
+                    Grid.ColumnSpan="2"
+                    Margin="5"
+                    Classes="Overline"
+                    Foreground="Gray"
+                    Text="REVIT ELEMENT DETAILS" />
+                </StackPanel>
+
                 <TextBlock
+                  Grid.Row="1"
+                  Margin="20,20,20,0"
+                  Text="Element" />
+                <ComboBox
+                  Grid.Row="1"
+                  Grid.Column="1"
+                  Margin="20,20,20,0"
+                  Items="{Binding SchemaTypes}"
+                  SelectedItem="{Binding SelectedSchemaType, Mode=TwoWay}">
+                  <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                      <TextBlock
+                        Grid.Column="1"
+                        Text="{Binding Name}"
+                        TextTrimming="CharacterEllipsis" />
+                    </DataTemplate>
+                  </ComboBox.ItemTemplate>
+                </ComboBox>
+
+                <ItemsControl
+                  Grid.Row="2"
                   Grid.ColumnSpan="2"
-                  Margin="5"
-                  Classes="Overline"
-                  Foreground="Gray"
-                  Text="REVIT PARAMETERS" />
-              </StackPanel>
+                  Items="{Binding SelectedSchemaType.SchemaProps}">
+                  <ItemsControl.DataTemplates>
+                    <DataTemplate DataType="{x:Type s:SchemaPropList}">
+                      <Grid ColumnDefinitions="100,*">
+                        <TextBlock
+                          Grid.Column="0"
+                          Margin="20,20,20,0"
+                          Text="{Binding Name}"
+                          ToolTip.Tip="{Binding Description}" />
+                        <ComboBox
+                          Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          Items="{Binding Options}"
+                          SelectedItem="{Binding SelectedOption, Mode=TwoWay}" />
+                      </Grid>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type s:SchemaPropBool}">
+                      <Grid ColumnDefinitions="100,*">
+                        <TextBlock
+                          Grid.Column="0"
+                          Margin="20,20,20,0"
+                          Text="{Binding Name}"
+                          ToolTip.Tip="{Binding Description}" />
+                        <CheckBox Grid.Column="1" IsChecked="{Binding IsChecked, Mode=TwoWay}" />
 
-              <TextBlock
-                Grid.Row="1"
-                Margin="20,20,20,0"
-                Text="Category" />
-              <ComboBox
-                Grid.Row="1"
-                Grid.Column="1"
-                Margin="20,20,20,0"
-                Items="{Binding RevitMappings}"
-                SelectedItem="{Binding SelectedRevitMapping, Mode=TwoWay}">
-                <ComboBox.ItemTemplate>
-                  <DataTemplate>
-                    <TextBlock
-                      Grid.Column="1"
-                      Text="{Binding Category}"
-                      TextTrimming="CharacterEllipsis" />
-                  </DataTemplate>
-                </ComboBox.ItemTemplate>
-              </ComboBox>
+                      </Grid>
+                    </DataTemplate>
+                    <DataTemplate DataType="{x:Type s:SchemaPropText}">
+                      <Grid ColumnDefinitions="100,*">
+                        <TextBlock
+                          Grid.Column="0"
+                          Margin="20,20,20,0"
+                          Text="{Binding Name}"
+                          ToolTip.Tip="{Binding Description}" />
+                        <TextBox
+                          Grid.Column="1"
+                          HorizontalAlignment="Stretch"
+                          Text="{Binding Value, Mode=TwoWay}" />
+                      </Grid>
+                    </DataTemplate>
+                  </ItemsControl.DataTemplates>
+                </ItemsControl>
 
-              <TextBlock
+
+                <!--<TextBlock
                 Grid.Row="2"
                 Margin="20,20,20,0"
                 Text="Type" />
@@ -206,15 +268,60 @@
                   </DataTemplate>
                 </ComboBox.ItemTemplate>
 
-              </ComboBox>
+              </ComboBox>-->
 
 
-            </Grid>
+              </Grid>
 
-          </m:Card>
+            </m:Card>
 
-        </StackPanel>
+            <m:Card Margin="10,0,10,10" IsEnabled="{Binding RevitMappings.Count}">
 
+              <Grid RowDefinitions="auto,auto">
+
+                <StackPanel Grid.ColumnSpan="2" Orientation="Horizontal">
+                  <icons:MaterialIcon
+                    Grid.Column="2"
+                    Margin="0"
+                    VerticalAlignment="Center"
+                    Foreground="Gray"
+                    Kind="InfoCircle"
+                    ToolTip.Tip="Set the Revit parameters to assign when creating&#x0a;BIM elements from the selected objects" />
+                  <TextBlock
+                    Grid.ColumnSpan="2"
+                    Margin="5"
+                    Classes="Overline"
+                    Foreground="Gray"
+                    Text="SELCTION" />
+                </StackPanel>
+
+                <StackPanel
+                  Grid.Row="1"
+                  Grid.ColumnSpan="2"
+                  Margin="20,10"
+                  Orientation="Horizontal">
+                  <TextBlock VerticalAlignment="Center" Text="{Binding Selection.Count, FallbackValue=13}" />
+                  <TextBlock VerticalAlignment="Center" Text=" elements selected" />
+                  <Button
+                    Margin="5,0"
+                    Classes="Flat"
+                    Command="{Binding RefreshSelectionCommand}"
+                    Content="Refresh" />
+                </StackPanel>
+
+
+              </Grid>
+
+            </m:Card>
+
+            <Button
+              Margin="10"
+              HorizontalAlignment="Right"
+              Command="{Binding SetMappingsCommand}"
+              Content="Set Mappings" />
+
+          </StackPanel>
+        </ScrollViewer>
 
       </TabItem>
 

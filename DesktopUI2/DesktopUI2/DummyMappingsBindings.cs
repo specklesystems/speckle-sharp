@@ -8,7 +8,7 @@ namespace DesktopUI2
 {
   public class DummyMappingsBindings : MappingsBindings
   {
-    public override void SetMappings()
+    public override void SetMappings(List<object> objects, string schema)
     {
       throw new NotImplementedException();
     }
