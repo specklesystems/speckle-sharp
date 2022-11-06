@@ -31,7 +31,7 @@ namespace SpeckleRhino
       try
       {
 
-        Rhino.UI.Panels.OpenPanel(typeof(DuiPanel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(MappingsPanel).GUID);
         return Result.Success;
       }
       catch (Exception e)

@@ -19,12 +19,13 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)UI\MappingBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MacOSHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandMac.cs" />
   </ItemGroup>
-  <ItemGroup >
+  <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)UI\DuiPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -32,23 +33,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\DuiPanel.xaml.cs">
       <DependentUpon>DuiPanel.xaml</DependentUpon>
     </Compile>
-
-     <Page Include="$(MSBuildThisFileDirectory)UI\MappingsPanel.xaml">
+    <Page Include="$(MSBuildThisFileDirectory)UI\MappingsPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
     <Compile Include="$(MSBuildThisFileDirectory)UI\MappingsPanel.xaml.cs">
       <DependentUpon>MappingsPanel.xaml</DependentUpon>
     </Compile>
-
-
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-
     <None Include="$(MSBuildThisFileDirectory)Resources\icon.ico" />
   </ItemGroup>
-
 </Project>

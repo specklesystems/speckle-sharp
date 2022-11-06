@@ -75,6 +75,18 @@ namespace DesktopUI2.ViewModels
 
     public MappingsViewModel()
     {
+      Init();
+    }
+
+    public MappingsViewModel(MappingsBindings bindings)
+    {
+      Bindings = bindings;
+      Init();
+    }
+
+
+    public void Init()
+    {
       Instance = this;
       Router = new RoutingState();
 

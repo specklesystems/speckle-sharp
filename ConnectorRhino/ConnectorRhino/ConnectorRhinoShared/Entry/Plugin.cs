@@ -25,6 +25,7 @@ namespace SpeckleRhino
     private static string SpeckleKey = "speckle2";
 
     public ConnectorBindingsRhino Bindings { get; private set; }
+    public MappingBindingsRhino MappingBindings { get; private set; }
 
 
     public static AppBuilder appBuilder;
@@ -49,6 +50,7 @@ namespace SpeckleRhino
 
 
         Bindings = new ConnectorBindingsRhino();
+        MappingBindings = new MappingBindingsRhino();
 
         RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
         RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
@@ -118,6 +120,7 @@ namespace SpeckleRhino
         }
 #else
         Rhino.UI.Panels.OpenPanel(typeof(DuiPanel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(MappingsPanel).GUID);
 #endif
 
       }
@@ -157,6 +160,9 @@ namespace SpeckleRhino
 #if !MAC
       System.Type panelType = typeof(DuiPanel);
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
+
+      System.Type mappingsPanelType = typeof(MappingsPanel);
+      Rhino.UI.Panels.RegisterPanel(this, mappingsPanelType, "Speckle Mapping Tool", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.
       var plugin_version = Settings.GetString("PlugInVersion", null);
