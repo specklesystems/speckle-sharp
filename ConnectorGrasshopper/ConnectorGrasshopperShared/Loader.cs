@@ -33,8 +33,7 @@ namespace ConnectorGrasshopper
     public ISpeckleKit selectedKit;
     private ToolStripMenuItem speckleMenu;
     private IEnumerable<ToolStripItem> kitMenuItems;
-
-
+    
     public override GH_LoadingInstruction PriorityLoad()
     {
       var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
@@ -181,8 +180,8 @@ namespace ConnectorGrasshopper
       CreateSchemaConversionMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateMeshingSettingsMenu();
-      speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
-      CreateHeadlessTemplateMenu();
+      // speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
+      // CreateHeadlessTemplateMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
       CreateTabsMenu();
       speckleMenu.DropDown.Items.Add(new ToolStripSeparator());
@@ -412,12 +411,18 @@ namespace ConnectorGrasshopper
 
     public static void SetupHeadlessDoc()
     {
+
 #if RHINO7
-      var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Template",
-        SpeckleGHSettings.HeadlessTemplateFilename);
-      _headlessDoc = File.Exists(templatePath)
-        ? RhinoDoc.OpenHeadless(templatePath)
-        : RhinoDoc.CreateHeadless(null);
+        // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
+        //   SpeckleGHSettings.HeadlessTemplateFilename);
+        // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
+        // _headlessDoc = File.Exists(templatePath)
+        //   ? RhinoDoc.CreateHeadless(templatePath)
+        //   : RhinoDoc.CreateHeadless(null);
+        
+        _headlessDoc = RhinoDoc.CreateHeadless(null);
+        Console.WriteLine(
+          $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
 #endif
     }
 
@@ -428,12 +433,16 @@ namespace ConnectorGrasshopper
     /// <returns></returns>
     public static RhinoDoc GetCurrentDocument()
     {
-      // Get the active doc, can be null if running headless
-      var doc = RhinoDoc.ActiveDoc;
 #if RHINO7
-      return doc ?? _headlessDoc;
+        if(Instances.RunningHeadless)
+        {
+          Console.WriteLine(
+            $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
+          Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
+        }
+        return Grasshopper.Instances.RunningHeadless ? _headlessDoc : RhinoDoc.ActiveDoc;
 #else
-      return doc;
+        return RhinoDoc.ActiveDoc;
 #endif
     }
   }
