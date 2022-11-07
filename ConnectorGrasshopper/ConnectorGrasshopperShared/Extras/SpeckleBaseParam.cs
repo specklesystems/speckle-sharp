@@ -8,14 +8,14 @@ namespace ConnectorGrasshopper.Extras
     {
         public override Guid ComponentGuid => new Guid("55F13720-45C1-4B43-892A-25AE4D95EFF2");
         protected override Bitmap Icon => Properties.Resources.BaseParam;
-        public override GH_Exposure Exposure => GH_Exposure.hidden;
+        public override GH_Exposure Exposure => GH_Exposure.tertiary;
 
         public bool UseSchemaTag;
         public bool IsSchemaBuilderOutput;
 
         public SpeckleBaseParam(string name, string nickname, string description, GH_ParamAccess access,
           bool isSchemaBuilderOutput = false) :
-          this(name, nickname, description, ComponentCategories.PRIMARY_RIBBON, "Params", access)
+          this(name, nickname, description, "Params", "Primitive", access)
         {
           IsSchemaBuilderOutput = isSchemaBuilderOutput;
         }
