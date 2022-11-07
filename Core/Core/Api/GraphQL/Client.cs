@@ -95,6 +95,7 @@ namespace Speckle.Core.Api
       CommitCreatedSubscription?.Dispose();
       CommitUpdatedSubscription?.Dispose();
       CommitDeletedSubscription?.Dispose();
+      CommentActivitySubscription?.Dispose();
       GQLClient?.Dispose();
     }
   }

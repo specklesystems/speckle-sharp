@@ -41,7 +41,7 @@ Now, we'll move our `Speckle Connector` build files. Open your build files at `.
 
 ![image](https://user-images.githubusercontent.com/7717434/149930098-4fc73382-955e-42e9-bba9-a048630f49ec.png)
 
-Next, we'll add out `ConnectorArchicad` build files. Open up your build files at `./speckle-sharp/ConnectorArchicad/bin/Debug/net5.0`. Copy the entire contents of this folder to the second `ConnectorArchicad` folder you just created at `C:\Program Files\GRAPHISOFT\ARCHICAD 25\Add-Ons\ConnectorArchicad\ConnectorArchicad`
+Next, we'll add out `ConnectorArchicad` build files. Open up your build files at `./speckle-sharp/ConnectorArchicad/bin/Debug/net6.0`. Copy the entire contents of this folder to the second `ConnectorArchicad` folder you just created at `C:\Program Files\GRAPHISOFT\ARCHICAD 25\Add-Ons\ConnectorArchicad\ConnectorArchicad`
 
 ![image](https://user-images.githubusercontent.com/7717434/149930127-c7ec8de0-89be-4dfc-9943-940b55913a0d.png)
 

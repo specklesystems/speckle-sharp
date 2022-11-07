@@ -164,6 +164,8 @@ namespace Speckle.Core.Api
     public static async Task<bool> IsConnectorUpdateAvailable(string slug)
     {
 #if DEBUG
+      if (slug == "dui2")
+        slug = "revit";
       //when debugging the version is not correct, so don't bother
       return false;
 #endif

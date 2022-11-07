@@ -30,9 +30,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="App.xaml" />
+    <None Remove="Styles\NotificationCard.xaml" />
+    <None Remove="Styles\NotificationManager.xaml" />
+    <None Remove="Views\Controls\CollaboratorsControl.xaml" />
     <None Remove="Views\Controls\PreviewButton.xaml" />
-    <None Remove="Views\Controls\ReceiveButton.xaml" />
-    <None Remove="Views\Controls\SendButton.xaml" />
     <None Remove="Styles\Button.xaml" />
     <None Remove="Styles\ChipListBox.xaml" />
     <None Remove="Styles\ComboBox.xaml" />
@@ -51,19 +52,15 @@
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
     <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
-    <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
-    <None Remove="Views\Pages\ShareControls\ChangeRoleDialog.xaml" />
-    <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
-    <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
-    <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
-    <None Remove="Views\Pages\StreamEditControls\Report.xaml" />
+    <None Remove="Views\Pages\NotificationsView.xaml" />
+    <None Remove="Views\Pages\OneClickView.xaml" />
+    <None Remove="Views\Controls\StreamEditControls\Activity.xaml" />
+    <None Remove="Views\Controls\StreamEditControls\Comments.xaml" />
+    <None Remove="Views\Controls\StreamEditControls\Report.xaml" />
     <None Remove="Views\Pages\SettingsView.xaml" />
-    <None Remove="Views\Pages\ShareControls\AddCollaborators.xaml" />
-    <None Remove="Views\Pages\ShareControls\CollaboratorsView.xaml" />
-    <None Remove="Views\Pages\ShareControls\Sending.xaml" />
-    <None Remove="Views\Pages\StreamEditControls\Receive.xaml" />
-    <None Remove="Views\Pages\StreamEditControls\Send.xaml" />
+    <None Remove="Views\Controls\StreamEditControls\Receive.xaml" />
+    <None Remove="Views\Controls\StreamEditControls\Send.xaml" />
     <None Remove="Views\Pages\StreamEditView.xaml" />
     <None Remove="Views\Scheduler.xaml" />
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
@@ -120,13 +117,16 @@
     <AvaloniaXaml Include="App.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Styles\NotificationCard.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Styles\NotificationManager.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Controls\CollaboratorsControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Controls\PreviewButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\ReceiveButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\SendButton.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Styles\MenuItem.xaml" />
@@ -145,31 +145,31 @@
     <AvaloniaXaml Include="Views\MainUserControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\ShareControls\ChangeRoleDialog.xaml">
+    <AvaloniaXaml Include="Views\Pages\NotificationsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\SharedControls\StreamDetails.xaml">
+    <AvaloniaXaml Include="Views\Pages\OneClickView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Activity.xaml">
+    <AvaloniaXaml Include="Views\Windows\Dialogs\ChangeRoleDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Comments.xaml">
+    <AvaloniaXaml Include="Views\Controls\StreamDetails.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Activity.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Comments.xaml">
         <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\SettingsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\ShareControls\AddCollaborators.xaml">
+    <AvaloniaXaml Include="Views\Pages\CollaboratorsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\ShareControls\CollaboratorsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\ShareControls\Sending.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Report.xaml">
+    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Report.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
@@ -181,16 +181,16 @@
     <AvaloniaXaml Include="Views\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\HomeControls\SavedStreams.xaml">
+    <AvaloniaXaml Include="Views\Controls\SavedStreams.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\HomeView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Receive.xaml">
+    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Receive.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\StreamEditControls\Send.xaml">
+    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Send.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
@@ -202,9 +202,6 @@
 	  <AvaloniaXaml Include="Views\Settings\MultiSelectBoxSettingView.xaml">
 		  <Generator>MSBuild:Compile</Generator>
 	  </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Share.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\AddAccountDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -257,14 +254,11 @@
     <Compile Update="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Controls\CollaboratorsControl.xaml.cs">
+      <DependentUpon>CollaboratorsControl.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Controls\PreviewButton.xaml.cs">
       <DependentUpon>PreviewButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\ReceiveButton.xaml.cs">
-      <DependentUpon>ReceiveButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\SendButton.xaml.cs">
-      <DependentUpon>SendButton.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Filters\AllFilterView.xaml.cs">
       <DependentUpon>AllFilterView.xaml</DependentUpon>
@@ -278,16 +272,22 @@
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\ShareControls\ChangeRoleDialog.xaml.cs">
+    <Compile Update="Views\Pages\NotificationsView.xaml.cs">
+      <DependentUpon>NotificationsView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\OneClickView.xaml.cs">
+      <DependentUpon>OneClickView.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\ChangeRoleDialog.xaml.cs">
       <DependentUpon>ChangeRoleDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\SharedControls\StreamDetails.xaml.cs">
+    <Compile Update="Views\Controls\StreamDetails.xaml.cs">
       <DependentUpon>StreamDetails.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\StreamEditControls\Activity.xaml.cs">
+    <Compile Update="Views\Controls\StreamEditControls\Activity.xaml.cs">
       <DependentUpon>Activity.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\StreamEditControls\Comments.xaml.cs">
+    <Compile Update="Views\Controls\StreamEditControls\Comments.xaml.cs">
       <DependentUpon>Comments.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\StreamEditView.xaml.cs">
@@ -299,16 +299,16 @@
     <Compile Update="Views\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\HomeControls\SavedStreams.xaml.cs">
+    <Compile Update="Views\Controls\SavedStreams.xaml.cs">
       <DependentUpon>SavedStreams.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\HomeView.xaml.cs">
       <DependentUpon>HomeView.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\StreamEditControls\Receive.xaml.cs">
+    <Compile Update="Views\Controls\StreamEditControls\Receive.xaml.cs">
       <DependentUpon>Receive.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Pages\StreamEditControls\Send.xaml.cs">
+    <Compile Update="Views\Controls\StreamEditControls\Send.xaml.cs">
       <DependentUpon>Send.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
