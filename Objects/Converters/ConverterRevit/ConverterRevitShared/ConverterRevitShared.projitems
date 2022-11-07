@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.DxfImport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.SettingsHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectContext3DServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />
