@@ -1,17 +1,23 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
+using Grasshopper.Kernel.Data;
+using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Sentry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class SelectKitAsyncComponentBase : GH_SpeckleAsyncComponent
+  public class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapableComponent<T>
   {
     public ISpeckleConverter Converter;
 
@@ -21,42 +27,41 @@ namespace ConnectorGrasshopper.Objects
 
     public string SelectedKitName;
 
-    public SelectKitAsyncComponentBase(string name, string nickname, string description, string category,
+    public SelectKitTaskCapableComponentBase(string name, string nickname, string description, string category,
       string subCategory) : base(name, nickname, description, category, subCategory)
     {
+      Converter = null;
+      Kit = null;
     }
 
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);
       if (SelectedKitName == null)
+      {
         SelectedKitName = SpeckleGHSettings.SelectedKitName;
-
+      }
       SetConverter();
     }
 
-    public virtual void SetConverter()
+    public virtual bool SetConverter()
     {
       if (SelectedKitName == "None")
       {
         Kit = null;
         Converter = null;
         Message = "No Conversion";
-        return;
+        return true;
       }
       try
       {
         SetConverterFromKit(SelectedKitName);
+        return true;
       }
       catch
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No default kit found on this machine.\n" +
-                                                        "This can be caused by \n" +
-                                                        "- A corrupted install\n" +
-                                                        "- Another Grasshopper plugin using an older version of Speckle\n" +
-                                                        "- Having an older version of the Rhino connector installed\n\n" +
-                                                        "Try reinstalling both Rhino and Grasshopper connectors.\n\n" +
-                                                        "If the problem persists, please reach out to our Community Forum (https://speckle.community)");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No kit found on this machine.");
+        return false;
       }
     }
 
@@ -74,6 +79,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
+      //base.AppendAdditionalMenuItems(menu);
       try
       {
         var kits = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName());
@@ -114,7 +120,7 @@ namespace ConnectorGrasshopper.Objects
       Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
       SpeckleGHSettings.OnMeshSettingsChanged +=
         (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-      Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      Converter.SetContextDocument(Loader.GetCurrentDocument());
       Message = $"Using the {Kit.Name} Converter";
     }
 
@@ -132,13 +138,26 @@ namespace ConnectorGrasshopper.Objects
         level: SentryLevel.Warning);
     }
 
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      throw new NotImplementedException();
+    }
+
     protected override void BeforeSolveInstance()
     {
-      Converter?.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+      try
+      {
+
+        Converter?.SetContextDocument(Loader.GetCurrentDocument());
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,$"Failed to set document context:\n\t{e.ToFormattedString()}");
+      }
       base.BeforeSolveInstance();
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void ComputeData()
     {
       //Ensure converter document is up to date
       if (Converter == null)
@@ -146,8 +165,7 @@ namespace ConnectorGrasshopper.Objects
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
 
       }
-
-      base.SolveInstance(DA);
+      base.ComputeData();
     }
   }
 }

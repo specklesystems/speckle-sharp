@@ -87,7 +87,7 @@ namespace ConnectorGrasshopper.Ops
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        Converter.SetContextDocument(Rhino.RhinoDoc.ActiveDoc);
+        Converter.SetContextDocument(Loader.GetCurrentDocument());
         foundKit = true;
       }
       catch

@@ -7,7 +7,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
-using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
@@ -22,39 +21,36 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
+using Logging = Speckle.Core.Logging;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
 {
-  public class VariableInputReceiveComponent : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
+  public class ReceiveComponent : SelectKitAsyncComponentBase
   {
-    public VariableInputReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
+    public ReceiveComponent() : base("Receive", "Receive", "Receive data from a Speckle server", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.SEND_RECEIVE)
     {
-      ExpandOutput = true;
-      BaseWorker = new VariableInputReceiveComponentWorker(this);
-      Attributes = new VariableInputReceiveComponentAttributes(this);
+      BaseWorker = new ReceiveComponentWorker(this);
+      Attributes = new ReceiveComponentAttributes(this);
     }
 
-    public Dictionary<string, GH_Structure<IGH_Goo>> PrevReceivedData;
+    public GH_Structure<IGH_Goo> PrevReceivedData;
     public Client ApiClient { get; set; }
 
     public bool AutoReceive { get; set; }
 
     public bool ReceiveOnOpen { get; set; }
 
-    public bool ExpandOutput { get; set; }
-
-    public override Guid ComponentGuid => new Guid("06A3E53B-2BFF-4EBD-BBCE-71B9CE36283E");
+    public override Guid ComponentGuid => new Guid("{3D07C1AC-2D05-42DF-A297-F861CCEEFBC7}");
+    public override bool Obsolete => true;
 
     public string CurrentComponentState { get; set; } = "needs_input";
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     protected override Bitmap Icon => Resources.Receiver;
 
@@ -72,8 +68,6 @@ namespace ConnectorGrasshopper.Ops
 
     public StreamWrapper StreamWrapper { get; set; }
 
-    public Task ApiResetTask;
-
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
       switch (context)
@@ -86,9 +80,8 @@ namespace ConnectorGrasshopper.Ops
               Task.Run(async () =>
               {
                 // Ensure fresh instance of client.
-                ApiResetTask = ResetApiClient(StreamWrapper);
-                await ApiResetTask;
-                
+                await ResetApiClient(StreamWrapper);
+
                 // Get last commit from the branch
                 var b = ApiClient.BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
@@ -115,6 +108,7 @@ namespace ConnectorGrasshopper.Ops
 
       base.DocumentContextChanged(document, context);
     }
+
 
     private void HandleNewCommit()
     {
@@ -145,7 +139,6 @@ namespace ConnectorGrasshopper.Ops
       writer.SetString("LastCommitDate", LastCommitDate);
       writer.SetString("ReceivedCommitId", ReceivedCommitId);
       writer.SetBoolean("ReceiveOnOpen", ReceiveOnOpen);
-      writer.SetBoolean("ExpandOutput", ExpandOutput);
       return base.Write(writer);
     }
 
@@ -159,9 +152,7 @@ namespace ConnectorGrasshopper.Ops
       LastInfoMessage = reader.GetString("LastInfoMessage");
       LastCommitDate = reader.GetString("LastCommitDate");
       ReceivedCommitId = reader.GetString("ReceivedCommitId");
-      var expand = true;
-      reader.TryGetBoolean("ExpandOutput", ref expand);
-      ExpandOutput = expand;
+
       var swString = reader.GetString("StreamWrapper");
       if (!string.IsNullOrEmpty(swString))
       {
@@ -180,28 +171,13 @@ namespace ConnectorGrasshopper.Ops
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
+      pManager.AddGenericParameter("Data", "D", "Data received.", GH_ParamAccess.tree);
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
-      pManager.AddParameter(new SendReceiveDataParam
-      {
-        Name = "Data",
-        NickName = "D",
-        Description = "The received data.",
-        Detachable = false
-      });
     }
 
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
-
-      Menu_AppendSeparator(menu);
-
-      var noExpandMi = Menu_AppendItem(menu, "Expand commit object properties", (s, e) =>
-      {
-        ExpandOutput = !ExpandOutput;
-        RhinoApp.InvokeOnUiThread((Action)delegate { ExpireSolution(true); });
-      }, null, true, ExpandOutput);
-      noExpandMi.ToolTipText = "Prevents expanding the commit object and outputs everything into the @data output.";
 
       Menu_AppendSeparator(menu);
 
@@ -275,6 +251,11 @@ namespace ConnectorGrasshopper.Ops
         return;
       }
 
+      // Force update output parameters
+      // TODO: This is a hack due to the fact that GH_AsyncComponent overrides ExpireDownstreamObjects()
+      // and will only propagate the call upwards to GH_Component if the private 'setData' prop  is == 1.
+      // We should provide access to the non-overriden method, or a way to call Done() from inherited classes.
+
       // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
       if (JustPastedIn)
       {
@@ -288,15 +269,7 @@ namespace ConnectorGrasshopper.Ops
         Message = "Expired";
         if (PrevReceivedData != null)
         {
-          foreach (var key in PrevReceivedData.Keys)
-          {
-            var index = Params.Output.FindIndex(p => p.Name == key || p.NickName == key || p.Name == key.Substring(1) || p.NickName == key.Substring(1));
-            var outTree = PrevReceivedData[key];
-            DA.SetDataTree(index, outTree);
-          }
-          var infoIndex = Params.Output.FindIndex(p => p.Name == "Info" || p.NickName == "Info");
-          DA.SetData(infoIndex, LastInfoMessage);
-
+          DA.SetDataTree(0, PrevReceivedData);
           AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Output is based on a prior receive operation. If you are seeing this message, you most likely recomputed the Grasshopper solution (F5). To ensure you have the latest data, press the Receive button again.");
         }
         OnDisplayExpired(true);
@@ -318,7 +291,7 @@ namespace ConnectorGrasshopper.Ops
         //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
         total += kvp.Value;
       }
-      OverallProgress = total / ProgressReports.Keys.Count;
+      OverallProgress = total / ProgressReports.Keys.Count();
 
       RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
     }
@@ -326,6 +299,7 @@ namespace ConnectorGrasshopper.Ops
     public override void RemovedFromDocument(GH_Document document)
     {
       RequestCancellation();
+      //CleanApiClient();
       ApiClient?.Dispose();
       base.RemovedFromDocument(document);
     }
@@ -400,11 +374,6 @@ namespace ConnectorGrasshopper.Ops
         AutoReceive = false;
         StreamWrapper = wrapper;
         LastInfoMessage = null;
-        Task.Run(async () =>
-        {
-          ApiResetTask = ResetApiClient(StreamWrapper);
-          await ApiResetTask;
-        });
         return;
       }
 
@@ -425,46 +394,17 @@ namespace ConnectorGrasshopper.Ops
       //ResetApiClient(wrapper);
       Task.Run(async () =>
       {
-        ApiResetTask = ResetApiClient(StreamWrapper);
-        await ApiResetTask;
+        await ResetApiClient(wrapper);
       });
     }
 
     private async Task ResetApiClient(StreamWrapper wrapper)
     {
-      try
-      {
-        var hasInternet = await Helpers.UserHasInternet();
-        if (!hasInternet)
-        {
-          throw new Exception("You are not connected to the internet.");
-        }
-        
-        Account account = null;
-        try
-        {
-          account = wrapper?.GetAccount().Result;
-        }
-        catch (Exception e)
-        {
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
-          account = new Account
-          {
-            id = wrapper?.StreamId,
-            serverInfo = new ServerInfo() { url = wrapper?.ServerUrl },
-            token = "",
-            refreshToken = ""
-          };
-        }
-        ApiClient?.Dispose();
-        ApiClient = new Client(account);
-        ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
-        ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
-      }
-      catch (Exception e)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
-      }
+      ApiClient?.Dispose();
+      var acc = await wrapper.GetAccount();
+      ApiClient = new Client(acc);
+      ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
+      ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
     }
 
     private void ApiClient_OnCommitCreated(object sender, CommitInfo e)
@@ -477,48 +417,16 @@ namespace ConnectorGrasshopper.Ops
 
       HandleNewCommit();
     }
-
-    public bool CanInsertParameter(GH_ParameterSide side, int index)
-    {
-      return false;
-    }
-
-    public bool CanRemoveParameter(GH_ParameterSide side, int index)
-    {
-      return false;
-    }
-
-    public IGH_Param CreateParameter(GH_ParameterSide side, int index)
-    {
-      var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Output);
-      return new SendReceiveDataParam
-      {
-        Name = uniqueName,
-        NickName = uniqueName,
-        MutableNickName = true,
-        Optional = false
-      };
-    }
-
-    public bool DestroyParameter(GH_ParameterSide side, int index)
-    {
-      return true;
-    }
-
-    public void VariableParameterMaintenance()
-    {
-
-    }
   }
 
-  public class VariableInputReceiveComponentWorker : WorkerInstance
+  public class ReceiveComponentWorker : WorkerInstance
   {
     private GH_Structure<IGH_Goo> DataInput;
     private Action<string, Exception> ErrorAction;
 
     private Action<ConcurrentDictionary<string, int>> InternalProgressAction;
 
-    public VariableInputReceiveComponentWorker(GH_Component p) : base(p)
+    public ReceiveComponentWorker(GH_Component p) : base(p)
     {
     }
 
@@ -535,19 +443,21 @@ namespace ConnectorGrasshopper.Ops
 
     public override WorkerInstance Duplicate()
     {
-      return new VariableInputReceiveComponentWorker(Parent);
+      return new ReceiveComponentWorker(Parent);
     }
 
     public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
     {
-      InputWrapper = ((VariableInputReceiveComponent)Parent).StreamWrapper;
+      InputWrapper = ((ReceiveComponent)Parent).StreamWrapper;
     }
 
     public override void DoWork(Action<string, double> ReportProgress, Action Done)
     {
-      var receiveComponent = ((VariableInputReceiveComponent)Parent);
+      var receiveComponent = ((ReceiveComponent)Parent);
       try
       {
+
+
         InternalProgressAction = dict =>
         {
           //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
@@ -576,9 +486,20 @@ namespace ConnectorGrasshopper.Ops
           });
         };
 
-        receiveComponent.ApiResetTask.Wait();
-        
-        var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
+        Client client;
+        try
+        {
+          client = new Client(InputWrapper?.GetAccount().Result);
+        }
+        catch (Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
+          Done();
+          return;
+        }
+        receiveComponent.Tracker.TrackNodeSend(client.Account, receiveComponent.AutoReceive);
+
+        var remoteTransport = new ServerTransport(InputWrapper?.GetAccount().Result, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
         // Means it's a copy paste of an empty non-init component; set the record and exit fast unless ReceiveOnOpen is true.
@@ -594,14 +515,7 @@ namespace ConnectorGrasshopper.Ops
 
         var t = Task.Run(async () =>
         {
-          var hasInternet = await Helpers.UserHasInternet();
-          if (!hasInternet)
-          {
-            throw new Exception("You are not connected to the internet.");
-          }
-          
-          receiveComponent.PrevReceivedData = null;
-          var myCommit = await GetCommit(InputWrapper, receiveComponent.ApiClient, (level, message) =>
+          var myCommit = await GetCommit(InputWrapper, client, (level, message) =>
           {
             RuntimeMessages.Add((level, message));
 
@@ -609,16 +523,10 @@ namespace ConnectorGrasshopper.Ops
 
           if (myCommit == null)
           {
-            Done();
-            return;
+            throw new Exception("Failed to find a valid commit or object to get.");
           }
 
           ReceivedCommit = myCommit;
-          Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>()
-          { { "auto", receiveComponent.AutoReceive },
-            { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
-            { "sourceHostAppVersion", myCommit.sourceApplication }
-          });
 
           if (CancellationToken.IsCancellationRequested)
           {
@@ -639,7 +547,7 @@ namespace ConnectorGrasshopper.Ops
 
           try
           {
-            await receiveComponent.ApiClient.CommitReceived(new CommitReceivedInput
+            await client.CommitReceived(new CommitReceivedInput
             {
               streamId = InputWrapper.StreamId,
               commitId = myCommit.id,
@@ -656,8 +564,7 @@ namespace ConnectorGrasshopper.Ops
           {
             return;
           }
-          if (ReceivedObject != null)
-            AutoCreateOutputs(ReceivedObject);
+
           Done();
         });
         t.Wait();
@@ -665,7 +572,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Logging.Log.CaptureException(e);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         Done();
       }
@@ -680,8 +587,6 @@ namespace ConnectorGrasshopper.Ops
           try
           {
             myCommit = await client.CommitGet(CancellationToken, InputWrapper.StreamId, InputWrapper.CommitId);
-            if (myCommit == null)
-              OnFail(GH_RuntimeMessageLevel.Warning, $"Commit with id {InputWrapper.CommitId} was not found in stream {InputWrapper.StreamId}.");
             return myCommit;
           }
           catch (Exception e)
@@ -694,7 +599,7 @@ namespace ConnectorGrasshopper.Ops
           return myCommit;
         case StreamWrapperType.Stream:
         case StreamWrapperType.Undefined:
-          var mb = await client.BranchGet(CancellationToken, InputWrapper.StreamId, "main", 1);
+          var mb = await client.BranchGet(InputWrapper.StreamId, "main", 1);
           if (mb.commits.totalCount == 0)
           {
             // TODO: Warn that we're not pulling from the main branch
@@ -705,10 +610,10 @@ namespace ConnectorGrasshopper.Ops
             return mb.commits.items[0];
           }
 
-          var cms = await client.StreamGetCommits(CancellationToken, InputWrapper.StreamId, 1);
+          var cms = await client.StreamGetCommits(InputWrapper.StreamId, 1);
           if (cms.Count == 0)
           {
-            OnFail(GH_RuntimeMessageLevel.Warning, $"This stream has no commits.");
+            OnFail(GH_RuntimeMessageLevel.Error, $"This stream has no commits.");
             return null;
           }
           else
@@ -716,16 +621,10 @@ namespace ConnectorGrasshopper.Ops
             return cms[0];
           }
         case StreamWrapperType.Branch:
-          var br = await client.BranchGet(CancellationToken, InputWrapper.StreamId, InputWrapper.BranchName, 1);
-          if (br == null)
-          {
-            OnFail(GH_RuntimeMessageLevel.Warning,
-              $"The branch with name '{InputWrapper.BranchName}' doesn't exist in stream {InputWrapper.StreamId} on server {InputWrapper.ServerUrl}");
-            return null;
-          }
+          var br = await client.BranchGet(InputWrapper.StreamId, InputWrapper.BranchName, 1);
           if (br.commits.totalCount == 0)
           {
-            OnFail(GH_RuntimeMessageLevel.Warning, $"This branch has no commits.");
+            OnFail(GH_RuntimeMessageLevel.Error, $"This branch has no commits.");
             return null;
           }
           return br.commits.items[0];
@@ -746,7 +645,7 @@ namespace ConnectorGrasshopper.Ops
         Parent.AddRuntimeMessage(level, message);
       }
 
-      var parent = ((VariableInputReceiveComponent)Parent);
+      var parent = ((ReceiveComponent)Parent);
 
       parent.CurrentComponentState = "up_to_date";
 
@@ -760,167 +659,30 @@ namespace ConnectorGrasshopper.Ops
 
       parent.JustPastedIn = false;
 
-      // Info message is always the last output.
-      var infoIndex = Parent.Params.Output.FindIndex(p => p.Name == "Info");
-      DA.SetData(infoIndex, parent.LastInfoMessage);
+      DA.SetData(1, parent.LastInfoMessage);
 
       if (ReceivedObject == null)
       {
         return;
       }
 
-
       //the active document may have changed
       var converter = parent.Converter;
-      converter?.SetContextDocument(RhinoDoc.ActiveDoc);
-      parent.PrevReceivedData = new Dictionary<string, GH_Structure<IGH_Goo>>();
 
-      if (!parent.ExpandOutput || (converter != null && converter.CanConvertToNative(ReceivedObject)))
-      {
-        var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
-        var receiveComponent = (VariableInputReceiveComponent)this.Parent;
-        receiveComponent.PrevReceivedData["Data"] = tree;
-        DA.SetDataTree(1, tree);
-        return;
-      }
+      converter?.SetContextDocument(Loader.GetCurrentDocument());
 
-      GetOutputList(ReceivedObject).ForEach(name =>
-      {
-        var prop = ReceivedObject[name];
-        var param = Parent.Params.Output.FindIndex(p => p.Name == name || p.Name == name.Substring(1));
-        var ighP = Parent.Params.Output[param];
-        if (ighP is SendReceiveDataParam srParam)
-        {
-          srParam.Detachable = name.StartsWith("@");
-        }
-
-        GH_Structure<IGH_Goo> dataTree;
-        if (prop is Base b && Utilities.CanConvertToDataTree(b))
-        {
-          dataTree = Utilities.DataTreeToNative(b, converter);
-        }
-        else
-        {
-          var treeBuilder = new TreeBuilder(converter) { ConvertToNative = converter != null };
-          dataTree = treeBuilder.Build(prop);
-        }
-
-        DA.SetDataTree(param, dataTree);
-        parent.PrevReceivedData.Add(name, dataTree);
-      });
-    }
-
-    private List<string> GetOutputList(Base b)
-    {
-      var receiveComponent = (VariableInputReceiveComponent)Parent;
-      if (!receiveComponent.ExpandOutput || (receiveComponent.Converter != null && receiveComponent.Converter.CanConvertToNative(b)))
-        return new List<string> { "Data" };
-
-      // Get the full list of output parameters
-      var fullProps = new List<string>();
-      b?.GetMemberNames().ToList().ForEach(prop =>
-      {
-        if (!fullProps.Contains(prop))
-          fullProps.Add(prop);
-      });
-      fullProps.Sort();
-      return fullProps;
-    }
-
-    public List<string> outputList = new List<string>();
-
-    private bool OutputMismatch() =>
-      outputList.Count != Parent.Params.Output.Count
-      || outputList.Where((t, i) => Parent.Params.Output[i].Name != t).Any();
-
-    private bool HasSingleRename()
-    {
-      var equalLength = outputList.Count == Parent?.Params.Output.Count;
-      if (!equalLength) return false;
-
-      var diffParams = Parent?.Params.Output.Where(param => !outputList.Contains(param.Name) && !outputList.Contains("@" + param.Name));
-      return diffParams.Count() == 1;
-    }
-    private void AutoCreateOutputs(Base @base)
-    {
-      outputList = GetOutputList(@base);
-      outputList.Insert(0, "Info");
-      if (!OutputMismatch())
-        return;
-
-      Parent.RecordUndoEvent("Creating Outputs");
-      if (HasSingleRename())
-      {
-        var diffParams = Parent.Params.Output.Where(param => !outputList.Contains(param.Name));
-        var diffOut = outputList
-          .Where(name =>
-            !Parent.Params.Output.Select(p => p.Name)
-              .Contains(name));
-
-        var newName = diffOut.First();
-        var renameParam = diffParams.First();
-        var isDetached = newName.StartsWith("@");
-        var cleanName = isDetached ? newName.Substring(1) : newName;
-        renameParam.NickName = cleanName;
-        renameParam.Name = cleanName;
-        renameParam.Description = $"Data from property: {cleanName}";
-        (renameParam as SendReceiveDataParam).Detachable = isDetached;
-        return;
-      }
-
-      // Check what params must be deleted, and do so when safe.
-      var remove = Parent.Params.Output.Select((p, i) =>
-      {
-        var res = outputList.Find(o => o == p.Name || p.Name == o.Substring(1));
-        return res == null ? i : -1;
-      }).ToList();
-      remove.Reverse();
-      remove.ForEach(b =>
-      {
-        if (b != -1 && Parent.Params.Output[b].Recipients.Count == 0)
-          Parent.Params.UnregisterOutputParameter(Parent.Params.Output[b]);
-      });
-
-      outputList.ForEach(s =>
-      {
-        var isDetached = s.StartsWith("@");
-        var name = isDetached ? s.Substring(1) : s;
-        var param = Parent.Params.Output.Find(p => p.Name == name);
-        if (param == null)
-        {
-          var newParam = ((IGH_VariableParameterComponent)Parent).CreateParameter(GH_ParameterSide.Output, Parent.Params.Output.Count) as SendReceiveDataParam;
-          newParam.Name = name;
-          newParam.NickName = name;
-          newParam.Description = $"Data from property: {name}";
-          newParam.MutableNickName = false;
-          newParam.Access = GH_ParamAccess.tree;
-          newParam.Detachable = isDetached;
-          Parent.Params.RegisterOutputParam(newParam, Parent.Params.Output.Count);
-        }
-        if (param is SendReceiveDataParam srParam)
-        {
-          srParam.Detachable = isDetached;
-        }
-      });
-
-
-      var paramNames = Parent.Params.Output.Select(p => p.Name).ToList();
-      paramNames.Sort();
-      var sortOrder = Parent.Params.Output.Select(p => paramNames.IndexOf(p.Name)).ToArray();
-      Parent.Params.SortOutput(sortOrder);
-      var infoParam = Parent.Params.Output.Find(p => p.Name == "Info");
-      Parent.Params.Output.Remove(infoParam);
-      Parent.Params.Output.Insert(0, infoParam);
-      Parent.Params.OnParametersChanged();
-      ((IGH_VariableParameterComponent)Parent).VariableParameterMaintenance();
+      var tree = Utilities.ConvertToTree(converter, ReceivedObject, Parent.AddRuntimeMessage);
+      var receiveComponent = (ReceiveComponent)this.Parent;
+      receiveComponent.PrevReceivedData = tree;
+      DA.SetDataTree(0, tree);
     }
   }
 
-  public class VariableInputReceiveComponentAttributes : GH_ComponentAttributes
+  public class ReceiveComponentAttributes : GH_ComponentAttributes
   {
     private bool _selected;
 
-    public VariableInputReceiveComponentAttributes(GH_Component owner) : base(owner)
+    public ReceiveComponentAttributes(GH_Component owner) : base(owner)
     {
     }
 
@@ -931,7 +693,7 @@ namespace ConnectorGrasshopper.Ops
       get => _selected;
       set
       {
-        //Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
+        Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
         _selected = value;
       }
     }
@@ -956,11 +718,11 @@ namespace ConnectorGrasshopper.Ops
     {
       base.Render(canvas, graphics, channel);
 
-      var state = ((VariableInputReceiveComponent)Owner).CurrentComponentState;
+      var state = ((ReceiveComponent)Owner).CurrentComponentState;
 
       if (channel == GH_CanvasChannel.Objects)
       {
-        if (((VariableInputReceiveComponent)Owner).AutoReceive)
+        if (((ReceiveComponent)Owner).AutoReceive)
         {
           var autoSendButton =
             GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Receive", 2, 0);
@@ -995,21 +757,21 @@ namespace ConnectorGrasshopper.Ops
         return base.RespondToMouseDown(sender, e);
       }
 
-      if (((VariableInputReceiveComponent)Owner).CurrentComponentState == "receiving")
+      if (((ReceiveComponent)Owner).CurrentComponentState == "receiving")
       {
         return GH_ObjectResponse.Handled;
       }
 
-      if (((VariableInputReceiveComponent)Owner).AutoReceive)
+      if (((ReceiveComponent)Owner).AutoReceive)
       {
-        ((VariableInputReceiveComponent)Owner).AutoReceive = false;
+        ((ReceiveComponent)Owner).AutoReceive = false;
         Owner.OnDisplayExpired(true);
         return GH_ObjectResponse.Handled;
       }
 
       // TODO: check if owner has null account/client, and call the reset thing SYNC 
 
-      ((VariableInputReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
+      ((ReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
       Owner.ExpireSolution(true);
       return GH_ObjectResponse.Handled;
     }

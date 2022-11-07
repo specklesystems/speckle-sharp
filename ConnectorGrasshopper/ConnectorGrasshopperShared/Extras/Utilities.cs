@@ -42,7 +42,7 @@ namespace ConnectorGrasshopper.Extras
         var defKit = KitManager.GetKitsWithConvertersForApp(Extras.Utilities.GetVersionedAppName()).FirstOrDefault(kit => kit != null && kit.Name == n);
         var converter = defKit.LoadConverter(Extras.Utilities.GetVersionedAppName());
         converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        converter.SetContextDocument(Loader.GetCurrentDocument());
         return converter;
       }
       catch

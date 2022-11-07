@@ -212,7 +212,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
         Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
         SpeckleGHSettings.OnMeshSettingsChanged +=
           (sender, args) => Converter.SetConverterSettings(SpeckleGHSettings.MeshSettings);
-        Converter.SetContextDocument(RhinoDoc.ActiveDoc);
+        Converter.SetContextDocument(Loader.GetCurrentDocument());
         foundKit = true;
       }
       catch
@@ -332,7 +332,7 @@ namespace ConnectorGrasshopper.Ops.Deprecated
         ReceivedObjectId = @base.id;
 
         //the active document may have changed
-        Converter?.SetContextDocument(RhinoDoc.ActiveDoc);
+        Converter?.SetContextDocument(Loader.GetCurrentDocument());
         var data = Extras.Utilities.ConvertToTree(Converter, @base, AddRuntimeMessage);
 
         DA.SetDataTree(0, data);
