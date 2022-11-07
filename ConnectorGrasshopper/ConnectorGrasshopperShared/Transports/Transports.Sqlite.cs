@@ -12,7 +12,13 @@ namespace ConnectorGrasshopper.Transports
 {
   public class SqliteTransportComponent : GH_SpeckleComponent
   {
-    public override Guid ComponentGuid { get => new Guid("DFFAF45E-06A8-4458-85D8-74FDA8DF3268"); }
+    internal static Guid internalGuid => new Guid("DFFAF45E-06A8-4458-85D8-74FDA8DF3268");
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid
+    {
+      get => internalGuid;
+    }
 
     protected override Bitmap Icon => Properties.Resources.SQLiteTransport;
 

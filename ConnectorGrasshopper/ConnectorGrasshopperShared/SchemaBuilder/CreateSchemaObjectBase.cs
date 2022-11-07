@@ -37,13 +37,6 @@ namespace ConnectorGrasshopper
       : base(name, nickname, description, category, subCategory)
     {
       Seed = GenerateSeed();
-      SpeckleGHSettings.SettingsChanged += (_, args) =>
-      {
-        if (!args.Key.StartsWith("Speckle2:tabs.")) return;
-        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
-        if (proxy == null) return;
-        proxy.Exposure = Exposure;
-      };
     }
 
     private bool UseSchemaTag;

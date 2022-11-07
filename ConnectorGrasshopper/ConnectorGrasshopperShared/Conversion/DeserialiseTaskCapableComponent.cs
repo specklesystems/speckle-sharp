@@ -12,24 +12,30 @@ namespace ConnectorGrasshopper
 {
   public class DeserializeTaskCapableComponent: GH_SpeckleTaskCapableComponent<Base>
   {
-    public override Guid ComponentGuid => new Guid("0336F3D1-2FEE-4B66-980D-63DB624980C9");
+    internal static Guid internalGuid => new Guid("0336F3D1-2FEE-4B66-980D-63DB624980C9");
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
+    public override GH_Exposure Exposure => internalExposure;
+    
     private CancellationTokenSource source;
     protected override System.Drawing.Bitmap Icon => Properties.Resources.Deserialize;
 
-    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
-
-    public DeserializeTaskCapableComponent() : base("Deserialize", "Deserialize",
-      "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON,
-      ComponentCategories.CONVERSION)
+    static DeserializeTaskCapableComponent()
     {
       SpeckleGHSettings.SettingsChanged += (_, args) =>
       {
         if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
         
-        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
         if (proxy == null) return;
-        proxy.Exposure = Exposure;
+        proxy.Exposure = internalExposure;
       };
+    }
+    public DeserializeTaskCapableComponent() : base("Deserialize", "Deserialize",
+      "Deserializes a JSON string to a Speckle Base object.", ComponentCategories.SECONDARY_RIBBON,
+      ComponentCategories.CONVERSION)
+    {
     }    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {

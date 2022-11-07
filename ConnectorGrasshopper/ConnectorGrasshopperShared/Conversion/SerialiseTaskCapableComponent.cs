@@ -14,10 +14,24 @@ namespace ConnectorGrasshopper.Conversion
   public class SerializeTaskCapableComponent : GH_SpeckleTaskCapableComponent<string>
   {
     private CancellationTokenSource source;
-    public override Guid ComponentGuid => new Guid("6F6A5347-8DE1-44FA-8D26-C73FD21650A9");
-    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
+    internal static Guid internalGuid => new Guid("6F6A5347-8DE1-44FA-8D26-C73FD21650A9");
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
+    public override GH_Exposure Exposure => internalExposure;
     protected override System.Drawing.Bitmap Icon => Properties.Resources.Serialize;
 
+    static SerializeTaskCapableComponent()
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+        if (proxy == null) return;
+        proxy.Exposure = internalExposure;
+      };
+    }
     public SerializeTaskCapableComponent() : base(
       "Serialize",
       "SRL",
@@ -25,14 +39,6 @@ namespace ConnectorGrasshopper.Conversion
       ComponentCategories.SECONDARY_RIBBON,
       ComponentCategories.CONVERSION)
     {
-      SpeckleGHSettings.SettingsChanged += (_, args) =>
-      {
-        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
-        
-        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
-        if (proxy == null) return;
-        proxy.Exposure = Exposure;
-      };
     }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)

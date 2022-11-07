@@ -15,6 +15,17 @@ namespace ConnectorGrasshopper.Conversion
 {
   public class ToSpeckleTaskCapableComponent : SelectKitTaskCapableComponentBase<IGH_Goo>
   {
+    static ToSpeckleTaskCapableComponent()
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+        if (proxy == null) return;
+        proxy.Exposure = internalExposure;
+      };
+    }
     public ToSpeckleTaskCapableComponent() : base(
       "To Speckle",
       "To Speckle",
@@ -22,24 +33,18 @@ namespace ConnectorGrasshopper.Conversion
       ComponentCategories.SECONDARY_RIBBON,
       ComponentCategories.CONVERSION)
     {
-      SpeckleGHSettings.SettingsChanged += (_, args) =>
-      {
-        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
-        
-        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == ComponentGuid);
-        if (proxy == null) return;
-        proxy.Exposure = Exposure;
-      };
     }
 
     private CancellationTokenSource source;
 
-    public override Guid ComponentGuid => new Guid("FB88150A-1885-4A77-92EA-9B1378310FDD");
+    internal static Guid internalGuid => new Guid("FB88150A-1885-4A77-92EA-9B1378310FDD");
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
+    public override Guid ComponentGuid => internalGuid;
     protected override Bitmap Icon => Properties.Resources.ToNative;
 
     public override bool CanDisableConversion => false;
 
-    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
+    public override GH_Exposure Exposure => internalExposure;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
