@@ -24,6 +24,7 @@
 #>
 
 using System;
+using System.Linq;
 using Grasshopper.Kernel;
 using ConnectorGrasshopperUtils;
 
@@ -52,15 +53,35 @@ namespace ConnectorGrasshopper {
 #>
 // This is generated code:
 public class <#= compName #>: CreateSchemaObjectBase {
-     
+    static <#= compName #>() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
     public <#= compName #>(): base("<#= name #>", "<#= name #>", "<#= description #>", "<#= cat #>", "<#= subcat #>") { }
     
-    public override Guid ComponentGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
+    internal static string internalCategory { get; }  = "<#= cat #>";
+
+    internal static Guid internalGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
+
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
 <#
     if (depr != null){
 #>
     public override bool Obsolete => true;
     public override GH_Exposure Exposure => GH_Exposure.hidden;
+<#
+        } else {
+#>
+    public override GH_Exposure Exposure => internalExposure;
 <#
         }
 #>

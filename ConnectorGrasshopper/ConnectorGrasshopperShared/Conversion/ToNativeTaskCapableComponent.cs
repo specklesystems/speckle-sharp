@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -15,6 +16,18 @@ namespace ConnectorGrasshopper.Conversion
 {
   public class ToNativeTaskCapableComponent : SelectKitTaskCapableComponentBase<IGH_Goo>
   {
+    static ToNativeTaskCapableComponent()
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+        if (proxy == null) return;
+        proxy.Exposure = SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
+      };
+    }
+    
     public ToNativeTaskCapableComponent() : base(
       "To Native", 
       "To Native",
@@ -22,13 +35,16 @@ namespace ConnectorGrasshopper.Conversion
       ComponentCategories.SECONDARY_RIBBON,
       ComponentCategories.CONVERSION)
     {
+
     }
 
     public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
 
     protected override Bitmap Icon => Properties.Resources.ToNative;
+    
+    internal static Guid internalGuid => new Guid("7F4BDA01-F9C8-42ED-ABC1-DA0443283219");
 
-    public override Guid ComponentGuid => new Guid("7F4BDA01-F9C8-42ED-ABC1-DA0443283219");
+    public override Guid ComponentGuid => internalGuid;
 
     public override bool CanDisableConversion => false;
 

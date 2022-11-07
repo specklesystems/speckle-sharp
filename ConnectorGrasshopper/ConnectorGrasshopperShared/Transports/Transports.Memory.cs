@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Grasshopper.Kernel;
 using Speckle.Core.Transports;
 using Logging = Speckle.Core.Logging;
@@ -9,13 +10,31 @@ namespace ConnectorGrasshopper.Transports
 {
   public class MemoryTransportComponent : GH_SpeckleComponent
   {
-    public override Guid ComponentGuid { get => new Guid("B3E7A1E0-FB96-45AE-9F47-54D1B495AAC9"); }
+    internal static Guid internalGuid => new Guid("B3E7A1E0-FB96-45AE-9F47-54D1B495AAC9");
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
 
     protected override Bitmap Icon => Properties.Resources.MemoryTransport;
 
-    public override GH_Exposure Exposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
+    public override GH_Exposure Exposure => internalExposure;
 
-    public MemoryTransportComponent() : base("Memory Transport", "Memory", "Creates a Memory Transport. This is useful for debugging, or just sending data around one grasshopper defintion. We don't recommend you use it!", ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS) { }
+    static MemoryTransportComponent()
+    {
+      SpeckleGHSettings.SettingsChanged += (_, args) =>
+      {
+        if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
+        
+        var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+        if (proxy == null) return;
+        proxy.Exposure = internalExposure;
+      };
+    }
+    public MemoryTransportComponent() : base("Memory Transport", "Memory",
+      "Creates a Memory Transport. This is useful for debugging, or just sending data around one grasshopper defintion. We don't recommend you use it!",
+      ComponentCategories.SECONDARY_RIBBON, ComponentCategories.TRANSPORTS)
+    {
+    }
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
