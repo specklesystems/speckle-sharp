@@ -924,11 +924,13 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
     }
 
-    public void CloseNotificationCommand()
+    public void CloseNotificationCommand(bool track = true)
     {
       Notification = "";
       NotificationUrl = "";
 
+      if (track)
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
 
     public void LaunchNotificationCommand()
@@ -938,7 +940,7 @@ namespace DesktopUI2.ViewModels
       if (!string.IsNullOrEmpty(NotificationUrl))
         Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
 
-      CloseNotificationCommand();
+      CloseNotificationCommand(false);
     }
 
     public void EditSavedStreamCommand()
