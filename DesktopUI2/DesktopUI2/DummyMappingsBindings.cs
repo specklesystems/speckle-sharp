@@ -1,4 +1,4 @@
-﻿using Objects.Geometry;
+﻿using DesktopUI2.ViewModels.MappingTool;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -8,14 +8,14 @@ namespace DesktopUI2
 {
   public class DummyMappingsBindings : MappingsBindings
   {
-    public override void SetMappings(List<object> objects, string schema)
+    public override void SetMappings(string schema)
     {
       throw new NotImplementedException();
     }
 
-    public override List<Base> GetSelection()
+    public override List<Type> GetSelectionSchemas()
     {
-      return new List<Base> { new Line(), new Line(), new Line(), new Line(), new Line() };
+      return new List<Type> { };
     }
 
     public DummyMappingsBindings()

@@ -18,9 +18,9 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId(speckleBeam.applicationId);
       var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
-      
+
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj)) 
+      if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
 
       if (speckleBeam.baseLine == null)
@@ -81,7 +81,7 @@ namespace Objects.Converter.Revit
         revitBeam = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
         // check for disallow join for beams in user settings
         // currently, this setting only applies to beams being created
-        if (Settings.ContainsKey("disallow-join"))
+        if (Settings.ContainsKey("disallow-join") && Settings["disallow-join"] != null)
         {
           List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
           if (joinSettings.Contains(StructuralFraming))

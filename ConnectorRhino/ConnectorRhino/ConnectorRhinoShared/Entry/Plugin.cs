@@ -27,6 +27,8 @@ namespace SpeckleRhino
     public ConnectorBindingsRhino Bindings { get; private set; }
     public MappingBindingsRhino MappingBindings { get; private set; }
 
+    private bool SelectionExpired = false;
+
 
     public static AppBuilder appBuilder;
 
@@ -54,6 +56,14 @@ namespace SpeckleRhino
 
         RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
         RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+
+        //Mapping tool selection
+        RhinoDoc.ActiveDocumentChanged += RhinoDoc_ActiveDocumentChanged;
+        RhinoDoc.SelectObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeselectObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeselectAllObjects += (sender, e) => SelectionExpired = true;
+
+        RhinoApp.Idle += RhinoApp_Idle;
       }
       catch (Exception ex)
       {
@@ -203,5 +213,31 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+
+
+    private void RhinoApp_Idle(object sender, EventArgs e)
+    {
+      if (SelectionExpired)
+      {
+        SelectionExpired = false;
+        MappingBindings.UpdateSelection(MappingBindings.GetSelectionSchemas());
+      }
+
+    }
+    private void RhinoDoc_DeselectObjects(object sender, Rhino.DocObjects.RhinoObjectSelectionEventArgs e)
+    {
+      SelectionExpired = true;
+    }
+
+    private void RhinoDoc_SelectObjects(object sender, Rhino.DocObjects.RhinoObjectSelectionEventArgs e)
+    {
+      SelectionExpired = true;
+    }
+
+    private void RhinoDoc_ActiveDocumentChanged(object sender, DocumentEventArgs e)
+    {
+      SelectionExpired = true;
+      // TODO: Parse new doc for existing stuff
+    }
   }
 }

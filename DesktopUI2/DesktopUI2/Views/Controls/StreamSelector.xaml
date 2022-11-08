@@ -2,6 +2,7 @@
   x:Class="DesktopUI2.Views.Controls.StreamSelector"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
@@ -9,77 +10,178 @@
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
-  <StackPanel Orientation="Vertical">
-    <Grid Grid.Row="1" Margin="0,15,0,0">
-      <m:Card Padding="0" CornerRadius="25">
-        <!--  SEARCH STREAMS  -->
-        <TextBox
-          Name="SearchBox"
-          Margin="0"
-          Padding="0"
-          Classes="Solo Small"
-          Text="{Binding SearchQuery}"
-          Watermark="Search streams">
-          <TextBox.InnerRightContent>
-            <Button
-              Width="{Binding $self.Bounds.Height}"
-              Padding="4"
-              Classes="Flat"
-              Command="{Binding ClearSearchCommand}"
-              Content="{icons:MaterialIconExt CloseCircle,
-                                              Size=15}" />
-          </TextBox.InnerRightContent>
-          <TextBox.InnerLeftContent>
-            <icons:MaterialIcon
-              Width="15"
-              Height="15"
-              Margin="10,0,0,0"
-              Kind="Search" />
-          </TextBox.InnerLeftContent>
-        </TextBox>
-      </m:Card>
 
-      <Popup
-        Width="{Binding #SearchBox.Bounds.Width}"
-        MaxHeight="300"
-        IsLightDismissEnabled="True"
-        IsOpen="{Binding #SearchBox.IsKeyboardFocusWithin}">
+  <Grid IsVisible="{Binding DialogVisible}" Opacity="{Binding DialogOpacity}">
+    <Grid.Transitions>
+      <Transitions>
+        <DoubleTransition Property="Opacity" Duration="0:0:0.3" />
+      </Transitions>
+    </Grid.Transitions>
+    <Border Background="{DynamicResource MaterialDesignCardBackground}" Opacity="0.8" />
+    <m:Card
+      MinHeight="100"
+      Margin="40"
+      Padding="0"
+      VerticalAlignment="Center"
+      assists:ShadowAssist.ShadowDepth="10">
+      <Grid RowDefinitions="auto,auto,auto,*,auto">
+        <TextBlock
+          Margin="15,15,15,0"
+          Classes="Subtitle1"
+          Text="Mapping Data Source"
+          TextTrimming="CharacterEllipsis" />
 
-        <m:Card Margin="20,0" CornerRadius="0">
-          <StackPanel Orientation="Vertical">
-            <ProgressBar
-              Grid.Row="2"
-              Margin="12,5"
-              IsIndeterminate="True"
-              IsVisible="{Binding ShowProgress, FallbackValue=True}" />
-            <ListBox
-              Classes="no-ripple"
-              Items="{Binding Streams}"
-              SelectedItem="{Binding SelectedStream}"
-              SelectionMode="Single">
-              <ListBox.ItemTemplate>
+        <TextBlock
+          Grid.Row="1"
+          Margin="15"
+          Foreground="Gray"
+          Text="Select a stream and branch coming from Revit with the Mapping Data"
+          TextWrapping="Wrap" />
+        <Grid Grid.Row="2" Margin="10,0">
+          <m:Card Padding="0" CornerRadius="25">
+            <!--  SEARCH STREAMS  -->
+            <TextBox
+              Name="SearchBox"
+              Margin="0"
+              Padding="0"
+              Classes="Solo Small"
+              Text="{Binding SearchQuery}"
+              Watermark="Search streams">
+              <TextBox.InnerRightContent>
+                <Button
+                  Width="{Binding $self.Bounds.Height}"
+                  Padding="4"
+                  Classes="Flat"
+                  Command="{Binding ClearSearchCommand}"
+                  Content="{icons:MaterialIconExt CloseCircle,
+                                                  Size=15}" />
+              </TextBox.InnerRightContent>
+              <TextBox.InnerLeftContent>
+                <icons:MaterialIcon
+                  Width="15"
+                  Height="15"
+                  Margin="10,0,0,0"
+                  Kind="Search" />
+              </TextBox.InnerLeftContent>
+            </TextBox>
+          </m:Card>
+
+          <Popup
+            Width="{Binding #SearchBox.Bounds.Width}"
+            MaxHeight="300"
+            IsLightDismissEnabled="True"
+            IsOpen="{Binding #SearchBox.IsKeyboardFocusWithin}">
+
+            <m:Card Margin="20,0" CornerRadius="0">
+              <StackPanel Orientation="Vertical">
+                <ProgressBar
+                  Grid.Row="2"
+                  Margin="12,5"
+                  IsIndeterminate="True"
+                  IsVisible="{Binding ShowProgress, FallbackValue=True}" />
+                <ListBox
+                  Classes="no-ripple"
+                  Items="{Binding Streams}"
+                  SelectedItem="{Binding SelectedStream}"
+                  SelectionMode="Single">
+                  <ListBox.ItemTemplate>
+                    <DataTemplate>
+                      <Grid ColumnDefinitions="auto,*">
+                        <TextBlock
+                          Grid.Column="1"
+                          Margin="5,0,0,0"
+                          VerticalAlignment="Center"
+                          Text="{Binding Stream.name}"
+                          TextTrimming="CharacterEllipsis" />
+                      </Grid>
+                    </DataTemplate>
+                  </ListBox.ItemTemplate>
+                </ListBox>
+              </StackPanel>
+
+
+            </m:Card>
+          </Popup>
+
+
+        </Grid>
+        <!--  BRANCH SELECTOR  -->
+        <m:Card
+          Grid.Row="3"
+          Margin="10"
+          IsEnabled="{Binding StreamSelector.SelectedStream, Converter={x:Static ObjectConverters.IsNotNull}}">
+          <Grid ColumnDefinitions="*,*" RowDefinitions="auto,auto">
+            <StackPanel Orientation="Horizontal">
+              <icons:MaterialIcon
+                Grid.Column="2"
+                Margin="0"
+                VerticalAlignment="Center"
+                Foreground="Gray"
+                Kind="InfoCircle"
+                ToolTip.Tip="Select a branch coming from Revit&#x0a;whose last commit contains a set of Project Information" />
+              <TextBlock
+                Grid.ColumnSpan="2"
+                Margin="5"
+                Classes="Overline"
+                Foreground="Gray"
+                Text="STREAM AND BRANCH" />
+            </StackPanel>
+
+
+            <TextBlock
+              Grid.Row="1"
+              Grid.Column="0"
+              Margin="5"
+              VerticalAlignment="Center"
+              IsVisible="{Binding SelectedStream}"
+              Text="{Binding SelectedStream.Stream.name}"
+              TextTrimming="CharacterEllipsis" />
+
+            <ComboBox
+              Grid.Row="1"
+              Grid.Column="1"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Center"
+              Classes="Outline"
+              Items="{Binding Branches}"
+              PlaceholderText="Branch"
+              SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
+              <ComboBox.ItemTemplate>
                 <DataTemplate>
-                  <Grid ColumnDefinitions="auto,*">
-                    <TextBlock
-                      Grid.Column="1"
-                      Margin="5,0,0,0"
-                      VerticalAlignment="Center"
-                      Text="{Binding Stream.name}"
-                      TextTrimming="CharacterEllipsis" />
-                  </Grid>
+                  <TextBlock
+                    Grid.Column="1"
+                    Text="{Binding name}"
+                    TextTrimming="CharacterEllipsis" />
                 </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-          </StackPanel>
+              </ComboBox.ItemTemplate>
+            </ComboBox>
 
+          </Grid>
 
         </m:Card>
-      </Popup>
+        <StackPanel
+          Grid.Row="4"
+          Margin="15"
+          HorizontalAlignment="Right"
+          Orientation="Horizontal">
+          <Button
+            Margin="0,0,10,0"
+            Classes="Outline"
+            Command="{Binding CancelCommand}"
+            Content="Cancel" />
+          <Button
+            Margin="0,0,10,0"
+            Command="{Binding OkCommand}"
+            Content="OK"
+            IsEnabled="{Binding SelectedBranch, Converter={x:Static ObjectConverters.IsNotNull}}" />
+
+        </StackPanel>
+      </Grid>
+    </m:Card>
+  </Grid>
 
 
-    </Grid>
 
 
-  </StackPanel>
 
 </UserControl>

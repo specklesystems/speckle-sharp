@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows;
 using System.Windows.Controls;
-using DesktopUI2.ViewModels;
+using DesktopUI2.ViewModels.MappingTool;
 using DesktopUI2.Views;
 
 namespace SpeckleRhino

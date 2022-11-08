@@ -1,10 +1,9 @@
-﻿using Objects.BuiltElements.Revit;
-using Objects.Organization;
-using ReactiveUI;
+﻿using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,55 +21,60 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public MappingsBindings Bindings { get; private set; } = new DummyMappingsBindings();
 
-    internal List<RevitMetadataViewModel> _revitCategories = new List<RevitMetadataViewModel>();
-
-    private List<SchemaType> _tmpSchemaTypes;
-    private List<SchemaType> _schemaTypes = new List<SchemaType>();
-
-    public List<SchemaType> SchemaTypes
+    private List<Type> _applicableSchemas;
+    public List<Type> ApplicableSchemas
     {
-      get => _schemaTypes;
+      get => _applicableSchemas;
       set
       {
-        this.RaiseAndSetIfChanged(ref _schemaTypes, value);
-      }
-    }
-
-    private SchemaType _selectedSchemaType;
-
-    public SchemaType SelectedSchemaType
-    {
-      get => _selectedSchemaType;
-      set
-      {
-        this.RaiseAndSetIfChanged(ref _selectedSchemaType, value);
+        this.RaiseAndSetIfChanged(ref _applicableSchemas, value);
+        this.RaisePropertyChanged(nameof(Schemas));
       }
     }
 
 
+    private List<ISchema> _allSchemas = new List<ISchema>();
 
-    //private RevitElementType _selectedRevitType;
+    public List<ISchema> AllSchemas
+    {
+      get => _allSchemas;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _allSchemas, value);
+        this.RaisePropertyChanged(nameof(Schemas));
+      }
+    }
 
-    //public RevitElementType SelectedRevitType
-    //{
-    //  get => _selectedRevitType;
-    //  set => this.RaiseAndSetIfChanged(ref _selectedRevitType, value);
-    //}
+
+    public List<ISchema> Schemas
+    {
+      get
+      {
+        return AllSchemas.Where(x => ApplicableSchemas.Contains(x.GetType())).ToList();
+      }
+    }
+
+    private ISchema _selectedSchema;
+
+    public ISchema SelectedSchema
+    {
+      get => _selectedSchema;
+      set => this.RaiseAndSetIfChanged(ref _selectedSchema, value);
+
+    }
+
+    public List<Base> AvailableRevitTypes { get; private set; } = new List<Base>();
+    public List<string> AvailableRevitLevels { get; private set; } = new List<string>();
+
+
 
     public static RoutingState RouterInstance { get; private set; }
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
     internal static MappingsViewModel Instance { get; private set; }
-    public List<Base> Selection
-    {
-      get => _selection;
-      set
-      {
-        _selection = value;
-        this.RaiseAndSetIfChanged(ref _selection, value);
-      }
-    }
+
+
 
     private bool _showProgress;
     public bool ShowProgress
@@ -84,7 +88,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public StreamSelectorViewModel StreamSelector { get; private set; } = new StreamSelectorViewModel();
 
-    private List<Base> _selection;
+
 
 
 
@@ -104,77 +108,31 @@ namespace DesktopUI2.ViewModels.MappingTool
     {
       Instance = this;
       Router = new RoutingState();
-
+      Bindings.UpdateSelection = UpdateSelection;
       RouterInstance = Router; // makes the router available app-wide
 
-      Selection = Bindings.GetSelection();
+      RefreshSelectionCommand();
 
-
-
-
-      StreamSelector.ObservableForProperty(x => x.SelectedBranch).Subscribe(x =>
-      Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-        Task.Run(() => GetCommit().ConfigureAwait(false))
-      ));
     }
 
-    private async Task GetCommit()
+    private void UpdateSelection(List<Type> types)
+    {
+      ApplicableSchemas = types;
+    }
+
+    internal async Task OnBranchSelected()
     {
       try
       {
-        if (StreamSelector.SelectedBranch == null || StreamSelector.SelectedBranch.commits == null || StreamSelector.SelectedBranch.commits.items.Count == 0)
+
+        var model = await GetCommit();
+
+        if (model == null)
           return;
 
-        ShowProgress = true;
+        GetAvailableRevitMetadata(model);
+        GenerateRevitMetadata();
 
-        var client = new Client(StreamSelector.SelectedStream.Account);
-        string referencedObject = StreamSelector.SelectedBranch.commits.items.FirstOrDefault().referencedObject;
-
-        var transport = new ServerTransport(StreamSelector.SelectedStream.Account, StreamSelector.SelectedStream.Stream.id);
-        var model = await Operations.Receive(
-            referencedObject,
-            transport,
-            disposeTransports: true
-            ) as Model;
-
-        var types = model["Types"] as Base;
-
-        var mappings = new List<RevitMetadataViewModel>();
-
-        foreach (var baseCategory in types.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic))
-        {
-          try
-          {
-            var categoryName = baseCategory.Key.Replace("@", "");
-            var elementTypes = (baseCategory.Value as List<object>).Cast<RevitElementType>().OrderBy(x => x.family + x.type).ToList();
-            if (!elementTypes.Any())
-              continue;
-
-            mappings.Add(new RevitMetadataViewModel
-            {
-              Category = categoryName,
-              Types = elementTypes
-            });
-
-          }
-          catch (Exception ex)
-          {
-            continue;
-          }
-        }
-        //needed to trigger binding refresh
-        _revitCategories = mappings;
-
-        _tmpSchemaTypes = new List<SchemaType>();
-        //populate schema infos
-        foreach (var type in ListAvailableTypes(false))
-          RecurseNamespace(type.Namespace.Split('.'), type);
-
-        //needed to trigger binding refresh
-        SchemaTypes = _tmpSchemaTypes;
-        SelectedSchemaType = SchemaTypes[0];
-        //SelectedRevitMapping = RevitMappings[0];
-        //SelectedRevitType = SelectedRevitMapping.Types[0];
       }
       catch (Exception e)
       {
@@ -186,98 +144,132 @@ namespace DesktopUI2.ViewModels.MappingTool
       }
     }
 
+    private async Task<Base> GetCommit()
+    {
+      if (StreamSelector.SelectedBranch == null || StreamSelector.SelectedBranch.commits == null || StreamSelector.SelectedBranch.commits.items.Count == 0)
+        return null;
+
+      ShowProgress = true;
+
+      var client = new Client(StreamSelector.SelectedStream.Account);
+      string referencedObject = StreamSelector.SelectedBranch.commits.items.FirstOrDefault().referencedObject;
+
+      var transport = new ServerTransport(StreamSelector.SelectedStream.Account, StreamSelector.SelectedStream.Stream.id);
+      return await Operations.Receive(
+          referencedObject,
+          transport,
+          disposeTransports: true
+          );
+    }
+
+    private void GetAvailableRevitMetadata(Base model)
+    {
+      var revitTypes = new List<Base>();
+      try
+      {
+        var types = model["Types"] as Base;
+
+        foreach (var baseCategory in types.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic))
+        {
+          try
+          {
+            var elementTypes = (baseCategory.Value as List<object>).Cast<Base>().ToList();
+            if (!elementTypes.Any())
+              continue;
+
+            revitTypes.AddRange(elementTypes);
+
+          }
+          catch (Exception ex)
+          {
+            continue;
+          }
+        }
+        AvailableRevitTypes = revitTypes;
+        AvailableRevitLevels = (model["@Levels"] as List<object>).Cast<Base>().Select(x => x["name"].ToString()).ToList();
+
+      }
+      catch (Exception ex)
+      {
+        return;
+      }
+
+
+    }
+
+    /// <summary>
+    /// Manually patch info from our schema builder and the available model types
+    /// </summary>
+    /// <param name="revitTypes"></param>
+    private void GenerateRevitMetadata()
+    {
+      var revitViewModels = new List<ISchema>();
+
+      //WALLS
+      var wallFamilies = AvailableRevitTypes.Where(x => x["category"].ToString() == "Walls").ToList();
+      if (wallFamilies.Any())
+      {
+        var wallFamiliesViewModels = wallFamilies.GroupBy(x => x["family"]).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y["type"].ToString()).ToList())).ToList();
+        revitViewModels.Add(new RevitWallViewModel(wallFamiliesViewModels, AvailableRevitLevels));
+      }
+
+
+      //var revitMetadata = new List<RevitMetadataViewModel>();
+
+      ////ADAPTIVE COMPONENT
+      //var adaptiveFamilies = revitTypes.Where(x => x.placementType == "Adaptive").ToList();
+      //if (adaptiveFamilies.Any())
+      //{
+      //  revitMetadata.Add(new RevitMetadataViewModel("Adaptive Component", new List<Type> { typeof(AdaptiveComponent) }, adaptiveFamilies));
+      //}
+
+      //revitMetadata.Add(new RevitMetadataViewModel("Curve", new List<Type> { typeof(DetailCurve), typeof(ModelCurve), typeof(RoomBoundaryLine), typeof(SpaceSeparationLine) }));
+      //revitMetadata.Add(new RevitMetadataViewModel("DirectShape", new List<Type> { typeof(DirectShape) }));
+
+      ////FAMILY INSTANCE
+      //var fiFamilies = revitTypes.Where(x => x.placementType != "Adaptive" && x.placementType != "Invalid").ToList();
+      //if (fiFamilies.Any())
+      //{
+      //  revitMetadata.Add(new RevitMetadataViewModel("Family Instance", new List<Type> { typeof(FamilyInstance) }, fiFamilies));
+      //}
+
+      ////WALLS
+      //var wallFamilies = revitTypes.Where(x => x.category == "Walls").ToList();
+      //if (wallFamilies.Any())
+      //{
+      //  revitMetadata.Add(new RevitMetadataViewModel("Wall", new List<Type> { typeof(RevitWall) }, wallFamilies));
+      //}
+
+      //also triggers binding refresh
+      AllSchemas = revitViewModels;
+
+
+    }
+
 
     public void SetMappingsCommand()
     {
-      Bindings.SetMappings(Selection.Cast<object>().ToList(), "");
+      //needed bc we're serializing an interface
+      var settings = new JsonSerializerSettings()
+      {
+        TypeNameHandling = TypeNameHandling.All
+      };
+
+      var serialized = JsonConvert.SerializeObject(SelectedSchema, settings);
+
+      Bindings.SetMappings(serialized);
     }
 
     public void RefreshSelectionCommand()
     {
-      Selection = Bindings.GetSelection();
+      ApplicableSchemas = Bindings.GetSelectionSchemas();
     }
 
-    private void RecurseNamespace(string[] ns, Type t)
+    public void OpenStreamSelectorCommand()
     {
-      if (ns.Length > 1)
-      {
-        RecurseNamespace(ns.Skip(1).ToArray(), t);
-      }
-      else
-      {
-        var temp = GetValidConstr(t, false);
-        try
-        {
-          foreach (var item in temp)
-          {
-            var info = item.GetCustomAttribute<SchemaInfo>();
-            if (info.Category != "Revit")
-              continue;
-
-            var name = info.Name.Replace("Revit", "");
-
-
-
-            _tmpSchemaTypes.Add(new SchemaType(name, info.Description, item));
-          }
-        }
-        catch (Exception e)
-        {
-          Console.WriteLine(e);
-        }
-
-      }
+      StreamSelector.IsVisible = true;
     }
 
-
-    //TODO: move to Core? Copy pasted from GrasshopperUtiles
-    public static List<Type> ListAvailableTypes(bool includeDeprecated = true)
-    {
-      // exclude types that don't have any constructors with a SchemaInfo attribute
-      return KitManager.Types.Where(
-        x => GetValidConstr(x, includeDeprecated).Any()).OrderBy(x => x.Name).ToList();
-    }
-
-    public static IEnumerable<ConstructorInfo> GetValidConstr(Type type, bool includeDeprecated = true)
-    {
-
-      return type.GetConstructors().Where(y =>
-      {
-        var hasSchemaInfo = y.GetCustomAttribute<SchemaInfo>() != null;
-        var isDeprecated = y.GetCustomAttribute<SchemaDeprecated>() != null;
-        return includeDeprecated
-          ? hasSchemaInfo
-          : hasSchemaInfo && !isDeprecated;
-      });
-    }
-
-    public static ConstructorInfo FindConstructor(string ConstructorName, string TypeName)
-    {
-      var type = KitManager.Types.FirstOrDefault(x => x.FullName == TypeName);
-      if (type == null)
-        return null;
-
-      var constructors = GetValidConstr(type);
-      var constructor = constructors.FirstOrDefault(x => MethodFullName(x) == ConstructorName);
-      return constructor;
-    }
-
-    public static string MethodFullName(MethodBase m)
-    {
-      var s = m.ReflectedType.FullName;
-      if (!m.IsConstructor)
-      {
-        s += ".";
-      }
-
-      s += m.Name;
-      if (m.GetParameters().Any())
-      {
-        //jamie rainfall bug, had to replace + with .
-        s += "(" + string.Join(",", m.GetParameters().Select(o => string.Format("{0}", o.ParameterType).Replace("+", ".")).ToArray()) + ")";
-      }
-      return s;
-    }
   }
 
 

@@ -1,5 +1,6 @@
 ﻿using Avalonia.Controls.Selection;
 using DesktopUI2.Models;
+using DesktopUI2.ViewModels.MappingTool;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -18,6 +19,16 @@ namespace DesktopUI2.ViewModels
     #region bindings
 
     private Action streamSearchDebouncer = null;
+
+    private bool _isVisible;
+    public bool IsVisible
+    {
+      get => _isVisible;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _isVisible, value);
+      }
+    }
     public SelectionModel<AccountViewModel> SelectionModel { get; private set; }
 
     private List<AccountViewModel> _accounts = new List<AccountViewModel>();
@@ -192,6 +203,18 @@ namespace DesktopUI2.ViewModels
     private void ClearSearchCommand()
     {
       SearchQuery = "";
+    }
+
+    private async void OkCommand()
+    {
+      IsVisible = false;
+
+      MappingsViewModel.Instance.OnBranchSelected().ConfigureAwait(false);
+    }
+
+    private void CancelCommand()
+    {
+      IsVisible = false;
     }
   }
 }

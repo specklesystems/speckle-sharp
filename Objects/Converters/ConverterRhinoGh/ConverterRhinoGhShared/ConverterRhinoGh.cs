@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel.Types;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
@@ -8,6 +9,7 @@ using Rhino.DocObjects;
 using Rhino.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -96,6 +98,7 @@ namespace Objects.Converter.RhinoGh
 
     // speckle user string for custom schemas
     private string SpeckleSchemaKey = "SpeckleSchema";
+    private string SpeckleMappingKey = "SpeckleMapping";
     private string ApplicationIdKey = "applicationId";
 
     public RH.Mesh GetRhinoRenderMesh(RhinoObject rhinoObj)
@@ -139,6 +142,11 @@ namespace Objects.Converter.RhinoGh
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
           schema = ConvertToSpeckleBE(ro, reportObj, displayMesh) ?? ConvertToSpeckleStr(ro, reportObj);
+
+        //mapping tool
+        var mappingString = ro.Attributes.GetUserString(SpeckleMappingKey);
+        if (mappingString != null)
+          schema = InitializeObjectFromMapping(mappingString, ro);
 
         attributes = ro.Attributes;
 
@@ -293,6 +301,38 @@ namespace Objects.Converter.RhinoGh
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
+    }
+
+    private Base InitializeObjectFromMapping(string mapping, RhinoObject @object)
+    {
+      var settings = new JsonSerializerSettings()
+      {
+        TypeNameHandling = TypeNameHandling.All
+      };
+
+      var derialized = JsonConvert.DeserializeObject(mapping, settings);
+
+      var name = GetValue(derialized, "Name");
+      Base schemaObject = null;
+
+      switch (name)
+      {
+        case "Wall":
+          var extrusion = ((RH.Extrusion)@object.Geometry);
+          var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
+          var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
+          var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
+          var family = GetValue(derialized, "SelectedFamily").ToString();
+          var type = GetValue(derialized, "SelectedType").ToString();
+          var level = GetValue(derialized, "SelectedLevel").ToString();
+          schemaObject = new RevitWall(family, type, CurveToSpeckle(bottomCrv), new RevitLevel(level), height);
+          schemaObject["units"] = ModelUnits;
+          break;
+        default:
+          break;
+      }
+
+      return schemaObject;
     }
 
     public Base ConvertToSpeckleBE(object @object, ApplicationObject reportObj, RH.Mesh displayMesh)
@@ -763,6 +803,12 @@ namespace Objects.Converter.RhinoGh
         default:
           return false;
       }
+    }
+
+
+    private object GetValue(object @object, string property)
+    {
+      return @object.GetType().GetProperty(property).GetValue(@object, null);
     }
   }
 }

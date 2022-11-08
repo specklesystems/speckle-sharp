@@ -12,6 +12,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using DesktopUI2.ViewModels.MappingTool;
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
@@ -31,44 +32,75 @@ namespace SpeckleRhino
 
   public partial class MappingBindingsRhino : MappingsBindings
   {
-    static string SpeckleSchemaKey = "SpeckleMapping";
+    static string SpeckleMappingKey = "SpeckleMapping";
 
     public MappingBindingsRhino()
     {
 
     }
 
-    public override List<Base> GetSelection()
+    public override List<Type> GetSelectionSchemas()
     {
       var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
+      var result = new List<Type>();
 
-
-      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        throw (new SpeckleException("Could not find any Kit!"));
-      }
-      converter.SetContextDocument(RhinoDoc.ActiveDoc);
-
-      var speckleObjects = new List<Base>();
-
+      var first = true;
       foreach (var obj in selection)
       {
-        if (obj == null || !converter.CanConvertToSpeckle(obj))
+        var schemas = GetObjectSchemas(obj);
+        if (first)
+        {
+          result = schemas;
+          first = false;
           continue;
-        var converted = converter.ConvertToSpeckle(obj);
-        if (converted != null)
-          speckleObjects.Add(converted);
-
+        }
+        result = result.Intersect(schemas).ToList();
       }
 
-      return speckleObjects;
+      return result;
     }
 
-    public override void SetMappings(List<object> objects, string schema)
+    private List<Type> GetObjectSchemas(RhinoObject obj)
     {
-      foreach (var obj in objects)
-        (obj as RhinoObject).Attributes.SetUserString(SpeckleSchemaKey, schema);
+      var result = new List<Type>();
+
+
+      switch (obj.Geometry)
+      {
+        //case Mesh _m:
+        //  cats.Add(DirectShape);
+        //  break;
+
+        //case Brep b:
+        //  if (b.IsSurface) cats.Add(DirectShape); // TODO: Wall by face, totally faking it right now
+        //  else cats.Add(DirectShape);
+        //  break;
+
+        case Extrusion e:
+          if (e.ProfileCount > 1) break;
+          var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
+          if (!(crv.IsLinear() || crv.IsArc())) break;
+          //TODO check what is this and why it wasn't working 
+          //if (crv.PointAtStart.Z == crv.PointAtEnd.Z) 
+          result.Add(typeof(RevitWallViewModel));
+          break;
+
+          //case Curve c:
+          //  if (c.IsLinear()) cats.Add(Beam);
+          //  if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+          //  if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
+          //  if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+          //  break;
+      }
+
+      return result;
+    }
+
+    public override void SetMappings(string schema)
+    {
+      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
+      foreach (var obj in selection)
+        obj.Attributes.SetUserString(SpeckleMappingKey, schema);
     }
   }
 }
