@@ -177,6 +177,8 @@ namespace Objects.Geometry
             else if (startPoint.x < circleCentre.x && startPoint.y > circleCentre.y) // Q2
                 startAngle = Math.PI - startAngle;
             endAngle = startAngle + angleRadians;
+            // Set the plane of this arc
+            this.plane = plane;
         }
         
         /// <summary>
