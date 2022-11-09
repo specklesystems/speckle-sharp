@@ -1,5 +1,6 @@
 ﻿using Avalonia.Metadata;
 using DesktopUI2.Models;
+using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -67,7 +68,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     }
 
-    public List<Base> AvailableRevitTypes { get; private set; } = new List<Base>();
+    public List<RevitElementType> AvailableRevitTypes { get; private set; } = new List<RevitElementType>();
     public List<string> AvailableRevitLevels { get; private set; } = new List<string>();
 
 
@@ -190,7 +191,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     private void GetTypesAndLevels(Base model)
     {
-      var revitTypes = new List<Base>();
+      var revitTypes = new List<RevitElementType>();
       try
       {
         var types = model["Types"] as Base;
@@ -199,7 +200,7 @@ namespace DesktopUI2.ViewModels.MappingTool
         {
           try
           {
-            var elementTypes = (baseCategory.Value as List<object>).Cast<Base>().ToList();
+            var elementTypes = (baseCategory.Value as List<object>).Cast<RevitElementType>().ToList();
             if (!elementTypes.Any())
               continue;
 
@@ -212,7 +213,7 @@ namespace DesktopUI2.ViewModels.MappingTool
           }
         }
         AvailableRevitTypes = revitTypes;
-        AvailableRevitLevels = (model["@Levels"] as List<object>).Cast<Base>().Select(x => x["name"].ToString()).ToList();
+        AvailableRevitLevels = (model["@Levels"] as List<object>).Cast<RevitLevel>().Select(x => x.name).ToList();
 
       }
       catch (Exception ex)
@@ -232,10 +233,10 @@ namespace DesktopUI2.ViewModels.MappingTool
       var revitViewModels = new List<ISchema>();
 
       //WALLS
-      var wallFamilies = AvailableRevitTypes.Where(x => x["category"].ToString() == "Walls").ToList();
+      var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
       if (wallFamilies.Any())
       {
-        var wallFamiliesViewModels = wallFamilies.GroupBy(x => x["family"]).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y["type"].ToString()).ToList())).ToList();
+        var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
         revitViewModels.Add(new RevitWallViewModel(wallFamiliesViewModels, AvailableRevitLevels));
       }
 
@@ -259,12 +260,6 @@ namespace DesktopUI2.ViewModels.MappingTool
       //  revitMetadata.Add(new RevitMetadataViewModel("Family Instance", new List<Type> { typeof(FamilyInstance) }, fiFamilies));
       //}
 
-      ////WALLS
-      //var wallFamilies = revitTypes.Where(x => x.category == "Walls").ToList();
-      //if (wallFamilies.Any())
-      //{
-      //  revitMetadata.Add(new RevitMetadataViewModel("Wall", new List<Type> { typeof(RevitWall) }, wallFamilies));
-      //}
 
       //also triggers binding refresh
       AllSchemas = revitViewModels;
@@ -277,7 +272,8 @@ namespace DesktopUI2.ViewModels.MappingTool
     {
       if (SelectedSchema == null)
         return false;
-
+      var vals = SelectedSchema.GetType().GetProperties(BindingFlags.Public)
+                            .Select(p => p.GetValue(SelectedSchema)).ToList();
       bool isAnyPropNull = SelectedSchema.GetType().GetProperties(BindingFlags.Public)
                             .All(p => p.GetValue(SelectedSchema) != null);
 

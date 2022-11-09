@@ -371,5 +371,14 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+			<!--Prevent copying Objects.dll only Private seems to work, but let's keep all of them-->
+      <CopyLocal>False</CopyLocal>
+			<Private>False</Private>
+      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+      <EmbedInteropTypes>False</EmbedInteropTypes>
+      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
+			<PrivateAssets>all</PrivateAssets>
+    </ProjectReference>
   </ItemGroup>
 </Project>

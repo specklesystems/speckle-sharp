@@ -6,6 +6,7 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.ViewModels.MappingTool;
 using DesktopUI2.Views;
 using Material.Styles.Themes;
+using Speckle.Core.Kits;
 
 namespace DesktopUI2
 {
@@ -25,6 +26,14 @@ namespace DesktopUI2
 
     public override void OnFrameworkInitializationCompleted()
     {
+      //NOTE: DUI is referencing Objects but we're not copying its dll from release and local builds
+      //this is because it could lead to versions incompatibilities
+      //the KitManager is invoked here to load Objects in the current AppDomain for us
+      try
+      {
+        var objects = KitManager.GetDefaultKit();
+      }
+      catch { }
 
       var theme = Theme.Create(Theme.Light, Primary, Accent);
       var themeBootstrap = this.LocateMaterialTheme<MaterialThemeBase>();
