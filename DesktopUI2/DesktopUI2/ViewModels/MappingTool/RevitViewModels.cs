@@ -23,9 +23,10 @@ namespace DesktopUI2.ViewModels.MappingTool
     abstract string Name { get; set; }
   }
 
-
+  [DataContract]
   public class RevitFamily : ReactiveObject
   {
+    [DataMember]
     public string Name { get; set; }
 
     private List<string> _types;

@@ -205,11 +205,11 @@ namespace DesktopUI2.ViewModels
       SearchQuery = "";
     }
 
-    private async void OkCommand()
+    private void OkCommand()
     {
       IsVisible = false;
 
-      MappingsViewModel.Instance.OnBranchSelected().ConfigureAwait(false);
+      Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() => Task.Run(() => MappingsViewModel.Instance.OnBranchSelected()));
     }
 
     private void CancelCommand()

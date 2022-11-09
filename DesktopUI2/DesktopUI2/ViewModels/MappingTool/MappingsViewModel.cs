@@ -1,4 +1,6 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Metadata;
+using DesktopUI2.Models;
+using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -29,6 +31,7 @@ namespace DesktopUI2.ViewModels.MappingTool
       {
         this.RaiseAndSetIfChanged(ref _applicableSchemas, value);
         this.RaisePropertyChanged(nameof(Schemas));
+        this.RaisePropertyChanged(nameof(ShowGeomMessage));
       }
     }
 
@@ -42,6 +45,7 @@ namespace DesktopUI2.ViewModels.MappingTool
       {
         this.RaiseAndSetIfChanged(ref _allSchemas, value);
         this.RaisePropertyChanged(nameof(Schemas));
+        this.RaisePropertyChanged(nameof(ShowGeomMessage));
       }
     }
 
@@ -80,10 +84,25 @@ namespace DesktopUI2.ViewModels.MappingTool
     public bool ShowProgress
     {
       get => _showProgress;
-      private set
-      {
-        this.RaiseAndSetIfChanged(ref _showProgress, value);
-      }
+      private set => this.RaiseAndSetIfChanged(ref _showProgress, value);
+    }
+
+    private bool _isValidStreamSelected = true;
+    public bool IsValidStreamSelected
+    {
+      get => _isValidStreamSelected;
+      private set => this.RaiseAndSetIfChanged(ref _isValidStreamSelected, value);
+    }
+    public bool ShowGeomMessage
+    {
+      get { return ApplicableSchemas.Count == 0 && AllSchemas.Any(); }
+    }
+
+    private StreamAccountWrapper _selectedStream;
+    public StreamAccountWrapper SelectedStream
+    {
+      get => _selectedStream;
+      private set => this.RaiseAndSetIfChanged(ref _selectedStream, value);
     }
 
     public StreamSelectorViewModel StreamSelector { get; private set; } = new StreamSelectorViewModel();
@@ -120,7 +139,7 @@ namespace DesktopUI2.ViewModels.MappingTool
       ApplicableSchemas = types;
     }
 
-    internal async Task OnBranchSelected()
+    internal async void OnBranchSelected()
     {
       try
       {
@@ -130,8 +149,15 @@ namespace DesktopUI2.ViewModels.MappingTool
         if (model == null)
           return;
 
-        GetAvailableRevitMetadata(model);
-        GenerateRevitMetadata();
+        GetTypesAndLevels(model);
+        GenerateSchemas();
+
+        SelectedStream = StreamSelector.SelectedStream;
+
+        if (AllSchemas.Any())
+          IsValidStreamSelected = true;
+        else
+          IsValidStreamSelected = false;
 
       }
       catch (Exception e)
@@ -162,7 +188,7 @@ namespace DesktopUI2.ViewModels.MappingTool
           );
     }
 
-    private void GetAvailableRevitMetadata(Base model)
+    private void GetTypesAndLevels(Base model)
     {
       var revitTypes = new List<Base>();
       try
@@ -201,7 +227,7 @@ namespace DesktopUI2.ViewModels.MappingTool
     /// Manually patch info from our schema builder and the available model types
     /// </summary>
     /// <param name="revitTypes"></param>
-    private void GenerateRevitMetadata()
+    private void GenerateSchemas()
     {
       var revitViewModels = new List<ISchema>();
 
@@ -246,6 +272,18 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     }
 
+    [DependsOn(nameof(SelectedSchema))]
+    public bool CanSetMappingsCommand(object parameter)
+    {
+      if (SelectedSchema == null)
+        return false;
+
+      bool isAnyPropNull = SelectedSchema.GetType().GetProperties(BindingFlags.Public)
+                            .All(p => p.GetValue(SelectedSchema) != null);
+
+
+      return isAnyPropNull;
+    }
 
     public void SetMappingsCommand()
     {

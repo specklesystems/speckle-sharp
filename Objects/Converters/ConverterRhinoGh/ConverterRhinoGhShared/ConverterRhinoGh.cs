@@ -322,10 +322,11 @@ namespace Objects.Converter.RhinoGh
           var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
           var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
           var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
-          var family = GetValue(derialized, "SelectedFamily").ToString();
+          var family = GetValue(GetValue(derialized, "SelectedFamily"), "Name").ToString();
           var type = GetValue(derialized, "SelectedType").ToString();
           var level = GetValue(derialized, "SelectedLevel").ToString();
           schemaObject = new RevitWall(family, type, CurveToSpeckle(bottomCrv), new RevitLevel(level), height);
+          schemaObject.applicationId = @object.Id.ToString();
           schemaObject["units"] = ModelUnits;
           break;
         default:

@@ -116,7 +116,21 @@
                     </StackPanel>
 
 
-                    <Button Command="{Binding OpenStreamSelectorCommand}" Content="Select Mapping Source" />
+                    <Button Command="{Binding OpenStreamSelectorCommand}" IsEnabled="{Binding !ShowProgress}">
+                      <Grid>
+                        <TextBlock IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNull}}" Text="Select Mapping Source" />
+                        <StackPanel IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNotNull}}" Orientation="Horizontal">
+                          <TextBlock Text="Stream: " />
+                          <TextBlock Text="{Binding SelectedStream.Stream.name}" />
+                        </StackPanel>
+                      </Grid>
+                    </Button>
+
+                    <TextBlock
+                      Margin="5,10"
+                      IsVisible="{Binding !IsValidStreamSelected}"
+                      Text="The selected stream and branch do not contain valid Revit types and levels."
+                      TextWrapping="Wrap" />
 
 
 
@@ -139,7 +153,7 @@
                     </ComboBox>
                     <TextBlock
                       Margin="5,10"
-                      IsVisible="{Binding !ApplicableSchemas.Count}"
+                      IsVisible="{Binding ShowGeomMessage}"
                       Text="Select one or more compatible geometry objects."
                       TextWrapping="Wrap" />
 
