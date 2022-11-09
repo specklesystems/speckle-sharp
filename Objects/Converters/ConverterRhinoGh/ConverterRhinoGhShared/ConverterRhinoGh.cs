@@ -7,6 +7,7 @@ using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
@@ -14,7 +15,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Speckle.Core.Api;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -96,7 +96,7 @@ namespace Objects.Converter.RhinoGh
 
     public void SetContextDocument(object doc)
     {
-        Doc = (RhinoDoc)doc;
+      Doc = (RhinoDoc)doc;
     }
 
     // speckle user string for custom schemas
@@ -149,7 +149,7 @@ namespace Objects.Converter.RhinoGh
         //mapping tool
         var mappingString = ro.Attributes.GetUserString(SpeckleMappingKey);
         if (mappingString != null)
-          schema = InitializeObjectFromMapping(mappingString, ro);
+          schema = MappingToSpeckle(mappingString, ro);
 
         attributes = ro.Attributes;
 
@@ -306,36 +306,32 @@ namespace Objects.Converter.RhinoGh
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
     }
 
-    private Base InitializeObjectFromMapping(string mapping, RhinoObject @object)
+    private Base MappingToSpeckle(string mapping, RhinoObject @object)
     {
-      var settings = new JsonSerializerSettings()
+      Base schemaObject = Operations.Deserialize(mapping);
+
+      switch (schemaObject)
       {
-        TypeNameHandling = TypeNameHandling.All
-      };
-
-      var derialized = JsonConvert.DeserializeObject(mapping, settings);
-
-      var name = GetValue(derialized, "Name");
-      Base schemaObject = null;
-
-      switch (name)
-      {
-        case "Wall":
+        case RevitWall o:
           var extrusion = ((RH.Extrusion)@object.Geometry);
           var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
           var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
           var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
-          var family = GetValue(GetValue(derialized, "SelectedFamily"), "Name").ToString();
-          var type = GetValue(derialized, "SelectedType").ToString();
-          var level = GetValue(derialized, "SelectedLevel").ToString();
-          schemaObject = new RevitWall(family, type, CurveToSpeckle(bottomCrv), new RevitLevel(level), height);
-          schemaObject.applicationId = @object.Id.ToString();
-          schemaObject["units"] = ModelUnits;
+          o.height = height;
+          o.baseLine = CurveToSpeckle(bottomCrv);
+
+          break;
+        case DirectShape o:
+          o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
+          break;
+        case FreeformElement o:
+          o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
           break;
         default:
           break;
       }
-
+      schemaObject.applicationId = @object.Id.ToString();
+      schemaObject["units"] = ModelUnits;
       return schemaObject;
     }
 
@@ -809,10 +805,5 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
-
-    private object GetValue(object @object, string property)
-    {
-      return @object.GetType().GetProperty(property).GetValue(@object, null);
-    }
   }
 }

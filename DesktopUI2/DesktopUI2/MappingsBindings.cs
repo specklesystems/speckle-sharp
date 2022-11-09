@@ -28,7 +28,9 @@ namespace DesktopUI2
     /// <summary>
     /// Sets the mappings on the current selection
     /// </summary>
-    public abstract void SetMappings(string schema);
+    /// <param name="schema">The schema to be applied, has to be an Objects class and have appropriate converter</param>
+    /// <param name="viewModel">An ISchema View Model to easily restore the mappings in the Mapping Tool</param>
+    public abstract void SetMappings(string schema, string viewModel);
 
 
 

@@ -186,6 +186,8 @@
 
                   <ContentControl Grid.Row="1" Content="{Binding SelectedSchema}">
                     <ContentControl.DataTemplates>
+                      <!--  DATA TEMPLATES FOR OUR SCHEMAS  -->
+                      <!--  WALL  -->
                       <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
                         <StackPanel
                           Margin="5"
@@ -222,62 +224,35 @@
                             SelectedItem="{Binding SelectedLevel, Mode=TwoWay}" />
                         </StackPanel>
                       </DataTemplate>
+                      <!--  DIRECTSHAPE  -->
+                      <DataTemplate DataType="{x:Type s:DirectShapeFreeformViewModel}">
+                        <StackPanel
+                          Margin="5"
+                          Orientation="Vertical"
+                          Spacing="5">
+                          <TextBox
+                            assists:TextFieldAssist.Label="Name"
+                            Text="{Binding ShapeName, Mode=TwoWay}"
+                            UseFloatingWatermark="True" />
+                          <TextBlock
+                            Classes="Caption"
+                            Text="If sending multiple elements, unique names will be generated for each."
+                            TextWrapping="Wrap" />
+                          <ComboBox
+                            assists:ComboBoxAssist.Label="Category"
+                            Classes="Outline"
+                            Items="{Binding Categories}"
+                            SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+                          <CheckBox
+                            Margin="0,10"
+                            Content="Create as FreeForm element?"
+                            IsChecked="{Binding Freeform}" />
+                        </StackPanel>
+                      </DataTemplate>
                     </ContentControl.DataTemplates>
 
 
                   </ContentControl>
-
-                  <!--<ItemsControl
-                  Grid.Row="3"
-                  Grid.ColumnSpan="2"
-                  Items="{Binding SelectedRevitViewModel.SchemaProps}">
-                  <ItemsControl.DataTemplates>
-                    <DataTemplate DataType="{x:Type s:SchemaPropList}">
-                      <Grid ColumnDefinitions="100,*">
-                        <TextBlock
-                          Grid.Column="0"
-                          Margin="20,20,20,0"
-                          Text="{Binding Name}"
-                          ToolTip.Tip="{Binding Description}" />
-                        <ComboBox
-                          Grid.Column="1"
-                          Margin="20,20,20,0"
-                          HorizontalAlignment="Stretch"
-                          Items="{Binding Options}"
-                          SelectedItem="{Binding SelectedOption, Mode=TwoWay}" />
-                      </Grid>
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type s:SchemaPropBool}">
-                      <Grid ColumnDefinitions="100,*">
-                        <TextBlock
-                          Grid.Column="0"
-                          Margin="20,20,20,0"
-                          Text="{Binding Name}"
-                          ToolTip.Tip="{Binding Description}" />
-                        <CheckBox
-                          Grid.Column="1"
-                          Margin="20,20,20,0"
-                          IsChecked="{Binding IsChecked, Mode=TwoWay}" />
-
-                      </Grid>
-                    </DataTemplate>
-                    <DataTemplate DataType="{x:Type s:SchemaPropText}">
-                      <Grid ColumnDefinitions="100,*">
-                        <TextBlock
-                          Grid.Column="0"
-                          Margin="20,20,20,0"
-                          Text="{Binding Name}"
-                          ToolTip.Tip="{Binding Description}" />
-                        <TextBox
-                          Grid.Column="1"
-                          Margin="20,20,20,0"
-                          HorizontalAlignment="Stretch"
-                          Text="{Binding Value, Mode=TwoWay}" />
-                      </Grid>
-                    </DataTemplate>
-                  </ItemsControl.DataTemplates>
-                </ItemsControl>-->
-
                 </Grid>
 
               </m:Card>

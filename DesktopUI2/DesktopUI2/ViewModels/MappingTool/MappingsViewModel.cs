@@ -230,16 +230,18 @@ namespace DesktopUI2.ViewModels.MappingTool
     /// <param name="revitTypes"></param>
     private void GenerateSchemas()
     {
-      var revitViewModels = new List<ISchema>();
+      var schemas = new List<ISchema>();
 
       //WALLS
       var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
       if (wallFamilies.Any())
       {
         var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
-        revitViewModels.Add(new RevitWallViewModel(wallFamiliesViewModels, AvailableRevitLevels));
+        schemas.Add(new RevitWallViewModel(wallFamiliesViewModels, AvailableRevitLevels));
       }
 
+      //DIRECT SHAPE AND FREEFORM ELEMENT
+      schemas.Add(new DirectShapeFreeformViewModel());
 
       //var revitMetadata = new List<RevitMetadataViewModel>();
 
@@ -262,7 +264,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
 
       //also triggers binding refresh
-      AllSchemas = revitViewModels;
+      AllSchemas = schemas;
 
 
     }
@@ -272,13 +274,14 @@ namespace DesktopUI2.ViewModels.MappingTool
     {
       if (SelectedSchema == null)
         return false;
-      var vals = SelectedSchema.GetType().GetProperties(BindingFlags.Public)
-                            .Select(p => p.GetValue(SelectedSchema)).ToList();
-      bool isAnyPropNull = SelectedSchema.GetType().GetProperties(BindingFlags.Public)
-                            .All(p => p.GetValue(SelectedSchema) != null);
+      //TODO: trigger refresh as any of these changes so we can check if schema is valid
+      //var vals = SelectedSchema.GetType().GetProperties()
+      //                      .Select(p => p.GetValue(SelectedSchema)).ToList();
+      //bool isAnyPropNull = SelectedSchema.GetType().GetProperties()
+      //                      .All(p => p.GetValue(SelectedSchema) != null);
 
 
-      return isAnyPropNull;
+      return true;
     }
 
     public void SetMappingsCommand()
@@ -289,9 +292,8 @@ namespace DesktopUI2.ViewModels.MappingTool
         TypeNameHandling = TypeNameHandling.All
       };
 
-      var serialized = JsonConvert.SerializeObject(SelectedSchema, settings);
-
-      Bindings.SetMappings(serialized);
+      var serializedViewModel = JsonConvert.SerializeObject(SelectedSchema, settings);
+      Bindings.SetMappings(SelectedSchema.GetSerializedSchema(), serializedViewModel);
     }
 
     public void RefreshSelectionCommand()

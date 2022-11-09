@@ -33,6 +33,7 @@ namespace SpeckleRhino
   public partial class MappingBindingsRhino : MappingsBindings
   {
     static string SpeckleMappingKey = "SpeckleMapping";
+    static string SpeckleMappingViewKey = "SpeckleMappingView";
 
     public MappingBindingsRhino()
     {
@@ -67,15 +68,17 @@ namespace SpeckleRhino
 
       switch (obj.Geometry)
       {
-        //case Mesh _m:
-        //  cats.Add(DirectShape);
-        //  break;
+        case Mesh m:
+          result.Add(typeof(DirectShapeFreeformViewModel));
+          break;
 
+        case Brep b:
+          result.Add(typeof(DirectShapeFreeformViewModel));
+          break;
         //case Brep b:
         //  if (b.IsSurface) cats.Add(DirectShape); // TODO: Wall by face, totally faking it right now
         //  else cats.Add(DirectShape);
         //  break;
-
         case Extrusion e:
           if (e.ProfileCount > 1) break;
           var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
@@ -96,11 +99,15 @@ namespace SpeckleRhino
       return result;
     }
 
-    public override void SetMappings(string schema)
+    public override void SetMappings(string schema, string viewModel)
     {
       var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
       foreach (var obj in selection)
+      {
         obj.Attributes.SetUserString(SpeckleMappingKey, schema);
+        obj.Attributes.SetUserString(SpeckleMappingViewKey, viewModel);
+      }
+
     }
   }
 }
