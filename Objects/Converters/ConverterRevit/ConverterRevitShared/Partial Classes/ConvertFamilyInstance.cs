@@ -260,8 +260,6 @@ namespace Objects.Converter.Revit
       //they will pass the 'shouldConvert' filter above, but we still want the parents to deal with their conversion
       if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
       {
-        //if (SubelementIds.Contains(revitFi.Id))
-        //  SubelementIds.Add(revitFi.Id);
         if (SubelementIds.Contains(revitFi.Id))
           return null;
         else
@@ -271,6 +269,7 @@ namespace Objects.Converter.Revit
         if (Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category))
         {
           var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
+          // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
           extraProps["isUGridLine"] = Math.Abs(direction.X) > Math.Abs(direction.Y) ? true : false;
         }
       }
@@ -296,10 +295,9 @@ namespace Objects.Converter.Revit
       if (@base == null)
         @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
 
+      // add additional props to base object
       foreach (var prop in extraProps.GetDynamicMembers())
         @base[prop] = extraProps[prop];
-      //if (speckleHost != null)
-      //  @base["speckleHost"] = speckleHost;
 
       return @base; 
     }

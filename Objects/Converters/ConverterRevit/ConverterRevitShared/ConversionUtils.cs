@@ -57,10 +57,6 @@ namespace Objects.Converter.Revit
       if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
         return false;
 
-      //// currentHostElement is the host of this element so it came from within the host's conversion
-      //if (CurrentHostElement?.UniqueId == host.UniqueId)
-      //  return true;
-
       // the parent is in our selection list,skip it, as this element will be converted by the host element
       if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
       {

@@ -78,7 +78,7 @@ namespace Objects.Converter.Revit
               if (type == null)
               {
                 // assuming first mullion is the desired mullion for the whole roof...
-                GetElementType<MullionType>(elements.First(), new ApplicationObject("", ""), out MullionType mullionType);
+                GetElementType<MullionType>(elements.Where(b=>b is BuiltElements.Revit.FamilyInstance f).First(), new ApplicationObject("", ""), out MullionType mullionType);
                 TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
                 TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
                 TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
@@ -211,38 +211,6 @@ namespace Objects.Converter.Revit
               profiles = GetProfiles(revitRoof, newTail, newHead);
             }
 
-            //var elements = new List<Base>();
-            //if (footPrintRoof.CurtainGrids != null)
-            //{
-            //  foreach (var obj in footPrintRoof.CurtainGrids)
-            //  {
-            //    if (!(obj is CurtainGrid curtainGrid))
-            //      continue;
-
-            //    var numULines = curtainGrid.NumULines;
-            //    var numVLines = curtainGrid.NumVLines;
-
-            //    if (numULines == 0 && numVLines == 0)
-            //      continue;
-
-            //    var uLineAngle = curtainGrid.Grid1Angle;
-            //    var vLineAngle = curtainGrid.Grid2Angle;
-
-
-            //    foreach (var mullionId in curtainGrid.GetMullionIds())
-            //    {
-            //      var revitMullion = Doc.GetElement(mullionId) as Mullion;
-            //      var speckleMullion = ConvertToSpeckle(revitMullion);
-            //      //var directionVectorUnrotatedU = UnrotateVector(((DB.Line)revitMullion.LocationCurve).Direction, uLineAngle, true);
-
-            //      var direction = ((DB.Line)revitMullion.LocationCurve).Direction;
-            //      speckleMullion["isUGridLine"] = Math.Abs(direction.X) > Math.Abs(direction.Y) ? true : false;
-            //      elements.Add(speckleMullion);
-            //    }
-            //  }
-            //}
-            //speckleFootprintRoof["elements"] = elements;
-
             speckleRoof = speckleFootprintRoof;
             break;
           }
@@ -284,16 +252,6 @@ namespace Objects.Converter.Revit
       GetHostedElements(speckleRoof, revitRoof, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);
       return speckleRoof;
-    }
-
-    private Geometry.Point UnrotateVector(DB.XYZ ogVector, double rotation, bool isURotation)
-    {
-      var newPoint = new Geometry.Point();
-
-      newPoint.x = isURotation ? ogVector.X / Math.Cos(rotation) : ogVector.X / Math.Sin(rotation);
-      newPoint.y = isURotation ? ogVector.Y / Math.Sin(rotation) : ogVector.Y / Math.Cos(rotation);
-
-      return newPoint;
     }
 
     //Nesting the various profiles into a polycurve segments
