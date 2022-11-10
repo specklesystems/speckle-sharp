@@ -61,5 +61,12 @@ namespace DesktopUI2
     /// </summary>
     /// <param name="ids"></param>
     public abstract void HighlightElements(List<string> ids);
+
+
+    /// <summary>
+    /// Selects a list of elements given their IDs
+    /// </summary>
+    /// <param name="ids"></param>
+    public abstract void SelectElements(List<string> ids);
   }
 }

@@ -173,16 +173,31 @@ namespace SpeckleRhino
 
 
       return schemas;
-
-
-
-
     }
 
     public override void HighlightElements(List<string> ids)
     {
-      Display.ObjectIds = ids;
-      RhinoDoc.ActiveDoc?.Views.Redraw();
+      try
+      {
+        Display.ObjectIds = ids;
+        RhinoDoc.ActiveDoc?.Views.Redraw();
+      }
+      catch (Exception ex)
+      {
+        //fail silently
+      }
+    }
+
+    public override void SelectElements(List<string> ids)
+    {
+      try
+      {
+        RhinoDoc.ActiveDoc.Objects.Select(ids.Select(x => Guid.Parse(x)));
+      }
+      catch (Exception ex)
+      {
+        //fail silently
+      }
     }
   }
 }

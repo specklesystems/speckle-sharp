@@ -63,7 +63,7 @@
             FontSize="16"
             FontWeight="Medium"
             Foreground="White"
-            Text="Mapping Tool"
+            Text="Mapping Tool (alpha)"
             TextTrimming="CharacterEllipsis" />
 
           <TextBlock
@@ -115,7 +115,10 @@
                       IsVisible="{Binding RevitViewModels.Count}"
                       Orientation="Vertical"
                       Spacing="5">
-                      <Button Command="{Binding OpenStreamSelectorCommand}" IsEnabled="{Binding !ShowProgress}">
+                      <Button
+                        Margin="0,0,0,5"
+                        Command="{Binding OpenStreamSelectorCommand}"
+                        IsEnabled="{Binding !ShowProgress}">
                         <Grid>
                           <TextBlock
                             Classes="SpeckleFont"
@@ -258,7 +261,10 @@
                   <ItemsControl Items="{Binding ExistingSchemas}">
                     <ItemsControl.ItemTemplate>
                       <DataTemplate>
-                        <Expander Classes="Minimal Transparent" PointerEnter="PointerEnterEvent">
+                        <Expander
+                          Classes="Minimal Transparent"
+                          PointerEnter="PointerEnterEvent"
+                          PointerLeave="PointerLeaveEvent">
                           <Expander.Header>
                             <StackPanel Orientation="Horizontal">
                               <TextBlock Text="{Binding Name}" />
@@ -267,18 +273,44 @@
                               <TextBlock Text=")" />
                             </StackPanel>
                           </Expander.Header>
-                          <ItemsControl Items="{Binding Schemas}">
-                            <ItemsControl.ItemTemplate>
+                          <ListBox
+                            Items="{Binding Schemas}"
+                            SelectionChanged="SelectionChanged"
+                            SelectionMode="Multiple">
+                            <ListBox.Styles>
+                              <Style Selector="ListBox ListBoxItem">
+                                <Setter Property="Padding" Value="0" />
+                              </Style>
+                              <Style Selector="ListBoxItem /template/ Border#selectedBorder">
+                                <Setter Property="IsVisible" Value="False" />
+                              </Style>
+                            </ListBox.Styles>
+                            <ListBox.ItemTemplate>
                               <DataTemplate>
-                                <TextBlock Margin="5" Text="{Binding Summary}"/>
+                                <Grid>
+                                  <TextBlock
+                                    Padding="5,5"
+                                    HorizontalAlignment="Stretch"
+                                    Text="{Binding Summary}" />
+                                  <!--  hack to get the PointerEnter event to trigger  -->
+                                  <Border
+                                    Background="{DynamicResource MaterialDesignCardBackground}"
+                                    Opacity="0.01"
+                                    PointerEnter="PointerEnterEventItem"
+                                    PointerLeave="PointerLeaveEvent" />
+
+                                </Grid>
+
                               </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                          </ItemsControl>
+                            </ListBox.ItemTemplate>
+                          </ListBox>
 
                         </Expander>
                       </DataTemplate>
                     </ItemsControl.ItemTemplate>
                   </ItemsControl>
+
+
                 </StackPanel>
               </m:Card>
 

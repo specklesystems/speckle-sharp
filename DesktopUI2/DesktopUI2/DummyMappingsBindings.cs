@@ -37,6 +37,11 @@ namespace DesktopUI2
     {
     }
 
+    public override void SelectElements(List<string> ids)
+    {
+    }
+
+
     public DummyMappingsBindings()
     {
 
