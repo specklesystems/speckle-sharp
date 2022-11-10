@@ -28,6 +28,7 @@ namespace SpeckleRhino
     public MappingBindingsRhino MappingBindings { get; private set; }
 
     private bool SelectionExpired = false;
+    internal bool ExistingSchemaLogExpired = false;
 
 
     public static AppBuilder appBuilder;
@@ -62,6 +63,7 @@ namespace SpeckleRhino
         RhinoDoc.SelectObjects += (sender, e) => SelectionExpired = true;
         RhinoDoc.DeselectObjects += (sender, e) => SelectionExpired = true;
         RhinoDoc.DeselectAllObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeleteRhinoObject += (sender, e) => ExistingSchemaLogExpired = true;
 
         RhinoApp.Idle += RhinoApp_Idle;
       }
@@ -220,7 +222,13 @@ namespace SpeckleRhino
       if (SelectionExpired)
       {
         SelectionExpired = false;
-        MappingBindings.UpdateSelection(MappingBindings.GetSelectionSchemas());
+        MappingBindings.UpdateSelection(MappingBindings.GetSelectionInfo());
+      }
+
+      if (ExistingSchemaLogExpired)
+      {
+        ExistingSchemaLogExpired = false;
+        MappingBindings.UpdateExistingSchemaElements(MappingBindings.GetExistingSchemaElements());
       }
 
     }

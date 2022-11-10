@@ -35,45 +35,63 @@ namespace SpeckleRhino
     static string SpeckleMappingKey = "SpeckleMapping";
     static string SpeckleMappingViewKey = "SpeckleMappingView";
 
+    private MappingsDisplayConduit Display;
+
     public MappingBindingsRhino()
     {
-
+      Display = new MappingsDisplayConduit();
+      Display.Enabled = true;
     }
 
-    public override List<Type> GetSelectionSchemas()
+    public override MappingSelectionInfo GetSelectionInfo()
     {
       var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-      var result = new List<Type>();
+      var result = new List<Schema>();
 
-      var first = true;
       foreach (var obj in selection)
       {
         var schemas = GetObjectSchemas(obj);
-        if (first)
-        {
+
+        if (!result.Any())
           result = schemas;
-          first = false;
-          continue;
-        }
-        result = result.Intersect(schemas).ToList();
+        else
+          //intersect lists
+          //TODO: if some elements already have a schema and values are different
+          //we should default to an empty schema, instead of potentially restoring the one with values
+          result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+
+        //incompatible selection
+        if (!result.Any())
+          return new MappingSelectionInfo(new List<Schema>(), selection.Count);
       }
 
-      return result;
+      return new MappingSelectionInfo(result, selection.Count);
     }
 
-    private List<Type> GetObjectSchemas(RhinoObject obj)
+    /// <summary>
+    /// For a give Rhino Object find all applicable schemas and retrive any existing one already applied
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
+    private List<Schema> GetObjectSchemas(RhinoObject obj)
     {
-      var result = new List<Type>();
+      var result = new List<Schema>();
+
+      var existingSchema = GetExistingObjectSchema(obj);
+      if (existingSchema != null)
+        result.Add(existingSchema);
 
 
       switch (obj.Geometry)
       {
         case Mesh m:
-          result.Add(typeof(DirectShapeFreeformViewModel));
+          if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+            result.Add(new DirectShapeFreeformViewModel());
           break;
 
         case Brep b:
-          result.Add(typeof(DirectShapeFreeformViewModel));
+          if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+            result.Add(new DirectShapeFreeformViewModel());
           break;
         //case Brep b:
         //  if (b.IsSurface) cats.Add(DirectShape); // TODO: Wall by face, totally faking it right now
@@ -83,9 +101,10 @@ namespace SpeckleRhino
           if (e.ProfileCount > 1) break;
           var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
           if (!(crv.IsLinear() || crv.IsArc())) break;
-          //TODO check what is this and why it wasn't working 
-          //if (crv.PointAtStart.Z == crv.PointAtEnd.Z) 
-          result.Add(typeof(RevitWallViewModel));
+          if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
+
+          if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
+            result.Add(new RevitWallViewModel());
           break;
 
           //case Curve c:
@@ -99,6 +118,29 @@ namespace SpeckleRhino
       return result;
     }
 
+    private Schema GetExistingObjectSchema(RhinoObject obj)
+    {
+      var viewModel = obj.Attributes.GetUserString(SpeckleMappingViewKey);
+
+      if (string.IsNullOrEmpty(viewModel))
+        return null;
+
+      try
+      {
+        var settings = new JsonSerializerSettings()
+        {
+          TypeNameHandling = TypeNameHandling.All
+        };
+
+        return JsonConvert.DeserializeObject<Schema>(viewModel, settings);
+
+      }
+      catch
+      {
+        return null;
+      }
+    }
+
     public override void SetMappings(string schema, string viewModel)
     {
       var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
@@ -108,6 +150,39 @@ namespace SpeckleRhino
         obj.Attributes.SetUserString(SpeckleMappingViewKey, viewModel);
       }
 
+      SpeckleRhinoConnectorPlugin.Instance.ExistingSchemaLogExpired = true;
+
+    }
+
+    public override List<Schema> GetExistingSchemaElements()
+    {
+      var settings = new JsonSerializerSettings()
+      {
+        TypeNameHandling = TypeNameHandling.All
+      };
+
+      var objects = RhinoDoc.ActiveDoc.Objects.FindByUserString(SpeckleMappingViewKey, "*", true);
+      var schemas = objects.Select(obj => JsonConvert.DeserializeObject<Schema>(obj.Attributes.GetUserString(SpeckleMappingViewKey), settings)).ToList();
+
+
+      //add the object id to the schema so we can easily highlight/clear them
+      for (var i = 0; i < schemas.Count; i++)
+      {
+        schemas[i].ApplicationId = objects[i].Id.ToString();
+      }
+
+
+      return schemas;
+
+
+
+
+    }
+
+    public override void HighlightElements(List<string> ids)
+    {
+      Display.ObjectIds = ids;
+      RhinoDoc.ActiveDoc?.Views.Redraw();
     }
   }
 }

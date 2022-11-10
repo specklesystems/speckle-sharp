@@ -24,44 +24,17 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public MappingsBindings Bindings { get; private set; } = new DummyMappingsBindings();
 
-    private List<Type> _applicableSchemas;
-    public List<Type> ApplicableSchemas
+    private List<Schema> _schemas = new List<Schema>();
+    public List<Schema> Schemas
     {
-      get => _applicableSchemas;
-      set
-      {
-        this.RaiseAndSetIfChanged(ref _applicableSchemas, value);
-        this.RaisePropertyChanged(nameof(Schemas));
-        this.RaisePropertyChanged(nameof(ShowGeomMessage));
-      }
+      get => _schemas;
+      set => this.RaiseAndSetIfChanged(ref _schemas, value);
+
     }
 
+    private Schema _selectedSchema;
 
-    private List<ISchema> _allSchemas = new List<ISchema>();
-
-    public List<ISchema> AllSchemas
-    {
-      get => _allSchemas;
-      set
-      {
-        this.RaiseAndSetIfChanged(ref _allSchemas, value);
-        this.RaisePropertyChanged(nameof(Schemas));
-        this.RaisePropertyChanged(nameof(ShowGeomMessage));
-      }
-    }
-
-
-    public List<ISchema> Schemas
-    {
-      get
-      {
-        return AllSchemas.Where(x => ApplicableSchemas.Contains(x.GetType())).ToList();
-      }
-    }
-
-    private ISchema _selectedSchema;
-
-    public ISchema SelectedSchema
+    public Schema SelectedSchema
     {
       get => _selectedSchema;
       set => this.RaiseAndSetIfChanged(ref _selectedSchema, value);
@@ -88,15 +61,18 @@ namespace DesktopUI2.ViewModels.MappingTool
       private set => this.RaiseAndSetIfChanged(ref _showProgress, value);
     }
 
-    private bool _isValidStreamSelected = true;
-    public bool IsValidStreamSelected
+    private int _count;
+    public int Count
     {
-      get => _isValidStreamSelected;
-      private set => this.RaiseAndSetIfChanged(ref _isValidStreamSelected, value);
+      get => _count;
+      private set => this.RaiseAndSetIfChanged(ref _count, value);
     }
-    public bool ShowGeomMessage
+
+    private string _promptMsg = "To get started, select a mapping data source.";
+    public string PromptMsg
     {
-      get { return ApplicableSchemas.Count == 0 && AllSchemas.Any(); }
+      get => _promptMsg;
+      private set => this.RaiseAndSetIfChanged(ref _promptMsg, value);
     }
 
     private StreamAccountWrapper _selectedStream;
@@ -106,12 +82,16 @@ namespace DesktopUI2.ViewModels.MappingTool
       private set => this.RaiseAndSetIfChanged(ref _selectedStream, value);
     }
 
+    private List<SchemaGroup> _existingSchemas;
+    public List<SchemaGroup> ExistingSchemas
+    {
+      get => _existingSchemas;
+      private set => this.RaiseAndSetIfChanged(ref _existingSchemas, value);
+    }
+
     public StreamSelectorViewModel StreamSelector { get; private set; } = new StreamSelectorViewModel();
 
-
-
-
-
+    MappingSelectionInfo _lastInfo = null;
     public MappingsViewModel()
     {
       Init();
@@ -129,15 +109,69 @@ namespace DesktopUI2.ViewModels.MappingTool
       Instance = this;
       Router = new RoutingState();
       Bindings.UpdateSelection = UpdateSelection;
+      Bindings.UpdateExistingSchemaElements = UpdateExistingSchemaElements;
       RouterInstance = Router; // makes the router available app-wide
 
-      RefreshSelectionCommand();
+
+      UpdateSelection(Bindings.GetSelectionInfo());
+      UpdateExistingSchemaElements(Bindings.GetExistingSchemaElements());
 
     }
 
-    private void UpdateSelection(List<Type> types)
+    private void UpdateSelection(MappingSelectionInfo info)
     {
-      ApplicableSchemas = types;
+      _lastInfo = info;
+      Count = info.Count;
+
+      PromptMsg = "";
+
+      //empty selection
+      if (Count == 0)
+      {
+        if (SelectedStream != null)
+          PromptMsg = "Select one or more elements.";
+        else
+          PromptMsg = "To get started, select a mapping data source.";
+
+        SelectedSchema = null;
+        return;
+
+      }
+
+
+      //this might be a bit inefficient
+      AddRevitInfoToSchema(info.Schemas);
+
+      if (Schemas.Any())
+      {
+        if (Schemas.Any(x => x.HasData))
+          SelectedSchema = Schemas.First(x => x.HasData);
+        SelectedSchema = Schemas.First();
+
+        if (SelectedStream == null || !AvailableRevitTypes.Any() || !AvailableRevitLevels.Any())
+          PromptMsg = "Try selecting a compatible mapping source for more options.";
+      }
+      else
+      {
+        if (SelectedStream == null)
+          PromptMsg = "No options available for the current selection, try selecting a mapping data source.";
+        else if (!AvailableRevitTypes.Any())
+          PromptMsg = "The selected branch does not contain any Revit types, try changing mapping data source.";
+        else if (!AvailableRevitLevels.Any())
+          PromptMsg = "The selected branch does not contain any Revit levels, try changing mapping data source.";
+        else
+          PromptMsg = "Incompatible selection, try selecting objects of the same type.";
+
+        SelectedSchema = null;
+        return;
+      }
+
+
+    }
+
+    private void UpdateExistingSchemaElements(List<Schema> schemas)
+    {
+      ExistingSchemas = schemas.GroupBy(x => x.Name).Select(x => new SchemaGroup(x.Key, x.ToList())).ToList();
     }
 
     internal async void OnBranchSelected()
@@ -151,14 +185,12 @@ namespace DesktopUI2.ViewModels.MappingTool
           return;
 
         GetTypesAndLevels(model);
-        GenerateSchemas();
 
         SelectedStream = StreamSelector.SelectedStream;
 
-        if (AvailableRevitTypes.Any() && AvailableRevitLevels.Any())
-          IsValidStreamSelected = true;
-        else
-          IsValidStreamSelected = false;
+        //force an update
+        if (_lastInfo != null)
+          UpdateSelection(_lastInfo);
 
       }
       catch (Exception e)
@@ -225,23 +257,34 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
 
     /// <summary>
-    /// Manually patch info from our schema builder and the available model types
+    /// Add Revit information such as families and levels to our schema to populate dropdowns and such
     /// </summary>
-    /// <param name="revitTypes"></param>
-    private void GenerateSchemas()
+    /// <param name="schemas">Available schemas for the current selection</param>
+    private void AddRevitInfoToSchema(List<Schema> schemas)
     {
-      var schemas = new List<ISchema>();
+      var updatedSchemas = new List<Schema>();
 
-      //WALLS
-      var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
-      if (wallFamilies.Any())
+      foreach (var schema in schemas)
       {
-        var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
-        schemas.Add(new RevitWallViewModel(wallFamiliesViewModels, AvailableRevitLevels));
+        switch (schema)
+        {
+          case RevitWallViewModel o:
+            var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+            if (!wallFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+
+            var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            o.Families = wallFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+
+            break;
+          case DirectShapeFreeformViewModel o:
+            updatedSchemas.Add(o);
+            break;
+        }
       }
 
-      //DIRECT SHAPE AND FREEFORM ELEMENT
-      schemas.Add(new DirectShapeFreeformViewModel());
 
       //var revitMetadata = new List<RevitMetadataViewModel>();
 
@@ -264,7 +307,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
 
       //also triggers binding refresh
-      AllSchemas = schemas;
+      Schemas = updatedSchemas;
 
 
     }
@@ -286,20 +329,10 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public void SetMappingsCommand()
     {
-      //needed bc we're serializing an interface
-      var settings = new JsonSerializerSettings()
-      {
-        TypeNameHandling = TypeNameHandling.All
-      };
 
-      var serializedViewModel = JsonConvert.SerializeObject(SelectedSchema, settings);
-      Bindings.SetMappings(SelectedSchema.GetSerializedSchema(), serializedViewModel);
+      Bindings.SetMappings(SelectedSchema.GetSerializedSchema(), SelectedSchema.GetSerializedViewModel());
     }
 
-    public void RefreshSelectionCommand()
-    {
-      ApplicableSchemas = Bindings.GetSelectionSchemas();
-    }
 
     public void OpenStreamSelectorCommand()
     {

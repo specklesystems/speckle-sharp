@@ -11,43 +11,55 @@ using System.Text;
 
 namespace DesktopUI2.ViewModels.MappingTool
 {
-  public interface ISchema
-  {
-    abstract string Name { get; }
-    abstract string GetSerializedSchema();
-  }
-
   [DataContract]
-  public class RevitFamily : ReactiveObject
+  public abstract class Schema : ReactiveObject
   {
     [DataMember]
-    public string Name { get; set; }
+    public abstract string Name { get; }
+    [DataMember]
+    public bool HasData;
 
-    private List<string> _types;
-    public List<string> Types
+    //only used to highlight/clear mapped elements
+    //needs to be set by the GetExistingSchemaElements method
+
+    public string ApplicationId;
+
+    public abstract string Summary { get; }
+    public abstract string GetSerializedSchema();
+
+    public string GetSerializedViewModel()
     {
-      get => _types;
-      set => this.RaiseAndSetIfChanged(ref _types, value);
+      HasData = true;
+      //needed bc we're serializing an interface
+      var settings = new JsonSerializerSettings()
+      {
+        TypeNameHandling = TypeNameHandling.All
+      };
+      var serializedViewModel = JsonConvert.SerializeObject(this, settings);
+      return serializedViewModel;
     }
 
-    public RevitFamily(string name, List<string> types)
-    {
-      Name = name;
-      Types = types;
-    }
   }
 
-  [DataContract]
-  public class RevitWallViewModel : ReactiveObject, ISchema
+
+
+  public class RevitWallViewModel : Schema
   {
-    [DataMember]
-    public string Name => "Wall";
+    public override string Name => "Wall";
 
     private List<RevitFamily> _families;
     public List<RevitFamily> Families
     {
       get => _families;
-      set => this.RaiseAndSetIfChanged(ref _families, value);
+      set
+      {
+
+        this.RaiseAndSetIfChanged(ref _families, value);
+
+        //force the refresh of the dropdown after these lists have been updated
+        SelectedFamily = Families?.FirstOrDefault(x => x.Name == SelectedFamily?.Name);
+        SelectedType = SelectedFamily?.Types?.FirstOrDefault(x => x == SelectedType);
+      }
     }
 
     private RevitFamily _selectedFamily;
@@ -70,7 +82,13 @@ namespace DesktopUI2.ViewModels.MappingTool
     public List<string> Levels
     {
       get => _levels;
-      set => this.RaiseAndSetIfChanged(ref _levels, value);
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _levels, value);
+
+        //force the refresh of the dropdown after these lists have been updated
+        SelectedLevel = Levels?.FirstOrDefault(x => x == SelectedLevel);
+      }
     }
 
 
@@ -82,29 +100,23 @@ namespace DesktopUI2.ViewModels.MappingTool
       set => this.RaiseAndSetIfChanged(ref _selectedLevel, value);
     }
 
+    public override string Summary => $"{SelectedFamily?.Name} - {SelectedType}";
 
-    public RevitWallViewModel(List<RevitFamily> families, List<string> levels)
-    {
-      Families = families;
-      Levels = levels;
-    }
 
     public RevitWallViewModel()
     {
     }
 
-    public string GetSerializedSchema()
+    public override string GetSerializedSchema()
     {
       var obj = new RevitWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel), 0);
       return Operations.Serialize(obj);
     }
   }
 
-  [DataContract]
-  public class DirectShapeFreeformViewModel : ReactiveObject, ISchema
+  public class DirectShapeFreeformViewModel : Schema
   {
-    [DataMember]
-    public string Name => "DirectShape";
+    public override string Name => "DirectShape";
 
     private string _shapeName;
     [DataMember]
@@ -138,13 +150,15 @@ namespace DesktopUI2.ViewModels.MappingTool
       set => this.RaiseAndSetIfChanged(ref _freeform, value);
     }
 
+    public override string Summary => $"{ShapeName} - {SelectedCategory}";
+
     public DirectShapeFreeformViewModel()
     {
       Categories = Enum.GetValues(typeof(RevitCategory)).Cast<RevitCategory>().Select(x => x.ToString()).ToList(); ;
     }
 
 
-    public string GetSerializedSchema()
+    public override string GetSerializedSchema()
     {
       //TODO: look into supporting the category and name filed for freeform elements too
       if (Freeform)
@@ -160,4 +174,40 @@ namespace DesktopUI2.ViewModels.MappingTool
   }
 
 
+  [DataContract]
+  public class RevitFamily : ReactiveObject
+  {
+    [DataMember]
+    public string Name { get; set; }
+
+    private List<string> _types;
+    public List<string> Types
+    {
+      get => _types;
+      set => this.RaiseAndSetIfChanged(ref _types, value);
+    }
+
+    public RevitFamily(string name, List<string> types)
+    {
+      Name = name;
+      Types = types;
+    }
+
+    public RevitFamily()
+    {
+    }
+  }
+
+
+  public class SchemaGroup
+  {
+    public string Name { get; set; }
+    public List<Schema> Schemas { get; set; }
+
+    public SchemaGroup(string name, List<Schema> schemas)
+    {
+      Name = name;
+      Schemas = schemas;
+    }
+  }
 }

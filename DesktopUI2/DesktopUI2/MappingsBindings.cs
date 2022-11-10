@@ -9,21 +9,45 @@ namespace DesktopUI2
   /// Notifies that the selection has changed
   /// </summary>
   /// <param name="objects"></param>
-  public delegate void UpdateSelection(List<Type> objects);
+  public delegate void UpdateSelection(MappingSelectionInfo info);
 
+  /// <summary>
+  /// Notifies that the existing elements with a schema in the Doc have changed
+  /// </summary>
+  /// <param name="schemas"></param>
+  public delegate void UpdateExistingSchemaElements(List<Schema> schemas);
+
+  public class MappingSelectionInfo
+  {
+    public List<Schema> Schemas { get; set; }
+    public int Count { get; set; }
+
+    public MappingSelectionInfo(List<Schema> schemas, int count)
+    {
+      Schemas = schemas;
+      Count = count;
+    }
+  }
   public abstract class MappingsBindings
   {
 
     #region delegates
 
     public UpdateSelection UpdateSelection;
+    public UpdateExistingSchemaElements UpdateExistingSchemaElements;
 
     #endregion
     /// <summary>
     /// Gets the selected objects in the host application
     /// </summary>
     /// <returns></returns>
-    public abstract List<Type> GetSelectionSchemas();
+    public abstract MappingSelectionInfo GetSelectionInfo();
+
+    /// <summary>
+    /// Gets all the objects with a schema in the host application
+    /// </summary>
+    /// <returns></returns>
+    public abstract List<Schema> GetExistingSchemaElements();
 
     /// <summary>
     /// Sets the mappings on the current selection
@@ -32,7 +56,10 @@ namespace DesktopUI2
     /// <param name="viewModel">An ISchema View Model to easily restore the mappings in the Mapping Tool</param>
     public abstract void SetMappings(string schema, string viewModel);
 
-
-
+    /// <summary>
+    /// Highlights a list of elements given their IDs
+    /// </summary>
+    /// <param name="ids"></param>
+    public abstract void HighlightElements(List<string> ids);
   }
 }
