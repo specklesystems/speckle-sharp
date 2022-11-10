@@ -311,6 +311,11 @@ namespace Speckle.Core.Models
     private string _filePath;
     public string filePath { get => _filePath; set { _filePath = value; hashExpired = true; } }
 
+    public Blob(string filePath)
+    {
+      this.filePath = filePath;
+    }
+
     /// <summary>
     /// For blobs, the id is the same as the file hash. Please note, when deserialising, the id will be set from the original hash generated on sending.
     /// </summary>
@@ -334,7 +339,7 @@ namespace Speckle.Core.Models
 
     public string getLocalDestinationPath(string blobStorageFolder)
     {
-      var fileName = filePath.Split('/').Last();
+      var fileName = Path.GetFileName(filePath);
       return Path.Combine(blobStorageFolder, $"{id.Substring(0, 10)}-{fileName}");
     }
 

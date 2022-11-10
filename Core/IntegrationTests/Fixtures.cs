@@ -91,18 +91,17 @@ namespace TestsIntegration
       return @base;
     }
 
-    public static Blob[] GenerateThreeBlobs()
+    public static Blob[] GenerateThreeBlobs() => new Blob[] {
+        GenerateBlob("blob 1 data"),
+        GenerateBlob("blob 2 data"),
+        GenerateBlob("blob 3 data"),
+    };
+
+    private static Blob GenerateBlob(string content)
     {
-      // TODO: remove local file dependency
-      var blob = new Blob();
-      blob.filePath = Path.Combine("/Users/dim/Downloads", "email-header.png");
-
-      var blob2 = new Blob();
-      blob2.filePath = Path.Combine("/Users/dim/Downloads", "2015_09.pdf");
-
-      var blob3 = new Blob();
-      blob3.filePath = Path.Combine("/Users/dim/Downloads", "comments.gif");
-      return new Blob[] {blob, blob2, blob3};
+      var filePath = Path.GetTempFileName();
+      File.WriteAllText(filePath, content);
+      return new Blob(filePath);
     }
   }
 
