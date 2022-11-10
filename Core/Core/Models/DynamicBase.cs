@@ -153,7 +153,7 @@ namespace Speckle.Core.Models
     /// Gets all of the property names on this class, dynamic or not.
     /// </summary>
     /// <returns></returns>
-    [Obsolete("Use GetMembers().Keys instead")]
+    [Obsolete("Use `GetMembers(DynamicBaseMemberType.All).Keys` instead")]
     public override IEnumerable<string> GetDynamicMemberNames()
     {
       PopulatePropInfoCache(GetType());
@@ -170,7 +170,7 @@ namespace Speckle.Core.Models
     /// Gets the names of the defined class properties (typed).
     /// </summary>
     /// <returns></returns>
-    [Obsolete("Use GetMembers(DynamicBaseMemberType.Dynamic).Keys instead")]
+    [Obsolete("Use GetMembers(DynamicBaseMemberType.InstanceAll).Keys instead")]
     public IEnumerable<string> GetInstanceMembersNames() => GetInstanceMembersNames(GetType());
     
     public static IEnumerable<string> GetInstanceMembersNames(Type t)
