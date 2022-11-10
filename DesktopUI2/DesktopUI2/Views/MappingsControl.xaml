@@ -112,7 +112,7 @@
                         Margin="5"
                         Classes="Overline"
                         Foreground="Gray"
-                        Text="ELEMENT" />
+                        Text="SET UP" />
                     </StackPanel>
 
 
@@ -128,8 +128,9 @@
 
                     <TextBlock
                       Margin="5,10"
+                      FontStyle="Italic"
                       IsVisible="{Binding !IsValidStreamSelected}"
-                      Text="The selected stream and branch do not contain valid Revit types and levels."
+                      Text="The selected branch does not contain valid Revit types and levels, some elements will not be available."
                       TextWrapping="Wrap" />
 
 

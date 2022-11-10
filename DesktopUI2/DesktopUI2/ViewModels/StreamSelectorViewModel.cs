@@ -20,6 +20,8 @@ namespace DesktopUI2.ViewModels
 
     private Action streamSearchDebouncer = null;
 
+    private bool _noSearch = false;
+
     private bool _isVisible;
     public bool IsVisible
     {
@@ -49,6 +51,8 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
+        if (_noSearch)
+          return;
         if (!string.IsNullOrEmpty(SearchQuery) && SearchQuery.Length <= 2)
           return;
 
@@ -72,8 +76,15 @@ namespace DesktopUI2.ViewModels
       private set
       {
         this.RaiseAndSetIfChanged(ref _selectedStream, value);
+
         if (value != null)
+        {
+          _noSearch = true;
+          SearchQuery = _selectedStream.Stream.name;
+          _noSearch = false;
           GetBranches();
+        }
+
       }
     }
 
@@ -203,6 +214,9 @@ namespace DesktopUI2.ViewModels
     private void ClearSearchCommand()
     {
       SearchQuery = "";
+      SelectedStream = null;
+      SelectedBranch = null;
+      Streams = new List<StreamAccountWrapper>();
     }
 
     private void OkCommand()

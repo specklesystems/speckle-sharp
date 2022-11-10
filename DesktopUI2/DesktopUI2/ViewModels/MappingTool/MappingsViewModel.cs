@@ -155,7 +155,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
         SelectedStream = StreamSelector.SelectedStream;
 
-        if (AllSchemas.Any())
+        if (AvailableRevitTypes.Any() && AvailableRevitLevels.Any())
           IsValidStreamSelected = true;
         else
           IsValidStreamSelected = false;
