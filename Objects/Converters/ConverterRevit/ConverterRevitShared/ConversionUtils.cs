@@ -153,7 +153,7 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
-      if (@base["elements"] != null && @base["elements"] is IList elements)
+      if (@base != null && @base["elements"] != null && @base["elements"] is IList elements)
       {
         CurrentHostElement = host;
 

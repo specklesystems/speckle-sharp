@@ -138,6 +138,7 @@ namespace Objects.Converter.Revit
           {
             if (CurrentHostElement is FootPrintRoof roof)
             {
+              // handle receiving mullions on a curtain roof
               var curtainGrids = roof.CurtainGrids;
               CurtainGrid lastGrid = null;
               foreach (var curtainGrid in curtainGrids)
@@ -246,7 +247,6 @@ namespace Objects.Converter.Revit
     {
       notes = new List<string>();
       Base @base = null;
-      //Base speckleHost = null;
       Base extraProps = new Base();
 
       if (!ShouldConvertHostedElement(revitFi, revitFi.Host, ref extraProps))
@@ -257,7 +257,8 @@ namespace Objects.Converter.Revit
         @base = AdaptiveComponentToSpeckle(revitFi);
 
       //these elements come when the curtain wall is generated
-      //they will pass the 'shouldConvert' filter above, but we still want the parents to deal with their conversion
+      //if they are contained in 'subelements' then they have already been accounted for from a wall
+      //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
       {
         if (SubelementIds.Contains(revitFi.Id))
@@ -337,7 +338,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
-      #region sub elements capture
+#region sub elements capture
 
       var subElementIds = revitFi.GetSubComponentIds();
       var convertedSubElements = new List<Base>();
@@ -362,7 +363,7 @@ namespace Objects.Converter.Revit
         speckleFi.elements = convertedSubElements;
       }
 
-      #endregion
+#endregion
 
       return speckleFi;
     }

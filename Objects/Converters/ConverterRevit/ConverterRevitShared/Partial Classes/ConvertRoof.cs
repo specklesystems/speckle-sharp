@@ -295,10 +295,10 @@ namespace Objects.Converter.Revit
                   var start = PointToSpeckle(line.GetEndPoint(0));
                   var end = PointToSpeckle(line.GetEndPoint(1));
 
-                  if (!isBetween(start, end, tailPoint))
+                  if (!IsBetween(start, end, tailPoint))
                     continue;
 
-                  if (!checkOrtho(start.x, start.y, end.x, end.y, tailPoint.x, tailPoint.y, headPoint.x, headPoint.y))
+                  if (!CheckOrtho(start.x, start.y, end.x, end.y, tailPoint.x, tailPoint.y, headPoint.x, headPoint.y))
                     break;
 
                   definesRoofSlope = curve;
@@ -361,7 +361,7 @@ namespace Objects.Converter.Revit
     }
 
     // checks if point c is between a and b
-    private bool isBetween(Geometry.Point a, Geometry.Point b, Geometry.Point c)
+    private bool IsBetween(Geometry.Point a, Geometry.Point b, Geometry.Point c)
     {
       var crossproduct = (c.y - a.y) * (b.x - a.x) - (c.x - a.x) * (b.y - a.y);
 
@@ -380,7 +380,7 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    private bool checkOrtho(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
+    private bool CheckOrtho(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
     {
       double m1, m2;
 
