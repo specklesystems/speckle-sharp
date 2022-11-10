@@ -117,6 +117,7 @@ namespace Speckle.Core.Api
     public int favoritesCount { get; set; }
 
     public List<Collaborator> collaborators { get; set; }
+    public List<PendingStreamCollaborator> pendingCollaborators { get; set; } = new List<PendingStreamCollaborator>();
     public Branches branches { get; set; }
 
     /// <summary>
@@ -170,6 +171,7 @@ namespace Speckle.Core.Api
     public string title { get; set; }
     public string role { get; set; }
     public User invitedBy { get; set; }
+    public User user { get; set; }
     public string token { get; set; }
   }
 
@@ -271,20 +273,30 @@ namespace Speckle.Core.Api
     public List<Stream> items { get; set; }
   }
 
-  public class User
+  public class UserBase
   {
     public string id { get; set; }
-    public string email { get; set; }
     public string name { get; set; }
     public string bio { get; set; }
     public string company { get; set; }
     public string avatar { get; set; }
-
     public bool verified { get; set; }
-
-    //public object profiles { get; set; }
     public string role { get; set; }
     public Streams streams { get; set; }
+  }
+
+  public class LimitedUser : UserBase
+  {
+    public override string ToString()
+    {
+      return $"Other user profile: ({name} | {id})";
+    }
+
+  }
+
+  public class User : UserBase
+  {
+    public string email { get; set; }
     public Streams favoriteStreams { get; set; }
 
     public override string ToString()
@@ -293,62 +305,6 @@ namespace Speckle.Core.Api
     }
   }
 
-  public class Comments
-  {
-    public int totalCount { get; set; }
-    public DateTime? cursor { get; set; }
-    public List<CommentItem> items { get; set; }
-  }
-
-  public class CommentData
-  {
-    public Comments comments { get; set; }
-    public List<double> camPos { get; set; }
-    public object filters { get; set; }
-    public Location location { get; set; }
-    public object selection { get; set; }
-    public object sectionBox { get; set; }
-  }
-
-  public class CommentItem
-  {
-    public string id { get; set; }
-    public string authorId { get; set; }
-    public bool archived { get; set; }
-    public string screenshot { get; set; }
-    public Text text { get; set; }
-    public CommentData data { get; set; }
-    public DateTime createdAt { get; set; }
-    public DateTime updatedAt { get; set; }
-    public DateTime? viewedAt { get; set; }
-    public object reactions { get; set; }
-    public Comments replies { get; set; }
-    public List<Resource> resources { get; set; }
-  }
-
-  public partial class Text
-  {
-    public Doc Doc { get; set; }
-  }
-
-  public partial class Doc
-  {
-    public string Type { get; set; }
-    public DocContent[] Content { get; set; }
-  }
-
-  public partial class DocContent
-  {
-    public string Type { get; set; }
-    public ContentContent[] Content { get; set; }
-  }
-
-  public partial class ContentContent
-  {
-    public string Type { get; set; }
-    //public Mark[] Marks { get; set; }
-    public string Text { get; set; }
-  }
 
   public class Resource
   {
@@ -376,6 +332,30 @@ namespace Speckle.Core.Api
     public User user { get; set; }
   }
 
+
+  /// <summary>
+  /// GraphQL DTO model for active user data
+  /// </summary>
+  public class ActiveUserData
+  {
+    /// <summary>
+    ///  User profile of the active user.
+    /// </summary>
+    public User activeUser { get; set; }
+  }
+
+
+  /// <summary>
+  /// GraphQL DTO model for limited user data. Mostly referring to other user's profile.
+  /// </summary>
+  public class LimitedUserData
+  {
+    /// <summary>
+    /// The limited user profile of another (non active user)
+    /// </summary>
+    public LimitedUser otherUser { get; set; }
+  }
+
   public class UserSearchData
   {
     public UserSearch userSearch { get; set; }
@@ -384,7 +364,7 @@ namespace Speckle.Core.Api
   public class UserSearch
   {
     public string cursor { get; set; }
-    public List<User> items { get; set; }
+    public List<LimitedUser> items { get; set; }
   }
 
   public class ServerInfoResponse
@@ -417,6 +397,47 @@ namespace Speckle.Core.Api
     public Streams streams { get; set; }
   }
 
+  #region comments
+  public class Comments
+  {
+    public int totalCount { get; set; }
+    public DateTime? cursor { get; set; }
+    public List<CommentItem> items { get; set; }
+  }
+
+  public class CommentData
+  {
+    public Comments comments { get; set; }
+    public List<double> camPos { get; set; }
+    public object filters { get; set; }
+    public Location location { get; set; }
+    public object selection { get; set; }
+    public object sectionBox { get; set; }
+  }
+
+  public class CommentItem
+  {
+    public string id { get; set; }
+    public string authorId { get; set; }
+    public bool archived { get; set; }
+    public string screenshot { get; set; }
+    public string rawText { get; set; }
+    public CommentData data { get; set; }
+    public DateTime createdAt { get; set; }
+    public DateTime updatedAt { get; set; }
+    public DateTime? viewedAt { get; set; }
+    public object reactions { get; set; }
+    public Comments replies { get; set; }
+    public List<Resource> resources { get; set; }
+  }
+
+  public partial class ContentContent
+  {
+    public string Type { get; set; }
+    //public Mark[] Marks { get; set; }
+    public string Text { get; set; }
+  }
+
   public class CommentsData
   {
     public Comments comments { get; set; }
@@ -426,6 +447,18 @@ namespace Speckle.Core.Api
   {
     public CommentItem comment { get; set; }
   }
+
+  public class CommentActivityMessage
+  {
+    public string type { get; set; }
+    public CommentItem comment { get; set; }
+  }
+
+  public class CommentActivityResponse
+  {
+    public CommentActivityMessage commentActivity { get; set; }
+  }
+  #endregion
 
   #region manager api
 

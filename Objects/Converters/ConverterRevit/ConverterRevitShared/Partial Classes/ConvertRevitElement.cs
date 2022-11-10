@@ -24,14 +24,25 @@ namespace Objects.Converter.Revit
         speckleElement.type = revitElement.Name;
       }
 
+      var baseGeometry = LocationToSpeckle(revitElement);
+      if (baseGeometry is Geometry.Point point)
+        speckleElement["basePoint"] = point;
+      else if (baseGeometry is Geometry.Line line)
+        speckleElement["baseLine"] = line;
+
       speckleElement.category = revitElement.Category.Name;
       speckleElement.displayValue = GetElementDisplayMesh(revitElement, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       //Only send elements that have a mesh, if not we should probably support them properly via direct conversions
       if (speckleElement.displayValue == null || speckleElement.displayValue.Count == 0)
       {
-        notes.Add("Not sending elements without display meshes");
-        return null;
+        speckleElement.displayValue = GetFabricationMeshes(revitElement);
+
+        if (speckleElement.displayValue == null || speckleElement.displayValue.Count == 0)
+        {
+          notes.Add("Not sending elements without display meshes");
+          return null;
+        }
       }
 
       GetAllRevitParamsAndIds(speckleElement, revitElement);

@@ -76,32 +76,6 @@ namespace Speckle.ConnectorRevit.Entry
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
-      // one click send
-      var speckleButtonSend = specklePanel.AddItem(new PushButtonData("Send", "Send to Speckle", typeof(App).Assembly.Location, typeof(OneClickSendCommand).FullName)) as PushButton;
-
-      if (speckleButtonSend != null)
-      {
-        speckleButtonSend.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick16.png", path);
-        speckleButtonSend.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick32.png", path);
-        speckleButtonSend.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick32.png", path);
-        speckleButtonSend.ToolTip = "Sends your selected file objects to Speckle, or the entire model if nothing is selected.";
-        speckleButtonSend.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        speckleButtonSend.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
-      }
-
-
-      // quick share
-      var speckleButtonShare = specklePanel.AddItem(new PushButtonData("Share", "Quick Share", typeof(App).Assembly.Location, typeof(QuickShareCommand).FullName)) as PushButton;
-
-      if (speckleButtonShare != null)
-      {
-        speckleButtonShare.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share16.png", path);
-        speckleButtonShare.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
-        speckleButtonShare.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
-        speckleButtonShare.ToolTip = "Quickly share the selected evelemtns via Speckle, or the entire model if nothing is selected.";
-        speckleButtonShare.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        speckleButtonShare.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
-      }
 #endif
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
@@ -154,8 +128,6 @@ namespace Speckle.ConnectorRevit.Entry
         bindings.RegisterAppEvents();
         SpeckleRevitCommand2.Bindings = bindings;
         SchedulerCommand.Bindings = bindings;
-        OneClickSendCommand.Bindings = bindings;
-        QuickShareCommand.Bindings = bindings;
 
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
         Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
