@@ -262,16 +262,15 @@ namespace Objects.Converter.Revit
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
-        else
-          //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
-          SubelementIds.Add(revitFi.Id);
-
-        if (Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category))
+        else if (Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category))
         {
           var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
           // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
           extraProps["isUGridLine"] = Math.Abs(direction.X) > Math.Abs(direction.Y) ? true : false;
         }
+        else
+          //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
+          SubelementIds.Add(revitFi.Id);
       }
 
       //beams & braces
