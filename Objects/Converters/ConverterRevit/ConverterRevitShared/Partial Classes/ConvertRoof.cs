@@ -68,6 +68,23 @@ namespace Objects.Converter.Revit
           {
             ModelCurveArray curveArray = new ModelCurveArray();
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
+
+            // if the roof is a curtain roof then set the mullions at the borders
+            if (revitFootprintRoof.CurtainGrids != null && speckleFootprintRoof["elements"] is List<Base> elements && elements.Count != 0)
+            {
+              // TODO: Create a new type instead of overriding the type. This could affect other elements
+              var param = roofType.get_Parameter(BuiltInParameter.AUTO_MULLION_BORDER1_GRID1);
+              var type = Doc.GetElement(param.AsElementId());
+              if (type == null)
+              {
+                // assuming first mullion is the desired mullion for the whole roof...
+                GetElementType<MullionType>(elements.First(), new ApplicationObject("", ""), out MullionType mullionType);
+                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
+                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
+                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
+                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID2, mullionType);
+              }
+            }
             var poly = speckleFootprintRoof.outline as Polycurve;
             bool hasSlopedSide = false;
             if (poly != null)
@@ -116,7 +133,7 @@ namespace Objects.Converter.Revit
           }
         default:
           appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof");
-          return  appObj;
+          return appObj;
       }
 
       Doc.Regenerate();
@@ -134,6 +151,8 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(revitRoof, speckleRevitRoof);
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitRoof.UniqueId, convertedItem: revitRoof);
+
+      Doc.Regenerate();
       appObj = SetHostedElements(speckleRoof, revitRoof, appObj);
       return appObj;
     }
