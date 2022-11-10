@@ -134,6 +134,24 @@ namespace Objects.Converter.Revit
               return appObj;
             }
           }
+          else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased)
+          {
+            if (CurrentHostElement is FootPrintRoof roof)
+            {
+              var curtainGrids = roof.CurtainGrids;
+              CurtainGrid lastGrid = null;
+              foreach (var curtainGrid in curtainGrids)
+                if (curtainGrid is CurtainGrid c)
+                  lastGrid = c;
+
+              if (lastGrid != null && speckleFi["isUGridLine"] is bool isUGridLine)
+              {
+                var gridLine = lastGrid.AddGridLine(isUGridLine, basePoint, false);
+                foreach (var seg in gridLine.AllSegmentCurves)
+                  gridLine.AddMullions(seg as Curve, familySymbol as MullionType, isUGridLine);
+              }
+            }
+          }
           else
           {
             appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}");
@@ -228,36 +246,33 @@ namespace Objects.Converter.Revit
     {
       notes = new List<string>();
       Base @base = null;
-      Base speckleHost = null;
+      //Base speckleHost = null;
+      Base extraProps = new Base();
 
-      if (!ShouldConvertHostedElement(revitFi, revitFi.Host, ref speckleHost))
-      {
-        // there are certain elements in Revit that can be a host to another element
-        // yet not know it.
-        var hostedElementIds = GetDependentElementIds(revitFi.Host);
-        var elementId = revitFi.Id;
-        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
-        {
-          speckleHost = new Base() { applicationId = revitFi.Host.UniqueId };
-          speckleHost["category"] = revitFi.Host.Category.Name;
-        }
-        else
-          return null;
-      }
+      if (!ShouldConvertHostedElement(revitFi, revitFi.Host, ref extraProps))
+        return null;
 
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
         @base = AdaptiveComponentToSpeckle(revitFi);
 
       //these elements come when the curtain wall is generated
-      //let's not send them to speckle unless we realize they are needed!
+      //they will pass the 'shouldConvert' filter above, but we still want the parents to deal with their conversion
       if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
       {
+        //if (SubelementIds.Contains(revitFi.Id))
+        //  SubelementIds.Add(revitFi.Id);
         if (SubelementIds.Contains(revitFi.Id))
           return null;
         else
           //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
           SubelementIds.Add(revitFi.Id);
+
+        if (Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category))
+        {
+          var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
+          extraProps["isUGridLine"] = Math.Abs(direction.X) > Math.Abs(direction.Y) ? true : false;
+        }
       }
 
       //beams & braces
@@ -281,8 +296,10 @@ namespace Objects.Converter.Revit
       if (@base == null)
         @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
 
-      if (speckleHost != null)
-        @base["speckleHost"] = speckleHost;
+      foreach (var prop in extraProps.GetDynamicMembers())
+        @base[prop] = extraProps[prop];
+      //if (speckleHost != null)
+      //  @base["speckleHost"] = speckleHost;
 
       return @base; 
     }

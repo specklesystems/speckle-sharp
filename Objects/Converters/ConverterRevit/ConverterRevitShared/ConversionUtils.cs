@@ -47,7 +47,7 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base speckleHost)
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
     {
       //doesn't have a host, go ahead and convert
       if (host == null)
@@ -55,9 +55,11 @@ namespace Objects.Converter.Revit
 
       // has been converted before (from a parent host), skip it
       if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
-      {
         return false;
-      }
+
+      //// currentHostElement is the host of this element so it came from within the host's conversion
+      //if (CurrentHostElement?.UniqueId == host.UniqueId)
+      //  return true;
 
       // the parent is in our selection list,skip it, as this element will be converted by the host element
       if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
@@ -68,8 +70,8 @@ namespace Objects.Converter.Revit
         var elementId = element.Id;
         if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
         {
-          speckleHost = new Base() { applicationId = host.UniqueId };
-          speckleHost["category"] = host.Category.Name;
+          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId };
+          ((dynamic)extraProps["speckleHost"])["category"] = host.Category.Name;
         }
         else return false;
       }
@@ -140,8 +142,8 @@ namespace Objects.Converter.Revit
 
     public IList<ElementId> GetDependentElementIds(Element host)
     {
-      //if (host is HostObject hostObject)
-      //  return hostObject.FindInserts(true, false, false, false);
+      if (host is HostObject hostObject)
+        return hostObject.FindInserts(true, false, false, false);
 
       var typeFilter = new ElementIsElementTypeFilter(true);
       var categoryFilter = new ElementMulticategoryFilter(

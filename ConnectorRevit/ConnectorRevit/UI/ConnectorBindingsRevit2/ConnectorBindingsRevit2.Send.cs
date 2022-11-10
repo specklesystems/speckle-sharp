@@ -7,6 +7,7 @@ using Autodesk.Revit.DB;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -76,6 +77,7 @@ namespace Speckle.ConnectorRevit.UI
 
       progress.Max = selectedObjects.Count();
       var convertedCount = 0;
+
       foreach (var revitElement in selectedObjects)
       {
         var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
@@ -106,7 +108,12 @@ namespace Speckle.ConnectorRevit.UI
             return null;
 
           converter.Report.Log(reportObj); // Log object so converter can access
-          var conversionResult = converter.ConvertToSpeckle(revitElement);
+
+          Base conversionResult = null;
+          await RevitTask.RunAsync(app =>
+          {
+            conversionResult = converter.ConvertToSpeckle(revitElement);
+          });
 
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
@@ -120,29 +127,34 @@ namespace Speckle.ConnectorRevit.UI
             continue;
           }
 
-          // if we first receive an object that is a host but doesn't know it
-          // and then we receive the hosted object
+          // here we are checking to see if we're receiving an object that has a host
+          // but the host doesn't know that it is a host
           if (conversionResult["speckleHost"] is Base host && host["category"] is string catName)
           {
             commitObject[$"@{catName}"] ??= new List<Base>();
             if (commitObject[$"@{catName}"] is List<Base> objs)
             {
               var hostIndex = objs.FindIndex(obj => obj.applicationId == host.applicationId);
+              // if the "host" is present, then it has already been converted and we need to 
+              // attach the current, dependent, elements as a hosted element
               if (hostIndex != -1)
               {
                 objs[hostIndex]["elements"] ??= new List<Base>();
-
-                // remove the speckleHost element that we added
-                conversionResult["speckleHost"] = null;
                 ((List<Base>)objs[hostIndex]["elements"]).Add(conversionResult);
               }
+              // if host is not present, then it hasn't been converted yet
+              // create a placeholder that will be overridden later, but that will contain the hosted element
               else
               {
-                conversionResult["speckleHost"] = null;
                 var newBase = new Base() { applicationId = host.applicationId };
                 newBase["elements"] = new List<Base>() { conversionResult };
                 objs.Add(newBase);
               }
+
+              // remove the speckleHost element that we added
+              conversionResult["speckleHost"] = null;
+
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.applicationId}");
             }
           }
           //is an element type, nest it under Types instead
@@ -166,17 +178,20 @@ namespace Speckle.ConnectorRevit.UI
             if (commitObject[category] is List<Base> objs)
             {
               var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
-              // if we first receive a hosted object
-              // and then we receive the host that doesn't know that it is a host
+              
+              // here we are checking to see if we're converting a host that doesn't know it is a host
+              // and if dependent elements of that host have already been converted
               if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)
               {
                 objs.RemoveAt(hostIndex);
-                conversionResult["elements"] = elements;
+                if (conversionResult["elements"] is List<Base> els)
+                  els.AddRange(elements);
+                else
+                  conversionResult["elements"] = elements;
               }
               objs.Add(conversionResult);
             }
           }
-
 
           reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}");
         }
