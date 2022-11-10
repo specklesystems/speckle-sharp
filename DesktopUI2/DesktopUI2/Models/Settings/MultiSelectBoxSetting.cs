@@ -39,7 +39,7 @@ namespace DesktopUI2.Models.Settings
     public SelectionModel<string> SelectionModel { get; }
     public void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
     {
-      Selection = string.Join(",", SelectionModel.SelectedItems);
+      Selection = string.Join(", ", SelectionModel.SelectedItems);
       this.RaisePropertyChanged("Selection");
     }
 
