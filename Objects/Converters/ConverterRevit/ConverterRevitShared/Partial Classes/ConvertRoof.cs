@@ -299,7 +299,7 @@ namespace Objects.Converter.Revit
                     continue;
 
                   if (!checkOrtho(start.x, start.y, end.x, end.y, tailPoint.x, tailPoint.y, headPoint.x, headPoint.y))
-                    continue;
+                    break;
 
                   definesRoofSlope = curve;
                   var distance = Math.Sqrt((Math.Pow(headPoint.x - tailPoint.x, 2) + Math.Pow(headPoint.y - tailPoint.y, 2)));
@@ -415,7 +415,7 @@ namespace Objects.Converter.Revit
         m2 = (y4 - y3) / (x4 - x3);
 
         // Check if their product is -1
-        if (Math.Abs(m1 * m2) < TOLERANCE)
+        if (Math.Abs(m1 * m2 + 1) < TOLERANCE)
           return true;
         else
           return false;
