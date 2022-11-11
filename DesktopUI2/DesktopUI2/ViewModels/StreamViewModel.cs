@@ -1081,6 +1081,29 @@ namespace DesktopUI2.ViewModels
       SearchQuery = "";
     }
 
+    public void ShareCommand()
+    {
+      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
+    }
+
+    public void CloseNotificationCommand()
+    {
+      Notification = "";
+      NotificationUrl = "";
+
+    }
+
+    public void LaunchNotificationCommand()
+    {
+      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
+
+      if (!string.IsNullOrEmpty(NotificationUrl))
+        Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
+
+      CloseNotificationCommand();
+    }
 
     public void EditSavedStreamCommand()
     {
