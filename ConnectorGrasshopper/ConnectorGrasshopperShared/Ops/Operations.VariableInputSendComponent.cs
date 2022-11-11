@@ -388,6 +388,7 @@ namespace ConnectorGrasshopper.Ops
             {
               ReportProgress("Conversion", Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2));
             });
+            
             convertedCount++;
             var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
             var key = d.Key;
@@ -407,6 +408,11 @@ namespace ConnectorGrasshopper.Ops
           }
         }
 
+        foreach (var error in sendComponent.Converter.Report.ConversionErrors)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, error.ToFormattedString()));
+        }
+        
         if (convertedCount == 0)
         {
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
