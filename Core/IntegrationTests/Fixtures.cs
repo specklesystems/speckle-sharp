@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using System.Net.Mime;
+using System.Text;
+using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
@@ -64,7 +66,6 @@ namespace TestsIntegration
 
       var user1 = await client.ActiveUserGet();
       acc.userInfo.id = user1.id;
-
       return acc;
     }
 

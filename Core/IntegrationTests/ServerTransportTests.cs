@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using NUnit.Framework;
-using Speckle.Core.Api;
+﻿using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -19,9 +13,9 @@ namespace TestsIntegration
     public string streamId;
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
-      account = Fixtures.SeedUser();
+      account = await Fixtures.SeedUser();
       client = new Client(account);
       streamId = client.StreamCreate(new StreamCreateInput
       {
@@ -52,7 +46,7 @@ namespace TestsIntegration
       var sentObjectId = await Operations.Send(myObject, new List<ITransport> { transport });
 
       // NOTE: used to debug diffing
-      await Operations.Send(myObject, new List<ITransport> { transport });
+      // await Operations.Send(myObject, new List<ITransport> { transport });
 
       var receivedObject = await Operations.Receive(sentObjectId, transport);
 
