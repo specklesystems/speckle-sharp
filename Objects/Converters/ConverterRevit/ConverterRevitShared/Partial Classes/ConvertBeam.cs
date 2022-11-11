@@ -1,5 +1,6 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
+using Autodesk.Revit.DB.Visual;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -81,7 +82,8 @@ namespace Objects.Converter.Revit
         revitBeam = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
         // check for disallow join for beams in user settings
         // currently, this setting only applies to beams being created
-        if (Settings.ContainsKey("disallow-join") && Settings["disallow-join"] != null)
+
+        if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         {
           List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
           if (joinSettings.Contains(StructuralFraming))
@@ -101,6 +103,7 @@ namespace Objects.Converter.Revit
       // TODO: get sub families, it's a family! 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitBeam.UniqueId, convertedItem: revitBeam);
+      appObj = SetHostedElements(speckleBeam, revitBeam, appObj);
       return appObj;
     }
 
