@@ -333,6 +333,11 @@ namespace DesktopUI2.ViewModels.MappingTool
       Bindings.SetMappings(SelectedSchema.GetSerializedSchema(), SelectedSchema.GetSerializedViewModel());
     }
 
+    public void ClearMappingsCommand()
+    {
+      Bindings.ClearMappings();
+    }
+
 
     public void OpenStreamSelectorCommand()
     {

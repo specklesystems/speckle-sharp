@@ -154,6 +154,22 @@ namespace SpeckleRhino
 
     }
 
+    public override void ClearMappings()
+    {
+      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
+
+      foreach (var obj in selection)
+      {
+        try
+        {
+          obj.Attributes.DeleteUserString(SpeckleMappingKey);
+          obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
+        }
+        catch { }
+      }
+      SpeckleRhinoConnectorPlugin.Instance.ExistingSchemaLogExpired = true;
+    }
+
     public override List<Schema> GetExistingSchemaElements()
     {
       var settings = new JsonSerializerSettings()

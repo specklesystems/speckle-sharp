@@ -224,17 +224,27 @@
                     </ContentControl>
 
                     <!--  APPLY MAPPINGS  -->
-                    <StackPanel
-                      IsVisible="{Binding SelectedSchema, Converter={x:Static ObjectConverters.IsNotNull}}"
-                      Orientation="Vertical"
-                      Spacing="5">
+                    <StackPanel Orientation="Vertical" Spacing="5">
 
                       <StackPanel Margin="5" Orientation="Horizontal">
                         <TextBlock Classes="Caption" Text="Selected elements: " />
                         <TextBlock Classes="Caption" Text="{Binding Count}" />
                       </StackPanel>
+                      <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                        <Button
+                          Margin="0,0,10,0"
+                          Classes="Flat"
+                          Command="{Binding ClearMappingsCommand}"
+                          Content="Clear Mappings"
+                          IsEnabled="{Binding Count}"
+                          ToolTip.Tip="Remove mappings from all the selected elements" />
+                        <Button
+                          Command="{Binding SetMappingsCommand}"
+                          Content="Apply Mappings"
+                          IsEnabled="{Binding SelectedSchema, Converter={x:Static ObjectConverters.IsNotNull}}"
+                          ToolTip.Tip="Apply mappings to all the selected elements" />
+                      </StackPanel>
 
-                      <Button Command="{Binding SetMappingsCommand}" Content="Apply Mappings" />
                     </StackPanel>
 
                   </StackPanel>

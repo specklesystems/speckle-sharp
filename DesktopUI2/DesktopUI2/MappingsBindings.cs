@@ -56,6 +56,12 @@ namespace DesktopUI2
     /// <param name="viewModel">An ISchema View Model to easily restore the mappings in the Mapping Tool</param>
     public abstract void SetMappings(string schema, string viewModel);
 
+
+    /// <summary>
+    /// Clears the mappings on the current selection
+    /// </summary>
+    public abstract void ClearMappings();
+
     /// <summary>
     /// Highlights a list of elements given their IDs
     /// </summary>
