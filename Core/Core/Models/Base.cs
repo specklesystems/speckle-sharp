@@ -311,6 +311,8 @@ namespace Speckle.Core.Models
     private string _filePath;
     public string filePath { get => _filePath; set { _filePath = value; hashExpired = true; } }
 
+    public Blob(){}
+
     public Blob(string filePath)
     {
       this.filePath = filePath;

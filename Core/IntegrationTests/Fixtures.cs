@@ -66,7 +66,6 @@ namespace TestsIntegration
 
       var user1 = await client.ActiveUserGet();
       acc.userInfo.id = user1.id;
-coreapp3.1
       return acc;
     }
 
