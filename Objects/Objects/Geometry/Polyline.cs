@@ -5,14 +5,19 @@ using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Objects.Other;
 using Speckle.Core.Logging;
 
 namespace Objects.Geometry
 {
+  /// <summary>
+  /// A polyline curve, defined by a set of vertices.
+  /// </summary>
   public class Polyline : Base, ICurve, IHasArea, IHasBoundingBox, IConvertible, ITransformable
   {
+    /// <summary>
+    /// Gets or sets the raw coordinates that define this polyline. Use GetPoints instead to access this data as <see cref="Point"/> instances instead.
+    /// </summary>
     [DetachProperty]
     [Chunkable(31250)]
     public List<double> value { get; set; } = new List<double>();
@@ -21,20 +26,50 @@ namespace Objects.Geometry
     /// If true, do not add the last point to the value list. Polyline first and last points should be unique.
     /// </summary>
     public bool closed { get; set; }
+    
+    /// <summary>
+    /// The internal domain of this curve.
+    /// </summary>
     public Interval domain { get; set; }
+    
+    /// <inheritdoc/>
     public Box bbox { get; set; }
+    
+    /// <inheritdoc/>
     public double area { get; set; }
+    
+    /// <inheritdoc/>
     public double length { get; set; }
+    
+    /// <summary>
+    /// The unit's this <see cref="Polyline"/> is in.
+    /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
+    /// </summary>
     public string units { get; set; }
 
+    /// <summary>
+    /// Constructs an empty <see cref="Polyline"/>
+    /// </summary>
     public Polyline()
     { }
     
+    /// <summary>
+    /// Constructs a new <see cref="Polyline"/> instance from a flat list of coordinates.
+    /// </summary>
+    /// <param name="coordinatesArray">The array of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
+    /// <param name="units">The units the coordinates are in.</param>
+    /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
     [Obsolete("Use list constructor instead")]
     public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId)
     { }
     
+    /// <summary>
+    /// Constructs a new <see cref="Polyline"/> instance from a flat list of coordinates.
+    /// </summary>
+    /// <param name="coordinates">The list of 3-dimensional coordinates [x1,y1,z1,x2,y2,...</param>
+    /// <param name="units">The units the coordinates are in.</param>
+    /// <param name="applicationId">The unique ID of this polyline in a specific application</param>
     public Polyline(List<double> coordinates, string units = Units.Meters, string applicationId = null)
     {
       this.value = coordinates;
@@ -42,6 +77,9 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
     }
 
+    /// <summary>
+    /// Gets the list of points representing the vertices of this polyline.
+    /// </summary>
     [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]
     public List<Point> points => GetPoints();
     
@@ -60,6 +98,10 @@ namespace Objects.Geometry
       return pts;
     }
 
+    /// <summary>
+    /// Returns the values of this <see cref="Polyline"/> as a list of numbers
+    /// </summary>
+    /// <returns>A list of values representing the polyline.</returns>
     public List<double> ToList()
     {
       var list = new List<double>();
@@ -74,6 +116,12 @@ namespace Objects.Geometry
       list.Insert(0, list.Count); // 0
       return list;
     }
+
+    /// <summary>
+    /// Creates a new <see cref="Polyline"/> based on a list of coordinates and the unit they're drawn in.
+    /// </summary>
+    /// <param name="list">The list of values representing this polyline</param>
+    /// <returns>A new <see cref="Polyline"/> with the provided values.</returns>
 
     public static Polyline FromList(List<double> list)
     {
@@ -93,6 +141,7 @@ namespace Objects.Geometry
       throw new InvalidCastException();
     }
 
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable polyline)
     {
       // transform points
