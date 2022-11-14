@@ -20,12 +20,6 @@ namespace DesktopUI2
 
     public override void Initialize()
     {
-      AvaloniaXamlLoader.Load(this);
-      this.Name = "Speckle";
-    }
-
-    public override void OnFrameworkInitializationCompleted()
-    {
       //NOTE: the Mapping Tool is referencing Objects but we're not copying its dll from release and local builds
       //this is because it could lead to versions incompatibilities
       //the KitManager is invoked here to load Objects in the current AppDomain for us
@@ -38,6 +32,14 @@ namespace DesktopUI2
 
       }
 
+
+      AvaloniaXamlLoader.Load(this);
+      this.Name = "Speckle";
+    }
+
+    public override void OnFrameworkInitializationCompleted()
+    {
+     
       var theme = Theme.Create(Theme.Light, Primary, Accent);
       var themeBootstrap = this.LocateMaterialTheme<MaterialThemeBase>();
       themeBootstrap.CurrentTheme = theme;

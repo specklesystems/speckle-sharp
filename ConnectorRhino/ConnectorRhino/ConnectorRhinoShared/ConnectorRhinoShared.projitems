@@ -24,6 +24,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MacOSHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandMac.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMappingsCommandMac.cs" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='Release'">
