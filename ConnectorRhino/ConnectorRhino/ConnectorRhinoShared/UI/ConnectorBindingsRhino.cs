@@ -1159,9 +1159,12 @@ namespace SpeckleRhino
       Point3d target = new Point3d(viewCoordinates[3], viewCoordinates[4], viewCoordinates[5]);
       Vector3d direction = target - cameraLocation;
 
-      // Get bounds from active view
-      Rectangle bounds = Doc.Views.ActiveView.ActiveViewport.Bounds;
-      Doc.Views.Add("SpeckleCommentView", DefinedViewportProjection.Perspective, bounds, false);
+      if (!Doc.Views.Any(v => v.ActiveViewport.Name == "SpeckleCommentView"))
+      {
+        // Get bounds from active view
+        Rectangle bounds = Doc.Views.ActiveView.ScreenRectangle;
+        Doc.Views.Add("SpeckleCommentView", DefinedViewportProjection.Perspective, bounds, false);
+      }
 
       await Task.Run(() =>
       {
@@ -1171,7 +1174,12 @@ namespace SpeckleRhino
           RhinoView speckleCommentView = views.First();
           speckleCommentView.ActiveViewport.SetCameraDirection(direction, false);
           speckleCommentView.ActiveViewport.SetCameraLocation(cameraLocation, true);
-          Doc.Views.ActiveView = speckleCommentView;
+          speckleCommentView.Maximized = true;
+          
+          if (Doc.Views.ActiveView.ActiveViewport.Name != "SpeckleCommentView")
+          {
+            Doc.Views.ActiveView = speckleCommentView;
+          }
         }
 
         Doc.Views.Redraw();
