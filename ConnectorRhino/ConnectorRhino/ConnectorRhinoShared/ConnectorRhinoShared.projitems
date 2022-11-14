@@ -43,7 +43,6 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Resources.resx">
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <Generator>ResXFileCodeGenerator</Generator>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="$(MSBuildThisFileDirectory)Resources\icon.ico" />
   </ItemGroup>
