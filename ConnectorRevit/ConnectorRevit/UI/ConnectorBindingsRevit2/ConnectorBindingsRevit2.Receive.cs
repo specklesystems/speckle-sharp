@@ -22,16 +22,7 @@ namespace Speckle.ConnectorRevit.UI
   
   public partial class ConnectorBindingsRevit2
   {
-    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
-
-    public override bool CanPreviewReceive => false;
-
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
-    {
-      return null;
-      // TODO!
-    }
 
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.

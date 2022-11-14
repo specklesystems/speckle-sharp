@@ -76,6 +76,15 @@ namespace Speckle.ConnectorRevit.Entry
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
 
+      var testButton = specklePanel.AddItem(new PushButtonData("Test", "Test", typeof(App).Assembly.Location, typeof(TestCommand).FullName)) as PushButton;
+
+      if (testButton != null)
+      {
+        testButton.ToolTip = "Test Me!";
+        testButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        testButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
+
 #endif
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
@@ -128,6 +137,7 @@ namespace Speckle.ConnectorRevit.Entry
         bindings.RegisterAppEvents();
         SpeckleRevitCommand2.Bindings = bindings;
         SchedulerCommand.Bindings = bindings;
+        TestCommand.Bindings = bindings;
 
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
         Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
