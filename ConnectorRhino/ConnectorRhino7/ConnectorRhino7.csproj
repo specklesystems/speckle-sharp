@@ -6,13 +6,12 @@
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
-    <Product>ConnectorRhino7</Product>
     <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
-    <Version>2.0.0-dev</Version>
     <!--NOTE-->
   <!--
     Since Rhino uses mono we build for win-x64 also on mac
@@ -32,6 +31,10 @@
     <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+    <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
     </PackageReference>
     <PackageReference Include="RhinoCommon" Version="7.4.21078.1001">
