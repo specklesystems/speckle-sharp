@@ -83,13 +83,12 @@ namespace Speckle.ConnectorRevit.UI
         {
           using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
           {
-            t.Start();
+            //t.Start();
             applicationObjects = ConvertReceivedObjects(converter, progress);
-            t.Commit();
+            //t.Commit();
           }
 
           AddMultipleRevitElementServers(applicationObjects);
-
         });
       }
       else // just generate the log
@@ -164,20 +163,8 @@ namespace Speckle.ConnectorRevit.UI
       {
         if (!(appObj.Converted.FirstOrDefault() is IExternalServer server))
           continue;
-        try
-        {
-          //var s = new CancellationTokenSource();
-          //DispatcherTimer.RunOnce(() => directContext3DService.AddServer(server), TimeSpan.FromMilliseconds(10));
-          //Dispatcher.UIThread.MainLoop(s.Token);
 
-          //Dispatcher.UIThread.Post(() => directContext3DService.AddServer(server));
-          //Dispatcher.UIThread.RunJobs();
-          directContext3DService.AddServer(server);
-        }
-        catch (Exception ex)
-        {
-
-        }
+        directContext3DService.AddServer(server);
         serverIds.Add(server.GetServerId());
       }
 

@@ -359,21 +359,6 @@ namespace ConverterRevitShared
 
     #region Helper classes
 
-    // A container to hold information associated with a triangulated face.
-    class MeshInfo
-    {
-      public MeshInfo(OG.Mesh mesh, XYZ normal, ColorWithTransparency color)
-      {
-        Mesh = mesh;
-        Normal = normal;
-        ColorWithTransparency = color;
-      }
-
-      public OG.Mesh Mesh;
-      public XYZ Normal;
-      public ColorWithTransparency ColorWithTransparency;
-    }
-
     // A class that brings together all the data and rendering parameters that are needed to draw one sequence of primitives (e.g., triangles)
     // with the same format and appearance.
     class RenderingPassBufferStorage
