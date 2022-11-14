@@ -1082,6 +1082,13 @@ namespace DesktopUI2.ViewModels
     }
 
 
+    public void ShareCommand()
+    {
+      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
+    }
+
     public void EditSavedStreamCommand()
     {
       MainViewModel.RouterInstance.Navigate.Execute(this);
