@@ -134,6 +134,7 @@ namespace Objects.Geometry
       return polyline;
     }
 
+    /// <inheritdoc/>
     object IConvertible.ToType(Type conversionType, IFormatProvider provider)
     {
       if (conversionType == typeof(Polycurve))
@@ -163,86 +164,97 @@ namespace Objects.Geometry
       return true;
     }
 
+    /// <inheritdoc/>
     public TypeCode GetTypeCode()
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public bool ToBoolean(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public byte ToByte(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public char ToChar(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public DateTime ToDateTime(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public decimal ToDecimal(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public double ToDouble(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public short ToInt16(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public int ToInt32(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public long ToInt64(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public sbyte ToSByte(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public float ToSingle(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public string ToString(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
-    public object ToType(Type conversionType, IFormatProvider provider)
-    {
-      throw new NotImplementedException();
-    }
-
+    /// <inheritdoc/>
     public ushort ToUInt16(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public uint ToUInt32(IFormatProvider provider)
     {
       throw new NotImplementedException();
     }
 
+    /// <inheritdoc/>
     public ulong ToUInt64(IFormatProvider provider)
     {
       throw new NotImplementedException();
