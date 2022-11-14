@@ -45,7 +45,7 @@ namespace ConverterRevitShared
     public string GetApplicationId() => " ";
     public Outline GetBoundingBox(View dBView)
     {
-      return new Outline(new XYZ(0,0,0), new XYZ(1,1,1));
+      return new Outline(new XYZ(0,0,0), new XYZ(2,2,2));
     }
     public string GetDescription() => "Implements preview functionality for a Speckle Object";
     public string GetName() => "Speckle Object Drawing Server";
@@ -62,11 +62,8 @@ namespace ConverterRevitShared
             m_transparentFaceBufferStorage == null || m_transparentFaceBufferStorage.needsUpdate(displayStyle) ||
             m_edgeBufferStorage == null || m_edgeBufferStorage.needsUpdate(displayStyle))
         {
-          //Options options = new Options();
-          //GeometryElement geomElem = m_element.get_Geometry(options);
 
           CreateBufferStorageForBase(speckleObj, displayStyle);
-          //CreateBufferStorageForMesh(CreateRhinoStylePolygon(), displayStyle);
         }
 
         // Submit a subset of the geometry for drawing. Determine what geometry should be submitted based on
@@ -78,7 +75,7 @@ namespace ConverterRevitShared
 
         // Conditionally submit triangle primitives (for non-wireframe views).
         if (displayStyle != DisplayStyle.Wireframe &&
-            faceBufferStorage.PrimitiveCount > 0)
+            faceBufferStorage?.PrimitiveCount > 0)
           DrawContext.FlushBuffer(faceBufferStorage.VertexBuffer,
                                   faceBufferStorage.VertexBufferCount,
                                   faceBufferStorage.IndexBuffer,
@@ -89,7 +86,7 @@ namespace ConverterRevitShared
 
         // Conditionally submit line segment primitives.
         if (displayStyle != DisplayStyle.Shading &&
-            m_edgeBufferStorage.PrimitiveCount > 0)
+            m_edgeBufferStorage?.PrimitiveCount > 0)
           DrawContext.FlushBuffer(m_edgeBufferStorage.VertexBuffer,
                                   m_edgeBufferStorage.VertexBufferCount,
                                   m_edgeBufferStorage.IndexBuffer,
@@ -108,101 +105,48 @@ namespace ConverterRevitShared
 
     private void CreateBufferStorageForBase(Base @base, DisplayStyle displayStyle)
     {
-      var meshes = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<OG.Mesh>;
-      foreach (var mesh in meshes)
-        CreateBufferStorageForMesh(mesh, displayStyle);
+      //if (!@base.GetDynamicMemberNames().Contains("displayValue"))
+      //  return;
+
+      //var x = @base.GetDynamicMemberNames();
+      //var meshes = @base["displayValue"];
+      //var meshes2 = @base["displayValue"] as List<OG.Mesh>;
+      //var meshes3 = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<OG.Mesh>;
+      if (@base["displayValue"] != null && @base["displayValue"] is List<OG.Mesh> meshes)
+        foreach (var mesh in meshes)
+          CreateBufferStorageForMesh(mesh, displayStyle);
     }
 
     // Initialize and populate buffers that hold graphics primitives, set up related parameters that are needed for drawing.
     private void CreateBufferStorageForMesh(OG.Mesh mesh, DisplayStyle displayStyle)
     {
-      //List<Solid> allSolids = new List<Solid>();
-
-      //foreach (GeometryObject geomObj in geomElem)
-      //{
-      //  if (geomObj is Solid)
-      //  {
-      //    Solid solid = (Solid)geomObj;
-      //    if (solid.Volume > 1e-06)
-      //      allSolids.Add(solid);
-      //  }
-      //}
-
       m_nonTransparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
       m_transparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
       m_edgeBufferStorage = new RenderingPassBufferStorage(displayStyle);
-
-      // Collect primitives (and associated rendering parameters, such as colors) from faces and edges.
-      //foreach (Face face in mesh.faces)
-      //{
-      //  if (face.Area > 1e-06)
-      //  {
-      //    Mesh mesh = face.Triangulate();
-
-      //    ElementId materialId = face.MaterialElementId;
-      //    bool isTransparent = false;
-      //    ColorWithTransparency cwt = new ColorWithTransparency(127, 127, 127, 0);
-      //    if (materialId != ElementId.InvalidElementId)
-      //    {
-      //      Material material = m_element.Document.GetElement(materialId) as Material;
-
-      //      Color color = material.Color;
-      //      int transparency0To100 = material.Transparency;
-      //      uint transparency0To255 = (uint)((float)transparency0To100 / 100f * 255f);
-
-      //      cwt = new ColorWithTransparency(color.Red, color.Green, color.Blue, transparency0To255);
-      //      if (transparency0To255 > 0)
-      //      {
-      //        isTransparent = true;
-      //      }
-      //    }
-
-      //    BoundingBoxUV env = face.GetBoundingBox();
-      //    UV center = 0.5 * (env.Min + env.Max);
-      //    XYZ normal = face.ComputeNormal(center);
-
-      //    SpeckleMeshInfo meshInfo = new MeshInfo(mesh, normal, cwt);
-
-      //    if (isTransparent)
-      //    {
-      //      m_transparentFaceBufferStorage.Meshes.Add(meshInfo);
-      //      m_transparentFaceBufferStorage.VertexBufferCount += mesh.Vertices.Count;
-      //      m_transparentFaceBufferStorage.PrimitiveCount += mesh.NumTriangles;
-      //    }
-      //    else
-      //    {
-      //      m_nonTransparentFaceBufferStorage.Meshes.Add(meshInfo);
-      //      m_nonTransparentFaceBufferStorage.VertexBufferCount += mesh.Vertices.Count;
-      //      m_nonTransparentFaceBufferStorage.PrimitiveCount += mesh.NumTriangles;
-      //    }
-      //  }
-      //}
 
       var meshInfo = new SpeckleMeshInfo(mesh);
       m_nonTransparentFaceBufferStorage.Meshes.Add(meshInfo);
       m_nonTransparentFaceBufferStorage.VertexBufferCount += mesh.VerticesCount;
       m_nonTransparentFaceBufferStorage.PrimitiveCount += meshInfo.Faces.Count;
 
-      //m_edgeBufferStorage.VertexBufferCount += mesh.ed;
-      //m_edgeBufferStorage.PrimitiveCount += xyzs.Count - 1;
-      //m_edgeBufferStorage.EdgeXYZs.Add(xyzs);
-
-      //foreach (Edge edge in solid.Edges)
-      //{
-      //  // if (edge.Length > 1e-06)
-      //  {
-      //    IList<XYZ> xyzs = edge.Tessellate();
-
-      //    m_edgeBufferStorage.VertexBufferCount += xyzs.Count;
-      //    m_edgeBufferStorage.PrimitiveCount += xyzs.Count - 1;
-      //    m_edgeBufferStorage.EdgeXYZs.Add(xyzs);
-      //  }
-      //}
+      foreach (var edge in meshInfo.Edges)
+      {
+        var p1 = edge.ElementAt(0);
+        var p2 = edge.ElementAt(1);
+        IList<XYZ> xyzs = new List<XYZ>()
+        {
+          new XYZ(p1.x, p1.y, p1.z),
+          new XYZ(p2.x, p2.y, p2.z)
+        };
+        m_edgeBufferStorage.VertexBufferCount += xyzs.Count;
+        m_edgeBufferStorage.PrimitiveCount += xyzs.Count - 1;
+        m_edgeBufferStorage.EdgeXYZs.Add(xyzs);
+      }
 
       // Fill out buffers with primitives based on the intermediate information about faces and edges.
       ProcessFaces(m_nonTransparentFaceBufferStorage);
       //ProcessFaces(m_transparentFaceBufferStorage);
-      //ProcessEdges(m_edgeBufferStorage);
+      ProcessEdges(m_edgeBufferStorage);
     }
 
     private void ProcessFaces(RenderingPassBufferStorage bufferStorage)
@@ -406,31 +350,41 @@ namespace ConverterRevitShared
       public OG.Mesh Mesh;
       public List<OG.Point> Vertices;
       public List<int[]> Faces;
+      public List<List<OG.Point>> Edges = new List<List<OG.Point>>();
       public XYZ Normal;
       public ColorWithTransparency ColorWithTransparency;
       //public ConcurrentDictionary<Tuple<int, int>, ConcurrentBag<int>> EdgeFaceConnection;
 
       public SpeckleMeshInfo(OG.Mesh mesh)
       {
-        //var result = new ConcurrentDictionary<Tuple<int, int>, ConcurrentBag<int>>();
+        var result = new ConcurrentDictionary<Tuple<int, int>, ConcurrentBag<int>>();
         Mesh = mesh;
         Faces = GetFaceIndices(mesh).ToList();
         Vertices = mesh.GetPoints();
-        //var faceIndex = 0;
-        //foreach (var indices in faces)
-        //{
-        //  for (var j = 0; j < indices.Length; j++)
-        //  {
-        //    var iA = indices[j];
-        //    var iB = indices[(j + 1) % indices.Length];
-        //    var temp = iA;
-        //    iA = temp < iB ? iA : iB;
-        //    iB = temp < iB ? iB : temp;
-        //    //var connectedFaces = result.GetOrAdd(new Tuple<int, int>(iA, iB), new ConcurrentBag<int>());
-        //    //connectedFaces.Add(faceIndex);
-        //  }
-        //  faceIndex++;
-        //}
+
+        var edges = new List<(int, int)>();
+        var faceIndex = 0;
+        foreach (var indices in Faces)
+        {
+          for (var j = 0; j < indices.Length; j++)
+          {
+            var iA = indices[j];
+            var iB = indices[(j + 1) % indices.Length];
+            var temp = iA;
+            iA = temp < iB ? iA : iB;
+            iB = temp < iB ? iB : temp;
+
+            if (!edges.Contains((iA, iB)))
+            {
+              edges.Add((iA, iB));
+              Edges.Add(new List<OG.Point> { Vertices.ElementAt(iA), Vertices.ElementAt(iB) });
+            }
+              
+            //var connectedFaces = result.GetOrAdd(new Tuple<int, int>(iA, iB), new ConcurrentBag<int>());
+            //connectedFaces.Add(faceIndex);
+          }
+          faceIndex++;
+        }
       }
       public static IEnumerable<int[]> GetFaceIndices(OG.Mesh mesh)
       {

@@ -29,6 +29,7 @@ using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Avalonia.Threading;
 using Autodesk.Revit.DB.DirectContext3D;
 using Revit.Async;
+using DynamicData;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -37,10 +38,10 @@ namespace Speckle.ConnectorRevit.UI
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public override bool CanPreviewReceive => true;
     private string SelectedReceiveCommit { get; set; }
+    List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
+
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
- 
-
       // first check if commit is the same and preview objects have already been generated
       Commit commit = await GetCommitFromState(state, progress);
       progress.Report = new ProgressReport();
@@ -83,9 +84,9 @@ namespace Speckle.ConnectorRevit.UI
         {
           using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
           {
-            //t.Start();
+            t.Start();
             applicationObjects = ConvertReceivedObjects(converter, progress);
-            //t.Commit();
+            t.Commit();
           }
 
           AddMultipleRevitElementServers(applicationObjects);
@@ -110,7 +111,13 @@ namespace Speckle.ConnectorRevit.UI
 
         //return null;
     }
-    #region move to core?
+
+    public override void ResetDocument()
+    {
+      UnregisterServers();
+    }
+
+    #region move these?
     // gets the state commit
     private async Task<Commit> GetCommitFromState(StreamState state, ProgressViewModel progress)
     {
@@ -161,17 +168,63 @@ namespace Speckle.ConnectorRevit.UI
 
       foreach (var appObj in applicationObjects)
       {
-        if (!(appObj.Converted.FirstOrDefault() is IExternalServer server))
+        if (!(appObj.Converted.FirstOrDefault() is IDirectContext3DServer server))
           continue;
 
         directContext3DService.AddServer(server);
+        m_servers.Add(server);
         serverIds.Add(server.GetServerId());
+        //RefreshView();
       }
 
       msDirectContext3DService.SetActiveServers(serverIds);
 
       //m_documents.Add(uidoc.Document);
       CurrentDoc.UpdateAllOpenViews();
+    }
+
+    public void UnregisterServers()
+    {
+      ExternalServiceId externalDrawerServiceId = ExternalServices.BuiltInExternalServices.DirectContext3DService;
+      var externalDrawerService = ExternalServiceRegistry.GetService(externalDrawerServiceId) as MultiServerService;
+      if (externalDrawerService == null)
+        return;
+
+      foreach (var registeredServerId in externalDrawerService.GetRegisteredServerIds())
+      {
+        var externalDrawServer = externalDrawerService.GetServer(registeredServerId) as IDirectContext3DServer;
+        if (externalDrawServer == null)
+          continue;
+        //if (document != null && !document.Equals(externalDrawServer.Document))
+        //  continue;
+        externalDrawerService.RemoveServer(registeredServerId);
+      }
+
+      //if (document != null)
+      //{
+      //  m_servers.RemoveAll(server => document.Equals(server.Document));
+
+      //  if (updateViews)
+      //  {
+      //    UIDocument uidoc = new UIDocument(document);
+      //    uidoc.UpdateAllOpenViews();
+      //  }
+
+      //  m_documents.Remove(document);
+      //}
+      //else
+      //{
+        m_servers.Clear();
+
+        //if (updateViews)
+          //foreach (var doc in m_documents)
+          //{
+          //  UIDocument uidoc = new UIDocument(doc);
+          //  uidoc.UpdateAllOpenViews();
+          //}
+      CurrentDoc.UpdateAllOpenViews();
+      //m_documents.Clear();
+      //}
     }
   }
 }
