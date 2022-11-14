@@ -3,7 +3,6 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:local="using:DesktopUI2"
-  xmlns:style="clr-namespace:DesktopUI2.Styles"
   xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles">
   <Application.DataTemplates>
     <local:ViewLocator />
