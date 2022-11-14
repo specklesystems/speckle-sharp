@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
       List<string> joinSettings = new List<string>();
-      if (Settings.ContainsKey("disallow-join"))
+      if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
 
       if (speckleWall is RevitWall speckleRevitWall)

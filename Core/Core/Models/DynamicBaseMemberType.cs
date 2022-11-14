@@ -24,5 +24,13 @@ namespace Speckle.Core.Models
     /// The typed members flagged with <see cref="SchemaIgnored"/> attribute.
     /// </summary>
     SchemaIgnored = 8,
+    /// <summary>
+    /// All the typed members, including ones with <see cref="ObsoleteAttribute"/> or <see cref="SchemaIgnored"/> attributes.
+    /// </summary>
+    InstanceAll = Instance + Obsolete + SchemaIgnored,
+    /// <summary>
+    /// All the members, including dynamic and instance members flagged with <see cref="ObsoleteAttribute"/> or <see cref="SchemaIgnored"/> attributes
+    /// </summary>
+    All = InstanceAll + Dynamic
   }
 }
