@@ -67,8 +67,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper6", "..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils", "..\ConnectorGrasshopper\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj", "{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2.Launcher", "..\DesktopUI2\DesktopUI2.Launcher\DesktopUI2.Launcher.csproj", "{37111629-0B60-48E5-A8FD-4319D830A3B3}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{0f1fd0c3-875f-4689-9c4a-c56e9ab31102}*SharedItemsImports = 13
@@ -197,11 +195,6 @@ Global
 		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release Mac|Any CPU.Build.0 = Release|Any CPU
 		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}.Release|Any CPU.Build.0 = Release|Any CPU
-		{37111629-0B60-48E5-A8FD-4319D830A3B3}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
-		{37111629-0B60-48E5-A8FD-4319D830A3B3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{37111629-0B60-48E5-A8FD-4319D830A3B3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{37111629-0B60-48E5-A8FD-4319D830A3B3}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
-		{37111629-0B60-48E5-A8FD-4319D830A3B3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -222,7 +215,6 @@ Global
 		{109B3382-634B-408A-8A5C-4CD09CB92641} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{86920221-416E-4A66-A601-3418207E2401} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
-		{37111629-0B60-48E5-A8FD-4319D830A3B3} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1BFED19F-741B-4E11-95C0-753E2058B3D2}

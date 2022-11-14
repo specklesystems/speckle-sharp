@@ -25,7 +25,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)MacOSHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandMac.cs" />
   </ItemGroup>
-  <ItemGroup>
+
+  <ItemGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='Release'">
+
     <Page Include="$(MSBuildThisFileDirectory)UI\DuiPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -45,6 +47,10 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
     </EmbeddedResource>
+  </ItemGroup>
+
+   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)Resources\icon.ico" />
   </ItemGroup>
+
 </Project>

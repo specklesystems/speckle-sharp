@@ -64,7 +64,6 @@ namespace SpeckleRhino
         RhinoDoc.DeselectObjects += (sender, e) => SelectionExpired = true;
         RhinoDoc.DeselectAllObjects += (sender, e) => SelectionExpired = true;
         RhinoDoc.DeleteRhinoObject += (sender, e) => ExistingSchemaLogExpired = true;
-
         RhinoApp.Idle += RhinoApp_Idle;
       }
       catch (Exception ex)
