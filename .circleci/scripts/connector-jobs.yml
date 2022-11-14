@@ -17,11 +17,12 @@ rhino:
       requires:
         - build-desktopui
   - build-connector-mac:
+      name: rhino-build-mac
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       installername: SpeckleRhinoInstall
       build-config: Release Mac
-      slug: rhino-mac
+      slug: rhino
       requires:
         - build-desktopui
       converter-files: "
@@ -32,12 +33,13 @@ rhino:
         Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
         "
   - build-connector-mac:
+      name: grasshopper-build-mac
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       build-config: Release Mac
       installername: SpeckleGhInstall
       installer: true
-      slug: grasshopper-mac
+      slug: grasshopper
       requires:
         - build-desktopui
       converter-files: "
@@ -133,13 +135,48 @@ csi:
         - build-desktopui
 
 archicad:
-  - setup-archicad-dev:
+  - build-archicad-add-on:
+      e: win/server-2019
+      archicadversion: "25"
       requires:
         - get-ci-tools
+      name: build-archicad-add-on-25
+  - build-archicad-add-on:
+      e: win/server-2019
+      archicadversion: "26"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-26
   - build-connector:
       requires:
-        - setup-archicad-dev
+        - build-archicad-add-on-25
+        - build-archicad-add-on-26
         - build-desktopui
       slnname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
       slug: archicad
+  - build-archicad-add-on-mac:
+      archicadversion: "25"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-25-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
+  - build-archicad-add-on-mac:
+      archicadversion: "26"
+      requires:
+        - get-ci-tools
+      name: build-archicad-add-on-26-mac
+      slug: archicad
+      installername: SpeckleArchicadInstall
+  - build-connector-mac:
+      name: archicad-build-mac
+      requires:
+        - build-archicad-add-on-25-mac
+        - build-archicad-add-on-26-mac
+        - build-desktopui
+      slnname: ConnectorArchicad
+      projname: ConnectorArchicad
+      slug: archicad
+      build-with-mono: false
+      installername: SpeckleArchicadInstall

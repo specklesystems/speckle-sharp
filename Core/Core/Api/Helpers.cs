@@ -10,6 +10,7 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -18,7 +19,6 @@ namespace Speckle.Core.Api
 {
   public static class Helpers
   {
-
     private static string _feedsEndpoint = "https://releases.speckle.dev/manager2/feeds";
     /// <summary>
     /// Helper method to Receive from a Speckle Server.
@@ -83,7 +83,11 @@ namespace Speckle.Core.Api
         objectId = branch.commits.items[0].referencedObject;
       }
 
-      Analytics.TrackEvent(client.Account, Analytics.Events.Receive);
+      Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
+          {
+            { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
+            { "sourceHostAppVersion", commit.sourceApplication }
+          });
 
       var receiveRes = await Operations.Receive(
         objectId,
@@ -188,7 +192,7 @@ namespace Speckle.Core.Api
       }
       catch (Exception ex)
       {
-        new SpeckleException($"Could not check for connector updates: {slug}", ex, true, SentryLevel.Warning);
+        //new SpeckleException($"Could not check for connector updates: {slug}", ex, true, SentryLevel.Warning);
       }
 
       return false;
@@ -268,5 +272,35 @@ namespace Speckle.Core.Api
         ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming")
         : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
 
+
+
+    /// <summary>
+    /// Checks if the user has a valid internet connection by pinging 'https://google.com'
+    /// </summary>
+    /// <returns>True if the user is connected to the internet, false otherwise.</returns>
+    public static Task<bool> UserHasInternet()
+    {
+      return Ping("https://google.com");
+    }
+
+    /// <summary>
+    /// Pings a specific url to verify it's accessible.
+    /// </summary>
+    /// <param name="url">The url to ping.</param>
+    /// <returns>True if the the status code is 200, false otherwise.</returns>
+    public static async Task<bool> Ping(string url)
+    {
+      try
+      {
+        HttpClient client = new HttpClient();
+        var response = await client.GetAsync(url);
+        return response.IsSuccessStatusCode;
+
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+    }
   }
 }

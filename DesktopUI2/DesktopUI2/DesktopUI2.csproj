@@ -53,6 +53,7 @@
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\Pages\HomeControls\SavedStreams.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\ShareControls\ChangeRoleDialog.xaml" />
     <None Remove="Views\Pages\SharedControls\StreamDetails.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Activity.xaml" />
     <None Remove="Views\Pages\StreamEditControls\Comments.xaml" />
@@ -72,6 +73,8 @@
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
+    <None Remove="Views\Windows\Dialogs\ImportExportAlert.xaml" />
+    <None Remove="Views\Windows\Dialogs\ImportFamiliesDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\MappingViewDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewBranchDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
@@ -142,6 +145,9 @@
     <AvaloniaXaml Include="Views\MainUserControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\ShareControls\ChangeRoleDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\SharedControls\StreamDetails.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -208,6 +214,12 @@
     <AvaloniaXaml Include="Views\Windows\Dialogs\Dialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\ImportExportAlert.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Windows\Dialogs\ImportFamiliesDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\MappingViewDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -266,6 +278,9 @@
     <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
       <DependentUpon>PropertyFilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Pages\ShareControls\ChangeRoleDialog.xaml.cs">
+      <DependentUpon>ChangeRoleDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Pages\SharedControls\StreamDetails.xaml.cs">
       <DependentUpon>StreamDetails.xaml</DependentUpon>
     </Compile>
@@ -313,6 +328,12 @@
     </Compile>
     <Compile Update="Views\Windows\Dialogs\Dialog.xaml.cs">
       <DependentUpon>Dialog.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\ImportExportAlert.xaml.cs">
+      <DependentUpon>ImportExportAlert.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Windows\Dialogs\ImportFamiliesDialog.xaml.cs">
+      <DependentUpon>ImportFamiliesDialog.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Windows\Dialogs\MappingViewDialog.xaml.cs">
       <DependentUpon>MappingViewDialog.xaml</DependentUpon>

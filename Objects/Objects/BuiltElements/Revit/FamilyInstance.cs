@@ -9,7 +9,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class FamilyInstance : Base, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
   {
     public Point basePoint { get; set; }
     public string family { get; set; }
@@ -48,13 +48,5 @@ namespace Objects.BuiltElements.Revit
       this.mirrored = false;
       this.parameters = parameters.ToBase();
     }
-    
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }

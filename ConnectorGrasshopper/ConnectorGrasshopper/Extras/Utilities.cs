@@ -1,22 +1,22 @@
-﻿using Grasshopper.Kernel.Types;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
-using Rhino.Geometry;
-using System.Threading;
-using Rhino;
+using Grasshopper.Kernel.Types;
 using Microsoft.CSharp.RuntimeBinder;
+using Rhino;
 using Rhino.Display;
+using Rhino.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Extras
 {
@@ -29,9 +29,9 @@ namespace ConnectorGrasshopper.Extras
     /// <returns><see cref="VersionedHostApplications.Grasshopper7"/> when Rhino 7 is running, <see cref="VersionedHostApplications.Grasshopper6"/> otherwise.</returns>
     public static string GetVersionedAppName()
     {
-      var version = VersionedHostApplications.Grasshopper6;
+      var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
       if (RhinoApp.Version.Major >= 7)
-        version = VersionedHostApplications.Grasshopper7;
+        version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
       return version;
     }
     public static ISpeckleConverter GetDefaultConverter()
@@ -74,14 +74,14 @@ namespace ConnectorGrasshopper.Extras
     /// and their names match the pattern described in the example.
     /// </returns>
     public static Base DataTreeToSpeckle(
-      GH_Structure<IGH_Goo> dataInput, 
-      ISpeckleConverter converter, 
-      CancellationToken cancellationToken, 
+      GH_Structure<IGH_Goo> dataInput,
+      ISpeckleConverter converter,
+      CancellationToken cancellationToken,
       Action onConversionProgress = null,
       int chunkLength = 1000)
     {
       var @base = new Base();
-      
+
       foreach (var path in dataInput.Paths.ToList())
       {
         if (cancellationToken.IsCancellationRequested)
@@ -105,7 +105,7 @@ namespace ConnectorGrasshopper.Extras
     }
 
     private static string dataTreePathPattern = @"^(@(\(\d+\))?)?(?<path>\{\d+(;\d+)*\})$";
-    
+
     /// <summary>
     ///   Converts a <see cref="Base"/> object into a Grasshopper <see cref="DataTree{T}"/>.
     /// </summary>
@@ -130,10 +130,10 @@ namespace ConnectorGrasshopper.Extras
         var converted = value.Select(item => TryConvertItemToNative(item, converter));
         dataTree.AppendRange(converted, path);
       });
-      
+
       return dataTree;
     }
-    
+
     /// <summary>
     ///   Checks if a given <see cref="Base"/> object can be converted into a Grasshopper <see cref="DataTree{T}"/>.
     /// </summary>
@@ -150,7 +150,7 @@ namespace ConnectorGrasshopper.Extras
       var isDataTree = dynamicMembers.All(el => regex.Match(el).Success);
       return isDataTree;
     }
-    
+
     public static List<object> DataTreeToNestedLists(GH_Structure<IGH_Goo> dataInput, ISpeckleConverter converter, Action OnConversionProgress = null)
     {
       return DataTreeToNestedLists(dataInput, converter, CancellationToken.None, OnConversionProgress);
@@ -203,7 +203,7 @@ namespace ConnectorGrasshopper.Extras
         throw ex;
       }
     }
-    
+
     /// <summary>
     /// Wraps an object in the appropriate <see cref="IGH_Goo"/> subtype for display in GH. The default value will return a <see cref="GH_ObjectWrapper"/> instance.
     /// </summary>
@@ -416,7 +416,7 @@ namespace ConnectorGrasshopper.Extras
       if (value is null) return value;
 
       string refId = GetRefId(value);
-      
+
       if (value is IGH_Goo)
       {
         value = value.GetType().GetProperty("Value").GetValue(value);
@@ -428,7 +428,7 @@ namespace ConnectorGrasshopper.Extras
 
       if (converter != null && converter.CanConvertToSpeckle(value))
       {
-        var result = converter.ConvertToSpeckle(value);  
+        var result = converter.ConvertToSpeckle(value);
         result.applicationId = refId;
         return result;
       }
@@ -464,7 +464,7 @@ namespace ConnectorGrasshopper.Extras
           refId = r.ReferenceID.ToString();
         }
       }
-      catch(RuntimeBinderException)
+      catch (RuntimeBinderException)
       {
         // Pass
       }
@@ -559,7 +559,7 @@ namespace ConnectorGrasshopper.Extras
         if (wrappedData is Base wrappedBase)
         {
           // New object type tree
-          data = DataTreeToNative(wrappedBase,Converter);
+          data = DataTreeToNative(wrappedBase, Converter);
         }
         else if (wrappedData is IList list)
         {
@@ -571,7 +571,7 @@ namespace ConnectorGrasshopper.Extras
       // Simple pass the SpeckleBase
       else
       {
-        if(onError != null) onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
+        if (onError != null) onError(GH_RuntimeMessageLevel.Remark, "This object needs to be expanded.");
         data.Append(new GH_SpeckleBase(@base));
       }
       return data;

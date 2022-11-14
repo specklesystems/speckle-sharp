@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +16,7 @@ using Ceiling = Objects.BuiltElements.Ceiling;
 using Floor = Objects.BuiltElements.Floor;
 using Room = Objects.BuiltElements.Archicad.Room;
 using Wall = Objects.BuiltElements.Wall;
+using Beam = Objects.BuiltElements.Beam;
 
 namespace Archicad
 {
@@ -116,6 +117,8 @@ namespace Archicad
         return Converters[ elementType ];
       if ( elementType.IsSubclassOf(typeof(Wall)) )
         return Converters[ typeof(Wall) ];
+      if (elementType.IsSubclassOf(typeof(Beam)))
+        return Converters[typeof(Beam)];
       if ( elementType.IsSubclassOf(typeof(Floor)) || elementType.IsSubclassOf(typeof(Ceiling)) )
         return Converters[ typeof(Floor) ];
       if ( elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)) )
@@ -130,6 +133,7 @@ namespace Archicad
         switch
         {
           Wall _ => true,
+          Beam _ => true,
           Floor _ => true,
           Ceiling _ => true,
           Room _ => true,
@@ -164,8 +168,6 @@ namespace Archicad
           var specialKeys = @base.GetMembers();
           if ( specialKeys.ContainsKey("displayValue") )
             objects.AddRange(FlattenCommitObject(specialKeys[ "displayValue" ]));
-          else if ( specialKeys.ContainsKey("displayMesh") )   // to be depreciated
-            objects.AddRange(FlattenCommitObject(specialKeys[ "displayMesh" ]));
           if ( specialKeys.ContainsKey("elements") ) // for built elements like roofs, walls, and floors.
             objects.AddRange(FlattenCommitObject(specialKeys[ "elements" ]));
 

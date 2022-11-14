@@ -11,7 +11,13 @@ namespace DesktopUI2.ViewModels
   public class AccountViewModel : ReactiveObject
   {
     public string Name { get; set; }
-    public string Role { get; set; } = "contributor";
+
+    private string _role = "contributor";
+    public string Role
+    {
+      get => _role;
+      set => this.RaiseAndSetIfChanged(ref _role, value);
+    }
     public string Id { get; }
 
     public Account Account { get; private set; }

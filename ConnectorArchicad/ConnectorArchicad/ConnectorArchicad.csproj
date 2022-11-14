@@ -1,13 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <Company>Speckle</Company>
-    <Product>ArchiCAD Connector</Product>
+    <Product>ConnectorArchicad</Product>
+    <Version>2.0.0-dev</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -15,20 +14,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Avalonia" Version="0.10.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+  </ItemGroup>
+  
+  <ItemGroup>
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
     <ProjectReference Include="..\..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
-  </Target>
-  <Target Name="AfterBuildDebug">
-    <ItemGroup>
-      <SourceDLLs Include="$(TargetDir)\**\*.*" />
-    </ItemGroup>
-    <Copy DestinationFolder="C:\Program Files\GRAPHISOFT\ARCHICAD 25\Add-Ons\ConnectorArchicad\ConnectorArchicad\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
-  </Target>
 
 </Project>

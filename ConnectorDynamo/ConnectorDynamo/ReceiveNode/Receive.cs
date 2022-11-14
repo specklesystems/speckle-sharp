@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -15,6 +15,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
 
 namespace Speckle.ConnectorDynamo.ReceiveNode
 {
@@ -43,6 +44,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     private bool _autoUpdateEnabled = true;
     private CancellationTokenSource _cancellationToken;
     private Client _client;
+
+    private List<Exception> _errors = new List<Exception>();
 
     private Client Client
     {
@@ -285,19 +288,34 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         void ErrorAction(string transportName, Exception e)
         {
           hasErrors = true;
-          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-          Message = Message.Contains("401") ? "Not authorized" : Message;
-          ReceiveEnabled = false;
-          _cancellationToken.Cancel();
+          var msg = e.ToFormattedString();
+          if(msg.Contains("401 "))
+          {
+            Message = "Not authorized";
+            Warning(msg);
+            ReceiveEnabled = false;
+            _cancellationToken.Cancel();
+          }
+          else if(msg.Contains("404 "))
+          {
+            Message = "Not found";
+            Warning(msg);
+            ReceiveEnabled = false;
+            _cancellationToken.Cancel();
+          }
+          else
+          {
+            //Message = "Conversion error";
+            _errors.Add(e);
+          }
         }
 
         var data = Functions.Functions.Receive(Stream, _cancellationToken.Token, ProgressAction,
           ErrorAction);
 
-        if (!hasErrors && data != null)
+        if (data != null)
         {
           LastCommitId = ((Commit)data["commit"]).id;
-
           InMemoryCache.Set(LastCommitId, data);
           Message = "";
         }
@@ -307,15 +325,11 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         if (!_cancellationToken.IsCancellationRequested)
         {
           _cancellationToken.Cancel();
-          Message = e.InnerException != null ? e.InnerException.Message : e.Message;
-          if (e.InnerException != null) Warning(e.InnerException.Message);
-          if (e is AggregateException agrException)
-            agrException.InnerExceptions.ToList().ForEach(ex =>
-            {
-              Warning(ex.Message);
-              Message = ex.Message.Contains("401") || ex.Message.Contains("don't have access") ? "Not authorized" : e.Message;
-            });
-          throw new SpeckleException(e.Message, e);
+          var msg = e.ToFormattedString();
+          Message = msg.Contains("401") || msg.Contains("don't have access") ? "Not authorized" : "Error";
+          Warning(msg);
+          _errors.Add(e);
+          throw;
         }
       }
       finally
@@ -328,7 +342,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         }
       }
     }
-
+    
     /// <summary>
     /// Triggered when the node inputs change
     /// Caches a copy of the inputs (Stream and BranchName)
@@ -336,6 +350,16 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <param name="engine"></param>
     internal void LoadInputs(EngineController engine)
     {
+      // Report any errors of the receive operation upon input load. This ensures they're not erased.
+      if (_errors.Count > 0)
+      {
+        foreach (var error in _errors)
+          Warning(error.ToFormattedString());
+        Message = "Conversion error";
+        _errors = new List<Exception>();
+      }
+      
+      // Load inputs
       var oldStream = Stream;
       StreamWrapper newStream = null;
 
@@ -565,7 +589,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     }
 
     #endregion
-
+    
     #region overrides
 
     /// <summary>
@@ -575,12 +599,13 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
+
       if (!InPorts[0].IsConnected || !_hasOutput || string.IsNullOrEmpty(LastCommitId))
       {
         return OutPorts.Enumerate().Select(output =>
           AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
       }
-
+      
       _hasOutput = false;
       var associativeNodes = new List<AssociativeNode>();
       var primitiveNode = AstFactory.BuildStringNode(LastCommitId);

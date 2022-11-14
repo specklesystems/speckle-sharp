@@ -1,0 +1,73 @@
+<Window
+  x:Class="DesktopUI2.Views.Windows.Dialogs.ImportExportAlert"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  Title="Speckle"
+  Width="450"
+  assists:ShadowAssist.ShadowDepth="10"
+  d:DesignWidth="400"
+  Background="{DynamicResource PrimaryHueMidBrush}"
+  HasSystemDecorations="False"
+  SizeToContent="Height"
+  mc:Ignorable="d">
+  <StackPanel
+    Margin="30"
+    Orientation="Vertical"
+    Spacing="20">
+    <TextBlock
+      Margin="0"
+      Classes="Medium SpeckleFont"
+      FontSize="20"
+      Foreground="White"
+      Text="Did you know?"
+      TextTrimming="CharacterEllipsis" />
+
+    <TextBlock
+      Grid.Row="1"
+      FontSize="15"
+      Foreground="White"
+      Text="There's a better way to exchange data 🙌!"
+      TextTrimming="CharacterEllipsis" />
+    <TextBlock
+      Grid.Row="1"
+      FontSize="15"
+      FontWeight="Light"
+      Foreground="White"
+      Text="Say goodbye to file imports or exports, with Speckle you can transfer the data you care about in seconds and share it with anyone or just view it online."
+      TextWrapping="Wrap" />
+    <TextBlock
+      Grid.Row="1"
+      FontSize="15"
+      FontWeight="Light"
+      Foreground="White"
+      Text="Try it now!"
+      TextWrapping="Wrap" />
+    <Button
+      Margin="0,0,10,0"
+      Background="White"
+      Click="OpenSpeckle_Click"
+      Content="Launch Speckle 🚀"
+      Foreground="{DynamicResource PrimaryHueMidBrush}" />
+    <StackPanel
+      Grid.Row="3"
+      Margin="15"
+      HorizontalAlignment="Right"
+      Orientation="Horizontal">
+      <Button
+        Margin="0,0,10,0"
+        Classes="Outline"
+        Click="DontShow_Click"
+        Content="Don't show again"
+        Foreground="White" />
+      <Button
+        Margin="0,0,10,0"
+        Background="White"
+        Click="Close_Click"
+        Content="Close"
+        Foreground="{DynamicResource PrimaryHueMidBrush}" />
+    </StackPanel>
+  </StackPanel>
+</Window>

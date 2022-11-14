@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Events;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -58,10 +59,48 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentSynchronizingWithCentral += Application_DocumentSynchronizingWithCentral;
       RevitApp.Application.DocumentSynchronizedWithCentral += Application_DocumentSynchronizedWithCentral;
       RevitApp.Application.FileExported += Application_FileExported;
+      RevitApp.Application.FileExporting += Application_FileExporting;
+      RevitApp.Application.FileImporting += Application_FileImporting;
       //SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
       //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
+    }
+
+    private void Application_FileExporting(object sender, FileExportingEventArgs e)
+    {
+      ShowImportExportAlert();
+    }
+
+    private void Application_FileImporting(object sender, FileImportingEventArgs e)
+    {
+      ShowImportExportAlert();
+    }
+
+    private void ShowImportExportAlert()
+    {
+      var config = ConfigManager.Load();
+      if (config.ShowImportExportAlert)
+      {
+        Analytics.TrackEvent(Analytics.Events.ImportExportAlert, new Dictionary<string, object>() { { "name", "Show" } });
+        var dialog = new ImportExportAlert();
+        dialog.LaunchAction = () =>
+        {
+          try
+          {
+            SpeckleRevitCommand2.RegisterPane();
+            var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand2.PanelId);
+            panel.Show();
+          }
+          catch (Exception ex)
+          {
+            Log.CaptureException(ex, Sentry.SentryLevel.Error);
+          }
+        };
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        dialog.Show();
+        dialog.Topmost = true;
+      }
     }
 
     private void Application_DocumentOpening(object sender, Autodesk.Revit.DB.Events.DocumentOpeningEventArgs e)
@@ -106,7 +145,8 @@ namespace Speckle.ConnectorRevit.UI
 
         var dialog = new QuickOpsDialog();
         dialog.DataContext = progress;
-        dialog.WindowStartupLocation = WindowStartupLocation.CenterOwner;
+        dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+        dialog.Topmost = true;
         dialog.Show();
 
         if (message != null)

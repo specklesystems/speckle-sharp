@@ -12,10 +12,15 @@ namespace ConverterDxf.Tests
         public static IEnumerable<T> FetchAllObjectsOfType<T>(string streamUrl) where T: Base 
             => Speckle.Core.Api.Helpers.Receive(streamUrl)
                       .Result
-                      .Flatten(true, b => b is T).Cast<T>();
+                      .Flatten(b => b is T)
+                      .Where(b => b is T)
+                      .Cast<T>();
         
-        public static IEnumerable<object[]> GetTestMemberData<T>() where T: Base => 
-            FetchAllObjectsOfType<T>(TestStream).Select(v => new object[] { v });
+        public static IEnumerable<object[]> GetTestMemberData<T>() where T: Base
+        {
+            var d =FetchAllObjectsOfType<T>(TestStream).Select(v => new object[] { v });
+            return d;
+        }
 
     }
 }

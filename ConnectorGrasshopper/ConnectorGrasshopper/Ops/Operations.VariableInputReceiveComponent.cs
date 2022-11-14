@@ -22,6 +22,7 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -71,6 +72,8 @@ namespace ConnectorGrasshopper.Ops
 
     public StreamWrapper StreamWrapper { get; set; }
 
+    public Task ApiResetTask;
+
     public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
     {
       switch (context)
@@ -83,8 +86,9 @@ namespace ConnectorGrasshopper.Ops
               Task.Run(async () =>
               {
                 // Ensure fresh instance of client.
-                await ResetApiClient(StreamWrapper);
-
+                ApiResetTask = ResetApiClient(StreamWrapper);
+                await ApiResetTask;
+                
                 // Get last commit from the branch
                 var b = ApiClient.BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
@@ -398,7 +402,8 @@ namespace ConnectorGrasshopper.Ops
         LastInfoMessage = null;
         Task.Run(async () =>
         {
-          await ResetApiClient(wrapper);
+          ApiResetTask = ResetApiClient(StreamWrapper);
+          await ApiResetTask;
         });
         return;
       }
@@ -420,7 +425,8 @@ namespace ConnectorGrasshopper.Ops
       //ResetApiClient(wrapper);
       Task.Run(async () =>
       {
-        await ResetApiClient(wrapper);
+        ApiResetTask = ResetApiClient(StreamWrapper);
+        await ApiResetTask;
       });
     }
 
@@ -428,7 +434,12 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        ApiClient?.Dispose();
+        var hasInternet = await Helpers.UserHasInternet();
+        if (!hasInternet)
+        {
+          throw new Exception("You are not connected to the internet.");
+        }
+        
         Account account = null;
         try
         {
@@ -439,9 +450,13 @@ namespace ConnectorGrasshopper.Ops
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
           account = new Account
           {
-            id = wrapper?.StreamId, serverInfo = new ServerInfo() { url = wrapper?.ServerUrl }, token = "", refreshToken = ""
+            id = wrapper?.StreamId,
+            serverInfo = new ServerInfo() { url = wrapper?.ServerUrl },
+            token = "",
+            refreshToken = ""
           };
         }
+        ApiClient?.Dispose();
         ApiClient = new Client(account);
         ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
         ApiClient.OnCommitCreated += ApiClient_OnCommitCreated;
@@ -560,9 +575,9 @@ namespace ConnectorGrasshopper.Ops
             }
           });
         };
-        
-        Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>() { { "auto", receiveComponent.AutoReceive } });
 
+        receiveComponent.ApiResetTask.Wait();
+        
         var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
@@ -579,6 +594,12 @@ namespace ConnectorGrasshopper.Ops
 
         var t = Task.Run(async () =>
         {
+          var hasInternet = await Helpers.UserHasInternet();
+          if (!hasInternet)
+          {
+            throw new Exception("You are not connected to the internet.");
+          }
+          
           receiveComponent.PrevReceivedData = null;
           var myCommit = await GetCommit(InputWrapper, receiveComponent.ApiClient, (level, message) =>
           {
@@ -593,6 +614,11 @@ namespace ConnectorGrasshopper.Ops
           }
 
           ReceivedCommit = myCommit;
+          Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>()
+          { { "auto", receiveComponent.AutoReceive },
+            { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
+            { "sourceHostAppVersion", myCommit.sourceApplication }
+          });
 
           if (CancellationToken.IsCancellationRequested)
           {
@@ -778,7 +804,7 @@ namespace ConnectorGrasshopper.Ops
           var treeBuilder = new TreeBuilder(converter) { ConvertToNative = converter != null };
           dataTree = treeBuilder.Build(prop);
         }
-        
+
         DA.SetDataTree(param, dataTree);
         parent.PrevReceivedData.Add(name, dataTree);
       });

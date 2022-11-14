@@ -10,7 +10,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
-  public class Area : Base, IHasArea, IHasVolume, IDisplayMesh, IDisplayValue<List<Mesh>>
+  public class Area : Base, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   {
     public string name { get; set; }
     public string number { get; set; }
@@ -41,12 +41,5 @@ namespace Objects.BuiltElements
       this.center = center;
     }
     
-    #region Obsolete Members
-    [JsonIgnore, Obsolete("Use " + nameof(displayValue) + " instead")]
-    public Mesh displayMesh {
-      get => displayValue?.FirstOrDefault();
-      set => displayValue = new List<Mesh> {value};
-    }
-    #endregion
   }
 }

@@ -9,7 +9,6 @@
         <Authors>Speckle</Authors>
         <Company />
         <Product />
-        <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
         <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
         <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
         <PackageIcon>logo.png</PackageIcon>
@@ -27,10 +26,6 @@
 
     <ItemGroup>
         <PackageReference Include="Grasshopper" Version="7.4.21078.1001" />
-        <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
         <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" />
     </ItemGroup>
 
@@ -48,10 +43,6 @@
         <ProjectReference Include="..\..\..\Objects\Objects.csproj">
             <ExcludeAssets>runtime</ExcludeAssets>
         </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Properties\" />
     </ItemGroup>
 
     <ItemGroup>

@@ -24,6 +24,7 @@ using System.Linq;
 using System.Net;
 using System.Reactive;
 using System.Threading.Tasks;
+using System.Web;
 using System.Windows.Input;
 using Stream = Speckle.Core.Api.Stream;
 
@@ -105,6 +106,7 @@ namespace DesktopUI2.ViewModels
     }
 
     public string NotificationUrl { get; set; }
+    public bool SuccessfulSend { get; set; } = false;
 
     private string _notification;
     public string Notification
@@ -114,12 +116,18 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _notification, value);
         this.RaisePropertyChanged("ShowNotification");
+        this.RaisePropertyChanged("ShowSharePrompt");
       }
     }
 
     public bool ShowNotification
     {
       get => !string.IsNullOrEmpty(Notification);
+    }
+
+    public bool ShowSharePrompt
+    {
+      get => !string.IsNullOrEmpty(Notification) && !IsReceiver && SuccessfulSend && Stream.collaborators.Count == 1;
     }
 
     private bool _isRemovingStream;
@@ -129,7 +137,13 @@ namespace DesktopUI2.ViewModels
       private set
       {
         this.RaiseAndSetIfChanged(ref _isRemovingStream, value);
+        this.RaisePropertyChanged("StreamEnabled");
       }
+    }
+
+    public bool StreamEnabled
+    {
+      get => !IsRemovingStream && !NoAccess;
     }
 
     private bool _isExpanded;
@@ -234,6 +248,9 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
+        if (Branches == null)
+          return new List<BranchViewModel>();
+
         if (_branchesViewModel == null)
           _branchesViewModel = Branches.Select(x => new BranchViewModel(x)).ToList();
 
@@ -258,7 +275,7 @@ namespace DesktopUI2.ViewModels
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
-            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{SelectedBranch.Branch.name}";
+            PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
         }
@@ -463,7 +480,7 @@ namespace DesktopUI2.ViewModels
         if (!IsReceiver)
         {
           if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.Branch.name}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
         }
         //receiver
         else
@@ -471,7 +488,7 @@ namespace DesktopUI2.ViewModels
           if (SelectedCommit != null && SelectedCommit.id != "latest")
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
           if (SelectedBranch != null)
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{SelectedBranch.Branch.name}";
+            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
         }
         return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
 
@@ -559,7 +576,7 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.Gray } };
+        var menu = new MenuItemViewModel { Header = new MaterialIcon { Kind = MaterialIconKind.EllipsisVertical, Foreground = Avalonia.Media.Brushes.White } };
         menu.Items = new List<MenuItemViewModel> {
         new MenuItemViewModel (ViewOnlineSavedStreamCommand, "View online",  MaterialIconKind.ExternalLink),
         new MenuItemViewModel (CopyStreamURLCommand, "Copy URL to clipboard",  MaterialIconKind.ContentCopy),
@@ -864,7 +881,7 @@ namespace DesktopUI2.ViewModels
         try
         {
 
-          var branchId = await this.StreamState.Client.BranchCreate(new BranchCreateInput { streamId = Stream.id, description = nbvm.Description ?? "", name = nbvm.BranchName });
+          var branchId = await StreamState.Client.BranchCreate(new BranchCreateInput { streamId = Stream.id, description = nbvm.Description ?? "", name = nbvm.BranchName });
 
 
           Branches = await Client.StreamGetBranches(Stream.id, 100, 0);
@@ -872,6 +889,8 @@ namespace DesktopUI2.ViewModels
           var index = Branches.FindIndex(x => x.name == nbvm.BranchName);
           if (index != -1)
             SelectedBranch = BranchesViewModel[index];
+
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Branch Create" } });
 
         }
         catch (Exception e)
@@ -901,13 +920,17 @@ namespace DesktopUI2.ViewModels
     public void ShareCommand()
     {
       MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
     }
 
-    public void CloseNotificationCommand()
+    public void CloseNotificationCommand(bool track = true)
     {
       Notification = "";
       NotificationUrl = "";
-      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
+
+      if (track)
+        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
     }
 
     public void LaunchNotificationCommand()
@@ -917,7 +940,7 @@ namespace DesktopUI2.ViewModels
       if (!string.IsNullOrEmpty(NotificationUrl))
         Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
 
-      CloseNotificationCommand();
+      CloseNotificationCommand(false);
     }
 
     public void EditSavedStreamCommand()
@@ -947,6 +970,7 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
+        SuccessfulSend = true;
         UpdateStreamState();
 
         HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
@@ -960,10 +984,21 @@ namespace DesktopUI2.ViewModels
         if (!Progress.CancellationTokenSource.IsCancellationRequested && commitId != null)
         {
           LastUsed = DateTime.Now.ToString();
-          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object> { { "filter", StreamState.Filter.Name } });
+          var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
+
+          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object> {
+            { "filter", StreamState.Filter.Name },
+            { "view", view },
+            { "collaborators", Stream.collaborators.Count },
+            { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+            { "branches", Stream.branches?.totalCount },
+            { "commits", Stream.commits?.totalCount },
+            { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
+          });
 
           Notification = $"Sent successfully, view online";
           NotificationUrl = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
+          SuccessfulSend = true;
         }
         else
         {
@@ -1025,14 +1060,29 @@ namespace DesktopUI2.ViewModels
 
         Reset();
         Progress.IsProgressing = true;
-        await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
+        var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
         Progress.IsProgressing = false;
+        var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
         {
           LastUsed = DateTime.Now.ToString();
-          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive, new Dictionary<string, object>() { { "mode", StreamState.ReceiveMode }, { "auto", StreamState.AutoReceive } });
+          Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive,
+            new Dictionary<string, object>() {
+              { "mode", StreamState.ReceiveMode },
+              { "auto", StreamState.AutoReceive },
+              { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastSourceApp).Slug },
+              { "sourceHostAppVersion", state.LastSourceApp },
+              { "view", view },
+              { "collaborators", Stream.collaborators.Count },
+              { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+              { "branches", Stream.branches?.totalCount },
+              { "commits", Stream.commits?.totalCount },
+              { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count }
+
+            });
         }
+
 
         GetActivity();
         GetReport();
