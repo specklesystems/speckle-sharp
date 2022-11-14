@@ -318,7 +318,10 @@ namespace Speckle.ConnectorRevit.UI
             if (views.Any())
             {
               var viewPhase = views.First().get_Parameter(BuiltInParameter.VIEW_PHASE);
-              perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
+              if (viewPhase != null)
+              {
+                perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
+              }
             }
 
             t.Commit();
