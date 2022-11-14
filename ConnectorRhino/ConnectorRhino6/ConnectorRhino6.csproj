@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
-    <Version>1.0</Version>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
