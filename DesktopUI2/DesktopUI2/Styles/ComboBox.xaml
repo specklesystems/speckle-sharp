@@ -1,6 +1,7 @@
 ﻿<Styles
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple">
   <Style Selector="ComboBoxItem">
@@ -55,6 +56,27 @@
     <Setter Property="IsVisible" Value="False" />
   </Style>
 
+  <!--<Style Selector="ComboBox.Outline  /template/ ContentPresenter#contentPresenter">
+    <Setter Property="Margin" Value="0" />
+  </Style>-->
+
+  <!--<Style Selector="ComboBox.Outline">
+    <Setter Property="Padding" Value="5,0" />
+  </Style>-->
+
+  <Style Selector="ComboBox.Outline:not(:focus-within)">
+    <Setter Property="BorderBrush" Value="Gray" />
+  </Style>
+
+  <Style Selector="ComboBox.Outline /template/ TextBlock#floatingWatermark">
+    <Setter Property="FontSize" Value="14" />
+    <Setter Property="FontWeight" Value="Regular" />
+  </Style>
+
+	<Style Selector="ComboBox.Outline /template/ Grid#PART_RootBorder">
+		<Setter Property="MinHeight" Value="0" />
+	</Style>
+
 
   <Design.PreviewWith>
     <Border
@@ -62,9 +84,12 @@
       Height="200"
       Padding="20">
       <StackPanel VerticalAlignment="Top">
-        <ComboBox PlaceholderText="test">
+        <ComboBox
+          assists:ComboBoxAssist.Label="Revit Element"
+          Classes="Outline"
+          PlaceholderText="test">
 
-          <ComboBox.ItemTemplate>
+          <!--<ComboBox.ItemTemplate>
             <DataTemplate>
               <Grid ColumnDefinitions="auto,auto,auto,*">
                 <icons:MaterialIcon
@@ -83,7 +108,7 @@
               </Grid>
             </DataTemplate>
 
-          </ComboBox.ItemTemplate>
+          </ComboBox.ItemTemplate>-->
           <ComboBox.Items>
             <ComboBoxItem Content="Item 1Item 1Item 1Item 1Item 1Item 1Item 1" />
             <ComboBoxItem Content="Item 2" />

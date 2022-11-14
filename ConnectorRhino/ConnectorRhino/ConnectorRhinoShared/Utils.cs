@@ -37,7 +37,7 @@ namespace SpeckleRhino
     public static string RemoveInvalidRhinoChars(string str)
     {
       // using this to handle grasshopper branch syntax
-      string cleanStr = str.Replace("{", "").Replace("}","");
+      string cleanStr = str.Replace("{", "").Replace("}", "");
       return cleanStr;
     }
     #region extension methods
@@ -209,6 +209,46 @@ namespace SpeckleRhino
   }
 
   #endregion
+
+  public class MappingsDisplayConduit : Rhino.Display.DisplayConduit
+  {
+    public List<string> ObjectIds { get; set; } = new List<string>();
+
+    public Color Color { get; set; } = Color.RoyalBlue;
+
+    protected override void DrawOverlay(DrawEventArgs e)
+    {
+      base.DrawOverlay(e);
+      if (!Enabled) return;
+
+      //e.Display.ZBiasMode = ZBiasMode.TowardsCamera;
+
+      foreach (var id in ObjectIds)
+      {
+        if (id == null) continue;
+        var obj = Rhino.RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
+        switch (obj.ObjectType)
+        {
+          case ObjectType.Curve:
+            e.Display.DrawCurve((Curve)obj.Geometry, Color);
+            break;
+          case ObjectType.Mesh:
+            DisplayMaterial mMaterial = new DisplayMaterial(Color, 0.5);
+            e.Display.DrawMeshShaded(obj.Geometry as Mesh, mMaterial);
+            break;
+          case ObjectType.Extrusion:
+            DisplayMaterial eMaterial = new DisplayMaterial(Color, 0.5);
+            e.Display.DrawBrepShaded(((Extrusion)obj.Geometry).ToBrep(), eMaterial);
+            break;
+          case ObjectType.Brep:
+            DisplayMaterial bMaterial = new DisplayMaterial(Color, 0.5);
+            e.Display.DrawBrepShaded((Brep)obj.Geometry, bMaterial);
+            break;
+        }
+      }
+
+    }
+  }
 
   public static class Formatting
   {
