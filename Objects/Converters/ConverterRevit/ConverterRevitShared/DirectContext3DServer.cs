@@ -20,11 +20,13 @@ namespace ConverterRevitShared
     private RenderingPassBufferStorage m_transparentFaceBufferStorage;
     private RenderingPassBufferStorage m_edgeBufferStorage;
     private Guid m_guid;
-    private Base speckleObj;
-    public DirectContext3DServer(Base @base, Document doc)
+    private IEnumerable<OG.Mesh> speckleMeshes;
+    public OG.Point minValues = new OG.Point(double.MaxValue, double.MaxValue, double.MaxValue);
+    public OG.Point maxValues = new OG.Point(double.MinValue, double.MinValue, double.MinValue);
+    public DirectContext3DServer(IEnumerable<OG.Mesh> meshes, Document doc)
     {
       m_guid = Guid.NewGuid();
-      speckleObj = @base;
+      speckleMeshes = meshes;
       document = doc;
     }
     public bool CanExecute(View dBView)
@@ -41,7 +43,13 @@ namespace ConverterRevitShared
     public string GetApplicationId() => " ";
     public Outline GetBoundingBox(View dBView)
     {
-      return new Outline(new XYZ(0,0,0), new XYZ(2,2,2));
+      //return new Outline(new XYZ(0, 0, 0), new XYZ(2, 2, 2));
+
+      return new Outline
+        (
+          new XYZ(minValues.x, minValues.y, minValues.z),
+          new XYZ(maxValues.x, maxValues.y, maxValues.z)
+        );
     }
     public string GetDescription() => "Implements preview functionality for a Speckle Object";
     public string GetName() => "Speckle Object Drawing Server";
@@ -59,7 +67,7 @@ namespace ConverterRevitShared
             m_edgeBufferStorage == null || m_edgeBufferStorage.NeedsUpdate(displayStyle))
         {
 
-          CreateBufferStorageForBase(speckleObj, displayStyle);
+          CreateBufferStorageForMeshes(speckleMeshes, displayStyle);
         }
 
         // Submit a subset of the geometry for drawing. Determine what geometry should be submitted based on
@@ -81,8 +89,9 @@ namespace ConverterRevitShared
                                   faceBufferStorage.PrimitiveCount);
 
         // Conditionally submit line segment primitives.
-        if (displayStyle != DisplayStyle.Shading &&
-            m_edgeBufferStorage?.PrimitiveCount > 0)
+        if (displayStyle == DisplayStyle.Wireframe && 
+          displayStyle != DisplayStyle.Shading &&
+          m_edgeBufferStorage?.PrimitiveCount > 0)
           DrawContext.FlushBuffer(m_edgeBufferStorage.VertexBuffer,
                                   m_edgeBufferStorage.VertexBufferCount,
                                   m_edgeBufferStorage.IndexBuffer,
@@ -99,16 +108,14 @@ namespace ConverterRevitShared
     public bool UseInTransparentPass(View dBView) => true;
     public bool UsesHandles() => false;
 
-    private void CreateBufferStorageForBase(Base @base, DisplayStyle displayStyle)
+    private void CreateBufferStorageForMeshes(IEnumerable<OG.Mesh> meshes, DisplayStyle displayStyle)
     {
-      if (@base["displayValue"] != null && @base["displayValue"] is List<OG.Mesh> meshes)
-      {
-        if (meshes.Count == m_nonTransparentFaceBufferStorage?.Meshes.Count)
+      var x = meshes.Count();
+        if (meshes.Count() == m_nonTransparentFaceBufferStorage?.Meshes.Count)
           RefreshBufferStorage(displayStyle);
         else
           foreach (var mesh in meshes)
             CreateBufferStorageForMesh(mesh, displayStyle);
-      }
     }
 
     private void RefreshBufferStorage(DisplayStyle displayStyle)
@@ -120,13 +127,15 @@ namespace ConverterRevitShared
       // Fill out buffers with primitives based on the intermediate information about faces and edges.
       ProcessFaces(m_nonTransparentFaceBufferStorage);
       //ProcessFaces(m_transparentFaceBufferStorage);
-      ProcessEdges(m_edgeBufferStorage);
+      if (displayStyle == DisplayStyle.Wireframe)
+        ProcessEdges(m_edgeBufferStorage);
     }
 
     // Initialize and populate buffers that hold graphics primitives, set up related parameters that are needed for drawing.
     private void CreateBufferStorageForMesh(OG.Mesh mesh, DisplayStyle displayStyle)
     {
-      var meshInfo = new SpeckleMeshInfo(mesh);
+      var color = new ColorWithTransparency(255, 255, 255, 0);
+      var meshInfo = new SpeckleMeshInfo(mesh, color, ref minValues, ref maxValues);
 
       m_nonTransparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
       m_transparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
@@ -177,11 +186,19 @@ namespace ConverterRevitShared
         foreach (SpeckleMeshInfo meshInfo in meshes)
         {
           OG.Mesh mesh = meshInfo.Mesh;
-          foreach (OG.Point vertex in mesh.GetPoints())
+          var addedVertexIndicies = new List<int>();
+          for (var i = 0; i < meshInfo.Faces.Count; i++)
           {
-            vertexStream.AddVertex(new VertexPositionNormalColored(new XYZ(vertex.x, vertex.y, vertex.z), meshInfo.Normal, meshInfo.ColorWithTransparency));
-          }
+            foreach (var index in meshInfo.Faces[i])
+            {
+              if (addedVertexIndicies.Contains(index))
+                continue;
 
+              var p1 = meshInfo.Vertices.ElementAt(index);
+              vertexStream.AddVertex(new VertexPositionNormalColored(new XYZ(p1.x, p1.y, p1.z), meshInfo.Normals.ElementAt(i), meshInfo.ColorWithTransparency));
+              addedVertexIndicies.Add(index);
+            }
+          }
           numVerticesInMeshesBefore.Add(numVerticesInMeshesBefore.Last() + mesh.VerticesCount);
         }
       }
@@ -348,20 +365,35 @@ namespace ConverterRevitShared
       public List<OG.Point> Vertices;
       public List<int[]> Faces;
       public List<List<XYZ>> XYZs = new List<List<XYZ>>();
-      public XYZ Normal;
+      public List<XYZ> Normals;
       public ColorWithTransparency ColorWithTransparency;
-      //public ConcurrentDictionary<Tuple<int, int>, ConcurrentBag<int>> EdgeFaceConnection;
 
-      public SpeckleMeshInfo(OG.Mesh mesh)
+      public SpeckleMeshInfo(OG.Mesh mesh, ColorWithTransparency color, ref OG.Point minValues, ref OG.Point maxValue)
       {
         Mesh = mesh;
+        ColorWithTransparency = color;
         Faces = GetFaceIndices(mesh).ToList();
         Vertices = mesh.GetPoints();
+        Normals = new List<XYZ>();
 
         var edges = new List<(int, int)>();
         var faceIndex = 0;
         foreach (var indices in Faces)
         {
+          var vectorA = new OG.Vector(Vertices.ElementAt(indices[0]));
+          var vectorB = new OG.Vector(Vertices.ElementAt(indices[1]));
+          var vectorC = new OG.Vector(Vertices.ElementAt(indices[2]));
+          var result = OG.Vector.CrossProduct(vectorB - vectorA, vectorC - vectorA).Unit();
+
+          try
+          {
+            Normals.Add(new XYZ(result.x, result.y, result.z));
+          }
+          catch (Exception ex)
+          {
+            Normals.Add(new XYZ(0, 0, 1));
+          }
+
           for (var j = 0; j < indices.Length; j++)
           {
             var iA = indices[j];
@@ -370,13 +402,21 @@ namespace ConverterRevitShared
             iA = temp < iB ? iA : iB;
             iB = temp < iB ? iB : temp;
 
-            if (!edges.Contains((iA, iB)))
-            {
-              edges.Add((iA, iB));
-              var p1 = Vertices.ElementAt(iA);
-              var p2 = Vertices.ElementAt(iB);
-              XYZs.Add(new List<XYZ> { new XYZ(p1.x, p1.y, p1.z), new XYZ(p2.x, p2.y, p2.z) });
-            }
+            if (edges.Contains((iA, iB)))
+              continue;
+
+            edges.Add((iA, iB));
+            var p1 = Vertices.ElementAt(iA);
+            var p2 = Vertices.ElementAt(iB);
+            XYZs.Add(new List<XYZ> { new XYZ(p1.x, p1.y, p1.z), new XYZ(p2.x, p2.y, p2.z) });
+
+            minValues.x = Math.Min(minValues.x, Math.Min(p1.x, p2.x));
+            minValues.y = Math.Min(minValues.y, Math.Min(p1.y, p2.y));
+            minValues.z = Math.Min(minValues.z, Math.Min(p1.z, p2.z));
+
+            maxValue.x = Math.Max(maxValue.x, Math.Max(p1.x, p2.x));
+            maxValue.y = Math.Max(maxValue.y, Math.Max(p1.y, p2.y));
+            maxValue.z = Math.Max(maxValue.z, Math.Max(p1.z, p2.z));
           }
           faceIndex++;
         }
