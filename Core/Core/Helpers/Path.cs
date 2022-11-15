@@ -73,7 +73,7 @@ namespace Speckle.Core.Helpers
     /// <summary>
     /// Get the platform specific user configuration folder path.
     /// </summary>
-    internal static string UserApplicationDataPath() {
+    public static string UserApplicationDataPath() {
       // if we have an override, just return that
       if (_path != null) return _path;
 
@@ -98,7 +98,7 @@ namespace Speckle.Core.Helpers
     /// <summary>
     /// Get the installation path.
     /// </summary>
-    internal static string InstallApplicationDataPath =>
+    public static string InstallApplicationDataPath =>
         Assembly.GetAssembly(typeof(SpecklePathProvider)).Location.Contains("ProgramData")
           ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
           : UserApplicationDataPath();
