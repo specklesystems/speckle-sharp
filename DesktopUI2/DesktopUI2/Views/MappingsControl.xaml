@@ -102,7 +102,7 @@
                         VerticalAlignment="Center"
                         Foreground="Gray"
                         Kind="InfoCircle"
-                        ToolTip.Tip="Select a stream coming from Revit with types and levels&#x0a;then select how to map the currently selected objects&#x0a;when received in Revit" />
+                        ToolTip.Tip="Select a stream coming from Revit with types and levels&#x0a;then select some objects.&#x0a;&#x0a;CURRENT MAPPINGS:&#x0a;DirectShape from Brep and Mesh&#x0a;Wall from Extrusion&#x0a;Beam/Brace from Line&#x0a;Family Instance from Point or Block" />
                       <TextBlock
                         Margin="5,0"
                         VerticalAlignment="Center"
@@ -172,6 +172,10 @@
                         </DataTemplate>
                         <!--  BRACE  -->
                         <DataTemplate DataType="{x:Type s:RevitBraceViewModel}">
+                          <map:RevitBasic />
+                        </DataTemplate>
+                        <!--  FAMILY INSTANCE  -->
+                        <DataTemplate DataType="{x:Type s:RevitFamilyInstanceViewModel}">
                           <map:RevitBasic />
                         </DataTemplate>
                         <!--  DIRECTSHAPE  -->

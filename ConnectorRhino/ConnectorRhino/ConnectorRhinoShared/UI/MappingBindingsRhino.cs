@@ -26,6 +26,7 @@ using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
+using Point = Rhino.Geometry.Point;
 
 namespace SpeckleRhino
 {
@@ -89,43 +90,49 @@ namespace SpeckleRhino
       if (existingSchema != null)
         result.Add(existingSchema);
 
-
-      switch (obj.Geometry)
+      if (obj is InstanceObject)
       {
-        case Mesh m:
-          if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
-            result.Add(new DirectShapeFreeformViewModel());
-          break;
+        result.Add(new RevitFamilyInstanceViewModel());
+      }
+      else
+      {
+        switch (obj.Geometry)
+        {
+          case Mesh m:
+            if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+              result.Add(new DirectShapeFreeformViewModel());
+            break;
 
-        case Brep b:
-          if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
-            result.Add(new DirectShapeFreeformViewModel());
-          break;
-        //case Brep b:
-        //  if (b.IsSurface) cats.Add(DirectShape); // TODO: Wall by face, totally faking it right now
-        //  else cats.Add(DirectShape);
-        //  break;
-        case Extrusion e:
-          if (e.ProfileCount > 1) break;
-          var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
-          if (!(crv.IsLinear() || crv.IsArc())) break;
-          if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
+          case Brep b:
+            if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+              result.Add(new DirectShapeFreeformViewModel());
+            break;
+          case Extrusion e:
+            if (e.ProfileCount > 1) break;
+            var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
+            if (!(crv.IsLinear() || crv.IsArc())) break;
+            if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
 
-          if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
-            result.Add(new RevitWallViewModel());
-          break;
+            if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
+              result.Add(new RevitWallViewModel());
+            break;
 
-        case Curve c:
-          if (c.IsLinear())
-          {
-            result.Add(new RevitBeamViewModel());
-            result.Add(new RevitBraceViewModel());
-          }
+          case Curve c:
+            if (c.IsLinear())
+            {
+              result.Add(new RevitBeamViewModel());
+              result.Add(new RevitBraceViewModel());
+            }
 
-          //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-          //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
-          //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-          break;
+            //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+            //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
+            //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+            break;
+
+          case Point p:
+            result.Add(new RevitFamilyInstanceViewModel());
+            break;
+        }
       }
 
       return result;

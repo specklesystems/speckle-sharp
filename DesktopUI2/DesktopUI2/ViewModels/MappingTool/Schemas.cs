@@ -151,6 +151,17 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
+  public class RevitFamilyInstanceViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Family Instance";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new FamilyInstance(null, SelectedFamily.Name, SelectedType, new RevitLevel(SelectedLevel));
+      return Operations.Serialize(obj);
+    }
+  }
+
   public class DirectShapeFreeformViewModel : Schema
   {
     public override string Name => "DirectShape";
