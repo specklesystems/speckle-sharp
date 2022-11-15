@@ -59,6 +59,16 @@ namespace Speckle.Core.Helpers
     {
       _accountsFolderName = accountsFolderName;
     }
+    
+    /// <summary>
+    ///  
+    /// </summary>
+    public static void OverrideObjectsFolderName(string objectsFolderName)
+    {
+      _objectsFolderName = objectsFolderName;
+    }
+
+    private static string _objectsFolderName = "Objects";
 
     /// <summary>
     /// Get the platform specific user configuration folder path.
@@ -98,6 +108,11 @@ namespace Speckle.Core.Helpers
     /// Get the folder where the Speckle kits should be stored.
     /// </summary>
     public static string KitsFolderPath => EnsureFolderExists(InstallSpeckleFolderPath, _kitsFolderName);
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    public static string ObjectsFolderPath => EnsureFolderExists(KitsFolderPath, _objectsFolderName);
 
     /// <summary>
     /// Get the folder where the Speckle accounts data should be stored.
