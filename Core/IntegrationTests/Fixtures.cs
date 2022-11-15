@@ -57,10 +57,11 @@ namespace TestsIntegration
         await tokenResponse.Content.ReadAsStringAsync()
       );
 
-      var acc = new Account { 
-        token = deserialised["token"], 
-        userInfo = new UserInfo { id = user["name"], email = user["email"], name = user["name"] }, 
-        serverInfo = Server 
+      var acc = new Account
+      {
+        token = deserialised["token"],
+        userInfo = new UserInfo { id = user["name"], email = user["email"], name = user["name"] },
+        serverInfo = Server
       };
       var client = new Client(acc);
 

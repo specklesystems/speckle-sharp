@@ -132,7 +132,7 @@ namespace Speckle.Core.Models
           }
         }
       }
-      catch(Exception e)
+      catch (Exception e)
       {
 
       }

@@ -504,9 +504,9 @@ namespace Speckle.Core.Transports
 
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
-      var payload = new Dictionary<string, string>() { {"objects" , JsonConvert.SerializeObject(objectIds)}};
+      var payload = new Dictionary<string, string>() { { "objects", JsonConvert.SerializeObject(objectIds) } };
       var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
-      var response = await Client.PostAsync( uri, new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"), CancellationToken);
+      var response = await Client.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"), CancellationToken);
       response.EnsureSuccessStatusCode();
 
       var hasObjectsJson = await response.Content.ReadAsStringAsync();
