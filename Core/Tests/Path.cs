@@ -48,8 +48,11 @@ namespace Tests
     {
       var installPath = SpecklePathProvider.InstallApplicationDataPath;
       string pattern;
-      if (String.IsNullOrEmpty(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)))
+
+      var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+      if (String.IsNullOrEmpty(appData) || appData == "/root")
       {
+        Console.WriteLine(appData);
         pattern = @"\/root";
       }
       else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
