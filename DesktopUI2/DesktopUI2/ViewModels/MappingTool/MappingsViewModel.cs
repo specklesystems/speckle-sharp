@@ -160,7 +160,7 @@ namespace DesktopUI2.ViewModels.MappingTool
         else if (!AvailableRevitLevels.Any())
           PromptMsg = "The selected branch does not contain any Revit levels, try changing mapping data source.";
         else
-          PromptMsg = "Incompatible selection, try selecting objects of the same type.";
+          PromptMsg = "Incompatible selection, try selecting objects of the same type or changing mapping source";
 
         SelectedSchema = null;
         return;
