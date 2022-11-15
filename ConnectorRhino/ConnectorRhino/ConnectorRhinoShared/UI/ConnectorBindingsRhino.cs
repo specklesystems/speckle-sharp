@@ -1175,7 +1175,12 @@ namespace SpeckleRhino
           speckleCommentView.ActiveViewport.SetCameraDirection(direction, false);
           speckleCommentView.ActiveViewport.SetCameraLocation(cameraLocation, true);
           speckleCommentView.Maximized = true;
-          
+          DisplayModeDescription shaded = DisplayModeDescription.FindByName("Shaded");
+          if (shaded!= null)
+          {
+            speckleCommentView.ActiveViewport.DisplayMode = shaded;
+          }
+
           if (Doc.Views.ActiveView.ActiveViewport.Name != "SpeckleCommentView")
           {
             Doc.Views.ActiveView = speckleCommentView;
