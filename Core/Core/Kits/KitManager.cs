@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -25,7 +25,7 @@ namespace Speckle.Core.Kits
         if (_kitsFolder != null)
           return _kitsFolder;
 
-        return Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits");
+        return SpecklePathProvider.KitsFolderPath;
       }
       set
       {

@@ -2,10 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports.ServerUtils;
@@ -56,12 +56,10 @@ namespace Speckle.Core.Transports
       Account = account;
       CancellationToken = CancellationToken.None;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
-      
+
       if (blobStorageFolder == null)
       {
-        //BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs");
-        var accountHost = new Uri(account.serverInfo.url).Host;
-        BlobStorageFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), $"Speckle/Blobs/{accountHost}/{streamId}");
+        BlobStorageFolder = SpecklePathProvider.BlobStoragePath();
       }
       Directory.CreateDirectory(BlobStorageFolder);
     }
