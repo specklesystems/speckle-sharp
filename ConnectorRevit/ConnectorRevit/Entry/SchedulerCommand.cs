@@ -18,7 +18,7 @@ namespace Speckle.ConnectorRevit.Entry
 
     internal static UIApplication uiapp;
 
-    public static ConnectorBindingsRevit2 Bindings { get; set; }
+    public static ConnectorBindingsRevit Bindings { get; set; }
 
 
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
