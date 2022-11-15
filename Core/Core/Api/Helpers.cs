@@ -250,7 +250,7 @@ namespace Speckle.Core.Api
     /// Returns the correct location of the Speckle folder for the current user. Usually this would be the user's %appdata%/Speckle folder.
     /// </summary>
     /// <returns>The location of the Speckle installation folder</returns>
-    [Obsolete("Please use Helpers/SpecklePathProvider.UserSpeckleFolderPath", true)]
+    [Obsolete("Please use Helpers/SpecklePathProvider.UserSpeckleFolderPath()", true)]
     public static string UserSpeckleFolderPath => Path.Combine(UserApplicationDataPath, "Speckle");
 
 

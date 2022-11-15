@@ -73,12 +73,26 @@ namespace Speckle.Core.Helpers
     /// <summary>
     /// Get the platform specific user configuration folder path.
     /// </summary>
-    internal static string UserApplicationDataPath
-      => _path ?? (
-          RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-              ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming")
-              : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData))
-        );
+    internal static string UserApplicationDataPath() {
+      // this was the old way of doing it. Can we remove this?
+      // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        // return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+
+      // if we have an override, just return that
+      if (_path != null) return _path;
+
+      // on windows, we always go in the appdata folder.
+      // on desktop linux and macos its also expanded by the same variable.
+      var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+      if (!String.IsNullOrEmpty(appDataFolder)) return appDataFolder;
+
+      // on server linux, there might not be a user setup, things can run under root
+      // in that case, the appdata variable is most probably not set up
+      // we fall back to the value of the home folder
+      return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+    }
 
     /// <summary>
     /// Get the installation path.
@@ -86,7 +100,7 @@ namespace Speckle.Core.Helpers
     internal static string InstallApplicationDataPath =>
         Assembly.GetAssembly(typeof(SpecklePathProvider)).Location.Contains("ProgramData")
           ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
-          : UserApplicationDataPath;
+          : UserApplicationDataPath();
 
     /// <summary>
     /// Get the path where the Speckle applications should be installed
@@ -96,7 +110,7 @@ namespace Speckle.Core.Helpers
     /// <summary>
     /// Get the folder where the user's Speckle data should be stored.
     /// </summary>
-    public static string UserSpeckleFolderPath => EnsureFolderExists(UserApplicationDataPath, _applicationName);
+    public static string UserSpeckleFolderPath => EnsureFolderExists(UserApplicationDataPath(), _applicationName);
 
     /// <summary>
     /// Get the folder where the user's Speckle blobs should be stored.

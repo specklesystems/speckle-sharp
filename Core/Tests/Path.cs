@@ -11,7 +11,7 @@ namespace Tests
     [Test]
     public void TestUserApplicationDataPath()
     {
-      var userPath = SpecklePathProvider.UserApplicationDataPath;
+      var userPath = SpecklePathProvider.UserApplicationDataPath();
       string pattern;
       if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
@@ -39,7 +39,7 @@ namespace Tests
     {
       var newPath = Path.GetTempPath();
       SpecklePathProvider.OverrideApplicationDataPath(newPath);
-      Assert.That(SpecklePathProvider.UserApplicationDataPath, Is.EqualTo(newPath));
+      Assert.That(SpecklePathProvider.UserApplicationDataPath(), Is.EqualTo(newPath));
       SpecklePathProvider.OverrideApplicationDataPath(null);
     }
 
@@ -48,7 +48,11 @@ namespace Tests
     {
       var installPath = SpecklePathProvider.InstallApplicationDataPath;
       string pattern;
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      if (String.IsNullOrEmpty(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)))
+      {
+        pattern = @"\/root";
+      }
+      else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
         // this will prob fail on windows
         pattern = @"C:\\Users\\.*\\AppData\\Roaming";

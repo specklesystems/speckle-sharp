@@ -47,7 +47,7 @@ namespace Speckle.Core.Transports
     public SQLiteTransport(string basePath = null, string applicationName = null, string scope = "Data")
     {
       if (basePath == null)
-        basePath = SpecklePathProvider.UserApplicationDataPath;
+        basePath = SpecklePathProvider.UserApplicationDataPath();
       _basePath = basePath;
 
       if (applicationName == null)
