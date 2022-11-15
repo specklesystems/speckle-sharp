@@ -86,7 +86,7 @@ namespace Speckle.Core.Helpers
     /// <summary>
     /// Get the folder where the user's Speckle data should be stored.
     /// </summary>
-    public static string UserSpeckleFolderPath => EnsureFolderExists(_path, _applicationName);
+    public static string UserSpeckleFolderPath => EnsureFolderExists(UserApplicationDataPath, _applicationName);
 
     /// <summary>
     /// Get the folder where the user's Speckle blobs should be stored.

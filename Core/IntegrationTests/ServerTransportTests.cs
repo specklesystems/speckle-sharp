@@ -15,7 +15,7 @@ namespace TestsIntegration
     private string _basePath;
 
     [OneTimeSetUp]
-    public async Task Setup()
+    public async Task InitialSetup()
     {
       _basePath = Path.Join(Path.GetTempPath(), "speckleTest");
 
@@ -31,6 +31,14 @@ namespace TestsIntegration
         name = "Blobber"
       }).Result;
 
+    }
+
+    [SetUp]
+    public void Setup()
+    {
+      CleanData();
+      // need to recreate the server transport object for each test
+      // to make sure all folders are properly initialized
       transport = new ServerTransport(account, streamId);
     }
 
@@ -140,7 +148,8 @@ namespace TestsIntegration
       );
 
       memTransport = new MemoryTransport();
-      var receivedObject = await Operations.Receive(sentObjectId, transport, memTransport);
+      var receivedObject = await Operations.Receive(sentObjectId, transport, memTransport, onErrorAction: (s, e) => { 
+        Console.WriteLine(s); });
 
       var allFiles = Directory.GetFiles(transport.BlobStorageFolder)
         .Select(fp => fp.Split(Path.DirectorySeparatorChar).Last()).ToList();
