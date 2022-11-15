@@ -74,16 +74,17 @@ namespace Speckle.Core.Helpers
     /// Get the platform specific user configuration folder path.
     /// </summary>
     internal static string UserApplicationDataPath() {
-      // this was the old way of doing it. Can we remove this?
-      // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        // return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        // return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
-
       // if we have an override, just return that
       if (_path != null) return _path;
 
-      // on windows, we always go in the appdata folder.
-      // on desktop linux and macos its also expanded by the same variable.
+      // on windows we do this
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        // don't switch to the one below it causes issues for users:
+        // https://speckle.community/t/cant-find-speckle-kits-when-using-gh-sdk/3297/14
+        // return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+
+      // on desktop linux and macos we use the appdata.
       var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
       if (!String.IsNullOrEmpty(appDataFolder)) return appDataFolder;
 
