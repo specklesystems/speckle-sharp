@@ -7,11 +7,14 @@ using Autodesk.Revit.DB.Events;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -253,5 +256,97 @@ namespace Speckle.ConnectorRevit.UI
     }
 
 
+    public override bool CanOpen3DView => true;
+
+    public override async Task Open3DView(List<double> viewCoordinates, string viewName = "")
+    {
+      try
+      {
+        var views = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(View3D)).ToElements().Cast<View3D>();
+        var viewtypes = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(ViewFamilyType))
+          .ToElements()
+          .Cast<ViewFamilyType>()
+          .Where(x => x.ViewFamily == ViewFamily.ThreeDimensional);
+
+        //hacky but the current comments camera is not a Base object
+        //so it cannot be passed automatically to the converter
+        //making a dummy one here
+        var speckleCamera = new Base();
+        speckleCamera["isHackySpeckleCamera"] = true;
+        speckleCamera["coordinates"] = viewCoordinates;
+
+
+        //when in a perspective view, it's not possible to open any transaction (txs adsk)
+        //so we're switching to any other non perspective view here
+        if (CurrentDoc.ActiveView.ViewType == ViewType.ThreeD)
+        {
+          var activeView = CurrentDoc.ActiveView as View3D;
+          if (activeView.IsPerspective)
+          {
+            var nonPerspectiveView = views.FirstOrDefault(x => !x.IsPerspective);
+            if (nonPerspectiveView != null)
+              CurrentDoc.ActiveView = nonPerspectiveView;
+          }
+
+        }
+
+        var perspView = views.FirstOrDefault(o => o.Name == "SpeckleCommentView");
+
+        await RevitTask.RunAsync(app =>
+        {
+
+          using (var t = new Transaction(CurrentDoc.Document, $"Open Comment View"))
+          {
+            t.Start();
+
+            var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+            converter.SetContextDocument(CurrentDoc.Document);
+            var viewOrientation3D = converter.ConvertToNative(speckleCamera) as ViewOrientation3D;
+
+            //txs bcfier
+            if (perspView == null)
+            {
+              perspView = View3D.CreatePerspective(CurrentDoc.Document, viewtypes.First().Id);
+              perspView.Name = "SpeckleCommentView";
+            }
+            perspView.SetOrientation(viewOrientation3D);
+            perspView.CropBoxActive = false;
+            perspView.CropBoxVisible = false;
+            perspView.DisplayStyle = DisplayStyle.Shading;
+
+            // the default phase was not looking good, picking the one of the View3D
+            if (views.Any())
+            {
+              var viewPhase = views.First().get_Parameter(BuiltInParameter.VIEW_PHASE);
+              if (viewPhase != null)
+              {
+                perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
+              }
+            }
+
+            t.Commit();
+          }
+          // needs to be outside the transaction
+          CurrentDoc.ActiveView = perspView;
+          // "refresh" the active view, txs Connor
+          var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(perspView.Id));
+          uiView.Zoom(1);
+        });
+
+        //needed to force refresh the active view
+
+
+      }
+      catch (Exception ex)
+      {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "📷 Open View Error",
+          Message = $"Could not open the view: {ex.Message}",
+          Type = Avalonia.Controls.Notifications.NotificationType.Error
+        });
+      }
+    }
   }
 }

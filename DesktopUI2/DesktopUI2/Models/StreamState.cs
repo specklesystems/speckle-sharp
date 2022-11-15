@@ -138,6 +138,8 @@ namespace DesktopUI2.Models
     [JsonConverter(typeof(SelectionFilterConverter))]
     public ISelectionFilter Filter { get; set; }
 
+    [JsonProperty]
+    [JsonConverter(typeof(SettingsConverter))]
     public List<ISetting> Settings { get; set; } = new List<ISetting>();
 
     //List of uniqueids of the currently selected objects

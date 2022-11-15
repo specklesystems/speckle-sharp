@@ -33,8 +33,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\QuickShareCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\OneClickSendCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SchedulerCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />

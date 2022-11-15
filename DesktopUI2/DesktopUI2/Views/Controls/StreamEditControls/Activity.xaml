@@ -1,0 +1,71 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Controls.StreamEditControls.Activity"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:dataTemplates="using:DesktopUI2.Views.DataTemplates"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="550"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Design.DataContext>
+    <viewModels:DesignSavedStreamViewModel />
+  </Design.DataContext>
+
+  <UserControl.Resources>
+    <conv:RoleCanSendValueConverter x:Key="RoleCanSendValueConverter" />
+    <conv:RoleValueConverter x:Key="RoleValueConverter" />
+    <conv:StringOpacityValueConverter x:Key="StringOpacityValueConverter" />
+  </UserControl.Resources>
+  <ScrollViewer Name="activityScroller">
+    <ItemsControl Margin="0,0,0,10" Items="{Binding Activity}">
+      <ItemsControl.ItemTemplate>
+        <DataTemplate>
+          <Grid>
+            <m:ColorZone
+              Grid.Row="3"
+              Margin="{Binding Margin}"
+              HorizontalAlignment="{Binding Align}"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              CornerRadius="25"
+              Mode="Standard"
+              Opacity="{Binding Message, Converter={StaticResource StringOpacityValueConverter}}">
+              <Grid ColumnDefinitions="auto,auto,*">
+                <icons:MaterialIcon
+                  Width="15"
+                  Height="15"
+                  Margin="10,0,0,0"
+                  VerticalAlignment="Center"
+                  Kind="{Binding Icon}"
+                  ToolTip.Tip="Send" />
+                <Image
+                  Grid.Column="1"
+                  Width="15"
+                  Height="15"
+                  Source="{Binding Author^.AvatarImage}"
+                  ToolTip.Tip="{Binding Author^.SimpleName}">
+                  <Image.Clip>
+                    <EllipseGeometry Rect="0,0,15,15" />
+                  </Image.Clip>
+                </Image>
+                <TextBlock
+                  Grid.Column="2"
+                  Margin="5,10,10,10"
+                  Text="{Binding Message}"
+                  TextWrapping="Wrap" />
+              </Grid>
+
+            </m:ColorZone>
+
+          </Grid>
+        </DataTemplate>
+      </ItemsControl.ItemTemplate>
+
+    </ItemsControl>
+  </ScrollViewer>
+</UserControl>

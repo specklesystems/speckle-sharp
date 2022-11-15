@@ -1,6 +1,7 @@
 ﻿using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
+using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,18 +13,14 @@ namespace DesktopUI2.ViewModels
 {
   public class CommentViewModel : ReactiveObject
   {
+    private ConnectorBindings Bindings;
     public CommentItem Comment { get; set; }
     public string StreamId { get; private set; }
     public Task<AccountViewModel> Author => GetAuthorAsync();
     public Task<Avalonia.Media.Imaging.Bitmap> Screenshot => GetScreenshotAsync();
 
-    public string Text
-    {
-      get
-      {
-        return string.Join("", Comment.text.Doc.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
-      }
-    }
+    //return string.Join("", Comment.text.Doc?.Content.Select(x => string.Join("", x.Content.Select(x => x.Text).ToList())).ToList());
+    public string Text { get; private set; }
 
     private async Task<AccountViewModel> GetAuthorAsync()
     {
@@ -59,6 +56,11 @@ namespace DesktopUI2.ViewModels
       Comment = item;
       StreamId = streamId;
       _client = client;
+      Text = Comment.rawText;
+
+      //use dependency injection to get bindings
+      Bindings = Locator.Current.GetService<ConnectorBindings>();
+
       if (Comment.replies != null)
       {
         foreach (var r in Comment.replies.items)
@@ -67,6 +69,12 @@ namespace DesktopUI2.ViewModels
           Replies.Add(reply);
         }
       }
+    }
+
+    public void OpenCommentView()
+    {
+      Bindings.Open3DView(Comment.data.camPos, Comment.id);
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment Open 3D View" } });
     }
 
     public void OpenComment()

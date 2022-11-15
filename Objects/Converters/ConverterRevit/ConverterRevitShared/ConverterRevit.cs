@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -59,7 +59,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public HostObject CurrentHostElement { get; set; }
+    public Element CurrentHostElement { get; set; }
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
@@ -123,6 +123,9 @@ namespace Objects.Converter.Revit
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
+          break;
+        case DB.FabricationPart o:
+          returnObject = FabricationPartToSpeckle(o, out notes);
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
@@ -559,6 +562,15 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
+        case Base b:
+          var boo = b["isHackySpeckleCamera"] as bool?;
+          if (boo == true)
+            return ViewOrientation3DToNative(b);
+          return null;
+
+
         default:
           return null;
       }
@@ -609,6 +621,7 @@ namespace Objects.Converter.Revit
         DB.ElementType _ => true,
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
+        DB.FabricationPart _ => true,
 #if !REVIT2023
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,

@@ -1,6 +1,7 @@
 ﻿using Autodesk.Revit.DB;
 using Speckle.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
@@ -176,6 +177,29 @@ namespace Objects.Converter.Revit
       Report.Log($@"Renamed view {name} to {corrected} due to invalid characters.");
 
       return corrected;
+    }
+
+    /// <summary>
+    /// Converts a Speckle comment camera coordinates into Revit's
+    /// First three values are the camera's position, second three the target
+    /// </summary>
+    /// <param name="speckleCamera"></param>
+    /// <returns></returns>
+    public DB.ViewOrientation3D ViewOrientation3DToNative(Base baseCamera)
+    {
+      //hacky but the current comments camera is not a Base object
+      var speckleCamera = baseCamera["coordinates"] as List<double>;
+      var position = new Objects.Geometry.Point(speckleCamera[0], speckleCamera[1], speckleCamera[2]);
+      var target = new Objects.Geometry.Point(speckleCamera[3], speckleCamera[4], speckleCamera[5]);
+
+
+      var cameraTarget = PointToNative(target);
+      var cameraPosition = PointToNative(position);
+      var cameraDirection = (cameraTarget.Subtract(cameraPosition)).Normalize();
+      var cameraUpVector = cameraDirection.CrossProduct(XYZ.BasisZ).CrossProduct(cameraDirection);
+
+
+      return new ViewOrientation3D(cameraPosition, cameraUpVector, cameraDirection);
     }
   }
 }

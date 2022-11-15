@@ -26,6 +26,10 @@ namespace SpeckleRhino
     private static string SpeckleKey = "speckle2";
 
     public ConnectorBindingsRhino Bindings { get; private set; }
+    public MappingBindingsRhino MappingBindings { get; private set; }
+
+    private bool SelectionExpired = false;
+    internal bool ExistingSchemaLogExpired = false;
 
 
     public static AppBuilder appBuilder;
@@ -50,9 +54,18 @@ namespace SpeckleRhino
 
 
         Bindings = new ConnectorBindingsRhino();
+        MappingBindings = new MappingBindingsRhino();
 
         RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
         RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+
+        //Mapping tool selection
+        RhinoDoc.ActiveDocumentChanged += RhinoDoc_ActiveDocumentChanged;
+        RhinoDoc.SelectObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeselectObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeselectAllObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeleteRhinoObject += (sender, e) => ExistingSchemaLogExpired = true;
+        RhinoApp.Idle += RhinoApp_Idle;
       }
       catch (Exception ex)
       {
@@ -118,7 +131,8 @@ namespace SpeckleRhino
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
         }
 #else
-        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(DuiPanel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(MappingsPanel).GUID);
 #endif
 
       }
@@ -156,8 +170,11 @@ namespace SpeckleRhino
       Init();
 
 #if !MAC
-      System.Type panelType = typeof(Panel);
+      System.Type panelType = typeof(DuiPanel);
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
+
+      System.Type mappingsPanelType = typeof(MappingsPanel);
+      Rhino.UI.Panels.RegisterPanel(this, mappingsPanelType, "Speckle Mapping Tool", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.
       var plugin_version = Settings.GetString("PlugInVersion", null);
@@ -198,5 +215,37 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+
+
+    private void RhinoApp_Idle(object sender, EventArgs e)
+    {
+      if (SelectionExpired)
+      {
+        SelectionExpired = false;
+        MappingBindings.UpdateSelection(MappingBindings.GetSelectionInfo());
+      }
+
+      if (ExistingSchemaLogExpired)
+      {
+        ExistingSchemaLogExpired = false;
+        MappingBindings.UpdateExistingSchemaElements(MappingBindings.GetExistingSchemaElements());
+      }
+
+    }
+    private void RhinoDoc_DeselectObjects(object sender, Rhino.DocObjects.RhinoObjectSelectionEventArgs e)
+    {
+      SelectionExpired = true;
+    }
+
+    private void RhinoDoc_SelectObjects(object sender, Rhino.DocObjects.RhinoObjectSelectionEventArgs e)
+    {
+      SelectionExpired = true;
+    }
+
+    private void RhinoDoc_ActiveDocumentChanged(object sender, DocumentEventArgs e)
+    {
+      SelectionExpired = true;
+      // TODO: Parse new doc for existing stuff
+    }
   }
 }
