@@ -1,127 +1,125 @@
 <UserControl
-  x:Class="DesktopUI2.Views.Pages.NotificationsView"
-  xmlns="https://github.com/avaloniaui"
-  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
-  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
-  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
-  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  d:DesignHeight="450"
-  d:DesignWidth="400"
-  mc:Ignorable="d">
-  <Design.DataContext>
-    <dvm:DesignNotificationsViewModel />
-  </Design.DataContext>
-  <Grid RowDefinitions="auto,*">
-    <Border
-      Margin="0,0,0,7"
-      Padding="0"
-      assists:ShadowAssist.ShadowDepth="Depth2"
-      Background="{DynamicResource PrimaryHueMidBrush}">
-      <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
-        <m:FloatingButton
-          VerticalAlignment="Center"
-          assists:ShadowAssist.ShadowDepth="0"
-          Background="Transparent"
-          Classes=""
-          Command="{Binding GoBack}"
-          ToolTip.Tip="Back">
-          <Button.Content>
-            <Viewbox
-              HorizontalAlignment="Stretch"
-              VerticalAlignment="Stretch"
-              Stretch="Fill">
-              <icons:MaterialIcon
-                Width="24"
-                Height="24"
-                Foreground="White"
-                Kind="ChevronLeft" />
-            </Viewbox>
-          </Button.Content>
-        </m:FloatingButton>
-        <TextBlock
-          Grid.Column="1"
-          Margin="15,0,0,0"
-          VerticalAlignment="Center"
-          Classes="Medium"
-          FontSize="20"
-          Foreground="White"
-          Text="Notifications"
-          TextTrimming="CharacterEllipsis" />
-
-      </Grid>
-    </Border>
-
-    <ScrollViewer Grid.Row="1">
-      <Grid RowDefinitions="*,auto">
-        <StackPanel
-          Margin="10,15"
-          HorizontalAlignment="Center"
-          IsVisible="{Binding !Notifications.Count}"
-          Orientation="Vertical"
-          Spacing="20">
-          <TextBlock Text="😴 There are no new notifications!" TextWrapping="Wrap" />
-        </StackPanel>
-
-        <ItemsControl Margin="0,0,0,10" Items="{Binding Notifications}">
-          <ItemsControl.ItemTemplate>
-            <DataTemplate>
-              <m:Card Margin="15,10">
-                <Grid ColumnDefinitions="auto,*,auto">
-                  <icons:MaterialIcon
-                    Width="20"
-                    Height="20"
-                    Foreground="{Binding IconColor}"
-                    IsVisible="{Binding Icon}"
-                    Kind="{Binding Icon}" />
-
-                  <Image
-                    Width="30"
-                    Height="30"
-                    IsVisible="{Binding User}"
-                    Source="{Binding User.AvatarImage}"
-                    ToolTip.Tip="{Binding User.Name}">
-                    <Image.Clip>
-                      <EllipseGeometry Rect="0,0,30,30" />
-                    </Image.Clip>
-                  </Image>
-
-                  <TextBlock
-                    Grid.Column="1"
-                    Margin="5,0"
+    d:DesignHeight="450"
+    d:DesignWidth="400"
+    mc:Ignorable="d"
+    x:Class="DesktopUI2.Views.Pages.NotificationsView"
+    xmlns="https://github.com/avaloniaui"
+    xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+    xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+    xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+    xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Design.DataContext>
+        <dvm:DesignNotificationsViewModel />
+    </Design.DataContext>
+    <Grid RowDefinitions="auto,*">
+        <Border
+            Background="{DynamicResource PrimaryHueMidBrush}"
+            Margin="0,0,0,7"
+            Padding="0"
+            assists:ShadowAssist.ShadowDepth="Depth2">
+            <Grid ColumnDefinitions="auto,*,auto, auto" Margin="15">
+                <m:FloatingButton
+                    Background="Transparent"
+                    Classes=""
+                    Command="{Binding GoBack}"
+                    ToolTip.Tip="Back"
                     VerticalAlignment="Center"
-                    Text="{Binding Message}"
-                    TextWrapping="Wrap" />
-
-                  <m:FloatingButton
-                    Grid.Column="2"
-                    VerticalAlignment="Center"
-                    Command="{Binding LaunchCommand, FallbackValue={x:Null}}"
-                    Content="SEE"
-                    ToolTip.Tip="View">
-
+                    assists:ShadowAssist.ShadowDepth="0">
                     <Button.Content>
-                      <icons:MaterialIcon
-                        Width="20"
-                        Height="20"
-                        Foreground="White"
-                        Kind="OpenInNew" />
+                        <Viewbox
+                            HorizontalAlignment="Stretch"
+                            Stretch="Fill"
+                            VerticalAlignment="Stretch">
+                            <icons:MaterialIcon
+                                Foreground="White"
+                                Height="24"
+                                Kind="ChevronLeft"
+                                Width="24" />
+                        </Viewbox>
                     </Button.Content>
-                  </m:FloatingButton>
-                </Grid>
-              </m:Card>
-            </DataTemplate>
-          </ItemsControl.ItemTemplate>
+                </m:FloatingButton>
+                <TextBlock
+                    Classes="Medium"
+                    FontSize="20"
+                    Foreground="White"
+                    Grid.Column="1"
+                    Margin="15,0,0,0"
+                    Text="Notifications"
+                    TextTrimming="CharacterEllipsis"
+                    VerticalAlignment="Center" />
 
-        </ItemsControl>
+            </Grid>
+        </Border>
 
-      </Grid>
+        <ScrollViewer Grid.Row="1">
+            <Grid RowDefinitions="*,auto">
+                <StackPanel
+                    HorizontalAlignment="Center"
+                    IsVisible="{Binding !Notifications.Count}"
+                    Margin="10,15"
+                    Orientation="Vertical"
+                    Spacing="20">
+                    <TextBlock Text="😴 There are no new notifications!" TextWrapping="Wrap" />
+                </StackPanel>
 
-    </ScrollViewer>
-  </Grid>
+                <ItemsControl Items="{Binding Notifications}" Margin="0,0,0,10">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <m:Card Margin="15,10">
+                                <Grid ColumnDefinitions="auto,*,auto">
+                                    <icons:MaterialIcon
+                                        Foreground="{Binding IconColor}"
+                                        Height="20"
+                                        IsVisible="{Binding Icon}"
+                                        Kind="{Binding Icon}"
+                                        Width="20" />
+
+                                    <Image
+                                        Height="30"
+                                        IsVisible="{Binding User}"
+                                        Source="{Binding User.AvatarImage}"
+                                        ToolTip.Tip="{Binding User.Name}"
+                                        Width="30">
+                                        <Image.Clip>
+                                            <EllipseGeometry Rect="0,0,30,30" />
+                                        </Image.Clip>
+                                    </Image>
+
+                                    <TextBlock
+                                        Grid.Column="1"
+                                        Margin="5,0"
+                                        Text="{Binding Message}"
+                                        TextWrapping="Wrap"
+                                        VerticalAlignment="Center" />
+
+                                    <m:FloatingButton
+                                        Command="{Binding LaunchCommand, FallbackValue={x:Null}}"
+                                        Grid.Column="2"
+                                        ToolTip.Tip="View"
+                                        VerticalAlignment="Center">
+                                        <Button.Content>
+                                            <icons:MaterialIcon
+                                                Foreground="White"
+                                                Height="20"
+                                                Kind="OpenInNew"
+                                                Width="20" />
+                                        </Button.Content>
+                                    </m:FloatingButton>
+                                </Grid>
+                            </m:Card>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+
+                </ItemsControl>
+
+            </Grid>
+
+        </ScrollViewer>
+    </Grid>
 
 
 </UserControl>
