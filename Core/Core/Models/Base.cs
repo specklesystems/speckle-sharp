@@ -91,7 +91,7 @@ namespace Speckle.Core.Models
         var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
         var obsoleteAttr = prop.GetCustomAttribute<ObsoleteAttribute>(true);
         var jsonIgnoredAttr = prop.GetCustomAttribute<JsonIgnoreAttribute>(true);
-        
+
         if (obsoleteAttr != null || jsonIgnoredAttr != null)
         {
           // Skip properties from the count that are:
@@ -99,7 +99,7 @@ namespace Speckle.Core.Models
           // - Ignored by the serializer
           continue;
         }
-        
+
         object value = prop.GetValue(@base);
 
         if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute == null)
@@ -228,8 +228,8 @@ namespace Speckle.Core.Models
       myDuplicate.applicationId = applicationId;
 
       foreach (var kvp in GetMembers(
-                 DynamicBaseMemberType.Instance 
-                 | DynamicBaseMemberType.Dynamic 
+                 DynamicBaseMemberType.Instance
+                 | DynamicBaseMemberType.Dynamic
                  | DynamicBaseMemberType.SchemaIgnored)
                )
       {
@@ -309,9 +309,19 @@ namespace Speckle.Core.Models
     private bool hashExpired = true;
 
     private string _filePath;
-    public string filePath { get => _filePath; set { _filePath = value; hashExpired = true; } }
+    public string filePath
+    {
+      get => _filePath;
+      set
+      {
+        if (originalPath is null) originalPath = value;
+        _filePath = value;
+        hashExpired = true;
+      }
+    }
+    public string originalPath { get; set; }
 
-    public Blob(){}
+    public Blob() { }
 
     public Blob(string filePath)
     {
@@ -325,7 +335,7 @@ namespace Speckle.Core.Models
 
     public string GetFileHash()
     {
-      if((hashExpired || _hash == null) && filePath != null)
+      if ((hashExpired || _hash == null) && filePath != null)
       {
         _hash = Utilities.hashFile(filePath);
       }
