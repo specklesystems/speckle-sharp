@@ -112,7 +112,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
           try
           {
-            switch(operation)
+            switch (operation)
             {
               case ServerApiOperation.DownloadSingleObject:
                 (string dsoStreamId, string dsoObjectId) = ((string, string))inputValue;
@@ -180,7 +180,7 @@ namespace Speckle.Core.Transports.ServerUtils
     }
 
     public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
-    {      
+    {
       EnsureStarted();
       List<Task<object>> tasks = new List<Task<object>>();
       List<List<string>> splitObjectsIds;
@@ -197,7 +197,7 @@ namespace Speckle.Core.Transports.ServerUtils
         tasks.Add(op);
       }
       Dictionary<string, bool> ret = new Dictionary<string, bool>();
-      foreach(Task<object> task in tasks)
+      foreach (Task<object> task in tasks)
       {
         Dictionary<string, bool> taskResult = (await task) as Dictionary<string, bool>;
         foreach (KeyValuePair<string, bool> kv in taskResult)
@@ -224,7 +224,8 @@ namespace Speckle.Core.Transports.ServerUtils
       List<List<string>> splitObjectsIds = SplitList(objectIds, NumThreads);
       object callbackLock = new object();
 
-      CbObjectDownloaded callbackWrapper = (string id, string json) => {
+      CbObjectDownloaded callbackWrapper = (string id, string json) =>
+      {
         lock (callbackLock)
         {
           onObjectCallback(id, json);
@@ -289,7 +290,7 @@ namespace Speckle.Core.Transports.ServerUtils
       await op;
     }
 
-    public async Task<List<string>> HasBlobs(string streamId, List<(string,string)> blobs)
+    public async Task<List<string>> HasBlobs(string streamId, List<(string, string)> blobs)
     {
       EnsureStarted();
       Task<object> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));

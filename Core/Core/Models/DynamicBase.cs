@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -143,7 +143,7 @@ namespace Speckle.Core.Models
 
     private static void PopulatePropInfoCache(Type type)
     {
-      if(!propInfoCache.ContainsKey(type))
+      if (!propInfoCache.ContainsKey(type))
       {
         propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => !p.IsDefined(typeof(IgnoreTheItemAttribute), true)).ToList();
       }
@@ -157,11 +157,11 @@ namespace Speckle.Core.Models
     {
       PopulatePropInfoCache(GetType());
       var pinfos = propInfoCache[GetType()];
-      
+
       var names = new List<string>(properties.Count + pinfos.Count);
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
       foreach (var kvp in properties) names.Add(kvp.Key);
-      
+
       return names;
     }
 
@@ -174,7 +174,7 @@ namespace Speckle.Core.Models
     {
       PopulatePropInfoCache(t);
       var pinfos = propInfoCache[t];
-      
+
       var names = new List<string>(pinfos.Count);
       foreach (var pinfo in pinfos) names.Add(pinfo.Name);
 
@@ -185,13 +185,13 @@ namespace Speckle.Core.Models
     /// Gets the defined (typed) properties of this object.
     /// </summary>
     /// <returns></returns>
-    public IEnumerable<PropertyInfo> GetInstanceMembers() => GetInstanceMembers(GetType()); 
-    
+    public IEnumerable<PropertyInfo> GetInstanceMembers() => GetInstanceMembers(GetType());
+
     public static IEnumerable<PropertyInfo> GetInstanceMembers(Type t)
     {
       PopulatePropInfoCache(t);
       var pinfos = propInfoCache[t];
-      
+
       var names = new List<PropertyInfo>(pinfos.Count);
 
       foreach (var pinfo in pinfos)
@@ -206,7 +206,7 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     [Obsolete("Use GetMembers().Keys instead")]
     public IEnumerable<string> GetMemberNames() => GetMembers().Keys;
-    
+
     /// <summary>
     ///  Gets the typed and dynamic properties. 
     /// </summary>
@@ -228,7 +228,7 @@ namespace Speckle.Core.Models
         {
           var hasIgnored = x.IsDefined(typeof(SchemaIgnore), true);
           var hasObsolete = x.IsDefined(typeof(ObsoleteAttribute), true);
-          
+
           // If obsolete is false and prop has obsolete attr
           // OR
           // If schemaIgnored is true and prop has schemaIgnore attr
