@@ -98,18 +98,6 @@ namespace Speckle.ConnectorRevit.UI
           progress.Report.Log(previewObj);
       }
       return null;
-
-        //var converter = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
-        //converter.SetContextDocument(CurrentDoc.Document);
-        //var settings = new Dictionary<string, string>();
-        //settings["preview"] = "true";
-        //converter.SetConverterSettings(settings);
-
-        //var x = converter.ConvertToNative(new Base()) as ApplicationObject;
-
-        //AddMultipleRevitElementServers(new List<ApplicationObject>() { x });
-
-        //return null;
     }
 
     public override void ResetDocument()
@@ -137,6 +125,30 @@ namespace Speckle.ConnectorRevit.UI
       return commit;
     }
     private async Task<Base> GetCommit(Commit commit, StreamState state, ProgressViewModel progress)
+    {
+      var transport = new ServerTransport(state.Client.Account, state.StreamId);
+
+      var commitObject = await Operations.Receive(
+        commit.referencedObject,
+        progress.CancellationTokenSource.Token,
+        transport,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: (s, e) =>
+        {
+          progress.Report.LogOperationError(e);
+          progress.CancellationTokenSource.Cancel();
+        },
+        onTotalChildrenCountKnown: (c) => progress.Max = c,
+        disposeTransports: true
+        );
+
+      if (progress.Report.OperationErrorsCount != 0)
+        return null;
+
+      return commitObject;
+    }
+
+    private async Task<Base> GetCommitObject(Commit commit, StreamState state, ProgressViewModel progress)
     {
       var transport = new ServerTransport(state.Client.Account, state.StreamId);
 

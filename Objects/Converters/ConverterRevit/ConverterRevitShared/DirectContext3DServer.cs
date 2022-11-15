@@ -8,9 +8,6 @@ using Autodesk.Revit.DB.DirectContext3D;
 using Autodesk.Revit.DB.ExternalService;
 using Autodesk.Revit.UI;
 using Speckle.Core.Models;
-//using Objects;
-//using Objects.BuiltElements.Archicad;
-//using Objects.Geometry;
 using OG = Objects.Geometry;
 
 namespace ConverterRevitShared
@@ -24,7 +21,6 @@ namespace ConverterRevitShared
     private RenderingPassBufferStorage m_edgeBufferStorage;
     private Guid m_guid;
     private Base speckleObj;
-
     public DirectContext3DServer(Base @base, Document doc)
     {
       m_guid = Guid.NewGuid();
@@ -58,9 +54,9 @@ namespace ConverterRevitShared
       try
       {
         // Populate geometry buffers if they are not initialized or need updating.
-        if (m_nonTransparentFaceBufferStorage == null || m_nonTransparentFaceBufferStorage.needsUpdate(displayStyle) ||
-            m_transparentFaceBufferStorage == null || m_transparentFaceBufferStorage.needsUpdate(displayStyle) ||
-            m_edgeBufferStorage == null || m_edgeBufferStorage.needsUpdate(displayStyle))
+        if (m_nonTransparentFaceBufferStorage == null || m_nonTransparentFaceBufferStorage.NeedsUpdate(displayStyle) ||
+            m_transparentFaceBufferStorage == null || m_transparentFaceBufferStorage.NeedsUpdate(displayStyle) ||
+            m_edgeBufferStorage == null || m_edgeBufferStorage.NeedsUpdate(displayStyle))
         {
 
           CreateBufferStorageForBase(speckleObj, displayStyle);
@@ -105,48 +101,49 @@ namespace ConverterRevitShared
 
     private void CreateBufferStorageForBase(Base @base, DisplayStyle displayStyle)
     {
-      //if (!@base.GetDynamicMemberNames().Contains("displayValue"))
-      //  return;
-
-      //var x = @base.GetDynamicMemberNames();
-      //var meshes = @base["displayValue"];
-      //var meshes2 = @base["displayValue"] as List<OG.Mesh>;
-      //var meshes3 = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<OG.Mesh>;
       if (@base["displayValue"] != null && @base["displayValue"] is List<OG.Mesh> meshes)
-        foreach (var mesh in meshes)
-          CreateBufferStorageForMesh(mesh, displayStyle);
+      {
+        if (meshes.Count == m_nonTransparentFaceBufferStorage?.Meshes.Count)
+          RefreshBufferStorage(displayStyle);
+        else
+          foreach (var mesh in meshes)
+            CreateBufferStorageForMesh(mesh, displayStyle);
+      }
     }
 
-    // Initialize and populate buffers that hold graphics primitives, set up related parameters that are needed for drawing.
-    private void CreateBufferStorageForMesh(OG.Mesh mesh, DisplayStyle displayStyle)
+    private void RefreshBufferStorage(DisplayStyle displayStyle)
     {
-      m_nonTransparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
-      m_transparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
-      m_edgeBufferStorage = new RenderingPassBufferStorage(displayStyle);
-
-      var meshInfo = new SpeckleMeshInfo(mesh);
-      m_nonTransparentFaceBufferStorage.Meshes.Add(meshInfo);
-      m_nonTransparentFaceBufferStorage.VertexBufferCount += mesh.VerticesCount;
-      m_nonTransparentFaceBufferStorage.PrimitiveCount += meshInfo.Faces.Count;
-
-      foreach (var edge in meshInfo.Edges)
-      {
-        var p1 = edge.ElementAt(0);
-        var p2 = edge.ElementAt(1);
-        IList<XYZ> xyzs = new List<XYZ>()
-        {
-          new XYZ(p1.x, p1.y, p1.z),
-          new XYZ(p2.x, p2.y, p2.z)
-        };
-        m_edgeBufferStorage.VertexBufferCount += xyzs.Count;
-        m_edgeBufferStorage.PrimitiveCount += xyzs.Count - 1;
-        m_edgeBufferStorage.EdgeXYZs.Add(xyzs);
-      }
+      m_nonTransparentFaceBufferStorage.DisplayStyle = displayStyle;
+      m_transparentFaceBufferStorage.DisplayStyle = displayStyle;
+      m_edgeBufferStorage.DisplayStyle = displayStyle;
 
       // Fill out buffers with primitives based on the intermediate information about faces and edges.
       ProcessFaces(m_nonTransparentFaceBufferStorage);
       //ProcessFaces(m_transparentFaceBufferStorage);
       ProcessEdges(m_edgeBufferStorage);
+    }
+
+    // Initialize and populate buffers that hold graphics primitives, set up related parameters that are needed for drawing.
+    private void CreateBufferStorageForMesh(OG.Mesh mesh, DisplayStyle displayStyle)
+    {
+      var meshInfo = new SpeckleMeshInfo(mesh);
+
+      m_nonTransparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
+      m_transparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
+      m_edgeBufferStorage = new RenderingPassBufferStorage(displayStyle);
+
+      m_nonTransparentFaceBufferStorage.Meshes.Add(meshInfo);
+      m_nonTransparentFaceBufferStorage.VertexBufferCount += meshInfo.Mesh.VerticesCount;
+      m_nonTransparentFaceBufferStorage.PrimitiveCount += meshInfo.Faces.Count;
+
+      foreach (var xyzs in meshInfo.XYZs)
+      {
+        m_edgeBufferStorage.VertexBufferCount += xyzs.Count;
+        m_edgeBufferStorage.PrimitiveCount += xyzs.Count - 1;
+        m_edgeBufferStorage.EdgeXYZs.Add(xyzs);
+      }
+
+      RefreshBufferStorage(displayStyle);
     }
 
     private void ProcessFaces(RenderingPassBufferStorage bufferStorage)
@@ -173,7 +170,7 @@ namespace ConverterRevitShared
       bufferStorage.VertexBuffer = new VertexBuffer(vertexBufferSizeInFloats);
       bufferStorage.VertexBuffer.Map(vertexBufferSizeInFloats);
 
-      if (useNormals)
+      if (useNormals) //must use normals for shaded displayStyle
       {
         // A VertexStream is used to write data into a VertexBuffer.
         VertexStreamPositionNormalColored vertexStream = bufferStorage.VertexBuffer.GetVertexStreamPositionNormalColored();
@@ -314,7 +311,7 @@ namespace ConverterRevitShared
         EdgeXYZs = new List<IList<XYZ>>();
       }
 
-      public bool needsUpdate(DisplayStyle newDisplayStyle)
+      public bool NeedsUpdate(DisplayStyle newDisplayStyle)
       {
         if (newDisplayStyle != DisplayStyle)
           return true;
@@ -350,14 +347,13 @@ namespace ConverterRevitShared
       public OG.Mesh Mesh;
       public List<OG.Point> Vertices;
       public List<int[]> Faces;
-      public List<List<OG.Point>> Edges = new List<List<OG.Point>>();
+      public List<List<XYZ>> XYZs = new List<List<XYZ>>();
       public XYZ Normal;
       public ColorWithTransparency ColorWithTransparency;
       //public ConcurrentDictionary<Tuple<int, int>, ConcurrentBag<int>> EdgeFaceConnection;
 
       public SpeckleMeshInfo(OG.Mesh mesh)
       {
-        var result = new ConcurrentDictionary<Tuple<int, int>, ConcurrentBag<int>>();
         Mesh = mesh;
         Faces = GetFaceIndices(mesh).ToList();
         Vertices = mesh.GetPoints();
@@ -377,11 +373,10 @@ namespace ConverterRevitShared
             if (!edges.Contains((iA, iB)))
             {
               edges.Add((iA, iB));
-              Edges.Add(new List<OG.Point> { Vertices.ElementAt(iA), Vertices.ElementAt(iB) });
+              var p1 = Vertices.ElementAt(iA);
+              var p2 = Vertices.ElementAt(iB);
+              XYZs.Add(new List<XYZ> { new XYZ(p1.x, p1.y, p1.z), new XYZ(p2.x, p2.y, p2.z) });
             }
-              
-            //var connectedFaces = result.GetOrAdd(new Tuple<int, int>(iA, iB), new ConcurrentBag<int>());
-            //connectedFaces.Add(faceIndex);
           }
           faceIndex++;
         }
@@ -399,36 +394,6 @@ namespace ConverterRevitShared
           i += n + 1;
         }
       }
-    }
-
-    private static OG.Mesh CreateRhinoStylePolygon()
-    {
-      return new OG.Mesh()
-      {
-        vertices =
-                {
-                    0, 0, 0,
-                    0, 0, 1,
-                    1, 0, 1,
-                    0, 0, 0,
-                    1, 0, 1,
-                    1, 0, 0
-                },
-        faces =
-                {
-                    3, 0, 1, 2,
-                    3, 3, 4, 5
-                },
-        textureCoordinates =
-                {
-                    0,0,
-                    0,1,
-                    1,1,
-                    0,0,
-                    1,1,
-                    1,0
-                },
-      };
     }
 
     #endregion
