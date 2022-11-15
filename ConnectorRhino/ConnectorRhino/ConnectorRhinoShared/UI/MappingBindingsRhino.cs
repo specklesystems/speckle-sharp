@@ -45,27 +45,35 @@ namespace SpeckleRhino
 
     public override MappingSelectionInfo GetSelectionInfo()
     {
-      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-      var result = new List<Schema>();
-
-      foreach (var obj in selection)
+      try
       {
-        var schemas = GetObjectSchemas(obj);
+        var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
+        var result = new List<Schema>();
 
-        if (!result.Any())
-          result = schemas;
-        else
-          //intersect lists
-          //TODO: if some elements already have a schema and values are different
-          //we should default to an empty schema, instead of potentially restoring the one with values
-          result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+        foreach (var obj in selection)
+        {
+          var schemas = GetObjectSchemas(obj);
 
-        //incompatible selection
-        if (!result.Any())
-          return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+          if (!result.Any())
+            result = schemas;
+          else
+            //intersect lists
+            //TODO: if some elements already have a schema and values are different
+            //we should default to an empty schema, instead of potentially restoring the one with values
+            result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+
+          //incompatible selection
+          if (!result.Any())
+            return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+        }
+
+        return new MappingSelectionInfo(result, selection.Count);
+
       }
-
-      return new MappingSelectionInfo(result, selection.Count);
+      catch (Exception ex)
+      {
+        return new MappingSelectionInfo(new List<Schema>(), 0);
+      }
     }
 
     /// <summary>
@@ -107,12 +115,17 @@ namespace SpeckleRhino
             result.Add(new RevitWallViewModel());
           break;
 
-          //case Curve c:
-          //  if (c.IsLinear()) cats.Add(Beam);
-          //  if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-          //  if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
-          //  if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-          //  break;
+        case Curve c:
+          if (c.IsLinear())
+          {
+            result.Add(new RevitBeamViewModel());
+            result.Add(new RevitBraceViewModel());
+          }
+
+          //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+          //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
+          //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+          break;
       }
 
       return result;

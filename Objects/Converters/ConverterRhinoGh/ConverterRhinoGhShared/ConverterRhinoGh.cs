@@ -321,6 +321,12 @@ namespace Objects.Converter.RhinoGh
           o.baseLine = CurveToSpeckle(bottomCrv);
 
           break;
+        case RevitBeam o:
+          o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+          break;
+        case RevitBrace o:
+          o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+          break;
         case DirectShape o:
           o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
           break;

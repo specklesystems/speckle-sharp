@@ -10,6 +10,7 @@
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:map="clr-namespace:DesktopUI2.Views.Mappings.Controls"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
   xmlns:s="clr-namespace:DesktopUI2.ViewModels.MappingTool"
@@ -163,37 +164,15 @@
                         <!--  DATA TEMPLATES FOR OUR SCHEMAS  -->
                         <!--  WALL  -->
                         <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
-                          <StackPanel Orientation="Vertical" Spacing="5">
-
-                            <ComboBox
-                              assists:ComboBoxAssist.Label="Family"
-                              Classes="Outline"
-                              Items="{Binding Families}"
-                              SelectedItem="{Binding SelectedFamily, Mode=TwoWay}">
-                              <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                  <TextBlock
-                                    Grid.Column="1"
-                                    Text="{Binding Name}"
-                                    TextTrimming="CharacterEllipsis" />
-                                </DataTemplate>
-                              </ComboBox.ItemTemplate>
-                            </ComboBox>
-
-                            <ComboBox
-                              Grid.Row="1"
-                              assists:ComboBoxAssist.Label="Type"
-                              Classes="Outline"
-                              Items="{Binding SelectedFamily.Types}"
-                              SelectedItem="{Binding SelectedType, Mode=TwoWay}" />
-
-                            <ComboBox
-                              Grid.Row="1"
-                              assists:ComboBoxAssist.Label="Base Level"
-                              Classes="Outline"
-                              Items="{Binding Levels}"
-                              SelectedItem="{Binding SelectedLevel, Mode=TwoWay}" />
-                          </StackPanel>
+                          <map:RevitBasic />
+                        </DataTemplate>
+                        <!--  BEAM  -->
+                        <DataTemplate DataType="{x:Type s:RevitBeamViewModel}">
+                          <map:RevitBasic />
+                        </DataTemplate>
+                        <!--  BRACE  -->
+                        <DataTemplate DataType="{x:Type s:RevitBraceViewModel}">
+                          <map:RevitBasic />
                         </DataTemplate>
                         <!--  DIRECTSHAPE  -->
                         <DataTemplate DataType="{x:Type s:DirectShapeFreeformViewModel}">
@@ -212,10 +191,10 @@
                               Classes="Outline"
                               Items="{Binding Categories}"
                               SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
-                            <CheckBox
+                            <!--<CheckBox
                               Margin="0,10"
                               Content="Create as FreeForm element?"
-                              IsChecked="{Binding Freeform}" />
+                              IsChecked="{Binding Freeform}" />-->
                           </StackPanel>
                         </DataTemplate>
                       </ContentControl.DataTemplates>
