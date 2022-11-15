@@ -73,23 +73,8 @@ namespace Objects.Converter.Revit
                 if (obj != null) obj["partType"] = partType.ToString();
               }
               break;
-            case DB.Plumbing.Pipe pipe:
-              obj = PipeToSpeckle(pipe);
-              break;
-            case DB.Plumbing.FlexPipe flexpipe:
-              obj = PipeToSpeckle(flexpipe);
-              break;
-            case DB.Mechanical.Duct duct:
-              obj = DuctToSpeckle(duct, out notes);
-              break;
-            case DB.Mechanical.FlexDuct flexDuct:
-              obj = DuctToSpeckle(flexDuct);
-              break;
-            case DB.Electrical.CableTray cableTray:
-              obj = CableTrayToSpeckle(cableTray);
-              break;
-            case DB.Electrical.Conduit conduit:
-              obj = ConduitToSpeckle(conduit);
+            default:
+              obj = ConvertToSpeckle(element);
               break;
           }
 
@@ -107,7 +92,6 @@ namespace Objects.Converter.Revit
               isCurveBased= element is MEPCurve
             });
             ConvertedObjectsList.Add(obj.applicationId);
-
           }
           else
           {
@@ -168,9 +152,7 @@ namespace Objects.Converter.Revit
       }
 
       if (@network.elements.Any())
-      {
         notes.Add($"Converted and attached {@network.elements.Count} connected elements");
-      }
     }
 
     // for fitting family instances, retrieves the type of fitting and determines if it is connector based
