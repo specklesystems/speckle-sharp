@@ -9,6 +9,14 @@
 
     </Border>
   </Design.PreviewWith>
+
+
+
+  <Style Selector="NotificationCard /template/ ContentControl#PART_Content">
+    <Setter Property="MinHeight" Value="0" />
+  </Style>
+
+
   <Style Selector="NotificationCard">
     <Setter Property="UseLayoutRounding" Value="True" />
     <Setter Property="MinWidth" Value="350" />
@@ -17,13 +25,18 @@
     <Setter Property="Foreground" Value="White" />
     <Setter Property="RenderTransformOrigin" Value="50%,75%" />
     <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="VerticalAlignment" Value="Bottom" />
+    <Setter Property="CornerRadius" Value="20" />
+    <Setter Property="MinHeight" Value="0" />
+    <Setter Property="Margin" Value="5,0" />
+    <Setter Property="Cursor" Value="Hand" />
     <Setter Property="Background" Value="{DynamicResource PrimaryHueMidBrush}" />
     <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
     <Setter Property="Template">
       <ControlTemplate>
         <LayoutTransformControl Name="PART_LayoutTransformControl" UseRenderTransform="True">
           <Border
-            Margin="5,5,5,10"
+            Margin="5,0,5,10"
             BoxShadow="0 6 8 0 #4F000000"
             CornerRadius="{TemplateBinding CornerRadius}">
             <Border

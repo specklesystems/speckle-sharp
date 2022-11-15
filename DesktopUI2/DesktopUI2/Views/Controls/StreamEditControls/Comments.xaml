@@ -6,6 +6,7 @@
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
@@ -78,11 +79,45 @@
 
               </Expander.Header>
               <!--  COMMENT BODY  -->
-              <Grid RowDefinitions="auto, auto, auto">
-                <Image Source="{Binding Screenshot^}" />
-                <ItemsControl
+              <Grid RowDefinitions="auto, auto, auto, auto">
+                <Image Margin="0,0,0,10" Source="{Binding Screenshot^}" />
+                <!--  VIEW  -->
+                <m:ColorZone
                   Grid.Row="1"
                   Margin="0,0,0,10"
+                  assists:ShadowAssist.ShadowDepth="Depth0"
+                  CornerRadius="25"
+                  IsVisible="{Binding $parent[local:StreamEditView].DataContext.CanOpenCommentsIn3DView}"
+                  Mode="PrimaryMid">
+                  <Button
+                    Margin="0,0,3,0"
+                    VerticalAlignment="Center"
+                    Classes="Flat"
+                    Command="{Binding OpenCommentView}"
+                    CornerRadius="25,0,0,25"
+                    ToolTip.Tip="Open this view in the curren software">
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock
+                        VerticalAlignment="Center"
+                        Classes="Overline"
+                        FontWeight="Medium"
+                        Foreground="White"
+                        Text="OPEN VIEW"
+                        TextWrapping="Wrap" />
+                      <icons:MaterialIcon
+                        Margin="5,0"
+                        VerticalAlignment="Center"
+                        Foreground="White"
+                        Kind="Camera" />
+                    </StackPanel>
+                  </Button>
+
+                </m:ColorZone>
+
+                <ItemsControl
+                  Grid.Row="2"
+                  Margin="0,0,0,10"
+                  IsVisible="{Binding Replies.Count}"
                   Items="{Binding Replies}">
                   <ItemsControl.ItemTemplate>
                     <DataTemplate>
@@ -120,7 +155,7 @@
                 </ItemsControl>
                 <!--  REPLY  -->
                 <m:ColorZone
-                  Grid.Row="2"
+                  Grid.Row="3"
                   Margin="0,0,0,10"
                   assists:ShadowAssist.ShadowDepth="Depth0"
                   CornerRadius="25"

@@ -2,17 +2,18 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using ConnectorRhinoShared;
-using DesktopUI2;
-using DesktopUI2.ViewModels;
 using Rhino;
 using Rhino.PlugIns;
 using Rhino.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Models.Extensions;
+
+[assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 
 namespace SpeckleRhino
 {
@@ -25,6 +26,10 @@ namespace SpeckleRhino
     private static string SpeckleKey = "speckle2";
 
     public ConnectorBindingsRhino Bindings { get; private set; }
+    public MappingBindingsRhino MappingBindings { get; private set; }
+
+    private bool SelectionExpired = false;
+    internal bool ExistingSchemaLogExpired = false;
 
 
     public static AppBuilder appBuilder;
@@ -49,9 +54,18 @@ namespace SpeckleRhino
 
 
         Bindings = new ConnectorBindingsRhino();
+        MappingBindings = new MappingBindingsRhino();
 
         RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
         RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+
+        //Mapping tool selection
+        RhinoDoc.ActiveDocumentChanged += RhinoDoc_ActiveDocumentChanged;
+        RhinoDoc.SelectObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeselectObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeselectAllObjects += (sender, e) => SelectionExpired = true;
+        RhinoDoc.DeleteRhinoObject += (sender, e) => ExistingSchemaLogExpired = true;
+        RhinoApp.Idle += RhinoApp_Idle;
       }
       catch (Exception ex)
       {
@@ -63,17 +77,17 @@ namespace SpeckleRhino
 
     public static void InitAvaloniaMac()
     {
-        var rhinoMenuPtr = MacOSHelpers.MainMenu;
-        var rhinoDelegate = MacOSHelpers.AppDelegate;
-        var titlePtr = MacOSHelpers.MenuItemGetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)));
+      var rhinoMenuPtr = MacOSHelpers.MainMenu;
+      var rhinoDelegate = MacOSHelpers.AppDelegate;
+      var titlePtr = MacOSHelpers.MenuItemGetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)));
 
-        appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
+      appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
 
-        // don't use Avalonia's AppDelegate.. not sure what consequences this might have to Avalonia functionality
-        MacOSHelpers.AppDelegate = rhinoDelegate;
-        MacOSHelpers.MainMenu = rhinoMenuPtr;
-        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
-        MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
+      // don't use Avalonia's AppDelegate.. not sure what consequences this might have to Avalonia functionality
+      MacOSHelpers.AppDelegate = rhinoDelegate;
+      MacOSHelpers.MainMenu = rhinoMenuPtr;
+      MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
+      MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
 
     }
 
@@ -117,7 +131,8 @@ namespace SpeckleRhino
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
         }
 #else
-        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(DuiPanel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(MappingsPanel).GUID);
 #endif
 
       }
@@ -155,8 +170,11 @@ namespace SpeckleRhino
       Init();
 
 #if !MAC
-      System.Type panelType = typeof(Panel);     
+      System.Type panelType = typeof(DuiPanel);
       Rhino.UI.Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
+
+      System.Type mappingsPanelType = typeof(MappingsPanel);
+      Rhino.UI.Panels.RegisterPanel(this, mappingsPanelType, "Speckle Mapping Tool", Resources.icon);
 #endif
       // Get the version number of our plugin, that was last used, from our settings file.
       var plugin_version = Settings.GetString("PlugInVersion", null);
@@ -197,5 +215,37 @@ namespace SpeckleRhino
       return LoadReturnCode.Success;
     }
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
+
+
+    private void RhinoApp_Idle(object sender, EventArgs e)
+    {
+      if (SelectionExpired)
+      {
+        SelectionExpired = false;
+        MappingBindings.UpdateSelection(MappingBindings.GetSelectionInfo());
+      }
+
+      if (ExistingSchemaLogExpired)
+      {
+        ExistingSchemaLogExpired = false;
+        MappingBindings.UpdateExistingSchemaElements(MappingBindings.GetExistingSchemaElements());
+      }
+
+    }
+    private void RhinoDoc_DeselectObjects(object sender, Rhino.DocObjects.RhinoObjectSelectionEventArgs e)
+    {
+      SelectionExpired = true;
+    }
+
+    private void RhinoDoc_SelectObjects(object sender, Rhino.DocObjects.RhinoObjectSelectionEventArgs e)
+    {
+      SelectionExpired = true;
+    }
+
+    private void RhinoDoc_ActiveDocumentChanged(object sender, DocumentEventArgs e)
+    {
+      SelectionExpired = true;
+      // TODO: Parse new doc for existing stuff
+    }
   }
 }

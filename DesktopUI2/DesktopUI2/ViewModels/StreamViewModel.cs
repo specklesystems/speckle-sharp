@@ -32,11 +32,14 @@ using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
 {
-  public class StreamViewModel : ReactiveObject, IRoutableViewModel
+  public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
 
     public StreamState StreamState { get; set; }
     public IScreen HostScreen { get; set; }
+
+
+    #region bindings
 
     private ConnectorBindings Bindings;
 
@@ -61,8 +64,6 @@ namespace DesktopUI2.ViewModels
         this.RaiseAndSetIfChanged(ref _previewOn, value);
       }
     }
-
-    #region bindings
     private Stream _stream;
     public Stream Stream
     {
@@ -137,18 +138,23 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    private int _selectedTab = 0;
+    public int SelectedTab
+    {
+      get => _selectedTab;
+      private set => this.RaiseAndSetIfChanged(ref _selectedTab, value);
+
+    }
+
     public string UrlPathSegment { get; } = "stream";
 
-    private Client Client { get; }
+    internal Client Client { get; }
 
-    public ReactiveCommand<Unit, Unit> GoBack
+    public void GoBack()
     {
-      get
-      {
-        PreviewOn = false;
-        Bindings.ResetDocument();
-        return MainViewModel.RouterInstance.NavigateBack;
-      }
+      PreviewOn = false;
+      Bindings.ResetDocument();
+      MainViewModel.GoHome();
     }
 
     //If we don't have access to this stream
@@ -264,15 +270,11 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private List<Commit> _commits;
+    private List<Commit> _commits = new List<Commit>();
     public List<Commit> Commits
     {
       get => _commits;
-      private set
-      {
-        this.RaiseAndSetIfChanged(ref _commits, value);
-        this.RaisePropertyChanged("HasCommits");
-      }
+      private set => this.RaiseAndSetIfChanged(ref _commits, value);
     }
 
     private List<ActivityViewModel> _activity;
@@ -432,7 +434,6 @@ namespace DesktopUI2.ViewModels
       }
     }
     public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
-    public bool HasCommits => Commits != null && Commits.Any();
 
     public string _previewImageUrl = "";
     public string PreviewImageUrl
@@ -470,6 +471,9 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _previewImage360, value);
     }
 
+    public bool CanOpenCommentsIn3DView { get; set; } = false;
+    private bool _isAddingBranches = false;
+
     #endregion
 
     private string Url
@@ -501,10 +505,15 @@ namespace DesktopUI2.ViewModels
       //refresh stream, branches, filters etc
       Init();
     }
+    /// <summary>
+    /// Unique identifier to identify this stream view model
+    /// </summary>
+    private string _guid { get; set; }
     public StreamViewModel(StreamState streamState, IScreen hostScreen, ICommand removeSavedStreamCommand)
     {
       try
       {
+        _guid = Guid.NewGuid().ToString();
         StreamState = streamState;
         //use cached stream, then load a fresh one async 
         //this way we can immediately show stream name and other info and update it later if it changed
@@ -526,24 +535,16 @@ namespace DesktopUI2.ViewModels
 
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
+        CanOpenCommentsIn3DView = Bindings.CanOpen3DView;
 
         if (Client == null)
         {
           NoAccess = true;
-
-          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
-          {
-            Title = "✋ No Access",
-            Message = $"You do not have access to this Stream.",
-            Expiration = TimeSpan.Zero,
-            OnClick = () => OpenUrl($"{streamState.ServerUrl}/streams/{streamState.StreamId}"),
-            Type = Avalonia.Controls.Notifications.NotificationType.Warning
-          });
-
           return;
         }
 
         Init();
+        Subscribe();
         GenerateMenuItems();
 
         var updateTextTimer = new System.Timers.Timer();
@@ -573,6 +574,8 @@ namespace DesktopUI2.ViewModels
         new SpeckleException("Error creating stream view model", ex, true, Sentry.SentryLevel.Error);
       }
     }
+
+
 
     private void UpdateTextTimer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
     {
@@ -617,10 +620,6 @@ namespace DesktopUI2.ViewModels
         Collaborators.ReloadUsers(); ;
 
         StreamState.CachedStream = Stream;
-
-        //subscription
-        Client.SubscribeCommitCreated(StreamState.StreamId);
-        Client.OnCommitCreated += Client_OnCommitCreated;
       }
       catch (Exception e)
       {
@@ -697,8 +696,7 @@ namespace DesktopUI2.ViewModels
 
       if (HasReportItems) // activate report tab
       {
-        var tabControl = StreamEditView.Instance.FindControl<TabControl>("tabStreamEdit");
-        tabControl.SelectedIndex = tabControl.ItemCount - 1;
+        SelectedTab = 4;
       }
 
       // report filter selection
@@ -730,7 +728,7 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private async void GetComments()
+    private async Task GetComments()
     {
       try
       {
@@ -794,26 +792,40 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private async void GetCommits()
+    private async Task GetBranches()
+    {
+      var prevBranchName = SelectedBranch != null ? SelectedBranch.Branch.name : StreamState.BranchName;
+      Branches = await Client.StreamGetBranches(Stream.id, 100, 0);
+
+      var index = Branches.FindIndex(x => x.name == prevBranchName);
+      if (index != -1)
+        SelectedBranch = BranchesViewModel[index];
+      else
+        SelectedBranch = BranchesViewModel[0];
+
+    }
+    private async Task GetCommits()
     {
       try
       {
-        if (SelectedBranch.Branch.commits == null || SelectedBranch.Branch.commits.totalCount > 0)
+        var prevCommitId = SelectedCommit != null ? SelectedCommit.id : StreamState.CommitId;
+        var branch = await Client.BranchGet(Stream.id, SelectedBranch.Branch.name, 100);
+        if (branch != null && branch.commits.items.Any())
         {
-          var branch = await Client.BranchGet(Stream.id, SelectedBranch.Branch.name, 100);
           branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
           Commits = branch.commits.items;
-          var commit = Commits.FirstOrDefault(x => x.id == StreamState.CommitId);
+
+          var commit = Commits.FirstOrDefault(x => x.id == prevCommitId);
           if (commit != null)
             SelectedCommit = commit;
           else
             SelectedCommit = Commits[0];
         }
+
         else
         {
           SelectedCommit = null;
           Commits = new List<Commit>();
-          SelectedCommit = null;
         }
       }
       catch (Exception ex)
@@ -822,24 +834,126 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+
+    #region subscriptions
+    private void Subscribe()
+    {
+      Client.SubscribeCommitCreated(StreamState.StreamId);
+      Client.SubscribeCommitUpdated(StreamState.StreamId);
+      Client.SubscribeCommitDeleted(StreamState.StreamId);
+      Client.OnCommitCreated += Client_OnCommitCreated;
+      Client.OnCommitUpdated += Client_OnCommitChange;
+      Client.OnCommitDeleted += Client_OnCommitChange;
+
+      Client.SubscribeBranchCreated(StreamState.StreamId);
+      Client.SubscribeBranchUpdated(StreamState.StreamId);
+      Client.SubscribeBranchDeleted(StreamState.StreamId);
+      Client.OnBranchCreated += Client_OnBranchChange;
+      Client.OnBranchUpdated += Client_OnBranchChange;
+      Client.OnBranchDeleted += Client_OnBranchChange;
+
+      Client.SubscribeCommentActivity(StreamState.StreamId);
+      Client.OnCommentActivity += Client_OnCommentActivity;
+
+      Client.SubscribeStreamUpdated(StreamState.StreamId);
+      Client.OnStreamUpdated += Client_OnStreamUpdated;
+    }
+
+    private async void Client_OnCommentActivity(object sender, CommentItem e)
+    {
+      await GetComments();
+
+      var authorName = "you";
+      if (e.authorId != Client.Account.userInfo.id)
+      {
+        var author = await Client.OtherUserGet(e.id);
+        authorName = author.name;
+      }
+
+      bool openStream = true;
+      var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
+      if (svm != null && svm.Stream.id == Stream.id)
+        openStream = false;
+
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = $"🆕 New comment by {authorName}:",
+          Message = e.rawText,
+          OnClick = () =>
+          {
+            if (openStream)
+              MainViewModel.RouterInstance.Navigate.Execute(this);
+
+            SelectedTab = 3;
+          }
+          ,
+          Type = Avalonia.Controls.Notifications.NotificationType.Success,
+          Expiration = TimeSpan.FromSeconds(15)
+        });
+      });
+    }
+
+    private async void Client_OnBranchChange(object sender, Speckle.Core.Api.SubscriptionModels.BranchInfo info)
+    {
+      if (!_isAddingBranches)
+        await GetBranches();
+    }
+
+
+    private async void Client_OnCommitChange(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo info)
+    {
+      if (info.branchName == SelectedBranch.Branch.name)
+        await GetCommits();
+    }
+
     private async void Client_OnCommitCreated(object sender, Speckle.Core.Api.SubscriptionModels.CommitInfo info)
     {
       try
       {
-        var branches = await Client.StreamGetBranches(StreamState.StreamId);
+
+
+        if (info.branchName == SelectedBranch.Branch.name)
+          await GetCommits();
 
         if (!IsReceiver) return;
 
-        var binfo = branches.FirstOrDefault(b => b.name == info.branchName);
-        var cinfo = binfo.commits.items.FirstOrDefault(c => c.id == info.id);
-
-
-        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        var authorName = "You";
+        if (info.authorId != Client.Account.userInfo.id)
         {
-          Title = "🆕 New commit",
-          Message = $"{cinfo.authorName} sent to {info.branchName}: {info.message}",
-          OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{cinfo.id}"),
-          Type = Avalonia.Controls.Notifications.NotificationType.Success
+          var author = await Client.OtherUserGet(info.id);
+          authorName = author.name;
+        }
+
+        bool openOnline = false;
+
+        //if in stream edit open online
+        var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
+        if (svm != null && svm.Stream.id == Stream.id)
+          openOnline = true;
+
+
+        Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+        {
+          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          {
+            Title = $"🆕 {authorName} sent to {Stream.name}/{info.branchName}'",
+            Message = openOnline ? "Click to view it online" : "Click open the stream",
+            OnClick = () =>
+            {
+              //if in stream edit open online
+              if (openOnline)
+                ViewOnlineSavedStreamCommand();
+              //if on home, open stream
+              else
+                MainViewModel.RouterInstance.Navigate.Execute(this);
+
+            }
+            ,
+            Type = Avalonia.Controls.Notifications.NotificationType.Success,
+            Expiration = TimeSpan.FromSeconds(10)
+          });
         });
 
         ScrollToBottom();
@@ -852,6 +966,13 @@ namespace DesktopUI2.ViewModels
 
       }
     }
+
+    private void Client_OnStreamUpdated(object sender, Speckle.Core.Api.SubscriptionModels.StreamInfo e)
+    {
+      GetStream().ConfigureAwait(false);
+    }
+
+    #endregion
 
     public async Task DownloadImage(string url)
     {
@@ -919,11 +1040,9 @@ namespace DesktopUI2.ViewModels
       {
         try
         {
-
+          _isAddingBranches = true;
           var branchId = await StreamState.Client.BranchCreate(new BranchCreateInput { streamId = Stream.id, description = nbvm.Description ?? "", name = nbvm.BranchName });
-
-
-          Branches = await Client.StreamGetBranches(Stream.id, 100, 0);
+          await GetBranches();
 
           var index = Branches.FindIndex(x => x.name == nbvm.BranchName);
           if (index != -1)
@@ -937,6 +1056,11 @@ namespace DesktopUI2.ViewModels
           Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
           new SpeckleException("Error creating branch", e, true, Sentry.SentryLevel.Error);
         }
+        finally
+        {
+          _isAddingBranches = false;
+        }
+
       }
       else
       {
@@ -957,6 +1081,13 @@ namespace DesktopUI2.ViewModels
       SearchQuery = "";
     }
 
+
+    public void ShareCommand()
+    {
+      MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
+    }
 
     public void EditSavedStreamCommand()
     {
@@ -1021,7 +1152,8 @@ namespace DesktopUI2.ViewModels
             Title = "👌 Data sent",
             Message = $"Sent to '{Stream.name}', view it online",
             OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}"),
-            Type = Avalonia.Controls.Notifications.NotificationType.Success
+            Type = Avalonia.Controls.Notifications.NotificationType.Success,
+            Expiration = TimeSpan.FromSeconds(15)
           });
         }
         else
@@ -1258,6 +1390,11 @@ namespace DesktopUI2.ViewModels
       }
 
       return true;
+    }
+
+    public void Dispose()
+    {
+      Client.Dispose();
     }
     #endregion
 

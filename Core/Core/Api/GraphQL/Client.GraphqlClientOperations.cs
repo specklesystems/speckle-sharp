@@ -1721,9 +1721,7 @@ namespace Speckle.Core.Api
                             id
                             authorId
                             archived
-                            text {
-                              doc
-                            }
+                            rawText
                             data
                             createdAt
                             updatedAt
@@ -1740,9 +1738,7 @@ namespace Speckle.Core.Api
                                 id
                                 authorId
                                 archived
-                                text {
-                                  doc
-                                }
+                                rawText
                                 data
                                 createdAt
                                 updatedAt

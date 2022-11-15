@@ -20,8 +20,7 @@ namespace SpeckleRhino
     // TODO: address consistency weak point, since this string needs to match exactly in ConverterRhinoGH.Geometry.cs!
     static string SpeckleSchemaKey = "SpeckleSchema";
     static string DirectShapeKey = "DirectShape";
-    public RhinoDoc ActiveDoc = null;
-
+    
     public class AutomaticBIM : Command
     {
       public override string EnglishName => "CreateAutomatic";

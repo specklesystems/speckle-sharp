@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Other;
 using System;
 using System.Collections.Generic;
@@ -107,6 +107,45 @@ namespace Objects.Converter.Revit
       }
 
       return buildHelper.GetAllValidMeshes();
+    }
+
+    /// <summary>
+    /// Get meshes from fabrication parts which have different geometry hierarchy than other revit elements.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="subElements"></param>
+    /// <returns></returns>
+    public List<Mesh> GetFabricationMeshes(Element element, List<Element> subElements = null)
+    {
+      //Search for solids on geometry element level
+      var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
+
+      List<Mesh> meshes = new List<Mesh>();
+
+      var geom = element.get_Geometry(new Options());
+      foreach (GeometryInstance instance in geom)
+      {
+        //Get instance geometry from fabrication part geometry
+        var symbolGeometry = instance.GetInstanceGeometry();
+
+        //Get meshes
+        var symbolMeshes = GetMeshes(symbolGeometry, element.Document);
+        meshes.AddRange(symbolMeshes);
+
+        //Get solids
+        var symbolSolids = GetSolids(symbolGeometry);
+        allSolids.AddRange(symbolSolids);
+      }
+
+
+      if (subElements != null)
+        foreach (var sb in subElements)
+          allSolids.AddRange(GetElementSolids(sb));
+
+      //Convert solids to meshes
+      meshes.AddRange(GetMeshesFromSolids(allSolids, element.Document));
+
+      return meshes;
     }
 
     /// <summary>
@@ -234,7 +273,7 @@ namespace Objects.Converter.Revit
         {
           DB.Material faceMaterial = d.GetElement(face.MaterialElementId) as DB.Material;
           Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
-          if(!MeshMap.ContainsKey(m))
+          if (!MeshMap.ContainsKey(m))
           {
             MeshMap.Add(m, new List<DB.Mesh>());
           }
@@ -242,7 +281,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      foreach(var meshData in MeshMap)
+      foreach (var meshData in MeshMap)
       {
         //It's cheaper to resize lists manually, since we would otherwise be resizing a lot!
         int numberOfVertices = 0;

@@ -8,6 +8,7 @@ using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -346,6 +347,33 @@ namespace Objects.Converter.Revit
       }
       return true;
     }
+
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
+    {
+      //doesn't have a host, go ahead and convert
+      if (host == null)
+        return true;
+
+      // has been converted before (from a parent host), skip it
+      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+        return false;
+
+      // the parent is in our selection list,skip it, as this element will be converted by the host element
+      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      {
+        // there are certain elements in Revit that can be a host to another element
+        // yet not know it.
+        var hostedElementIds = GetDependentElementIds(host);
+        var elementId = element.Id;
+        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        {
+          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId };
+          ((dynamic)extraProps["speckleHost"])["category"] = host.Category.Name;
+        }
+        else return false;
+      }
+      return true;
+    }
     /// <summary>
     /// Gets the hosted element of a host and adds the to a Base object
     /// </summary>
@@ -354,7 +382,7 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
       notes = new List<string>();
-      var hostedElementIds = host.FindInserts(true, false, false, false);
+      var hostedElementIds = GetDependentElementIds(host);
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -409,15 +437,31 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)
+    public IList<ElementId> GetDependentElementIds(Element host)
     {
-      if (@base["elements"] != null && @base["elements"] is List<Base> elements)
+      if (host is HostObject hostObject)
+        return hostObject.FindInserts(true, false, false, false);
+
+      var typeFilter = new ElementIsElementTypeFilter(true);
+      var categoryFilter = new ElementMulticategoryFilter(
+        new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_SketchLines,
+          BuiltInCategory.OST_WeakDims
+        }, true);
+      return host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+    }
+
+    public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
+    {
+      if (@base != null && @base["elements"] != null && @base["elements"] is IList elements)
       {
         CurrentHostElement = host;
 
-        foreach (var obj in elements)
+        foreach (var el in elements)
         {
-          if (obj == null) continue;
+          if (el == null) continue;
+          if (!(el is Base obj)) continue;
 
           if (!CanConvertToNative(obj))
           {

@@ -285,7 +285,7 @@ namespace Speckle.Core.Api
     public Streams streams { get; set; }
   }
 
-  public class LimitedUser: UserBase
+  public class LimitedUser : UserBase
   {
     public override string ToString()
     {
@@ -294,7 +294,7 @@ namespace Speckle.Core.Api
 
   }
 
-  public class User: UserBase
+  public class User : UserBase
   {
     public string email { get; set; }
     public Streams favoriteStreams { get; set; }
@@ -305,62 +305,6 @@ namespace Speckle.Core.Api
     }
   }
 
-  public class Comments
-  {
-    public int totalCount { get; set; }
-    public DateTime? cursor { get; set; }
-    public List<CommentItem> items { get; set; }
-  }
-
-  public class CommentData
-  {
-    public Comments comments { get; set; }
-    public List<double> camPos { get; set; }
-    public object filters { get; set; }
-    public Location location { get; set; }
-    public object selection { get; set; }
-    public object sectionBox { get; set; }
-  }
-
-  public class CommentItem
-  {
-    public string id { get; set; }
-    public string authorId { get; set; }
-    public bool archived { get; set; }
-    public string screenshot { get; set; }
-    public Text text { get; set; }
-    public CommentData data { get; set; }
-    public DateTime createdAt { get; set; }
-    public DateTime updatedAt { get; set; }
-    public DateTime? viewedAt { get; set; }
-    public object reactions { get; set; }
-    public Comments replies { get; set; }
-    public List<Resource> resources { get; set; }
-  }
-
-  public partial class Text
-  {
-    public Doc Doc { get; set; }
-  }
-
-  public partial class Doc
-  {
-    public string Type { get; set; }
-    public DocContent[] Content { get; set; }
-  }
-
-  public partial class DocContent
-  {
-    public string Type { get; set; }
-    public ContentContent[] Content { get; set; }
-  }
-
-  public partial class ContentContent
-  {
-    public string Type { get; set; }
-    //public Mark[] Marks { get; set; }
-    public string Text { get; set; }
-  }
 
   public class Resource
   {
@@ -453,6 +397,47 @@ namespace Speckle.Core.Api
     public Streams streams { get; set; }
   }
 
+  #region comments
+  public class Comments
+  {
+    public int totalCount { get; set; }
+    public DateTime? cursor { get; set; }
+    public List<CommentItem> items { get; set; }
+  }
+
+  public class CommentData
+  {
+    public Comments comments { get; set; }
+    public List<double> camPos { get; set; }
+    public object filters { get; set; }
+    public Location location { get; set; }
+    public object selection { get; set; }
+    public object sectionBox { get; set; }
+  }
+
+  public class CommentItem
+  {
+    public string id { get; set; }
+    public string authorId { get; set; }
+    public bool archived { get; set; }
+    public string screenshot { get; set; }
+    public string rawText { get; set; }
+    public CommentData data { get; set; }
+    public DateTime createdAt { get; set; }
+    public DateTime updatedAt { get; set; }
+    public DateTime? viewedAt { get; set; }
+    public object reactions { get; set; }
+    public Comments replies { get; set; }
+    public List<Resource> resources { get; set; }
+  }
+
+  public partial class ContentContent
+  {
+    public string Type { get; set; }
+    //public Mark[] Marks { get; set; }
+    public string Text { get; set; }
+  }
+
   public class CommentsData
   {
     public Comments comments { get; set; }
@@ -462,6 +447,18 @@ namespace Speckle.Core.Api
   {
     public CommentItem comment { get; set; }
   }
+
+  public class CommentActivityMessage
+  {
+    public string type { get; set; }
+    public CommentItem comment { get; set; }
+  }
+
+  public class CommentActivityResponse
+  {
+    public CommentActivityMessage commentActivity { get; set; }
+  }
+  #endregion
 
   #region manager api
 
