@@ -243,12 +243,14 @@ namespace Speckle.Core.Api
     /// Returns the correct location of the Speckle installation folder. Usually this would be the user's %appdata%/Speckle folder, unless the install was made for all users.
     /// </summary>
     /// <returns>The location of the Speckle installation folder</returns>
+    [Obsolete("Please use Helpers/SpecklePathProvider.InstallSpeckleFolderPath", true)]
     public static string InstallSpeckleFolderPath => Path.Combine(InstallApplicationDataPath, "Speckle");
 
     /// <summary>
     /// Returns the correct location of the Speckle folder for the current user. Usually this would be the user's %appdata%/Speckle folder.
     /// </summary>
     /// <returns>The location of the Speckle installation folder</returns>
+    [Obsolete("Please use Helpers/SpecklePathProvider.UserSpeckleFolderPath", true)]
     public static string UserSpeckleFolderPath => Path.Combine(UserApplicationDataPath, "Speckle");
 
 
@@ -256,6 +258,7 @@ namespace Speckle.Core.Api
     /// Returns the correct location of the AppData folder where Speckle is installed. Usually this would be the user's %appdata% folder, unless the install was made for all users.
     /// </summary>
     /// <returns>The location of the AppData folder where Speckle is installed</returns>
+    [Obsolete("Please use Helpers/SpecklePathProvider.InstallApplicationDataPath ", true)]
     public static string InstallApplicationDataPath =>
 
         Assembly.GetAssembly(typeof(Helpers)).Location.Contains("ProgramData")
@@ -267,6 +270,7 @@ namespace Speckle.Core.Api
     /// Returns the correct location for `Environment.SpecialFolder.ApplicationData` for the current roaming user.
     /// </summary>
     /// <returns>The location of the user's `%appdata%` folder.</returns>
+    [Obsolete("Please use Helpers/SpecklePathProvider.UserApplicationDataPath", true)]
     public static string UserApplicationDataPath
       // We combine our own path to the %appdata% folder due to solve issues with network account management in windows,
       // where the normal `SpecialFolder.ApplicationData` would point to the `Default` user instead of the active one.
