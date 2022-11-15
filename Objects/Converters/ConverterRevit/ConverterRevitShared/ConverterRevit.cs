@@ -122,7 +122,6 @@ namespace Objects.Converter.Revit
             returnObject = NetworkToSpeckle(o, out notes);
           else
             returnObject = FamilyInstanceToSpeckle(o, out notes);
-
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -485,7 +484,7 @@ namespace Objects.Converter.Revit
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
-        case Network o:
+        case BE.Network o:
           return NetworkToNative(o);
 
         case BE.Floor o:
@@ -698,7 +697,7 @@ namespace Objects.Converter.Revit
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
-        Network _ => true,
+        BE.Network _ => true,
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,

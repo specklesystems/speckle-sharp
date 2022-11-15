@@ -91,10 +91,9 @@ namespace Objects.BuiltElements.Revit
     /// Indicates if this element needs temporary placeholder objects to be created first when receiving
     /// </summary>
     /// <remarks>
-    /// This is a utility property used to track network creation state on receive. Deprecate if possible. 
     /// For example, some fittings cannot be created based on connectors, and so will be created similarly to mechanical equipment
     /// </remarks>
-    [JsonIgnore] public bool needsPlaceholders { get; set; }
+    public bool isConnectorBased { get; set; }
 
     public RevitNetworkElement() { }
   }

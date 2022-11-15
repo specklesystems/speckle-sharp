@@ -2,13 +2,18 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
-using Objects.Organization.Revit;
+using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
-using Network = Objects.Organization.Network;
+using Network = Objects.BuiltElements.Network;
+using NetworkElement = Objects.BuiltElements.NetworkElement;
+using NetworkLink = Objects.BuiltElements.NetworkLink;
+using RevitNetworkElement = Objects.BuiltElements.Revit.RevitNetworkElement;
+using RevitNetworkLink = Objects.BuiltElements.Revit.RevitNetworkLink;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.Revit
 {
@@ -25,7 +30,7 @@ namespace Objects.Converter.Revit
 
       var convertedElements = new Dictionary<string, Element>();
       var elements = speckleNetwork.elements.Cast<RevitNetworkElement>().ToList();
-      var notConnectorBasedCreationElements = elements.Where(e => !e.connectorBasedCreation).ToArray();
+      var notConnectorBasedCreationElements = elements.Where(e => !e.isConnectorBased).ToArray();
       foreach (var networkElement in notConnectorBasedCreationElements)
       {
         var element = networkElement.element;
@@ -49,27 +54,26 @@ namespace Objects.Converter.Revit
       // transition, tee, union, cross then other family instances since creation are based on connectors, two,
       // three or four depends on type of fitting.
 
-      var connectorBasedCreationElements = elements.Where(e => e.connectorBasedCreation).ToArray();
+      var connectorBasedCreationElements = elements.Where(e => e.isConnectorBased).ToArray();
       var convertedMEPCurves = convertedElements.Where(e => e.Value is MEPCurve).ToArray();
       foreach (var networkElement in connectorBasedCreationElements)
       {
-        //FamilySymbol familySymbol = GetElementType<FamilySymbol>(networkElement.element);
         if (!GetElementType(networkElement.element, appObj, out FamilySymbol familySymbol))
         {
           appObj.Update(status: ApplicationObject.State.Failed);
           continue;
         }
         
-        FamilyInstance familyInstance = null;
+        DB.FamilyInstance familyInstance = null;
 
         var tempCurves = new Dictionary<int, MEPCurve>();
 
         foreach (var link in networkElement.links)
         {
-          if (link is RevitNetworkLink revitLink && !revitLink.connectedToCurve)
+          if (link is RevitNetworkLink revitLink && !revitLink.needsPlaceholders)
           {
             var curve = CreateCurve(revitLink);
-            tempCurves.Add(revitLink.connectionIndex, curve);
+            tempCurves.Add(revitLink.fittingIndex, curve);
           }
         }
 
@@ -78,43 +82,34 @@ namespace Objects.Converter.Revit
           l => l.elements
           .Cast<RevitNetworkElement>()
           .FirstOrDefault(e => e.applicationId != networkElement.applicationId
-          && e.isCurve));
+          && e.isCurveBased));
 
-        var firstConnection = connections.FirstOrDefault(c => c.Key.connectionIndex == 1);
-        var secondConnection = connections.FirstOrDefault(c => c.Key.connectionIndex == 2);
-        var thirdConnection = connections.FirstOrDefault(c => c.Key.connectionIndex == 3);
-        var fourthConnection = connections.FirstOrDefault(c => c.Key.connectionIndex == 4);
+        var connection1 = connections.FirstOrDefault(c => c.Key.fittingIndex == 1);
+        var connection2 = connections.FirstOrDefault(c => c.Key.fittingIndex == 2);
+        var connection3 = connections.FirstOrDefault(c => c.Key.fittingIndex == 3);
+        var connection4 = connections.FirstOrDefault(c => c.Key.fittingIndex == 4);
 
-        var firstElement = firstConnection.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == firstConnection.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 1).Value;
-        var secondElement = secondConnection.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == secondConnection.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 2).Value;
-        var thirdElement = thirdConnection.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == thirdConnection.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 3).Value;
-        var fourthElement = fourthConnection.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == fourthConnection.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 4).Value;
+        var element1 = connection1.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection1.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 1).Value;
+        var element2 = connection2.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection2.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 2).Value;
+        var element3 = connection3.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection3.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 3).Value;
+        var element4 = connection4.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection4.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 4).Value;
 
-        var firstConnector = firstElement != null ? GetConnectorByPoint(firstElement, SpeckleToRevitPoint(firstConnection.Key.origin)) : null;
-        var secondConnector = secondElement != null ? GetConnectorByPoint(secondElement, SpeckleToRevitPoint(secondConnection.Key.origin)) : null;
-        var thirdConnector = thirdElement != null ? GetConnectorByPoint(thirdElement, SpeckleToRevitPoint(thirdConnection.Key.origin)) : null;
-        var fourthConnector = fourthElement != null ? GetConnectorByPoint(fourthElement, SpeckleToRevitPoint(fourthConnection.Key.origin)) : null;
+        var connector1 = element1 != null ? GetConnectorByPoint(element1, PointToNative(connection1.Key.origin)) : null;
+        var connector2 = element2 != null ? GetConnectorByPoint(element2, PointToNative(connection2.Key.origin)) : null;
+        var connector3 = element3 != null ? GetConnectorByPoint(element3, PointToNative(connection3.Key.origin)) : null;
+        var connector4 = element4 != null ? GetConnectorByPoint(element4, PointToNative(connection4.Key.origin)) : null;
 
-        if (networkElement.fittingType == FittingType.Elbow && firstConnector != null && secondConnector != null)
-        {
-          familyInstance = Doc.Create.NewElbowFitting(firstConnector, secondConnector);
-        }
-        else if (networkElement.fittingType == FittingType.Transition && firstConnector != null && secondConnector != null)
-        {
-          familyInstance = Doc.Create.NewTransitionFitting(firstConnector, secondConnector);
-        }
-        else if (networkElement.fittingType == FittingType.Union && firstConnector != null && secondConnector != null)
-        {
-          familyInstance = Doc.Create.NewUnionFitting(firstConnector, secondConnector);
-        }
-        else if (networkElement.fittingType == FittingType.Tee && firstConnector != null && secondConnector != null && thirdConnector != null)
-        {
-          familyInstance = Doc.Create.NewTeeFitting(firstConnector, secondConnector, thirdConnector);
-        }
-        else if (networkElement.fittingType == FittingType.Cross && firstConnector != null && secondConnector != null && thirdConnector != null && fourthConnector != null)
-        {
-          familyInstance = Doc.Create.NewCrossFitting(firstConnector, secondConnector, thirdConnector, fourthConnector);
-        }
+        var partType = networkElement.element["partType"] as string ?? "Unknown";
+        if (partType.Contains("Elbow") && connector1 != null && connector2 != null)
+          familyInstance = Doc.Create.NewElbowFitting(connector1, connector2);
+        else if (partType.Contains("Transition") && connector1 != null && connector2 != null)
+          familyInstance = Doc.Create.NewTransitionFitting(connector1, connector2);
+        else if (partType.Contains("Union") && connector1 != null && connector2 != null)
+          familyInstance = Doc.Create.NewUnionFitting(connector1, connector2);
+        else if (partType.Contains("Tee") && connector1 != null && connector2 != null && connector3 != null)
+          familyInstance = Doc.Create.NewTeeFitting(connector1, connector2, connector3);
+        else if (partType.Contains("Cross") && connector1 != null && connector2 != null && connector3 != null && connector4 != null)
+          familyInstance = Doc.Create.NewCrossFitting(connector1, connector2, connector3, connector4);
         else
         {
           var convAppObj = ConvertToNative(networkElement.element) as ApplicationObject;
@@ -146,7 +141,7 @@ namespace Objects.Converter.Revit
       var links = speckleNetwork.links.Cast<RevitNetworkLink>().ToArray();
       foreach (var link in links)
       {
-        if (link.connected && link.elements.Count == 2)
+        if (link.isConnected && link.elements.Count == 2)
         {
           var firstElement = convertedElements.FirstOrDefault(e => e.Key == link.elements[0].applicationId).Value;
           var secondElement = convertedElements.FirstOrDefault(e => e.Key == link.elements[1].applicationId).Value;
@@ -169,7 +164,7 @@ namespace Objects.Converter.Revit
     public Network NetworkToSpeckle(Element mepElement, out List<string> notes)
     {
       notes = new List<string>();
-      Network speckleNetwork = new Network() { name = mepElement.Name, elements = new List<Organization.NetworkElement>(), links = new List<Organization.NetworkLink>() };
+      Network speckleNetwork = new Network() { name = mepElement.Name, elements = new List<NetworkElement>(), links = new List<NetworkLink>() };
 
       GetNetworkElements(speckleNetwork, mepElement, out List<string> connectedNotes);
       if (connectedNotes.Any()) notes.AddRange(connectedNotes);
@@ -178,15 +173,15 @@ namespace Objects.Converter.Revit
 
     private Connector GetConnectorByPoint(Element element, XYZ point)
     {
-      if (element is MEPCurve curve)
+      switch (element)
       {
-        return curve.ConnectorManager.Connectors.Cast<Connector>().FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
+        case MEPCurve o:
+          return o.ConnectorManager.Connectors.Cast<Connector>().FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
+        case DB.FamilyInstance o:
+          return o.MEPModel?.ConnectorManager.Connectors.Cast<Connector>().FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
+        default:
+          return null;
       }
-      else if (element is DB.FamilyInstance familyInstance)
-      {
-        return familyInstance.MEPModel?.ConnectorManager.Connectors.Cast<Connector>().FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
-      }
-      return null;
     }
 
     private static MEPCurveType GetDefaultMEPCurveType(Document doc, Domain domain, ConnectorProfileType shape)
@@ -229,7 +224,7 @@ namespace Objects.Converter.Revit
       switch (domain)
       {
         case Domain.DomainHvac:
-          if (!(systemTypes.Where(st => st is MechanicalSystemType).FirstOrDefault(x => x.Name == link.type) is MechanicalSystemType mechanicalSystemType))
+          if (!(systemTypes.Where(st => st is MechanicalSystemType).FirstOrDefault(x => x.Name == link.systemType) is MechanicalSystemType mechanicalSystemType))
           {
             mechanicalSystemType = systemTypes.Where(st => st is MechanicalSystemType).First() as MechanicalSystemType;
           }
@@ -245,7 +240,7 @@ namespace Objects.Converter.Revit
           }
           break;
         case Domain.DomainPiping:
-          if (!(systemTypes.Where(st => st is PipingSystemType).FirstOrDefault(x => x.Name == link.type) is PipingSystemType pipingSystemType))
+          if (!(systemTypes.Where(st => st is PipingSystemType).FirstOrDefault(x => x.Name == link.systemType) is PipingSystemType pipingSystemType))
           {
             pipingSystemType = systemTypes.Where(st => st is PipingSystemType).First() as PipingSystemType;
           }
@@ -263,16 +258,6 @@ namespace Objects.Converter.Revit
           break;
       }
       return curve;
-    }
-
-    private static XYZ SpeckleToRevitPoint(Geometry.Point point)
-    {
-      return new XYZ(point.x, point.y, point.z);
-    }
-
-    private static Geometry.Point RevitToSpecklePoint(XYZ point)
-    {
-      return new Geometry.Point(point.X, point.Y, point.Z, Speckle.Core.Kits.Units.Feet);
     }
   }
 }
