@@ -5,7 +5,7 @@ using DesktopUI2.Models.Settings;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  public partial class ConnectorBindingsRevit2
+  public partial class ConnectorBindingsRevit
   {
     // CAUTION: these strings need to have the same values as in the converter
     const string InternalOrigin = "Internal Origin (default)";
