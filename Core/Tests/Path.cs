@@ -13,7 +13,12 @@ namespace Tests
     {
       var userPath = SpecklePathProvider.UserApplicationDataPath();
       string pattern;
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+
+      if (String.IsNullOrEmpty(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)))
+      {
+        pattern = @"\/root";
+      }
+      else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
         pattern = @"C:\\Users\\.*\\AppData\\Roaming";
       }
@@ -49,10 +54,8 @@ namespace Tests
       var installPath = SpecklePathProvider.InstallApplicationDataPath;
       string pattern;
 
-      var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-      if (String.IsNullOrEmpty(appData) || appData == "/root")
+      if (String.IsNullOrEmpty(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)))
       {
-        Console.WriteLine(appData);
         pattern = @"\/root";
       }
       else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
