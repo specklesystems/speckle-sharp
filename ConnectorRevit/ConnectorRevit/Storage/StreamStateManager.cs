@@ -3,8 +3,8 @@ using System.Collections.Generic;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExtensibleStorage;
+using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
-using Speckle.DesktopUI.Utils;
 
 namespace Speckle.ConnectorRevit.Storage
 {
@@ -14,7 +14,7 @@ namespace Speckle.ConnectorRevit.Storage
   /// </summary>
   public static class StreamStateManager
   {
-    readonly static Guid ID = new Guid("{5D453471-1F20-44CE-B1D0-BBD2BDE4616A}");
+    readonly static Guid ID = new Guid("4EF264B9-5AA0-4B99-A6E7-C82ACEB26DE2");
 
     /// <summary>
     /// Returns all the speckle stream states present in the current document.
@@ -31,11 +31,6 @@ namespace Speckle.ConnectorRevit.Storage
 
         var str = streamStatesEntity.Get<string>("StreamStates");
         var states = JsonConvert.DeserializeObject<List<StreamState>>(str);
-
-        if (states != null)
-        {
-          states.ForEach(x => x.Initialise(true));
-        }
 
         return states;
       }
@@ -57,11 +52,11 @@ namespace Speckle.ConnectorRevit.Storage
       if (ds == null)
         ds = DataStorage.Create(doc);
 
-      var streamStatesEntity = new Entity(StreamStateListSchema.GetSchema());
+      var streamStatesEntity = new Entity(StreamStateListSchema2.GetSchema());
 
       streamStatesEntity.Set("StreamStates", JsonConvert.SerializeObject(streamStates) as string);
 
-      var idEntity = new Entity(DSUniqueSchemaStreamStateStorage.GetSchema());
+      var idEntity = new Entity(DSUniqueSchemaStreamStateStorage2.GetSchema());
       idEntity.Set("Id", ID);
 
       ds.SetEntity(idEntity);
@@ -78,7 +73,7 @@ namespace Speckle.ConnectorRevit.Storage
       // Find setting data storage
       foreach (DataStorage dataStorage in dataStorages)
       {
-        var settingIdEntity = dataStorage.GetEntity(DSUniqueSchemaStreamStateStorage.GetSchema());
+        var settingIdEntity = dataStorage.GetEntity(DSUniqueSchemaStreamStateStorage2.GetSchema());
 
         if (!settingIdEntity.IsValid())
           continue;
@@ -100,7 +95,7 @@ namespace Speckle.ConnectorRevit.Storage
       var dataStorages = collector.OfClass(typeof(DataStorage));
       foreach (DataStorage dataStorage in dataStorages)
       {
-        Entity settingEntity = dataStorage.GetEntity(StreamStateListSchema.GetSchema());
+        Entity settingEntity = dataStorage.GetEntity(StreamStateListSchema2.GetSchema());
         if (!settingEntity.IsValid())
           continue;
 
@@ -113,9 +108,9 @@ namespace Speckle.ConnectorRevit.Storage
   /// <summary>
   /// Revit schema of the StreamStateWrapper class.
   /// </summary>
-  public static class StreamStateListSchema
+  public static class StreamStateListSchema2
   {
-    static readonly Guid schemaGuid = new Guid("{F29ABD4E-C2DA-4F6A-A301-C70F1C32128D}");
+    static readonly Guid schemaGuid = new Guid("C48D05AE-8068-4B9A-A790-B4B2F605126B");
 
     public static Schema GetSchema()
     {
@@ -135,9 +130,9 @@ namespace Speckle.ConnectorRevit.Storage
   /// <summary>
   /// Unique schema for... something ¯\_(ツ)_/¯
   /// </summary>
-  static class DSUniqueSchemaStreamStateStorage
+  static class DSUniqueSchemaStreamStateStorage2
   {
-    static readonly Guid schemaGuid = new Guid("{174C7EEE-EC5E-4A3F-894A-C801871AEDB8}");
+    static readonly Guid schemaGuid = new Guid("C0DA9F31-83A7-4775-807B-4430446E694F");
 
     public static Schema GetSchema()
     {
