@@ -15,20 +15,7 @@ namespace Objects.BuiltElements.Revit
     public string type { get; set; }
     public string category { get; set; }
     public Level level { get; set; }
-
-    /// <summary>
-    /// The plane describing the orientation of this <see cref="FamilyInstance"/>
-    /// </summary>
-    /// <remarks>
-    /// The origin of this plane should be the base point.
-    /// </remarks>
-    public Plane plane { get; set; }
-
-    /// <summary>
-    /// The rotation of the instance on <see cref="plane"/>
-    /// </summary>
     public double rotation { get; set; }
-
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
     public bool mirrored { get; set; }

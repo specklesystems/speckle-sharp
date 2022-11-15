@@ -271,12 +271,8 @@ namespace Objects.Converter.Revit
           while (refsIterator.MoveNext())
           {
             var refConnector = refsIterator.Current as Connector;
-            if (refConnector != null &&
-              !refConnector.Owner.Id.Equals(element.Id) &&
-              !(refConnector.Owner is MEPSystem))
-            {
+            if (refConnector != null && !refConnector.Owner.Id.Equals(element.Id) && !(refConnector.Owner is MEPSystem))
               refConnectionPairs.Add(Tuple.Create(connector, refConnector));
-            }
           }
         }
         else
@@ -289,10 +285,9 @@ namespace Objects.Converter.Revit
 
     private static ConnectorSet GetConnectors(Element e)
     {
-      if (e is MEPCurve cure)
-        return cure.ConnectorManager.Connectors;
-      else
-        return (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
+      return e is MEPCurve curve ?
+        curve.ConnectorManager.Connectors :
+        (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
     }
 
     private static bool IsConnected(Element e)
@@ -310,13 +305,9 @@ namespace Objects.Converter.Revit
 
     private static bool IsConnectable(Element e)
     {
-      if (e is MEPCurve)
-        return true;
-      else
-      {
-        var fi = e as DB.FamilyInstance;
-        return fi?.MEPModel?.ConnectorManager?.Connectors?.Size > 0;
-      }
+      return e is MEPCurve ?
+        true :
+        ((DB.FamilyInstance)e)?.MEPModel?.ConnectorManager?.Connectors?.Size > 0;
     }
 
     private static T[] GetValues<T>()
