@@ -31,7 +31,7 @@ namespace Tests
       }
       var regex = new Regex(pattern);
       var match = regex.Match(userPath);
-      Assert.True(match.Success);
+      Assert.True(match.Success, $"{userPath} did not match on {pattern}");
     }
 
     [Test]
@@ -67,7 +67,7 @@ namespace Tests
       }
       var regex = new Regex(pattern);
       var match = regex.Match(installPath);
-      Assert.True(match.Success);
+      Assert.True(match.Success, $"{installPath} did not match on {pattern}");
     }
   }
 }
