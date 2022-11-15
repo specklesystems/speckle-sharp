@@ -84,7 +84,7 @@ namespace Speckle.Core.Transports
 
   public interface IBlobCapableTransport
   {
-    public string BlobStorageFolder { get; set; }
+    public string BlobStorageFolder { get; }
 
     public void SaveBlob(Blob obj);
 
