@@ -219,17 +219,25 @@ namespace SpeckleRhino
 
     private void RhinoApp_Idle(object sender, EventArgs e)
     {
-      if (SelectionExpired)
+      try
       {
-        SelectionExpired = false;
-        MappingBindings.UpdateSelection(MappingBindings.GetSelectionInfo());
+        if (SelectionExpired && MappingBindings.UpdateSelection != null)
+        {
+          SelectionExpired = false;
+          MappingBindings.UpdateSelection(MappingBindings.GetSelectionInfo());
+        }
+
+        if (ExistingSchemaLogExpired && MappingBindings.UpdateExistingSchemaElements != null)
+        {
+          ExistingSchemaLogExpired = false;
+          MappingBindings.UpdateExistingSchemaElements(MappingBindings.GetExistingSchemaElements());
+        }
+      }
+      catch (Exception ex)
+      {
+
       }
 
-      if (ExistingSchemaLogExpired)
-      {
-        ExistingSchemaLogExpired = false;
-        MappingBindings.UpdateExistingSchemaElements(MappingBindings.GetExistingSchemaElements());
-      }
 
     }
     private void RhinoDoc_DeselectObjects(object sender, Rhino.DocObjects.RhinoObjectSelectionEventArgs e)
