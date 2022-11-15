@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -23,7 +23,7 @@ namespace Speckle.Core.Kits
       get
       {
         if (_kitsFolder == null)
-          _kitsFolder = Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits");
+          _kitsFolder = SpecklePathProvider.KitsFolderPath; 
 
         return _kitsFolder;
       }
