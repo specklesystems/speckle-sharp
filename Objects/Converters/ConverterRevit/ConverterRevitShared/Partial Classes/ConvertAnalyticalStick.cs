@@ -55,6 +55,8 @@ namespace Objects.Converter.Revit
       }
 
       AnalyticalMember revitMember = null;
+      DB.FamilyInstance physicalMember = null;
+
       if (docObj != null && docObj is AnalyticalMember analyticalMember)
       {      
         // update location
@@ -64,6 +66,14 @@ namespace Objects.Converter.Revit
         analyticalMember.SectionTypeId = familySymbol.Id;
         isUpdate = true;
         revitMember = analyticalMember;
+
+        if (analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+        {
+          var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
+          physicalMember = (DB.FamilyInstance)Doc.GetElement(physicalMemberId);
+          if (physicalMember.Symbol != familySymbol)
+            physicalMember.Symbol = familySymbol;
+        }
       }
 
       //create family instance
@@ -77,7 +87,6 @@ namespace Objects.Converter.Revit
       // set or update analytical properties
       SetAnalyticalProps(revitMember, speckleStick, offset1, offset2);
 
-      DB.FamilyInstance physicalMember = null;
       // if there isn't an associated physical element to the analytical element, create it
       if (!analyticalToPhysicalManager.HasAssociation(revitMember.Id))
       {

@@ -26,6 +26,9 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     public bool HasSavedStreams = true;
 
+    public string Title { get; set; } = "for Desktop UI 3D Max";
+    public string Version { get; set; } = "1.2.3-beta8";
+
     public DesignHomeViewModel()
     {
       var acc = AccountManager.GetDefaultAccount();

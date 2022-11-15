@@ -94,7 +94,7 @@ namespace Speckle.Core.Models
     /// </summary>
     /// <param name="key"></param>
     /// <returns></returns>
-    [IgnoreTheItemAttribute]
+    [IgnoreTheItem]
     public object this[string key]
     {
       get
@@ -153,6 +153,7 @@ namespace Speckle.Core.Models
     /// Gets all of the property names on this class, dynamic or not.
     /// </summary>
     /// <returns></returns>
+    [Obsolete("Use `GetMembers(DynamicBaseMemberType.All).Keys` instead")]
     public override IEnumerable<string> GetDynamicMemberNames()
     {
       PopulatePropInfoCache(GetType());
@@ -169,7 +170,9 @@ namespace Speckle.Core.Models
     /// Gets the names of the defined class properties (typed).
     /// </summary>
     /// <returns></returns>
+    [Obsolete("Use GetMembers(DynamicBaseMemberType.InstanceAll).Keys instead")]
     public IEnumerable<string> GetInstanceMembersNames() => GetInstanceMembersNames(GetType());
+    
     public static IEnumerable<string> GetInstanceMembersNames(Type t)
     {
       PopulatePropInfoCache(t);
@@ -246,6 +249,7 @@ namespace Speckle.Core.Models
     /// Gets the dynamically added property names only.
     /// </summary>
     /// <returns></returns>
+    [Obsolete("Use GetMembers(DynamicBaseMemberType.Dynamic).Keys instead")]
     public IEnumerable<string> GetDynamicMembers()
     {
       return properties.Keys;

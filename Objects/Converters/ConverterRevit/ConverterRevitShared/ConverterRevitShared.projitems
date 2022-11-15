@@ -21,6 +21,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCableTray.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectTeklaMeshElements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFabricationPart.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterialQuantities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />

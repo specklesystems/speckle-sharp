@@ -87,7 +87,7 @@
         CornerRadius="5">
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
           <StackPanel>
-            <ListBox Items="{Binding LoadedFamilies}" SelectedItem="{Binding SelectedFamily}, Mode=TwoWay" />
+            <ListBox Items="{Binding LoadedFamilies}" SelectedItem="{Binding SelectedFamily,Mode=TwoWay}" />
           </StackPanel>
         </ScrollViewer>
       </Border>
@@ -166,7 +166,7 @@
                       <Grid ColumnDefinitions="auto,*">
                         <CheckBox
                           Margin="3,0,0,0"
-                          IsChecked="{Binding isChecked}, Mode=TwoWay"
+                          IsChecked="{Binding isChecked,Mode=TwoWay}" 
                           IsVisible="{Binding !isImported}" />
                         <icons:MaterialIcon
                           Grid.Row="0"
@@ -232,7 +232,7 @@
                   <Grid ColumnDefinitions="auto,*">
                     <CheckBox
                       Margin="10,0,0,0"
-                      IsChecked="{Binding isChecked}, Mode=TwoWay"
+                      IsChecked="{Binding isChecked,Mode=TwoWay}" 
                       IsVisible="{Binding !isImported}" />
                     <icons:MaterialIcon
                       Grid.Row="0"
