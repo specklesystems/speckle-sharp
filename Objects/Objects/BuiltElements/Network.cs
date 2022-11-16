@@ -111,14 +111,14 @@ namespace Objects.BuiltElements.Revit
     public string systemType { get; set; }
 
     /// <summary>
-    /// The shape of the <see cref="NetworkLink"/>
+    /// The connector profile shape of the <see cref="NetworkLink"/>
     /// </summary>
-    public NetworkLinkShape shape { get; set; }
+    public string shape { get; set; }
 
     /// <summary>
     /// The link domain
     /// </summary>
-    public NetworkLinkDomain domain { get; set; }
+    public string domain { get; set; }
 
     /// <summary>
     /// The index indicating the position of this link on the connected fitting element, if applicable
@@ -147,25 +147,5 @@ namespace Objects.BuiltElements.Revit
     [JsonIgnore] public bool isConnected { get; set; }
 
     public RevitNetworkLink() { }
-  }
-
-  /// <summary>
-  /// Represents the shape of a <see cref="NetworkLink"/>.
-  /// </summary>
-  public enum NetworkLinkShape
-  {
-    Oval,
-    Round,
-    Rectangular,
-    Unknown,
-  }
-
-  public enum NetworkLinkDomain
-  {
-    Cabletray,
-    Conduit,
-    Duct,
-    Piping,
-    Unknown
   }
 }

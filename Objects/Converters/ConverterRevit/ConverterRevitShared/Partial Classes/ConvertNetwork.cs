@@ -15,6 +15,7 @@ using RevitNetworkElement = Objects.BuiltElements.Revit.RevitNetworkElement;
 using RevitNetworkLink = Objects.BuiltElements.Revit.RevitNetworkLink;
 using Objects.BuiltElements.Revit;
 using ConverterRevitShared.Revit;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Objects.Converter.Revit
 {
@@ -272,8 +273,8 @@ namespace Objects.Converter.Revit
 
           var connector = connection.Connector;
 
-          link.domain = RevitToSpeckleDomain(connector.Domain);
-          link.shape = RevitToSpeckleShape(connector.Shape);
+          link.domain = connector.Domain.ToString();
+          link.shape = connector.Shape.ToString();
           link.systemName = connector.Owner.Category.Name;
           link.systemType = connector.MEPSystem != null ? Doc.GetElement(connector.MEPSystem.GetTypeId()).Name : "";
 
@@ -333,26 +334,6 @@ namespace Objects.Converter.Revit
     }
 
     private static List<ApplicationObject> CachedContextObjects = null;
-
-    private static ConnectorProfileType SpeckleToRevitShape(NetworkLinkShape shape)
-    {
-      return Enum.GetValues(typeof(ConnectorProfileType)).Cast<ConnectorProfileType>().FirstOrDefault(s => (int)s == (int)shape);
-    }
-
-    private static NetworkLinkShape RevitToSpeckleShape(ConnectorProfileType shape)
-    {
-      return Enum.GetValues(typeof(NetworkLinkShape)).Cast<NetworkLinkShape>().FirstOrDefault(s => (int)s == (int)shape);
-    }
-
-    private static Domain SpeckleToRevitDomain(NetworkLinkDomain domain)
-    {
-      return Enum.GetValues(typeof(Domain)).Cast<Domain>().FirstOrDefault(d => (int)d == (int)domain);
-    }
-
-    private static NetworkLinkDomain RevitToSpeckleDomain(Domain domain)
-    {
-      return Enum.GetValues(typeof(NetworkLinkDomain)).Cast<NetworkLinkDomain>().FirstOrDefault(d => (int)d == (int)domain);
-    }
 
     private bool IsWithinContext(Element element)
     {
@@ -445,23 +426,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private static MEPCurveType GetDefaultMEPCurveType(Document doc, Domain domain, ConnectorProfileType shape)
-    {
-      switch (domain)
-      {
-        case Domain.DomainHvac:
-          return GetDefaultMEPCurveType(doc, typeof(DuctType), shape);
-        case Domain.DomainPiping:
-          return GetDefaultMEPCurveType(doc, typeof(PipeType), shape);
-        case Domain.DomainElectrical:
-          return GetDefaultMEPCurveType(doc, typeof(ConduitType), shape);
-        case Domain.DomainCableTrayConduit:
-          return GetDefaultMEPCurveType(doc, typeof(CableTrayType), shape);
-        default:
-          throw new Exception();
-      }
-    }
-
     private static MEPCurveType GetDefaultMEPCurveType(Document doc, Type type, ConnectorProfileType shape)
     {
       return new FilteredElementCollector(doc)
@@ -475,20 +439,21 @@ namespace Objects.Converter.Revit
       var direction = VectorToNative(link.direction);
       var start = PointToNative(link.origin);
       var end = start.Add(direction.Multiply(2));
-      var domain = SpeckleToRevitDomain(link.domain);
-      var shape = SpeckleToRevitShape(link.shape);
-      var curveType = GetDefaultMEPCurveType(Doc, domain, shape);
+
       var sfi = link.elements.FirstOrDefault(e => e.element is BuiltElements.Revit.FamilyInstance)?.element as BuiltElements.Revit.FamilyInstance;
       Level level = ConvertLevelToRevit(sfi.level, out ApplicationObject.State state);
-      var systemTypes = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(MEPSystemType)).ToElements().Cast<ElementType>();
+
+      Domain domain = Enum.TryParse(link.domain, out domain) ? domain : Domain.DomainUndefined;
+      ConnectorProfileType profile = Enum.TryParse(link.shape, out profile) ? profile : ConnectorProfileType.Invalid;
+
+      MEPCurveType curveType = null;
       MEPCurve curve = null;
       switch (domain)
       {
         case Domain.DomainHvac:
-          if (!(systemTypes.Where(st => st is MechanicalSystemType).FirstOrDefault(x => x.Name == link.systemType) is MechanicalSystemType mechanicalSystemType))
-          {
-            mechanicalSystemType = systemTypes.Where(st => st is MechanicalSystemType).First() as MechanicalSystemType;
-          }
+          curveType = GetDefaultMEPCurveType(Doc, typeof(DuctType), profile);
+          if (curveType == null) goto default;
+          var mechanicalSystemType = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(MechanicalSystemType)).ToElements().Cast<MechanicalSystemType>().FirstOrDefault(x => x.Name == link.systemType);
           curve = Duct.Create(Doc, mechanicalSystemType.Id, curveType.Id, level.Id, start, end);
           if (curveType.Shape == ConnectorProfileType.Round)
           {
@@ -501,22 +466,27 @@ namespace Objects.Converter.Revit
           }
           break;
         case Domain.DomainPiping:
-          if (!(systemTypes.Where(st => st is PipingSystemType).FirstOrDefault(x => x.Name == link.systemType) is PipingSystemType pipingSystemType))
-          {
-            pipingSystemType = systemTypes.Where(st => st is PipingSystemType).First() as PipingSystemType;
-          }
+          curveType = GetDefaultMEPCurveType(Doc, typeof(PipeType), profile);
+          if (curveType == null) goto default;
+          var pipingSystemType = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(PipingSystemType)).ToElements().Cast<PipingSystemType>().FirstOrDefault(x => x.Name == link.systemType);
           curve = Pipe.Create(Doc, pipingSystemType.Id, curveType.Id, level.Id, start, end);
           curve.get_Parameter(BuiltInParameter.RBS_PIPE_DIAMETER_PARAM).Set(link.diameter);
           break;
         case Domain.DomainElectrical:
+          curveType = GetDefaultMEPCurveType(Doc, typeof(ConduitType), profile);
+          if (curveType == null) goto default;
           curve = Conduit.Create(Doc, curveType.Id, start, end, level.Id);
           curve.get_Parameter(BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM).Set(link.diameter);
           break;
         case Domain.DomainCableTrayConduit:
+          curveType = GetDefaultMEPCurveType(Doc, typeof(CableTrayType), profile);
+          if (curveType == null) goto default;
           curve = CableTray.Create(Doc, curveType.Id, start, end, level.Id);
           curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM).Set(link.width);
           curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_HEIGHT_PARAM).Set(link.height);
           break;
+        default:
+          return curve;
       }
       return curve;
     }
