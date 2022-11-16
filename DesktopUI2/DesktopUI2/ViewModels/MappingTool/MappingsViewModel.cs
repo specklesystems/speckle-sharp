@@ -4,6 +4,7 @@ using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -360,11 +361,14 @@ namespace DesktopUI2.ViewModels.MappingTool
     {
 
       Bindings.SetMappings(SelectedSchema.GetSerializedSchema(), SelectedSchema.GetSerializedViewModel());
+
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Set" }, { "schema", SelectedSchema.Name } });
     }
 
     public void ClearMappingsCommand()
     {
       Bindings.ClearMappings();
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Clear" } });
     }
 
 

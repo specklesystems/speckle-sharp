@@ -4,6 +4,7 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using DesktopUI2.ViewModels.MappingTool;
 using ReactiveUI;
+using Speckle.Core.Logging;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,7 +17,7 @@ namespace DesktopUI2.Views
       this.WhenActivated(disposables => { });
       AvaloniaXamlLoader.Load(this);
 
-
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Launched" } });
     }
     //these methods are here as it wasn't easy to have them in the MappingsViewModel
     private void SelectionChanged(object sender, SelectionChangedEventArgs e)
