@@ -320,22 +320,22 @@ namespace Objects.Converter.Revit
 
     private static List<ApplicationObject> CachedContextObjects = null;
 
-    public static ConnectorProfileType SpeckleToRevitShape(NetworkLinkShape shape)
+    private static ConnectorProfileType SpeckleToRevitShape(NetworkLinkShape shape)
     {
       return Enum.GetValues(typeof(ConnectorProfileType)).Cast<ConnectorProfileType>().FirstOrDefault(s => (int)s == (int)shape);
     }
 
-    public static NetworkLinkShape RevitToSpeckleShape(ConnectorProfileType shape)
+    private static NetworkLinkShape RevitToSpeckleShape(ConnectorProfileType shape)
     {
       return Enum.GetValues(typeof(NetworkLinkShape)).Cast<NetworkLinkShape>().FirstOrDefault(s => (int)s == (int)shape);
     }
 
-    public static Domain SpeckleToRevitDomain(NetworkLinkDomain domain)
+    private static Domain SpeckleToRevitDomain(NetworkLinkDomain domain)
     {
       return Enum.GetValues(typeof(Domain)).Cast<Domain>().FirstOrDefault(d => (int)d == (int)domain);
     }
 
-    public static NetworkLinkDomain RevitToSpeckleDomain(Domain domain)
+    private static NetworkLinkDomain RevitToSpeckleDomain(Domain domain)
     {
       return Enum.GetValues(typeof(NetworkLinkDomain)).Cast<NetworkLinkDomain>().FirstOrDefault(d => (int)d == (int)domain);
     }
@@ -411,25 +411,11 @@ namespace Objects.Converter.Revit
         (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
     }
 
-    private static bool IsConnected(Element e)
-    {
-      return e is MEPCurve cure ?
-        cure.ConnectorManager.Connectors.Cast<Connector>().Any(c => c.IsConnected) :
-        (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors != null ?
-          (e as DB.FamilyInstance).MEPModel.ConnectorManager.Connectors.Cast<Connector>().Any(c => c.IsConnected) :
-          false;
-    }
-
     private static bool IsConnectable(Element e)
     {
       return e is MEPCurve ?
         true :
         ((DB.FamilyInstance)e)?.MEPModel?.ConnectorManager?.Connectors?.Size > 0;
-    }
-
-    private static T[] GetValues<T>()
-    {
-      return Enum.GetValues(typeof(T)).Cast<T>().ToArray();
     }
 
     private Connector GetConnectorByPoint(Element element, XYZ point)
@@ -472,8 +458,8 @@ namespace Objects.Converter.Revit
 
     private MEPCurve CreateCurve(RevitNetworkLink link)
     {
-      var direction = new XYZ(link.direction.x, link.direction.y, link.direction.z);
-      var start = new XYZ(link.origin.x, link.origin.y, link.origin.z);
+      var direction = VectorToNative(link.direction);
+      var start = PointToNative(link.origin);
       var end = start.Add(direction.Multiply(2));
       var domain = SpeckleToRevitDomain(link.domain);
       var shape = SpeckleToRevitShape(link.shape);
