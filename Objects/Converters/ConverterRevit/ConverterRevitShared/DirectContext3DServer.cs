@@ -231,14 +231,10 @@ namespace Objects.Converter.Revit
           foreach (SpeckleMeshInfo meshInfo in meshes)
           {
             OG.Mesh mesh = meshInfo.Mesh;
-            // make the color of all faces white in HLR
-            ColorWithTransparency color = (bufferStorage.DisplayStyle == DisplayStyle.HLR) ?
-               new ColorWithTransparency(255, 255, 255, meshInfo.ColorWithTransparency.GetTransparency()) :
-               meshInfo.ColorWithTransparency;
 
             foreach (OG.Point vertex in mesh.GetPoints())
             {
-              vertexStream.AddVertex(new VertexPositionColored(new XYZ(vertex.x, vertex.y, vertex.z), color));
+              vertexStream.AddVertex(new VertexPositionColored(new XYZ(vertex.x, vertex.y, vertex.z), meshInfo.ColorWithTransparency));
             }
 
             numVerticesInMeshesBefore.Add(numVerticesInMeshesBefore.Last() + mesh.VerticesCount);

@@ -147,30 +147,6 @@ namespace Speckle.ConnectorRevit.UI
 
       return commitObject;
     }
-
-    private async Task<Base> GetCommitObject(Commit commit, StreamState state, ProgressViewModel progress)
-    {
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
-
-      var commitObject = await Operations.Receive(
-        commit.referencedObject,
-        progress.CancellationTokenSource.Token,
-        transport,
-        onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (s, e) =>
-        {
-          progress.Report.LogOperationError(e);
-          progress.CancellationTokenSource.Cancel();
-        },
-        onTotalChildrenCountKnown: (c) => progress.Max = c,
-        disposeTransports: true
-        );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      return commitObject;
-    }
     #endregion
     public void AddMultipleRevitElementServers(List<ApplicationObject> applicationObjects)
     {
@@ -212,31 +188,27 @@ namespace Speckle.ConnectorRevit.UI
         externalDrawerService.RemoveServer(registeredServerId);
       }
 
-      //if (document != null)
-      //{
-      //  m_servers.RemoveAll(server => document.Equals(server.Document));
-
-      //  if (updateViews)
-      //  {
-      //    UIDocument uidoc = new UIDocument(document);
-      //    uidoc.UpdateAllOpenViews();
-      //  }
-
-      //  m_documents.Remove(document);
-      //}
-      //else
-      //{
-        m_servers.Clear();
-
-        //if (updateViews)
-          //foreach (var doc in m_documents)
-          //{
-          //  UIDocument uidoc = new UIDocument(doc);
-          //  uidoc.UpdateAllOpenViews();
-          //}
+      m_servers.Clear();
       CurrentDoc.UpdateAllOpenViews();
-      //m_documents.Clear();
-      //}
+    }
+
+    public override bool CanPreviewSend => true;
+
+    public override void PreviewSend(StreamState state, ProgressViewModel progress)
+    {
+      var filterObjs = GetSelectionFilterObjects(state.Filter);
+      foreach (var filterObj in filterObjs)
+      {
+        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+        var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
+        var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
+        if (!converter.CanConvertToSpeckle(filterObj))
+          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
+        else
+          reportObj.Update(status: ApplicationObject.State.Created);
+        progress.Report.Log(reportObj);
+      }
+      SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList());
     }
   }
 }
