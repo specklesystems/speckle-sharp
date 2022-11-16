@@ -196,52 +196,66 @@ namespace Objects.Converter.Revit
           continue;
 
         ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
-        if (CanConvertToSpeckle(element))
-        {
-          Base obj = null;
-          bool connectorBasedCreation = false;
-          switch (element)
-          {
-            case DB.FamilyInstance fi:
-              obj = FamilyInstanceToSpeckle(fi, out notes);
-              // test if this family instance is a fitting
-              var fittingCategories = new List<BuiltInCategory> { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting, BuiltInCategory.OST_CableTrayFitting, BuiltInCategory.OST_ConduitFitting };
-              if (fittingCategories.Any(c => (int)c == fi.Category.Id.IntegerValue))
-              {
-                connectorBasedCreation = IsConnectorBasedCreation(fi);
-                var partType = (PartType)fi.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE).AsInteger();
-                if (obj != null) obj["partType"] = partType.ToString();
-              }
-              break;
-            default:
-              obj = ConvertToSpeckle(element);
-              break;
-          }
 
-          if (obj != null)
-          {
-            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as connected element to {initialElement.UniqueId}");
-            @network.elements.Add(new RevitNetworkElement()
-            {
-              applicationId = element.UniqueId,
-              network = @network,
-              name = element.Name,
-              element = obj,
-              linkIndices = new List<int>(),
-              isConnectorBased = connectorBasedCreation,
-              isCurveBased = element is MEPCurve
-            });
-            ConvertedObjectsList.Add(obj.applicationId);
-          }
-          else
-          {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
-          }
-        }
-        else
+        Base obj = null;
+        bool connectorBasedCreation = false;
+        switch (element)
         {
-          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Conversion not supported");
+          case DB.FamilyInstance fi:
+            obj = FamilyInstanceToSpeckle(fi, out notes);
+            // test if this family instance is a fitting
+            var fittingCategories = new List<BuiltInCategory> { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting, BuiltInCategory.OST_CableTrayFitting, BuiltInCategory.OST_ConduitFitting };
+            if (fittingCategories.Any(c => (int)c == fi.Category.Id.IntegerValue))
+            {
+              connectorBasedCreation = IsConnectorBasedCreation(fi);
+              var partType = (PartType)fi.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE).AsInteger();
+              if (obj != null) obj["partType"] = partType.ToString();
+            }
+            break;
+          case DB.Plumbing.Pipe pipe:
+            obj = PipeToSpeckle(pipe);
+            break;
+          case DB.Plumbing.FlexPipe flexpipe:
+            obj = PipeToSpeckle(flexpipe);
+            break;
+          case DB.Mechanical.Duct duct:
+            obj = DuctToSpeckle(duct, out notes);
+            break;
+          case DB.Mechanical.FlexDuct flexDuct:
+            obj = DuctToSpeckle(flexDuct);
+            break;
+          case DB.Electrical.CableTray cableTray:
+            obj = CableTrayToSpeckle(cableTray);
+            break;
+          case DB.Electrical.Conduit conduit:
+            obj = ConduitToSpeckle(conduit);
+            break;
+          default:
+            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Conversion not supported");
+            Report.Log(reportObj);
+            continue;
         }
+
+        if (obj == null)
+        {
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+          Report.Log(reportObj);
+          continue;
+        }
+
+        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as connected element to {initialElement.UniqueId}");
+        @network.elements.Add(new RevitNetworkElement()
+        {
+          applicationId = element.UniqueId,
+          network = @network,
+          name = element.Name,
+          element = obj,
+          linkIndices = new List<int>(),
+          isConnectorBased = connectorBasedCreation,
+          isCurveBased = element is MEPCurve
+        });
+        ConvertedObjectsList.Add(obj.applicationId);
+
         Report.Log(reportObj);
       }
 
