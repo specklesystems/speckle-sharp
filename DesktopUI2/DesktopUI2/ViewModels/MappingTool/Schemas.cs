@@ -41,11 +41,12 @@ namespace DesktopUI2.ViewModels.MappingTool
 
   }
 
-
-
-  public class RevitWallViewModel : Schema
+  /// <summary>
+  /// Basic Revit Element with Family, Type and Level properties
+  /// </summary>
+  public class RevitBasicViewModel : Schema
   {
-    public override string Name => "Wall";
+    public override string Name => "";
 
     private List<RevitFamily> _families;
     public List<RevitFamily> Families
@@ -103,13 +104,60 @@ namespace DesktopUI2.ViewModels.MappingTool
     public override string Summary => $"{SelectedFamily?.Name} - {SelectedType}";
 
 
-    public RevitWallViewModel()
+    public RevitBasicViewModel()
     {
     }
 
     public override string GetSerializedSchema()
     {
+      return "";
+    }
+  }
+
+
+
+  public class RevitWallViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Wall";
+
+
+    public override string GetSerializedSchema()
+    {
       var obj = new RevitWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel), 0);
+      return Operations.Serialize(obj);
+    }
+  }
+
+
+  public class RevitBeamViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Beam";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitBeam(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitBraceViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Brace";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitBrace(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitFamilyInstanceViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Family Instance";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new FamilyInstance(null, SelectedFamily.Name, SelectedType, new RevitLevel(SelectedLevel));
       return Operations.Serialize(obj);
     }
   }

@@ -525,7 +525,7 @@ namespace Objects.Converter.Revit
           speckleElement["category"] = category.Name;
         }
       }
-        
+
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -1034,7 +1034,7 @@ namespace Objects.Converter.Revit
         //eg: user sends some objects, moves them, receives them 
         element = Doc.GetElement(applicationId);
       }
-      else if(@ref.CreatedIds.Any())
+      else if (@ref.CreatedIds.Any())
       {
         //return the cached object, if it's still in the model
         element = Doc.GetElement(@ref.CreatedIds.First());
@@ -1138,22 +1138,15 @@ namespace Objects.Converter.Revit
         case ProjectBase:
           if (projectPoint != null)
           {
-#if REVIT2019
-            var point = projectPoint.get_BoundingBox(null).Min;
-#else
+
             var point = projectPoint.Position;
-#endif
             referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
           }
           break;
         case Survey:
           if (surveyPoint != null)
           {
-#if REVIT2019
-            var point = surveyPoint.get_BoundingBox(null).Min;
-#else
             var point = surveyPoint.Position;
-#endif
             var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
           }

@@ -52,6 +52,8 @@
     <Reference Include="System" />
     <Reference Include="System.Numerics" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
@@ -92,11 +94,6 @@
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
       <Project>{aab81f89-c71c-4f8a-b256-6a23d19134a7}</Project>
       <Name>DesktopUI2</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI\DesktopUI\DesktopUI.csproj">
-      <Project>{a97c3046-2d55-4c49-ab40-a3c2194b82fa}</Project>
-      <Name>DesktopUI</Name>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
     </ProjectReference>
   </ItemGroup>
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />

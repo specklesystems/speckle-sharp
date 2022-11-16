@@ -1,33 +1,30 @@
+using Objects.Other;
+using Rhino.Display;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Rhino.Render;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
-
-using Rhino.Geometry;
-using Rhino.Display;
-using Rhino.DocObjects;
-using Rhino.Render;
-using RH = Rhino.DocObjects;
-
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using Utilities = Speckle.Core.Models.Utilities;
-
-using Objects.Other;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
-using DisplayStyle = Objects.Other.DisplayStyle;
 using Dimension = Objects.Other.Dimension;
+using DisplayStyle = Objects.Other.DisplayStyle;
 using Hatch = Objects.Other.Hatch;
 using HatchLoop = Objects.Other.HatchLoop;
 using Line = Objects.Geometry.Line;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
+using RenderMaterial = Objects.Other.RenderMaterial;
+using RH = Rhino.DocObjects;
 using Text = Objects.Other.Text;
 using Transform = Objects.Other.Transform;
-using RenderMaterial = Objects.Other.RenderMaterial;
+using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -102,7 +99,7 @@ namespace Objects.Converter.RhinoGh
     {
       var commitInfo = GetCommitInfo();
       var speckleName = $"{commitInfo} - {speckleMaterial.name}";
-      
+
       // check if the doc already has a material with speckle material name, or a previously created speckle material
       var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleMaterial.name);
       if (existing != null)
@@ -113,7 +110,7 @@ namespace Objects.Converter.RhinoGh
         return existing;
 
       Rhino.Render.RenderMaterial rm;
-//#if RHINO6
+      //#if RHINO6
       var rhinoMaterial = new RH.Material
       {
         Name = speckleName,
@@ -122,7 +119,7 @@ namespace Objects.Converter.RhinoGh
         Transparency = 1 - speckleMaterial.opacity
       };
       rm = Rhino.Render.RenderMaterial.CreateBasicMaterial(rhinoMaterial, Doc);
-//#else
+      //#else
       //TODO Convert materials as PhysicallyBasedMaterial 
       // var pbrRenderMaterial = RenderContentType.NewContentFromTypeId(ContentUuids.PhysicallyBasedMaterialType, Doc) as Rhino.Render.RenderMaterial;
       // RH.Material simulatedMaterial = pbrRenderMaterial.SimulatedMaterial(RenderTexture.TextureGeneration.Allow);
@@ -136,8 +133,8 @@ namespace Objects.Converter.RhinoGh
       //
       // rm = Rhino.Render.RenderMaterial.FromMaterial(pbr.Material, Doc);
       // rm.Name = speckleName;
-//#endif
-      
+      //#endif
+
       Doc.RenderMaterials.Add(rm);
 
       return rm;
@@ -149,11 +146,11 @@ namespace Objects.Converter.RhinoGh
 
       renderMaterial.name = material.Name ?? "default"; // default rhino material has no name or id
 #if RHINO6
-      
+
       renderMaterial.diffuse = material.DiffuseColor.ToArgb();
       renderMaterial.emissive = material.EmissionColor.ToArgb();
       renderMaterial.opacity = 1 - material.Transparency;
-      
+
       // for some reason some default material transparency props are 1 when they shouldn't be - use this hack for now
       if ((renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem")) && renderMaterial.opacity == 0)
         renderMaterial.opacity = 0.3;
@@ -175,7 +172,7 @@ namespace Objects.Converter.RhinoGh
         renderMaterial.roughness = pbrMaterial.Roughness;
       }
 #endif
-      
+
       return renderMaterial;
     }
 
@@ -414,8 +411,8 @@ namespace Objects.Converter.RhinoGh
       var displayMaterial = new DisplayMaterial(rhinoMaterial);
       return displayMaterial;
     }
-    
-    
+
+
     public RenderMaterial DisplayMaterialToSpeckle(DisplayMaterial material)
     {
       var speckleMaterial = new RenderMaterial();
@@ -424,7 +421,7 @@ namespace Objects.Converter.RhinoGh
       speckleMaterial.opacity = 1.0 - material.Transparency;
       return speckleMaterial;
     }
-    
+
     public Rhino.Geometry.Transform TransformToNative(Transform speckleTransform, string units = null)
     {
       var u = units ?? speckleTransform.units;
@@ -459,7 +456,7 @@ namespace Objects.Converter.RhinoGh
         t.M30, t.M31, t.M32, t.M33 };
       return new Transform(transformArray, ModelUnits);
     }
-    
+
     // Text
     public Text TextToSpeckle(TextEntity text)
     {
@@ -515,7 +512,7 @@ namespace Objects.Converter.RhinoGh
       Base sourceAppProps = text[RhinoPropName] as Base;
       if (sourceAppProps != null)
       {
-        var scaleProps = new List<string>() { 
+        var scaleProps = new List<string>() {
           "TextHeight" };
         foreach (var scaleProp in scaleProps)
         {
@@ -569,7 +566,7 @@ namespace Objects.Converter.RhinoGh
 
             var angularDimension = new AngleDimension() { units = ModelUnits, measurement = (Math.PI / 180) * dimension.NumericValue };
             angularDimension.position = PointToSpeckle(angularDimPoint);
-            angularDimension.measured = new List<Line>() { lineStart, lineEnd};
+            angularDimension.measured = new List<Line>() { lineStart, lineEnd };
             if (o.GetDisplayLines(o.DimensionStyle, o.DimensionScale, out Rhino.Geometry.Line[] lines, out Rhino.Geometry.Arc[] arcs))
             {
               angularDimension.displayValue = lines.Select(l => LineToSpeckle(l) as ICurve).ToList();
@@ -616,7 +613,7 @@ namespace Objects.Converter.RhinoGh
         _dimension.value = dimension.PlainText;
         _dimension.richText = dimension.RichText;
         _dimension.textPosition = PointToSpeckle(textPoint);
-        
+
         // set rhino props
         var style = dimension.DimensionStyle.HasName ? dimension.DimensionStyle.Name : String.Empty;
         if (!string.IsNullOrEmpty(style)) props["DimensionStyleName"] = style;
@@ -645,7 +642,7 @@ namespace Objects.Converter.RhinoGh
           DistanceDimension linearDimension = dimension as DistanceDimension;
           var start = PointToNative(linearDimension.measured[0]).Location;
           var end = PointToNative(linearDimension.measured[1]).Location;
-          bool isRotated = sourceAppProps["AnnotationType"] as string == AnnotationType.Rotated.ToString() ? true : false ;
+          bool isRotated = sourceAppProps["AnnotationType"] as string == AnnotationType.Rotated.ToString() ? true : false;
           if (isRotated)
             _dimension = LinearDimension.Create(AnnotationType.Rotated, dimensionStyle, plane, Vector3d.XAxis, start, end, position, 0);
           else
@@ -705,7 +702,7 @@ namespace Objects.Converter.RhinoGh
         case LengthDimension o:
           switch (o.measured)
           {
-            case Line l: 
+            case Line l:
               var radialLine = LineToNative(l);
               var radialDimension = RadialDimension.Create(style, AnnotationType.Radius, plane, radialLine.PointAtStart, radialLine.PointAtEnd, position);
               _dimension = radialDimension;
