@@ -18,6 +18,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(@object.applicationId, @object.speckle_type);
       DirectContext3DServer server = null;
 
+      Instance = this;
       var meshes = @object.Flatten().Where(b => b is Mesh).Cast<Mesh>();
       if (meshes == null || !meshes.Any())
       {
