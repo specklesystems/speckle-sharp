@@ -146,7 +146,7 @@ namespace Objects.Converter.Revit
         {
           var firstElement = convertedElements.FirstOrDefault(e => e.Key == link.elements[0].applicationId).Value;
           var secondElement = convertedElements.FirstOrDefault(e => e.Key == link.elements[1].applicationId).Value;
-          var origin = new XYZ(link.origin.x, link.origin.y, link.origin.z);
+          var origin = PointToNative(link.origin);
           var firstConnector = GetConnectorByPoint(firstElement, origin);
           var secondConnector = GetConnectorByPoint(secondElement, origin);
           if (firstConnector != null
