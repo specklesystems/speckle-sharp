@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
@@ -12,7 +12,7 @@ using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino
 {
-  #if !MAC
+#if !MAC
   public class SpeckleCommandWin : Command
   {
 
@@ -31,7 +31,7 @@ namespace SpeckleRhino
       try
       {
 
-        Rhino.UI.Panels.OpenPanel(typeof(Panel).GUID);
+        Rhino.UI.Panels.OpenPanel(typeof(DuiPanel).GUID);
         return Result.Success;
       }
       catch (Exception e)

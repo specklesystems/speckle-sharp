@@ -13,7 +13,7 @@ using Timer = System.Timers.Timer;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  public partial class ConnectorBindingsRevit2 : ConnectorBindings
+  public partial class ConnectorBindingsRevit : ConnectorBindings
   {
     public static UIApplication RevitApp;
 
@@ -32,7 +32,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     public List<Exception> OperationErrors { get; set; } = new List<Exception>();
 
-    public ConnectorBindingsRevit2(UIApplication revitApp) : base()
+    public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
     }
@@ -62,7 +62,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       var streams = new List<StreamState>();
       if (CurrentDoc != null)
-        streams = StreamStateManager2.ReadState(CurrentDoc.Document);
+        streams = StreamStateManager.ReadState(CurrentDoc.Document);
 
       return streams;
     }

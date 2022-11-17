@@ -15,7 +15,7 @@ using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  public partial class ConnectorBindingsRevit2
+  public partial class ConnectorBindingsRevit
   {
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }

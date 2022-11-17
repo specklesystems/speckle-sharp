@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel.Types;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
@@ -6,13 +7,14 @@ using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Speckle.Core.Api;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -94,11 +96,12 @@ namespace Objects.Converter.RhinoGh
 
     public void SetContextDocument(object doc)
     {
-        Doc = (RhinoDoc)doc;
+      Doc = (RhinoDoc)doc;
     }
 
     // speckle user string for custom schemas
     private string SpeckleSchemaKey = "SpeckleSchema";
+    private string SpeckleMappingKey = "SpeckleMapping";
     private string ApplicationIdKey = "applicationId";
 
     public RH.Mesh GetRhinoRenderMesh(RhinoObject rhinoObj)
@@ -142,6 +145,11 @@ namespace Objects.Converter.RhinoGh
 
         if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
           schema = ConvertToSpeckleBE(ro, reportObj, displayMesh) ?? ConvertToSpeckleStr(ro, reportObj);
+
+        //mapping tool
+        var mappingString = ro.Attributes.GetUserString(SpeckleMappingKey);
+        if (mappingString != null)
+          schema = MappingToSpeckle(mappingString, ro);
 
         attributes = ro.Attributes;
 
@@ -296,6 +304,58 @@ namespace Objects.Converter.RhinoGh
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
       return objects.Select(x => ConvertToSpeckle(x)).ToList();
+    }
+
+    private Base MappingToSpeckle(string mapping, RhinoObject @object)
+    {
+      Base schemaObject = Operations.Deserialize(mapping);
+
+      switch (schemaObject)
+      {
+        case RevitWall o:
+          var extrusion = ((RH.Extrusion)@object.Geometry);
+          var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
+          var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
+          var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
+          o.height = height;
+          o.baseLine = CurveToSpeckle(bottomCrv);
+          break;
+
+        case RevitBeam o:
+          o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+          break;
+
+        case RevitBrace o:
+          o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+          break;
+
+        case DirectShape o:
+          o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
+          break;
+
+        case FreeformElement o:
+          o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
+          break;
+
+        case FamilyInstance o:
+          if (@object.Geometry is Rhino.Geometry.Point p)
+          {
+            o.basePoint = PointToSpeckle(p);
+          }
+          else if (@object is InstanceObject)
+          {
+            var block = BlockInstanceToSpeckle(@object as InstanceObject);
+            o.basePoint = block.GetInsertionPoint();
+            o.rotation = block.transform.rotationZ;
+          }
+          break;
+
+        default:
+          break;
+      }
+      schemaObject.applicationId = @object.Id.ToString();
+      schemaObject["units"] = ModelUnits;
+      return schemaObject;
     }
 
     public Base ConvertToSpeckleBE(object @object, ApplicationObject reportObj, RH.Mesh displayMesh)
@@ -767,5 +827,6 @@ namespace Objects.Converter.RhinoGh
           return false;
       }
     }
+
   }
 }

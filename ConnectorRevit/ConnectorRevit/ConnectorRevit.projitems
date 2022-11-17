@@ -33,16 +33,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\TestCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SchedulerCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\HelpCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit .Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Events.cs" />

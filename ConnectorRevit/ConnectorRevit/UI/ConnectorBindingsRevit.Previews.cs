@@ -33,9 +33,8 @@ using DynamicData;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  public partial class ConnectorBindingsRevit2
+  public partial class ConnectorBindingsRevit
   {
-    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public override bool CanPreviewReceive => true;
     private string SelectedReceiveCommit { get; set; }
     List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();

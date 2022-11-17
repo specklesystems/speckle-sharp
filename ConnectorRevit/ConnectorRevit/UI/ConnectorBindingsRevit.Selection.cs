@@ -9,7 +9,7 @@ using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  public partial class ConnectorBindingsRevit2
+  public partial class ConnectorBindingsRevit
   {
     public override List<ISelectionFilter> GetSelectionFilters()
     {

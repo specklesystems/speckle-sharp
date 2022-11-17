@@ -20,7 +20,7 @@ using static DesktopUI2.ViewModels.MappingViewModel;
 namespace Speckle.ConnectorRevit.UI
 {
 
-  public partial class ConnectorBindingsRevit2
+  public partial class ConnectorBindingsRevit
   {
 
     /// <summary>

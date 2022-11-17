@@ -20,11 +20,10 @@ using Speckle.Core.Transports;
 namespace Speckle.ConnectorRevit.UI
 {
   
-  public partial class ConnectorBindingsRevit2
+  public partial class ConnectorBindingsRevit
   {
+    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
-    public Base CommitObject;
-    public string CachedCommitObjectId;
 
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.

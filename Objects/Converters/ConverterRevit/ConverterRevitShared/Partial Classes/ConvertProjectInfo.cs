@@ -7,8 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
-using RevitElementType = Objects.BuiltElements.Revit.RevitElementType;
 using ProjectInfo = Objects.BuiltElements.Revit.ProjectInfo;
+using RevitElementType = Objects.BuiltElements.Revit.RevitElementType;
 
 namespace Objects.Converter.Revit
 {
@@ -16,12 +16,20 @@ namespace Objects.Converter.Revit
   {
     private RevitElementType ElementTypeToSpeckle(DB.ElementType revitType)
     {
+      var fs = revitType as FamilySymbol;
+
       var speckleType = new RevitElementType
       {
         type = revitType.Name,
         family = revitType.FamilyName,
         category = revitType.Category.Name
       };
+
+      if (fs != null && fs.Family != null)
+      {
+        speckleType.placementType = fs.Family?.FamilyPlacementType.ToString();
+        speckleType.hasFamilySymbol = true;
+      }
 
       GetAllRevitParamsAndIds(speckleType, revitType);
 

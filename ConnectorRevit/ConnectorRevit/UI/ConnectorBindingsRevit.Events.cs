@@ -18,7 +18,7 @@ using Speckle.Core.Models;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  public partial class ConnectorBindingsRevit2
+  public partial class ConnectorBindingsRevit
   {
     private string _lastSyncComment { get; set; }
     public override async void WriteStreamsToFile(List<StreamState> streams)
@@ -31,7 +31,7 @@ namespace Speckle.ConnectorRevit.UI
             using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
             {
               t.Start();
-              StreamStateManager2.WriteStreamStateList(CurrentDoc.Document, streams);
+              StreamStateManager.WriteStreamStateList(CurrentDoc.Document, streams);
               t.Commit();
             }
 
@@ -91,8 +91,8 @@ namespace Speckle.ConnectorRevit.UI
         {
           try
           {
-            SpeckleRevitCommand2.RegisterPane();
-            var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand2.PanelId);
+            SpeckleRevitCommand.RegisterPane();
+            var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand.PanelId);
             panel.Show();
           }
           catch (Exception ex)
@@ -182,7 +182,7 @@ namespace Speckle.ConnectorRevit.UI
         if (e.Document == null || e.PreviousActiveView == null || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode())
           return;
 
-        SpeckleRevitCommand2.RegisterPane();
+        SpeckleRevitCommand.RegisterPane();
 
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
@@ -226,7 +226,7 @@ namespace Speckle.ConnectorRevit.UI
     { }
     private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
     {
-      SpeckleRevitCommand2.RegisterPane();
+      SpeckleRevitCommand.RegisterPane();
 
       //clear saved streams if opening a new doc
       if (UpdateSavedStreams != null)
@@ -239,14 +239,14 @@ namespace Speckle.ConnectorRevit.UI
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
-        if (SpeckleRevitCommand2.UseDockablePanel)
+        if (SpeckleRevitCommand.UseDockablePanel)
         {
-          SpeckleRevitCommand2.RegisterPane();
-          var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand2.PanelId);
+          SpeckleRevitCommand.RegisterPane();
+          var panel = App.AppInstance.GetDockablePane(SpeckleRevitCommand.PanelId);
           panel.Show();
         }
         else
-          SpeckleRevitCommand2.CreateOrFocusSpeckle();
+          SpeckleRevitCommand.CreateOrFocusSpeckle();
       }
       if (UpdateSavedStreams != null)
         UpdateSavedStreams(streams);
@@ -318,7 +318,10 @@ namespace Speckle.ConnectorRevit.UI
             if (views.Any())
             {
               var viewPhase = views.First().get_Parameter(BuiltInParameter.VIEW_PHASE);
-              perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
+              if (viewPhase != null)
+              {
+                perspView.get_Parameter(BuiltInParameter.VIEW_PHASE).Set(viewPhase.AsElementId());
+              }
             }
 
             t.Commit();
