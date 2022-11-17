@@ -2,8 +2,6 @@
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Objects.Organization;
-using Objects.Organization.Revit;
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
