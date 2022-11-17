@@ -153,7 +153,6 @@ namespace Objects.Converter.Revit
         "RBS_PIPING_SYSTEM_TYPE_PARAM",
         "RBS_SYSTEM_CLASSIFICATION_PARAM",
         "RBS_SYSTEM_NAME_PARAM",
-        "RBS_PIPE_DIAMETER_PARAM",
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
