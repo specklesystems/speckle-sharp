@@ -38,24 +38,29 @@ namespace Objects.BuiltElements
   {
     public string name { get; set; }
 
+    [DetachProperty]
     /// <summary>
     /// The Base object representing the element in the network (eg Pipe, Duct, etc)
     /// </summary>
-    public Base element { get; set; }
+    /// <remarks>
+    /// Currently named "elements" to assist with receiving in connector flatten method.
+    /// </remarks>
+    public Base elements { get; set; } 
 
     /// <summary>
     /// The index of the links in <see cref="network"/> that are connected to this element
     /// </summary>
     public List<int> linkIndices { get; set; }
 
-    [JsonIgnore] public Network network { get; set; }
+    [JsonIgnore] 
+    public Network network { get; set; }
 
     public NetworkElement() { }
 
     /// <summary>
     /// Retrieves the links for this element
     /// </summary>
-    [JsonIgnore] public List<NetworkLink> links => linkIndices.Select(i => network.links[i]).ToList();
+    [JsonIgnore] public List<NetworkLink> links => linkIndices.Select(i => network?.links[i]).ToList();
   }
 
   public class NetworkLink : Base
@@ -67,14 +72,15 @@ namespace Objects.BuiltElements
     /// </summary>
     public List<int> elementIndices { get; set; }
 
-    [JsonIgnore] public Network network { get; set; }
+    [JsonIgnore] 
+    public Network network { get; set; }
 
     public NetworkLink() { }
 
     /// <summary>
     /// Retrieves the elements for this link
     /// </summary>
-    [JsonIgnore] public List<NetworkElement> elements => elementIndices.Select(i => network.elements[i]).ToList();
+    [JsonIgnore] public List<NetworkElement> elements => elementIndices.Select(i => network?.elements[i]).ToList();
   }
 }
 
