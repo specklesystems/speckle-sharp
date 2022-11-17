@@ -1163,6 +1163,9 @@ namespace SpeckleRhino
       {
         // Get bounds from active view
         Rectangle bounds = Doc.Views.ActiveView.ScreenRectangle;
+        // Reset margins
+        bounds.X = 0;
+        bounds.Y = 0;
         Doc.Views.Add("SpeckleCommentView", DefinedViewportProjection.Perspective, bounds, false);
       }
 
