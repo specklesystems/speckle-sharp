@@ -406,13 +406,6 @@ namespace Objects.Converter.Revit
         (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
     }
 
-    private static bool IsConnectable(Element e)
-    {
-      return e is MEPCurve ?
-        true :
-        ((DB.FamilyInstance)e)?.MEPModel?.ConnectorManager?.Connectors?.Size > 0;
-    }
-
     private Connector GetConnectorByPoint(Element element, XYZ point)
     {
       switch (element)
@@ -424,14 +417,6 @@ namespace Objects.Converter.Revit
         default:
           return null;
       }
-    }
-
-    private static MEPCurveType GetDefaultMEPCurveType(Document doc, Type type, ConnectorProfileType shape)
-    {
-      return new FilteredElementCollector(doc)
-          .WhereElementIsElementType()
-          .OfClass(type)
-          .FirstOrDefault(t => t is MEPCurveType type && type.Shape == shape) as MEPCurveType;
     }
 
     private MEPCurve CreateCurve(RevitNetworkLink link)
@@ -489,6 +474,14 @@ namespace Objects.Converter.Revit
           return curve;
       }
       return curve;
+    }
+
+    private static MEPCurveType GetDefaultMEPCurveType(Document doc, Type type, ConnectorProfileType shape)
+    {
+      return new FilteredElementCollector(doc)
+          .WhereElementIsElementType()
+          .OfClass(type)
+          .FirstOrDefault(t => t is MEPCurveType type && type.Shape == shape) as MEPCurveType;
     }
   }
 }

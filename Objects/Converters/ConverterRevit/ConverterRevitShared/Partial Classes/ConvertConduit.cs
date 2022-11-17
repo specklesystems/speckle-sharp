@@ -14,7 +14,7 @@ namespace Objects.Converter.Revit
     {
       var speckleRevitConduit = speckleConduit as RevitConduit;
 
-      var docObj = GetExistingElementByApplicationId((speckleConduit).applicationId);
+      var docObj = GetExistingElementByApplicationId(speckleConduit.applicationId);
       var appObj = new ApplicationObject(speckleConduit.id, speckleConduit.speckle_type) { applicationId = speckleConduit.applicationId };
       if (docObj != null && ReceiveMode == Speckle.Core.Kits.ReceiveMode.Ignore)
       {
@@ -22,27 +22,27 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      //var conduitType = GetElementType<ConduitType>(speckleConduit);
-
-      if (!GetElementType(speckleConduit, appObj, out ConduitType conduitType))
+      if (!(speckleConduit.baseCurve is Line))
       {
-        appObj.Update(status: ApplicationObject.State.Failed);
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"BaseCurve of type ${speckleConduit.baseCurve.GetType()} cannot be used to create a Revit Conduit");
         return appObj;
       }
 
-      Element conduit = null;
-      if (speckleConduit.baseCurve is Line)
+      if (!GetElementType(speckleConduit, appObj, out ConduitType conduitType))
       {
-        DB.Line baseLine = LineToNative(speckleConduit.baseCurve as Line);
-        XYZ startPoint = baseLine.GetEndPoint(0);
-        XYZ endPoint = baseLine.GetEndPoint(1);
-        DB.Level lineLevel = ConvertLevelToRevit(speckleRevitConduit != null ? speckleRevitConduit.level : LevelFromCurve(baseLine), out ApplicationObject.State levelState);
-        Conduit lineConduit = Conduit.Create(Doc, conduitType.Id, startPoint, endPoint, lineLevel.Id);
-        conduit = lineConduit;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve conduit type");
+        return appObj;
       }
-      else
+
+      DB.Line baseLine = LineToNative(speckleConduit.baseCurve as Line);
+      XYZ startPoint = baseLine.GetEndPoint(0);
+      XYZ endPoint = baseLine.GetEndPoint(1);
+      DB.Level lineLevel = ConvertLevelToRevit(speckleRevitConduit != null ? speckleRevitConduit.level : LevelFromCurve(baseLine), out ApplicationObject.State levelState);
+      var conduit = Conduit.Create(Doc, conduitType.Id, startPoint, endPoint, lineLevel.Id);
+
+      if (conduit == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"BaseCurve of type ${speckleConduit.baseCurve.GetType()} cannot be used to create a Revit CableTray");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Creation returned null");
         return appObj;
       }
 

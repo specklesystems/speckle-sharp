@@ -3,7 +3,6 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
@@ -100,9 +99,7 @@
                     Grid.Column="2"
                     VerticalAlignment="Center"
                     Command="{Binding LaunchCommand, FallbackValue={x:Null}}"
-                    Content="SEE"
                     ToolTip.Tip="View">
-
                     <Button.Content>
                       <icons:MaterialIcon
                         Width="20"
