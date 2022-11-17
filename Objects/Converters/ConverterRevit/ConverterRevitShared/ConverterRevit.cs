@@ -118,7 +118,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject = IsConnectable(o) ? NetworkToSpeckle(o, out notes) : FamilyInstanceToSpeckle(o, out notes);
+          returnObject = o.MEPModel?.ConnectorManager?.Connectors?.Size > 0 ? NetworkToSpeckle(o, out notes) : FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
