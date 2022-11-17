@@ -19,24 +19,6 @@ namespace Speckle.ConnectorRevit.UI
   {
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }
-    public override bool CanPreviewSend => true;
-
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
-    {
-      var filterObjs = GetSelectionFilterObjects(state.Filter);
-      foreach (var filterObj in filterObjs)
-      {
-        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
-        var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
-        if (!converter.CanConvertToSpeckle(filterObj))
-          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
-        else
-          reportObj.Update(status: ApplicationObject.State.Created);
-        progress.Report.Log(reportObj);
-      }
-      SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList());
-    }
 
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
