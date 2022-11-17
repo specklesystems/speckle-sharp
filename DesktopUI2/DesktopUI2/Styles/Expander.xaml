@@ -35,7 +35,7 @@
       </Expander>
       <Expander
         Margin="0,10"
-        Classes="Flat Transparent"
+        Classes="Minimal Transparent"
         Header="This is another expander!">
         <TextBlock Text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse malesuada lacus ex, sit amet blandit leo lobortis eget." TextWrapping="Wrap" />
       </Expander>
@@ -72,6 +72,152 @@
 
   <Style Selector="Expander:up /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter, Expander:down /template/ ToggleButton#PART_toggle /template/ ContentPresenter#PART_ContentPresenter">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+  </Style>
+
+  <Style Selector="Expander.Transparent">
+    <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Expander.Edit">
+    <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+    <Setter Property="Background" Value="Transparent" />
+  </Style>
+
+  <Style Selector="Expander.Transparent /template/ ToggleButton#PART_toggle">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          MinHeight="48"
+          Padding="8"
+          Background="Transparent">
+          <Grid ColumnDefinitions="Auto,*">
+            <ContentPresenter
+              Name="PART_ContentPresenter"
+              Grid.Column="1"
+              Padding="0"
+              VerticalAlignment="Center"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              Background="Transparent"
+              Content="{TemplateBinding Content}" />
+            <Border
+              Grid.Column="0"
+              Margin="0,0,10,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+
+              <Path
+                Name="PART_ExpandIcon"
+                Width="16"
+                Height="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Data="M 6.013 11.606 L 9.219 8.4 L 6.013 5.187 L 7 4.2 L 11.2 8.4 L 7 12.6 L 6.013 11.606 Z"
+                Fill="Gray" />
+
+
+            </Border>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+
+  <!--<Style Selector="Expander.Edit:down /template/ ToggleButton#PART_toggle /template/ TextBlock#PART_Close">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>
+  <Style Selector="Expander.Edit:down:expanded /template/ ToggleButton#PART_toggle /template/ TextBlock#PART_Edit">
+    <Setter Property="IsVisible" Value="False" />
+  </Style>-->
+
+  <!--  TRANSPARENT EXPANDER, remove borders on header  -->
+  <Style Selector="Expander.Minimal /template/ ToggleButton#PART_toggle">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border
+          MinHeight="48"
+          Padding="8"
+          Background="Transparent">
+          <Grid ColumnDefinitions="Auto,*">
+            <ContentPresenter
+              Name="PART_ContentPresenter"
+              Grid.Column="1"
+              Padding="0"
+              VerticalAlignment="Center"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              Background="Transparent"
+              Content="{TemplateBinding Content}" />
+            <Border
+              Grid.Column="0"
+              Margin="0,0,10,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+
+              <Path
+                Name="PART_ExpandIcon"
+                Width="16"
+                Height="16"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Data="M 6.013 11.606 L 9.219 8.4 L 6.013 5.187 L 7 4.2 L 11.2 8.4 L 7 12.6 L 6.013 11.606 Z"
+                Fill="Gray" />
+
+
+            </Border>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
+  </Style>
+
+
+
+  <Style Selector="Expander.Edit /template/ ToggleButton#PART_toggle">
+    <Setter Property="Template">
+      <ControlTemplate>
+        <Border MinHeight="48" Background="Transparent">
+          <Grid ColumnDefinitions="*,auto">
+            <ContentPresenter
+              Name="PART_ContentPresenter"
+              Grid.Column="0"
+              Padding="0"
+              VerticalAlignment="Center"
+              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+              Background="Transparent"
+              Content="{TemplateBinding Content}" />
+            <Border
+              Grid.Column="1"
+              Margin="0,0,10,0"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center">
+              <StackPanel Orientation="Horizontal">
+                <TextBlock
+                  Name="PART_Edit"
+                  Margin="0,0,5,0"
+                  Classes="Overline"
+                  Foreground="{DynamicResource PrimaryHueMidBrush}"
+                  Text="Edit" />
+                <!--<Path
+                  Name="PART_ExpandIcon"
+                  Width="16"
+                  Height="16"
+                  HorizontalAlignment="Center"
+                  VerticalAlignment="Center"
+                  Data="M 6.013 11.606 L 9.219 8.4 L 6.013 5.187 L 7 4.2 L 11.2 8.4 L 7 12.6 L 6.013 11.606 Z"
+                  Fill="Gray" />-->
+              </StackPanel>
+
+
+
+            </Border>
+          </Grid>
+        </Border>
+      </ControlTemplate>
+    </Setter>
   </Style>
 
 </Styles>

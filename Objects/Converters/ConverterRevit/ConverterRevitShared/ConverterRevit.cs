@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public HostObject CurrentHostElement { get; set; }
+    public Element CurrentHostElement { get; set; }
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
@@ -118,14 +118,13 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          if (IsConnectable(o))
-            returnObject = NetworkToSpeckle(o, out notes);
-          else
-            returnObject = FamilyInstanceToSpeckle(o, out notes);
-
+          returnObject = IsConnectable(o) ? NetworkToSpeckle(o, out notes) : FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
+          break;
+        case DB.FabricationPart o:
+          returnObject = FabricationPartToSpeckle(o, out notes);
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
@@ -164,28 +163,28 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes); // NOTE: Shouldn't this have an `IsConnected` condition and return DuctToSpeckle if false?
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes); // NOTE: Shouldn't this have an `IsConnected` condition and return FlexDuctToSpeckle if false?
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes); // NOTE: Shouldn't this have an `IsConnected` condition and return PipeToSpeckle if false?
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes); // NOTE: Shouldn't this have an `IsConnected` condition and return FlexPipeToSpeckle if false?
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes); // NOTE: Shouldn't this have an `IsConnected` condition and return CableTrayToSpeckle if false?
           break;
         case DB.Electrical.Conduit o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes);// NOTE: Shouldn't this have an `IsConnected` condition and return ConduitToSpeckle if false?
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -485,7 +484,7 @@ namespace Objects.Converter.Revit
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
-        case Network o:
+        case BE.Network o:
           return NetworkToNative(o);
 
         case BE.Floor o:
@@ -571,6 +570,15 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
+        case Base b:
+          var boo = b["isHackySpeckleCamera"] as bool?;
+          if (boo == true)
+            return ViewOrientation3DToNative(b);
+          return null;
+
+
         default:
           return null;
       }
@@ -622,6 +630,7 @@ namespace Objects.Converter.Revit
         DB.ElementType _ => true,
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
+        DB.FabricationPart _ => true,
 #if !REVIT2023
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
@@ -698,7 +707,7 @@ namespace Objects.Converter.Revit
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
-        Network _ => true,
+        BE.Network _ => true,
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,

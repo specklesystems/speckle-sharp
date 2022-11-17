@@ -1,4 +1,5 @@
 ﻿
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -17,15 +18,36 @@ namespace Objects
   {
     /// <inheritdoc/>
     public string Description => "The default Speckle Kit.";
-    
+
     /// <inheritdoc/>
     public string Name => "Objects";
-    
+
     /// <inheritdoc/>
     public string Author => "Speckle";
-    
+
     /// <inheritdoc/>
     public string WebsiteOrEmail => "https://speckle.systems";
+
+    private static string _objectsFolder = null;
+
+    /// <summary>
+    /// Local installations store objects in C:\Users\USERNAME\AppData\Roaming\Speckle\Kits\Objects
+    /// Admin/System-wide installations in C:\ProgramData\Speckle\Kits\Objects
+    /// </summary>
+    public static string ObjectsFolder
+    {
+      get
+      {
+        if (_objectsFolder == null)
+          _objectsFolder = Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits", "Objects");
+
+        return _objectsFolder;
+      }
+      set
+      {
+        _objectsFolder = value;
+      }
+    }
 
     /// <inheritdoc/>
     public IEnumerable<Type> Types
@@ -81,6 +103,14 @@ namespace Objects
         var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
         var path = Path.Combine(basePath, $"Objects.Converter.{app}.dll");
+
+        //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
+        if (!File.Exists(path))
+        {
+          path = Path.Combine(ObjectsFolder, $"Objects.Converter.{app}.dll");
+        }
+
+
         if (File.Exists(path))
         {
           var assembly = Assembly.LoadFrom(path);
@@ -110,8 +140,16 @@ namespace Objects
     {
       var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
       var list = Directory.EnumerateFiles(basePath, "Objects.Converter.*");
+      var availableConverters = list.ToList().Select(dllPath => dllPath.Split('.').Reverse().ToList()[1]).ToList();
 
-      return list.ToList().Select(dllPath => dllPath.Split('.').Reverse().ToList()[1]).ToList();
+      //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
+      if (!availableConverters.Any())
+      {
+        list = Directory.EnumerateFiles(ObjectsFolder, "Objects.Converter.*");
+        availableConverters = list.ToList().Select(dllPath => dllPath.Split('.').Reverse().ToList()[1]).ToList();
+      }
+
+      return availableConverters;
     }
   }
 }

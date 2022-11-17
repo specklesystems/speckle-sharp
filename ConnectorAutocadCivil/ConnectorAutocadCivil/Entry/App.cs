@@ -1,17 +1,15 @@
-﻿using System.Windows.Controls;
-using System.Windows.Media;
-using System.Reflection;
-using System.IO;
-using System.Windows.Media.Imaging;
-using System.Linq;
-using Forms = System.Windows.Forms;
-
-using Speckle.ConnectorAutocadCivil.UI;
-
+﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Runtime;
 using Autodesk.Windows;
-using Autodesk.AutoCAD.ApplicationServices;
+using Speckle.ConnectorAutocadCivil.UI;
 using System;
+using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Windows.Controls;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using Forms = System.Windows.Forms;
 
 namespace Speckle.ConnectorAutocadCivil.Entry
 {
@@ -45,9 +43,8 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         var bindings = new ConnectorBindingsAutocad();
         bindings.RegisterAppEvents();
         SpeckleAutocadCommand.Bindings = bindings;
-        OneClickCommand.Bindings = bindings;
       }
-      catch(System.Exception e)
+      catch (System.Exception e)
       {
         Forms.MessageBox.Show($"Add-in initialize context (true = application, false = doc): {Application.DocumentManager.IsApplicationContext.ToString()}. Error encountered: {e.ToString()}");
       }
@@ -229,9 +226,6 @@ namespace Speckle.ConnectorAutocadCivil.Entry
           {
             case "Speckle":
               SpeckleAutocadCommand.SpeckleCommand();
-              break;
-            case "SpeckleSend":
-              OneClickCommand.SendCommand();
               break;
             case "SpeckleCommunity":
               SpeckleAutocadCommand.SpeckleCommunity();

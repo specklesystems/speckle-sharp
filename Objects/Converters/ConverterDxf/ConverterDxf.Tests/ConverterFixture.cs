@@ -1,20 +1,23 @@
 using System;
+using Objects.Converters.DxfConverter;
 using Speckle.Core.Models;
+using Speckle.netDxf.Units;
 using Xunit;
-using Dxf = netDxf;
-using Dxfe = netDxf.Entities;
+using Dxf = Speckle.netDxf;
+using Dxfe = Speckle.netDxf.Entities;
 
 namespace ConverterDxf.Tests
 {
     public class ConverterFixture: IDisposable
     {
         public SpeckleDxfConverter Converter;
-        public Dxf.DxfDocument Doc;
+        public readonly Dxf.DxfDocument Doc;
 
         public ConverterFixture()
         {
             Converter = new SpeckleDxfConverter();
             Doc = new Dxf.DxfDocument();
+            Doc.DrawingVariables.InsUnits = DrawingUnits.Meters;
             Converter.SetContextDocument(Doc);
         }
 

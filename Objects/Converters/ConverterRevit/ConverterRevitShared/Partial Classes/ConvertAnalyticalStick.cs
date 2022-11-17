@@ -18,10 +18,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject AnalyticalStickToNative(Element1D speckleStick)
     {
       ApplicationObject appObj = null;
-      XYZ offset1 = VectorToNative(speckleStick.end1Offset ?? new Geometry.Vector(0,0,0));
-      XYZ offset2 = VectorToNative(speckleStick.end2Offset ?? new Geometry.Vector(0,0,0));
+      XYZ offset1 = VectorToNative(speckleStick.end1Offset ?? new Geometry.Vector(0, 0, 0));
+      XYZ offset2 = VectorToNative(speckleStick.end2Offset ?? new Geometry.Vector(0, 0, 0));
 
-#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
+#if REVIT2020 || REVIT2021 || REVIT2022
       appObj = CreatePhysicalMember(speckleStick);
       DB.FamilyInstance physicalMember = (DB.FamilyInstance)appObj.Converted.FirstOrDefault();
       SetAnalyticalProps(physicalMember, speckleStick, offset1, offset2);
@@ -55,6 +55,8 @@ namespace Objects.Converter.Revit
       }
 
       AnalyticalMember revitMember = null;
+      DB.FamilyInstance physicalMember = null;
+
       if (docObj != null && docObj is AnalyticalMember analyticalMember)
       {      
         // update location
@@ -64,6 +66,14 @@ namespace Objects.Converter.Revit
         analyticalMember.SectionTypeId = familySymbol.Id;
         isUpdate = true;
         revitMember = analyticalMember;
+
+        if (analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+        {
+          var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
+          physicalMember = (DB.FamilyInstance)Doc.GetElement(physicalMemberId);
+          if (physicalMember.Symbol != familySymbol)
+            physicalMember.Symbol = familySymbol;
+        }
       }
 
       //create family instance
@@ -77,7 +87,6 @@ namespace Objects.Converter.Revit
       // set or update analytical properties
       SetAnalyticalProps(revitMember, speckleStick, offset1, offset2);
 
-      DB.FamilyInstance physicalMember = null;
       // if there isn't an associated physical element to the analytical element, create it
       if (!analyticalToPhysicalManager.HasAssociation(revitMember.Id))
       {
@@ -106,7 +115,7 @@ namespace Objects.Converter.Revit
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
           revitBeam.baseLine = speckleStick.baseLine;
-#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
+#if REVIT2020 || REVIT2021 || REVIT2022
           revitBeam.applicationId = speckleStick.applicationId;
 #endif
           appObj = BeamToNative(revitBeam);
@@ -117,7 +126,7 @@ namespace Objects.Converter.Revit
           RevitBrace revitBrace = new RevitBrace();
           revitBrace.type = speckleStick.property.name.Replace('X', 'x');
           revitBrace.baseLine = speckleStick.baseLine;
-#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
+#if REVIT2020 || REVIT2021 || REVIT2022
           revitBrace.applicationId = speckleStick.applicationId;
 #endif
           appObj = BraceToNative(revitBrace);
@@ -129,7 +138,7 @@ namespace Objects.Converter.Revit
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
           revitColumn.baseLine = speckleStick.baseLine;
           revitColumn.units = speckleStick.units;
-#if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
+#if REVIT2020 || REVIT2021 || REVIT2022
           revitColumn.applicationId = speckleStick.applicationId;
 #endif
           appObj = ColumnToNative(revitColumn);
@@ -491,6 +500,22 @@ namespace Objects.Converter.Revit
     private StructuralMaterial GetStructuralMaterial(StructuralMaterialType materialType, StructuralAsset materialAsset, string name)
     {
       Structural.Materials.StructuralMaterial speckleMaterial = null;
+
+      if (materialType == StructuralMaterialType.Undefined)
+      {
+        switch (materialAsset.StructuralAssetClass)
+        {
+          case StructuralAssetClass.Metal:
+            materialType = StructuralMaterialType.Steel;
+            break;
+          case StructuralAssetClass.Concrete:
+            materialType = StructuralMaterialType.Concrete;
+            break;
+          case StructuralAssetClass.Wood:
+            materialType = StructuralMaterialType.Wood;
+            break;
+        }
+      }
 
       switch (materialType)
       {
