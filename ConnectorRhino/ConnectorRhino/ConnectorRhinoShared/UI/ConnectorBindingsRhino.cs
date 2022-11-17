@@ -480,6 +480,9 @@ namespace SpeckleRhino
     // gets objects by id directly or by applicaiton id user string
     private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
     {
+      if (string.IsNullOrEmpty(applicationId))
+        return new List<RhinoObject>();
+
       // first try to find the object by app id user string
       var match = Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId)?.ToList() ?? new List<RhinoObject>();
       
@@ -552,7 +555,7 @@ namespace SpeckleRhino
         {
           appObj.Convertible = true;
           if (StoredObjects.ContainsKey(@base.id))
-            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id. Skipped other object");
+            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id {@base.id}. Skipped other object");
           else
             StoredObjects.Add(@base.id, @base);
           objects.Add(appObj);
@@ -1147,5 +1150,45 @@ namespace SpeckleRhino
 
     #endregion
 
+    public override bool CanOpen3DView => true;
+
+    public override async Task Open3DView(List<double> viewCoordinates, string viewName = "")
+    {
+      // Create positional objects for camera
+      Point3d cameraLocation = new Point3d(viewCoordinates[0], viewCoordinates[1], viewCoordinates[2]);
+      Point3d target = new Point3d(viewCoordinates[3], viewCoordinates[4], viewCoordinates[5]);
+      Vector3d direction = target - cameraLocation;
+
+      if (!Doc.Views.Any(v => v.ActiveViewport.Name == "SpeckleCommentView"))
+      {
+        // Get bounds from active view
+        Rectangle bounds = Doc.Views.ActiveView.ScreenRectangle;
+        Doc.Views.Add("SpeckleCommentView", DefinedViewportProjection.Perspective, bounds, false);
+      }
+
+      await Task.Run(() =>
+      {
+        IEnumerable<RhinoView> views = Doc.Views.Where(v => v.ActiveViewport.Name == "SpeckleCommentView");
+        if (views.Any())
+        {
+          RhinoView speckleCommentView = views.First();
+          speckleCommentView.ActiveViewport.SetCameraDirection(direction, false);
+          speckleCommentView.ActiveViewport.SetCameraLocation(cameraLocation, true);
+          speckleCommentView.Maximized = true;
+          DisplayModeDescription shaded = DisplayModeDescription.FindByName("Shaded");
+          if (shaded!= null)
+          {
+            speckleCommentView.ActiveViewport.DisplayMode = shaded;
+          }
+
+          if (Doc.Views.ActiveView.ActiveViewport.Name != "SpeckleCommentView")
+          {
+            Doc.Views.ActiveView = speckleCommentView;
+          }
+        }
+
+        Doc.Views.Redraw();
+      });
+    }
   }
 }

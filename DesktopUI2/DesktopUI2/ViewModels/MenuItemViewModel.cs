@@ -2,6 +2,7 @@
 using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
+using Speckle.Core.Credentials;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace DesktopUI2.ViewModels
   public class MenuItemViewModel
   {
     public object Header { get; set; }
-    public MaterialIcon Icon { get; set; }
+    public object Icon { get; set; }
     public ICommand Command { get; set; }
     public object CommandParameter { get; set; }
     public IList<MenuItemViewModel> Items { get; set; }
@@ -47,17 +48,25 @@ namespace DesktopUI2.ViewModels
 
     }
 
-    public MenuItemViewModel(ICommand command, object commandParameter, string header, MaterialIconKind icon)
-    {
-      Command = command;
-      CommandParameter = commandParameter;
-      Header = header;
-      Icon = new MaterialIcon { Kind = icon, Foreground = Avalonia.Media.Brushes.Gray };
-    }
+    //public MenuItemViewModel(ICommand command, object commandParameter, string header, MaterialIconKind icon)
+    //{
+    //  Command = command;
+    //  CommandParameter = commandParameter;
+    //  Header = header;
+    //  Icon = new MaterialIcon { Kind = icon, Foreground = Avalonia.Media.Brushes.Gray };
+    //}
 
     public MenuItemViewModel(Action action, string header, MaterialIconKind icon)
     {
       Command = ReactiveCommand.Create(action);
+      Header = header;
+      Icon = new MaterialIcon { Kind = icon, Foreground = Avalonia.Media.Brushes.Gray };
+    }
+
+    public MenuItemViewModel(Action<Account> action, object commandParameter, string header, MaterialIconKind icon)
+    {
+      Command = ReactiveCommand.Create(action);
+      CommandParameter = commandParameter;
       Header = header;
       Icon = new MaterialIcon { Kind = icon, Foreground = Avalonia.Media.Brushes.Gray };
     }

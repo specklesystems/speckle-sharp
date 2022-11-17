@@ -80,16 +80,16 @@ namespace DesktopUI2.ViewModels.DesignViewModels
         Filter = new ListSelectionFilter { Icon = "Mouse", Name = "Category" }
       };
 
-      Activity = new List<ActivityViewModel>() {
-        new ActivityViewModel (null, null){
+      //Activity = new List<ActivityViewModel>() {
+      //  new ActivityViewModel (new Speckle.Core.Api.ActivityItem{ actionType="commit_create",time=""}, null){
 
-          Margin = new Avalonia.Thickness(50,10,10,0),
-          Icon = "ArrowBottomLeft",
-          Message = "Commit 5aaf00a723 was received by Matteo Cominetti" },
-        new ActivityViewModel (null, null) {
-              Margin = new Avalonia.Thickness(10,10,50,0),
-          Icon = "ArrowTopRight",
-          Message = "Commit created on branch main: 0ae5a01ad7 (Sent 148 objects from Revit2022.)" } };
+      //    Margin = new Avalonia.Thickness(50,10,10,0),
+      //    Icon = "ArrowBottomLeft",
+      //    Message = "Commit 5aaf00a723 was received by Matteo Cominetti" },
+      //  new ActivityViewModel (new Speckle.Core.Api.ActivityItem{ actionType="commit_receive", time=""}, null) {
+      //        Margin = new Avalonia.Thickness(10,10,50,0),
+      //    Icon = "ArrowTopRight",
+      //    Message = "Commit created on branch main: 0ae5a01ad7 (Sent 148 objects from Revit2022.)" } };
     }
 
     public void ReceiveCommand()
@@ -107,10 +107,6 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     }
 
-    public void CloseNotificationCommand()
-    {
-
-    }
 
     public void OpenReportCommand()
     {

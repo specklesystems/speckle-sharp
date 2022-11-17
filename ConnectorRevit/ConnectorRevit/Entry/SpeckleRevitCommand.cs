@@ -1,69 +1,211 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using System.Windows;
+using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Threading;
 using Autodesk.Revit.Attributes;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Avalonia;
+using Avalonia.Controls;
+using Avalonia.ReactiveUI;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
 using Speckle.ConnectorRevit.UI;
-using Speckle.DesktopUI;
-using Stylet.Xaml;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.Entry
 {
   [Transaction(TransactionMode.Manual)]
   public class SpeckleRevitCommand : IExternalCommand
   {
-    public static Bootstrapper Bootstrapper { get; set; }
+
+    public static bool UseDockablePanel = true;
+
+    //window stuff
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+    const int GWL_HWNDPARENT = -8;
+    public static Window MainWindow { get; private set; }
+    private static Avalonia.Application AvaloniaApp { get; set; }
+    //end window stuff
+
     public static ConnectorBindingsRevit Bindings { get; set; }
+
+    private static Panel _panel { get; set; }
+
+
+    internal static DockablePaneId PanelId = new DockablePaneId(new Guid("{0A866FB8-8FD5-4DE8-B24B-56F4FA5B0836}"));
+
+
+    public static void InitAvalonia()
+    {
+      BuildAvaloniaApp().SetupWithoutStarting();
+    }
+
+    public static AppBuilder BuildAvaloniaApp() => AppBuilder.Configure<DesktopUI2.App>()
+      .UsePlatformDetect()
+      .With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 })
+      .With(new Win32PlatformOptions { AllowEglInitialization = true, EnableMultitouch = false })
+      .LogToTrace()
+      .UseReactiveUI();
+
+
 
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-      OpenOrFocusSpeckle(commandData.Application);
+
+      if (UseDockablePanel)
+      {
+        try
+        {
+          RegisterPane();
+          var panel = App.AppInstance.GetDockablePane(PanelId);
+          panel.Show();
+        }
+        catch (Exception ex)
+        {
+          Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        }
+      }
+      else
+        CreateOrFocusSpeckle();
+
+
+
       return Result.Succeeded;
     }
 
-    public static void OpenOrFocusSpeckle(UIApplication app)
+    internal static void RegisterPane()
     {
       try
       {
-        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+        if (!UseDockablePanel)
+          return;
 
-        if (Bootstrapper != null)
+        var registered = DockablePane.PaneIsRegistered(PanelId);
+        var created = DockablePane.PaneExists(PanelId);
+
+        if (registered && created)
         {
-          Bootstrapper.ShowRootView();
+          _panel.Init();
           return;
         }
 
-        Bootstrapper = new Bootstrapper() { Bindings = Bindings };
+        if (!registered)
+        {
+          //Register dockable panel
+          var viewModel = new MainViewModel(Bindings);
+          _panel = new Panel
+          {
+            DataContext = viewModel
+          };
+          App.AppInstance.RegisterDockablePane(PanelId, "Speckle", _panel);
+          _panel.Init();
+        }
+        created = DockablePane.PaneExists(PanelId);
 
-        if (Application.Current != null)
-          new StyletAppLoader() { Bootstrapper = Bootstrapper };
-        else
-          new DesktopUI.App(Bootstrapper);
+        //if revit was launched double-clicking on a Revit file, we're screwed
+        //could maybe show the old window?
+        if (!created && App.AppInstance.Application.Documents.Size > 0)
+        {
+          TaskDialog mainDialog = new TaskDialog("Dockable Panel Issue");
+          mainDialog.MainInstruction = "Dockable Panel Issue";
+          mainDialog.MainContent =
+              "Revit cannot properly register Dockable Panels when launched by double-clicking a Revit file. "
+              + "Please close and re-open Revit without launching a file OR open/create a new project to trigger the Speckle panel registration.";
 
-        Bootstrapper.Start(Application.Current);
-        Bootstrapper.SetParent(app.MainWindowHandle);
+
+          // Set footer text. Footer text is usually used to link to the help document.
+          mainDialog.FooterText =
+              "<a href=\"https://github.com/specklesystems/speckle-sharp/issues/1469 \">"
+              + "Click here for more info</a>";
+
+          mainDialog.Show();
+
+        }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        Bootstrapper = null;
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        var td = new TaskDialog("Error");
+        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
+        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
+
+        TaskDialogResult tResult = td.Show();
+
+        if (TaskDialogResult.CommandLink1 == tResult)
+        {
+          Process.Start("https://speckle.community/");
+        }
+      }
+
+    }
+
+    public static void CreateOrFocusSpeckle(bool showWindow = true)
+    {
+      try
+      {
+
+        if (MainWindow == null)
+        {
+          var viewModel = new MainViewModel(Bindings);
+          MainWindow = new MainWindow
+          {
+            DataContext = viewModel
+          };
+
+          //massive hack: we start the avalonia main loop and stop it immediately (since it's thread blocking)
+          //to avoid an annoying error when closing revit
+          var cts = new CancellationTokenSource();
+          cts.CancelAfter(100);
+          AvaloniaApp.Run(cts.Token);
+
+        }
+
+
+        if (showWindow)
+        {
+          MainWindow.Show();
+          MainWindow.Activate();
+
+          //required to gracefully quit avalonia and the skia processes
+          //can also be used to manually do so
+          //https://github.com/AvaloniaUI/Avalonia/wiki/Application-lifetimes
+
+
+          if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+          {
+            var parentHwnd = App.AppInstance.MainWindowHandle;
+            var hwnd = MainWindow.PlatformImpl.Handle.Handle;
+            SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        var td = new TaskDialog("Error");
+        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
+        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
+
+        TaskDialogResult tResult = td.Show();
+
+        if (TaskDialogResult.CommandLink1 == tResult)
+        {
+          Process.Start("https://speckle.community/");
+        }
       }
     }
 
-    static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    private static void AppMain(Avalonia.Application app, string[] args)
     {
-      Assembly a = null;
-      var name = args.Name.Split(',')[0];
-      string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
-
-      string assemblyFile = Path.Combine(path, name + ".dll");
-
-      if (File.Exists(assemblyFile))
-        a = Assembly.LoadFrom(assemblyFile);
-
-      return a;
+      AvaloniaApp = app;
     }
+
+
+
+
+
   }
 
 }

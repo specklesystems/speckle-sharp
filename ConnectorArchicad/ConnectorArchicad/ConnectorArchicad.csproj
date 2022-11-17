@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <Company>Speckle</Company>
-    <Product>ArchiCAD Connector</Product>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <Product>ConnectorArchicad</Product>
+    <Version>2.0.0-dev</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -22,12 +22,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
     <ProjectReference Include="..\..\Objects\Objects\Objects.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
-        <PrivateAssets>all</PrivateAssets>
-        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>

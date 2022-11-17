@@ -1,6 +1,8 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
+using System.Diagnostics;
 using System.IO;
+using System.Threading;
 
 namespace DesktopUI2.Launcher
 {
@@ -17,8 +19,9 @@ namespace DesktopUI2.Launcher
     {
 
       // to debug the VS previewer
-      // 1. open another instanc of the project in VS
-      // 2. uncomment the lines below
+      // 
+      // 1. uncomment the lines below & rebuild
+      // 2. (optional)open another instance of the project in VS & attach it to this process
       // 3. close and reopen the problematic XAML window
 
       //Debugger.Launch();

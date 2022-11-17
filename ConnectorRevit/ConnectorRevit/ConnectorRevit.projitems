@@ -33,30 +33,20 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\QuickShareCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\OneClickSendCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SchedulerCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleRevitCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\HelpCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ExternalEventHandler.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2 .Settings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Events.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Mappings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Receive.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Selection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit .Settings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Mappings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Receive.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Send.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.ClientOperations.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Selection.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit2\ConnectorBindingsRevit2.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Selection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\Panel.xaml.cs">
       <DependentUpon>Panel.xaml</DependentUpon>
     </Compile>

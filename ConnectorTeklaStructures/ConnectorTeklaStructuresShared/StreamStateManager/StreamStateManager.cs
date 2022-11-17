@@ -9,6 +9,7 @@ namespace ConnectorTeklaStructures.Storage
 {
   public static class StreamStateManager
   {
+
     private static string _speckleFilePath;
     public static List<StreamState> ReadState(Model model)
     {

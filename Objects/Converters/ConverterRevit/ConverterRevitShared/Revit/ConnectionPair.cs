@@ -61,12 +61,8 @@ namespace ConverterRevitShared.Revit
           while (refsIterator.MoveNext())
           {
             var refConnector = refsIterator.Current as Connector;
-            if (refConnector != null &&
-              !refConnector.Owner.Id.Equals(element.Id) &&
-              !(refConnector.Owner is MEPSystem))
-            {
+            if (refConnector != null && !refConnector.Owner.Id.Equals(element.Id) && !(refConnector.Owner is MEPSystem))
               refConnectionPairs.Add(new ConnectionPair(element, connector, refConnector));
-            }
           }
         }
         else
@@ -79,10 +75,9 @@ namespace ConverterRevitShared.Revit
 
     public bool IsValid()
     {
-      return Connector.Owner.Id.Equals(Owner.Id) &&
-        RefConnector != null
-        ? Connector.IsConnectedTo(RefConnector)
-        : true;
+      return Connector.Owner.Id.Equals(Owner.Id) && RefConnector != null ? 
+        Connector.IsConnectedTo(RefConnector):
+        true;
     }
 
     public int CompareTo(ConnectionPair other)
@@ -92,8 +87,7 @@ namespace ConverterRevitShared.Revit
 
     public bool Equals(ConnectionPair other)
     {
-      return Owner.Id.Equals(other.Owner.Id)
-        && RefConnector?.Owner?.Id == other.RefConnector?.Owner?.Id;
+      return Owner.Id.Equals(other.Owner.Id) && RefConnector?.Owner?.Id == other.RefConnector?.Owner?.Id;
     }
 
     public bool ConnectedToCurve(out MEPCurve curve)
@@ -104,10 +98,9 @@ namespace ConverterRevitShared.Revit
 
     private static ConnectorSet GetConnectors(Element e)
     {
-      if (e is MEPCurve cure)
-        return cure.ConnectorManager.Connectors;
-      else
-        return (e as FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
+      return e is MEPCurve cure ?
+        cure.ConnectorManager.Connectors:
+        (e as FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
     }
   }
 }

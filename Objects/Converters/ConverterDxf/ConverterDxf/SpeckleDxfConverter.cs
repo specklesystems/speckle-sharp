@@ -19,8 +19,8 @@ namespace Objects.Converters.DxfConverter
     public string Author => "Speckle Systems";
     public string WebsiteOrEmail => "https://speckle.systems";
 
-    public ProgressReport Report { get; } = new();
-    public ConverterDxfSettings Settings = new();
+    public ProgressReport Report { get; } = new ProgressReport();
+    public ConverterDxfSettings Settings = new ConverterDxfSettings();
     public ReceiveMode ReceiveMode { get; set; } = ReceiveMode.Create;
 
     // TODO: Convert to Speckle is currently not supported.
@@ -60,7 +60,7 @@ namespace Objects.Converters.DxfConverter
         case Brep brep:
           return BrepToNative(brep);
         default:
-          return null!;
+          return null;
       }
     }
 

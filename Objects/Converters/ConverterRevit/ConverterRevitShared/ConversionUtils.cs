@@ -1,4 +1,5 @@
 ﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Mechanical;
 using ConverterRevitShared.Revit;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -9,6 +10,7 @@ using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -16,7 +18,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
-using FittingType = Objects.Organization.Revit.FittingType;
+using Duct = Objects.BuiltElements.Duct;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -28,442 +30,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    #region Network Conversion Utilities
-
-    private static List<ApplicationObject> CachedContextObjects = null;
-
-    /// <summary>
-    /// Gets the connected element of a MEP element and adds the to a Base object
-    /// </summary>
-    /// <param name="base"></param>
-    /// <param name="mepElement"></param>
-    public void GetNetworkElements(Network @network, Element initialElement, out List<string> notes)
-    {
-      CachedContextObjects = ContextObjects.ToList();
-      notes = new List<string>();
-      var networkConnections = new List<ConnectionPair>();
-      GetNetworkConnections(initialElement, ref networkConnections);
-      var groups = networkConnections.GroupBy(n => n.Owner.UniqueId).ToList();
-
-      foreach (var group in groups)
-      {
-        var element = Doc.GetElement(group.Key);
-        var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == element.UniqueId);
-
-        if (elementIndex != -1)
-          ContextObjects.RemoveAt(elementIndex);
-        else
-          continue;
-
-        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
-        if (CanConvertToSpeckle(element))
-        {
-          FittingType fittingType = FittingType.Invalid;
-          Base obj = null;
-          bool connectorBasedCreation = false;
-          switch (element)
-          {
-            case DB.FamilyInstance fi:
-              fittingType = GetFittingType(fi, out connectorBasedCreation);
-              obj = FamilyInstanceToSpeckle(fi, out notes);
-              break;
-            case DB.Plumbing.Pipe pipe:
-              obj = PipeToSpeckle(pipe);
-              break;
-            case DB.Plumbing.FlexPipe flexpipe:
-              obj = PipeToSpeckle(flexpipe);
-              break;
-            case DB.Mechanical.Duct duct:
-              obj = DuctToSpeckle(duct, out notes);
-              break;
-            case DB.Mechanical.FlexDuct flexDuct:
-              obj = DuctToSpeckle(flexDuct);
-              break;
-            case DB.Electrical.CableTray cableTray:
-              obj = CableTrayToSpeckle(cableTray);
-              break;
-            case DB.Electrical.Conduit conduit:
-              obj = ConduitToSpeckle(conduit);
-              break;
-          }
-
-          if (obj != null)
-          {
-            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as connected element to {initialElement.UniqueId}");
-            @network.elements.Add(new RevitNetworkElement()
-            {
-              applicationId = element.UniqueId,
-              network = @network,
-              name = element.Name,
-              element = obj,
-              linkIndices = new List<int>(),
-              fittingType = fittingType,
-              connectorBasedCreation = connectorBasedCreation,
-              isCurve= element is MEPCurve
-            });
-            ConvertedObjectsList.Add(obj.applicationId);
-
-          }
-          else
-          {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
-          }
-        }
-        else
-        {
-          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Conversion not supported");
-        }
-        Report.Log(reportObj);
-      }
-
-      foreach (var group in groups)
-      {
-        var connections = group.ToList();
-        var ownerIndex = @network.elements.FindIndex(e => e.applicationId.Equals(group.Key));
-        var ownerElement = @network.elements[ownerIndex];
-        foreach (var connection in connections)
-        {
-          var link = new RevitNetworkLink() { name = connection.Name, network = @network, elementIndices = new List<int>() };
-          
-          link.elementIndices.Add(ownerIndex);
-          
-          var connector = connection.Connector;
-
-          link.domain = RevitToSpeckleDomain(connector.Domain);
-          link.shape = RevitToSpeckleShape(connector.Shape);
-          link.category = connector.Owner.Category.Name;
-          link.type = connector.MEPSystem != null ? Doc.GetElement(connector.MEPSystem.GetTypeId()).Name : "";
-
-          var origin = connection.Connector.Origin;
-
-          link.origin = new Point(origin.X, origin.Y, origin.Z, Speckle.Core.Kits.Units.Feet);
-          link.connectionIndex = connector.Id;
-          link.direction = new Vector(connector.CoordinateSystem.BasisZ.X,
-            connector.CoordinateSystem.BasisZ.Y,
-            connector.CoordinateSystem.BasisZ.Z,
-            Speckle.Core.Kits.Units.Feet);
-          link.connected = connection.IsConnected;
-          link.connectedToCurve = connection.ConnectedToCurve(out MEPCurve curve) && IsWithinContext(curve);
-          link.diameter = connection.Diameter;
-          link.height = connection.Height;
-          link.width = connection.Width;
-
-
-          // find index of the ref element
-          var refConnector = connection.RefConnector;
-          var refIndex = @network.elements.FindIndex(e => e.applicationId.Equals(refConnector?.Owner?.UniqueId));
-
-          // add it in case it's exist
-          if (refIndex != -1)
-          {
-            link.elementIndices.Add(refIndex);
-          }
-
-          @network.links.Add(link);
-          var linkIndex = @network.links.IndexOf(link);
-          ownerElement.linkIndices.Add(linkIndex);
-        }
-      }
-
-      if (@network.elements.Any())
-      {
-        notes.Add($"Converted and attached {@network.elements.Count} connected elements");
-      }
-    }
-
-    private static FittingType GetFittingType(DB.FamilyInstance familyInstance, out bool connectorBasedCreation)
-    {
-      var isFittingInstance = IsFittingInstance(familyInstance);
-      var connectors = GetConnectors(familyInstance).Cast<Connector>().ToArray();
-      connectorBasedCreation = connectors.All(c => connectors.All(c1 =>
-      (c1.Domain == Domain.DomainPiping && c1.PipeSystemType == c.PipeSystemType) ||
-      (c1.Domain == Domain.DomainHvac && c1.DuctSystemType == c.DuctSystemType) ||
-      (c1.Domain == Domain.DomainElectrical && c1.ElectricalSystemType == c.ElectricalSystemType) ||
-      (c1.Domain == Domain.DomainCableTrayConduit)))
-        && isFittingInstance;
-
-      PartType partType = (PartType)familyInstance.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE).AsInteger();
-
-      if (partType == PartType.Elbow ||
-          partType == PartType.ChannelCableTrayElbow ||
-          partType == PartType.ChannelCableTrayVerticalElbow ||
-          partType == PartType.JunctionBoxElbow ||
-          partType == PartType.LadderCableTrayElbow ||
-          partType == PartType.LadderCableTrayVerticalElbow)
-      {
-        return FittingType.Elbow;
-      }
-      else if (partType == PartType.Tee ||
-          partType == PartType.ChannelCableTrayTee ||
-          partType == PartType.JunctionBoxTee ||
-          partType == PartType.LadderCableTrayTee ||
-          partType == PartType.LateralTee)
-      {
-        return FittingType.Tee;
-      }
-      else if (partType == PartType.Cross ||
-          partType == PartType.ChannelCableTrayCross ||
-          partType == PartType.JunctionBoxCross ||
-          partType == PartType.LadderCableTrayCross ||
-          partType == PartType.LateralCross)
-      {
-        return FittingType.Cross;
-      }
-      else if (partType == PartType.Union ||
-          partType == PartType.ChannelCableTrayUnion ||
-          partType == PartType.LadderCableTrayUnion)
-      {
-        return FittingType.Union;
-      }
-      else if (partType == PartType.Transition ||
-          partType == PartType.ChannelCableTrayTransition ||
-          partType == PartType.LadderCableTrayTransition)
-      {
-        return FittingType.Transition;
-      }
-      else if (partType == PartType.TapAdjustable ||
-          partType == PartType.TapPerpendicular)
-      {
-        return FittingType.Tap;
-      }
-      else if (isFittingInstance)
-      {
-        return FittingType.Other;
-      }
-      return FittingType.Invalid;
-    }
-
-    private static bool IsFittingInstance(DB.FamilyInstance familyInstance)
-    {
-      var fittingCategories = new List<BuiltInCategory> { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting, BuiltInCategory.OST_CableTrayFitting, BuiltInCategory.OST_ConduitFitting };
-      return fittingCategories.Any(c => (int)c == familyInstance.Category.Id.IntegerValue);
-    }
-
-    public static ConnectorProfileType SpeckleToRevitShape(NetworkLinkShape shape)
-    {
-      return GetValues<ConnectorProfileType>().FirstOrDefault(s => (int)s == (int)shape);
-    }
-
-    public static NetworkLinkShape RevitToSpeckleShape(ConnectorProfileType shape)
-    {
-      return GetValues<NetworkLinkShape>().FirstOrDefault(s => (int)s == (int)shape);
-    }
-
-    public static Domain SpeckleToRevitDomain(NetworkLinkDomain domain)
-    {
-      return GetValues<Domain>().FirstOrDefault(d => (int)d == (int)domain);
-    }
-
-    public static NetworkLinkDomain RevitToSpeckleDomain(Domain domain)
-    {
-      return GetValues<NetworkLinkDomain>().FirstOrDefault(d => (int)d == (int)domain);
-    }
-
-    public static void RotateFamilyInstance(DB.FamilyInstance familyInstance, DB.Transform originalTransform, bool handFlipped, bool facingFlipped)
-    {
-      var currentTransform = familyInstance.GetTotalTransform();
-      currentTransform.Origin = originalTransform.Origin;
-      var basePoint = originalTransform.Origin;
-      var document = familyInstance.Document;
-      while (!originalTransform.AlmostEqual(currentTransform))
-      {
-        if (!currentTransform.BasisX.IsAlmostEqualTo(originalTransform.BasisX))
-        {
-          double angleX = currentTransform.BasisX.AngleTo(originalTransform.BasisX);
-          var crossProductX = currentTransform.BasisX.CrossProduct(originalTransform.BasisX).Normalize();
-          var axisX = !crossProductX.IsAlmostEqualTo(DB.XYZ.Zero) ?
-              DB.Line.CreateUnbound(basePoint, crossProductX) :
-              DB.Line.CreateUnbound(basePoint, originalTransform.BasisX.CrossProduct(originalTransform.BasisY));
-          familyInstance.Location.Rotate(axisX, angleX);
-          currentTransform = familyInstance.GetTotalTransform();
-          if (!currentTransform.BasisX.IsAlmostEqualTo(originalTransform.BasisX))
-          {
-            familyInstance.Location.Rotate(axisX, -2 * angleX);
-            currentTransform = familyInstance.GetTotalTransform();
-          }
-        }
-        if (!currentTransform.BasisY.IsAlmostEqualTo(originalTransform.BasisY))
-        {
-          var angleY = currentTransform.BasisY.AngleTo(originalTransform.BasisY);
-          var crossProductY = currentTransform.BasisY.CrossProduct(originalTransform.BasisY).Normalize();
-          var axisY = !crossProductY.IsAlmostEqualTo(DB.XYZ.Zero) ?
-              DB.Line.CreateUnbound(basePoint, crossProductY) :
-              DB.Line.CreateUnbound(basePoint, originalTransform.BasisY.CrossProduct(originalTransform.BasisX));
-          familyInstance.Location.Rotate(axisY, angleY);
-          currentTransform = familyInstance.GetTotalTransform();
-          if (!currentTransform.BasisY.IsAlmostEqualTo(originalTransform.BasisY))
-          {
-            familyInstance.Location.Rotate(axisY, -2 * angleY);
-            currentTransform = familyInstance.GetTotalTransform();
-          }
-        }
-        if (!currentTransform.BasisZ.IsAlmostEqualTo(originalTransform.BasisZ))
-        {
-          var angleZ = currentTransform.BasisZ.AngleTo(originalTransform.BasisZ);
-          var crossProductZ = currentTransform.BasisZ.CrossProduct(originalTransform.BasisZ).Normalize();
-          var axisZ = !crossProductZ.IsAlmostEqualTo(XYZ.Zero) ?
-              DB.Line.CreateUnbound(basePoint, crossProductZ) :
-              DB.Line.CreateUnbound(basePoint, originalTransform.BasisZ.CrossProduct(originalTransform.BasisY));
-          familyInstance.Location.Rotate(axisZ, angleZ);
-          currentTransform = familyInstance.GetTotalTransform();
-          if (!currentTransform.BasisZ.IsAlmostEqualTo(originalTransform.BasisZ))
-          {
-            familyInstance.Location.Rotate(axisZ, -2 * angleZ);
-            currentTransform = familyInstance.GetTotalTransform();
-          }
-        }
-        currentTransform.Origin = originalTransform.Origin;
-      }
-      if (handFlipped)
-      {
-        if (!familyInstance.flipHand() && ElementTransformUtils.CanMirrorElement(document, familyInstance.Id))
-        {
-          var plane = DB.Plane.CreateByNormalAndOrigin(originalTransform.BasisX, originalTransform.Origin);
-          ElementTransformUtils.MirrorElement(document, familyInstance.Id, plane);
-          document.Delete(familyInstance.Id);
-          var mirroredElementId = new ElementId(new FilteredElementCollector(document).WhereElementIsNotElementType().Max(e => e.Id.IntegerValue));
-          familyInstance = document.GetElement(mirroredElementId) as DB.FamilyInstance;
-        }
-      }
-      if (facingFlipped)
-      {
-        if (!familyInstance.flipFacing() && ElementTransformUtils.CanMirrorElement(document, familyInstance.Id))
-        {
-          var plane = DB.Plane.CreateByNormalAndOrigin(originalTransform.BasisY, originalTransform.Origin);
-          ElementTransformUtils.MirrorElement(document, familyInstance.Id, plane);
-          document.Delete(familyInstance.Id);
-          var mirroredElementId = new ElementId(new FilteredElementCollector(document).WhereElementIsNotElementType().Max(e => e.Id.IntegerValue));
-          familyInstance = document.GetElement(mirroredElementId) as DB.FamilyInstance;
-        }
-      }
-    }
-
-    private void GetNetworkConnections(Element element, ref List<ConnectionPair> networkConnections)
-    {
-      var connectionPairs = ConnectionPair.GetConnectionPairs(element);
-      foreach (var connectionPair in connectionPairs)
-      {
-        if (!networkConnections.Contains(connectionPair))
-        {
-          networkConnections.Add(connectionPair);
-          var refElement = connectionPair.RefConnector?.Owner;
-          if (connectionPair.IsConnected && IsWithinContext(refElement))
-          {
-            GetNetworkConnections(refElement, ref networkConnections);
-          }
-        }
-      }
-    }
-
-    private bool IsWithinContext(Element element)
-    {
-      return CachedContextObjects.Any(obj => obj.applicationId.Equals(element?.UniqueId));
-    }
-
-    private void GetConnectionPairs(Element element, ref List<Tuple<Connector, Connector, Element>> connectionPairs, ref List<Element> elements)
-    {
-      var refss = ConnectionPair.GetConnectionPairs(element);
-
-      foreach (var r in refss)
-      {
-        var isValid = r.IsValid();
-        var isConnected = r.IsConnected;
-      }
-      var refs = GetRefConnectionPairs(element);
-      var refConnectionPairs = GetRefConnectionPairs(element).
-        Where(e => e.Item2 == null || ContextObjects.Any(obj => obj.applicationId.Equals(e.Item2.Owner.UniqueId))).ToList();
-      elements.Add(element);
-      foreach (var refConnectionPair in refs)
-      {
-        var connectedElement = refConnectionPair.Item2?.Owner;
-        if (connectedElement != null
-          && !elements.Any(e => e.UniqueId.Equals(connectedElement.UniqueId))
-          && ContextObjects.Any(obj => obj.applicationId.Equals(connectedElement.UniqueId)))
-        {
-          connectionPairs.Add(Tuple.Create(refConnectionPair.Item1, refConnectionPair.Item2, element));
-          GetConnectionPairs(connectedElement, ref connectionPairs, ref elements);
-        }
-        else
-        {
-          //connectionPairs.Add(refConnectionPair);
-
-          connectionPairs.Add(Tuple.Create<Connector, Connector, Element>(refConnectionPair.Item1, null, element));
-        }
-      }
-    }
-
-    private static List<Tuple<Connector, Connector>> GetRefConnectionPairs(Element element)
-    {
-      var refConnectionPairs = new List<Tuple<Connector, Connector>>();
-      var connectors = GetConnectors(element);
-      var connectorsIterator = connectors.ForwardIterator();
-      connectorsIterator.Reset();
-      while (connectorsIterator.MoveNext())
-      {
-        var connector = connectorsIterator.Current as Connector;
-        if (connector != null && connector.IsConnected)
-        {
-          var refs = connector.AllRefs;
-          var refsIterator = refs.ForwardIterator();
-          refsIterator.Reset();
-          while (refsIterator.MoveNext())
-          {
-            var refConnector = refsIterator.Current as Connector;
-            if (refConnector != null &&
-              !refConnector.Owner.Id.Equals(element.Id) &&
-              !(refConnector.Owner is MEPSystem))
-            {
-              refConnectionPairs.Add(Tuple.Create(connector, refConnector));
-            }
-          }
-        }
-        else
-        {
-          refConnectionPairs.Add(Tuple.Create<Connector, Connector>(connector, null));
-        }
-      }
-      return refConnectionPairs;
-    }
-
-    private static ConnectorSet GetConnectors(Element e)
-    {
-      if (e is MEPCurve cure)
-        return cure.ConnectorManager.Connectors;
-      else
-        return (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
-    }
-
-    private static bool IsConnected(Element e)
-    {
-      if (e is MEPCurve cure)
-        return cure.ConnectorManager.Connectors.Cast<Connector>().Any(c => c.IsConnected);
-      else
-      {
-        var fi = e as DB.FamilyInstance;
-        return fi?.MEPModel?.ConnectorManager?.Connectors != null ?
-          fi.MEPModel.ConnectorManager.Connectors.Cast<Connector>().Any(c => c.IsConnected) :
-          false;
-      }
-    }
-
-    private static bool IsConnectable(Element e)
-    {
-      if (e is MEPCurve)
-        return true;
-      else
-      {
-        var fi = e as DB.FamilyInstance;
-        return fi?.MEPModel?.ConnectorManager?.Connectors?.Size > 0;
-      }
-    }
-
-    private static T[] GetValues<T>()
-    {
-      return Enum.GetValues(typeof(T)).Cast<T>().ToArray();
-    }
-
-    #endregion
-
     #region hosted elements
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
@@ -485,6 +51,33 @@ namespace Objects.Converter.Revit
       }
       return true;
     }
+
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
+    {
+      //doesn't have a host, go ahead and convert
+      if (host == null)
+        return true;
+
+      // has been converted before (from a parent host), skip it
+      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+        return false;
+
+      // the parent is in our selection list,skip it, as this element will be converted by the host element
+      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      {
+        // there are certain elements in Revit that can be a host to another element
+        // yet not know it.
+        var hostedElementIds = GetDependentElementIds(host);
+        var elementId = element.Id;
+        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        {
+          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId };
+          ((dynamic)extraProps["speckleHost"])["category"] = host.Category.Name;
+        }
+        else return false;
+      }
+      return true;
+    }
     /// <summary>
     /// Gets the hosted element of a host and adds the to a Base object
     /// </summary>
@@ -493,7 +86,7 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
       notes = new List<string>();
-      var hostedElementIds = host.FindInserts(true, false, false, false);
+      var hostedElementIds = GetDependentElementIds(host);
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -548,15 +141,31 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)
+    public IList<ElementId> GetDependentElementIds(Element host)
     {
-      if (@base["elements"] != null && @base["elements"] is List<Base> elements)
+      if (host is HostObject hostObject)
+        return hostObject.FindInserts(true, false, false, false);
+
+      var typeFilter = new ElementIsElementTypeFilter(true);
+      var categoryFilter = new ElementMulticategoryFilter(
+        new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_SketchLines,
+          BuiltInCategory.OST_WeakDims
+        }, true);
+      return host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+    }
+
+    public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
+    {
+      if (@base != null && @base["elements"] != null && @base["elements"] is IList elements)
       {
         CurrentHostElement = host;
 
-        foreach (var obj in elements)
+        foreach (var el in elements)
         {
-          if (obj == null) continue;
+          if (el == null) continue;
+          if (!(el is Base obj)) continue;
 
           if (!CanConvertToNative(obj))
           {
@@ -647,7 +256,7 @@ namespace Objects.Converter.Revit
           speckleElement["category"] = category.Name;
         }
       }
-        
+
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -1156,10 +765,10 @@ namespace Objects.Converter.Revit
         //eg: user sends some objects, moves them, receives them 
         element = Doc.GetElement(applicationId);
       }
-      else
+      else if (@ref.CreatedIds.Any())
       {
         //return the cached object, if it's still in the model
-        element = Doc.GetElement(@ref.CreatedIds.FirstOrDefault());
+        element = Doc.GetElement(@ref.CreatedIds.First());
       }
 
       return element;
@@ -1260,22 +869,15 @@ namespace Objects.Converter.Revit
         case ProjectBase:
           if (projectPoint != null)
           {
-#if REVIT2019
-            var point = projectPoint.get_BoundingBox(null).Min;
-#else
+
             var point = projectPoint.Position;
-#endif
             referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
           }
           break;
         case Survey:
           if (surveyPoint != null)
           {
-#if REVIT2019
-            var point = surveyPoint.get_BoundingBox(null).Min;
-#else
             var point = surveyPoint.Position;
-#endif
             var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
           }
@@ -1607,7 +1209,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
     public bool UnboundCurveIfSingle(DB.CurveArray array)
 
     {
@@ -1642,7 +1243,6 @@ namespace Objects.Converter.Revit
       curveArray.Append(b);
 
       return (a, b);
-
     }
 
     public class FallbackToDxfException : Exception

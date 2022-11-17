@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Objects.Geometry;
 using Xunit;
-using Dxf = netDxf;
-using Dxfe = netDxf.Entities;
+using Dxf = Speckle.netDxf;
+using Dxfe = Speckle.netDxf.Entities;
 
 namespace ConverterDxf.Tests.Geometry
 {

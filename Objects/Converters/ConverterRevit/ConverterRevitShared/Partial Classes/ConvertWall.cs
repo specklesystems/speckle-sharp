@@ -1,12 +1,12 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
-using System.Text.RegularExpressions;
 
 namespace Objects.Converter.Revit
 {
@@ -43,7 +43,8 @@ namespace Objects.Converter.Revit
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
       List<string> joinSettings = new List<string>();
-      if (Settings.ContainsKey("disallow-join"))
+      
+      if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
 
       if (speckleWall is RevitWall speckleRevitWall)
@@ -147,7 +148,7 @@ namespace Objects.Converter.Revit
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitWall.UniqueId, convertedItem: revitWall);
-      
+
       appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }

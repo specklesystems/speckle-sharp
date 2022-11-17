@@ -57,13 +57,13 @@ namespace Objects.Converter.Revit
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element. The closest thing would be:
       // https://adndevbConversionLog.Add.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html
       // This would only work if the floors have the same number (and type!!!) of outline curves. 
-      
+
 
       if (docObj != null)
         Doc.Delete(docObj.Id);
 
       DB.Floor revitFloor = null;
-#if (REVIT2019 || REVIT2020 || REVIT2021)
+#if (REVIT2020 || REVIT2021)
       if (floorType == null)
       {
         if (slope != 0 && slopeDirection != null)
@@ -80,20 +80,20 @@ namespace Objects.Converter.Revit
       }
 
 #else
-     if (floorType == null)
+      if (floorType == null)
         throw new SpeckleException("Floor needs a floor type");
 
       else
       {
         //from revit 2022 we can create openings in the floors!
         var profile = new List<CurveLoop> { CurveArrayToCurveLoop(outline) };
-        if(speckleFloor["voids"] != null && (speckleFloor["voids"] is List<ICurve> voids))
+        if (speckleFloor["voids"] != null && (speckleFloor["voids"] is List<ICurve> voids))
         {
           foreach (var v in voids)
           {
             var opening = CurveArrayToCurveLoop(CurveToNative(v, true));
             profile.Add(opening);
-          }   
+          }
         }
 
         if (slope != 0 && slopeDirection != null)
@@ -105,7 +105,7 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate();
 
-      #if (REVIT2019 || REVIT2020 || REVIT2021)
+#if (REVIT2020 || REVIT2021)
       try
       {
         CreateVoids(revitFloor, speckleFloor);
@@ -114,7 +114,7 @@ namespace Objects.Converter.Revit
       {
         appObj.Update(logItem: $"Could not create openings: {ex.Message}");
       }
-      #endif
+#endif
 
       SetInstanceParameters(revitFloor, speckleFloor);
 

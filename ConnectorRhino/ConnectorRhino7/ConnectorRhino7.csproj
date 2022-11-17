@@ -2,44 +2,49 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <Version>1.0</Version>
+    <Version>2.0.0-dev</Version>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
     <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
+    <Product>ConnectorRhino7</Product>
+   
+    <!--NOTE-->
+  <!--
+    Since Rhino uses mono we build for win-x64 also on mac
+    BUT we then have to manually copy the dylib for Avalonia and Microsoft.Data.Sqlite
+    They are loaded from the nuget mac folder
+    REMEMBER to update its numbers if updating the nugets
+    -->
     <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\**\*" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" />
+    <AvaloniaXaml Remove="Properties\**" />
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-    <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
-    </PackageReference>
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001">
-    </PackageReference>
-    <PackageReference Include="RhinoWindows" Version="7.4.21078.1001">
+    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build">
+       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper\ConnectorGrasshopper.csproj" />
+    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
@@ -48,6 +53,16 @@
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System.Xaml" />
+  </ItemGroup>
+
+  <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
+  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
+    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+    <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
+  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
+    <None Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.0.6/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
@@ -63,22 +78,17 @@
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>TRACE;RHINO7</DefineConstants>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
     <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
-    <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
   </PropertyGroup>
-
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <DefineConstants>TRACE;RHINO7</DefineConstants>
-    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
     <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
-    <RuntimeIdentifier>osx-x64</RuntimeIdentifier>
   </PropertyGroup>
+
   <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')" />
   <ItemGroup>
     <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
