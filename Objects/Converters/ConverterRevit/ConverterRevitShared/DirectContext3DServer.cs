@@ -150,9 +150,9 @@ namespace Objects.Converter.Revit
         color ??= new ColorWithTransparency(255, 255, 255, 0);
         var meshInfo = new SpeckleMeshInfo(mesh, color, ref minValues, ref maxValues);
 
-        m_nonTransparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
-        m_transparentFaceBufferStorage = new RenderingPassBufferStorage(displayStyle);
-        m_edgeBufferStorage = new RenderingPassBufferStorage(displayStyle);
+        m_nonTransparentFaceBufferStorage ??= new RenderingPassBufferStorage(displayStyle);
+        m_transparentFaceBufferStorage ??= new RenderingPassBufferStorage(displayStyle);
+        m_edgeBufferStorage ??= new RenderingPassBufferStorage(displayStyle);
 
         if (color.GetTransparency() != 0)
         {
