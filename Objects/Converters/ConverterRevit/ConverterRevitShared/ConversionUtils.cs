@@ -13,6 +13,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
+using Duct = Objects.BuiltElements.Duct;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -24,7 +25,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     #region hosted elements
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
@@ -1204,7 +1204,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
     public bool UnboundCurveIfSingle(DB.CurveArray array)
 
     {
@@ -1239,7 +1238,6 @@ namespace Objects.Converter.Revit
       curveArray.Append(b);
 
       return (a, b);
-
     }
 
     public class FallbackToDxfException : Exception
