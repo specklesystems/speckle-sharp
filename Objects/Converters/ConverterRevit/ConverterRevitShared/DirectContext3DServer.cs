@@ -232,10 +232,8 @@ namespace Objects.Converter.Revit
           {
             OG.Mesh mesh = meshInfo.Mesh;
 
-            foreach (OG.Point vertex in mesh.GetPoints())
-            {
-              vertexStream.AddVertex(new VertexPositionColored(new XYZ(vertex.x, vertex.y, vertex.z), meshInfo.ColorWithTransparency));
-            }
+            foreach (XYZ vertex in meshInfo.Vertices)
+              vertexStream.AddVertex(new VertexPositionColored(vertex, meshInfo.ColorWithTransparency));
 
             numVerticesInMeshesBefore.Add(numVerticesInMeshesBefore.Last() + mesh.VerticesCount);
           }
