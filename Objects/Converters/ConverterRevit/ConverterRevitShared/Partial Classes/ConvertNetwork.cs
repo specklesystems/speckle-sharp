@@ -72,7 +72,7 @@ namespace Objects.Converter.Revit
 
         foreach (var link in networkElement.links)
         {
-          if (link is RevitNetworkLink revitLink && !revitLink.needsPlaceholders)
+          if (link is RevitNetworkLink revitLink && revitLink.needsPlaceholders)
           {
             var curve = CreateCurve(revitLink);
             tempCurves.Add(revitLink.fittingIndex, curve);
