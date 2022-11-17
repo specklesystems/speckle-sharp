@@ -1163,6 +1163,9 @@ namespace SpeckleRhino
       {
         // Get bounds from active view
         Rectangle bounds = Doc.Views.ActiveView.ScreenRectangle;
+        // Reset margins
+        bounds.X = 0;
+        bounds.Y = 0;
         Doc.Views.Add("SpeckleCommentView", DefinedViewportProjection.Perspective, bounds, false);
       }
 
@@ -1174,12 +1177,22 @@ namespace SpeckleRhino
           RhinoView speckleCommentView = views.First();
           speckleCommentView.ActiveViewport.SetCameraDirection(direction, false);
           speckleCommentView.ActiveViewport.SetCameraLocation(cameraLocation, true);
-          speckleCommentView.Maximized = true;
+          
           DisplayModeDescription shaded = DisplayModeDescription.FindByName("Shaded");
           if (shaded!= null)
           {
             speckleCommentView.ActiveViewport.DisplayMode = shaded;
           }
+
+          // Minimized all maximized views.
+          IEnumerable<RhinoView> maximizedViews = Doc.Views.Where(v => v.Maximized);
+          foreach (RhinoView view in maximizedViews)
+          {
+            view.Maximized = false;
+          }
+
+          // Maximized speckle comment view.
+          speckleCommentView.Maximized = true;
 
           if (Doc.Views.ActiveView.ActiveViewport.Name != "SpeckleCommentView")
           {

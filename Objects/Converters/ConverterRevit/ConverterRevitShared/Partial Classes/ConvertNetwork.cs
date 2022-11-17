@@ -35,7 +35,7 @@ namespace Objects.Converter.Revit
       var notConnectorBasedCreationElements = elements.Where(e => !e.isConnectorBased).ToArray();
       foreach (var networkElement in notConnectorBasedCreationElements)
       {
-        var element = networkElement.element;
+        var element = networkElement.elements;
         if (CanConvertToNative(element))
         {
           var convAppObj = ConvertToNative(element) as ApplicationObject;
@@ -60,7 +60,7 @@ namespace Objects.Converter.Revit
       var convertedMEPCurves = convertedElements.Where(e => e.Value is MEPCurve).ToArray();
       foreach (var networkElement in connectorBasedCreationElements)
       {
-        if (!GetElementType(networkElement.element, appObj, out FamilySymbol familySymbol))
+        if (!GetElementType(networkElement.elements, appObj, out FamilySymbol familySymbol))
         {
           appObj.Update(status: ApplicationObject.State.Failed);
           continue;
@@ -101,7 +101,7 @@ namespace Objects.Converter.Revit
         var connector3 = element3 != null ? GetConnectorByPoint(element3, PointToNative(connection3.Key.origin)) : null;
         var connector4 = element4 != null ? GetConnectorByPoint(element4, PointToNative(connection4.Key.origin)) : null;
 
-        var partType = networkElement.element["partType"] as string ?? "Unknown";
+        var partType = networkElement.elements["partType"] as string ?? "Unknown";
         if (partType.Contains("Elbow") && connector1 != null && connector2 != null)
           familyInstance = Doc.Create.NewElbowFitting(connector1, connector2);
         else if (partType.Contains("Transition") && connector1 != null && connector2 != null)
@@ -114,7 +114,7 @@ namespace Objects.Converter.Revit
           familyInstance = Doc.Create.NewCrossFitting(connector1, connector2, connector3, connector4);
         else
         {
-          var convAppObj = ConvertToNative(networkElement.element) as ApplicationObject;
+          var convAppObj = ConvertToNative(networkElement.elements) as ApplicationObject;
           foreach (var obj in convAppObj.Converted)
           {
             var nativeElement = obj as Element;
@@ -165,11 +165,10 @@ namespace Objects.Converter.Revit
 
     public Network NetworkToSpeckle(Element mepElement, out List<string> notes)
     {
-      notes = new List<string>();
       Network speckleNetwork = new Network() { name = mepElement.Name, elements = new List<NetworkElement>(), links = new List<NetworkLink>() };
 
-      GetNetworkElements(speckleNetwork, mepElement, out List<string> connectedNotes);
-      if (connectedNotes.Any()) notes.AddRange(connectedNotes);
+      GetNetworkElements(speckleNetwork, mepElement, out notes);
+
       return speckleNetwork;
     }
 
@@ -248,9 +247,8 @@ namespace Objects.Converter.Revit
         @network.elements.Add(new RevitNetworkElement()
         {
           applicationId = element.UniqueId,
-          network = @network,
           name = element.Name,
-          element = obj,
+          elements = obj,
           linkIndices = new List<int>(),
           isConnectorBased = connectorBasedCreation,
           isCurveBased = element is MEPCurve
@@ -425,7 +423,7 @@ namespace Objects.Converter.Revit
       var start = PointToNative(link.origin);
       var end = start.Add(direction.Multiply(2));
 
-      var sfi = link.elements.FirstOrDefault(e => e.element is BuiltElements.Revit.FamilyInstance)?.element as BuiltElements.Revit.FamilyInstance;
+      var sfi = link.elements.FirstOrDefault(e => e.elements is BuiltElements.Revit.FamilyInstance)?.elements as BuiltElements.Revit.FamilyInstance;
       Level level = ConvertLevelToRevit(sfi.level, out ApplicationObject.State state);
 
       Domain domain = Enum.TryParse(link.domain, out domain) ? domain : Domain.DomainUndefined;
