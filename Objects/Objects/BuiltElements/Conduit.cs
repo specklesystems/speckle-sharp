@@ -1,4 +1,4 @@
-using System
+using System;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
