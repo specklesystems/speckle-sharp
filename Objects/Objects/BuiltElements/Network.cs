@@ -142,7 +142,7 @@ namespace Objects.BuiltElements.Revit
     /// Placeholder geometry are curves. 
     /// For example, U-bend links need temporary pipes to be created first, if one or more linked pipes have not yet been created in the network.
     /// </remarks>
-    [JsonIgnore] public bool needsPlaceholders { get; set; }
+    public bool needsPlaceholders { get; set; }
 
     /// <summary>
     /// Indicates if this link has been connected to its elements
@@ -150,7 +150,8 @@ namespace Objects.BuiltElements.Revit
     /// <remarks>
     /// This is a utility property used to track network creation state on receive. Deprecate if possible.
     /// </remarks>
-    [JsonIgnore] public bool isConnected { get; set; }
+    public bool isConnected { get; set; }
+
 
     public RevitNetworkLink() { }
   }

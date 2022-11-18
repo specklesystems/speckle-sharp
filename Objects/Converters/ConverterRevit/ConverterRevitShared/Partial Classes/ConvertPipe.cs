@@ -154,6 +154,10 @@ namespace Objects.Converter.Revit
         "RBS_SYSTEM_CLASSIFICATION_PARAM",
         "RBS_SYSTEM_NAME_PARAM",
         "RBS_PIPE_DIAMETER_PARAM",
+        "RBS_CURVE_HOR_OFFSET_PARAM",
+        "RBS_CURVE_VERT_OFFSET_PARAM",
+        "RBS_PIPE_BOTTOM_ELEVATION",
+        "RBS_PIPE_TOP_ELEVATION",
         "CURVE_ELEM_LENGTH",
         "RBS_START_LEVEL_PARAM",
       });
