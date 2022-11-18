@@ -15,8 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterRevitTests", "Conv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterRevit", "ConverterRevit", "{1987848E-D753-4791-B89E-F74EDF136CB3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2019", "Converters\ConverterRevit\ConverterRevit2019\ConverterRevit2019.csproj", "{0BCB32CF-A3CF-4A6A-A9F8-DFE5D85D608C}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2020", "Converters\ConverterRevit\ConverterRevit2020\ConverterRevit2020.csproj", "{E4006179-462F-4133-9481-219279138B93}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2021", "Converters\ConverterRevit\ConverterRevit2021\ConverterRevit2021.csproj", "{BF5515B4-C97C-4FB9-9F93-1740D2B615B3}"
