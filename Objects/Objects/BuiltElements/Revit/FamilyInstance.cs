@@ -3,6 +3,8 @@ using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System.Collections.Generic;
+using System.Linq;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
 {
