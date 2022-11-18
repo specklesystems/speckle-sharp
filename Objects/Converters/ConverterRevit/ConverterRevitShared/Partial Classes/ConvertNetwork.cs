@@ -455,18 +455,22 @@ namespace Objects.Converter.Revit
           curve = Pipe.Create(Doc, pipingSystemType.Id, curveType.Id, level.Id, start, end);
           curve.get_Parameter(BuiltInParameter.RBS_PIPE_DIAMETER_PARAM).Set(link.diameter);
           break;
-        case Domain.DomainElectrical:
-          curveType = GetDefaultMEPCurveType(Doc, typeof(ConduitType), profile);
-          if (curveType == null) goto default;
-          curve = Conduit.Create(Doc, curveType.Id, start, end, level.Id);
-          curve.get_Parameter(BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM).Set(link.diameter);
-          break;
         case Domain.DomainCableTrayConduit:
-          curveType = GetDefaultMEPCurveType(Doc, typeof(CableTrayType), profile);
-          if (curveType == null) goto default;
-          curve = CableTray.Create(Doc, curveType.Id, start, end, level.Id);
-          curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM).Set(link.width);
-          curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_HEIGHT_PARAM).Set(link.height);
+          if (profile == ConnectorProfileType.Rectangular)
+          {
+            curveType = GetDefaultMEPCurveType(Doc, typeof(CableTrayType), profile);
+            if (curveType == null) goto default;
+            curve = CableTray.Create(Doc, curveType.Id, start, end, level.Id);
+            curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM).Set(link.width);
+            curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_HEIGHT_PARAM).Set(link.height);
+          }
+          else
+          {
+            curveType = GetDefaultMEPCurveType(Doc, typeof(ConduitType), profile);
+            if (curveType == null) goto default;
+            curve = Conduit.Create(Doc, curveType.Id, start, end, level.Id);
+            curve.get_Parameter(BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM).Set(link.diameter);
+          }
           break;
         default:
           return curve;
