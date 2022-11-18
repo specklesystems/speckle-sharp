@@ -198,7 +198,6 @@ namespace Objects.Converter.Revit
       if (speckleFi.mirrored)
         appObj.Update(logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so.");
 
-      SetInstanceParameters(familyInstance, speckleFi);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
 
