@@ -78,11 +78,6 @@ namespace Speckle.ConnectorRevit.UI
       return new List<MenuItem>();
     }
 
-    public override void ResetDocument()
-    {
-      // TODO!
-    }
-
     // WARNING: Everything in the 'interop' section must match a corrosponding element in the converter
     // which can be found in the namespace commented above the element
     #region interop

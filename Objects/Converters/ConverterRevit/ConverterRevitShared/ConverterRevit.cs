@@ -355,6 +355,11 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      // Get setting for if the user is only trying to preview the geometry
+      Settings.TryGetValue("preview", out string isPreview);
+      if (bool.Parse(isPreview ?? "false") == true)
+        return PreviewGeometry(@object);
+
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
       if (bool.Parse(recieveModelMesh ?? "false") == true)

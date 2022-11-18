@@ -46,7 +46,7 @@ namespace ConverterRevitShared.Revit
 
     public static ICollection<ConnectionPair> GetConnectionPairs(Element element)
     {
-      var refConnectionPairs = new List<ConnectionPair>();
+      var connectionPairs = new List<ConnectionPair>();
       var connectors = GetConnectors(element);
       var connectorsIterator = connectors.ForwardIterator();
       connectorsIterator.Reset();
@@ -62,15 +62,15 @@ namespace ConverterRevitShared.Revit
           {
             var refConnector = refsIterator.Current as Connector;
             if (refConnector != null && !refConnector.Owner.Id.Equals(element.Id) && !(refConnector.Owner is MEPSystem))
-              refConnectionPairs.Add(new ConnectionPair(element, connector, refConnector));
+              connectionPairs.Add(new ConnectionPair(element, connector, refConnector));
           }
         }
         else
         {
-          refConnectionPairs.Add(new ConnectionPair(element, connector, null));
+          connectionPairs.Add(new ConnectionPair(element, connector, null));
         }
       }
-      return refConnectionPairs;
+      return connectionPairs;
     }
 
     public bool IsValid()

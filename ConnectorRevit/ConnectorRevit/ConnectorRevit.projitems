@@ -43,6 +43,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit .Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Mappings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Previews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Selection.cs" />

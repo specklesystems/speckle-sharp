@@ -65,7 +65,7 @@ namespace Objects.Converter.Revit
           appObj.Update(status: ApplicationObject.State.Failed);
           continue;
         }
-
+        
         DB.FamilyInstance familyInstance = null;
 
         var tempCurves = new Dictionary<int, MEPCurve>();
@@ -294,7 +294,6 @@ namespace Objects.Converter.Revit
           // add it in case it exists
           if (refIndex != -1)
             link.elementIndices.Add(refIndex);
-            
           @network.links.Add(link);
           var linkIndex = @network.links.IndexOf(link);
           ownerElement.linkIndices.Add(linkIndex);
