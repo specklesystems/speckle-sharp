@@ -254,6 +254,7 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Returns the correct location of the AppData folder where Speckle is installed. Usually this would be the user's %appdata% folder, unless the install was made for all users.
+    /// This folder contains Kits and othe data that can be shared among users of the same machine.
     /// </summary>
     /// <returns>The location of the AppData folder where Speckle is installed</returns>
     public static string InstallApplicationDataPath =>
@@ -264,15 +265,20 @@ namespace Speckle.Core.Api
 
 
     /// <summary>
-    /// Returns the correct location for `Environment.SpecialFolder.ApplicationData` for the current roaming user.
+    /// Envirenment Variable that allows to overwrite the <see cref="UserApplicationDataPath"/>
+    /// /// </summary>
+    private static string _speckleUserDataEnvVar = "SPECKLE_USERDATA_PATH";
+
+
+    /// <summary>
+    /// Returns the location of the User Application Data folder for the current roaming user, which contains user specific data such as accounts and cache.
     /// </summary>
     /// <returns>The location of the user's `%appdata%` folder.</returns>
-    public static string UserApplicationDataPath
-      // We combine our own path to the %appdata% folder due to solve issues with network account management in windows,
-      // where the normal `SpecialFolder.ApplicationData` would point to the `Default` user instead of the active one.
-      => RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming")
-        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+    public static string UserApplicationDataPath =>
+      !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(_speckleUserDataEnvVar)) ?
+      Environment.GetEnvironmentVariable(_speckleUserDataEnvVar) :
+      Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
 
 
 
