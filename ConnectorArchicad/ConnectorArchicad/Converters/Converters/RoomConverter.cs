@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -18,16 +18,16 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      var rooms = new List<Objects.BuiltElements.Archicad.Room>();
+      var rooms = new List<Objects.BuiltElements.Archicad.ArchicadRoom>();
       foreach ( var el in elements )
       {
         switch ( el )
         {
-          case Objects.BuiltElements.Archicad.Room archiRoom:
+          case Objects.BuiltElements.Archicad.ArchicadRoom archiRoom:
             rooms.Add(archiRoom);
             break;
           case Objects.BuiltElements.Room room:
-            rooms.Add(new Objects.BuiltElements.Archicad.Room
+            rooms.Add(new Objects.BuiltElements.Archicad.ArchicadRoom
             {
               shape = Utils.PolycurvesToElementShape(room.outline, room.voids),
               name = room.name,
@@ -47,7 +47,7 @@ namespace Archicad.Converters
       CancellationToken token)
     {
       var elementModels = elements as ElementModelData[ ] ?? elements.ToArray();
-      IEnumerable<Objects.BuiltElements.Archicad.Room> data =
+      IEnumerable<Objects.BuiltElements.Archicad.ArchicadRoom> data =
         await AsyncCommandProcessor.Execute(
           new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
           token);
@@ -57,7 +57,7 @@ namespace Archicad.Converters
       }
 
       List<Base> rooms = new List<Base>();
-      foreach ( Objects.BuiltElements.Archicad.Room room in data )
+      foreach ( Objects.BuiltElements.Archicad.ArchicadRoom room in data )
       {
         room.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == room.applicationId)

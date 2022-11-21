@@ -6,7 +6,7 @@ using Speckle.Core.Kits;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class GetRoomData : ICommand<IEnumerable<ArchicadRoom>>
+  sealed internal class GetDoorData : ICommand<IEnumerable<ArchicadDoor>>
   {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -27,25 +27,25 @@ namespace Archicad.Communication.Commands
     private sealed class Result
     {
 
-      [JsonProperty("zones")]
-      public IEnumerable<ArchicadRoom> Rooms { get; private set; }
+      [JsonProperty("doors")]
+      public IEnumerable<ArchicadDoor> Datas { get; private set; }
 
     }
 
     private IEnumerable<string> ApplicationIds { get; }
 
-    public GetRoomData(IEnumerable<string> applicationIds)
+    public GetDoorData(IEnumerable<string> applicationIds)
     {
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadRoom>> Execute()
+    public async Task<IEnumerable<ArchicadDoor>> Execute()
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoomData", new Parameters(ApplicationIds));
-      foreach (var room in result.Rooms)
-        room.units = Units.Meters;
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetDoorData", new Parameters(ApplicationIds));
+      //foreach (var subelement in result.Datas)
+        //subelement.units = Units.Meters;
 
-      return result.Rooms;
+      return result.Datas;
     }
 
   }
