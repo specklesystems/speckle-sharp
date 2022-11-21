@@ -17,36 +17,33 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      var walls = new List<Objects.BuiltElements.Archicad.ArchicadDoor>();
-      //foreach ( var el in elements )
-      //{
-      //  switch ( el )
-      //  {
-      //    case Objects.BuiltElements.Archicad.Wall archiWall:
-      //      walls.Add(archiWall);
-      //      break;
-      //    case Objects.BuiltElements.Wall wall:
-      //      var baseLine = ( Line )wall.baseLine;
-      //      var newWall = new Objects.BuiltElements.Archicad.Wall(Utils.ScaleToNative(baseLine.start),
-      //        Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
-      //      if ( el is RevitWall revitWall )
-      //        newWall.flipped = revitWall.flipped;
-      //      walls.Add(newWall);
-      //      break;
-      //  }
-      //}
+      var doors = new List<Objects.BuiltElements.Archicad.ArchicadDoor>();
+      foreach (var el in elements)
+      {
+        switch (el)
+        {
+          case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoors:
+            doors.Add(archicadDoors);
+            break;
+          //case Objects.BuiltElements.Opening window:
+          //  var baseLine = (Line)wall.baseLine;
+          //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
+          //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
+          //  if (el is RevitWall revitWall)
+          //    newWall.flipped = revitWall.flipped;
+          //  walls.Add(newWall);
+          //  break;
+        }
+      }
 
-      //var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWall(walls), token);
-      
-      //return result is null ? new List<string>() : result.ToList();
+      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token);
 
-      return new List<string>();
+      return result is null ? new List<string>() : result.ToList();
     }
 
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
       CancellationToken token)
     {
-      // Get subelements
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadDoor> datas =
         await AsyncCommandProcessor.Execute(new Communication.Commands.GetDoorData(elementModels.Select(e => e.applicationId)));

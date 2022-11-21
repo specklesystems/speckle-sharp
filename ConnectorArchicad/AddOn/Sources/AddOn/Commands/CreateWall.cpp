@@ -192,6 +192,14 @@ namespace AddOnCommands
       os.Get(Wall::InsideSlantAngleFieldName, element.wall.slantBeta);
     ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, slantBeta);
     
+    // Door & window
+    if (os.Contains(Wall::HasDoorFieldName))
+      os.Get(Wall::HasDoorFieldName, element.wall.hasDoor);
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, hasDoor);
+
+    if (os.Contains(Wall::HasWindowFieldName))
+      os.Get(Wall::HasWindowFieldName, element.wall.hasWindow);
+    ACAPI_ELEMENT_MASK_SET(wallMask, API_WallType, hasWindow);
 
     return NoError;
   }
@@ -237,6 +245,7 @@ namespace AddOnCommands
           listAdder(elemId);
         }
       }
+
       return NoError;
     });
 

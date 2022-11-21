@@ -18,6 +18,8 @@
 #include "Commands/GetProjectInfo.hpp"
 #include "Commands/GetSubElementInfo.hpp"
 #include "Commands/CreateWall.hpp"
+#include "Commands/CreateDoor.hpp"
+#include "Commands/CreateWindow.hpp"
 #include "Commands/CreateBeam.hpp"
 #include "Commands/CreateSlab.hpp"
 #include "Commands/CreateZone.hpp"
@@ -171,6 +173,8 @@ static GSErrCode RegisterAddOnCommands()
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSlabData>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetProjectInfo>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateWall>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateDoor>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateWindow>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateBeam>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateSlab>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateZone>()));

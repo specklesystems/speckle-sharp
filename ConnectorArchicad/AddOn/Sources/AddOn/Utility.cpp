@@ -172,12 +172,8 @@ namespace Utility {
 		if (wall.hasDoor) {
 			GS::Array<API_Guid> doors;
 			GSErrCode err = ACAPI_Element_GetConnectedElements(wall.head.guid, API_DoorID, &doors);
-			if (err == NoError) {
-				for (GS::UInt32 i = 0; i < doors.GetSize(); i++)
-				{
-					result.Push(doors.Get(i));
-				}
-			}
+			if (err == NoError)
+				result.Append(doors);
 		}
 		if (wall.hasWindow) {
 			GS::Array<API_Guid> windows;

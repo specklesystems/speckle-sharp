@@ -7,7 +7,7 @@ using Speckle.Core.Kits;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class GetSubelementInfo : ICommand<IEnumerable<SubelementModelData>>
+  sealed internal class GetSubElementInfo : ICommand<IEnumerable<SubElementData>>
   {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -29,18 +29,18 @@ namespace Archicad.Communication.Commands
     {
 
       [JsonProperty("subelementModels")]
-      public IEnumerable<SubelementModelData> Datas { get; private set; }
+      public IEnumerable<SubElementData> Datas { get; private set; }
 
     }
 
     private string ApplicationId { get; }
 
-    public GetSubelementInfo(string applicationId)
+    public GetSubElementInfo(string applicationId)
     {
       ApplicationId = applicationId;
     }
 
-    public async Task<IEnumerable<SubelementModelData>> Execute()
+    public async Task<IEnumerable<SubElementData>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSubelementInfo", new Parameters(ApplicationId));
       return result.Datas;

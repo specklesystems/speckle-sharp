@@ -19,6 +19,8 @@
 #define GetSubelementInfoCommandName				"GetSubelementInfo";
 #define CreateDirectShapesCommandName 			"CreateDirectShapes";
 #define CreateWallCommandName					"CreateWall";
+#define CreateDoorCommandName				        "CreateDoor";
+#define CreateWindowCommandName				    "CreateWindow";
 #define CreateBeamCommandName                   "CreateBeam";
 #define CreateSlabCommandName					"CreateSlab";
 #define CreateZoneCommandName                   "CreateZone";

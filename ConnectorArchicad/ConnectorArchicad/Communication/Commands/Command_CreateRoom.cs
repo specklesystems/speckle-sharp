@@ -10,9 +10,9 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-      [JsonProperty("zones")] private IEnumerable<Room> Datas { get; }
+      [JsonProperty("zones")] private IEnumerable<ArchicadRoom> Datas { get; }
 
-      public Parameters(IEnumerable<Room> datas)
+      public Parameters(IEnumerable<ArchicadRoom> datas)
       {
         Datas = datas;
       }
@@ -24,9 +24,9 @@ namespace Archicad.Communication.Commands
       [JsonProperty("applicationIds")] public IEnumerable<string> ApplicationIds { get; private set; }
     }
 
-    private IEnumerable<Room> Datas { get; }
+    private IEnumerable<ArchicadRoom> Datas { get; }
 
-    public CreateRoom(IEnumerable<Room> datas)
+    public CreateRoom(IEnumerable<ArchicadRoom> datas)
     {
       Datas = datas;
     }

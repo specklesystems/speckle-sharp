@@ -1,4 +1,5 @@
 #include "GetWindowData.hpp"
+#include "GetOpeningBaseData.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -20,27 +21,12 @@ namespace AddOnCommands {
     err = ACAPI_Element_Get(&element);
 
     if (err == NoError) {
-      GS::ObjectState openingBase;
-      openingBase.Add(Window::width, element.window.openingBase.width);
-      openingBase.Add(Window::height, element.window.openingBase.height);
-      openingBase.Add(Window::subFloorThickness, element.window.openingBase.subFloorThickness);
-      openingBase.Add(Window::reflected, element.window.openingBase.reflected);
-      openingBase.Add(Window::oSide, element.window.openingBase.oSide);
-      openingBase.Add(Window::refSide, element.window.openingBase.refSide);
-      currentWindow.Add(Window::openingBase, openingBase);
+		if (err == NoError) {
+		  currentWindow.Add(ApplicationIdFieldName, APIGuidToString(guid));
+		  currentWindow.Add(ParentElementIdFieldName, APIGuidToString(element.door.owner));
 
-      currentWindow.Add(ApplicationIdFieldName, APIGuidToString(guid));
-      currentWindow.Add(Window::revealDepthFromSide, element.window.revealDepthFromSide);
-      currentWindow.Add(Window::jambDepthHead, element.window.jambDepthHead);
-      currentWindow.Add(Window::jambDepth, element.window.jambDepth);
-      currentWindow.Add(Window::jambDepth2, element.window.jambDepth2);
-      currentWindow.Add(Window::objLoc, element.window.objLoc);
-      currentWindow.Add(Window::lower, element.window.lower);
-      currentWindow.Add(Window::directionType, windowDoorDirectionTypeNames.Get(element.window.directionType));
-
-      currentWindow.Add(Window::startPoint, Objects::Point3D(element.window.startPoint.x, element.window.startPoint.y, 0));
-      currentWindow.Add(Window::dirVector, Objects::Point3D(element.window.dirVector.x, element.window.dirVector.y, 0));
-
+		  AddOnCommands::GetOpeningBaseData<API_WindowType> (element.window, currentWindow);
+		}
     }
 
     return currentWindow;
