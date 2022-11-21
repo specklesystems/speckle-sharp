@@ -22,47 +22,8 @@
   <UserControl.Resources>
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
   </UserControl.Resources>
-  <UserControl.DataTemplates>
-    <DataTemplate DataType="{x:Type vm:MenuItemViewModel}">
-      <Separator />
-    </DataTemplate>
-  </UserControl.DataTemplates>
-  <UserControl.Styles>
-    <Style Selector="MenuItem.Profile">
-      <Setter Property="Header">
-        <Setter.Value>
-          <Template>
-            <Grid RowDefinitions="auto,auto">
-              <TextBlock Text="{Binding FullAccountName}" />
-              <TextBlock
-                Grid.Row="1"
-                Classes="Overline"
-                Text="{Binding FullServerName}" />
-            </Grid>
-          </Template>
-        </Setter.Value>
-
-      </Setter>
-      <Setter Property="Icon">
-        <Setter.Value>
-          <Template>
-            <Image
-              Width="20"
-              Height="20"
-              Source="{Binding AvatarImage}">
-
-              <Image.Clip>
-                <EllipseGeometry Rect="0,0,20,20" />
-              </Image.Clip>
-            </Image>
-          </Template>
-        </Setter.Value>
-      </Setter>
-
-    </Style>
-
-  </UserControl.Styles>
   <Grid RowDefinitions="auto, *">
+    <!--  HEADER BAR  -->
     <Border
       Padding="10"
       Background="{DynamicResource PrimaryHueMidBrush}"
@@ -171,6 +132,7 @@
 
       </Grid>
     </Border>
+    <!--  MAIN BODY  -->
     <Grid
       Grid.Row="1"
       Margin="5,10,5,5"
@@ -512,10 +474,11 @@
       </Button>
 
     </Grid>
+    <!--  NO ACCOUNTS / LOG IN  -->
     <Grid
       Grid.Row="1"
       Margin="15"
-      IsVisible="{Binding HasAccounts, Converter={x:Static BoolConverters.Not}, FallbackValue=True}">
+      IsVisible="{Binding !HasAccounts, FallbackValue=True}">
       <m:Card
         Margin="10"
         Padding="30"
@@ -553,5 +516,31 @@
       </m:Card>
 
     </Grid>
+
+    <!--  NO INTERNET  -->
+    <Border
+      Grid.Row="1"
+      Background="{DynamicResource MaterialDesignCardBackground}"
+      IsVisible="{Binding IsOffline, FallbackValue=False}">
+      <StackPanel
+        Margin="15"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Orientation="Vertical">
+        <TextBlock
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          Text="🏜&#x0a;You're offline"
+          TextAlignment="Center" />
+        <Button
+          Margin="20"
+          HorizontalAlignment="Center"
+          Classes="Flat"
+          Command="{Binding RefreshCommand}"
+          Content="Retry" />
+      </StackPanel>
+    </Border>
+
+
   </Grid>
 </UserControl>
