@@ -392,8 +392,14 @@ namespace DesktopUI2.ViewModels
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
               return;
             Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
-            //NOTE: the line below crashes revit at startup! We need to investigate more
-            //Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+            Dispatcher.UIThread.Post(() =>
+              MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+              {
+                Title = "⚠️ Could not get streams",
+                Message = $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n",
+                Type = Avalonia.Controls.Notifications.NotificationType.Error
+              }), DispatcherPriority.Background);
+
           }
         }
         if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -469,7 +475,8 @@ namespace DesktopUI2.ViewModels
          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
          {
            Title = "⚠️ Oh no!",
-           Message = "Could not reach the internet, are you connected?"
+           Message = "Could not reach the internet, are you connected?",
+           Type = Avalonia.Controls.Notifications.NotificationType.Error
          }), DispatcherPriority.Background);
 
           IsOffline = true;
