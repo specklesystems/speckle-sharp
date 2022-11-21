@@ -4,6 +4,7 @@ using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
@@ -231,6 +232,13 @@ namespace DesktopUI2.ViewModels
 
     private List<Client> _subscribedClientsStreamAddRemove = new List<Client>();
 
+    private bool _isOffline = false;
+    public bool IsOffline
+    {
+      get => _isOffline;
+      private set => this.RaiseAndSetIfChanged(ref _isOffline, value);
+    }
+
     #endregion
 
     public HomeViewModel(IScreen screen)
@@ -249,7 +257,7 @@ namespace DesktopUI2.ViewModels
 
 
         streamSearchDebouncer = Utils.Debounce(SearchStreams, 500);
-        Init();
+        Refresh();
       }
       catch (Exception ex)
       {
@@ -384,8 +392,14 @@ namespace DesktopUI2.ViewModels
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
               return;
             Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
-            //NOTE: the line below crashes revit at startup! We need to investigate more
-            //Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+            Dispatcher.UIThread.Post(() =>
+              MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+              {
+                Title = "⚠️ Could not get streams",
+                Message = $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n",
+                Type = Avalonia.Controls.Notifications.NotificationType.Error
+              }), DispatcherPriority.Background);
+
           }
         }
         if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -451,10 +465,46 @@ namespace DesktopUI2.ViewModels
       this.RaisePropertyChanged("StreamsText");
     }
 
-    internal async void Init()
+    internal async void Refresh()
     {
       try
       {
+        if (!await Helpers.Ping("https://google.com"))
+        {
+          Dispatcher.UIThread.Post(() =>
+         MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+         {
+           Title = "⚠️ Oh no!",
+           Message = "Could not reach the internet, are you connected?",
+           Type = Avalonia.Controls.Notifications.NotificationType.Error
+         }), DispatcherPriority.Background);
+
+          IsOffline = true;
+          return;
+        }
+
+        //if (!await Helpers.Ping(_releasesUrl))
+        //{
+        //  Dispatcher.UIThread.Post(() =>
+        //  MainWindow.NotificationManager.Show(new NotificationViewModel()
+        //  {
+        //    Title = "⚠️ Oh no!",
+        //    Message = $"Could not reach the Speckle servers, are you connected? Please unblock {_releasesUrl}"
+        //  }), DispatcherPriority.Background);
+        //  ShowFullScreenProgress = false;
+        //  Models.Sentry.CaptureException(new Exception("Could not reach the Speckle servers"));
+        //  IsOffline = true;
+        //  IsRefreshing = false;
+        //  return;
+        //}
+
+        IsOffline = false;
+
+
+
+
+
+
         //prevent subscriptions from being registered multiple times
         _subscribedClientsStreamAddRemove.ForEach(x => x.Dispose());
         _subscribedClientsStreamAddRemove.Clear();
@@ -618,7 +668,7 @@ namespace DesktopUI2.ViewModels
       {
         AccountManager.RemoveAccount(account.id);
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
-        Init();
+        Refresh();
       }
       catch (Exception ex)
       {
@@ -686,7 +736,7 @@ namespace DesktopUI2.ViewModels
 
               await AccountManager.AddAccount(result);
               await Task.Delay(1000);
-              Init();
+              Refresh();
             }
             catch (Exception e)
             {
@@ -879,7 +929,7 @@ namespace DesktopUI2.ViewModels
     {
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
       ApiUtils.ClearCache();
-      Init();
+      Refresh();
     }
 
     private void OneClickModeCommand()
