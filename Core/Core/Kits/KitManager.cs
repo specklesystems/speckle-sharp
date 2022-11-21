@@ -184,15 +184,21 @@ namespace Speckle.Core.Kits
           if (unloadedAssemblyName == null)
             continue;
 
-          var assembly = Assembly.LoadFrom(assemblyPath);
-          var kitClass = GetKitClass(assembly);
-          if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
+          try
           {
-            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+            var assembly = Assembly.LoadFrom(assemblyPath);
+            var kitClass = GetKitClass(assembly);
+            if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
             {
-              var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
-              if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              if (!_SpeckleKits.ContainsKey(assembly.FullName))
+              {
+                var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
+                if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              }
             }
+          }
+          catch (FileLoadException ex)
+          {
           }
         }
       }

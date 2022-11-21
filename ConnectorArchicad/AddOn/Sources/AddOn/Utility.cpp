@@ -166,5 +166,22 @@ namespace Utility {
 			floorInd += GetActualStoryItem().index;
 	}
 
+	GS::Array<API_Guid> GetWallSubelements(API_WallType& wall) {
+		GS::Array<API_Guid> result;
 
+		if (wall.hasDoor) {
+			GS::Array<API_Guid> doors;
+			GSErrCode err = ACAPI_Element_GetConnectedElements(wall.head.guid, API_DoorID, &doors);
+			if (err == NoError)
+				result.Append(doors);
+		}
+		if (wall.hasWindow) {
+			GS::Array<API_Guid> windows;
+			GSErrCode err = ACAPI_Element_GetConnectedElements(wall.head.guid, API_WindowID, &windows);
+			if (err == NoError)
+				result.Append(windows);
+		}
+
+		return result;
+	}
 }
