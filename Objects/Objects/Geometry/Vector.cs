@@ -197,16 +197,25 @@ namespace Objects.Geometry
     }
 
     /// <summary>
-    /// Divides this vector by it's euclidean length.
+    /// Compute and return a unit vector from this vector
     /// </summary>
-    public void Unitize()
+    /// <returns>a normalized unit vector</returns>
+    public void Normalize()
     {
       var length = this.Length;
       this.x /= length;
       this.y /= length;
       this.z /= length;
     }
-
+    /// <summary>
+    /// Inverses the direction of the vector, equivalent to multiplying by -1
+    /// </summary>
+    /// <returns></returns>
+    public Vector Negate()
+    {
+      return new Vector(-1 * this.x, -1 * this.y, -1 * this.z);
+    }
+    
     /// <summary>
     /// Returns a normalized copy of this vector.
     /// </summary>
