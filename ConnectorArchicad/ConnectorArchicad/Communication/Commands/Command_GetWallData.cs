@@ -6,7 +6,7 @@ using Speckle.Core.Kits;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class GetWallData : ICommand<IEnumerable<Wall>>
+  sealed internal class GetWallData : ICommand<IEnumerable<ArchicadWall>>
   {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -28,7 +28,7 @@ namespace Archicad.Communication.Commands
     {
 
       [JsonProperty("walls")]
-      public IEnumerable<Wall> Datas { get; private set; }
+      public IEnumerable<ArchicadWall> Datas { get; private set; }
 
     }
 
@@ -39,7 +39,7 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<Wall>> Execute()
+    public async Task<IEnumerable<ArchicadWall>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetWallData", new Parameters(ApplicationIds));
       foreach (var wall in result.Datas)
