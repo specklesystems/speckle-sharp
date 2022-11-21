@@ -26,7 +26,12 @@ namespace AddOnCommands
   static GSErrCode GetDoorFromObjectState(const GS::ObjectState& currentDoor, API_Element& element, API_Element& wallMask, API_ElementMemo& memo, API_SubElement& marker) {
     GSErrCode err = NoError;
 
+#ifdef ServerMainVers_2600
     element.header.type = API_DoorID;
+#else
+    element.header.typeID = API_DoorID;
+#endif
+    
     marker.subType = APISubElement_MainMarker;
 
     err = ACAPI_Element_GetDefaultsExt(&element, &memo, 1UL, &marker);
@@ -39,8 +44,13 @@ namespace AddOnCommands
 #pragma region ReviewRequired
     API_LibPart libPart;
 	BNZeroMemory (&libPart, sizeof (API_LibPart));
-    
-    err = ACAPI_Goodies_GetMarkerParent (element.header.type, libPart);
+
+#ifdef ServerMainVers_2600
+	err = ACAPI_Goodies_GetMarkerParent (element.header.type, libPart);
+#else
+    err = ACAPI_Goodies (APIAny_GetMarkerParentID, &element.header.typeID, &libPart);
+#endif
+
     if (err != NoError) {
       ACAPI_DisposeElemMemoHdls (&memo);
       ACAPI_DisposeElemMemoHdls (&marker.memo);
@@ -110,7 +120,7 @@ namespace AddOnCommands
 #ifdef ServerMainVers_2600
           element.header.type = API_WallID;
 #else
-          element.header.type = API_WallID;
+          element.header.typeID = API_WallID;
 #endif
           element.header.guid = parentGuid;
           err = ACAPI_Element_Get(&element);
