@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.ReactiveUI;
 using ConnectorRhinoShared;
 using DesktopUI2.ViewModels.MappingTool;
+using DesktopUI2.Views;
 using Rhino;
 using Rhino.PlugIns;
 using Rhino.Runtime;
@@ -225,8 +226,13 @@ namespace SpeckleRhino
       if (MappingsViewModel.Instance == null)
         return;
 
+#if !MAC
       if (!Rhino.UI.Panels.GetOpenPanelIds().Contains(typeof(MappingsPanel).GUID))
         return;
+#else
+      if (SpeckleMappingsCommandMac.MainWindow == null || !SpeckleMappingsCommandMac.MainWindow.IsVisible)
+        return;
+#endif
 
       try
       {
