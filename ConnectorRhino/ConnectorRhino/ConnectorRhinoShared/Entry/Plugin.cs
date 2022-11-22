@@ -7,6 +7,7 @@ using System.Text;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using ConnectorRhinoShared;
+using DesktopUI2.ViewModels.MappingTool;
 using Rhino;
 using Rhino.PlugIns;
 using Rhino.Runtime;
@@ -219,6 +220,14 @@ namespace SpeckleRhino
 
     private void RhinoApp_Idle(object sender, EventArgs e)
     {
+
+      //do not hog rhino, to be refractored a bit
+      if (MappingsViewModel.Instance == null)
+        return;
+
+      if (!Rhino.UI.Panels.GetOpenPanelIds().Contains(typeof(MappingsPanel).GUID))
+        return;
+
       try
       {
         if (SelectionExpired && MappingBindings.UpdateSelection != null)
