@@ -34,27 +34,27 @@ namespace DesktopUI2
 
 
       AvaloniaXamlLoader.Load(this);
-      this.Name = "Speckle";
+      Name = "Speckle";
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-     
+
       var theme = Theme.Create(Theme.Light, Primary, Accent);
       var themeBootstrap = this.LocateMaterialTheme<MaterialThemeBase>();
       themeBootstrap.CurrentTheme = theme;
 
       if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
       {
-        desktop.MainWindow = new MappingsWindow
-        {
-          DataContext = new MappingsViewModel(),
-        };
-
-        //desktop.MainWindow = new MainWindow
+        //desktop.MainWindow = new MappingsWindow
         //{
-        //  DataContext = new MainViewModel(),
+        //  DataContext = new MappingsViewModel(),
         //};
+
+        desktop.MainWindow = new MainWindow
+        {
+          DataContext = new MainViewModel(),
+        };
 
         //desktop.MainWindow = new Scheduler
         //{
