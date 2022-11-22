@@ -195,17 +195,19 @@ namespace Objects.Geometry
       return new Vector(x, y, z);
     }
 
+    [Obsolete("Renamed to " + nameof(Vector.Normalize))]
+    public void Unitize() => Normalize();
+    
     /// <summary>
     /// Compute and return a unit vector from this vector
     /// </summary>
     /// <returns>a normalized unit vector</returns>
-    public Vector Normalize()
+    public void Normalize()
     {
       var length = Length;
       x /= length;
       y /= length;
       z /= length;
-      return this;
     }
 
     /// <summary>
