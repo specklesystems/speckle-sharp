@@ -18,8 +18,8 @@ namespace Objects.Converter.Revit
     public ApplicationObject AnalyticalStickToNative(Element1D speckleStick)
     {
       ApplicationObject appObj = null;
-      XYZ offset1 = VectorToNative(speckleStick.end1Offset ?? new Geometry.Vector(0,0,0));
-      XYZ offset2 = VectorToNative(speckleStick.end2Offset ?? new Geometry.Vector(0,0,0));
+      XYZ offset1 = VectorToNative(speckleStick.end1Offset ?? new Geometry.Vector(0, 0, 0));
+      XYZ offset2 = VectorToNative(speckleStick.end2Offset ?? new Geometry.Vector(0, 0, 0));
 
 #if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
       appObj = CreatePhysicalMember(speckleStick);
@@ -141,17 +141,19 @@ namespace Objects.Converter.Revit
 
     private void SetAnalyticalProps(Element element, Element1D element1d, XYZ offset1, XYZ offset2)
     {
+      Func<char, bool> releaseConvert = rel => rel == 'R';
+
 #if !REVIT2023
       var analyticalModel = (AnalyticalModelStick)element.GetAnalyticalModel();
-      analyticalModel.SetReleases(true, Convert.ToBoolean(element1d.end1Releases.stiffnessX), Convert.ToBoolean(element1d.end1Releases.stiffnessY), Convert.ToBoolean(element1d.end1Releases.stiffnessZ), Convert.ToBoolean(element1d.end1Releases.stiffnessXX), Convert.ToBoolean(element1d.end1Releases.stiffnessYY), Convert.ToBoolean(element1d.end1Releases.stiffnessZZ));
-      analyticalModel.SetReleases(false, Convert.ToBoolean(element1d.end2Releases.stiffnessX), Convert.ToBoolean(element1d.end2Releases.stiffnessY), Convert.ToBoolean(element1d.end2Releases.stiffnessZ), Convert.ToBoolean(element1d.end2Releases.stiffnessXX), Convert.ToBoolean(element1d.end2Releases.stiffnessYY), Convert.ToBoolean(element1d.end2Releases.stiffnessZZ));
+      analyticalModel.SetReleases(true, releaseConvert(element1d.end1Releases.code[0]), releaseConvert(element1d.end1Releases.code[1]), releaseConvert(element1d.end1Releases.code[2]), releaseConvert(element1d.end1Releases.code[3]), releaseConvert(element1d.end1Releases.code[4]), releaseConvert(element1d.end1Releases.code[5]));
+      analyticalModel.SetReleases(false, releaseConvert(element1d.end2Releases.code[0]), releaseConvert(element1d.end2Releases.code[1]), releaseConvert(element1d.end2Releases.code[2]), releaseConvert(element1d.end2Releases.code[3]), releaseConvert(element1d.end2Releases.code[4]), releaseConvert(element1d.end2Releases.code[5]));
       analyticalModel.SetOffset(AnalyticalElementSelector.StartOrBase, offset1);
       analyticalModel.SetOffset(AnalyticalElementSelector.EndOrTop, offset2);
 #else
       if (element is AnalyticalMember analyticalMember)
       {
-        analyticalMember.SetReleaseConditions(new ReleaseConditions(true, Convert.ToBoolean(element1d.end1Releases.stiffnessX), Convert.ToBoolean(element1d.end1Releases.stiffnessY), Convert.ToBoolean(element1d.end1Releases.stiffnessZ), Convert.ToBoolean(element1d.end1Releases.stiffnessXX), Convert.ToBoolean(element1d.end1Releases.stiffnessYY), Convert.ToBoolean(element1d.end1Releases.stiffnessZZ)));
-        analyticalMember.SetReleaseConditions(new ReleaseConditions(false, Convert.ToBoolean(element1d.end2Releases.stiffnessX), Convert.ToBoolean(element1d.end2Releases.stiffnessY), Convert.ToBoolean(element1d.end2Releases.stiffnessZ), Convert.ToBoolean(element1d.end2Releases.stiffnessXX), Convert.ToBoolean(element1d.end2Releases.stiffnessYY), Convert.ToBoolean(element1d.end2Releases.stiffnessZZ)));
+        analyticalMember.SetReleaseConditions(new ReleaseConditions(true, releaseConvert(element1d.end1Releases.code[0]), releaseConvert(element1d.end1Releases.code[1]), releaseConvert(element1d.end1Releases.code[2]), releaseConvert(element1d.end1Releases.code[3]), releaseConvert(element1d.end1Releases.code[4]), releaseConvert(element1d.end1Releases.code[5])));
+        analyticalMember.SetReleaseConditions(new ReleaseConditions(false, releaseConvert(element1d.end2Releases.code[0]), releaseConvert(element1d.end2Releases.code[1]), releaseConvert(element1d.end2Releases.code[2]), releaseConvert(element1d.end2Releases.code[3]), releaseConvert(element1d.end2Releases.code[4]), releaseConvert(element1d.end2Releases.code[5])));
       }
       //TODO Set offsets
 #endif
@@ -519,20 +521,25 @@ namespace Objects.Converter.Revit
             grade = null,
             designCode = null,
             codeYear = null,
-            elasticModulus = materialAsset.YoungModulus.X,
-            compressiveStrength = materialAsset.ConcreteCompression,
             tensileStrength = 0,
             flexuralStrength = 0,
             maxCompressiveStrain = 0,
             maxTensileStrain = 0,
             maxAggregateSize = 0,
-            lightweight = materialAsset.Lightweight,
-            poissonsRatio = materialAsset.PoissonRatio.X,
-            shearModulus = materialAsset.ShearModulus.X,
-            density = materialAsset.Density,
-            thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X,
             dampingRatio = 0
           };
+
+          if (materialAsset != null)
+          {
+            concreteMaterial.elasticModulus = materialAsset.YoungModulus.X;
+            concreteMaterial.compressiveStrength = materialAsset.ConcreteCompression;
+            concreteMaterial.lightweight = materialAsset.Lightweight;
+            concreteMaterial.poissonsRatio = materialAsset.PoissonRatio.X;
+            concreteMaterial.shearModulus = materialAsset.ShearModulus.X;
+            concreteMaterial.density = materialAsset.Density;
+            concreteMaterial.thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X;
+          }
+
           speckleMaterial = concreteMaterial;
           break;
         case StructuralMaterialType.Steel:
@@ -540,19 +547,24 @@ namespace Objects.Converter.Revit
           {
             name = name,
             materialType = Structural.MaterialType.Steel,
-            grade = materialAsset.Name,
             designCode = null,
             codeYear = null,
-            elasticModulus = materialAsset.YoungModulus.X, // Newtons per foot meter 
-            yieldStrength = materialAsset.MinimumYieldStress, // Newtons per foot meter
-            ultimateStrength = materialAsset.MinimumTensileStrength, // Newtons per foot meter
             maxStrain = 0,
-            poissonsRatio = materialAsset.PoissonRatio.X,
-            shearModulus = materialAsset.ShearModulus.X, // Newtons per foot meter
-            density = materialAsset.Density, // kilograms per cubed feet 
-            thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X, // inverse Kelvin
-            dampingRatio = 0
+            dampingRatio = 0,
           };
+
+          if (materialAsset != null)
+          {
+            steelMaterial.grade = materialAsset.Name;
+            steelMaterial.elasticModulus = materialAsset.YoungModulus.X; // Newtons per foot meter 
+            steelMaterial.yieldStrength = materialAsset.MinimumYieldStress; // Newtons per foot meter
+            steelMaterial.ultimateStrength = materialAsset.MinimumTensileStrength; // Newtons per foot meter
+            steelMaterial.poissonsRatio = materialAsset.PoissonRatio.X;
+            steelMaterial.shearModulus = materialAsset.ShearModulus.X; // Newtons per foot meter
+            steelMaterial.density = materialAsset.Density; // kilograms per cubed feet 
+            steelMaterial.thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X; // inverse Kelvin
+          }
+
           speckleMaterial = steelMaterial;
           break;
         case StructuralMaterialType.Wood:
@@ -560,22 +572,27 @@ namespace Objects.Converter.Revit
           {
             name = name,
             materialType = Structural.MaterialType.Timber,
-            grade = materialAsset.WoodGrade,
             designCode = null,
             codeYear = null,
-            elasticModulus = materialAsset.YoungModulus.X, // Newtons per foot meter 
-            poissonsRatio = materialAsset.PoissonRatio.X,
-            shearModulus = materialAsset.ShearModulus.X, // Newtons per foot meter
-            density = materialAsset.Density, // kilograms per cubed feet 
-            thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X, // inverse Kelvin
-            species = materialAsset.WoodSpecies,
             dampingRatio = 0
           };
-          timberMaterial["bendingStrength"] = materialAsset.WoodBendingStrength;
-          timberMaterial["parallelCompressionStrength"] = materialAsset.WoodParallelCompressionStrength;
-          timberMaterial["parallelShearStrength"] = materialAsset.WoodParallelShearStrength;
-          timberMaterial["perpendicularCompressionStrength"] = materialAsset.WoodPerpendicularCompressionStrength;
-          timberMaterial["perpendicularShearStrength"] = materialAsset.WoodPerpendicularShearStrength;
+
+          if (materialAsset != null)
+          {
+            timberMaterial.grade = materialAsset.WoodGrade;
+            timberMaterial.elasticModulus = materialAsset.YoungModulus.X; // Newtons per foot meter 
+            timberMaterial.poissonsRatio = materialAsset.PoissonRatio.X;
+            timberMaterial.shearModulus = materialAsset.ShearModulus.X; // Newtons per foot meter
+            timberMaterial.density = materialAsset.Density; // kilograms per cubed feet 
+            timberMaterial.thermalExpansivity = materialAsset.ThermalExpansionCoefficient.X; // inverse Kelvin
+            timberMaterial.species = materialAsset.WoodSpecies;
+            timberMaterial["bendingStrength"] = materialAsset.WoodBendingStrength;
+            timberMaterial["parallelCompressionStrength"] = materialAsset.WoodParallelCompressionStrength;
+            timberMaterial["parallelShearStrength"] = materialAsset.WoodParallelShearStrength;
+            timberMaterial["perpendicularCompressionStrength"] = materialAsset.WoodPerpendicularCompressionStrength;
+            timberMaterial["perpendicularShearStrength"] = materialAsset.WoodPerpendicularShearStrength;
+          }
+
           speckleMaterial = timberMaterial;
           break;
         default:
