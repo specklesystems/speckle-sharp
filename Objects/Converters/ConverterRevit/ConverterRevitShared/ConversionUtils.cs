@@ -379,11 +379,6 @@ namespace Objects.Converter.Revit
 
     #endregion
 
-    private List<int> problematicParameters = new List<int>()
-    { 
-      (int)BuiltInParameter.VIEW_NAME, // set this property using view.Name = "name"
-    };
-
     /// <summary>
     /// </summary>
     /// <param name="revitElement"></param>
