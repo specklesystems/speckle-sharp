@@ -273,7 +273,8 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        SavedStreams.Clear();
+        ClearSavedStreams();
+
         foreach (StreamState stream in streams)
         {
           SavedStreams.Add(new StreamViewModel(stream, HostScreen, RemoveSavedStreamCommand));
@@ -289,6 +290,13 @@ namespace DesktopUI2.ViewModels
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
+    }
+
+    private void ClearSavedStreams()
+    {
+      //dispose subscriptions!
+      SavedStreams.ForEach(x => x.Dispose());
+      SavedStreams.Clear();
     }
 
     /// <summary>
@@ -459,51 +467,42 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private void SearchStreams()
+    private async void SearchStreams()
     {
+      if (await CheckIsOffline())
+        return;
+
       GetStreams().ConfigureAwait(false);
       this.RaisePropertyChanged("StreamsText");
+    }
+
+    private async Task<bool> CheckIsOffline()
+    {
+      if (!await Helpers.UserHasInternet())
+      {
+        Dispatcher.UIThread.Post(() =>
+          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          {
+            Title = "⚠️ Oh no!",
+            Message = "Could not reach the internet, are you connected?",
+            Type = Avalonia.Controls.Notifications.NotificationType.Error
+          }), DispatcherPriority.Background);
+
+        IsOffline = true;
+      }
+      else
+        IsOffline = false;
+
+      return IsOffline;
+
     }
 
     internal async void Refresh()
     {
       try
       {
-        if (!await Helpers.Ping("https://google.com"))
-        {
-          Dispatcher.UIThread.Post(() =>
-         MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
-         {
-           Title = "⚠️ Oh no!",
-           Message = "Could not reach the internet, are you connected?",
-           Type = Avalonia.Controls.Notifications.NotificationType.Error
-         }), DispatcherPriority.Background);
-
-          IsOffline = true;
+        if (await CheckIsOffline())
           return;
-        }
-
-        //if (!await Helpers.Ping(_releasesUrl))
-        //{
-        //  Dispatcher.UIThread.Post(() =>
-        //  MainWindow.NotificationManager.Show(new NotificationViewModel()
-        //  {
-        //    Title = "⚠️ Oh no!",
-        //    Message = $"Could not reach the Speckle servers, are you connected? Please unblock {_releasesUrl}"
-        //  }), DispatcherPriority.Background);
-        //  ShowFullScreenProgress = false;
-        //  Models.Sentry.CaptureException(new Exception("Could not reach the Speckle servers"));
-        //  IsOffline = true;
-        //  IsRefreshing = false;
-        //  return;
-        //}
-
-        IsOffline = false;
-
-
-
-
-
 
         //prevent subscriptions from being registered multiple times
         _subscribedClientsStreamAddRemove.ForEach(x => x.Dispose());
@@ -881,8 +880,11 @@ namespace DesktopUI2.ViewModels
 
 
 
-    private void OpenStreamCommand(object streamAccountWrapper)
+    private async void OpenStreamCommand(object streamAccountWrapper)
     {
+      if (await CheckIsOffline())
+        return;
+
       if (streamAccountWrapper != null)
       {
         var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
@@ -892,8 +894,11 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    private void OpenSavedStreamCommand(object streamViewModel)
+    private async void OpenSavedStreamCommand(object streamViewModel)
     {
+      if (await CheckIsOffline())
+        return;
+
       if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
       {
         try

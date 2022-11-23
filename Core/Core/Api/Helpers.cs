@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -283,25 +284,52 @@ namespace Speckle.Core.Api
 
 
     /// <summary>
-    /// Checks if the user has a valid internet connection by pinging 'https://google.com'
+    /// Checks if the user has a valid internet connection by pinging cloudfare
     /// </summary>
     /// <returns>True if the user is connected to the internet, false otherwise.</returns>
     public static Task<bool> UserHasInternet()
     {
-      return Ping("https://google.com");
+      return Ping("1.1.1.1"); //cloudfare
     }
 
     /// <summary>
     /// Pings a specific url to verify it's accessible.
     /// </summary>
-    /// <param name="url">The url to ping.</param>
+    /// <param name="hostnameOrAddress">The hostname or address to ping.</param>
     /// <returns>True if the the status code is 200, false otherwise.</returns>
-    public static async Task<bool> Ping(string url)
+    public static async Task<bool> Ping(string hostnameOrAddress)
     {
       try
       {
+        Ping myPing = new Ping();
+        var hostname = (Uri.CheckHostName(hostnameOrAddress) != UriHostNameType.Unknown) ? hostnameOrAddress : (new Uri(hostnameOrAddress)).DnsSafeHost;
+        byte[] buffer = new byte[32];
+        int timeout = 1000;
+        PingOptions pingOptions = new PingOptions();
+        PingReply reply = myPing.Send(hostname, timeout, buffer, pingOptions);
+        return (reply.Status == IPStatus.Success);
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+    }
+
+    /// <summary>
+    /// Pings and tries gettign data from a specific address to verify it's online.
+    /// </summary>
+    /// <param name="address">Theaddress to use.</param>
+    /// <returns>True if the the status code is 200, false otherwise.</returns>
+    public static async Task<bool> PingAndGet(string address)
+    {
+      try
+      {
+        var ping = await Ping(address);
+        if (!ping)
+          return false;
+
         HttpClient client = new HttpClient();
-        var response = await client.GetAsync(url);
+        var response = await client.GetAsync(address);
         return response.IsSuccessStatusCode;
 
       }

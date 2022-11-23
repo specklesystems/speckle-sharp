@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
@@ -1128,6 +1129,19 @@ namespace DesktopUI2.ViewModels
 
         Reset();
 
+        if (!await Helpers.UserHasInternet())
+        {
+          Dispatcher.UIThread.Post(() =>
+            MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+            {
+              Title = "⚠️ Oh no!",
+              Message = "Could not reach the internet, are you connected?",
+              Type = Avalonia.Controls.Notifications.NotificationType.Error
+            }), DispatcherPriority.Background);
+
+          return;
+        }
+
         Progress.IsProgressing = true;
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
         Progress.IsProgressing = false;
@@ -1153,7 +1167,7 @@ namespace DesktopUI2.ViewModels
             Message = $"Sent to '{Stream.name}', view it online",
             OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}"),
             Type = Avalonia.Controls.Notifications.NotificationType.Success,
-            Expiration = TimeSpan.FromSeconds(15)
+            Expiration = TimeSpan.FromSeconds(10)
           });
         }
         else
@@ -1220,6 +1234,21 @@ namespace DesktopUI2.ViewModels
         HomeViewModel.Instance.AddSavedStream(this);
 
         Reset();
+
+        if (!await Helpers.UserHasInternet())
+        {
+          Dispatcher.UIThread.Post(() =>
+            MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+            {
+              Title = "⚠️ Oh no!",
+              Message = "Could not reach the internet, are you connected?",
+              Type = Avalonia.Controls.Notifications.NotificationType.Error
+            }), DispatcherPriority.Background);
+
+          return;
+        }
+
+
         Progress.IsProgressing = true;
         var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
         Progress.IsProgressing = false;

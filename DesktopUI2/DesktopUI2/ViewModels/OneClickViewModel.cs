@@ -50,6 +50,22 @@ namespace DesktopUI2.ViewModels
 
     }
 
+    private string _sentText;
+    public string SentText
+    {
+      get => _sentText;
+      set => this.RaiseAndSetIfChanged(ref _sentText, value);
+
+    }
+
+    private bool _successfulSend;
+    public bool SuccessfulSend
+    {
+      get => _successfulSend;
+      set => this.RaiseAndSetIfChanged(ref _successfulSend, value);
+
+    }
+
     private string Url
     {
       get
@@ -134,6 +150,33 @@ namespace DesktopUI2.ViewModels
       try
       {
         Id = await Task.Run(() => Bindings.SendStream(_fileStream, Progress));
+
+        if (!string.IsNullOrEmpty(Id))
+        {
+          var errorsCount = Progress.Report.ReportObjects.Count(x => x.Status == Speckle.Core.Models.ApplicationObject.State.Failed);
+          if (errorsCount > 0)
+          {
+            var s = errorsCount == 1 ? "" : "s";
+            SentText = $"Done 🎉\nOperation completed with {errorsCount} error{s}";
+            SuccessfulSend = true;
+          }
+          else if (Progress.Report.ReportObjects.Count == 0)
+          {
+            SentText = "Nothing was sent!\nPlease try again or switch to advanced mode.";
+            SuccessfulSend = false;
+          }
+          else
+          {
+            SentText = "Done 🎉\nYour model has been sent!";
+            SuccessfulSend = true;
+          }
+        }
+        else
+        {
+          SentText = "Semething went wrong!\nPlease try again or switch to advanced mode.";
+          SuccessfulSend = false;
+        }
+
         Progress.IsProgressing = false;
 
         if (!Progress.CancellationTokenSource.IsCancellationRequested)
