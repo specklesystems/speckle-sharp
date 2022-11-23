@@ -12,6 +12,10 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    private List<string> excludedParameters = new List<string>()
+    {
+      "VIEW_NAME", // param value is already stored in name prop of view and setting this param can cause errors 
+    };
     public View ViewToSpeckle(DB.View revitView)
     {
       switch (revitView.ViewType)
@@ -60,7 +64,7 @@ namespace Objects.Converter.Revit
         AttachViewParams(speckleView, rv3d);
       }
 
-      GetAllRevitParamsAndIds(speckleView, revitView);
+      GetAllRevitParamsAndIds(speckleView, revitView, excludedParameters);
       Report.Log($"Converted View {revitView.ViewType} {revitView.Id}");
       return speckleView;
     }
@@ -96,7 +100,7 @@ namespace Objects.Converter.Revit
       view.SaveOrientationAndLock();
 
       if (view.IsValidObject)
-        SetInstanceParameters(view, speckleView);
+        SetInstanceParameters(view, speckleView, excludedParameters);
       view = SetViewParams(view, speckleView);
 
       // set name last due to duplicate name errors
