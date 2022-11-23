@@ -18,7 +18,7 @@ namespace ConverterRevitShared.Revit
         Height = Connector.Shape != ConnectorProfileType.Round ? curve.Height : 0;
         Width = Connector.Shape != ConnectorProfileType.Round ? curve.Width : 0;
       }
-      else
+      else if (Connector.Shape != ConnectorProfileType.Invalid)
       {
         Diameter = Connector.Shape == ConnectorProfileType.Round ? Connector.Radius * 2 : 0;
         Height = Connector.Shape != ConnectorProfileType.Round ? Connector.Height : 0;
@@ -36,11 +36,11 @@ namespace ConverterRevitShared.Revit
       ? $"{Owner.Category.Name}: {Connector.Owner.Name} --> {RefConnector.Owner.Category.Name}: {RefConnector.Owner.Name}"
       : $"{Owner.Category.Name}: {Connector.Owner.Name} --> NULL";
 
-    public double Diameter { get; private set; }
+    public double Diameter { get; private set; } = 0;
 
-    public double Height { get; private set; }
+    public double Height { get; private set; } = 0;
 
-    public double Width { get; private set; }
+    public double Width { get; private set; } = 0;
 
     public bool IsConnected { get; private set; }
 
