@@ -382,24 +382,28 @@ namespace SpeckleRhino
       if (progress.Report.OperationErrorsCount != 0)
         return null;
 
-
-
       RhinoApp.InvokeOnUiThread((Action)delegate
       {
         RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
 
-        // create preview objects if they don't already exist
-        if (Preview.Count == 0)
-        {
-          // flatten the commit object to retrieve children objs
-          int count = 0;
-          Preview = FlattenCommitObject(commitObject, converter, progress, commitLayerName, ref count);
+      // create preview objects if they don't already exist
+      if (Preview.Count == 0)
+      {
+        // flatten the commit object to retrieve children objs
+        int count = 0;
+        Preview = FlattenCommitObject(commitObject, converter, progress, commitLayerName, ref count);
 
-          // convert
-          foreach (var previewObj in Preview)
-          {
-            if (previewObj.Convertible)
-              previewObj.Converted = ConvertObject(previewObj, converter);
+        // convert
+        foreach (var previewObj in Preview)
+        {
+            var storedObj = StoredObjects[previewObj.OriginalId];
+            if (storedObj == null)
+            {
+              previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't retrieve stored object from bindings");
+              continue;
+            }
+            if (previewObj.Convertible && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("Block"))
+              previewObj.Converted = ConvertObject(storedObj, converter);
             else
               foreach (var fallback in previewObj.Fallback)
               {
@@ -407,7 +411,7 @@ namespace SpeckleRhino
                 previewObj.Log.AddRange(fallback.Log);
               }
 
-            if (previewObj.Converted == null || previewObj.Converted.Count == 0)
+            if (previewObj.Converted == null || previewObj.Converted.Count == 0 && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("Block"))
             {
               var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
               if (convertedFallback != null && convertedFallback.Count() > 0)
@@ -477,7 +481,7 @@ namespace SpeckleRhino
       return state;
     }
 
-    // gets objects by id directly or by applicaiton id user string
+    // gets objects by id directly or by application id user string
     private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
     {
       if (string.IsNullOrEmpty(applicationId))
@@ -638,9 +642,8 @@ namespace SpeckleRhino
     }
 
     // conversion and bake
-    private List<object> ConvertObject(ApplicationObject appObj, ISpeckleConverter converter)
+    private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
     {
-      var obj = StoredObjects[appObj.OriginalId];
       var convertedList = new List<object>();
 
       var converted = converter.ConvertToNative(obj);
@@ -667,7 +670,7 @@ namespace SpeckleRhino
       // check if this is a view or block - convert instead of bake if so (since these are "baked" during conversion)
       if (!appObj.Converted.Any() && (obj.speckle_type.Contains("Block") || obj.speckle_type.Contains("View")))
       {
-        appObj.Converted = ConvertObject(appObj, converter);
+        appObj.Converted = ConvertObject(obj, converter);
       }
       foreach (var convertedItem in appObj.Converted)
       {
