@@ -393,14 +393,15 @@ namespace Speckle.ConnectorAutocadCivil
     /// </summary>
     /// <param name="appId">Id of the application that originally created the element, in AutocadCivil it's the handle</param>
     /// <returns>The element, if found, otherwise null</returns>
+    /// <remarks>
+    /// Updating is super buggy because of limitations to how object handles are generated. 
+    /// See: https://forums.autodesk.com/t5/net/is-the-quot-objectid-quot-unique-in-a-drawing-file/m-p/6527799#M49953
+    /// </remarks>
     public static List<ObjectId> GetObjectsByApplicationId(this Document doc, Transaction tr, string appId)
     {
       var foundObjects = new List<ObjectId>();
 
-      // first see if this appid is a handle (autocad appid)
-      if (Utils.GetHandle(appId, out Handle handle))
-        if (doc.Database.TryGetObjectId(handle, out ObjectId id))
-           return id.IsErased ? foundObjects : new List<ObjectId>() { id };
+      // first check for xustom xdata application ids, because object handles tend to be duplicated
 
       // Create a TypedValue array to define the filter criteria
       TypedValue[] acTypValAr = new TypedValue[1];
@@ -410,23 +411,30 @@ namespace Speckle.ConnectorAutocadCivil
       SelectionFilter acSelFtr = new SelectionFilter(acTypValAr);
       var editor = Application.DocumentManager.MdiActiveDocument.Editor;
       var res = editor.SelectAll(acSelFtr);
-      if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
-        return foundObjects;
 
-      // loop through all obj with an appId 
-      foreach (var appIdObj in res.Value.GetObjectIds())
+      if (res.Status != PromptStatus.None && res.Status != PromptStatus.Error)
       {
-        // get the db object from id
-        var obj = tr.GetObject(appIdObj, OpenMode.ForRead);
-        if (obj != null)
-          foreach (var entry in obj.XData)
-            if (entry.Value as string == appId)
-            {
-              foundObjects.Add(appIdObj);
-              break;
-            }
+        // loop through all obj with an appId 
+        foreach (var appIdObj in res.Value.GetObjectIds())
+        {
+          // get the db object from id
+          var obj = tr.GetObject(appIdObj, OpenMode.ForRead);
+          if (obj != null)
+            foreach (var entry in obj.XData)
+              if (entry.Value as string == appId)
+              {
+                foundObjects.Add(appIdObj);
+                break;
+              }
+        }
       }
+      if (foundObjects.Any()) return foundObjects;
 
+      // if no matching xdata appids were found, loop through handles instead
+      if (Utils.GetHandle(appId, out Handle handle))
+        if (doc.Database.TryGetObjectId(handle, out ObjectId id))
+          return id.IsErased ? foundObjects : new List<ObjectId>() { id };
+     
       return foundObjects;
     }
 
