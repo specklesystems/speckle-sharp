@@ -379,6 +379,11 @@ namespace Objects.Converter.Revit
 
     #endregion
 
+    private List<int> problematicParameters = new List<int>()
+    { 
+      (int)BuiltInParameter.VIEW_NAME, // set this property using view.Name = "name"
+    };
+
     /// <summary>
     /// </summary>
     /// <param name="revitElement"></param>
@@ -399,7 +404,7 @@ namespace Objects.Converter.Revit
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
       // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
-      var revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly);
+      var revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly && !problematicParameters.Contains(x.Id.IntegerValue));
 
       // Here we are creating two  dictionaries for faster lookup
       // one uses the BuiltInName / GUID the other the name as Key
