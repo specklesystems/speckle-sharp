@@ -88,8 +88,7 @@ namespace Speckle.ConnectorCSI.UI
         case "manual":
           return GetSelectedObjects();
         case "all":
-          if (ConnectorCSIUtils.ObjectIDsTypesAndNames == null)
-            ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
+          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
                       .Select(pair => pair.Key).ToList());
@@ -97,8 +96,7 @@ namespace Speckle.ConnectorCSI.UI
 
         case "type":
           var typeFilter = filter as ListSelectionFilter;
-          if (ConnectorCSIUtils.ObjectIDsTypesAndNames == null)
-            ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
+          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           foreach (var type in typeFilter.Selection)
           {
