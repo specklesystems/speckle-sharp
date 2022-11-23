@@ -200,7 +200,32 @@ namespace ConnectorGrasshopper
 
       // Manager button
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo,
-        (o, args) => Process.Start("speckle://"));
+        (o, args) =>
+        {
+          try
+          {
+            string path = "";
+
+            // Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+
+#if MAC
+            path = @"/Applications/Manager for Speckle.app";
+#else     
+            path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
+#endif  
+
+            if (File.Exists(path))
+              Process.Start(path);
+            else
+            {
+              Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
+            }
+          }
+          catch (Exception ex)
+          {
+            Log.CaptureException(ex, Sentry.SentryLevel.Error);
+          }
+        });
 
 
       if (!MenuHasBeenAdded)
@@ -232,11 +257,11 @@ namespace ConnectorGrasshopper
         
         if (!Directory.Exists(path))
           Directory.CreateDirectory(path);
-        #if MAC
+#if MAC
           Process.Start("file://" + path);
-        #else
+#else
           Process.Start("explorer.exe", "/select, " + path );
-        #endif
+#endif
       });
     }
 
