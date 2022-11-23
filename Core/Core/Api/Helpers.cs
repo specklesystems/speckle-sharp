@@ -295,7 +295,7 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Pings a specific url to verify it's accessible.
     /// </summary>
-    /// <param name="url">The url to ping.</param>
+    /// <param name="hostnameOrAddress">The hostname or address to ping.</param>
     /// <returns>True if the the status code is 200, false otherwise.</returns>
     public static async Task<bool> Ping(string hostnameOrAddress)
     {
@@ -313,18 +313,30 @@ namespace Speckle.Core.Api
       {
         return false;
       }
+    }
 
-      //try
-      //{
-      //  HttpClient client = new HttpClient();
-      //  var response = await client.GetAsync(url);
-      //  return response.IsSuccessStatusCode;
+    /// <summary>
+    /// Pings and tries gettign data from a specific address to verify it's online.
+    /// </summary>
+    /// <param name="address">Theaddress to use.</param>
+    /// <returns>True if the the status code is 200, false otherwise.</returns>
+    public static async Task<bool> PingAndGet(string address)
+    {
+      try
+      {
+        var ping = await Ping(address);
+        if (!ping)
+          return false;
 
-      //}
-      //catch (Exception)
-      //{
-      //  return false;
-      //}
+        HttpClient client = new HttpClient();
+        var response = await client.GetAsync(address);
+        return response.IsSuccessStatusCode;
+
+      }
+      catch (Exception)
+      {
+        return false;
+      }
     }
   }
 }
