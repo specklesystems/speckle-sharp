@@ -61,9 +61,9 @@ namespace Objects.Converter.CSI
         {
           Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
         }
-        else
+        else if (area.property is CSIProperty2D prop2D)
         {
-          Property2DToNative((CSIProperty2D)area.property);
+          Property2DToNative(prop2D);
           Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
         }
       }
