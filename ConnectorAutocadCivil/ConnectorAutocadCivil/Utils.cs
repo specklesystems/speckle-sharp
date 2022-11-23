@@ -120,6 +120,12 @@ namespace Speckle.ConnectorAutocadCivil
       }
     }
 
+    /// <summary>
+    /// Gets the document model space
+    /// </summary>
+    /// <param name="db"></param>
+    /// <param name="mode"></param>
+    /// <returns></returns>
     public static BlockTableRecord GetModelSpace(this Database db, OpenMode mode = OpenMode.ForRead)
     {
       return (BlockTableRecord)SymbolUtilityServices.GetBlockModelSpaceId(db).GetObject(mode);
@@ -132,12 +138,13 @@ namespace Speckle.ConnectorAutocadCivil
     /// <param name="type">Object class dxf name</param>
     /// <param name="layer">Object layer name</param>
     /// <returns></returns>
-    public static DBObject GetObject(this Handle handle, Transaction tr, out string type, out string layer)
+    public static DBObject GetObject(this Handle handle, Transaction tr, out string type, out string layer, out string applicationId)
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
       DBObject obj = null;
       type = null;
       layer = null;
+      applicationId = null;
 
       // get objectId
       ObjectId id = Doc.Database.GetObjectId(false, handle, 0);
@@ -150,6 +157,16 @@ namespace Speckle.ConnectorAutocadCivil
           Entity objEntity = obj as Entity;
           type = id.ObjectClass.DxfName;
           layer = objEntity.Layer;
+
+          // application id is stored in xdata
+          ResultBuffer rb = objEntity.GetXDataForApplication(ApplicationIdKey);
+          if (rb != null)
+            foreach (var entry in rb)
+              if (entry.TypeCode == 1000)
+              {
+                applicationId = entry.Value as string;
+                break;
+              }
         }
       }
       return obj;
@@ -383,7 +400,7 @@ namespace Speckle.ConnectorAutocadCivil
       // first see if this appid is a handle (autocad appid)
       if (Utils.GetHandle(appId, out Handle handle))
         if (doc.Database.TryGetObjectId(handle, out ObjectId id))
-          return new List<ObjectId>() { id };
+           return id.IsErased ? foundObjects : new List<ObjectId>() { id };
 
       // Create a TypedValue array to define the filter criteria
       TypedValue[] acTypValAr = new TypedValue[1];
@@ -412,6 +429,12 @@ namespace Speckle.ConnectorAutocadCivil
 
       return foundObjects;
     }
+
+    /// <summary>
+    /// Returns a descriptive string for reporting
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns></returns>
     public static string ObjectDescriptor(DBObject obj)
     {
       if (obj == null) return String.Empty;
