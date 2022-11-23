@@ -273,7 +273,8 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        SavedStreams.Clear();
+        ClearSavedStreams();
+
         foreach (StreamState stream in streams)
         {
           SavedStreams.Add(new StreamViewModel(stream, HostScreen, RemoveSavedStreamCommand));
@@ -289,6 +290,13 @@ namespace DesktopUI2.ViewModels
       {
         Log.CaptureException(ex, Sentry.SentryLevel.Error);
       }
+    }
+
+    private void ClearSavedStreams()
+    {
+      //dispose subscriptions!
+      SavedStreams.ForEach(x => x.Dispose());
+      SavedStreams.Clear();
     }
 
     /// <summary>
