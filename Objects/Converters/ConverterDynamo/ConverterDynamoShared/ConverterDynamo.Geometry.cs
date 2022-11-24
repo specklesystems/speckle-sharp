@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -717,7 +717,7 @@ namespace Objects.Converter.Dynamo
         })
         .ToList();
       
-      var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToList();
+      //var colors = Enumerable.Repeat(defaultColour.ToArgb(), mesh.VertexPositions.Length).ToList();
       //double[] textureCoords;
 
       //if (SpeckleRhinoConverter.AddMeshTextureCoordinates)
@@ -726,7 +726,7 @@ namespace Objects.Converter.Dynamo
       //  return new SpeckleMesh(vertices, faces, Colors, textureCoords, properties: mesh.UserDictionary.ToSpeckle());
       //}
 
-      var speckleMesh = new Mesh(vertices, faces, colors, units: u);
+      var speckleMesh = new Mesh(vertices, faces, units: u);
 
       CopyProperties(speckleMesh, mesh);
 
