@@ -290,8 +290,8 @@ namespace SpeckleRhino
           else
             foreach (var fallback in previewObj.Fallback)
             {
-              fallback.Converted = ConvertObject(fallback, converter);
-              previewObj.Log.AddRange(fallback.Log);
+              var storedFallback = StoredObjects[fallback.OriginalId];
+              fallback.Converted = ConvertObject(storedFallback, converter);
             }
 
           if (previewObj.Converted == null || previewObj.Converted.Count == 0)
