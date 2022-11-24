@@ -161,12 +161,16 @@ namespace Speckle.ConnectorAutocadCivil
           // application id is stored in xdata
           ResultBuffer rb = objEntity.GetXDataForApplication(ApplicationIdKey);
           if (rb != null)
+          {
             foreach (var entry in rb)
+            {
               if (entry.TypeCode == 1000)
               {
                 applicationId = entry.Value as string;
                 break;
               }
+            }
+          }
         }
       }
       return obj;
@@ -401,7 +405,7 @@ namespace Speckle.ConnectorAutocadCivil
     {
       var foundObjects = new List<ObjectId>();
 
-      // first check for xustom xdata application ids, because object handles tend to be duplicated
+      // first check for custom xdata application ids, because object handles tend to be duplicated
 
       // Create a TypedValue array to define the filter criteria
       TypedValue[] acTypValAr = new TypedValue[1];
