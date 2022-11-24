@@ -699,7 +699,7 @@ namespace DesktopUI2.ViewModels
           path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
         }
 
-        if (File.Exists(path))
+        if (File.Exists(path) || Directory.Exists(path))
           Process.Start(path);
         else
         {

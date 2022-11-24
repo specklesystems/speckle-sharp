@@ -206,15 +206,16 @@ namespace ConnectorGrasshopper
           {
             string path = "";
 
-            // Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+            Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
 
 #if MAC
             path = @"/Applications/Manager for Speckle.app";
+
 #else     
             path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
 #endif  
 
-            if (File.Exists(path))
+            if (File.Exists(path) || Directory.Exists(path))
               Process.Start(path);
             else
             {
