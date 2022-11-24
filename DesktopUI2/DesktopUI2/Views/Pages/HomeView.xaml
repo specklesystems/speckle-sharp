@@ -474,49 +474,6 @@
       </Button>
 
     </Grid>
-    <!--  NO ACCOUNTS / LOG IN  -->
-    <Grid
-      Grid.Row="1"
-      Margin="15"
-      IsVisible="{Binding !HasAccounts, FallbackValue=True}">
-      <m:Card
-        Margin="10"
-        Padding="30"
-        VerticalAlignment="Top">
-        <StackPanel Orientation="Vertical">
-
-
-          <TextBlock TextAlignment="Center">
-            👋 Hello and welcome!&#10;&#10;Please log in to use this connector:
-          </TextBlock>
-          <Button
-            Margin="15,40,15,15"
-            Command="{Binding LaunchManagerCommand}"
-            Content="Log In using Manager"
-            IsEnabled="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
-            ToolTip.Tip="Manager is the reccomended way to log in and install Connectors" />
-          <TextBlock TextAlignment="Center">
-            or
-          </TextBlock>
-          <Button
-            Margin="15"
-            Command="{Binding AddAccountCommand}"
-            Content="Log In directly"
-            IsVisible="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
-            ToolTip.Tip="Direct log in is currently only supported on our XYZ server" />
-          <StackPanel IsVisible="{Binding IsLoggingIn, FallbackValue=False}" Orientation="Vertical">
-            <TextBlock Margin="15" TextAlignment="Center">
-              ☝ Please follow the instructions in your browser.
-            </TextBlock>
-            <ProgressBar Classes="Circle" IsIndeterminate="True" />
-          </StackPanel>
-
-        </StackPanel>
-
-      </m:Card>
-
-    </Grid>
-
     <!--  NO INTERNET  -->
     <Border
       Grid.Row="1"

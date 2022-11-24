@@ -5,7 +5,7 @@
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  d:DesignHeight="200"
+  d:DesignHeight="300"
   d:DesignWidth="400"
   mc:Ignorable="d">
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
@@ -19,14 +19,21 @@
       Grid.Row="1"
       Margin="15"
       Foreground="Gray"
-      Text="Log In to Speckle by providing your Server URL"
+      Text="A new window will open in your browser, you can return here after logging in 🙌"
       TextWrapping="Wrap" />
-
-    <TextBox
-      Name="url"
+    <Expander
       Grid.Row="2"
-      Margin="15,0"
-      Watermark="Server URL" />
+      Classes="Minimal Flat Transparent"
+      Header="Want to set a custom Server URL?">
+      <StackPanel Orientation="Vertical">
+        <TextBox
+          Name="url"
+          Margin="15,0"
+          Watermark="Server URL" />
+      </StackPanel>
+
+    </Expander>
+
 
     <StackPanel
       Grid.Row="5"
@@ -41,7 +48,8 @@
       <Button
         Margin="0,0,10,0"
         Click="Add_Click"
-        Content="Add"
+        Content="Go"
+        IsDefault="True"
         IsEnabled="{Binding #url.Text, Converter={x:Static StringConverters.IsNotNullOrEmpty}}" />
 
     </StackPanel>
