@@ -691,7 +691,7 @@ namespace DesktopUI2.ViewModels
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         {
-          path = @"/Applications/SpeckleManager.app";
+          path = @"/Applications/Manager for Speckle.app";
         }
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -699,9 +699,8 @@ namespace DesktopUI2.ViewModels
           path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
         }
 
-        if (File.Exists(path))
+        if (File.Exists(path) || Directory.Exists(path))
           Process.Start(path);
-
         else
         {
           Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
