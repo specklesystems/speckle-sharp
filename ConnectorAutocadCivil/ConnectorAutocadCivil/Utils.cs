@@ -420,12 +420,16 @@ namespace Speckle.ConnectorAutocadCivil
           // get the db object from id
           var obj = tr.GetObject(appIdObj, OpenMode.ForRead);
           if (obj != null)
+          {
             foreach (var entry in obj.XData)
+            {
               if (entry.Value as string == appId)
               {
                 foundObjects.Add(appIdObj);
                 break;
               }
+            }
+          }
         }
       }
       if (foundObjects.Any()) return foundObjects;
