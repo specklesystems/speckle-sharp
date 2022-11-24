@@ -6,43 +6,44 @@ namespace ConverterRevitShared.Revit
 {
   public class ConnectionPair : IComparable<ConnectionPair>, IEquatable<ConnectionPair>
   {
-    private ConnectionPair(Element element, Connector connector, Connector refConnector = null)
-    {
-      Owner = element;
-      Connector = connector;
-      RefConnector = refConnector;
-      IsConnected = RefConnector != null;
-      if (element is MEPCurve curve)
-      {
-        Diameter = Connector.Shape == ConnectorProfileType.Round ? curve.Diameter : 0;
-        Height = Connector.Shape != ConnectorProfileType.Round ? curve.Height : 0;
-        Width = Connector.Shape != ConnectorProfileType.Round ? curve.Width : 0;
-      }
-      else if (Connector.Shape != ConnectorProfileType.Invalid)
-      {
-        Diameter = Connector.Shape == ConnectorProfileType.Round ? Connector.Radius * 2 : 0;
-        Height = Connector.Shape != ConnectorProfileType.Round ? Connector.Height : 0;
-        Width = Connector.Shape != ConnectorProfileType.Round ? Connector.Width : 0;
-      }
-    }
-
     public Element Owner { get; private set; }
 
     public Connector Connector { get; private set; }
 
     public Connector RefConnector { get; private set; }
 
+    public double Diameter { get; private set; }
+
+    public double Height { get; private set; }
+
+    public double Width { get; private set; }
+
+    public bool IsConnected { get; private set; }
+
     public string Name => RefConnector != null
       ? $"{Owner.Category.Name}: {Connector.Owner.Name} --> {RefConnector.Owner.Category.Name}: {RefConnector.Owner.Name}"
       : $"{Owner.Category.Name}: {Connector.Owner.Name} --> NULL";
 
-    public double Diameter { get; private set; } = 0;
-
-    public double Height { get; private set; } = 0;
-
-    public double Width { get; private set; } = 0;
-
-    public bool IsConnected { get; private set; }
+    private ConnectionPair(Element element, Connector connector, Connector refConnector = null)
+    {
+      Owner = element;
+      Connector = connector;
+      RefConnector = refConnector;
+      IsConnected = RefConnector != null;
+      var curve = element as MEPCurve;
+      switch (Connector.Shape)
+      {
+        case ConnectorProfileType.Invalid:
+          break;
+        case ConnectorProfileType.Round:
+          Diameter = curve != null ? curve.Diameter : Connector.Radius * 2;
+          break;
+        default:
+          Height = curve != null ? curve.Height : Connector.Height;
+          Width = curve != null ? curve.Width : Connector.Width;
+          break;
+      }
+    }
 
     public static ICollection<ConnectionPair> GetConnectionPairs(Element element)
     {
