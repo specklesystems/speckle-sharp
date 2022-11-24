@@ -153,7 +153,7 @@
           <StackPanel>
             <TextBlock
               IsVisible="{Binding HasCommits, Converter={x:Static BoolConverters.Not}}"
-              Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
+              Text="This branch has no commits. Commits are generated when data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
               TextWrapping="Wrap" />
 
             <Image Source="{Binding PreviewImage}" />
