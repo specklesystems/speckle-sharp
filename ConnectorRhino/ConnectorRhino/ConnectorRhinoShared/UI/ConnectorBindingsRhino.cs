@@ -402,7 +402,7 @@ namespace SpeckleRhino
               previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't retrieve stored object from bindings");
               continue;
             }
-            if (previewObj.Convertible && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("Block"))
+            if (previewObj.Convertible && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("View"))
               previewObj.Converted = ConvertObject(storedObj, converter);
             else
               foreach (var fallback in previewObj.Fallback)
@@ -411,7 +411,7 @@ namespace SpeckleRhino
                 previewObj.Log.AddRange(fallback.Log);
               }
 
-            if (previewObj.Converted == null || previewObj.Converted.Count == 0 && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("Block"))
+            if (previewObj.Converted == null || previewObj.Converted.Count == 0 && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("View"))
             {
               var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
               if (convertedFallback != null && convertedFallback.Count() > 0)
