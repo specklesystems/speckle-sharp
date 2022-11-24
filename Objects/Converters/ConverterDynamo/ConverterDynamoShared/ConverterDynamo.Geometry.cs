@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -325,6 +325,7 @@ namespace Objects.Converter.Dynamo
       var u = units ?? ModelUnits;
       using (DS.Vector xAxis = DS.Vector.ByTwoPoints(a.CenterPoint, a.StartPoint))
       using (DS.Plane basePlane = DS.Plane.ByOriginNormalXAxis(a.CenterPoint, a.Normal, xAxis))
+      using (DS.Point midPoint = a.PointAtParameter(0.5))
       {
         var arc = new Arc(
           PlaneToSpeckle(basePlane, u),
@@ -334,11 +335,15 @@ namespace Objects.Converter.Dynamo
           a.SweepAngle.ToRadians(),
           u
         );
-
+        arc.startPoint = PointToSpeckle(a.StartPoint);
+        arc.midPoint = PointToSpeckle(midPoint);
+        arc.endPoint = PointToSpeckle(a.EndPoint);
+        
         CopyProperties(arc, a);
+        
         arc.length = a.Length;
-
         arc.bbox = BoxToSpeckle(a.BoundingBox);
+        
         return arc;
       }
     }
@@ -711,7 +716,7 @@ namespace Objects.Converter.Dynamo
           }
         })
         .ToList();
-
+      
       var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToList();
       //double[] textureCoords;
 
