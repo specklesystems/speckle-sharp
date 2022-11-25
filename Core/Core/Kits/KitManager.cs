@@ -161,6 +161,9 @@ namespace Speckle.Core.Kits
       {
         var assemblyToCheck = assembliesToCheck.Dequeue();
 
+        if (assemblyToCheck == null)
+          continue;
+
         foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
         {
           // filtering out system dlls
