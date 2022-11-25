@@ -281,7 +281,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Build << parameters.slnname >>
                 command: |
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER
             # Compress build files
             - run:
                 name: Zip Objects Kit files
