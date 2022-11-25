@@ -149,7 +149,7 @@ namespace Speckle.Core.Kits
     }
 
     // recursive search for referenced assemblies
-    public static List<Assembly> GetAssemblies()
+    public static List<Assembly> GetReferencedAssemblies()
     {
       var returnAssemblies = new List<Assembly>();
       var loadedAssemblies = new HashSet<string>();
@@ -182,7 +182,10 @@ namespace Speckle.Core.Kits
 
     private static void GetLoadedSpeckleReferencingAssemblies()
     {
-      foreach (var assembly in GetAssemblies())
+      Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+      assemblies.Concat (GetReferencedAssemblies());
+
+      foreach (var assembly in assemblies)
       {
         if (!assembly.IsDynamic && !assembly.ReflectionOnly)
         {
