@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -147,9 +148,41 @@ namespace Speckle.Core.Kits
         .SelectMany(kit => kit.Value.Types).ToList();
     }
 
+    // recursive search for referenced assemblies
+    public static List<Assembly> GetAssemblies()
+    {
+      var returnAssemblies = new List<Assembly>();
+      var loadedAssemblies = new HashSet<string>();
+      var assembliesToCheck = new Queue<Assembly>();
+
+      assembliesToCheck.Enqueue(Assembly.GetEntryAssembly());
+
+      while (assembliesToCheck.Count > 0)
+      {
+        var assemblyToCheck = assembliesToCheck.Dequeue();
+
+        foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
+        {
+          // filtering out system dlls
+          if (reference.FullName.StartsWith("System.") || reference.FullName.StartsWith("Microsoft."))
+            continue;
+
+          if (!loadedAssemblies.Contains(reference.FullName))
+          {
+            var assembly = Assembly.Load(reference);
+            assembliesToCheck.Enqueue(assembly);
+            loadedAssemblies.Add(reference.FullName);
+            returnAssemblies.Add(assembly);
+          }
+        }
+      }
+
+      return returnAssemblies;
+    }
+
     private static void GetLoadedSpeckleReferencingAssemblies()
     {
-      foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+      foreach (var assembly in GetAssemblies())
       {
         if (!assembly.IsDynamic && !assembly.ReflectionOnly)
         {
