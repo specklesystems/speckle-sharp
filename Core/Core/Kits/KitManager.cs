@@ -182,8 +182,8 @@ namespace Speckle.Core.Kits
 
     private static void GetLoadedSpeckleReferencingAssemblies()
     {
-      Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
-      assemblies.Concat (GetReferencedAssemblies());
+      List<Assembly> assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
+      assemblies.AddRange(GetReferencedAssemblies());
 
       foreach (var assembly in assemblies)
       {
