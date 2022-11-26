@@ -281,6 +281,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Build << parameters.slnname >>
                 command: |
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
                   msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER
             # Compress build files
             - run:
