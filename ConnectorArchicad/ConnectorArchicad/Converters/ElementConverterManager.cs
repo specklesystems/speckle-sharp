@@ -248,7 +248,7 @@ namespace Archicad
 
         var subElements = currentObj["elements"] as List<Base>;
 
-        if (subElements.Count() > 0)
+        if (subElements != null && subElements.Count() > 0)
         {
           var convertedSubElements = await ConvertSubElementsToNative(subElements, token);
           result.AddRange(convertedSubElements);

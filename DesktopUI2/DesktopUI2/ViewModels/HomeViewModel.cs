@@ -65,12 +65,7 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _showProgress, value);
     }
 
-    private bool _isLoggingIn;
-    public bool IsLoggingIn
-    {
-      get => _isLoggingIn;
-      private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
-    }
+
 
     private ObservableCollection<MenuItemViewModel> _menuItems = new ObservableCollection<MenuItemViewModel>();
     public ObservableCollection<MenuItemViewModel> MenuItems
@@ -203,26 +198,9 @@ namespace DesktopUI2.ViewModels
       private set
       {
         this.RaiseAndSetIfChanged(ref _accounts, value);
-        this.RaisePropertyChanged("HasOneAccount");
-        this.RaisePropertyChanged("HasMultipleAccounts");
         this.RaisePropertyChanged("HasAccounts");
         this.RaisePropertyChanged("Avatar");
       }
-    }
-
-    public Bitmap Avatar
-    {
-      get => HasAccounts ? Accounts[0].AvatarImage : null;
-    }
-
-    public bool HasOneAccount
-    {
-      get => Accounts.Count == 1;
-    }
-
-    public bool HasMultipleAccounts
-    {
-      get => Accounts.Count > 1;
     }
 
     public bool HasAccounts
@@ -257,7 +235,6 @@ namespace DesktopUI2.ViewModels
 
 
         streamSearchDebouncer = Utils.Debounce(SearchStreams, 500);
-        Refresh();
       }
       catch (Exception ex)
       {
@@ -661,13 +638,17 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public async void AddAccountCommand()
+    {
+      await Utils.AddAccountCommand();
+    }
     public async void RemoveAccountCommand(Account account)
     {
       try
       {
         AccountManager.RemoveAccount(account.id);
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
-        Refresh();
+        MainViewModel.Instance.NavigateToDefaultScreen();
       }
       catch (Exception ex)
       {
@@ -683,73 +664,7 @@ namespace DesktopUI2.ViewModels
 
     public void LaunchManagerCommand()
     {
-      try
-      {
-        string path = "";
-
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-          path = @"/Applications/Manager for Speckle.app";
-        }
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-          path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
-        }
-
-        if (File.Exists(path) || Directory.Exists(path))
-          Process.Start(path);
-        else
-        {
-          Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
-        }
-      }
-      catch (Exception ex)
-      {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
-      }
-    }
-    public async void AddAccountCommand()
-    {
-      try
-      {
-        IsLoggingIn = true;
-
-
-        var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
-        var result = await dialog.ShowDialog<string>();
-
-        if (result != null)
-        {
-          Uri u;
-          if (!Uri.TryCreate(result, UriKind.Absolute, out u))
-            Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
-          else
-          {
-            try
-            {
-              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
-
-              await AccountManager.AddAccount(result);
-              await Task.Delay(1000);
-              Refresh();
-            }
-            catch (Exception e)
-            {
-              Log.CaptureException(e, Sentry.SentryLevel.Error);
-              Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
-            }
-          }
-        }
-
-        IsLoggingIn = false;
-      }
-      catch (Exception ex)
-      {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
-      }
+      Utils.LaunchManager();
     }
 
     public void ClearSearchCommand()
@@ -938,11 +853,11 @@ namespace DesktopUI2.ViewModels
 
     private void OneClickModeCommand()
     {
-      MainViewModel.RouterInstance.Navigate.Execute(new OneClickViewModel(HostScreen));
-
       var config = ConfigManager.Load();
       config.OneClickMode = true;
       ConfigManager.Save(config);
+
+      MainViewModel.Instance.NavigateToDefaultScreen();
     }
 
     private void NotificationsCommand()

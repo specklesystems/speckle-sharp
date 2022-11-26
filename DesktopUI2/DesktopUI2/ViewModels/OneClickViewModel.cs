@@ -80,7 +80,6 @@ namespace DesktopUI2.ViewModels
     #endregion
 
     private string Id { get; set; }
-    private List<AccountViewModel> Users { get; set; }
 
     public OneClickViewModel(IScreen screen)
     {
@@ -266,11 +265,11 @@ namespace DesktopUI2.ViewModels
 
     private void AdvancedModeCommand()
     {
-      MainViewModel.RouterInstance.Navigate.Execute(HomeViewModel.Instance);
-
       var config = ConfigManager.Load();
       config.OneClickMode = false;
       ConfigManager.Save(config);
+
+      MainViewModel.Instance.NavigateToDefaultScreen();
     }
 
 
