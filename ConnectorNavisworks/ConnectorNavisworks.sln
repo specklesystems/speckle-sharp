@@ -1,0 +1,106 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2023", "ConnectorNavisworks.2023\ConnectorNavisworks.2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorNavisworks", "ConnectorNavisworks\ConnectorNavisworks.shproj", "{A517A609-CAB1-4B33-B83C-1B13B34E4560}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NavisworksVersionProjects", "NavisworksVersionProjects", "{9A263001-608C-4D44-A9BA-BCF1CD0B2D18}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterNavisworks", "ConverterNavisworks", "{56CACEA2-7EE1-4A29-933C-A66A92E01461}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{E3404975-9278-4D4E-8697-A28873B33A1E}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterNavisworks", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworks.shproj", "{C3232EF3-2000-44C6-A330-B94531C9CC83}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2023", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks.2023.csproj", "{ED3CF481-06F5-4A60-81B1-757AA8404C75}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj", "{54CBD496-8FF0-493D-B689-E31972DA874C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2\DesktopUI2\DesktopUI2.csproj", "{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{3B33761E-2F7F-456B-8126-B801F5AD7FAC}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Debug|x64.Build.0 = Debug|Any CPU
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Release|x64.ActiveCfg = Release|x64
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Release|x64.Build.0 = Release|x64
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Debug|x64.Build.0 = Debug|Any CPU
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Release|x64.ActiveCfg = Release|Any CPU
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Release|x64.Build.0 = Release|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Debug|x64.Build.0 = Debug|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Release|x64.ActiveCfg = Release|Any CPU
+		{54CBD496-8FF0-493D-B689-E31972DA874C}.Release|x64.Build.0 = Release|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Debug|x64.Build.0 = Debug|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Release|x64.ActiveCfg = Release|Any CPU
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59}.Release|x64.Build.0 = Release|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Debug|x64.Build.0 = Debug|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Release|x64.ActiveCfg = Release|Any CPU
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF}.Release|x64.Build.0 = Release|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Debug|x64.Build.0 = Debug|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Release|x64.ActiveCfg = Release|Any CPU
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{74E39841-B2FA-494D-AC40-A6E505DE6B33} = {9A263001-608C-4D44-A9BA-BCF1CD0B2D18}
+		{56CACEA2-7EE1-4A29-933C-A66A92E01461} = {E3404975-9278-4D4E-8697-A28873B33A1E}
+		{C3232EF3-2000-44C6-A330-B94531C9CC83} = {56CACEA2-7EE1-4A29-933C-A66A92E01461}
+		{ED3CF481-06F5-4A60-81B1-757AA8404C75} = {56CACEA2-7EE1-4A29-933C-A66A92E01461}
+		{54CBD496-8FF0-493D-B689-E31972DA874C} = {E3404975-9278-4D4E-8697-A28873B33A1E}
+		{BB2ADB05-3FA3-4E28-84FE-89BB7BE1AB59} = {E3404975-9278-4D4E-8697-A28873B33A1E}
+		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF} = {E3404975-9278-4D4E-8697-A28873B33A1E}
+		{3B33761E-2F7F-456B-8126-B801F5AD7FAC} = {E3404975-9278-4D4E-8697-A28873B33A1E}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5C95D1DD-5BDC-4EDF-87F7-CF5BCEFBFF24}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{74e39841-b2fa-494d-ac40-a6e505de6b33}*SharedItemsImports = 5
+		ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{a517a609-cab1-4b33-b83c-1b13b34e4560}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{c3232ef3-2000-44c6-a330-b94531c9cc83}*SharedItemsImports = 13
+	EndGlobalSection
+EndGlobal

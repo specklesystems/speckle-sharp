@@ -1,0 +1,19 @@
+﻿<RibbonControl
+    x:Uid="Speckle_Ribbon"
+    xmlns="clr-namespace:Autodesk.Windows;assembly=AdWindows"
+    xmlns:gui="clr-namespace:Autodesk.Navisworks.Gui.Roamer.AIRLook;assembly=navisworks.gui.roamer"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <RibbonTab Id="Speckle" KeyTip="SP">
+        <!-- SPECKLE -->
+        <RibbonPanel x:Uid="RibbonPanel">
+            <RibbonPanelSource Id="RibbonPanelSource" x:Uid="RibbonPanelSource" KeyTip="SP" Title="Speckle">
+                <gui:NWRibbonButton x:Uid="Button_Speckle_LaunchSpeckleConnector" IsVisible="False" Id="Speckle_Launch"
+                                    Size="Large" KeyTip="S" ShowText="True" Orientation="Vertical" />
+                <!--<gui:NWRibbonButton x:Uid="Button_Speckle_OneClickSend" IsVisible="False" Id="Speckle_OneClickSend"
+                                    Size="Large" KeyTip="Q" ShowText="True" Orientation="Vertical" />-->
+                <gui:NWRibbonButton x:Uid="Button_Speckle_Community" IsVisible="False" Id="Speckle_Community"
+                                    Size="Large" KeyTip="Q" ShowText="True" Orientation="Vertical" />
+            </RibbonPanelSource>
+        </RibbonPanel>
+    </RibbonTab>
+</RibbonControl>
