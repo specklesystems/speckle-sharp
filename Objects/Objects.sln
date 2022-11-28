@@ -95,6 +95,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper7", "Co
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDxf", "Converters\ConverterDxf\ConverterDxf\ConverterDxf.csproj", "{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterNavisworks", "Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworks.shproj", "{C3232EF3-2000-44C6-A330-B94531C9CC83}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterNavisworks", "ConverterNavisworks", "{A2F9F9A0-0479-4FE0-83B3-AB38A9402821}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2023", "Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks.2023.csproj", "{74081536-2A3E-447D-8F53-BDC5DCB5D98B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -216,6 +222,10 @@ Global
 		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74081536-2A3E-447D-8F53-BDC5DCB5D98B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74081536-2A3E-447D-8F53-BDC5DCB5D98B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74081536-2A3E-447D-8F53-BDC5DCB5D98B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74081536-2A3E-447D-8F53-BDC5DCB5D98B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -263,6 +273,9 @@ Global
 		{1DC0A8F4-1F14-47E8-8456-9D8E9C0E6CFF} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{5A7671D6-57A1-4422-9EBB-79F3C724C0BA} = {1A35077C-2936-4A3D-8D48-65F39F76D999}
 		{C6E9DE1F-2CFF-44AC-9B9A-E71783DF6633} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{C3232EF3-2000-44C6-A330-B94531C9CC83} = {A2F9F9A0-0479-4FE0-83B3-AB38A9402821}
+		{A2F9F9A0-0479-4FE0-83B3-AB38A9402821} = {CCC09288-CE76-4FDB-B0C9-220112F88CD9}
+		{74081536-2A3E-447D-8F53-BDC5DCB5D98B} = {A2F9F9A0-0479-4FE0-83B3-AB38A9402821}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DA57EC2E-0A9E-4F59-B1F7-A65F76A74B74}
@@ -294,6 +307,7 @@ Global
 		Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b9649e07-f7b4-4fcc-9e44-076993621d0a}*SharedItemsImports = 5
 		Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{bc110327-3c61-4c15-ae4c-daae7ca82a7b}*SharedItemsImports = 5
 		Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{bf5515b4-c97c-4fb9-9f93-1740d2b615b3}*SharedItemsImports = 5
+		Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{c3232ef3-2000-44c6-a330-b94531c9cc83}*SharedItemsImports = 13
 		Converters\ConverterMicroStation\ConverterMicroStationOpenShared\ConverterMicroStationOpenShared.projitems*{d8cdf95e-f72d-4f3e-8026-b82863f97d64}*SharedItemsImports = 5
 		Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{dd4add16-65f9-46e0-a610-2b7908a966b3}*SharedItemsImports = 5
 		Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{df4d24c3-2be8-476c-8d40-33892be07b1d}*SharedItemsImports = 5
