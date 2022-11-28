@@ -213,9 +213,8 @@ namespace Objects.Converter.Revit
       var prop = new Property1D();
 
       var stickFamily = (Autodesk.Revit.DB.FamilyInstance)revitStick.Document.GetElement(revitStick.GetElementId());
-      var section = stickFamily.Symbol.GetStructuralSection();
 
-      var speckleSection = GetSectionProfile(section);
+      var speckleSection = GetSectionProfile(stickFamily.Symbol);
 
       var materialType = stickFamily.StructuralMaterialType;
       var structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.StructuralMaterialId);
@@ -284,7 +283,7 @@ namespace Objects.Converter.Revit
   
       var stickFamily = (Autodesk.Revit.DB.FamilySymbol)revitStick.Document.GetElement(revitStick.SectionTypeId);
 
-      var speckleSection = GetSectionProfile(stickFamily.GetStructuralSection());
+      var speckleSection = GetSectionProfile(stickFamily);
 
       var materialType = stickFamily.StructuralMaterialType;
       var structMat = (DB.Material)stickFamily.Document.GetElement(revitStick.MaterialId);
@@ -370,8 +369,12 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private SectionProfile GetSectionProfile(StructuralSection section)
+    private SectionProfile GetSectionProfile(FamilySymbol familySymbol)
     {
+      var section = familySymbol.GetStructuralSection();
+      if (section == null)
+        return null;
+
       var speckleSection = new SectionProfile();
       speckleSection.name = section.StructuralSectionShapeName;
 
@@ -504,25 +507,11 @@ namespace Objects.Converter.Revit
       Structural.Materials.StructuralMaterial speckleMaterial = null;
 
       if (materialType == StructuralMaterialType.Undefined)
-      {
-        switch (materialAsset.StructuralAssetClass)
-        {
-          case StructuralAssetClass.Metal:
-            materialType = StructuralMaterialType.Steel;
-            break;
-          case StructuralAssetClass.Concrete:
-            materialType = StructuralMaterialType.Concrete;
-            break;
-          case StructuralAssetClass.Wood:
-            materialType = StructuralMaterialType.Wood;
-            break;
-        }
-      }
+        materialType = GetMaterialType(materialAsset);
 
       switch (materialType)
       {
         case StructuralMaterialType.Concrete:
-
           var concreteMaterial = new Concrete
           {
             name = name,
@@ -614,6 +603,44 @@ namespace Objects.Converter.Revit
       }
 
       return speckleMaterial;
+    }
+
+    private StructuralMaterialType GetMaterialType(string materialName)
+    {
+      StructuralMaterialType materialType = StructuralMaterialType.Undefined;
+      switch (materialName)
+      {
+        case "Concrete":
+          materialType = StructuralMaterialType.Concrete;
+          break;
+        case "Steel":
+          materialType = StructuralMaterialType.Steel;
+          break;
+        case "Wood":
+          materialType = StructuralMaterialType.Wood;
+          break;
+      }
+
+      return materialType;
+    }
+
+    private StructuralMaterialType GetMaterialType(StructuralAsset materialAsset)
+    {
+      StructuralMaterialType materialType = StructuralMaterialType.Undefined;
+      switch (materialAsset?.StructuralAssetClass)
+      {
+        case StructuralAssetClass.Metal:
+          materialType = StructuralMaterialType.Steel;
+          break;
+        case StructuralAssetClass.Concrete:
+          materialType = StructuralMaterialType.Concrete;
+          break;
+        case StructuralAssetClass.Wood:
+          materialType = StructuralMaterialType.Wood;
+          break;
+      }
+
+      return materialType;
     }
   }
 }
