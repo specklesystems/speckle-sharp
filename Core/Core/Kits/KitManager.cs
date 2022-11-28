@@ -172,7 +172,15 @@ namespace Speckle.Core.Kits
 
           if (!loadedAssemblies.Contains(reference.FullName))
           {
-            var assembly = Assembly.Load(reference);
+            Assembly assembly = null;
+            try
+            {
+              assembly = Assembly.Load(reference);
+            }
+            catch
+            {
+              continue;
+            }
             assembliesToCheck.Enqueue(assembly);
             loadedAssemblies.Add(reference.FullName);
             returnAssemblies.Add(assembly);

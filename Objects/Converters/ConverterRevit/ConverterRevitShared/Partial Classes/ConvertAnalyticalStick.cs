@@ -216,14 +216,21 @@ namespace Objects.Converter.Revit
 
       var speckleSection = GetSectionProfile(stickFamily.Symbol);
 
+
+
       var materialType = stickFamily.StructuralMaterialType;
       var structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.StructuralMaterialId);
       if (structMat == null)
         structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
-      var materialAsset = ((PropertySetElement)structMat.Document.GetElement(structMat.StructuralAssetId)).GetStructuralAsset();
 
-      var name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name;
-      Structural.Materials.StructuralMaterial speckleMaterial = GetStructuralMaterial(materialType, materialAsset, name);
+      Structural.Materials.StructuralMaterial speckleMaterial = null;
+      if (structMat.StructuralAssetId != ElementId.InvalidElementId)
+      {
+        var materialAsset = ((PropertySetElement)structMat.Document.GetElement(structMat.StructuralAssetId)).GetStructuralAsset();
+        var name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name;
+        speckleMaterial = GetStructuralMaterial(materialType, materialAsset, name);
+      }
+
 
       prop.profile = speckleSection;
       prop.material = speckleMaterial;

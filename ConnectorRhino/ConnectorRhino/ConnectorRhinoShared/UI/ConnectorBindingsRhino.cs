@@ -238,6 +238,9 @@ namespace SpeckleRhino
 
     #region receiving 
     public override bool CanPreviewReceive => true;
+
+    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View");
+    
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       // first check if commit is the same and preview objects have already been generated
@@ -277,7 +280,7 @@ namespace SpeckleRhino
           previewObj.CreatedIds = new List<string>() { previewObj.OriginalId }; // temporary store speckle id as created id for Preview report selection to work
 
           var storedObj = StoredObjects[previewObj.OriginalId];
-          if (storedObj.speckle_type.Contains("Block") || storedObj.speckle_type.Contains("View"))
+          if(IsPreviewIgnore(storedObj))
           {
             var status = previewObj.Convertible ? ApplicationObject.State.Created : ApplicationObject.State.Skipped;
             previewObj.Update(status: status, logItem: "No preview available");
@@ -286,12 +289,12 @@ namespace SpeckleRhino
           }
 
           if (previewObj.Convertible)
-            previewObj.Converted = ConvertObject(previewObj, converter);
+            previewObj.Converted = ConvertObject(storedObj, converter);
           else
             foreach (var fallback in previewObj.Fallback)
             {
-              fallback.Converted = ConvertObject(fallback, converter);
-              previewObj.Log.AddRange(fallback.Log);
+              var storedFallback = StoredObjects[fallback.OriginalId];
+              fallback.Converted = ConvertObject(storedFallback, converter);
             }
 
           if (previewObj.Converted == null || previewObj.Converted.Count == 0)
@@ -386,32 +389,41 @@ namespace SpeckleRhino
       {
         RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
 
-      // create preview objects if they don't already exist
-      if (Preview.Count == 0)
-      {
-        // flatten the commit object to retrieve children objs
-        int count = 0;
-        Preview = FlattenCommitObject(commitObject, converter, progress, commitLayerName, ref count);
-
-        // convert
-        foreach (var previewObj in Preview)
+        // create preview objects if they don't already exist
+        if (Preview.Count == 0)
         {
-            var storedObj = StoredObjects[previewObj.OriginalId];
-            if (storedObj == null)
+          // flatten the commit object to retrieve children objs
+          int count = 0;
+          Preview = FlattenCommitObject(commitObject, converter, progress, commitLayerName, ref count);
+
+          // convert
+          foreach (var previewObj in Preview)
+          {
+            if (previewObj.Convertible)
             {
-              previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't retrieve stored object from bindings");
-              continue;
+              var storedObj = StoredObjects[previewObj.OriginalId];
+              if (storedObj == null)
+              {
+                previewObj.Update(status: ApplicationObject.State.Failed,
+                  logItem: $"Couldn't retrieve stored object from bindings");
+                continue;
+              }
+              
+              if (!IsPreviewIgnore(storedObj))
+              {
+                previewObj.Converted = ConvertObject(storedObj, converter);
+              }
             }
-            if (previewObj.Convertible && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("View"))
-              previewObj.Converted = ConvertObject(storedObj, converter);
             else
+            {
               foreach (var fallback in previewObj.Fallback)
               {
-                fallback.Converted = ConvertObject(fallback, converter);
-                previewObj.Log.AddRange(fallback.Log);
+                var storedFallback = StoredObjects[ fallback.OriginalId ];
+                fallback.Converted = ConvertObject(storedFallback, converter);
               }
+            }
 
-            if (previewObj.Converted == null || previewObj.Converted.Count == 0 && !storedObj.speckle_type.Contains("Block") && !storedObj.speckle_type.Contains("View"))
+            if (previewObj.Converted == null || previewObj.Converted.Count == 0)
             {
               var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
               if (convertedFallback != null && convertedFallback.Count() > 0)
@@ -668,7 +680,7 @@ namespace SpeckleRhino
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
       // check if this is a view or block - convert instead of bake if so (since these are "baked" during conversion)
-      if (!appObj.Converted.Any() && (obj.speckle_type.Contains("Block") || obj.speckle_type.Contains("View")))
+      if (!appObj.Converted.Any() && IsPreviewIgnore(obj))
       {
         appObj.Converted = ConvertObject(obj, converter);
       }
