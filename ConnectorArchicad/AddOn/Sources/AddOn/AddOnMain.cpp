@@ -7,7 +7,7 @@
 #include "FileSystem.hpp"
 
 #include "Commands/GetModelForElements.hpp"
-#include "Commands/GetSelectedApplicationIds.hpp"
+#include "Commands/GetElementIds.hpp"
 #include "Commands/GetElementTypes.hpp"
 #include "Commands/GetWallData.hpp"
 #include "Commands/GetDoorData.hpp"
@@ -162,7 +162,7 @@ static GSErrCode MenuCommandHandler(const API_MenuParams* menuParams)
 static GSErrCode RegisterAddOnCommands()
 {
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetModelForElements>()));
-  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSelectedApplicationIds>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetElementIds>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetElementTypes>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetWallData>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetDoorData>()));

@@ -12,6 +12,8 @@ using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Models.Filters;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Floor = Objects.BuiltElements.Floor;
 using Wall = Objects.BuiltElements.Wall;
@@ -48,18 +50,28 @@ namespace Archicad
 
     #region --- Functions ---
 
-    public async Task<Base?> ConvertToSpeckle(IEnumerable<string> elementIds, CancellationToken token)
+    public async Task<Base?> ConvertToSpeckle(ISelectionFilter filter, ProgressViewModel progress)
     {
       var objectToCommit = new Base();
 
-      SelectedObjects = await GetElementsType(elementIds, token);  // Gets all selected objects
+      IEnumerable<string> elementIds = filter.Selection;
+      if (filter.Slug == "all")
+        elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))?.Result;
+
+      SelectedObjects = await GetElementsType(elementIds, progress.CancellationTokenSource.Token);  // Gets all selected objects
       SelectedObjects = SortSelectedObjects();
 
       foreach (var (element, guids) in SelectedObjects) // For all kind of selected objects (like window, door, wall, etc.)
       {
-        var objects = await ConvertOneTypeToSpeckle(guids, ElementTypeProvider.GetTypeByName(element), token);  // Deserialize all objects with hiven type
+        var objects = await ConvertOneTypeToSpeckle(guids, ElementTypeProvider.GetTypeByName(element), progress.CancellationTokenSource.Token);  // Deserialize all objects with hiven type
         if (objects.Count() > 0)
+        {
           objectToCommit["@" + element] = objects;  // Save 'em. Assigned objects are parents with subelements
+
+          // itermediate solution for the OneClick Send report
+          for (int i = 0; i < objects.Count(); i++)
+            progress.Report.ReportObjects.Add(new ApplicationObject("", ""));
+        }
       }
 
       return objectToCommit;
