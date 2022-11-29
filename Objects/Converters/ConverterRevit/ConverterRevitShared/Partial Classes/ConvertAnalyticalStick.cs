@@ -1,6 +1,5 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using Autodesk.Revit.DB.Structure.StructuralSections;
 using Objects.BuiltElements.Revit;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
@@ -216,24 +215,13 @@ namespace Objects.Converter.Revit
 
       var speckleSection = GetSectionProfile(stickFamily.Symbol);
 
-
-
-      var materialType = stickFamily.StructuralMaterialType;
       var structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.StructuralMaterialId);
       if (structMat == null)
         structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.Symbol.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
 
-      Structural.Materials.StructuralMaterial speckleMaterial = null;
-      if (structMat.StructuralAssetId != ElementId.InvalidElementId)
-      {
-        var materialAsset = ((PropertySetElement)structMat.Document.GetElement(structMat.StructuralAssetId)).GetStructuralAsset();
-        var name = stickFamily.Document.GetElement(stickFamily.StructuralMaterialId).Name;
-        speckleMaterial = GetStructuralMaterial(materialType, materialAsset, name);
-      }
-
 
       prop.profile = speckleSection;
-      prop.material = speckleMaterial;
+      prop.material = GetStructuralMaterial(structMat);
       prop.name = revitStick.Document.GetElement(revitStick.GetElementId()).Name;
 
       var structuralElement = revitStick.Document.GetElement(revitStick.GetElementId());
@@ -292,17 +280,12 @@ namespace Objects.Converter.Revit
 
       var speckleSection = GetSectionProfile(stickFamily);
 
-      var materialType = stickFamily.StructuralMaterialType;
       var structMat = (DB.Material)stickFamily.Document.GetElement(revitStick.MaterialId);
       if (structMat == null)
         structMat = (DB.Material)stickFamily.Document.GetElement(stickFamily.get_Parameter(BuiltInParameter.STRUCTURAL_MATERIAL_PARAM).AsElementId());
-      var materialAsset = ((PropertySetElement)structMat.Document.GetElement(structMat.StructuralAssetId)).GetStructuralAsset();
-
-      var name = structMat.Document.GetElement(structMat.StructuralAssetId).Name;
-      var speckleMaterial = GetStructuralMaterial(materialType, materialAsset, name);
 
       prop.profile = speckleSection;
-      prop.material = speckleMaterial;
+      prop.material = GetStructuralMaterial(structMat);
       prop.name = stickFamily.Name;
 
       var mark = GetParamValue<string>(stickFamily, BuiltInParameter.ALL_MODEL_MARK);
@@ -509,6 +492,24 @@ namespace Objects.Converter.Revit
       return speckleSection;
     }
 
+    private StructuralMaterial GetStructuralMaterial(Material material)
+    {
+      if (material == null)
+        return null;
+
+      StructuralAsset materialAsset = null;
+      string name = null;
+      if (material.StructuralAssetId != ElementId.InvalidElementId)
+      {
+        materialAsset = ((PropertySetElement)material.Document.GetElement(material.StructuralAssetId)).GetStructuralAsset();
+
+        name = material.Document.GetElement(material.StructuralAssetId)?.Name;
+      }
+      var materialName = material.MaterialClass;
+      var materialType = GetMaterialType(materialName);
+      return GetStructuralMaterial(materialType, materialAsset, name);
+    }
+
     private StructuralMaterial GetStructuralMaterial(StructuralMaterialType materialType, StructuralAsset materialAsset, string name)
     {
       Structural.Materials.StructuralMaterial speckleMaterial = null;
@@ -516,6 +517,7 @@ namespace Objects.Converter.Revit
       if (materialType == StructuralMaterialType.Undefined && materialAsset != null)
         materialType = GetMaterialType(materialAsset);
 
+      name ??= materialType.ToString();
       switch (materialType)
       {
         case StructuralMaterialType.Concrete:
@@ -615,15 +617,15 @@ namespace Objects.Converter.Revit
     private StructuralMaterialType GetMaterialType(string materialName)
     {
       StructuralMaterialType materialType = StructuralMaterialType.Undefined;
-      switch (materialName)
+      switch (materialName.ToLower())
       {
-        case "Concrete":
+        case "concrete":
           materialType = StructuralMaterialType.Concrete;
           break;
-        case "Steel":
+        case "steel":
           materialType = StructuralMaterialType.Steel;
           break;
-        case "Wood":
+        case "wood":
           materialType = StructuralMaterialType.Wood;
           break;
       }

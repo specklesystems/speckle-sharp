@@ -262,27 +262,6 @@ namespace Objects.Converter.Revit
       return speckleElement2D;
     }
 #endif
-
-    private StructuralMaterial GetStructuralMaterial(Material structMaterial)
-    {
-      StructuralAsset materialAsset = null;
-      string name = null;
-      if (structMaterial.StructuralAssetId != ElementId.InvalidElementId)
-      {
-        materialAsset = ((PropertySetElement)structMaterial.Document.GetElement(structMaterial.StructuralAssetId)).GetStructuralAsset();
-
-        name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId)?.Name;
-      }
-      var materialName = structMaterial.MaterialClass;
-
-      return GetStructuralMaterial(materialName, materialAsset, name);
-    }
-
-    private StructuralMaterial GetStructuralMaterial(string materialName, StructuralAsset materialAsset, string name)
-    {
-      var materialType = GetMaterialType(materialName);
-      return GetStructuralMaterial(materialType, materialAsset, name);
-    }
   }
 
 }
