@@ -448,12 +448,13 @@ namespace SpeckleRhino
 
           // check receive mode & if objects need to be removed from the document after bake (or received objs need to be moved layers)
           var toRemove = new List<RhinoObject>();
+          var layer = previewObj.Container;
           switch (state.ReceiveMode)
           {
             case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
               if (toRemove.Any())
-                previewObj.Container = Doc.Layers[toRemove.First().Attributes.LayerIndex].FullPath;
+                layer = Doc.Layers[toRemove.First().Attributes.LayerIndex].FullPath;
               toRemove.ForEach(o => Doc.Objects.Delete(o));
               break;
             default:
@@ -467,7 +468,7 @@ namespace SpeckleRhino
 
           if (previewObj.Convertible)
           {
-            BakeObject(previewObj, converter);
+            BakeObject(previewObj, converter, layer);
             previewObj.Status = !previewObj.CreatedIds.Any() ? ApplicationObject.State.Failed : 
             isUpdate ? ApplicationObject.State.Updated : 
             ApplicationObject.State.Created;
@@ -475,7 +476,7 @@ namespace SpeckleRhino
           else
           {
             foreach (var fallback in previewObj.Fallback)
-              BakeObject(fallback, converter, previewObj);
+              BakeObject(fallback, converter, layer, previewObj);
             previewObj.Status = previewObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == previewObj.Fallback.Count ?
               ApplicationObject.State.Failed : isUpdate ?
               ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -682,7 +683,7 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, string layer, ApplicationObject parent = null)
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
@@ -696,7 +697,6 @@ namespace SpeckleRhino
         switch (convertedItem)
         {
           case GeometryBase o:
-            string layerPath = appObj.Container;
             if (!o.IsValidWithLog(out string log))
             {
               var invalidMessage = $"{log.Replace("\n", "").Replace("\r", "")}";
@@ -706,10 +706,10 @@ namespace SpeckleRhino
                 appObj.Update(logItem: invalidMessage);
               continue;
             }
-            Layer bakeLayer = Doc.GetLayer(layerPath, true);
+            Layer bakeLayer = Doc.GetLayer(layer, true);
             if (bakeLayer == null)
             {
-              var layerMessage = $"Could not create layer {layerPath}.";
+              var layerMessage = $"Could not create layer {layer}.";
               if (parent != null)
                 parent.Update(logItem: $"fallback {appObj.id}: {layerMessage}");
               else
