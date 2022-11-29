@@ -452,6 +452,8 @@ namespace SpeckleRhino
           {
             case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
+              if (toRemove.Any())
+                previewObj.Container = Doc.Layers[toRemove.First().Attributes.LayerIndex].FullPath;
               toRemove.ForEach(o => Doc.Objects.Delete(o));
               break;
             default:
@@ -464,7 +466,12 @@ namespace SpeckleRhino
           previewObj.CreatedIds.Clear(); // clear created ids before bake because these may be speckle ids from the preview
 
           if (previewObj.Convertible)
+          {
             BakeObject(previewObj, converter);
+            previewObj.Status = !previewObj.CreatedIds.Any() ? ApplicationObject.State.Failed : 
+            isUpdate ? ApplicationObject.State.Updated : 
+            ApplicationObject.State.Created;
+          }
           else
           {
             foreach (var fallback in previewObj.Fallback)
