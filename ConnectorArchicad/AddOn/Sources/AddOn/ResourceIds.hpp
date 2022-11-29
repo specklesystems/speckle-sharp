@@ -6,7 +6,7 @@
 
 #define CommandNamespace						"Speckle";
 #define GetModelForElementsCommandName			"GetModelForElements";
-#define GetSelectedApplicationIdsCommandName 		"GetSelectedApplicationIds";
+#define GetElementIdsCommandName 				"GetElementIds";
 #define GetElementTypesCommandName				"GetElementTypes";
 #define GetWallDataCommandName					"GetWallData";
 #define GetDoorCommandName				        "GetDoorData";

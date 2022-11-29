@@ -4,6 +4,7 @@
 static const char* ApplicationIdFieldName = "applicationId";
 static const char* ApplicationIdsFieldName = "applicationIds";
 static const char* ParentElementIdFieldName = "parentApplicationId";
+static const char* ElementFilterFieldName = "elementFilter";
 static const char* ElementTypeFieldName = "elementType";
 static const char* ElementTypesFieldName = "elementTypes";
 static const char* ElementsFieldName = "elements";
