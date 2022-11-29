@@ -266,14 +266,16 @@ namespace Objects.Converter.Revit
     private StructuralMaterial GetStructuralMaterial(Material structMaterial)
     {
       StructuralAsset materialAsset = null;
+      string name = null;
       if (structMaterial.StructuralAssetId != ElementId.InvalidElementId)
       {
         materialAsset = ((PropertySetElement)structMaterial.Document.GetElement(structMaterial.StructuralAssetId)).GetStructuralAsset();
-      }
-      var materialType = structMaterial.MaterialClass;
-      var revitMaterial = structMaterial.Document.GetElement(structMaterial.StructuralAssetId);
 
-      return GetStructuralMaterial(materialType, materialAsset, revitMaterial.Name);
+        name = structMaterial.Document.GetElement(structMaterial.StructuralAssetId)?.Name;
+      }
+      var materialName = structMaterial.MaterialClass;
+
+      return GetStructuralMaterial(materialName, materialAsset, name);
     }
 
     private StructuralMaterial GetStructuralMaterial(string materialName, StructuralAsset materialAsset, string name)
