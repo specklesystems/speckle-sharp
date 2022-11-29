@@ -109,7 +109,7 @@ namespace Objects.Converter.Revit
       switch (@object)
       {
         case DB.Document o:
-          returnObject = ModelToSpeckle(o);
+          returnObject = ModelToSpeckle(o, !o.IsFamilyDocument);
           break;
         case DB.DetailCurve o:
           returnObject = DetailCurveToSpeckle(o);

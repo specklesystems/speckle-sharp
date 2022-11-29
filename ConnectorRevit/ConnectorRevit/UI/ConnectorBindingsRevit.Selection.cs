@@ -159,7 +159,10 @@ namespace Speckle.ConnectorRevit.UI
 
           case "all":
             //add these only for the current doc
-            selection.Add(currentDoc.ProjectInformation);
+            if (!currentDoc.IsFamilyDocument)
+            {
+              selection.Add(currentDoc.ProjectInformation);
+            }
             selection.AddRange(currentDoc.Views2D());
             selection.AddRange(currentDoc.Views3D());
 
