@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
+using Autodesk.Revit.DB.Structure.StructuralSections;
 using Objects.BuiltElements.Revit;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
