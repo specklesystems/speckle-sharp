@@ -513,7 +513,7 @@ namespace Objects.Converter.Revit
     {
       Structural.Materials.StructuralMaterial speckleMaterial = null;
 
-      if (materialType == StructuralMaterialType.Undefined)
+      if (materialType == StructuralMaterialType.Undefined && materialAsset != null)
         materialType = GetMaterialType(materialAsset);
 
       switch (materialType)
