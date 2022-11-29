@@ -294,7 +294,12 @@ namespace Objects.Converter.CSI
         if (CSIelement1D.SpandrelAssignment != null) { Model.FrameObj.SetSpandrel(CSIelement1D.name, CSIelement1D.SpandrelAssignment); }
         if (CSIelement1D.PierAssignment != null) { Model.FrameObj.SetPier(CSIelement1D.name, CSIelement1D.PierAssignment); }
         if (CSIelement1D.CSILinearSpring != null) { Model.FrameObj.SetSpringAssignment(CSIelement1D.name, CSIelement1D.CSILinearSpring.name); }
-        if (CSIelement1D.DesignProcedure != null)
+        if (CSIelement1D.Modifiers != null)
+        {
+          var modifiers = CSIelement1D.Modifiers;
+          Model.FrameObj.SetModifiers(CSIelement1D.name, ref modifiers);
+        }
+        if (CSIelement1D.property.material.name != null)
         {
           switch (CSIelement1D.DesignProcedure)
           {
@@ -320,11 +325,10 @@ namespace Objects.Converter.CSI
               Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 7);
               break;
           }
-          if (CSIelement1D.Modifiers != null)
-          {
-            var modifiers = CSIelement1D.Modifiers;
-            Model.FrameObj.SetModifiers(CSIelement1D.name, ref modifiers);
-          }
+        }
+        else
+        {
+          Model.FrameObj.SetDesignProcedure(CSIelement1D.name, 0);
         }
       }
 
