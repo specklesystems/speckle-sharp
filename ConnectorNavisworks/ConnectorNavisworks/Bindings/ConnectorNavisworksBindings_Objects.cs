@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using DesktopUI2;
-using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -12,10 +11,12 @@ namespace Speckle.ConnectorNavisworks.Bindings
 {
     public partial class ConnectorBindingsNavisworks
     {
-        public override List<string> GetSelectedObjects()
+      
+        public override List<string> GetObjectsInView() // this returns all visible doc objects.
         {
-            var objects = new List<string>();
+            List<string> objects = new List<string>();
             return objects;
         }
+        
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using DesktopUI2.ViewModels;
+using ReactiveUI;
 using Application = Autodesk.Navisworks.Api.Application;
 using Document = Autodesk.Navisworks.Api.Document;
 
@@ -14,12 +15,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
             // Navisworks is an SDI (Single Document Interface) and on launch has an initial empty document.
             // Loading a file doesn't trigger the ActiveDocumentChanged event.
             // Instead it amends it in place. We can listen to the filename changing to get the intuitive event.
-            Application.ActiveDocument.FileNameChanged += Application_DocumentChanged;
+            Doc.FileNameChanged += DocumentChangedEvent;
+            Doc.SelectionSets.Changed += SetsChangedEvent;
         }
+
+
+        private void SetsChangedEvent(object sender, EventArgs e)
+        {
+            SavedSets = Doc.SelectionSets;
+            UpdateSelectedStream?.Invoke();
+
+            MainViewModel.Home.RaisePropertyChanged($"AvailableFilters");
+        }
+
 
         // Triggered when the active document name is changed.
         // This will happen automatically if a document is newly created or opened.
-        private void Application_DocumentChanged(object sender, EventArgs e)
+        private void DocumentChangedEvent(object sender, EventArgs e)
         {
             Document doc = sender as Document;
 
