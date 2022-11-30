@@ -636,10 +636,12 @@ namespace DesktopUI2.ViewModels
       {
         if (CanReceive)
         {
-          if (!ReceiveModes.Any())
-            throw new SpeckleException("No Receive Mode is available.");
           //receive modes
           ReceiveModes = Bindings.GetReceiveModes();
+
+          if (!ReceiveModes.Any())
+            throw new SpeckleException("No Receive Mode is available.");
+
           //by default the first available receive mode is selected
           SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
         }
