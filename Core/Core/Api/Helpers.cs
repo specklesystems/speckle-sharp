@@ -261,7 +261,7 @@ namespace Speckle.Core.Api
     public static string InstallApplicationDataPath =>
 
         Assembly.GetAssembly(typeof(Helpers)).Location.Contains("ProgramData")
-          ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+          ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData, Environment.SpecialFolderOption.Create)
           : UserApplicationDataPath;
 
 
@@ -278,7 +278,7 @@ namespace Speckle.Core.Api
     public static string UserApplicationDataPath =>
       !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(_speckleUserDataEnvVar)) ?
       Environment.GetEnvironmentVariable(_speckleUserDataEnvVar) :
-      Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+      Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create);
 
 
 
