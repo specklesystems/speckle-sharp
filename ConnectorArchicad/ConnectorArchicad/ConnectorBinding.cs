@@ -81,13 +81,18 @@ namespace Archicad.Launcher
 
     public override List<string> GetSelectedObjects()
     {
-      var elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetSelectedElements())?.Result;
+      var elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.Selection))?.Result;
       return elementIds is null ? new List<string>() : elementIds.ToList();
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      return new List<ISelectionFilter> { new ManualSelectionFilter() };
+      return new List<ISelectionFilter>()
+      {
+        new ManualSelectionFilter(),
+        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." }
+      };
+
     }
 
     public override List<StreamState> GetStreamsInFile()
@@ -138,8 +143,8 @@ namespace Archicad.Launcher
         return null;
 
       var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(
-        state.Filter.Selection,
-        progress.CancellationTokenSource.Token);
+        state.Filter,
+        progress);
 
       if (commitObject is not null)
       {
