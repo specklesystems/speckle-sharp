@@ -2,8 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Avalonia.Threading;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -97,6 +99,10 @@ namespace Speckle.ConnectorRevit.UI
 
             conversionProgressDict["Conversion"]++;
             progress.Update(conversionProgressDict);
+
+            var s = new CancellationTokenSource();
+            DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(1));
+            Dispatcher.UIThread.MainLoop(s.Token);
 
             convertedCount++;
 
