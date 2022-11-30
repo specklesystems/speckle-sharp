@@ -462,11 +462,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // bake
             if (commitObj.Convertible)
-              BakeObject(commitObj, converter, tr, existingObjs);
+            {
+              BakeObject(commitObj, converter, tr, layer, existingObjs);
+              commitObj.Status = !commitObj.CreatedIds.Any() ? ApplicationObject.State.Failed :
+                existingObjs.Count > 0 ? ApplicationObject.State.Updated :
+                ApplicationObject.State.Created;
+            }
             else
             {
               foreach (var fallback in commitObj.Fallback)
-                BakeObject(fallback, converter, tr, existingObjs, commitObj);
+                BakeObject(fallback, converter, tr, layer, existingObjs, commitObj);
               commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
                 ApplicationObject.State.Failed : existingObjs.Count > 0 ?
                 ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -604,7 +609,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return convertedList;
     }
 
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, List<ObjectId> toRemove, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, string layer, List<ObjectId> toRemove, ApplicationObject parent = null)
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
@@ -619,8 +624,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             if (o == null)
               continue;
 
-            string layerPath = appObj.Container;
-            if (GetOrMakeLayer(layerPath, tr, out string cleanName))
+            if (GetOrMakeLayer(layer, tr, out string cleanName))
             {
               var res = o.Append(cleanName);
               if (res.IsValid)
@@ -683,7 +687,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             }
             else
             {
-              var layerMessage = $"Could not create layer {layerPath}.";
+              var layerMessage = $"Could not create layer {layer}.";
               if (parent != null)
                 parent.Update(logItem: $"fallback {appObj.id}: {layerMessage}");
               else
