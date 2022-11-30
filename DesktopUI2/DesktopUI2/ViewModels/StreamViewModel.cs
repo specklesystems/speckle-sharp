@@ -434,7 +434,7 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("HasSettings");
       }
     }
-    public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
+
 
     public string _previewImageUrl = "";
     public string PreviewImageUrl
@@ -474,6 +474,7 @@ namespace DesktopUI2.ViewModels
 
     public bool CanOpenCommentsIn3DView { get; set; } = false;
     public bool CanReceive { get; set; }
+    public bool HasSettings { get; set; } = true;
     private bool _isAddingBranches = false;
 
     #endregion
@@ -648,6 +649,7 @@ namespace DesktopUI2.ViewModels
 
         //get available settings from our bindings
         Settings = Bindings.GetSettings();
+        HasSettings = Settings.Any();
 
         //get available filters from our bindings
         AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
