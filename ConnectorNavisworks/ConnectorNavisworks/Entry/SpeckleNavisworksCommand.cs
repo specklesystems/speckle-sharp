@@ -45,9 +45,9 @@ namespace Speckle.ConnectorNavisworks.Entry
                 // ignore
             }
 
-            var navisActiveDocument = Autodesk.Navisworks.Api.Application.ActiveDocument;
+            var navisworksActiveDocument = Autodesk.Navisworks.Api.Application.ActiveDocument;
 
-            var bindings = new ConnectorBindingsNavisworks(navisActiveDocument);
+            var bindings = new ConnectorBindingsNavisworks(navisworksActiveDocument);
             bindings.RegisterAppEvents();
             var viewModel = new MainViewModel(bindings);
 

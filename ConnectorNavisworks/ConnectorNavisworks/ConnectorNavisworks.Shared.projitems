@@ -9,6 +9,8 @@
     <Import_RootNamespace>Speckle.ConnectorNavisworks</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Objects.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Filters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Selections.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_File.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Mapping.cs" />
@@ -17,7 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\Commands.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommandPlugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Ribbon.xaml.cs">

@@ -51,6 +51,7 @@
     <None Remove="Views\Filters\ListFilterView.xaml" />
     <None Remove="Views\Filters\ManualFilterView.xaml" />
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
+    <None Remove="Views\Filters\TreeFilterView.xaml" />
     <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\MappingsControl.xaml" />
@@ -139,6 +140,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Filters\AllFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Filters\TreeFilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Filters\ListFilterView.xaml">
@@ -286,6 +290,9 @@
     <Compile Update="Views\Filters\AllFilterView.xaml.cs">
       <DependentUpon>AllFilterView.xaml</DependentUpon>
     </Compile>
+    <Compile Update="Views\Filters\ListFilterView - Copy.xaml.cs">
+      <DependentUpon>ListFilterView.xaml</DependentUpon>
+    </Compile>
     <Compile Update="Views\Filters\ListFilterView.xaml.cs">
       <DependentUpon>ListFilterView.xaml</DependentUpon>
     </Compile>
@@ -394,5 +401,10 @@
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
 			<PrivateAssets>all</PrivateAssets>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="navisworks.gui.common">
+      <HintPath>..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\navisworks.gui.common.dll</HintPath>
+    </Reference>
   </ItemGroup>
 </Project>
