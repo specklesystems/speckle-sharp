@@ -35,13 +35,16 @@ namespace Objects.Converter.CSI
       }
       return element1D.name;
     }
-    public object FrameToNative(Element1D element1D)
+    public ApplicationObject FrameToNative(Element1D element1D)
     {
+      var appObj = new ApplicationObject(element1D.id, element1D.speckle_type) { applicationId = element1D.applicationId };
+
       if (GetAllFrameNames(Model).Contains(element1D.name))
       {
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"There is already a frame object named {element1D.name} in the model");
+        return appObj;
       }
-      string units = ModelUnits();
+
       string newFrame = "";
       Line baseline = element1D.baseLine;
       string[] properties = new string[] { };
@@ -102,7 +105,8 @@ namespace Objects.Converter.CSI
         Model.FrameObj.SetGUID(newFrame, element1D.id);
       }
 
-      return element1D.name;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: newFrame);
+      return appObj;
     }
 
     public CSIElement1D FrameToSpeckle(string name)

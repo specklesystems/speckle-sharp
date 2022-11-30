@@ -1,6 +1,8 @@
-﻿using DesktopUI2;
+﻿using Avalonia.Threading;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using Speckle.ConnectorCSI.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -10,12 +12,15 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
+    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
     public override bool CanPreviewReceive => false;
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
@@ -32,7 +37,7 @@ namespace Speckle.ConnectorCSI.UI
       var converter = kit.LoadConverter(appName);
       converter.SetContextDocument(Model);
       Exceptions.Clear();
-      //var previouslyRecieveObjects = state.ReceivedObjects;
+      var previouslyReceivedObjects = state.ReceivedObjects;
 
       if (converter == null)
       {
@@ -97,12 +102,14 @@ namespace Speckle.ConnectorCSI.UI
         // Do nothing!
       }
 
-
       if (progress.Report.OperationErrorsCount != 0)
         return state;
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
+
+      Preview.Clear();
+      StoredObjects.Clear();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
@@ -114,11 +121,20 @@ namespace Speckle.ConnectorCSI.UI
         progress.Update(conversionProgressDict);
       };
 
-      var commitObjs = FlattenCommitObject(commitObject, converter);
-      foreach (var commitObj in commitObjs)
+      Preview = FlattenCommitObject(commitObject, converter);
+      foreach (var previewObj in Preview)
+        progress.Report.Log(previewObj);
+
+      converter.ReceiveMode = state.ReceiveMode;
+      // needs to be set for editing to work 
+      //converter.SetPreviousContextObjects(previouslyReceivedObjects);
+
+      var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+      // receive was cancelled by user
+      if (newPlaceholderObjects == null)
       {
-        BakeObject(commitObj, state, converter);
-        updateProgressAction?.Invoke();
+        progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
+        return null;
       }
 
       try
@@ -137,25 +153,51 @@ namespace Speckle.ConnectorCSI.UI
       return state;
     }
 
-    /// <summary>
-    /// conversion to native
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="state"></param>
-    /// <param name="converter"></param>
-    private void BakeObject(Base obj, StreamState state, ISpeckleConverter converter)
+    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
-      try
+      var placeholders = new List<ApplicationObject>();
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 1;
+
+      foreach (var obj in Preview)
       {
-        converter.ReceiveMode = state.ReceiveMode;
-        converter.ConvertToNative(obj);
+        var @base = StoredObjects[obj.OriginalId];
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          placeholders = null;
+          break;
+        }
+
+        try
+        {
+          var convRes = converter.ConvertToNative(@base);
+
+          switch (convRes)
+          {
+            case ApplicationObject o:
+              placeholders.Add(o);
+              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
+              progress.Report.UpdateReportObject(obj);
+              break;
+            default:
+              break;
+          }
+        }
+        catch (Exception e)
+        {
+          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          progress.Report.UpdateReportObject(obj);
+        }
+
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
+
+        //var s = new CancellationTokenSource();
+        //DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
+        //Dispatcher.UIThread.MainLoop(s.Token);
       }
-      catch (Exception e)
-      {
-        var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}");
-        converter.Report.LogOperationError(exception);
-        return;
-      }
+
+      return placeholders;
     }
 
     /// <summary>
@@ -164,20 +206,24 @@ namespace Speckle.ConnectorCSI.UI
     /// <param name="obj"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
     {
-      List<Base> objects = new List<Base>();
+      var objects = new List<ApplicationObject>();
 
       if (obj is Base @base)
       {
+        var appObj = new ApplicationObject(@base.id, ConnectorCSIUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
+
         if (converter.CanConvertToNative(@base))
         {
-          objects.Add(@base);
+          appObj.Convertible = true;
+          objects.Add(appObj);
+          StoredObjects.Add(@base.id, @base);
           return objects;
         }
         else
         {
-          foreach (var prop in @base.GetDynamicMembers())
+          foreach (var prop in @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
             objects.AddRange(FlattenCommitObject(@base[prop], converter));
           return objects;
         }
@@ -197,8 +243,17 @@ namespace Speckle.ConnectorCSI.UI
         return objects;
       }
 
+      else
+      {
+        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
+        {
+          var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
+          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Revit");
+          objects.Add(appObj);
+        }
+      }
+
       return objects;
     }
-
   }
 }

@@ -24,11 +24,14 @@ namespace Objects.Converter.CSI
       }
       return area.name;
     }
-    public object AreaToNative(Element2D area)
+    public ApplicationObject AreaToNative(Element2D area)
     {
+      var appObj = new ApplicationObject(area.id, area.speckle_type) { applicationId = area.applicationId };
+
       if (GetAllAreaNames(Model).Contains(area.name))
       {
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"There is already a frame object named {area.name} in the model");
+        return appObj;
       }
       string name = "";
       int numPoints = area.topology.Count();
@@ -99,8 +102,8 @@ namespace Objects.Converter.CSI
 
       }
 
-
-      return name;
+      appObj.Update(status: ApplicationObject.State.Created, createdId: name);
+      return appObj;
 
     }
 
