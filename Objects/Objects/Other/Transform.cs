@@ -179,11 +179,10 @@ namespace Objects.Other
     /// </summary>
     public List<double> ApplyToVector(List<double> vector)
     {
-      var newPoint = new List<double>(4) { vector[0], vector[1], vector[2], 1 };
+      var newPoint = new List<double>();
 
       for (var i = 0; i < 16; i += 4)
-        newPoint[i / 4] = newPoint[0] * value[i] + newPoint[1] * value[i + 1] +
-                            newPoint[2] * value[i + 2];
+        newPoint.Add(vector[0] * value[i] + vector[1] * value[i + 1] + vector[2] * value[i + 2]);
 
       return new List<double>(3)
         { newPoint[ 0 ], newPoint[ 1 ], newPoint[ 2 ] };
