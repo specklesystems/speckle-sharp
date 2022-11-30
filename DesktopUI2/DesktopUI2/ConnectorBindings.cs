@@ -36,6 +36,11 @@ namespace DesktopUI2
     #endregion
 
     #region virtual methods & properties
+    /// <summary>
+    /// Indicates if the connector can Receive and if that function has been implemented
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool CanReceive => true;
     public virtual bool CanSelectObjects => false;
 
     public virtual bool CanTogglePreview => false;

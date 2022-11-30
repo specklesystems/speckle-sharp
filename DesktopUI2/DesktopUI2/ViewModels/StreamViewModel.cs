@@ -473,6 +473,7 @@ namespace DesktopUI2.ViewModels
     }
 
     public bool CanOpenCommentsIn3DView { get; set; } = false;
+    public bool CanReceive { get; set; }
     private bool _isAddingBranches = false;
 
     #endregion
@@ -537,6 +538,7 @@ namespace DesktopUI2.ViewModels
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
         CanOpenCommentsIn3DView = Bindings.CanOpen3DView;
+        CanReceive = Bindings.CanReceive;
 
         if (Client == null)
         {
@@ -632,10 +634,15 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        //receive modes
-        ReceiveModes = Bindings.GetReceiveModes();
-        //by default the first available receive mode is selected
-        SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
+        if (CanReceive)
+        {
+          if (!ReceiveModes.Any())
+            throw new SpeckleException("No Receive Mode is available.");
+          //receive modes
+          ReceiveModes = Bindings.GetReceiveModes();
+          //by default the first available receive mode is selected
+          SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
+        }
 
         //get available settings from our bindings
         Settings = Bindings.GetSettings();
