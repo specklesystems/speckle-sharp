@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Microsoft.Data.Sqlite;
 using Microsoft.Data.Sqlite;
 using Speckle.Core.Api;
 
@@ -58,7 +58,16 @@ namespace Speckle.Core.Transports
         scope = "Data";
       _Scope = scope;
 
-      Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
+      var dir = Path.Combine(basePath, applicationName);
+      try
+      {
+        Directory.CreateDirectory(dir); //ensure dir is there
+      }
+      catch (Exception ex)
+      {
+        throw new Exception($"Cound not create {dir}", ex);
+      }
+
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
       //fix for network drives: https://stackoverflow.com/a/18506097/826060
