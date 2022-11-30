@@ -1,0 +1,206 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Controls.StreamEditControls.Send"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-30deg)" />
+    </Style>
+    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-45deg)" />
+    </Style>
+  </UserControl.Styles>
+  <StackPanel Orientation="Vertical">
+    <Grid
+      Margin="15"
+      HorizontalAlignment="Stretch"
+      ColumnDefinitions="auto,*"
+      RowDefinitions="auto,auto">
+
+
+      <TextBlock
+        VerticalAlignment="Center"
+        Classes="SpeckleFont"
+        FontWeight="Bold"
+        Text="Model (branch):" />
+
+      <ComboBox
+        Grid.Column="1"
+        Margin="5,10,5,10"
+        HorizontalAlignment="Stretch"
+        VerticalAlignment="Center"
+        Items="{Binding BranchesViewModel}"
+        PlaceholderText="Select a model (branch)"
+        SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
+        <ComboBox.ItemsPanel />
+        <ComboBox.ItemTemplate>
+          <DataTemplate>
+            <Grid ColumnDefinitions="auto,*">
+              <!--<icons:MaterialIcon
+                Margin="0,0,5,0"
+                Foreground="DarkGray"
+                Kind="{Binding Icon}" />-->
+              <TextBlock
+                Grid.Column="1"
+                Text="{Binding Branch.name}"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </DataTemplate>
+        </ComboBox.ItemTemplate>
+      </ComboBox>
+
+
+
+      <!--  FILTER & SETTINGS  -->
+      <Expander
+        Grid.Row="1"
+        Grid.ColumnSpan="2"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Classes="Edit"
+        IsExpanded="{Binding IsExpanded}">
+        <Expander.Header>
+          <StackPanel Orientation="Horizontal">
+            <TextBlock
+              Grid.Row="1"
+              VerticalAlignment="Center"
+              Classes="SpeckleFont"
+              FontWeight="Bold"
+              Text="Selection: " />
+
+            <TextBlock
+              Grid.Row="1"
+              Grid.Column="1"
+              VerticalAlignment="Center"
+              Text="{Binding SelectedFilter.Summary}" />
+          </StackPanel>
+        </Expander.Header>
+
+        <StackPanel Orientation="Vertical">
+
+
+
+          <!--  SELECT FILTER  -->
+
+          <ComboBox
+            Name="FilterCombo"
+            HorizontalAlignment="Stretch"
+            VerticalAlignment="Center"
+            Items="{Binding AvailableFilters}"
+            PlaceholderText="Select a filter"
+            SelectedIndex="0"
+            SelectedItem="{Binding SelectedFilter}">
+            <ComboBox.ItemTemplate>
+              <DataTemplate>
+                <Grid ColumnDefinitions="auto,*">
+                  <icons:MaterialIcon
+                    Margin="0,0,5,0"
+                    Foreground="DarkGray"
+                    Kind="{Binding Filter.Icon}" />
+                  <TextBlock
+                    Grid.Column="1"
+                    Text="{Binding Filter.Name}"
+                    TextTrimming="CharacterEllipsis" />
+                </Grid>
+              </DataTemplate>
+            </ComboBox.ItemTemplate>
+          </ComboBox>
+          <!--  FILTER INFO - the magic happens in FilterTemplateSelector.cs  -->
+          <Grid Margin="0,15">
+            <ContentControl Content="{Binding SelectedFilter}" />
+          </Grid>
+          <!--  ADVANCED SETTINGS  -->
+          <Button
+            Margin="5"
+            HorizontalAlignment="Center"
+            HorizontalContentAlignment="Center"
+            assists:ShadowAssist.ShadowDepth="Depth0"
+            Background="Transparent"
+            Command="{Binding OpenSettingsCommand}"
+            Foreground="{DynamicResource PrimaryHueMidBrush}">
+            <Grid Margin="0" ColumnDefinitions="auto,*">
+              <icons:MaterialIcon VerticalAlignment="Center" Kind="Settings" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="8,0"
+                Padding="0"
+                VerticalAlignment="Center"
+                Text="Advanced Settings"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </Button>
+
+        </StackPanel>
+
+      </Expander>
+    </Grid>
+
+    <!--  SEND BTN  -->
+    <Button Margin="0,5,0,20" Classes="SendFull" />
+
+
+    <!--  COMMIT AND OTHER BUTTONS  -->
+    <Grid
+      Grid.Row="1"
+      Margin="15,5"
+      ColumnDefinitions="*,auto"
+      RowDefinitions="auto">
+      <!--  COMMIT MESSAGE  -->
+      <TextBox
+        Margin="0,0,10,0"
+        Padding="0"
+        HorizontalAlignment="Stretch"
+        HorizontalContentAlignment="Stretch"
+        Classes="Filled Dense"
+        Foreground="Gray"
+        IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
+        IsReadOnly="{Binding Progress.IsProgressing}"
+        Text="{Binding StreamState.CommitMessage}"
+        Watermark="Message (optional) " />
+      <StackPanel
+        Grid.Column="1"
+        HorizontalAlignment="Right"
+        Orientation="Horizontal"
+        Spacing="10">
+
+        <!--  SAVE BTN  -->
+        <m:FloatingButton
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="Depth0"
+          Background="Transparent"
+          Command="{Binding SaveCommand}"
+          IsEnabled="{Binding !Progress.IsProgressing}"
+          ToolTip.Tip="Save this sender to the file without sending">
+          <Button.Content>
+            <icons:MaterialIcon
+              Width="20"
+              Height="20"
+              assists:ShadowAssist.ShadowDepth="0"
+              Foreground="Gray"
+              Kind="ContentSave" />
+
+          </Button.Content>
+        </m:FloatingButton>
+
+        <!--  PREVIEW BTN  -->
+        <c:PreviewButton />
+
+
+      </StackPanel>
+    </Grid>
+
+
+
+  </StackPanel>
+
+</UserControl>

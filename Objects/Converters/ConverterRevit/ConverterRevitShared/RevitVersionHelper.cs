@@ -11,7 +11,7 @@ namespace Objects.Converter.Revit
       get
       {
 #if REVIT2022
-          return "2022";
+        return "2022";
 #elif REVIT2021
         return "2021";
 #elif REVIT2020
@@ -126,7 +126,7 @@ namespace Objects.Converter.Revit
     }
 
     #region helper functions
-#if !(REVIT2019 || REVIT2020)
+#if !REVIT2020
     private static ForgeTypeId DUTToForgeTypeId(string s)
     {
       ForgeTypeId sourceUnit = null;

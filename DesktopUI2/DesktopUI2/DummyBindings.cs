@@ -438,7 +438,7 @@ namespace DesktopUI2
 
         var r = new Random(i);
         var status = (ApplicationObject.State)r.Next(5);
-        var appObj = new ApplicationObject(i.ToString(), "Some Object") { Status = status, Log = new List<string>() { "Some description"} };
+        var appObj = new ApplicationObject(i.ToString(), "Some Object") { Status = status, Log = new List<string>() { "Some description" } };
         progress.Report.Log(appObj);
 
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
@@ -479,6 +479,11 @@ namespace DesktopUI2
     {
       await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
       return new Dictionary<string, List<MappingValue>>();
+    }
+
+    public override Task Open3DView(List<double> viewCoordinates, string viewName = "")
+    {
+      throw new NotImplementedException();
     }
   }
 }

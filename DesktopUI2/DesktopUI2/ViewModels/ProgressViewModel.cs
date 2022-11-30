@@ -130,7 +130,7 @@ namespace DesktopUI2.ViewModels
     public void CancelCommand()
     {
       CancellationTokenSource.Cancel();
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancelled Quick Op" } });
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Cancel Progress" } });
     }
   }
 }

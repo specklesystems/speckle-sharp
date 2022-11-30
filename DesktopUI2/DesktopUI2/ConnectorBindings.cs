@@ -3,6 +3,7 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Sentry.Reflection;
+using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -34,31 +35,44 @@ namespace DesktopUI2
 
     #endregion
 
-    public virtual bool CanSelectObjects()
-    {
-      return false;
-    }
+    #region virtual methods & properties
+    public virtual bool CanSelectObjects => false;
 
-    public virtual bool CanTogglePreview()
-    {
-      return false;
-    }
-
-    #region abstract properties
+    public virtual bool CanTogglePreview => false;
 
     /// <summary>
     /// Indicates if previewing send has been implemented
     /// </summary>
     /// <returns></returns>
-    public abstract bool CanPreviewSend { get; }
+    public virtual bool CanPreviewSend => false;
 
     /// <summary>
     /// Indicates if previewing receive has been implemented
     /// </summary>
     /// <returns></returns>
-    public abstract bool CanPreviewReceive { get; }
+    public virtual bool CanPreviewReceive => false;
+
+
+    /// <summary>
+    /// Returns true if the <see cref="Open3DView"/> method is overwritten and implemented. 
+    /// </summary>
+    /// <returns></returns>
+    public virtual bool CanOpen3DView => false;
+
+
+    /// <summary>
+    /// Opens a 3D view in the host application
+    /// </summary>
+    /// <param name="viewCoordinates">First three values are the camera position, second three the target. TODO: update to use <see cref="Base"/></param>
+    /// <param name="viewName">Id or Name of the view</param>
+    /// <returns></returns>
+    public virtual Task Open3DView(List<double> viewCoordinates, string viewName = "")
+    {
+      return Task.CompletedTask;
+    }
 
     #endregion
+
 
 
     #region abstract methods
@@ -206,7 +220,7 @@ namespace DesktopUI2
     /// Imports family symbols in Revit 
     /// </summary>
     /// <returns></returns>
-    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string,List<MappingValue>> Mapping);
+    public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping);
     #endregion
   }
 }

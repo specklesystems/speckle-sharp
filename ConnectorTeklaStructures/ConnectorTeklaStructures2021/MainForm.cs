@@ -27,13 +27,13 @@ namespace Speckle.ConnectorTeklaStructures
       // Link to model.         
       model = new Model();
       Bindings = new ConnectorBindingsTeklaStructures(model);
-
+     
       try
       {
         base.Load += (s, e) => Close();
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
         CreateOrFocusSpeckle();
-
+        Bindings.OpenTeklaStructures();
       }
       catch (Exception ex)
       {
