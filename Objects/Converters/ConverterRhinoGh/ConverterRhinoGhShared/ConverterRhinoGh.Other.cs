@@ -103,7 +103,7 @@ namespace Objects.Converter.RhinoGh
 
       // check if the doc already has a material with speckle material name, or a previously created speckle material
       var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
-      if (existing != null && ReceiveMode != ReceiveMode.Update)
+      if (existing != null)
         return existing;
 
       Rhino.Render.RenderMaterial rm;
