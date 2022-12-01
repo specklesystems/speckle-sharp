@@ -41,9 +41,6 @@ namespace DesktopUI2
     /// </summary>
     /// <returns></returns>
     public virtual bool CanReceive => true;
-    public virtual bool CanSelectObjects => false;
-
-    public virtual bool CanTogglePreview => false;
 
     /// <summary>
     /// Indicates if previewing send has been implemented
