@@ -1,17 +1,17 @@
 ﻿using CSiAPIv1;
-using Objects.Converter.CSI;
 using Objects.Structural.Analysis;
+using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Geometry;
+using Objects.Structural.CSI.Properties;
+using Objects.Structural.Geometry;
+using Objects.Structural.Loading;
+using Objects.Structural.Properties;
 using Objects.Structural.Results;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using BE = Objects.BuiltElements;
-using OSEA = Objects.Structural.CSI.Analysis;
 using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
@@ -49,6 +49,8 @@ namespace Objects.Converter.CSI
 
     public void SetContextDocument(object doc)
     {
+      // TODO: make sure we are setting the load patterns before we import load combinations
+      // TODO: why are we calling modelToSpeckle and ResultsToSpeckle on receive?
       Model = (cSapModel)doc;
       SpeckleModel = ModelToSpeckle();
       AnalysisResults = ResultsToSpeckle();
@@ -60,13 +62,23 @@ namespace Objects.Converter.CSI
 
     public bool CanConvertToNative(Base @object)
     {
-      foreach (var type in Enum.GetNames(typeof(ConverterCSI.CSIConverterSupported)))
+      switch (@object)
       {
-        if (type == @object.ToString().Split('.').Last())
-        {
+        case CSIDiaphragm csiDiaphragm:
+        case CSIStories csiStories:
+        case Element1D element1D:
+        case Element2D element2D:
+        case Load load:
+        //case Geometry.Line line:
+        case Node node:
+        //case Model o:
+        case Property property:
+
+        // for the moment we need to have this in here so the flatten traversal skips over this object
+        // otherwise it would add result.element to the list twice and the stored objects dictionary would throw
+        case Result result:
           return true;
-        }
-      }
+      };
       return false;
     }
 
@@ -86,30 +98,62 @@ namespace Objects.Converter.CSI
 
     public object ConvertToNative(Base @object)
     {
-      Base returnObject = null;
+      var appObj = new ApplicationObject(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
       List<string> notes = new List<string>();
 
       switch (@object)
       {
-        case Objects.Organization.Model o:
-          return BuiltElementModelToNative(o);
-        //case osg.node o:
-        //    return pointtonative(o);
-        case OSG.Node o:
-          return PointToNative((CSINode)o);
-        case Geometry.Line o:
-          return LineToNative(o);
+        case CSIAreaSpring o:
+          AreaSpringPropertyToNative(o, ref appObj);
+          break;
+        case CSIDiaphragm o:
+          DiaphragmToNative(o, ref appObj);
+          break;
+        case CSILinearSpring o:
+          LinearSpringPropertyToNative(o, ref appObj);
+          break;
+        case CSILinkProperty o:
+          LinkPropertyToNative(o, ref appObj);
+          break;
+        case CSIProperty2D o:
+          Property2DToNative(o, ref appObj);
+          break;
+        case CSISpringProperty o:
+          SpringPropertyToNative(o, ref appObj);
+          break;
+        case CSIStories o:
+          StoriesToNative(o, ref appObj);
+          break;
+        //case CSIWindLoadingFace o:
+        //  LoadFaceToNative(o, ref appObj);
+        //  break;
+        //case CSITendonProperty o:
         case OSG.Element1D o:
-          returnObject = FrameToNative(o);
+          FrameToNative(o, ref appObj);
           break;
         case OSG.Element2D o:
-          returnObject = AreaToNative(o);
+          AreaToNative(o, ref appObj);
           break;
-        case Model o:
-          return ModelToNative(o);
+        case LoadBeam o:
+          LoadFrameToNative(o, ref appObj);
+          break;
+        case LoadFace o:
+          LoadFaceToNative(o, ref appObj);
+          break;
+        //case osg.node o:
+        //    return pointtonative(o);
+        case Geometry.Line o:
+          LineToNative(o, ref appObj); // do we really want to assume any line is a frame object?
+          break;
+        case OSG.Node o:
+          PointToNative((CSINode)o, ref appObj);
+          break;
+        case Property1D o:
+          Property1DToNative(o, ref appObj);
+          break;
         default:
-          Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
-          throw new NotSupportedException();
+          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Skipped not supported type: {@object.GetType()}");
+          break;
       }
 
       // log 
@@ -117,7 +161,7 @@ namespace Objects.Converter.CSI
       if (reportObj != null && notes.Count > 0)
         reportObj.Update(log: notes);
 
-      return returnObject;
+      return appObj;
     }
 
     public List<object> ConvertToNative(List<Base> objects)

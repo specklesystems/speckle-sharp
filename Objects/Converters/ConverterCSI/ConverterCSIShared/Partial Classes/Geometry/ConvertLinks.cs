@@ -13,28 +13,30 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LinkToNative(CSIElement1D link)
+    public void LinkToNative(CSIElement1D link, ref ApplicationObject appObj)
     {
 
-      PointToNative((CSINode)link.end1Node);
-      PointToNative((CSINode)link.end2Node);
+      PointToNative((CSINode)link.end1Node, ref appObj);
+      PointToNative((CSINode)link.end2Node, ref appObj);
       string linkName = null;
       int numberProps = 0;
       string[] listProp = null;
       Model.PropLink.GetNameList(ref numberProps, ref listProp);
       if (listProp.Contains(link.property.name))
       {
-        Model.LinkObj.AddByPoint(link.end1Node.name, link.end2Node.name, ref linkName, PropName: link.property.name);
+        var success = Model.LinkObj.AddByPoint(link.end1Node.name, link.end2Node.name, ref linkName, PropName: link.property.name);
+        if (success == 0)
+          appObj.Update(status: ApplicationObject.State.Created, createdId: linkName);
+        else
+          appObj.Update(status: ApplicationObject.State.Failed);
       }
       else
       {
-        LinkPropertyToNative((CSILinkProperty)link.property);
+        LinkPropertyToNative((CSILinkProperty)link.property, ref appObj);
         Model.LinkObj.AddByPoint(link.end1Node.name, link.end2Node.name, ref linkName, PropName: link.property.name);
       }
-
-      return;
-
     }
+
     public CSIElement1D LinkToSpeckle(string name)
     {
       string units = ModelUnits();

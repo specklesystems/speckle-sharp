@@ -161,6 +161,9 @@ namespace Speckle.ConnectorCSI.UI
 
       foreach (var obj in Preview)
       {
+        if (!StoredObjects.ContainsKey(obj.OriginalId))
+          continue;
+
         var @base = StoredObjects[obj.OriginalId];
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
@@ -188,6 +191,8 @@ namespace Speckle.ConnectorCSI.UI
           obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
           progress.Report.UpdateReportObject(obj);
         }
+
+        Model.View.RefreshWindow();
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
@@ -223,13 +228,13 @@ namespace Speckle.ConnectorCSI.UI
         }
         else
         {
-          foreach (var prop in @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
+          foreach (var prop in @base.GetMembers().Keys)
             objects.AddRange(FlattenCommitObject(@base[prop], converter));
           return objects;
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IList list && list != null)
       {
         foreach (var listObj in list)
           objects.AddRange(FlattenCommitObject(listObj, converter));
@@ -248,7 +253,7 @@ namespace Speckle.ConnectorCSI.UI
         if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
         {
           var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Revit");
+          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in CSI");
           objects.Add(appObj);
         }
       }

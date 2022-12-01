@@ -4,12 +4,13 @@ using Objects.Structural.Properties.Profiles;
 using CSiAPIv1;
 using System.Linq;
 using Objects.Structural.CSI.Properties;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void SpringPropertyToNative(CSISpringProperty springProperty)
+    public void SpringPropertyToNative(CSISpringProperty springProperty, ref ApplicationObject appObj)
     {
       double[] k = new double[6];
       k[0] = springProperty.stiffnessX;
@@ -18,19 +19,24 @@ namespace Objects.Converter.CSI
       k[3] = springProperty.stiffnessXX;
       k[4] = springProperty.stiffnessYY;
       k[5] = springProperty.stiffnessZZ;
+      int? success = null;
       switch (springProperty.springOption)
       {
         case SpringOption.Link:
           var springOption = 1;
-          Model.PropPointSpring.SetPointSpringProp(springProperty.name, springOption, ref k, springProperty.CYs, iGUID: springProperty.applicationId);
+          success = Model.PropPointSpring.SetPointSpringProp(springProperty.name, springOption, ref k, springProperty.CYs, iGUID: springProperty.applicationId);
           break;
         case SpringOption.SoilProfileFooting:
           springOption = 2;
-          throw new NotSupportedException();
+          appObj.Update(status: ApplicationObject.State.Skipped);
           break;
       }
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{springProperty.name}");
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
-    public void LinearSpringPropertyToNative(CSILinearSpring linearSpringProperty)
+    public void LinearSpringPropertyToNative(CSILinearSpring linearSpringProperty, ref ApplicationObject appObj)
     {
       var linearOption1 = 0;
       var linearOption2 = 0;
@@ -58,10 +64,14 @@ namespace Objects.Converter.CSI
           linearOption2 = 2;
           break;
       }
-      Model.PropLineSpring.SetLineSpringProp(linearSpringProperty.name, linearSpringProperty.stiffnessX, linearSpringProperty.stiffnessY, linearSpringProperty.stiffnessZ, linearSpringProperty.stiffnessXX, linearOption1, linearOption2, iGUID: linearSpringProperty.applicationId);
-      return;
+      var success = Model.PropLineSpring.SetLineSpringProp(linearSpringProperty.name, linearSpringProperty.stiffnessX, linearSpringProperty.stiffnessY, linearSpringProperty.stiffnessZ, linearSpringProperty.stiffnessXX, linearOption1, linearOption2, iGUID: linearSpringProperty.applicationId);
+
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: linearSpringProperty.name);
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
-    public void AreaSpringPropertyToNative(CSIAreaSpring areaSpring)
+    public void AreaSpringPropertyToNative(CSIAreaSpring areaSpring, ref ApplicationObject appObj)
     {
       var linearOption1 = 0;
       switch (areaSpring.LinearOption3)
@@ -76,7 +86,12 @@ namespace Objects.Converter.CSI
           linearOption1 = 2;
           break;
       }
-      Model.PropAreaSpring.SetAreaSpringProp(areaSpring.name, areaSpring.stiffnessX, areaSpring.stiffnessY, areaSpring.stiffnessZ, linearOption1, iGUID: areaSpring.applicationId);
+      var success = Model.PropAreaSpring.SetAreaSpringProp(areaSpring.name, areaSpring.stiffnessX, areaSpring.stiffnessY, areaSpring.stiffnessZ, linearOption1, iGUID: areaSpring.applicationId);
+
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: areaSpring.name);
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
     public CSISpringProperty SpringPropertyToSpeckle(string name)
     {

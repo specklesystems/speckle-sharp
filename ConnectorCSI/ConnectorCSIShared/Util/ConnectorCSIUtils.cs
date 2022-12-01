@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Speckle.Core.Kits;
+//using System.Text;
+//using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System.Linq;
-using Speckle.ConnectorCSI.UI;
+//using Speckle.ConnectorCSI.UI;
 using CSiAPIv1;
 
 namespace Speckle.ConnectorCSI.Util
