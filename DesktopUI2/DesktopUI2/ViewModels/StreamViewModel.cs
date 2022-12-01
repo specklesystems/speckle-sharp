@@ -434,7 +434,7 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("HasSettings");
       }
     }
-    public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
+
 
     public string _previewImageUrl = "";
     public string PreviewImageUrl
@@ -473,6 +473,8 @@ namespace DesktopUI2.ViewModels
     }
 
     public bool CanOpenCommentsIn3DView { get; set; } = false;
+    public bool CanReceive { get; set; }
+    public bool HasSettings { get; set; } = true;
     private bool _isAddingBranches = false;
 
     #endregion
@@ -537,6 +539,7 @@ namespace DesktopUI2.ViewModels
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
         CanOpenCommentsIn3DView = Bindings.CanOpen3DView;
+        CanReceive = Bindings.CanReceive;
 
         if (Client == null)
         {
@@ -632,13 +635,21 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        //receive modes
-        ReceiveModes = Bindings.GetReceiveModes();
-        //by default the first available receive mode is selected
-        SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
+        if (CanReceive)
+        {
+          //receive modes
+          ReceiveModes = Bindings.GetReceiveModes();
+
+          if (!ReceiveModes.Any())
+            throw new SpeckleException("No Receive Mode is available.");
+
+          //by default the first available receive mode is selected
+          SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
+        }
 
         //get available settings from our bindings
         Settings = Bindings.GetSettings();
+        HasSettings = Settings.Any();
 
         //get available filters from our bindings
         AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
