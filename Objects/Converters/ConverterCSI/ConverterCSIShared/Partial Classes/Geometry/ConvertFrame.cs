@@ -38,10 +38,7 @@ namespace Objects.Converter.CSI
     public void FrameToNative(Element1D element1D, ref ApplicationObject appObj)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"There is already a frame object named {element1D.name} in the model");
-        return;
-      }
+        element1D.name = element1D.id;
 
       if (element1D.type == ElementType1D.Link)
       {

@@ -146,7 +146,7 @@ namespace Objects.Converter.CSI
           LineToNative(o, ref appObj); // do we really want to assume any line is a frame object?
           break;
         case OSG.Node o:
-          PointToNative((CSINode)o, ref appObj);
+          PointToNative(o, ref appObj);
           break;
         case Property1D o:
           Property1DToNative(o, ref appObj);

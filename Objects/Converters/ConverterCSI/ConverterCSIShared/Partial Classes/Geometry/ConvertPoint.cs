@@ -84,6 +84,11 @@ namespace Objects.Converter.CSI
         return;
       }
       var point = speckleStructNode.basePoint;
+      if (point == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Node does not have a valid location");
+        return;
+      }
       string name = ""; 
       var success = Model.PointObj.AddCartesian(
        ScaleToNative(point.x, point.units),
