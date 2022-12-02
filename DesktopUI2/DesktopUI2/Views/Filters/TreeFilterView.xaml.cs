@@ -25,10 +25,6 @@ namespace DesktopUI2.Views.Filters
         try
         {
             (this.DataContext as FilterViewModel).RaisePropertyChanged("Summary");
-            
-
-
-            //throw new System.NotImplementedException();
         }
         catch
         {
