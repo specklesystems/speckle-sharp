@@ -22,6 +22,9 @@ namespace DesktopUI2.Models.Filters
         // For applications that record the pointer as a Guid
         public Guid Guid { get; set; }
 
+        // For applications that record the pointer as a Guid
+        public String Reference { get; set; }
+
         // For applications that record the pointer as successive indexes
         public int[] Indices { get; set; }
 
@@ -104,30 +107,29 @@ namespace DesktopUI2.Models.Filters
         // Doesn't Start with the Root Node, but all list of all children of the theoretical Root Node
         public List<ObjectHierarchy> Values { get; set; }
         public List<string> Selection { get; set; } = new List<string>();
-        public SelectedItems _Items { get; set; }
+
+        public SelectedItems SelectedItems { get; set; } = new SelectedItems();
         public Type ViewType { get; } = typeof(TreeFilterView);
 
         public TreeSelectionFilter()
         {
-            _Items = new SelectedItems();
-
-            _Items.CollectionChanged += Items_CollectionChanged;
+            SelectedItems.CollectionChanged += Items_CollectionChanged;
         }
 
         private void Items_CollectionChanged(object sender,
             System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
         {
             Selection.Clear();
-            Selection.AddRange(_Items.Select(item => item.ToString()).ToList());
+            Selection.AddRange(SelectedItems.Select(item => item.ToString()).ToList());
         }
 
         public string Summary
         {
             get
             {
-                if (_Items.Count != 0)
+                if (SelectedItems.Count != 0)
                 {
-                    return string.Join(", ", _Items.Select(item=>item.DisplayName));
+                    return string.Join(", ", SelectedItems.Select(item=>item.DisplayName));
                 }
                 else
                 {

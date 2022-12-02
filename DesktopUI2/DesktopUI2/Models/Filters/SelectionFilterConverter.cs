@@ -44,6 +44,9 @@ namespace DesktopUI2.Models.Filters
       else if (type == typeof(PropertySelectionFilter).ToString())
       {
         filter = new PropertySelectionFilter();
+      } else if (type == typeof(TreeSelectionFilter).ToString())
+      {
+          filter = new TreeSelectionFilter();
       }
       else
       {
