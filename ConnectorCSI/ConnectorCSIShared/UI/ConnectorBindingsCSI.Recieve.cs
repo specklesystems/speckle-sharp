@@ -221,6 +221,9 @@ namespace Speckle.ConnectorCSI.UI
 
         if (converter.CanConvertToNative(@base))
         {
+          if (StoredObjects.ContainsKey(@base.id))
+            return objects;
+
           appObj.Convertible = true;
           objects.Add(appObj);
           StoredObjects.Add(@base.id, @base);
