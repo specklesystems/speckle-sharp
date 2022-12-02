@@ -30,9 +30,19 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
             FolderItem selectSetsRootItem = Doc.SelectionSets.RootItem;
 
-            List<ObjectHierarchy> objectHierarchies = selectSetsRootItem.Children.Select(GetObjectHierarchy).ToList();
+            List<ObjectHierarchy> savedSelectionSets = selectSetsRootItem.Children.Select(GetSets).OfType<ObjectHierarchy>().ToList();
 
-            if (objectHierarchies.Count <= 0) return filters;
+            if (savedSelectionSets.Count > 0)
+            {
+                var selectionSetsFilter = new TreeSelectionFilter
+                {
+                    Slug = "sets", Name = "Saved Sets and Selections", Icon = "FileTree",
+                    Description = "Select saved selection and search sets to include in the commit.",
+                    Values = savedSelectionSets
+                };
+                filters.Add(selectionSetsFilter);
+            }
+
             var clashPlugin = Doc.GetClash();
             var clashTests = clashPlugin.TestsData;
             var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).OfType<ObjectHierarchy>().ToList();
@@ -49,23 +59,33 @@ namespace Speckle.ConnectorNavisworks.Bindings
                 filters.Add(clashReportFilter);
             }
 
+
+
             return filters;
         }
 
-        private static ObjectHierarchy GetObjectHierarchy(SavedItem savedSetItem)
+        private static ObjectHierarchy GetSets(SavedItem savedItem)
         {
+
             var hierarchyObject = new ObjectHierarchy
             {
-                DisplayName = savedSetItem.DisplayName,
-                Guid = savedSetItem.Guid,
-                Indices = Doc.SelectionSets.CreateIndexPath(savedSetItem).ToArray(),
-                IndexWith = nameof(ObjectHierarchy.Guid)
+                DisplayName = savedItem.DisplayName,
+                Guid = savedItem.Guid,
+                IndexWith = nameof(ObjectHierarchy.Guid),
+                Indices = Doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
             };
 
-            if (!savedSetItem.IsGroup) return hierarchyObject;
+            if (!savedItem.IsGroup) return hierarchyObject;
 
             //iterate the children and output
-            foreach (SavedItem childItem in ((GroupItem)savedSetItem).Children)
+            foreach (SavedItem childItem in ((GroupItem)savedItem).Children)
+            {
+                hierarchyObject.Elements.Add(GetSets(childItem));
+            }
+
+            return hierarchyObject.Elements.Count > 0 ? hierarchyObject : null;
+        }
+
         private static ObjectHierarchy GetClashTestResults(SavedItem savedItem)
         {
 
