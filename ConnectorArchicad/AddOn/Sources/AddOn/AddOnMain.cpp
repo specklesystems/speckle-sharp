@@ -39,39 +39,38 @@ static const Int32 AddOnCommandID = 1;
 
 class AvaloniaProcessManager {
 public:
-	void Start()
+	void Start ()
 	{
-		if (IsRunning()) {
+		if (IsRunning ()) {
 			return;
 		}
 
 		try {
-			const GS::UniString command = GetPlatformSpecificExecutablePath();
-			const GS::Array<GS::UniString> arguments = GetExecutableArguments();
+			const GS::UniString command = GetPlatformSpecificExecutablePath ();
+			const GS::Array<GS::UniString> arguments = GetExecutableArguments ();
 
-			avaloniaProcess = GS::Process::Create(command, arguments);
-		}
-		catch (GS::Exception&) {
-			DG::ErrorAlert("Error", "Can't start Speckle UI", "OK");
+			avaloniaProcess = GS::Process::Create (command, arguments);
+		} catch (GS::Exception&) {
+			DG::ErrorAlert ("Error", "Can't start Speckle UI", "OK");
 		}
 	}
 
-	void Stop()
+	void Stop ()
 	{
-		if (!IsRunning()) {
+		if (!IsRunning ()) {
 			return;
 		}
 
-		avaloniaProcess->Kill();
+		avaloniaProcess->Kill ();
 	}
 
-	bool IsRunning()
+	bool IsRunning ()
 	{
-		return avaloniaProcess.HasValue() && !avaloniaProcess->IsTerminated();
+		return avaloniaProcess.HasValue () && !avaloniaProcess->IsTerminated ();
 	}
 
 private:
-	GS::UniString GetPlatformSpecificExecutablePath()
+	GS::UniString GetPlatformSpecificExecutablePath ()
 	{
 #if defined (macintosh)
 		static const char* FileName = "ConnectorArchicad";
@@ -81,58 +80,58 @@ private:
 		static const char* FolderName = "ConnectorArchicad";
 
 		IO::Location ownFileLoc;
-		auto err = ACAPI_GetOwnLocation(&ownFileLoc);
+		auto err = ACAPI_GetOwnLocation (&ownFileLoc);
 		if (err != NoError) {
 			return "";
 		}
 
-		IO::Location location(ownFileLoc);
-		location.DeleteLastLocalName();
-		location.AppendToLocal(IO::Name(FolderName));
-		location.AppendToLocal(IO::Name(FileName));
+		IO::Location location (ownFileLoc);
+		location.DeleteLastLocalName ();
+		location.AppendToLocal (IO::Name (FolderName));
+		location.AppendToLocal (IO::Name (FileName));
 
-		bool exist(false);
-		err = IO::fileSystem.Contains(location, &exist);
+		bool exist (false);
+		err = IO::fileSystem.Contains (location, &exist);
 		if (err != NoError || !exist) {
 			location = ownFileLoc;
-			location.DeleteLastLocalName();
-			location.DeleteLastLocalName();
-			location.DeleteLastLocalName();
-			location.DeleteLastLocalName();
+			location.DeleteLastLocalName ();
+			location.DeleteLastLocalName ();
+			location.DeleteLastLocalName ();
+			location.DeleteLastLocalName ();
 
-			location.AppendToLocal(IO::Name(FolderName));
-			location.AppendToLocal(IO::Name("bin"));
-			location.AppendToLocal(IO::Name("Debug"));
-			location.AppendToLocal(IO::Name("net6.0"));
-			location.AppendToLocal(IO::Name(FileName));
+			location.AppendToLocal (IO::Name (FolderName));
+			location.AppendToLocal (IO::Name ("bin"));
+			location.AppendToLocal (IO::Name ("Debug"));
+			location.AppendToLocal (IO::Name ("net6.0"));
+			location.AppendToLocal (IO::Name (FileName));
 		}
 
 		GS::UniString executableStr;
-		location.ToPath(&executableStr);
+		location.ToPath (&executableStr);
 
 		return executableStr;
 	}
 
-	GS::Array<GS::UniString> GetExecutableArguments()
+	GS::Array<GS::UniString> GetExecutableArguments ()
 	{
 		UShort portNumber = 0;
 		{
-			const auto err = ACAPI_Goodies(APIAny_GetHttpConnectionPortID, &portNumber);
+			const auto err = ACAPI_Goodies (APIAny_GetHttpConnectionPortID, &portNumber);
 
 			if (err != NoError) {
-				throw GS::IllegalArgumentException();
+				throw GS::IllegalArgumentException ();
 			}
 		}
 
 		UShort archicadVersion = 0;
 		{
 			API_ServerApplicationInfo serverApplicationInfo;
-			ACAPI_GetReleaseNumber(&serverApplicationInfo);
+			ACAPI_GetReleaseNumber (&serverApplicationInfo);
 
 			archicadVersion = serverApplicationInfo.mainVersion;
 		}
 
-		return GS::Array<GS::UniString> { GS::ValueToUniString(portNumber), GS::ValueToUniString(archicadVersion) };
+		return GS::Array<GS::UniString> { GS::ValueToUniString (portNumber), GS::ValueToUniString (archicadVersion) };
 	}
 
 	GS::Optional<GS::Process> avaloniaProcess;
@@ -142,14 +141,14 @@ private:
 static AvaloniaProcessManager avaloniaProcess;
 
 
-static GSErrCode MenuCommandHandler(const API_MenuParams* menuParams)
+static GSErrCode MenuCommandHandler (const API_MenuParams* menuParams)
 {
 	switch (menuParams->menuItemRef.menuResID) {
 	case AddOnMenuID:
 		switch (menuParams->menuItemRef.itemIndex) {
 		case AddOnCommandID:
 		{
-			avaloniaProcess.Start();
+			avaloniaProcess.Start ();
 		}
 		break;
 		}
@@ -159,53 +158,53 @@ static GSErrCode MenuCommandHandler(const API_MenuParams* menuParams)
 	return NoError;
 }
 
-static GSErrCode RegisterAddOnCommands()
+static GSErrCode RegisterAddOnCommands ()
 {
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetModelForElements>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetElementIds>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetElementTypes>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetWallData>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetDoorData>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetWindowData>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSubElementInfo>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetBeamData>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetRoomData>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSlabData>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetProjectInfo>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateWall>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateDoor>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateWindow>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateBeam>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateSlab>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateZone>()));
-	CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateDirectShape>()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetModelForElements> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementIds> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetElementTypes> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWallData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetDoorData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWindowData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSubElementInfo> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetBeamData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetRoomData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSlabData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWall> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDoor> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWindow> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateBeam> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateSlab> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateZone> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDirectShape> ()));
 
 	return NoError;
 }
 
-API_AddonType __ACDLL_CALL CheckEnvironment(API_EnvirParams* envir)
+API_AddonType __ACDLL_CALL CheckEnvironment (API_EnvirParams* envir)
 {
-	RSGetIndString(&envir->addOnInfo.name, AddOnInfoID, AddOnNameID, ACAPI_GetOwnResModule());
-	RSGetIndString(&envir->addOnInfo.description, AddOnInfoID, AddOnDescriptionID, ACAPI_GetOwnResModule());
+	RSGetIndString (&envir->addOnInfo.name, AddOnInfoID, AddOnNameID, ACAPI_GetOwnResModule ());
+	RSGetIndString (&envir->addOnInfo.description, AddOnInfoID, AddOnDescriptionID, ACAPI_GetOwnResModule ());
 
 	return APIAddon_Normal;
 }
 
-GSErrCode __ACDLL_CALL RegisterInterface(void)
+GSErrCode __ACDLL_CALL RegisterInterface (void)
 {
-	return ACAPI_Register_Menu(AddOnMenuID, 0, MenuCode_Interoperability, MenuFlag_Default);
+	return ACAPI_Register_Menu (AddOnMenuID, 0, MenuCode_Interoperability, MenuFlag_Default);
 }
 
-GSErrCode __ACENV_CALL Initialize(void)
+GSErrCode __ACENV_CALL Initialize (void)
 {
-	CHECKERROR(RegisterAddOnCommands());
+	CHECKERROR (RegisterAddOnCommands ());
 
-	return ACAPI_Install_MenuHandler(AddOnMenuID, MenuCommandHandler);
+	return ACAPI_Install_MenuHandler (AddOnMenuID, MenuCommandHandler);
 }
 
-GSErrCode __ACENV_CALL FreeData(void)
+GSErrCode __ACENV_CALL FreeData (void)
 {
-	avaloniaProcess.Stop();
+	avaloniaProcess.Stop ();
 
 	return NoError;
 }
