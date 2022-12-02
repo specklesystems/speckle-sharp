@@ -95,6 +95,13 @@
 			xcopy /Y "$(TargetDir)*.dll" "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\"
 		</PostBuildEvent>
 	</PropertyGroup>
+
+	<!-- NUGETS -->
+	<ItemGroup>
+	  <PackageReference Include="Colorful.Console" Version="1.2.15" />
+	</ItemGroup>
+
+	<!--- Local Project Dependencies -->
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Core\Core\Core.csproj" />
 	  <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
@@ -113,6 +120,10 @@
 		<Reference Include="Autodesk.Navisworks.Api">
 			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.Api.dll</HintPath>
 			<Private>False</Private>
+		</Reference>
+		<Reference Include="Autodesk.Navisworks.Clash">
+			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.Clash.dll</HintPath>
+			<Private>True</Private>
 		</Reference>
 		<Reference Include="Autodesk.Navisworks.ComApi">
 			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.ComApi.dll</HintPath>

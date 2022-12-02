@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
+using Autodesk.Navisworks.Api.Clash;
 using Autodesk.Navisworks.Api.DocumentParts;
 using DesktopUI2;
 using DesktopUI2.Models.Filters;
@@ -32,14 +33,21 @@ namespace Speckle.ConnectorNavisworks.Bindings
             List<ObjectHierarchy> objectHierarchies = selectSetsRootItem.Children.Select(GetObjectHierarchy).ToList();
 
             if (objectHierarchies.Count <= 0) return filters;
+            var clashPlugin = Doc.GetClash();
+            var clashTests = clashPlugin.TestsData;
+            var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).OfType<ObjectHierarchy>().ToList();
 
-            var selectionSetsFilter = new TreeSelectionFilter
+            if (groupedClashResults.Count >= 0)
             {
-                Slug = "sets", Name = "Saved Sets and Selections", Icon = "FileTree",
-                Description = "Select saved selection and search sets to include in the commit.",
-                Values = objectHierarchies
-            };
-            filters.Add(selectionSetsFilter);
+
+                var clashReportFilter = new TreeSelectionFilter
+                {
+                    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+                    Description = "Select group clash test results.",
+                    Values = groupedClashResults
+                };
+                filters.Add(clashReportFilter);
+            }
 
             return filters;
         }
@@ -58,11 +66,33 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
             //iterate the children and output
             foreach (SavedItem childItem in ((GroupItem)savedSetItem).Children)
+        private static ObjectHierarchy GetClashTestResults(SavedItem savedItem)
+        {
+
+            var clashTest = (ClashTest)savedItem;
+
+            var hierarchyObject = new ObjectHierarchy
             {
-                hierarchyObject.Elements.Add(GetObjectHierarchy(childItem));
+                DisplayName = clashTest.DisplayName,
+                Guid = clashTest.Guid,
+                IndexWith = nameof(ObjectHierarchy.Guid),
+            };
+
+            //iterate the children and output only grouped clashes
+            foreach (SavedItem result in clashTest.Children)
+            {
+                if (result.IsGroup)
+                {
+                    hierarchyObject.Elements.Add(new ObjectHierarchy
+                    {
+                        DisplayName = result.DisplayName,
+                        Guid = result.Guid,
+                        IndexWith = nameof(ObjectHierarchy.Guid)
+                    });
+                }
             }
 
-            return hierarchyObject;
+            return hierarchyObject.Elements.Count > 0 ? hierarchyObject : null;
         }
     }
 }
