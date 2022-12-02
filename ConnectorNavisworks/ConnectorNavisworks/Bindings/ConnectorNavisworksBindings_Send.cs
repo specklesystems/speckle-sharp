@@ -9,6 +9,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
     {
         public override bool CanPreviewSend => false;
 
+
+        // Stub - Preview send is not supported
         public override async void PreviewSend(StreamState state, ProgressViewModel progress)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(500));

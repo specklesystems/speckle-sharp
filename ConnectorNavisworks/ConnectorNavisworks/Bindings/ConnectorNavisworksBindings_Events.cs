@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using ReactiveUI;
+using static Speckle.ConnectorNavisworks.Utils;
 using Application = Autodesk.Navisworks.Api.Application;
 using Document = Autodesk.Navisworks.Api.Document;
 
@@ -24,8 +27,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
         {
             SavedSets = Doc.SelectionSets;
             UpdateSelectedStream?.Invoke();
-
-            MainViewModel.Home.RaisePropertyChanged($"AvailableFilters");
         }
 
 
@@ -38,18 +39,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
             try
             {
                 // As ConnectorNavisworks is Send only, There is little use for a new empty document.
-                if (doc == null || doc.IsClear) return;
-
-                UpdateSelectedStream?.Invoke();
+                if (doc == null || doc.IsClear)
+                {
+                    UpdateSavedStreams?.Invoke(new List<StreamState>());
+                    MainViewModel.GoHome();
+                    return;
+                }
 
                 var streams = GetStreamsInFile();
                 UpdateSavedStreams?.Invoke(streams);
 
+                UpdateSelectedStream?.Invoke();
+
                 MainViewModel.GoHome();
             }
-            catch
+            catch (Exception ex)
             {
-                // ignored
+                ErrorLog($"Something went wrong: {ex.Message}");
             }
         }
     }

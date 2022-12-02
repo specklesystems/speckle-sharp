@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
@@ -114,5 +115,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
             return hierarchyObject.Elements.Count > 0 ? hierarchyObject : null;
         }
+        
     }
 }
