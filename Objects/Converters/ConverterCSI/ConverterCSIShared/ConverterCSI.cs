@@ -72,7 +72,7 @@ namespace Objects.Converter.CSI
         //case Geometry.Line line:
         case Node node:
         //case Model o:
-        case Property property:
+        //case Property property:
 
         // for the moment we need to have this in here so the flatten traversal skips over this object
         // otherwise it would add result.element to the list twice and the stored objects dictionary would throw
