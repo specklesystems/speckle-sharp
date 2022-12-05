@@ -212,8 +212,6 @@ namespace DesktopUI2.ViewModels
           AddNewBranch();
         else
           GetCommits();
-
-
       }
     }
 
@@ -260,6 +258,7 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _selectedCommit, value);
+        PreviewImage360Loaded = false;
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
