@@ -88,12 +88,12 @@ private:
     }
 
     IO::Location location (ownFileLoc);
-	location.DeleteLastLocalName();
+    location.DeleteLastLocalName();
     location.DeleteLastLocalName();
     location.DeleteLastLocalName();
     location.AppendToLocal(IO::Name(FolderNameCommon));
-	location.AppendToLocal(IO::Name(FolderName));
-	location.AppendToLocal(IO::Name(FileName));
+    location.AppendToLocal(IO::Name(FolderName));
+    location.AppendToLocal(IO::Name(FileName));
     
     bool exist (false);
     err = IO::fileSystem.Contains (location, &exist);
