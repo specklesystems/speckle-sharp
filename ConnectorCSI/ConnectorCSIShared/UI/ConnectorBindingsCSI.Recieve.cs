@@ -1,5 +1,4 @@
-﻿using Avalonia.Threading;
-using DesktopUI2;
+﻿using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorCSI.Util;
@@ -12,7 +11,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Speckle.ConnectorCSI.UI
@@ -193,14 +191,8 @@ namespace Speckle.ConnectorCSI.UI
           progress.Report.UpdateReportObject(obj);
         }
 
-        //Model.View.RefreshWindow();
-
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
-
-        //var s = new CancellationTokenSource();
-        //DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
-        //Dispatcher.UIThread.MainLoop(s.Token);
       }
 
       return placeholders;
