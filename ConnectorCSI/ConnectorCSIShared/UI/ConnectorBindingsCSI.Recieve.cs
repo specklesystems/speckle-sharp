@@ -136,6 +136,7 @@ namespace Speckle.ConnectorCSI.UI
         progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
         return null;
       }
+      Model.View.RefreshWindow();
 
       try
       {
@@ -192,7 +193,7 @@ namespace Speckle.ConnectorCSI.UI
           progress.Report.UpdateReportObject(obj);
         }
 
-        Model.View.RefreshWindow();
+        //Model.View.RefreshWindow();
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
