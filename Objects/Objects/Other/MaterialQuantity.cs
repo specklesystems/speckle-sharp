@@ -16,6 +16,10 @@ namespace Objects.Other
         /// Area of the material on a element
         /// </summary>
         public double area { get; set; }
+        /// <summary>
+        /// Length os the element; 0 if not line-based
+        /// </summary>
+        public double length { get; set; }
 
         /// <summary>
         /// UnitMeasure of the quantity,e.g meters implies aquaremeters for area and cubicmeters for the volume
@@ -26,12 +30,13 @@ namespace Objects.Other
         public MaterialQuantity() { }
         
         [Speckle.Core.Kits.SchemaInfo("MaterialQuantity", "Creates the quantity of a material")]
-        public MaterialQuantity(Objects.Other.Material m, double volume, double  area, string units)
+        public MaterialQuantity(Objects.Other.Material m, double volume, double  area, double length, string units)
         {
             material = m;
             this.volume = volume;   
             this.area = area;   
             this.units = units;
+            this.length = length;
         }
     }
 
