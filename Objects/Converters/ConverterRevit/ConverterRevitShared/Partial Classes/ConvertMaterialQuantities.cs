@@ -27,13 +27,13 @@ namespace Objects.Converter.Revit
       double area = element.GetMaterialArea(material.Id, false); //To-Do: Do we need Paint-Materials
                                                                  //length
       double length = 0;
-      if (LocationToSpeckle(element) is ICurve) length = (LocationToSpeckle(element) as ICurve).length;
+      if (LocationToSpeckle(element) is ICurve) length = (LocationToSpeckle(element) as ICurve).length/1000;  //LocationCurve default is mm (Speckle)
       //Convert Feet to meters
       string units = Speckle.Core.Kits.Units.Meters;
       double factor = Speckle.Core.Kits.Units.GetConversionFactor(Speckle.Core.Kits.Units.Feet, units);
       volume *= factor * factor * factor;
       area *= factor * factor;
-      length *= factor;
+  
       //Create and return materialquantity
       var speckleMaterial = ConvertAndCacheMaterial(material.Id, material.Document);
       return new Objects.Other.MaterialQuantity(speckleMaterial, volume, area, length, units);
