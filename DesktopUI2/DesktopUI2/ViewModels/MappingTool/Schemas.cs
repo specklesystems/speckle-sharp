@@ -151,6 +151,39 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
+  public class RevitPipeViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Pipe";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitPipe(SelectedFamily.Name, SelectedType, null, 0, new RevitLevel(SelectedLevel));
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitDuctViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Duct";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitDuct(SelectedFamily.Name, SelectedType, null, null, null, new RevitLevel(SelectedLevel), 0, 0, 0);
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitFlexPipeViewModel : RevitBasicViewModel
+  {
+    public override string Name => "FlexPipe";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitFlexPipe(SelectedFamily.Name, SelectedType, null, 0, new RevitLevel(SelectedLevel), null, null);
+      return Operations.Serialize(obj);
+    }
+  }
+
   public class RevitFamilyInstanceViewModel : RevitBasicViewModel
   {
     public override string Name => "Family Instance";
@@ -221,6 +254,16 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
+  public class RevitTopographyViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Topography";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitTopography();
+      return Operations.Serialize(obj);
+    }
+  }
 
   [DataContract]
   public class RevitFamily : ReactiveObject

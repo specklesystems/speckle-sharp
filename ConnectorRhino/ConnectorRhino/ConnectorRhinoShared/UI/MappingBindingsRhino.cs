@@ -101,12 +101,17 @@ namespace SpeckleRhino
           case Mesh m:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
               result.Add(new DirectShapeFreeformViewModel());
+            if (!m.IsClosed)
+              result.Add(new RevitTopographyViewModel());
             break;
 
           case Brep b:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
               result.Add(new DirectShapeFreeformViewModel());
+            if (!b.IsSolid)
+              result.Add(new RevitTopographyViewModel());
             break;
+
           case Extrusion e:
             if (e.ProfileCount > 1) break;
             var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
@@ -122,7 +127,13 @@ namespace SpeckleRhino
             {
               result.Add(new RevitBeamViewModel());
               result.Add(new RevitBraceViewModel());
+              result.Add(new RevitPipeViewModel());
+              result.Add(new RevitDuctViewModel());
             }
+            else if (!c.IsClosed)
+            {
+              result.Add(new RevitFlexPipeViewModel());
+            }  
 
             //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
             //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
