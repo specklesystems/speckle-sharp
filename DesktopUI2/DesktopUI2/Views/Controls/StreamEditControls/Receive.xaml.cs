@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using DesktopUI2.ViewModels;
 using System;
 
 namespace DesktopUI2.Views.Controls.StreamEditControls
@@ -18,16 +19,35 @@ namespace DesktopUI2.Views.Controls.StreamEditControls
       Image360 = this.FindControl<Image>("Image360");
       ImageBasic = this.FindControl<Image>("ImageBasic");
 
-
-
       PreviewBox360.PointerMoved += PreviewBox360_PointerMoved;
+      PreviewBox360.PointerEnter += PreviewBox360_PointerEnter;
+      PreviewBox360.PointerLeave += PreviewBox360_PointerLeave;
+
     }
+
+
 
     private void PreviewBox360_PointerMoved(object sender, Avalonia.Input.PointerEventArgs e)
     {
-      ImageBasic.IsVisible = false;
+
+
       var mouseX = e.GetPosition(PreviewBox360).X + PreviewBox360.Margin.Left;
       SetMargin(mouseX);
+    }
+
+    private void PreviewBox360_PointerEnter(object sender, Avalonia.Input.PointerEventArgs e)
+    {
+      var svm = PreviewBox360.DataContext as StreamViewModel;
+      if (!svm.PreviewImage360Loaded)
+        return;
+      Image360.Opacity = 1;
+      ImageBasic.IsVisible = false;
+    }
+
+    private void PreviewBox360_PointerLeave(object sender, Avalonia.Input.PointerEventArgs e)
+    {
+      Image360.Opacity = 0;
+      ImageBasic.IsVisible = true;
     }
 
     private void SetMargin(double mouseX)
