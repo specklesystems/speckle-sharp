@@ -46,7 +46,21 @@ namespace Objects.Converter.CSI
     public ResultSetAll AnalysisResults { get; set; }
 
     public ReceiveMode ReceiveMode { get; set; }
+    public Dictionary<string, string> ExistingObjectGuids { get; set; }
 
+    /// <summary>
+    /// <para>To know which other objects are being converted, in order to sort relationships between them.
+    /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
+    /// </summary>
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
+
+    /// <summary>
+    /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
+    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
+    /// </summary>
+    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
     public void SetContextDocument(object doc)
     {
       // TODO: make sure we are setting the load patterns before we import load combinations
@@ -54,6 +68,7 @@ namespace Objects.Converter.CSI
       Model = (cSapModel)doc;
       SpeckleModel = ModelToSpeckle();
       AnalysisResults = ResultsToSpeckle();
+      ExistingObjectGuids = GetAllGuids(Model);
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
@@ -354,15 +369,15 @@ namespace Objects.Converter.CSI
     public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
 
 
-    public void SetContextObjects(List<ApplicationObject> objects)
-    {
-      throw new NotImplementedException();
-    }
+    //public void SetContextObjects(List<ApplicationObject> objects)
+    //{
+    //  throw new NotImplementedException();
+    //}
 
-    public void SetPreviousContextObjects(List<ApplicationObject> objects)
-    {
-      throw new NotImplementedException();
-    }
+    //public void SetPreviousContextObjects(List<ApplicationObject> objects)
+    //{
+    //  throw new NotImplementedException();
+    //}
 
     public void SetConverterSettings(object settings)
     {

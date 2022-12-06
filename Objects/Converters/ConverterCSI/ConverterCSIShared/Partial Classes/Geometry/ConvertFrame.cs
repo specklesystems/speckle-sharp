@@ -8,33 +8,39 @@ using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
 using CSiAPIv1;
-using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    //public object updateFrametoNative(Element1D element1D)
-    //{
-    //  string GUID = "";
-    //  Model.FrameObj.GetGUID(element1D.name, ref GUID);
-    //  if (GUID == element1D.applicationId)
-    //  {
-    //    string pt1 = "";
-    //    string pt2 = "";
-    //    //Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
-    //    //var specklePt1 = element1D.end1Node.basePoint;
-    //    //var specklePt2 = element1D.end2Node.basePoint;
-    //    //Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
-    //    //Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
-    //    setFrameElementProperties(element1D, element1D.name);
-    //  }
-    //  else
-    //  {
-    //    return FrameToNative(element1D);
-    //  }
-    //  return element1D.name;
-    //}
+    public void UpdateFrame(Element1D element1D, string name, ref ApplicationObject appObj)
+    {
+      string pt1 = "";
+      string pt2 = "";
+      Model.FrameObj.GetPoints(name, ref pt1, ref pt2);
+
+      var end1node = element1D.end1Node?.basePoint ?? element1D.baseLine?.start;
+      var end2node = element1D.end2Node?.basePoint ?? element1D.baseLine?.end;
+
+      if (end1node == null || end2node == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Frame {element1D.name} does not have valid endpoints");
+        return;
+      }
+
+      // unfortunately this isn't as easy as just changing the coords of the end points of the frame,
+      // as those points may be shared by other frames. Need to check if there are other frames using
+      // those points and then check the new location of the endpoints to see if there are existing points
+      // that could be used.
+      var pt1Updated = UpdatePoint(pt1, end1node, element1D.end1Node);
+      var pt2Updated = UpdatePoint(pt2, end2node, element1D.end2Node);
+
+      if (pt1Updated != pt1 || pt2Updated != pt2)
+        Model.EditFrame.ChangeConnectivity(name, pt1Updated, pt2Updated);
+
+      SetFrameElementProperties(element1D, name);
+      appObj.Update(status: ApplicationObject.State.Updated);
+    }
     public void FrameToNative(Element1D element1D, ref ApplicationObject appObj)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
@@ -42,7 +48,13 @@ namespace Objects.Converter.CSI
 
       if (element1D.type == ElementType1D.Link)
       {
-        LinkToNative((CSIElement1D)(element1D), ref appObj);
+        LinkToNative((CSIElement1D)element1D, ref appObj);
+        return;
+      }
+
+      if (ElementExistsWithApplicationId(element1D.applicationId, out string name))
+      {
+        UpdateFrame(element1D, name, ref appObj);
         return;
       }
 
@@ -95,20 +107,15 @@ namespace Objects.Converter.CSI
           ref newFrame
         );
       }
-      setFrameElementProperties(element1D, newFrame);
-
+      SetFrameElementProperties(element1D, newFrame);
 
       if (element1D.name != null)
-      {
         Model.FrameObj.ChangeName(newFrame, element1D.name);
-      }
-      else
-      {
-        Model.FrameObj.SetGUID(newFrame, element1D.id);
-      }
+
+      Model.FrameObj.SetGUID(newFrame, element1D.applicationId);
 
       if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{element1D.name}");
+        appObj.Update(status: ApplicationObject.State.Created, createdId: element1D.applicationId);
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
@@ -271,7 +278,7 @@ namespace Objects.Converter.CSI
       return speckleStructFrame;
     }
 
-    public void setFrameElementProperties(Element1D element1D, string newFrame)
+    public void SetFrameElementProperties(Element1D element1D, string newFrame)
     {
       bool[] end1Release = null;
       bool[] end2Release = null;

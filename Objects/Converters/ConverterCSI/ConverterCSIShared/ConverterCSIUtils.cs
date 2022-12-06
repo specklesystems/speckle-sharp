@@ -1,19 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Objects.Structural.Geometry;
 using CSiAPIv1;
-using Objects.Structural.CSI.Properties;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
-using Speckle.Core.Models;
+using System.Reflection;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-  
- 
     public string ModelUnits()
     {
       var units = Model.GetDatabaseUnits();
@@ -161,6 +157,71 @@ namespace Objects.Converter.CSI
       }
 
       return FloorName;
+    }
+
+    public Dictionary<string, string> GetAllGuids(cSapModel model)
+    {
+      var guids = new Dictionary<string, string>();
+
+      // there are many model properties that have a method called "GetNameList" which, as far as I can tell,
+      // is the only way to access all elements. Loop through all props of model and use reflection to call
+      // the "GetNameList" method.
+      foreach (PropertyInfo prop in model.GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
+      {
+        var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
+        var getNameListMethod = type.GetMethod("GetNameList");
+        var getGuidMethod = type.GetMethod("GetGUID");
+        if (getNameListMethod == null || getGuidMethod == null)
+          continue;
+
+        var obj = prop.GetValue(model, null);
+        var nameListArgs = new object[] { 0, new string[] { } };
+        var success = (int)getNameListMethod.Invoke(obj, nameListArgs);
+
+        if (success != 0 || (int)nameListArgs[0] == 0 || !(nameListArgs[1] is string[] names))
+          continue;
+
+        foreach (var name in names)
+        {
+          var guidListArgs = new string[] { name, "" };
+          success = (int)getGuidMethod.Invoke(obj, guidListArgs);
+          if (success != 0)
+            continue;
+
+          guids.Add(guidListArgs[1], name);
+        }
+      }
+
+      return guids;
+    }
+
+    public bool ElementExistsWithApplicationId(string applicationId, out string name)
+    {
+      name = "";
+      if (string.IsNullOrEmpty(applicationId) || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+        return false;
+
+      if (ExistingObjectGuids.Keys.Contains(applicationId))
+      {
+        name = ExistingObjectGuids[applicationId];
+        return true;
+      }
+
+      return false;
+
+      // FROM REVIT
+      //var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
+
+      //if (@ref == null)
+      //{
+      //  //element was not cached in a PreviousContex but might exist in the model
+      //  //eg: user sends some objects, moves them, receives them 
+      //  element = Doc.GetElement(applicationId);
+      //}
+      //else if (@ref.CreatedIds.Any())
+      //  return true;
+
+      //return element;
     }
 
 

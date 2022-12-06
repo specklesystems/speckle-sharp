@@ -125,7 +125,7 @@ namespace Speckle.ConnectorCSI.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
-      //converter.SetPreviousContextObjects(previouslyReceivedObjects);
+      converter.SetPreviousContextObjects(previouslyReceivedObjects);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
       // receive was cancelled by user

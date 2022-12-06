@@ -14,32 +14,38 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    //public object updatePoint(Node speckleStructNode){
-    //  var csiNode = speckleStructNode.name;
-    //  var basePt = speckleStructNode.basePoint;
-    //  var GUID = "";
-    //  Model.PointObj.GetGUID(csiNode, ref GUID);
-    //  if (speckleStructNode.applicationId == GUID)
-    //  {
-    //    double xD = 0;
-    //    double yD = 0;
-    //    double zD = 0;
-    //    Model.PointObj.GetCoordCartesian(csiNode,ref  xD,ref  yD, ref zD);
-    //    Model.SelectObj.ClearSelection();
-    //    Model.PointObj.SetSelected(csiNode, true);
-    //    Model.EditGeneral.Move(speckleStructNode.basePoint.x-xD, speckleStructNode.basePoint.y- yD,  speckleStructNode.basePoint.z - zD);
-    //    updatePointProperties(speckleStructNode, csiNode);
-    //  }
-    //  else
-    //  {
-    //    PointToNative(speckleStructNode);
-    //  }
+    public string UpdatePoint(string name, Point basePoint, Node speckleNode)
+    {
+      //Model.EditFrame
+      int numItems = 0;
+      int[] objTypes = null;
+      string[] objNames = null;
+      int[] pointNums = null;
+      Model.PointObj.GetConnectivity(name, ref numItems, ref objTypes, ref objNames, ref pointNums);
 
-    //  return speckleStructNode.name;
-    //}
+      // if only connected to one frame, then you are safe to move it (I think?)
+      if (numItems == 1)
+        Model.EditPoint.ChangeCoordinates_1(
+          name,
+          ScaleToNative(basePoint.x, basePoint.units),
+          ScaleToNative(basePoint.y, basePoint.units),
+          ScaleToNative(basePoint.z, basePoint.units),
+          true
+        );
+      else
+      {
+        CreatePoint(basePoint, out string newName);
+        name = newName;
+      }
 
-    public void updatePointProperties(Node speckleStructNode, string name){
-      var point = speckleStructNode.basePoint;
+      UpdatePointProperties(speckleNode, ref name);
+      return name;
+    }
+
+    public void UpdatePointProperties(Node speckleStructNode, ref string name)
+    {
+      if (speckleStructNode == null)
+        return;
     
       if (speckleStructNode.restraint != null)
       {
@@ -47,33 +53,32 @@ namespace Objects.Converter.CSI
         Model.PointObj.SetRestraint(name, ref restraint);
       }
 
-
       if (speckleStructNode.name != null)
       {
         Model.PointObj.ChangeName(name, speckleStructNode.name);
+        name = speckleStructNode.name;
       }
-      else { Model.PointObj.ChangeName(name, speckleStructNode.id); }
 
-      if (speckleStructNode is CSINode)
+      if (!(speckleStructNode is CSINode csiNode))
+        return;
+
+      if (csiNode.CSISpringProperty != null) 
+        Model.PointObj.SetSpringAssignment(csiNode.name, csiNode.CSISpringProperty.name);
+
+      if (csiNode.DiaphragmAssignment != null)
       {
-        var CSInode = (CSINode)speckleStructNode;
-        if (CSInode.CSISpringProperty != null) { Model.PointObj.SetSpringAssignment(CSInode.name, CSInode.CSISpringProperty.name); }
-        if (CSInode.DiaphragmAssignment != null)
+        switch (csiNode.DiaphragmOption)
         {
-          switch (CSInode.DiaphragmOption)
-          {
-            case DiaphragmOption.Disconnect:
-              Model.PointObj.SetDiaphragm(CSInode.name, eDiaphragmOption.Disconnect, DiaphragmName: CSInode.DiaphragmAssignment);
-              break;
-            case DiaphragmOption.DefinedDiaphragm:
-              Model.PointObj.SetDiaphragm(CSInode.name, eDiaphragmOption.DefinedDiaphragm, DiaphragmName: CSInode.DiaphragmAssignment);
-              break;
-            case DiaphragmOption.FromShellObject:
-              Model.PointObj.SetDiaphragm(CSInode.name, eDiaphragmOption.FromShellObject, DiaphragmName: CSInode.DiaphragmAssignment);
-              break;
-          }
+          case DiaphragmOption.Disconnect:
+            Model.PointObj.SetDiaphragm(csiNode.name, eDiaphragmOption.Disconnect, DiaphragmName: csiNode.DiaphragmAssignment);
+            break;
+          case DiaphragmOption.DefinedDiaphragm:
+            Model.PointObj.SetDiaphragm(csiNode.name, eDiaphragmOption.DefinedDiaphragm, DiaphragmName: csiNode.DiaphragmAssignment);
+            break;
+          case DiaphragmOption.FromShellObject:
+            Model.PointObj.SetDiaphragm(csiNode.name, eDiaphragmOption.FromShellObject, DiaphragmName: csiNode.DiaphragmAssignment);
+            break;
         }
-
       }
     }
     public void PointToNative(Node speckleStructNode, ref ApplicationObject appObj)
@@ -89,19 +94,25 @@ namespace Objects.Converter.CSI
         appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Node does not have a valid location");
         return;
       }
-      string name = ""; 
-      var success = Model.PointObj.AddCartesian(
-       ScaleToNative(point.x, point.units),
-       ScaleToNative(point.y, point.units),
-       ScaleToNative(point.z, point.units),
-       ref name
-     );
-      updatePointProperties(speckleStructNode, name);
+      
+      var success = CreatePoint(point, out string name);
+      UpdatePointProperties(speckleStructNode, ref name);
 
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: speckleStructNode.name);
       else
         appObj.Update(status: ApplicationObject.State.Failed);
+    }
+    public int CreatePoint(Point point, out string name)
+    {
+      name = null;
+      var success = Model.PointObj.AddCartesian(
+       ScaleToNative(point.x, point.units),
+       ScaleToNative(point.y, point.units),
+       ScaleToNative(point.z, point.units),
+       ref name
+      );
+      return success;
     }
     public CSINode PointToSpeckle(string name)
     {
