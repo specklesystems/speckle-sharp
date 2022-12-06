@@ -33,6 +33,15 @@ namespace Speckle.ConnectorCSI.UI
       //var converter = new ConverterCSI();
       var appName = GetHostAppVersion(Model);
       var converter = kit.LoadConverter(appName);
+
+      // set converter settings as tuples (setting slug, setting selection)
+      // for csi, these must go before the SetContextDocument method.
+      var settings = new Dictionary<string, string>();
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      settings.Add("operation", "receive");
+      converter.SetConverterSettings(settings);
+
       converter.SetContextDocument(Model);
       Exceptions.Clear();
       var previouslyReceivedObjects = state.ReceivedObjects;
@@ -126,6 +135,8 @@ namespace Speckle.ConnectorCSI.UI
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
       converter.SetPreviousContextObjects(previouslyReceivedObjects);
+      //// needs to be set for openings in floors and roofs to work
+      //converter.SetContextObjects(Preview);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
       // receive was cancelled by user

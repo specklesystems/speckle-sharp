@@ -29,6 +29,15 @@ namespace Speckle.ConnectorCSI.UI
       //var converter = new ConverterCSI();
       var appName = GetHostAppVersion(Model);
       var converter = kit.LoadConverter(appName);
+
+      // set converter settings as tuples (setting slug, setting selection)
+      // for csi, these must go before the SetContextDocument method.
+      var settings = new Dictionary<string, string>();
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      settings.Add("operation", "send");
+      converter.SetConverterSettings(settings);
+
       converter.SetContextDocument(Model);
       Exceptions.Clear();
 
