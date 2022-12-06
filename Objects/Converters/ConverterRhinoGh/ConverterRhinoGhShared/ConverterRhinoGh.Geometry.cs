@@ -961,7 +961,6 @@ namespace Objects.Converter.RhinoGh
           break;
       }
       joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-      joinedMesh.Weld(Math.PI);
       return joinedMesh;
     }
 

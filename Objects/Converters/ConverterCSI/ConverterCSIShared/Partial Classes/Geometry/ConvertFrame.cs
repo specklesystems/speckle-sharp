@@ -8,6 +8,7 @@ using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
 using CSiAPIv1;
+using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
