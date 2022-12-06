@@ -1,4 +1,5 @@
-﻿using ReactiveUI;
+﻿using DesktopUI2.Views;
+using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Splat;
@@ -73,8 +74,31 @@ namespace DesktopUI2.ViewModels
 
     public void OpenCommentView()
     {
-      Bindings.Open3DView(Comment.data.camPos, Comment.id);
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment Open 3D View" } });
+      try
+      {
+        if (Comment.data != null && Comment.data.camPos != null)
+        {
+          Bindings.Open3DView(Comment.data.camPos, Comment.id);
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment Open 3D View" } });
+          return;
+        }
+      }
+      catch (Exception ex)
+      {
+
+      }
+
+      //something went wrong
+      Avalonia.Threading.Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+        {
+          Title = "Could not open view!",
+          Message = "Something went wrong",
+          Type = Avalonia.Controls.Notifications.NotificationType.Error,
+        });
+      });
+
     }
 
     public void OpenComment()

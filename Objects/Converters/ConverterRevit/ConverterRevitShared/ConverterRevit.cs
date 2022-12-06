@@ -3,7 +3,6 @@ using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using BE = Objects.BuiltElements;
@@ -59,7 +58,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
-    public HostObject CurrentHostElement { get; set; }
+    public Element CurrentHostElement { get; set; }
 
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
@@ -119,7 +118,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject = FamilyInstanceToSpeckle(o, out notes);
+          returnObject = o.MEPModel?.ConnectorManager?.Connectors?.Size > 0 ? NetworkToSpeckle(o, out notes) : FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -164,25 +163,28 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = DuctToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = DuctToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = PipeToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = PipeToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = CableTrayToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
+          break;
+        case DB.Electrical.Conduit o:
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -353,6 +355,11 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      // Get setting for if the user is only trying to preview the geometry
+      Settings.TryGetValue("preview", out string isPreview);
+      if (bool.Parse(isPreview ?? "false") == true)
+        return PreviewGeometry(@object);
+
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
       if (bool.Parse(recieveModelMesh ?? "false") == true)
@@ -482,6 +489,9 @@ namespace Objects.Converter.Revit
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
+        case BE.Network o:
+          return NetworkToNative(o);
+
         case BE.Floor o:
           return FloorToNative(o);
 
@@ -526,6 +536,9 @@ namespace Objects.Converter.Revit
 
         case BE.CableTray o:
           return CableTrayToNative(o);
+
+        case BE.Conduit o:
+          return ConduitToNative(o);
 
         case BE.Revit.RevitRailing o:
           return RailingToNative(o);
@@ -607,6 +620,7 @@ namespace Objects.Converter.Revit
         DB.Plumbing.FlexPipe _ => true,
         DB.Electrical.Wire _ => true,
         DB.Electrical.CableTray _ => true,
+        DB.Electrical.Conduit _ => true,
         DB.CurtainGridLine _ => true, //these should be handled by curtain walls
         DB.Architecture.BuildingPad _ => true,
         DB.Architecture.Stairs _ => true,
@@ -691,20 +705,21 @@ namespace Objects.Converter.Revit
         BE.Pipe _ => true,
         BE.Wire _ => true,
         BE.CableTray _ => true,
+        BE.Conduit _ => true,
         BE.Revit.RevitRailing _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
+        BE.Network _ => true,
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         STR.Geometry.Node _ => true,
         STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
-        _ => false
-
+        _ => false,
       };
     }
   }

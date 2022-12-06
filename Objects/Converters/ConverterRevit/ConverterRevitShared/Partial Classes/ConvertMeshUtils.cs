@@ -123,6 +123,9 @@ namespace Objects.Converter.Revit
       List<Mesh> meshes = new List<Mesh>();
 
       var geom = element.get_Geometry(new Options());
+      if (geom == null)
+        return null;
+
       foreach (GeometryInstance instance in geom)
       {
         //Get instance geometry from fabrication part geometry

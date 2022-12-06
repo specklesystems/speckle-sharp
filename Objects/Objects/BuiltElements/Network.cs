@@ -38,24 +38,29 @@ namespace Objects.BuiltElements
   {
     public string name { get; set; }
 
+    [DetachProperty]
     /// <summary>
     /// The Base object representing the element in the network (eg Pipe, Duct, etc)
     /// </summary>
-    public Base element { get; set; }
+    /// <remarks>
+    /// Currently named "elements" to assist with receiving in connector flatten method.
+    /// </remarks>
+    public Base elements { get; set; } 
 
     /// <summary>
     /// The index of the links in <see cref="network"/> that are connected to this element
     /// </summary>
     public List<int> linkIndices { get; set; }
 
-    [JsonIgnore] public Network network { get; set; }
+    [JsonIgnore] 
+    public Network network { get; set; }
 
     public NetworkElement() { }
 
     /// <summary>
     /// Retrieves the links for this element
     /// </summary>
-    [JsonIgnore] public List<NetworkLink> links => linkIndices.Select(i => network.links[i]).ToList();
+    [JsonIgnore] public List<NetworkLink> links => linkIndices.Select(i => network?.links[i]).ToList();
   }
 
   public class NetworkLink : Base
@@ -67,14 +72,15 @@ namespace Objects.BuiltElements
     /// </summary>
     public List<int> elementIndices { get; set; }
 
-    [JsonIgnore] public Network network { get; set; }
+    [JsonIgnore] 
+    public Network network { get; set; }
 
     public NetworkLink() { }
 
     /// <summary>
     /// Retrieves the elements for this link
     /// </summary>
-    [JsonIgnore] public List<NetworkElement> elements => elementIndices.Select(i => network.elements[i]).ToList();
+    [JsonIgnore] public List<NetworkElement> elements => elementIndices.Select(i => network?.elements[i]).ToList();
   }
 }
 
@@ -91,10 +97,9 @@ namespace Objects.BuiltElements.Revit
     /// Indicates if this element needs temporary placeholder objects to be created first when receiving
     /// </summary>
     /// <remarks>
-    /// This is a utility property used to track network creation state on receive. Deprecate if possible. 
     /// For example, some fittings cannot be created based on connectors, and so will be created similarly to mechanical equipment
     /// </remarks>
-    [JsonIgnore] public bool needsPlaceholders { get; set; }
+    public bool isConnectorBased { get; set; }
 
     public RevitNetworkElement() { }
   }
@@ -112,14 +117,14 @@ namespace Objects.BuiltElements.Revit
     public string systemType { get; set; }
 
     /// <summary>
-    /// The shape of the <see cref="NetworkLink"/>
+    /// The connector profile shape of the <see cref="NetworkLink"/>
     /// </summary>
-    public NetworkLinkShape shape { get; set; }
+    public string shape { get; set; }
 
     /// <summary>
     /// The link domain
     /// </summary>
-    public NetworkLinkDomain domain { get; set; }
+    public string domain { get; set; }
 
     /// <summary>
     /// The index indicating the position of this link on the connected fitting element, if applicable
@@ -132,41 +137,17 @@ namespace Objects.BuiltElements.Revit
     /// <summary>
     /// Indicates if this link needs temporary placeholder objects to be created first when receiving
     /// </summary>
-    /// <remarks>
-    /// This is a utility property used to track network creation state on receive. Deprecate if possible. 
+    /// <remarks> 
     /// Placeholder geometry are curves. 
     /// For example, U-bend links need temporary pipes to be created first, if one or more linked pipes have not yet been created in the network.
     /// </remarks>
-    [JsonIgnore] public bool needsPlaceholders { get; set; }
+    public bool needsPlaceholders { get; set; }
 
     /// <summary>
     /// Indicates if this link has been connected to its elements
     /// </summary>
-    /// <remarks>
-    /// This is a utility property used to track network creation state on receive. Deprecate if possible.
-    /// </remarks>
-    [JsonIgnore] public bool isConnected { get; set; }
+    public bool isConnected { get; set; }
 
     public RevitNetworkLink() { }
-  }
-
-  /// <summary>
-  /// Represents the shape of a <see cref="NetworkLink"/>.
-  /// </summary>
-  public enum NetworkLinkShape
-  {
-    Oval,
-    Round,
-    Rectangular,
-    Unknown,
-  }
-
-  public enum NetworkLinkDomain
-  {
-    Cabletray,
-    Conduit,
-    Duct,
-    Piping,
-    Unknown
   }
 }

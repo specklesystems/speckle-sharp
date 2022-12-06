@@ -94,6 +94,8 @@ namespace Objects.Converter.Revit
       });
 
       BuiltInCategory bic;
+      if ((int)speckleDs.category == -1)
+        speckleDs.category = RevitCategory.GenericModels;
       var bicName = Categories.GetBuiltInFromSchemaBuilderCategory(speckleDs.category);
 
       BuiltInCategory.TryParse(bicName, out bic);

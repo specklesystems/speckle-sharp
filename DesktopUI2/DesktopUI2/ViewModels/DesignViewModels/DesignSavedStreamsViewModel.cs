@@ -107,10 +107,6 @@ namespace DesktopUI2.ViewModels.DesignViewModels
 
     }
 
-    public void CloseNotificationCommand()
-    {
-
-    }
 
     public void OpenReportCommand()
     {

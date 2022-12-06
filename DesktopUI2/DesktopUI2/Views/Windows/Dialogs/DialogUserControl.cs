@@ -40,8 +40,8 @@ namespace DesktopUI2.Views.Windows.Dialogs
     public void Close(object dialogResult)
     {
       _dialogResult = dialogResult;
-      Closed?.Invoke(this, null);
       MainViewModel.Instance.DialogBody = null;
+      Closed?.Invoke(this, null);
     }
   }
 }

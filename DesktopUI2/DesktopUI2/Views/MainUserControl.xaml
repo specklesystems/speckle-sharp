@@ -5,8 +5,9 @@
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:c="using:DesktopUI2.Views.Controls"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:m="using:DesktopUI2.Models"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:mo="using:DesktopUI2.Models"
   xmlns:reactiveUi="http://reactiveui.net"
   xmlns:styles="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:vm="using:DesktopUI2.ViewModels"
@@ -29,12 +30,13 @@
   </UserControl.Styles>
   <ContentControl x:Name="MainUserControl">
     <Grid>
-
+      <!--  ROUTER  -->
       <reactiveUi:RoutedViewHost Grid.Row="1" Router="{Binding Router}">
         <reactiveUi:RoutedViewHost.PageTransition>
           <CrossFade Duration="0.15" />
         </reactiveUi:RoutedViewHost.PageTransition>
       </reactiveUi:RoutedViewHost>
+      <!--  DIALOG  -->
       <Grid IsVisible="{Binding DialogVisible}" Opacity="{Binding DialogOpacity}">
         <Grid.Transitions>
           <Transitions>
@@ -51,7 +53,8 @@
           <ContentControl Content="{Binding DialogBody}" />
         </styles:Card>
       </Grid>
-      <m:NotificationManager
+      <!--  NOTIFICATION MANAGER  -->
+      <mo:NotificationManager
         x:Name="NotificationManager"
         Classes="BottomStretch"
         CornerRadius="20"

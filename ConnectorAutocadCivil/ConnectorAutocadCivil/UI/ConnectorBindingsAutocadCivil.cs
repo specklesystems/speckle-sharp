@@ -947,9 +947,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // get the db object from id
           DBObject obj = null;
           string layer = null;
+          string applicationId = null;
           if (Utils.GetHandle(autocadObjectHandle, out Handle hn))
           {
-            obj = hn.GetObject(tr, out string type, out layer);
+            obj = hn.GetObject(tr, out string type, out layer, out applicationId);
+            if (applicationId == null) { applicationId = autocadObjectHandle; }
           }
           else
           {
@@ -960,8 +962,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // create applicationobject for reporting
           Base converted = null;
           var descriptor = Utils.ObjectDescriptor(obj);
-          var applicationId = autocadObjectHandle; // TODO: ADD TEST FOR XDATA APPID
-          ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor) { applicationId = applicationId };
+          ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor) { applicationId = autocadObjectHandle };
 
           if (!converter.CanConvertToSpeckle(obj))
           {

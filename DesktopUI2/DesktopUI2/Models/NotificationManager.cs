@@ -87,6 +87,9 @@ namespace DesktopUI2.Models
     /// <inheritdoc/>
     public async void Show(object content)
     {
+      if (_items == null)
+        return;
+
       var notification = content as INotification;
 
       var notificationControl = new NotificationCard
