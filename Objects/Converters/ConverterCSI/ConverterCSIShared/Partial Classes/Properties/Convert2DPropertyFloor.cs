@@ -5,13 +5,15 @@ using CSiAPIv1;
 using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 using Objects.Structural.CSI.Properties;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public object FloorPropertyToNative(CSIProperty2D property2D)
+    public void FloorPropertyToNative(CSIProperty2D property2D, ref ApplicationObject appObj)
     {
+      int? success = null;
       if (property2D.deckType != Structural.CSI.Analysis.DeckType.Null)
       {
         SetDeck(property2D);
@@ -19,7 +21,7 @@ namespace Objects.Converter.CSI
         {
           case Structural.CSI.Analysis.DeckType.Filled:
             var deckFilled = (CSIProperty2D.DeckFilled)property2D;
-            Model.PropArea.SetDeckFilled(deckFilled.name,
+            success = Model.PropArea.SetDeckFilled(deckFilled.name,
                 deckFilled.SlabDepth,
                 deckFilled.RibDepth,
                 deckFilled.RibWidthTop,
@@ -33,7 +35,7 @@ namespace Objects.Converter.CSI
             break;
           case Structural.CSI.Analysis.DeckType.Unfilled:
             var deckUnfilled = (CSIProperty2D.DeckUnFilled)property2D;
-            Model.PropArea.SetDeckUnfilled(deckUnfilled.name,
+            success = Model.PropArea.SetDeckUnfilled(deckUnfilled.name,
                 deckUnfilled.RibDepth,
                 deckUnfilled.RibWidthTop,
                 deckUnfilled.RibWidthBot,
@@ -43,7 +45,7 @@ namespace Objects.Converter.CSI
             break;
           case Structural.CSI.Analysis.DeckType.SolidSlab:
             var deckSlab = (CSIProperty2D.DeckSlab)property2D;
-            Model.PropArea.SetDeckSolidSlab(deckSlab.name,
+            success = Model.PropArea.SetDeckSolidSlab(deckSlab.name,
                 deckSlab.SlabDepth,
                 deckSlab.ShearStudDia,
                 deckSlab.ShearStudHt,
@@ -58,13 +60,13 @@ namespace Objects.Converter.CSI
           case Structural.CSI.Analysis.SlabType.Slab:
             var SolidSlab = property2D;
             var shell = shellType(SolidSlab);
-            Model.PropArea.SetSlab(SolidSlab.name, eSlabType.Slab, shell, SolidSlab.material.name, SolidSlab.thickness);
+            success = Model.PropArea.SetSlab(SolidSlab.name, eSlabType.Slab, shell, SolidSlab.material.name, SolidSlab.thickness);
             break;
           case Structural.CSI.Analysis.SlabType.Ribbed:
             var slabRibbed = (CSIProperty2D.RibbedSlab)property2D;
             shell = shellType(slabRibbed);
             Model.PropArea.SetSlab(slabRibbed.name, eSlabType.Ribbed, shell, slabRibbed.material.name, slabRibbed.thickness);
-            Model.PropArea.SetSlabRibbed(slabRibbed.name,
+            success = Model.PropArea.SetSlabRibbed(slabRibbed.name,
                 slabRibbed.OverAllDepth,
                 slabRibbed.thickness,
                 slabRibbed.StemWidthTop,
@@ -76,7 +78,7 @@ namespace Objects.Converter.CSI
             var slabWaffled = (CSIProperty2D.WaffleSlab)property2D;
             shell = shellType(slabWaffled);
             Model.PropArea.SetSlab(slabWaffled.name, eSlabType.Waffle, shell, slabWaffled.material.name, slabWaffled.thickness);
-            Model.PropArea.SetSlabWaffle(
+            success = Model.PropArea.SetSlabWaffle(
                 slabWaffled.name,
                 slabWaffled.OverAllDepth,
                 slabWaffled.thickness,
@@ -88,8 +90,10 @@ namespace Objects.Converter.CSI
         }
       }
 
-
-      return property2D.name;
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{property2D.name}");
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
 
     public eShellType shellType(CSIProperty2D property)

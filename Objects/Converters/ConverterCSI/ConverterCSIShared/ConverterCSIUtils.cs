@@ -249,11 +249,12 @@ namespace Objects.Converter.CSI
 
     public enum CSIConverterSupported
     {
+      //CSINode,
       Node,
       Line,
       Element1D,
       Element2D,
-      Model,
+      //Model,
     }
 
     public enum CSIAPIUsableTypes
