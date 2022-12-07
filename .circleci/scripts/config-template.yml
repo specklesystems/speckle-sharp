@@ -380,7 +380,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Checkout
           command: |
             cd speckle-sharp-ci-tools
-            git checkout #51-Installer-error-with-multiple-users-on-mac
+            git checkout origin/#51-Installer-error-with-multiple-users-on-mac
             ls
             cd ..
       - persist_to_workspace:
