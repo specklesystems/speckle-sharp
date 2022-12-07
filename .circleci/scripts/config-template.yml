@@ -173,6 +173,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           shell: cmd.exe #does not work in powershell
           environment:
             SLUG: << parameters.slug >>
+      - store_artifacts:
+          path: speckle-sharp-ci-tools/Installers/<<parameters.slug>>/
       # - when:
       #     condition:
       #       equal: [teklastructures, << parameters.slug >>] # Tekla Structures has it's own "plugin packager", so we do this instead of the ISS step
