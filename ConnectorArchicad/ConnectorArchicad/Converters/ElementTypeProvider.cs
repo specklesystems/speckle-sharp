@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using Archicad.Converters;
 using Objects.BuiltElements.Archicad;
+using Beam = Objects.BuiltElements.Archicad.ArchicadBeam;
 using DirectShape = Objects.BuiltElements.Archicad.DirectShape;
+using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Archicad.ArchicadFloor;
 using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Archicad.ArchicadWall;
-using Beam = Objects.BuiltElements.Archicad.ArchicadBeam;
-using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 
 namespace Archicad
