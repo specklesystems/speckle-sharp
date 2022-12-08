@@ -98,12 +98,12 @@ namespace Objects.Converter.RhinoGh
           viewport.ChangeToParallelProjection(true);
 
         var commitInfo = GetCommitInfo();
-        bakedViewName = $"{commitInfo } - {view.name}";
+        bakedViewName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {view.name}" : $"{view.name}";
 
-        Doc.NamedViews.Add(bakedViewName, viewport.Id);
+        var res = Doc.NamedViews.Add(bakedViewName, viewport.Id);
+        // if (res == -1) TODO: add reporting here and return application object
+
       });
-
-      //ConversionErrors.Add(sdfasdfaf);
 
       return bakedViewName;
     }
