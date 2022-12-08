@@ -76,17 +76,9 @@
       <Project>{3d522de4-1f73-486f-b07d-6ad794f784fd}</Project>
       <Name>DesktopUI2</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2020\ConverterTeklaStructures2020.csproj">
-      <Project>{fd0c136e-e3f0-487f-b372-44e9e1640038}</Project>
-      <Name>ConverterTeklaStructures2020</Name>
-    </ProjectReference>
     <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
       <Project>{60b78c35-560a-4111-82a2-d03a68a047c0}</Project>
       <Name>PolygonMesher</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
-      <Project>{69b9ded4-7b66-4a54-aff8-3a62880b8af9}</Project>
-      <Name>Objects</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -106,12 +98,6 @@
     </PackageReference>
     <PackageReference Include="Sentry">
       <Version>3.20.1</Version>
-    </PackageReference>
-    <PackageReference Include="Speckle.Newtonsoft.Json">
-      <Version>12.0.3.1</Version>
-    </PackageReference>
-    <PackageReference Include="Stylet">
-      <Version>1.3.6</Version>
     </PackageReference>
     <PackageReference Include="TeklaOpenAPI">
       <Version>2020.0.3</Version>
