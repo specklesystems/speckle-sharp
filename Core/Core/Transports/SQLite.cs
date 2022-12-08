@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Data.Sqlite;
-using Microsoft.Data.Sqlite;
 using Speckle.Core.Api;
 
 namespace Speckle.Core.Transports
