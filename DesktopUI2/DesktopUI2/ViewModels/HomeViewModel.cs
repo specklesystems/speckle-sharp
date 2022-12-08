@@ -238,7 +238,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not initialize the Home Screen", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -265,7 +265,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not Update Saved STreams", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
