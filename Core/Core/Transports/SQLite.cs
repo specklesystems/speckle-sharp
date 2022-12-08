@@ -70,9 +70,7 @@ namespace Speckle.Core.Transports
 
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
-      //fix for network drives: https://stackoverflow.com/a/18506097/826060
-      var prefix = RootPath.StartsWith(@"\\") ? @"\\" : "";
-      ConnectionString = string.Format("Data Source={0};", prefix + RootPath);
+      ConnectionString = string.Format("Data Source={0};", RootPath);
 
       try
       {
