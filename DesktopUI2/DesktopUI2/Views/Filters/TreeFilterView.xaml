@@ -23,7 +23,7 @@
             SelectionChanged="TreeView_OnSelectionChanged"
             SelectionMode="Multiple, Toggle">
             <TreeView.DataTemplates>
-                <TreeDataTemplate DataType="filters:ObjectHierarchy" ItemsSource="{Binding Elements}">
+                <TreeDataTemplate DataType="filters:TreeNode" ItemsSource="{Binding Elements}">
                     <TextBlock Text="{Binding DisplayName}" />
                 </TreeDataTemplate>
             </TreeView.DataTemplates>
