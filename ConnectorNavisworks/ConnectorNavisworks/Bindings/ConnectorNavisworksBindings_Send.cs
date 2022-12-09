@@ -2,13 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
-using System.Runtime.Serialization;
-using System.Threading;
 using System.Threading.Tasks;
-using Avalonia.Controls;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorNavisworks.Objects;

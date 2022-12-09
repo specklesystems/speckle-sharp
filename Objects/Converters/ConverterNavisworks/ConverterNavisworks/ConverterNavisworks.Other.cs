@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ConverterNavisworksShared
+namespace Objects.Converter.Navisworks
 {
-    internal class ConverterNavisworks
+  public partial class ConverterNavisworks
     {
     }
 }

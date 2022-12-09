@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Objects.Converter.Navisworks
 {
-    internal class ConverterNavisworks
+  public partial class ConverterNavisworks
     {
     }
 }
