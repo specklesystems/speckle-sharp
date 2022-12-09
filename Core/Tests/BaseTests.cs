@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using NUnit.Framework;
+﻿using NUnit.Framework;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Tests;
 
 namespace Tests
 {
