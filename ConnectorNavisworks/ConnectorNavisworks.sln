@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterNavisworks", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworks.shproj", "{C3232EF3-2000-44C6-A330-B94531C9CC83}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2023", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks.2023.csproj", "{ED3CF481-06F5-4A60-81B1-757AA8404C75}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2023", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks2023.csproj", "{ED3CF481-06F5-4A60-81B1-757AA8404C75}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj", "{54CBD496-8FF0-493D-B689-E31972DA874C}"
 EndProject

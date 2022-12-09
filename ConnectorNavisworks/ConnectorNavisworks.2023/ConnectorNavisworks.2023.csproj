@@ -105,7 +105,7 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Core\Core\Core.csproj" />
 	  <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
-	  <ProjectReference Include="..\..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks.2023.csproj" />
+	  <ProjectReference Include="..\..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks2023.csproj" />
 	  <ProjectReference Include="..\..\Objects\Objects\Objects.csproj" />
 	</ItemGroup>
 

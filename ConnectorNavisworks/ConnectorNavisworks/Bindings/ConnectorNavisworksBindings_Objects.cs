@@ -1,22 +1,24 @@
-﻿using System.Collections.Generic;
-using DesktopUI2;
-using DesktopUI2.Models.Settings;
+﻿using DesktopUI2.Models.Filters;
+using Speckle.ConnectorNavisworks.Objects;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Application = Autodesk.Navisworks.Api.Application;
-using Document = Autodesk.Navisworks.Api.Document;
-using MenuItem = DesktopUI2.Models.MenuItem;
+using System;
+using System.Collections.Generic;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
-    public partial class ConnectorBindingsNavisworks
+  public partial class ConnectorBindingsNavisworks
+  {
+    public override List<string> GetObjectsInView() // this returns all visible doc objects.
     {
-      
-        public override List<string> GetObjectsInView() // this returns all visible doc objects.
-        {
-            List<string> objects = new List<string>();
-            return objects;
-        }
-        
+      var objects = new List<string>();
+      return objects;
     }
+
+    private List<ConvertableObject> GetObjectsFromFilter(ISelectionFilter filter)
+    {
+      var objs = new List<ConvertableObject>();
+
+      return objs;
+    }
+  }
 }

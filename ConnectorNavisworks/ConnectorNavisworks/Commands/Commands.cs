@@ -1,9 +1,4 @@
-﻿using Speckle.ConnectorNavisworks.Bindings;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Speckle.ConnectorNavisworks.Entry
+﻿namespace Speckle.ConnectorNavisworks.Entry
 {
     public class LaunchSpeckleConnector
     {

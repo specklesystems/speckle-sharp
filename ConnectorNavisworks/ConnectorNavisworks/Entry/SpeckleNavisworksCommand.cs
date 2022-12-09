@@ -1,17 +1,16 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
+using System.Windows.Forms;
 using System.Windows.Forms.Integration;
 using Autodesk.Navisworks.Api.Plugins;
 using Avalonia;
-using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+using DesktopUI2;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorNavisworks.Bindings;
 using Speckle.Core.Logging;
-using Control = System.Windows.Forms.Control;
-using UserControl = System.Windows.Forms.UserControl;
+using Application = Autodesk.Navisworks.Api.Application;
 
 namespace Speckle.ConnectorNavisworks.Entry
 {
@@ -45,7 +44,7 @@ namespace Speckle.ConnectorNavisworks.Entry
                 // ignore
             }
 
-            var navisworksActiveDocument = Autodesk.Navisworks.Api.Application.ActiveDocument;
+            var navisworksActiveDocument = Application.ActiveDocument;
 
             var bindings = new ConnectorBindingsNavisworks(navisworksActiveDocument);
             bindings.RegisterAppEvents();
@@ -54,10 +53,10 @@ namespace Speckle.ConnectorNavisworks.Entry
             Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
             Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
-            ElementHost speckleHost = new ElementHost()
+            var speckleHost = new ElementHost
             {
                 AutoSize = true,
-                Child = new SpeckleHostPane()
+                Child = new SpeckleHostPane
                 {
                     DataContext = viewModel
                 }
@@ -70,15 +69,12 @@ namespace Speckle.ConnectorNavisworks.Entry
 
         public override void DestroyControlPane(Control pane)
         {
-            if (pane is UserControl control)
-            {
-                control.Dispose();
-            }
+            if (pane is UserControl control) control.Dispose();
         }
 
         public static AppBuilder BuildAvaloniaApp()
         {
-            AppBuilder app = AppBuilder.Configure<DesktopUI2.App>();
+            var app = AppBuilder.Configure<App>();
 
             app.UsePlatformDetect();
             app.With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 });
@@ -99,9 +95,9 @@ namespace Speckle.ConnectorNavisworks.Entry
         {
             Assembly a = null;
             var name = args.Name.Split(',')[0];
-            string path = Path.GetDirectoryName(typeof(RibbonHandler).Assembly.Location);
+            var path = Path.GetDirectoryName(typeof(RibbonHandler).Assembly.Location);
 
-            string assemblyFile = Path.Combine(path, name + ".dll");
+            var assemblyFile = Path.Combine(path ?? string.Empty, name + ".dll");
 
             if (File.Exists(assemblyFile))
                 a = Assembly.LoadFrom(assemblyFile);
