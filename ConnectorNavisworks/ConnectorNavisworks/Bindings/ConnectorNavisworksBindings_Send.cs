@@ -32,7 +32,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      List<ConvertableObject> filteredObjects = new List<ConvertableObject>();
+      List<string> filteredObjects = new List<string>();
 
       // check for converter
       ISpeckleKit defaultKit = KitManager.GetDefaultKit();
@@ -65,7 +65,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       if (state.Filter != null)
       {
         filteredObjects.AddRange(GetObjectsFromFilter(state.Filter));
-        state.SelectedObjectIds = filteredObjects.Select(x => x.ObjectId).ToList();
+        state.SelectedObjectIds = filteredObjects.ToList();
       }
 
       if (filteredObjects.Count == 0)
@@ -90,12 +90,16 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       int convertedCount = 0;
 
-      foreach (ConvertableObject obj in filteredObjects)
+      Dictionary<string, bool> toConvertDictionary = state.SelectedObjectIds.ToDictionary(x => x, x => false);
+
+      while (toConvertDictionary.Any((kv) => kv.Value == false))
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
           return null;
         }
+
+        var nextToConvert = toConvertDictionary.First(kv => kv.Value == false);
 
         Base converted = null;
 
@@ -106,34 +110,38 @@ namespace Speckle.ConnectorNavisworks.Bindings
           applicationId = applicationId
         };
 
-        if (obj != null)
-        {
-          if (!converter.CanConvertToSpeckle(obj))
-          {
-            reportObject.Update(status: ApplicationObject.State.Skipped,
-              logItem: $"Sending this object type is not supported in Navisworks");
-            progress.Report.Log(reportObject);
-            continue;
-          }
+        var pseudoId = nextToConvert.Key;
 
-          converter.Report.Log(reportObject);
-          converted = converter.ConvertToSpeckle(obj);
-
-          if (converted == null)
-          {
-            reportObject.Update(status: ApplicationObject.State.Failed,
-              logItem: $"Conversion returned null");
-            progress.Report.Log(reportObject);
-            continue;
-          }
-        }
-        else
+        if (!converter.CanConvertToSpeckle(pseudoId))
         {
-          progress.Report.LogOperationError(new Exception($"Failed to find doc object."));
+          reportObject.Update(status: ApplicationObject.State.Skipped,
+            logItem: $"Sending this object type is not supported in Navisworks");
+          progress.Report.Log(reportObject);
+
+          toConvertDictionary[pseudoId] = true;
           continue;
         }
 
-        conversionProgressDict["Conversion"]++;
+        converter.Report.Log(reportObject);
+        converted = converter.ConvertToSpeckle(pseudoId);
+
+        if (converted == null)
+        {
+          reportObject.Update(status: ApplicationObject.State.Failed,
+            logItem: $"Conversion returned null");
+          progress.Report.Log(reportObject);
+          toConvertDictionary[pseudoId] = true;
+          continue;
+        }
+
+        var convertedChildrenAndSelf = (converted["_convertedIds"] as List<string>);
+
+        convertedChildrenAndSelf.ForEach(x => toConvertDictionary[x] = true);
+
+        //((IDictionary<string, object>)converted).Remove("_convertedIds");
+
+
+        conversionProgressDict["Conversion"] += convertedChildrenAndSelf.Count;
         progress.Update(conversionProgressDict);
 
         converted.applicationId = applicationId;
@@ -147,7 +155,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
           logItem: $"Sent as {converted.speckle_type}");
         progress.Report.Log(reportObject);
 
-        convertedCount++;
+        convertedCount += convertedChildrenAndSelf.Count;
       }
 
       progress.Report.Merge(converter.Report);
@@ -201,8 +209,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         streamId = streamId,
         objectId = objectId,
         branchName = state.BranchName,
-        message = state.CommitMessage ?? $"Sent {convertedCount} elements from Rhino.",
-        sourceApplication = Utils.VersionedAppName
+        message = state.CommitMessage ?? $"Sent {convertedCount} elements from {HostApplications.Navisworks.Name}.",
+        sourceApplication = HostApplications.Navisworks.Slug
       };
 
       try
