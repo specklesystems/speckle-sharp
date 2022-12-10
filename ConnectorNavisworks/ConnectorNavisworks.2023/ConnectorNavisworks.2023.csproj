@@ -30,9 +30,9 @@
 		<Configurations>Debug;Release</Configurations>
 
 		<NavisworksBuildNumber>v20</NavisworksBuildNumber>
-		<NavisworksApiPath>..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023</NavisworksApiPath>
-		<PluginBundleTarget>C:\ProgramData\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle</PluginBundleTarget>
-		<!--<Platforms>AnyCPU;x64</Platforms>-->
+		<NavisworksApiPath>C:\Program Files\Autodesk\Navisworks Manage 2023</NavisworksApiPath>
+		<PluginBundleTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle</PluginBundleTarget>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<!-- Avalonia -->
