@@ -51,5 +51,43 @@ namespace Objects.Converter.Navisworks
           return false;
       }
     }
+
+    private static ModelItem PointerToModelItem(object @string)
+    {
+      int[] pathArray;
+
+      try
+      {
+        pathArray = @string.ToString().Split('-').Select(x =>
+        {
+          if (int.TryParse(x, out var value))
+          {
+            return value;
+          }
+
+          throw (new Exception("malformed path pseudoId"));
+        }).ToArray();
+      }
+      catch
+      {
+        return null;
+      }
+
+      InwOpState10 oState = ComApiBridge.State;
+      InwOaPath protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath, null, null);
+
+      Array myArray = Array.CreateInstance(typeof(int), new int[1] { pathArray.Length }, new int[1] { 1 });
+
+      for (int index = myArray.GetLowerBound(0); index <= myArray.GetUpperBound(0); index++)
+      {
+        myArray.SetValue(pathArray[index - 1], index);
+      }
+
+      protoPath.ArrayData = myArray;
+
+      ModelItem m = ComApiBridge.ToModelItem(protoPath);
+
+      return m ?? null;
+    }
   }
 }
