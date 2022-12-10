@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Speckle.ConnectorNavisworks.Objects;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -137,11 +136,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         var convertedChildrenAndSelf = (converted["_convertedIds"] as List<string>);
 
         convertedChildrenAndSelf.ForEach(x => toConvertDictionary[x] = true);
-
-        //((IDictionary<string, object>)converted).Remove("_convertedIds");
-
-
         conversionProgressDict["Conversion"] += convertedChildrenAndSelf.Count;
+
         progress.Update(conversionProgressDict);
 
         converted.applicationId = applicationId;
