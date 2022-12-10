@@ -7,9 +7,22 @@ using Autodesk.Navisworks.Api;
 using Speckle.Core.Kits;
 using System.Drawing;
 using Console = Colorful.Console;
+using System.Runtime.CompilerServices;
 
 namespace Speckle.ConnectorNavisworks
 {
+  internal static class ArrayExtension
+  {
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static T[] ToArray<T>(this Array arr) where T : struct
+    {
+      T[] result = new T[arr.Length];
+      Array.Copy(arr, result, result.Length);
+      return result;
+    }
+  }
+
+
   public static class Utils
   {
 #if NAVMAN20
