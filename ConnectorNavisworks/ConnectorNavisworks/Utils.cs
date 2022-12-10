@@ -46,7 +46,7 @@ namespace Speckle.ConnectorNavisworks
 
     public static string GetUnits(Document doc)
     {
-      return nameof(doc.Units).ToLower();
+      return doc.Units.ToString();
     }
   }
 }
