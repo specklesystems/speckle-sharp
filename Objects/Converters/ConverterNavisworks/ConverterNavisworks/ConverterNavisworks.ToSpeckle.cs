@@ -29,7 +29,6 @@ namespace Objects.Converter.Navisworks
       return @base;
     }
 
-
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
       return objects.Select(ConvertToSpeckle).ToList();
@@ -37,8 +36,17 @@ namespace Objects.Converter.Navisworks
 
     public bool CanConvertToSpeckle(object @object)
     {
-      switch (@object)
+      // is expecting @object to be a pseudoId string
+      if (!(@object is string pseudoId)) return false;
+
+      ModelItem item = PointerToModelItem(pseudoId);
+
+      switch (item.ClassDisplayName)
       {
+        case "Solid":
+          return true;
+        case null:
+          return false;
         default:
           return false;
       }
