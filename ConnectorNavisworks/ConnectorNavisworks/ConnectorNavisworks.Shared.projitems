@@ -20,7 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\Commands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Objects\ConvertableObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Ribbon.xaml.cs">
