@@ -36,7 +36,8 @@ namespace Objects.Converter.Revit
       return speckleCeiling;
     }
 
-#if REVIT2022
+#if REVIT2020  || REVIT2021
+#else
     public ApplicationObject CeilingToNative(Ceiling speckleCeiling)
     {
       var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);

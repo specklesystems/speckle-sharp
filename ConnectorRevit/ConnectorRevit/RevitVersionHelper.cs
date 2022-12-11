@@ -7,7 +7,7 @@ namespace ConnectorRevit
 
     public static double ConvertFromInternalUnits(double val, Parameter parameter)
     {
-#if !(REVIT2022 || REVIT2023)
+#if REVIT2020
       return UnitUtils.ConvertFromInternalUnits(val, parameter.DisplayUnitType);
 #else
       return UnitUtils.ConvertFromInternalUnits(val, parameter.GetUnitTypeId());
