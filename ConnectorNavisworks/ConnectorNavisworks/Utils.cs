@@ -23,6 +23,14 @@ namespace Speckle.ConnectorNavisworks
   }
 
 
+  internal class PseudoIdComparer : IComparer<string>
+  {
+    public int Compare(string x, string y) =>
+      x != null && y != null
+        ? x.Length == y.Length ? string.Compare(x, y, StringComparison.Ordinal) : x.Length.CompareTo(y.Length)
+        : 0;
+  }
+
   public static class Utils
   {
 #if NAVMAN20
