@@ -1,6 +1,4 @@
 ﻿using DesktopUI2.Models.Filters;
-using Speckle.ConnectorNavisworks.Objects;
-using Speckle.Core.Kits;
 using System;
 using System.Collections.Generic;
 

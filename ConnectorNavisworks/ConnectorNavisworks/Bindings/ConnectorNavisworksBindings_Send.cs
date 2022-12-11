@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
+using Autodesk.Navisworks.Gui;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -88,8 +90,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
       };
 
       int convertedCount = 0;
+      int skippedCount = 0;
 
-      Dictionary<string, bool> toConvertDictionary = state.SelectedObjectIds.ToDictionary(x => x, x => false);
+      SortedDictionary<string, bool> toConvertDictionary = new SortedDictionary<string, bool>(new PseudoIdComparer());
+      state.SelectedObjectIds.ForEach(x => toConvertDictionary.Add(x, false));
 
       while (toConvertDictionary.Any((kv) => kv.Value == false))
       {
@@ -118,6 +122,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
           progress.Report.Log(reportObject);
 
           toConvertDictionary[pseudoId] = true;
+          skippedCount++;
           continue;
         }
 
@@ -130,10 +135,16 @@ namespace Speckle.ConnectorNavisworks.Bindings
             logItem: $"Conversion returned null");
           progress.Report.Log(reportObject);
           toConvertDictionary[pseudoId] = true;
+          skippedCount++;
           continue;
         }
 
-        var convertedChildrenAndSelf = (converted["_convertedIds"] as List<string>);
+        if (commitObject[$"@Elements"] == null)
+          commitObject[$"@Elements"] = new List<Base>();
+        ((List<Base>)commitObject[$"@Elements"]).Add(converted);
+
+        // carries the pseudoIds of nested children already converted
+        var convertedChildrenAndSelf = (converted["__convertedIds"] as List<string>);
 
         convertedChildrenAndSelf.ForEach(x => toConvertDictionary[x] = true);
         conversionProgressDict["Conversion"] += convertedChildrenAndSelf.Count;
