@@ -326,8 +326,38 @@ namespace Objects.Converter.Navisworks
     }
   }
 
-  public class Geometry
+
+  public partial class ConverterNavisworks
   {
+    public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
+    {
+      var units = Application.ActiveDocument.Units.ToString();
+      double scale = 1; // TODO: Proper units support.
+
+      Point3D min = boundingBox3D.Min;
+      Point3D max = boundingBox3D.Max;
+
+      var basePlane = new Plane
+      {
+        units = units,
+        origin = new Point(0, 0),
+        xdir = new Vector(1, 0),
+        ydir = new Vector(0, 1),
+        normal = new Vector(0, 0, 1)
+      };
+
+      Box boundingBox = new Box
+      {
+        units = units,
+        basePlane = basePlane,
+        xSize = new Interval(min.X * scale, max.X * scale),
+        ySize = new Interval(min.Y * scale, max.Y * scale),
+        zSize = new Interval(min.Z * scale, max.Z * scale)
+      };
+
+      return boundingBox;
+    }
+  
     public Vector3D TransformVector3D { get; set; }
     public Vector SettingOutPoint { get; set; }
     public Vector TransformVector { get; set; }
@@ -434,27 +464,13 @@ namespace Objects.Converter.Navisworks
       geometryElement.Geometry = elementBase;
     }
 
-    public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
-    {
-      Box boundingBox = new Box();
-
-      double scale = 0.001; // TODO: Proper units support.
-
-      Point3D min = boundingBox3D.Min;
-      Point3D max = boundingBox3D.Max;
-
-      boundingBox.xSize = new Interval(min.X * scale, max.X * scale);
-      boundingBox.ySize = new Interval(min.Y * scale, max.Y * scale);
-      boundingBox.zSize = new Interval(min.Z * scale, max.Z * scale);
-
-      return boundingBox;
-    }
-
     public List<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
     {
       List<CallbackGeomListener> callbackListeners = navisworksGeometry.GetUniqueFragments();
 
       List<Base> baseGeometries = new List<Base>();
+
+      Vector3D move = (TransformVector3D == null) ? new Vector3D(0,0,0) : TransformVector3D;
 
       foreach (CallbackGeomListener callback in callbackListeners)
       {
@@ -466,14 +482,16 @@ namespace Objects.Converter.Navisworks
         List<double> vertices = new List<double>();
         List<int> faces = new List<int>();
 
-        Vector3D move = TransformVector3D;
+
+
+        /// TODO: this needs to come from options. For now, no move.
 
         int triangleCount = Triangles.Count;
         if (triangleCount <= 0) continue;
         for (int t = 0; t < triangleCount; t += 1)
         {
           double
-            scale = 0.001; // TODO: This will need to relate to the ActiveDocument reality and the target units. Probably metres.
+            scale = 1; // TODO: This will need to relate to the ActiveDocument reality and the target units. Probably metres.
 
           // Apply the bounding box move.
           // The native API methods for overriding transforms are not thread safe to call from the CEF instance
@@ -511,38 +529,6 @@ namespace Objects.Converter.Navisworks
       }
 
       return baseGeometries; // TODO: Check if this actually has geometries before adding to DisplayValue
-    }
-  }
-
-  public partial class ConverterNavisworks
-  {
-    public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
-    {
-      var units = Application.ActiveDocument.Units.ToString();
-      double scale = 1; // TODO: Proper units support.
-
-      Point3D min = boundingBox3D.Min;
-      Point3D max = boundingBox3D.Max;
-
-      var basePlane = new Plane
-      {
-        units = units,
-        origin = new Point(0, 0),
-        xdir = new Vector(1, 0),
-        ydir = new Vector(0, 1),
-        normal = new Vector(0, 0, 1)
-      };
-
-      Box boundingBox = new Box
-      {
-        units = units,
-        basePlane = basePlane,
-        xSize = new Interval(min.X * scale, max.X * scale),
-        ySize = new Interval(min.Y * scale, max.Y * scale),
-        zSize = new Interval(min.Z * scale, max.Z * scale)
-      };
-
-      return boundingBox;
     }
   }
 }

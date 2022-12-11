@@ -45,6 +45,15 @@ namespace Objects.Converter.Navisworks
         ["bbox"] = BoxToSpeckle(element.BoundingBox()),
       };
 
+      if (element.HasGeometry)
+      {
+        var geometry = new NavisworksGeometry(element);
+
+        AddFragments(geometry);
+
+        @base["displayValue"] = TranslateFragmentGeometry(geometry);
+      }
+
       if (element.Children.Any())
       {
         @base["@Elements"] = ConvertToSpeckle(element.Children.ToList());
@@ -140,6 +149,8 @@ namespace Objects.Converter.Navisworks
       switch (item.ClassDisplayName)
       {
         case "Solid":
+          return true;
+        case "Composite Part":
           return true;
         case null:
           return false;
