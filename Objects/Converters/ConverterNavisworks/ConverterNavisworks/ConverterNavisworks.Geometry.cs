@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.Geometry;
+using Objects.Primitive;
 using Speckle.Core.Models;
 using ComBridge = Autodesk.Navisworks.Api.ComApi.ComApiBridge; //
 
@@ -442,9 +443,9 @@ namespace Objects.Converter.Navisworks
       Point3D min = boundingBox3D.Min;
       Point3D max = boundingBox3D.Max;
 
-      boundingBox.xSize = new Primitive.Interval(min.X * scale, max.X * scale);
-      boundingBox.ySize = new Primitive.Interval(min.Y * scale, max.Y * scale);
-      boundingBox.zSize = new Primitive.Interval(min.Z * scale, max.Z * scale);
+      boundingBox.xSize = new Interval(min.X * scale, max.X * scale);
+      boundingBox.ySize = new Interval(min.Y * scale, max.Y * scale);
+      boundingBox.zSize = new Interval(min.Z * scale, max.Z * scale);
 
       return boundingBox;
     }
@@ -515,5 +516,33 @@ namespace Objects.Converter.Navisworks
 
   public partial class ConverterNavisworks
   {
+    public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
+    {
+      var units = Application.ActiveDocument.Units.ToString();
+      double scale = 1; // TODO: Proper units support.
+
+      Point3D min = boundingBox3D.Min;
+      Point3D max = boundingBox3D.Max;
+
+      var basePlane = new Plane
+      {
+        units = units,
+        origin = new Point(0, 0),
+        xdir = new Vector(1, 0),
+        ydir = new Vector(0, 1),
+        normal = new Vector(0, 0, 1)
+      };
+
+      Box boundingBox = new Box
+      {
+        units = units,
+        basePlane = basePlane,
+        xSize = new Interval(min.X * scale, max.X * scale),
+        ySize = new Interval(min.Y * scale, max.Y * scale),
+        zSize = new Interval(min.Z * scale, max.Z * scale)
+      };
+
+      return boundingBox;
+    }
   }
 }
