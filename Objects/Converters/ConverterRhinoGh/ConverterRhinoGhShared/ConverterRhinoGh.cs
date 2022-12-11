@@ -280,7 +280,10 @@ namespace Objects.Converter.RhinoGh
       if (@base is null) return @base;
 
       if (attributes != null)
-        GetUserInfo(@base, attributes);
+      {
+        GetUserInfo(@base, attributes, out List<string> attributeNotes);
+        notes.AddRange(attributeNotes);
+      }
       if (material != null)
         @base["renderMaterial"] = material;
       if (style != null)
