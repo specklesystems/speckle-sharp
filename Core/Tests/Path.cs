@@ -18,7 +18,7 @@ namespace Tests
       {
         pattern = @"\/root";
       }
-      else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
       {
         pattern = @"C:\\Users\\.*\\AppData\\Roaming";
       }
@@ -27,8 +27,17 @@ namespace Tests
         pattern = @"\/Users\/.*\/\.config";
       }
       else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-      {
-        pattern = @"\/home/.*/\.config";
+      { 
+        // if running under root user, the .config folder is in another location...
+        if (userPath.StartsWith("/root"))
+        {
+          pattern = @"\/root/\.config";
+        }
+        else
+        {
+          pattern = @"\/home/.*/\.config";
+
+        }
       }
       else
       {
@@ -69,7 +78,15 @@ namespace Tests
       }
       else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
       {
-        pattern = @"\/home/.*/\.config";
+        // if running under root user, the .config folder is in another location...
+        if (installPath.StartsWith("/root"))
+        {
+          pattern = @"\/root/\.config";
+        }
+        else
+        {
+          pattern = @"\/home/.*/\.config";
+        }
       }
       else
       {
