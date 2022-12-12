@@ -182,7 +182,7 @@ namespace DesktopUI2.ViewModels
           {
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
               return;
-            Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
+            new SpeckleException("Could not fetch streams", e, true, Sentry.SentryLevel.Error);
           }
         }
         if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -193,7 +193,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception e)
       {
-        Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
+        new SpeckleException("Could not fetch streams", e, true, Sentry.SentryLevel.Error);
       }
       finally
       {

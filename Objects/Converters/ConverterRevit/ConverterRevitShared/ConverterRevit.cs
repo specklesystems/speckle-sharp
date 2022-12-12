@@ -237,18 +237,18 @@ namespace Objects.Converter.Revit
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
           break;
-#if REVIT2023
-        case DB.Structure.AnalyticalMember o:
-          returnObject = AnalyticalStickToSpeckle(o);
-          break;
-        case DB.Structure.AnalyticalPanel o:
-          returnObject = AnalyticalSurfaceToSpeckle(o);
-          break;
-#else
+#if REVIT2020 || REVIT2021 || REVIT2022
         case DB.Structure.AnalyticalModelStick o:
           returnObject = AnalyticalStickToSpeckle(o);
           break;
         case DB.Structure.AnalyticalModelSurface o:
+          returnObject = AnalyticalSurfaceToSpeckle(o);
+          break;
+#else
+         case DB.Structure.AnalyticalMember o:
+          returnObject = AnalyticalStickToSpeckle(o);
+          break;
+        case DB.Structure.AnalyticalPanel o:
           returnObject = AnalyticalSurfaceToSpeckle(o);
           break;
 #endif
@@ -453,7 +453,8 @@ namespace Objects.Converter.Revit
         case BE.Column o:
           return ColumnToNative(o);
 
-#if REVIT2022
+#if REVIT2020  || REVIT2021
+#else
         case BE.Ceiling o:
           return CeilingToNative(o);
 #endif
@@ -636,7 +637,7 @@ namespace Objects.Converter.Revit
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
         DB.FabricationPart _ => true,
-#if !REVIT2023
+#if REVIT2020 || REVIT2021 || REVIT2022
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
 #else
