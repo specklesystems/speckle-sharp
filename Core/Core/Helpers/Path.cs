@@ -3,7 +3,6 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Speckle.Core.Helpers
 {
@@ -20,14 +19,15 @@ namespace Speckle.Core.Helpers
     /// <param name="applicationName"></param>
     public static void OverrideApplicationName(string applicationName) { _applicationName = applicationName; }
 
-    private static string? _path = null;
+    private static string _userDataPathEnvVar => "SPECKLE_USERDATA_PATH";
+    private static string? _path => Environment.GetEnvironmentVariable(_userDataPathEnvVar);
 
     /// <summary>
     /// Override the global Speckle application data path.
     /// </summary>
     public static void OverrideApplicationDataPath(string? path)
     {
-      _path = path;
+      Environment.SetEnvironmentVariable(_userDataPathEnvVar, path);
     }
 
     private static string _blobFolderName = "Blobs";
@@ -75,24 +75,28 @@ namespace Speckle.Core.Helpers
     /// </summary>
     public static string UserApplicationDataPath() {
       // if we have an override, just return that
-      if (_path != null) return _path;
-
-      // on windows we do this
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        // don't switch to the one below it causes issues for users:
-        // https://speckle.community/t/cant-find-speckle-kits-when-using-gh-sdk/3297/14
-        // return Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming");
+      var pathOverride = _path;
+      if ( pathOverride != null && !string.IsNullOrEmpty(pathOverride)) return pathOverride;
 
       // on desktop linux and macos we use the appdata.
-      var appDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-      if (!String.IsNullOrEmpty(appDataFolder)) return appDataFolder;
-
+      // but we might not have write access to the disk
+      // so the catch falls back to the user profile
+      try {
+        return Environment.GetFolderPath(
+          Environment.SpecialFolder.ApplicationData,
+          // if the folder doesn't exist, we get back an empty string on OSX, 
+          // which in turn, breaks other stuff down the line.
+          // passing in the Create option ensures that this directory exists,
+          // which is not a given on all OS-es.
+          Environment.SpecialFolderOption.Create
+        );
+      } catch {
       // on server linux, there might not be a user setup, things can run under root
       // in that case, the appdata variable is most probably not set up
       // we fall back to the value of the home folder
       return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
+      }
     }
 
     /// <summary>
