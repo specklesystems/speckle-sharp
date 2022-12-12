@@ -5,19 +5,20 @@ namespace Objects.Converter.Revit
 {
   public static class RevitVersionHelper
   {
-
     public static string Version
     {
       get
       {
-#if REVIT2022
+#if REVIT2023
+        return "2023";
+#elif REVIT2022
         return "2022";
 #elif REVIT2021
         return "2021";
 #elif REVIT2020
         return "2020";
 #else
-        return "2019";
+        return "2024";
 #endif
       }
     }
@@ -29,14 +30,15 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static double ConvertToInternalUnits(Objects.BuiltElements.Revit.Parameter parameter)
     {
-#if !(REVIT2022 || REVIT2023)
+#if REVIT2020
       Enum.TryParse(parameter.applicationUnit, out DisplayUnitType sourceUnit);
       return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
 #else
       // if a commit is sent in <=2021 and received in 2022+, the application unit will be a different format
       // therefore we need to check if the applicationUnit is in the wrong format
       ForgeTypeId sourceUnit = null;
-      if (!string.IsNullOrEmpty(parameter.applicationUnit) && parameter.applicationUnit.Length >= 3 && parameter.applicationUnit.Substring(0, 3) == "DUT")
+      if (!string.IsNullOrEmpty(parameter.applicationUnit) && parameter.applicationUnit.Length >= 3 &&
+          parameter.applicationUnit.Substring(0, 3) == "DUT")
         sourceUnit = DUTToForgeTypeId(parameter.applicationUnit);
       else
         sourceUnit = new ForgeTypeId(parameter.applicationUnit);
@@ -53,7 +55,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static double ConvertToInternalUnits(double value, Parameter parameter)
     {
-#if !(REVIT2022 || REVIT2023)
+#if REVIT2020
       return UnitUtils.ConvertToInternalUnits(value, parameter.DisplayUnitType);
 #else
       return UnitUtils.ConvertToInternalUnits(value, parameter.GetUnitTypeId());
@@ -62,7 +64,7 @@ namespace Objects.Converter.Revit
 
     public static double ConvertFromInternalUnits(double val, Parameter parameter)
     {
-#if !(REVIT2022 || REVIT2023)
+#if REVIT2020
       return UnitUtils.ConvertFromInternalUnits(val, parameter.DisplayUnitType);
 #else
       return UnitUtils.ConvertFromInternalUnits(val, parameter.GetUnitTypeId());
@@ -71,7 +73,7 @@ namespace Objects.Converter.Revit
 
     public static string GetUnityTypeString(this Parameter parameter)
     {
-#if !(REVIT2022 || REVIT2023)
+#if REVIT2020 || REVIT2021
       return parameter.Definition.UnitType.ToString();
 #else
       return parameter.Definition.GetDataType().TypeId;
@@ -80,7 +82,7 @@ namespace Objects.Converter.Revit
 
     public static string GetDisplayUnityTypeString(this Parameter parameter)
     {
-#if !(REVIT2022 || REVIT2023)
+#if REVIT2020
       return parameter.DisplayUnitType.ToString();
 #else
       return parameter.GetUnitTypeId().TypeId;
@@ -88,10 +90,11 @@ namespace Objects.Converter.Revit
     }
 
 
-
     public static bool IsCurveClosed(NurbSpline curve)
     {
-#if (REVIT2021 || REVIT2022 || REVIT2023)
+#if REVIT2020
+      return curve.isClosed;
+#else
       try
       {
         return curve.IsClosed;
@@ -100,14 +103,19 @@ namespace Objects.Converter.Revit
       {
         return true;
       }
-#else
-      return curve.isClosed;
 #endif
     }
 
     public static bool IsCurveClosed(Curve curve)
     {
-#if (REVIT2021 || REVIT2022 || REVIT2023)
+#if REVIT2020
+      if (curve.IsBound && curve.GetEndPoint(0).IsAlmostEqualTo(curve.GetEndPoint(1)))
+        return true;
+      else if (!curve.IsBound && curve.IsCyclic)
+        return true;
+      return false;
+#else
+
       try
       {
         return curve.IsClosed;
@@ -116,17 +124,11 @@ namespace Objects.Converter.Revit
       {
         return true;
       }
-#else
-      if (curve.IsBound && curve.GetEndPoint(0).IsAlmostEqualTo(curve.GetEndPoint(1)))
-        return true;
-      else if (!curve.IsBound && curve.IsCyclic)
-        return true;
-      return false;
 #endif
     }
 
-    #region helper functions
-#if !REVIT2020
+#if REVIT2020
+#else
     private static ForgeTypeId DUTToForgeTypeId(string s)
     {
       ForgeTypeId sourceUnit = null;
@@ -160,11 +162,9 @@ namespace Objects.Converter.Revit
           sourceUnit = UnitTypeId.Radians;
           break;
       }
+
       return sourceUnit;
     }
 #endif
-    #endregion
-
   }
 }
-
