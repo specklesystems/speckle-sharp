@@ -4,6 +4,7 @@ using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -50,7 +51,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
-    internal static MappingsViewModel Instance { get; private set; }
+    public static MappingsViewModel Instance { get; private set; }
 
 
 
@@ -272,35 +273,42 @@ namespace DesktopUI2.ViewModels.MappingTool
             var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
             if (!wallFamilies.Any() || !AvailableRevitLevels.Any())
               break;
-
             var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
             o.Families = wallFamiliesViewModels;
             o.Levels = AvailableRevitLevels;
             updatedSchemas.Add(o);
-
             break;
+
           case RevitBeamViewModel o:
             var beamFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
             if (!beamFamilies.Any() || !AvailableRevitLevels.Any())
               break;
-
             var beamFamiliesViewModels = beamFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
             o.Families = beamFamiliesViewModels;
             o.Levels = AvailableRevitLevels;
             updatedSchemas.Add(o);
-
             break;
+
           case RevitBraceViewModel o:
             var braceFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
             if (!braceFamilies.Any() || !AvailableRevitLevels.Any())
               break;
-
             var braceFamiliesViewModels = braceFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
             o.Families = braceFamiliesViewModels;
             o.Levels = AvailableRevitLevels;
             updatedSchemas.Add(o);
-
             break;
+
+          case RevitFamilyInstanceViewModel o:
+            var fiFamilies = AvailableRevitTypes.Where(x => x.placementType == "OneLevelBased").ToList();
+            if (!fiFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+            var fiFamiliesViewModels = fiFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            o.Families = fiFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+            break;
+
           case DirectShapeFreeformViewModel o:
             updatedSchemas.Add(o);
             break;
@@ -353,11 +361,14 @@ namespace DesktopUI2.ViewModels.MappingTool
     {
 
       Bindings.SetMappings(SelectedSchema.GetSerializedSchema(), SelectedSchema.GetSerializedViewModel());
+
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Set" }, { "schema", SelectedSchema.Name } });
     }
 
     public void ClearMappingsCommand()
     {
       Bindings.ClearMappings();
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Clear" } });
     }
 
 

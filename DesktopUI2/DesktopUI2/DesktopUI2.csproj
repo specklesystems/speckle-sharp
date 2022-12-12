@@ -57,6 +57,7 @@
     <None Remove="Views\MappingsWindow.xaml" />
     <None Remove="Views\Mappings\Controls\RevitBasic.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\LogInView.xaml" />
     <None Remove="Views\Pages\NotificationsView.xaml" />
     <None Remove="Views\Pages\OneClickView.xaml" />
     <None Remove="Views\Controls\StreamEditControls\Activity.xaml" />
@@ -159,6 +160,9 @@
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Mappings\Controls\RevitBasic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Pages\LogInView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\NotificationsView.xaml">
@@ -299,6 +303,9 @@
     </Compile>
     <Compile Update="Views\Mappings\Controls\RevitBasic.xaml.cs">
       <DependentUpon>RevitBasic.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\LogInView.xaml.cs">
+      <DependentUpon>LogInView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\NotificationsView.xaml.cs">
       <DependentUpon>NotificationsView.xaml</DependentUpon>

@@ -25,14 +25,6 @@ namespace Speckle.ConnectorRevit.UI
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
 
-    public override bool CanPreviewReceive => false;
-
-    public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
-    {
-      return null;
-      // TODO!
-    }
-
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -216,16 +208,7 @@ namespace Speckle.ConnectorRevit.UI
             continue;
 
           var convRes = converter.ConvertToNative(@base);
-
-          //regenerate the document and then implement a hack to "refresh" the view
-          CurrentDoc.Document.Regenerate();
-
-          // get the active ui view
-          var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
-          var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
-
-          // "refresh" the active view
-          uiView.Zoom(1);
+          RefreshView();
 
           switch (convRes)
           {
@@ -246,6 +229,19 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       return placeholders;
+    }
+
+    private void RefreshView()
+    {
+      //regenerate the document and then implement a hack to "refresh" the view
+      CurrentDoc.Document.Regenerate();
+
+      // get the active ui view
+      var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+      var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+
+      // "refresh" the active view
+      uiView.Zoom(1);
     }
 
     /// <summary>

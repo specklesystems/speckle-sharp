@@ -2,8 +2,10 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Avalonia.Threading;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -19,24 +21,6 @@ namespace Speckle.ConnectorRevit.UI
   {
     // used to store the Stream State settings when sending/receiving
     private List<ISetting> CurrentSettings { get; set; }
-    public override bool CanPreviewSend => true;
-
-    public override void PreviewSend(StreamState state, ProgressViewModel progress)
-    {
-      var filterObjs = GetSelectionFilterObjects(state.Filter);
-      foreach (var filterObj in filterObjs)
-      {
-        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
-        var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
-        if (!converter.CanConvertToSpeckle(filterObj))
-          reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
-        else
-          reportObj.Update(status: ApplicationObject.State.Created);
-        progress.Report.Log(reportObj);
-      }
-      SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList());
-    }
 
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
@@ -116,6 +100,10 @@ namespace Speckle.ConnectorRevit.UI
             conversionProgressDict["Conversion"]++;
             progress.Update(conversionProgressDict);
 
+            var s = new CancellationTokenSource();
+            DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(1));
+            Dispatcher.UIThread.MainLoop(s.Token);
+
             convertedCount++;
 
             if (conversionResult == null)
@@ -170,7 +158,10 @@ namespace Speckle.ConnectorRevit.UI
             }
             else
             {
-              var category = $"@{revitElement.Category.Name}";
+              var category = conversionResult.GetType().Name == "Network" ?
+                "@Networks" :
+                $"@{revitElement.Category.Name}";
+
               commitObject[category] ??= new List<Base>();
 
               if (commitObject[category] is List<Base> objs)

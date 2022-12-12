@@ -239,7 +239,10 @@ namespace Speckle.Core.Models
                    (!includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete));
         });
         foreach (var pi in pinfos)
-          dic.Add(pi.Name, pi.GetValue(this));
+        {
+          if(!dic.ContainsKey(pi.Name)) //todo This is a TEMP FIX FOR #1969, and should be reverted after a proper fix is made!
+            dic.Add(pi.Name, pi.GetValue(this));
+        }
       }
 
       return dic;

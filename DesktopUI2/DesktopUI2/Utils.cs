@@ -1,13 +1,19 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Data;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
 using Material.Dialog.Icons;
 using Material.Dialog.Interfaces;
 using Speckle.Core.Api;
+using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -195,6 +201,87 @@ namespace DesktopUI2
               }
             }, TaskScheduler.Default);
       };
+    }
+
+    public static void LaunchManager()
+    {
+      try
+      {
+        string path = "";
+
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+          path = @"/Applications/Manager for Speckle.app";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+          path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
+        }
+
+        if (File.Exists(path) || Directory.Exists(path))
+          Process.Start(path);
+        else
+        {
+          Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
+        }
+      }
+      catch (Exception ex)
+      {
+        new SpeckleException("Could not Launch Manager", ex, true, Sentry.SentryLevel.Error);
+      }
+    }
+
+    public static async Task AddAccountCommand()
+    {
+      try
+      {
+        //IsLoggingIn = true;
+
+
+        var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
+        var result = await dialog.ShowDialog<string>();
+
+        if (result != null)
+        {
+          Uri u;
+          if (!Uri.TryCreate(result, UriKind.Absolute, out u))
+            Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
+          else
+          {
+            try
+            {
+              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
+
+              await AccountManager.AddAccount(result);
+              await Task.Delay(1000);
+
+              MainViewModel.Instance.NavigateToDefaultScreen();
+            }
+            catch (Exception e)
+            {
+              new SpeckleException("Could not Add Account in AccountManager", e, true, Sentry.SentryLevel.Error);
+
+              MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+              {
+                Title = "Something went wrong...",
+                Message = e.Message,
+                Expiration = TimeSpan.Zero,
+                Type = Avalonia.Controls.Notifications.NotificationType.Error,
+
+              });
+            }
+          }
+        }
+
+        //IsLoggingIn = false;
+      }
+      catch (Exception ex)
+      {
+        new SpeckleException("Could not Add Account", ex, true, Sentry.SentryLevel.Error);
+      }
     }
   }
 }

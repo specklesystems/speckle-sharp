@@ -64,21 +64,20 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - image: "speckle/speckle-server:latest"
         command: ["bash", "-c", "/wait && node bin/www"]
         environment:
-          POSTGRES_URL: "localhost"
+          POSTGRES_URL: "127.0.0.1"
           POSTGRES_USER: "speckle"
           POSTGRES_PASSWORD: "speckle"
           POSTGRES_DB: "speckle2_test"
-          REDIS_URL: "redis://localhost"
+          REDIS_URL: "redis://127.0.0.1"
           SESSION_SECRET: "keyboard cat"
           STRATEGY_LOCAL: "true"
           CANONICAL_URL: "http://localhost:3000"
-          S3_ENDPOINT: 'http://localhost:9000'
+          S3_ENDPOINT: 'http://127.0.0.1:9000'
           S3_ACCESS_KEY: 'minioadmin'
           S3_SECRET_KEY: 'minioadmin'
           S3_BUCKET: 'speckle-server'
           S3_CREATE_BUCKET: 'true'
-          WAIT_HOSTS: localhost:5432, localhost:6379, localhost:9000
-
+          WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
     steps:
       - checkout
       - run:
@@ -288,7 +287,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Build << parameters.slnname >>
                 command: |
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER
             # Compress build files
             - run:
                 name: Zip Objects Kit files
@@ -410,7 +411,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             cd ConnectorArchicad/AddOn
             mkdir Build.Win.x64.<<parameters.archicadversion>>
             export PATH=$PATH:"C:\Program Files\CMake\bin"
-            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
       - run:
           name: Build add-on
           command: |

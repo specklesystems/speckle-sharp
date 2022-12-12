@@ -7,22 +7,28 @@ using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
-
+using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void LinkPropertyToNative(CSILinkProperty linkProperty)
+    public void LinkPropertyToNative(CSILinkProperty linkProperty, ref ApplicationObject appObj)
     {
       double[] value = new double[4];
       value[0] = linkProperty.M2PdeltaEnd1;
       value[1] = linkProperty.MP2deltaEnd2;
       value[2] = linkProperty.MP3deltaEnd1;
       value[3] = linkProperty.MP3deltaEnd2;
-      Model.PropLink.SetPDelta(linkProperty.name, ref value);
-      Model.PropLink.SetWeightAndMass(linkProperty.name, linkProperty.weight, linkProperty.mass, linkProperty.rotationalInertia1, linkProperty.rotationalInertia2, linkProperty.rotationalInertia3);
-      return;
+
+      // TODO: test if this works, because I don't think it will...
+      var success1 = Model.PropLink.SetPDelta(linkProperty.name, ref value);
+      var success2 = Model.PropLink.SetWeightAndMass(linkProperty.name, linkProperty.weight, linkProperty.mass, linkProperty.rotationalInertia1, linkProperty.rotationalInertia2, linkProperty.rotationalInertia3);
+
+      if (success1 == 0 && success2 == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{linkProperty.name}");
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
     public CSILinkProperty LinkPropertyToSpeckle(string name)
     {

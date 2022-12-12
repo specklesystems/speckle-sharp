@@ -7,7 +7,7 @@
 namespace AddOnCommands {
 
 
-  class GetSelectedApplicationIds : public BaseCommand {
+  class GetElementIds : public BaseCommand {
   public:
     virtual GS::String							GetName() const override;
     virtual GS::ObjectState						Execute(const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;

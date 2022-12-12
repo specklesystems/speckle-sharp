@@ -2,21 +2,21 @@
 #define	_APIENVIR_H_
 
 #if defined (_MSC_VER)
-	#if !defined (WINDOWS)
-		#define WINDOWS
-	#endif
+#if !defined (WINDOWS)
+#define WINDOWS
+#endif
 #endif
 
 #if defined (WINDOWS)
-	#include "Win32Interface.hpp"
+#include "Win32Interface.hpp"
 #endif
 
 #if defined (macintosh)
-	#include <CoreServices/CoreServices.h>
+#include <CoreServices/CoreServices.h>
 #endif
 
 #if !defined (ACExtension)
-	#define ACExtension
+#define ACExtension
 #endif
 
 #endif

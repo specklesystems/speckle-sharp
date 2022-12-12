@@ -34,12 +34,12 @@ namespace DesktopUI2
 
 
       AvaloniaXamlLoader.Load(this);
-      this.Name = "Speckle";
+      Name = "Speckle";
     }
 
     public override void OnFrameworkInitializationCompleted()
     {
-     
+
       var theme = Theme.Create(Theme.Light, Primary, Accent);
       var themeBootstrap = this.LocateMaterialTheme<MaterialThemeBase>();
       themeBootstrap.CurrentTheme = theme;

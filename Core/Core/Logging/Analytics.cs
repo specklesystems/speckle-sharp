@@ -57,7 +57,11 @@ namespace Speckle.Core.Logging
       /// <summary>
       /// Event triggered when the connector is registered
       /// </summary>
-      Registered
+      Registered,
+      /// <summary>
+      /// Event triggered by the Mapping Tool
+      /// </summary>
+      MappingsAction
     };
 
 
@@ -208,6 +212,11 @@ namespace Speckle.Core.Logging
             { "$union",  new Dictionary<string, object>()
               {
                  {"Connectors", new List<string>{ connector } },
+              }
+            },
+            { "set",  new Dictionary<string, object>()
+              {
+                 {"Identified", true },
               }
             }
           };

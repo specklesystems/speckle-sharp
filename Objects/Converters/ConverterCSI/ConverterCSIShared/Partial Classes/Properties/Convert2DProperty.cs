@@ -6,6 +6,7 @@ using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Properties;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.CSI
 {
@@ -19,14 +20,13 @@ namespace Objects.Converter.CSI
       property2D.material = MaterialToSpeckle(matProp);
       return;
     }
-    object Property2DToNative(CSIProperty2D property2D)
+    private void Property2DToNative(CSIProperty2D property2D, ref ApplicationObject appObj)
     {
       if (property2D.type2D == CSIPropertyType2D.Wall)
       {
-        WallPropertyToNative(property2D);
+        WallPropertyToNative(property2D, ref appObj);
       }
-      else { FloorPropertyToNative(property2D); }
-      return property2D.name;
+      else { FloorPropertyToNative(property2D, ref appObj); }
     }
 
     CSIProperty2D Property2DToSpeckle(string area, string property)

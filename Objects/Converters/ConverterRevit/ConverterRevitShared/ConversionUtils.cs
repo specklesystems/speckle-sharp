@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using Speckle.Core.Helpers;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
+using Duct = Objects.BuiltElements.Duct;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -25,7 +26,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     #region hosted elements
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
@@ -384,7 +384,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="revitElement"></param>
     /// <param name="speckleElement"></param>
-    public void SetInstanceParameters(Element revitElement, Base speckleElement)
+    public void SetInstanceParameters(Element revitElement, Base speckleElement, List<string> exclusions = null)
     {
       if (revitElement == null)
         return;
@@ -400,7 +400,11 @@ namespace Objects.Converter.Revit
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
       // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
-      var revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly);
+      IEnumerable<DB.Parameter> revitParameters = null;
+      if (exclusions == null)
+        revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly);
+      else
+        revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly && !exclusions.Contains(GetParamInternalName(x)));
 
       // Here we are creating two  dictionaries for faster lookup
       // one uses the BuiltInName / GUID the other the name as Key
@@ -1205,7 +1209,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
     public bool UnboundCurveIfSingle(DB.CurveArray array)
 
     {
@@ -1240,7 +1243,6 @@ namespace Objects.Converter.Revit
       curveArray.Append(b);
 
       return (a, b);
-
     }
 
     public class FallbackToDxfException : Exception

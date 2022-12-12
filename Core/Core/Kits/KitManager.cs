@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -147,9 +148,55 @@ namespace Speckle.Core.Kits
         .SelectMany(kit => kit.Value.Types).ToList();
     }
 
+    // recursive search for referenced assemblies
+    public static List<Assembly> GetReferencedAssemblies()
+    {
+      var returnAssemblies = new List<Assembly>();
+      var loadedAssemblies = new HashSet<string>();
+      var assembliesToCheck = new Queue<Assembly>();
+
+      assembliesToCheck.Enqueue(Assembly.GetEntryAssembly());
+
+      while (assembliesToCheck.Count > 0)
+      {
+        var assemblyToCheck = assembliesToCheck.Dequeue();
+
+        if (assemblyToCheck == null)
+          continue;
+
+        foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
+        {
+          // filtering out system dlls
+          if (reference.FullName.StartsWith("System.") || reference.FullName.StartsWith("Microsoft."))
+            continue;
+
+          if (!loadedAssemblies.Contains(reference.FullName))
+          {
+            Assembly assembly = null;
+            try
+            {
+              assembly = Assembly.Load(reference);
+            }
+            catch
+            {
+              continue;
+            }
+            assembliesToCheck.Enqueue(assembly);
+            loadedAssemblies.Add(reference.FullName);
+            returnAssemblies.Add(assembly);
+          }
+        }
+      }
+
+      return returnAssemblies;
+    }
+
     private static void GetLoadedSpeckleReferencingAssemblies()
     {
-      foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+      List<Assembly> assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
+      assemblies.AddRange(GetReferencedAssemblies());
+
+      foreach (var assembly in assemblies)
       {
         if (!assembly.IsDynamic && !assembly.ReflectionOnly)
         {
@@ -184,15 +231,21 @@ namespace Speckle.Core.Kits
           if (unloadedAssemblyName == null)
             continue;
 
-          var assembly = Assembly.LoadFrom(assemblyPath);
-          var kitClass = GetKitClass(assembly);
-          if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
+          try
           {
-            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+            var assembly = Assembly.LoadFrom(assemblyPath);
+            var kitClass = GetKitClass(assembly);
+            if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
             {
-              var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
-              if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              if (!_SpeckleKits.ContainsKey(assembly.FullName))
+              {
+                var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
+                if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              }
             }
+          }
+          catch (FileLoadException ex)
+          {
           }
         }
       }
