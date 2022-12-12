@@ -20,7 +20,7 @@ namespace DesktopUI2.Views
       AvaloniaXamlLoader.Load(this);
       Instance = this;
 
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launched Scheduler" } });
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launched Scheduler" } }, isAction: false);
 
 
 #if DEBUG

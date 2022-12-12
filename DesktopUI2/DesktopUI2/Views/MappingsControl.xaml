@@ -225,7 +225,7 @@
                           <Button
                             Command="{Binding SetMappingsCommand}"
                             Content="Apply Mappings"
-                            IsEnabled="{Binding SelectedSchema, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            IsEnabled="{Binding SelectedSchema.IsValid}"
                             ToolTip.Tip="Apply mappings to all the selected elements" />
                         </StackPanel>
 

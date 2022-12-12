@@ -1,4 +1,5 @@
-﻿using Objects.BuiltElements.Revit;
+﻿using Avalonia.Metadata;
+using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
@@ -26,6 +27,8 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public abstract string Summary { get; }
     public abstract string GetSerializedSchema();
+
+    public abstract bool IsValid { get; }
 
     public string GetSerializedViewModel()
     {
@@ -68,7 +71,11 @@ namespace DesktopUI2.ViewModels.MappingTool
     public RevitFamily SelectedFamily
     {
       get => _selectedFamily;
-      set => this.RaiseAndSetIfChanged(ref _selectedFamily, value);
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedFamily, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
     }
 
     private string _selectedtype;
@@ -76,7 +83,11 @@ namespace DesktopUI2.ViewModels.MappingTool
     public string SelectedType
     {
       get => _selectedtype;
-      set => this.RaiseAndSetIfChanged(ref _selectedtype, value);
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedtype, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
     }
 
     private List<string> _levels;
@@ -98,7 +109,11 @@ namespace DesktopUI2.ViewModels.MappingTool
     public string SelectedLevel
     {
       get => _selectedLevel;
-      set => this.RaiseAndSetIfChanged(ref _selectedLevel, value);
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedLevel, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
     }
 
     public override string Summary => $"{SelectedFamily?.Name} - {SelectedType}";
@@ -111,6 +126,17 @@ namespace DesktopUI2.ViewModels.MappingTool
     public override string GetSerializedSchema()
     {
       return "";
+    }
+
+    public override bool IsValid
+    {
+      get
+      {
+        return
+          SelectedFamily != null &&
+          !string.IsNullOrEmpty(SelectedType) &&
+          !string.IsNullOrEmpty(SelectedLevel);
+      }
     }
   }
 
@@ -171,7 +197,11 @@ namespace DesktopUI2.ViewModels.MappingTool
     public string ShapeName
     {
       get => _shapeName;
-      set => this.RaiseAndSetIfChanged(ref _shapeName, value);
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _shapeName, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
     }
 
 
@@ -187,7 +217,11 @@ namespace DesktopUI2.ViewModels.MappingTool
     public string SelectedCategory
     {
       get => _selectedCategory;
-      set => this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedCategory, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
     }
 
     private bool _freeform;
@@ -218,6 +252,16 @@ namespace DesktopUI2.ViewModels.MappingTool
       ds.name = ShapeName;
       ds.category = cat;
       return Operations.Serialize(ds);
+    }
+
+    public override bool IsValid
+    {
+      get
+      {
+        return
+          !string.IsNullOrEmpty(ShapeName) &&
+          !string.IsNullOrEmpty(SelectedCategory);
+      }
     }
   }
 

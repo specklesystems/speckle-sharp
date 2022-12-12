@@ -62,15 +62,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - image: "speckle/speckle-server:latest"
         command: ["bash", "-c", "/wait && node bin/www"]
         environment:
-          POSTGRES_URL: "localhost"
+          POSTGRES_URL: "127.0.0.1"
           POSTGRES_USER: "speckle"
           POSTGRES_PASSWORD: "speckle"
           POSTGRES_DB: "speckle2_test"
-          REDIS_URL: "redis://localhost"
+          REDIS_URL: "redis://127.0.0.1"
           SESSION_SECRET: "keyboard cat"
           STRATEGY_LOCAL: "true"
           CANONICAL_URL: "http://localhost:3000"
-          WAIT_HOSTS: localhost:5432, localhost:6379
+          WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379
           DISABLE_FILE_UPLOADS: "true"
     steps:
       - checkout

@@ -8,40 +8,44 @@ using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
 using CSiAPIv1;
+using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
-    public object updateFrametoNative(Element1D element1D)
-    {
-      string GUID = "";
-      Model.FrameObj.GetGUID(element1D.name, ref GUID);
-      if (GUID == element1D.applicationId)
-      {
-        string pt1 = "";
-        string pt2 = "";
-        //Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
-        //var specklePt1 = element1D.end1Node.basePoint;
-        //var specklePt2 = element1D.end2Node.basePoint;
-        //Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
-        //Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
-        setFrameElementProperties(element1D, element1D.name);
-      }
-      else
-      {
-        return FrameToNative(element1D);
-      }
-      return element1D.name;
-    }
-    public object FrameToNative(Element1D element1D)
+    //public object updateFrametoNative(Element1D element1D)
+    //{
+    //  string GUID = "";
+    //  Model.FrameObj.GetGUID(element1D.name, ref GUID);
+    //  if (GUID == element1D.applicationId)
+    //  {
+    //    string pt1 = "";
+    //    string pt2 = "";
+    //    //Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
+    //    //var specklePt1 = element1D.end1Node.basePoint;
+    //    //var specklePt2 = element1D.end2Node.basePoint;
+    //    //Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
+    //    //Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
+    //    setFrameElementProperties(element1D, element1D.name);
+    //  }
+    //  else
+    //  {
+    //    return FrameToNative(element1D);
+    //  }
+    //  return element1D.name;
+    //}
+    public void FrameToNative(Element1D element1D, ref ApplicationObject appObj)
     {
       if (GetAllFrameNames(Model).Contains(element1D.name))
+        element1D.name = element1D.id;
+
+      if (element1D.type == ElementType1D.Link)
       {
-        return null;
+        LinkToNative((CSIElement1D)(element1D), ref appObj);
+        return;
       }
-      string units = ModelUnits();
+
       string newFrame = "";
       Line baseline = element1D.baseLine;
       string[] properties = new string[] { };
@@ -49,7 +53,7 @@ namespace Objects.Converter.CSI
       Model.PropFrame.GetNameList(ref number, ref properties);
       if (!properties.Contains(element1D.property.name))
       {
-        Property1DToNative(element1D.property);
+        Property1DToNative(element1D.property, ref appObj);
         Model.PropFrame.GetNameList(ref number, ref properties);
       }
       Point end1node;
@@ -65,9 +69,10 @@ namespace Objects.Converter.CSI
         end2node = element1D.end2Node.basePoint;
       }
 
+      int? success = null;
       if (properties.Contains(element1D.property.name))
       {
-        Model.FrameObj.AddByCoord(
+        success = Model.FrameObj.AddByCoord(
           ScaleToNative(end1node.x, end1node.units),
           ScaleToNative(end1node.y, end1node.units),
           ScaleToNative(end1node.z, end1node.units),
@@ -80,7 +85,7 @@ namespace Objects.Converter.CSI
       }
       else
       {
-        Model.FrameObj.AddByCoord(
+        success = Model.FrameObj.AddByCoord(
           ScaleToNative(end1node.x, end1node.units),
           ScaleToNative(end1node.y, end1node.units),
           ScaleToNative(end1node.z, end1node.units),
@@ -102,7 +107,10 @@ namespace Objects.Converter.CSI
         Model.FrameObj.SetGUID(newFrame, element1D.id);
       }
 
-      return element1D.name;
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{element1D.name}");
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
 
     public CSIElement1D FrameToSpeckle(string name)

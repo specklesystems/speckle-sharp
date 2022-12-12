@@ -7,19 +7,19 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using DesktopUI2.Models.Filters;
+using DesktopUI2.ViewModels;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using DesktopUI2.ViewModels;
-using DesktopUI2.Models.Filters;
-using Ceiling = Objects.BuiltElements.Ceiling;
-using Floor = Objects.BuiltElements.Floor;
-using Wall = Objects.BuiltElements.Wall;
 using Beam = Objects.BuiltElements.Beam;
-using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
+using Ceiling = Objects.BuiltElements.Ceiling;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
+using Floor = Objects.BuiltElements.Floor;
+using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
+using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 
 namespace Archicad
@@ -83,7 +83,7 @@ namespace Archicad
       var canHave = SelectedObjects.Where(e => CanHaveSubElements.Contains(e.Key));
       var cannotHave = SelectedObjects.Where(e => !CanHaveSubElements.Contains(e.Key));
 
-      foreach (var (key,value) in canHave)
+      foreach (var (key, value) in canHave)
       {
         retval[key] = value;
       }
@@ -118,10 +118,10 @@ namespace Archicad
       IEnumerable<Type> convertes = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
         t.IsClass && !t.IsAbstract && typeof(Converters.IConverter).IsAssignableFrom(t));
 
-      foreach ( Type converterType in convertes )
+      foreach (Type converterType in convertes)
       {
         var converter = Activator.CreateInstance(converterType) as Converters.IConverter;
-        if ( converter?.Type is null )
+        if (converter?.Type is null)
           continue;
 
         Converters.Add(converter.Type, converter);
@@ -152,18 +152,18 @@ namespace Archicad
     {
       return @object
         switch
-        {
-          Wall _ => true,
-          Beam _ => true,
-          Floor _ => true,
-          Ceiling _ => true,
-          Room _ => true,
-          DirectShape _ => true,
-          Mesh _ => true,
-          Door => true,
-          Window => true,
-          _ => false
-        };
+      {
+        Wall _ => true,
+        Beam _ => true,
+        Floor _ => true,
+        Ceiling _ => true,
+        Room _ => true,
+        DirectShape _ => true,
+        Mesh _ => true,
+        Door => true,
+        Window => true,
+        _ => false
+      };
     }
 
     /// <summary>
@@ -177,46 +177,46 @@ namespace Archicad
     {
       List<Base> objects = new List<Base>();
 
-      switch ( obj )
+      switch (obj)
       {
         case Base @base when CanConvertToNative(@base):
           objects.Add(@base);
 
           return objects;
         case Base @base:
-        {
-          foreach ( var prop in @base.GetDynamicMembers() )
-            objects.AddRange(FlattenCommitObject(@base[ prop ]));
+          {
+            foreach (var prop in @base.GetDynamicMembers())
+              objects.AddRange(FlattenCommitObject(@base[prop]));
 
-          var specialKeys = @base.GetMembers();
-          if ( specialKeys.ContainsKey("displayValue") )
-            objects.AddRange(FlattenCommitObject(specialKeys[ "displayValue" ]));
-          if ( specialKeys.ContainsKey("elements") ) // for built elements like roofs, walls, and floors.
-            objects.AddRange(FlattenCommitObject(specialKeys[ "elements" ]));
+            var specialKeys = @base.GetMembers();
+            if (specialKeys.ContainsKey("displayValue"))
+              objects.AddRange(FlattenCommitObject(specialKeys["displayValue"]));
+            if (specialKeys.ContainsKey("elements")) // for built elements like roofs, walls, and floors.
+              objects.AddRange(FlattenCommitObject(specialKeys["elements"]));
 
-          return objects;
-        }
+            return objects;
+          }
         case IReadOnlyList<object> list:
-        {
-          foreach ( var listObj in list )
-            objects.AddRange(FlattenCommitObject(listObj));
+          {
+            foreach (var listObj in list)
+              objects.AddRange(FlattenCommitObject(listObj));
 
-          return objects;
-        }
+            return objects;
+          }
         case IDictionary dict:
-        {
-          foreach ( DictionaryEntry kvp in dict )
-            objects.AddRange(FlattenCommitObject(kvp.Value));
+          {
+            foreach (DictionaryEntry kvp in dict)
+              objects.AddRange(FlattenCommitObject(kvp.Value));
 
-          return objects;
-        }
+            return objects;
+          }
         default:
           return objects;
       }
     }
     #endregion
 
-   
+
     public async Task<List<string>?> ConvertSubElementsToNative(IEnumerable<Base> subElements, CancellationToken token)
     {
       //Should add a flag to each object to sign if has subelements or not.This way

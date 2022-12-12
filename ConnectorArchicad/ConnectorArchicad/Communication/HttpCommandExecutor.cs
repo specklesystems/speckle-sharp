@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -30,7 +30,7 @@ namespace Archicad.Communication
       return JsonConvert.DeserializeObject<TResponse>(obj, settings);
     }
 
-    public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters)where TParameters : class where TResult : class
+    public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters) where TParameters : class where TResult : class
     {
       AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
 
