@@ -41,7 +41,6 @@ namespace Speckle.ConnectorCSI.UI
       converter.SetContextDocument(Model);
       Exceptions.Clear();
 
-      var commitObj = new Base();
       int objCount = 0;
 
       if (state.Filter != null)
@@ -60,15 +59,24 @@ namespace Speckle.ConnectorCSI.UI
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
 
-      //if( commitObj["@Stories"] == null)
-      //{
-      //    commitObj["@Stories"] = converter.ConvertToSpeckle(("Stories", "CSI"));
-      //}
+      var sendCancelled = BuildSendCommitObj(converter, state.SelectedObjectIds, ref progress, ref conversionProgressDict);
+      if (sendCancelled)
+        return null;
 
-      foreach (var applicationId in state.SelectedObjectIds)
+      var commitObj = GetCommitObj(converter, progress, conversionProgressDict);
+      if (commitObj == null)
+        return null;
+
+      return await SendCommitObj(state, progress, commitObj, conversionProgressDict);
+  
+    }
+
+    public bool BuildSendCommitObj(ISpeckleConverter converter, List<string> selectedObjIds, ref ProgressViewModel progress, ref ConcurrentDictionary<string, int> conversionProgressDict)
+    {
+      foreach (var applicationId in selectedObjIds)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return null;
+          return true;
 
         Base converted = null;
         string containerName = string.Empty;
@@ -77,6 +85,8 @@ namespace Speckle.ConnectorCSI.UI
         var selectedObjectType = ConnectorCSIUtils.ObjectIDsTypesAndNames
             .Where(pair => pair.Key == applicationId)
             .Select(pair => pair.Value.Item1).FirstOrDefault();
+
+        var reportObj = new ApplicationObject(applicationId, selectedObjectType) { applicationId = applicationId };
 
         if (!converter.CanConvertToSpeckle(selectedObjectType))
         {
@@ -88,44 +98,45 @@ namespace Speckle.ConnectorCSI.UI
             .Where(pair => pair.Key == applicationId)
             .Select(pair => pair.Value).FirstOrDefault();
 
-        converted = converter.ConvertToSpeckle(typeAndName);
-
-        if (converted == null)
+        try
         {
-          var exception = new Exception($"Failed to convert object ${applicationId} of type ${selectedObjectType}.");
-          progress.Report.LogConversionError(exception);
+          converted = converter.ConvertToSpeckle(typeAndName);
+        }
+        catch (Exception ex)
+        {
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+          progress.Report.Log(reportObj);
           continue;
         }
 
-        //if (converted != null)
-        //{
-        //    if (commitObj[selectedObjectType] == null)
-        //    {
-        //        commitObj[selectedObjectType] = new List<Base>();
-        //    }
-        //             ((List<Base>)commitObj[selectedObjectType]).Add(converted);
-        //}
+        if (converted == null)
+        {
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+          progress.Report.Log(reportObj);
+          continue;
+        }
 
-        //objCount++;
+        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {ConnectorCSIUtils.SimplifySpeckleType(converted.speckle_type)}");
+        progress.Report.Log(reportObj);
+
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
       }
+      return false;
+    }
 
-      Base ElementCount = converter.ConvertToSpeckle(("ElementsCount", "CSI"));
-      if (ElementCount.applicationId != null)
-        objCount = Convert.ToInt32(ElementCount.applicationId);
-      else
-        objCount = 0;
-
+    public Base GetCommitObj(ISpeckleConverter converter, ProgressViewModel progress, ConcurrentDictionary<string, int> conversionProgressDict)
+    {
+      var commitObj = new Base();
       if (commitObj["@Model"] == null)
         commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "CSI"));
-      
+
       if (commitObj["AnalysisResults"] == null)
         commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "CSI"));
 
       progress.Report.Merge(converter.Report);
 
-      if (objCount == 0)
+      if (conversionProgressDict["Conversion"] == 0)
       {
         progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
         return null;
@@ -134,11 +145,16 @@ namespace Speckle.ConnectorCSI.UI
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
 
+      return commitObj;
+    }
+
+    public async Task<string> SendCommitObj(StreamState state, ProgressViewModel progress, Base commitObj, ConcurrentDictionary<string, int> conversionProgressDict)
+    {
       var streamId = state.StreamId;
       var client = state.Client;
 
       var transports = new List<SCT.ITransport>() { new SCT.ServerTransport(client.Account, streamId) };
-      progress.Max = totalObjectCount;
+      progress.Max = conversionProgressDict["Conversion"];
       var objectId = await Operations.Send(
           @object: commitObj,
           cancellationToken: progress.CancellationTokenSource.Token,
@@ -162,7 +178,7 @@ namespace Speckle.ConnectorCSI.UI
         streamId = streamId,
         objectId = objectId,
         branchName = state.BranchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {objCount} elements from CSI.",
+        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {conversionProgressDict["Conversion"]} elements from CSI.",
         sourceApplication = GetHostAppVersion(Model)
       };
 
