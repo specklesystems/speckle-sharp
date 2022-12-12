@@ -11,11 +11,10 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
     Dictionary<string, LoadBeam> LoadStoringBeam = new Dictionary<string, LoadBeam>();
     Dictionary<string, List<Base>> FrameStoring = new Dictionary<string, List<Base>>();
     int counterFrame = 0;
-    void LoadUniformFrameToSpeckle(LoadBeam loadBeam)
+    void LoadFrameToNative(LoadBeam loadBeam, ref ApplicationObject appObj)
     {
       int direction = 11;
       int myType = 1;
@@ -110,115 +109,27 @@ namespace Objects.Converter.CSI
             break;
         }
       }
-      foreach (Element1D element in loadBeam.elements)
-      {
-        if (element.name != null) { Model.FrameObj.SetLoadDistributed(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]); }
-        else { Model.FrameObj.SetLoadDistributed(element.id, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]); }
 
+      foreach (var el in loadBeam.elements)
+      {
+        if (!(el is Element1D element))
+          continue;
+
+        int? success = null;
+        string name = element.name ?? element.id;
+
+        if (loadBeam.loadType == BeamLoadType.Point)
+          Model.FrameObj.SetLoadDistributed(name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.positions[1], loadBeam.values[0], loadBeam.values[1]);
+        else 
+          Model.FrameObj.SetLoadPoint(name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.values[0]);
+
+        if (success == 0)
+          appObj.Update(status: ApplicationObject.State.Created, createdId: name);
+        else
+          appObj.Update(status: ApplicationObject.State.Failed);
       }
     }
-    void LoadPointFrameToSpeckle(LoadBeam loadBeam)
-    {
-      int direction = 11;
-      int myType = 1;
-
-      if (loadBeam.isProjected == true)
-      {
-        switch (loadBeam.direction)
-        {
-          case LoadDirection.X:
-            direction = 7;
-            myType = 1;
-            break;
-          case LoadDirection.Y:
-            direction = 8;
-            myType = 1;
-            break;
-          case LoadDirection.Z:
-            direction = 9;
-            myType = 1;
-            break;
-          case LoadDirection.XX:
-            direction = 7;
-            myType = 2;
-            break;
-          case LoadDirection.YY:
-            direction = 8;
-            myType = 2;
-            break;
-          case LoadDirection.ZZ:
-            direction = 9;
-            myType = 2;
-            break;
-        }
-      }
-      else if (loadBeam.loadAxisType == Structural.LoadAxisType.Local)
-      {
-        switch (loadBeam.direction)
-        {
-          case LoadDirection.X:
-            direction = 1;
-            myType = 1;
-            break;
-          case LoadDirection.Y:
-            direction = 2;
-            myType = 1;
-            break;
-          case LoadDirection.Z:
-            direction = 3;
-            myType = 1;
-            break;
-          case LoadDirection.XX:
-            direction = 1;
-            myType = 2;
-            break;
-          case LoadDirection.YY:
-            direction = 2;
-            myType = 2;
-            break;
-          case LoadDirection.ZZ:
-            direction = 3;
-            myType = 2;
-            break;
-        }
-      }
-      else
-      {
-        switch (loadBeam.direction)
-        {
-          case LoadDirection.X:
-            direction = 4;
-            myType = 1;
-            break;
-          case LoadDirection.Y:
-            direction = 5;
-            myType = 1;
-            break;
-          case LoadDirection.Z:
-            direction = 6;
-            myType = 1;
-            break;
-          case LoadDirection.XX:
-            direction = 4;
-            myType = 2;
-            break;
-          case LoadDirection.YY:
-            direction = 5;
-            myType = 2;
-            break;
-          case LoadDirection.ZZ:
-            direction = 6;
-            myType = 2;
-            break;
-        }
-      }
-      foreach (Element1D element in loadBeam.elements)
-      {
-        if (element.name != null) { Model.FrameObj.SetLoadPoint(element.name, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.values[0]); }
-        else { Model.FrameObj.SetLoadPoint(element.id, loadBeam.loadCase.name, myType, direction, loadBeam.positions[0], loadBeam.values[0]); }
-
-      }
-    }
+   
     Base LoadFrameToSpeckle(string name, int frameNumber)
     {
 

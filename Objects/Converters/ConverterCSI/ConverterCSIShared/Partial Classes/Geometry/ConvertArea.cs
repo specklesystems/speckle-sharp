@@ -24,11 +24,12 @@ namespace Objects.Converter.CSI
       }
       return area.name;
     }
-    public object AreaToNative(Element2D area)
+    public void AreaToNative(Element2D area, ref ApplicationObject appObj)
     {
       if (GetAllAreaNames(Model).Contains(area.name))
       {
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"There is already a frame object named {area.name} in the model");
+        return;
       }
       string name = "";
       int numPoints = area.topology.Count();
@@ -46,11 +47,12 @@ namespace Objects.Converter.CSI
       double[] x = X.ToArray();
       double[] y = Y.ToArray();
       double[] z = Z.ToArray();
+      int? success = null;
 
       if (area.property is CSIOpening)
       {
         Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
-        Model.AreaObj.SetOpening(name, true);
+        success = Model.AreaObj.SetOpening(name, true);
       }
       else if (area.property != null)
       {
@@ -59,18 +61,17 @@ namespace Objects.Converter.CSI
         Model.PropArea.GetNameList(ref numberNames, ref propNames);
         if (propNames.Contains(area.property.name))
         {
-          Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+          success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
         }
         else if (area.property is CSIProperty2D prop2D)
         {
-          Property2DToNative(prop2D);
-          Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
+          Property2DToNative(prop2D, ref appObj);
+          success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
         }
       }
       else
       {
-        Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
-
+        success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
       }
       if (area.name != null)
       {
@@ -80,6 +81,7 @@ namespace Objects.Converter.CSI
       {
         Model.AreaObj.ChangeName(name, area.id);
       }
+
       if (area is CSIElement2D)
       {
         var CSIarea = (CSIElement2D)area;
@@ -99,9 +101,10 @@ namespace Objects.Converter.CSI
 
       }
 
-
-      return name;
-
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{name}");
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
 
     public void setAreaProperties(string name, Element2D area)

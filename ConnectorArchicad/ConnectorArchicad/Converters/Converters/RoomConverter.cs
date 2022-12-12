@@ -19,9 +19,9 @@ namespace Archicad.Converters
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
       var rooms = new List<Objects.BuiltElements.Archicad.ArchicadRoom>();
-      foreach ( var el in elements )
+      foreach (var el in elements)
       {
-        switch ( el )
+        switch (el)
         {
           case Objects.BuiltElements.Archicad.ArchicadRoom archiRoom:
             rooms.Add(archiRoom);
@@ -46,24 +46,24 @@ namespace Archicad.Converters
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
       CancellationToken token)
     {
-      var elementModels = elements as ElementModelData[ ] ?? elements.ToArray();
+      var elementModels = elements as ElementModelData[] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadRoom> data =
         await AsyncCommandProcessor.Execute(
           new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
           token);
-      if ( data is null )
+      if (data is null)
       {
         return new List<Base>();
       }
 
       List<Base> rooms = new List<Base>();
-      foreach ( Objects.BuiltElements.Archicad.ArchicadRoom room in data )
+      foreach (Objects.BuiltElements.Archicad.ArchicadRoom room in data)
       {
         room.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == room.applicationId)
             .model);
         room.outline = Utils.PolycurveToSpeckle(room.shape.contourPolyline);
-        if ( room.shape.holePolylines?.Count > 0 )
+        if (room.shape.holePolylines?.Count > 0)
           room.voids = new List<ICurve>(room.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
         rooms.Add(room);
       }

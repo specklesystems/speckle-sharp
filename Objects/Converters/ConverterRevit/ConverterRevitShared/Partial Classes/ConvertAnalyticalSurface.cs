@@ -75,7 +75,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-#if !REVIT2023
+#if REVIT2020 || REVIT2021 || REVIT2022
     private Element2D AnalyticalSurfaceToSpeckle(AnalyticalModelSurface revitSurface)
     {
       if (!revitSurface.IsEnabled())

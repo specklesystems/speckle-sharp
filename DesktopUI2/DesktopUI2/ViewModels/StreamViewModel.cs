@@ -155,6 +155,9 @@ namespace DesktopUI2.ViewModels
     {
       PreviewOn = false;
       Bindings.ResetDocument();
+      //if not a saved stream dispose client and subs
+      if (!HomeViewModel.Instance.SavedStreams.Any(x => x._guid == _guid))
+        Client.Dispose();
       MainViewModel.GoHome();
     }
 
@@ -212,8 +215,6 @@ namespace DesktopUI2.ViewModels
           AddNewBranch();
         else
           GetCommits();
-
-
       }
     }
 
@@ -260,6 +261,7 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _selectedCommit, value);
+        PreviewImage360Loaded = false;
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
@@ -470,6 +472,13 @@ namespace DesktopUI2.ViewModels
     {
       get => _previewImage360;
       set => this.RaiseAndSetIfChanged(ref _previewImage360, value);
+    }
+
+    private bool _previewImage360Loaded;
+    public bool PreviewImage360Loaded
+    {
+      get => _previewImage360Loaded;
+      set => this.RaiseAndSetIfChanged(ref _previewImage360Loaded, value);
     }
 
     public bool CanOpenCommentsIn3DView { get; set; } = false;
@@ -1028,6 +1037,10 @@ namespace DesktopUI2.ViewModels
 
         _previewImage360 = new Bitmap(stream);
         this.RaisePropertyChanged(nameof(PreviewImage360));
+        //the default 360 image width is 34300
+        //this is a quick hack to see if the returned image is not an error image like "you do not have access" etc
+        if (_previewImage360.Size.Width > 30000)
+          PreviewImage360Loaded = true;
 
       }
       catch (Exception ex)
