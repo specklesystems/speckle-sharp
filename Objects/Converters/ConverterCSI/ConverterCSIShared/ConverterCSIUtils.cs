@@ -5,6 +5,7 @@ using CSiAPIv1;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
 using System.Reflection;
+using Objects.Geometry;
 
 namespace Objects.Converter.CSI
 {
@@ -27,6 +28,11 @@ namespace Objects.Converter.CSI
     {
       var f = Speckle.Core.Kits.Units.GetConversionFactor(units, ModelUnits());
       return value * f;
+    }
+    public Point ScaleToNative(Point p)
+    {
+      var f = Speckle.Core.Kits.Units.GetConversionFactor(p.units, ModelUnits());
+      return p * f;
     }
     public static List<string> GetAllFrameNames(cSapModel model)
     {
@@ -188,7 +194,8 @@ namespace Objects.Converter.CSI
           if (success != 0)
             continue;
 
-          guids.Add(guidListArgs[1], name);
+          if (!guids.ContainsKey(guidListArgs[1]))
+            guids.Add(guidListArgs[1], name);
         }
       }
 
