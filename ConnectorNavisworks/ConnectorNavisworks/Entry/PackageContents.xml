@@ -5,33 +5,23 @@
 	<CompanyDetails Name="Speckle" />
 
 	<Components>
-		<RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw15" SeriesMax="Nw15" />
-		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="1.0.0"
-		                ModuleName="./Contents/v15/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2018" />
-	</Components>
-	<Components>
-		<RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw16" SeriesMax="Nw16" />
-		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="1.0.0"
-		                ModuleName="./Contents/v16/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2019" />
-	</Components>
-	<Components>
 		<RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw17" SeriesMax="Nw17" />
-		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="1.0.0"
+		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="0.1.0"
 		                ModuleName="./Contents/v17/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2020" />
 	</Components>
 	<Components>
 		<RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw18" SeriesMax="Nw18" />
-		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="1.0.0"
+		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="0.1.0"
 		                ModuleName="./Contents/v18/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2021" />
 	</Components>
 	<Components>
 		<RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw19" SeriesMax="Nw19" />
-		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="1.0.0"
+		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="0.1.0"
 		                ModuleName="./Contents/v19/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2022" />
 	</Components>
 	<Components>
 		<RuntimeRequirements OS="Win64" Platform="NAVMAN|NAVSIM" SeriesMin="Nw20" SeriesMax="Nw20" />
-		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="1.0.0"
+		<ComponentEntry AppName="GAPTools" AppType="ManagedPlugin" Version="0.1.0"
 		                ModuleName="./Contents/v20/SpeckleConnectorNavisworks.dll" AppDescription="SpeckleNavisworks2023" />
 	</Components>
 </ApplicationPackage>

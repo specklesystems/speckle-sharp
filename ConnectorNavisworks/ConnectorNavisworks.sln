@@ -25,6 +25,18 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2023", "ConnectorNavisworks.2023\ConnectorNavisworks.2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2022", "ConnectorNavisworks.2022\ConnectorNavisworks.2022.csproj", "{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2021", "ConnectorNavisworks.2021\ConnectorNavisworks.2021.csproj", "{DEBC2174-5E31-4B6E-8680-690D75E50E2D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2022", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2022\ConverterNavisworks.2022.csproj", "{62BB0782-2662-4CF4-9482-0E353FE41A97}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2021", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2021\ConverterNavisworks.2021.csproj", "{8C851FC5-B83E-43C9-879B-D6DE72A8E192}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2020", "ConnectorNavisworks.2020\ConnectorNavisworks.2020.csproj", "{9A7D7F9A-4FE1-4053-950B-50B43BC81087}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2020", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2020\ConverterNavisworks.2020.csproj", "{5929BA61-81D2-4AD3-9350-4A4191A59D24}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +49,10 @@ Global
 		{A517A609-CAB1-4B33-B83C-1B13B34E4560}.Debug|x64.ActiveCfg = Debug|Any CPU
 		{A517A609-CAB1-4B33-B83C-1B13B34E4560}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A517A609-CAB1-4B33-B83C-1B13B34E4560}.Release|x64.ActiveCfg = Release|Any CPU
+		{C3232EF3-2000-44C6-A330-B94531C9CC83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3232EF3-2000-44C6-A330-B94531C9CC83}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C3232EF3-2000-44C6-A330-B94531C9CC83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3232EF3-2000-44C6-A330-B94531C9CC83}.Release|x64.ActiveCfg = Release|Any CPU
 		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ED3CF481-06F5-4A60-81B1-757AA8404C75}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -85,6 +101,54 @@ Global
 		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Release|Any CPU.Build.0 = Release|Any CPU
 		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Release|x64.ActiveCfg = Release|Any CPU
 		{74E39841-B2FA-494D-AC40-A6E505DE6B33}.Release|x64.Build.0 = Release|Any CPU
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Debug|x64.ActiveCfg = Debug|x64
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Debug|x64.Build.0 = Debug|x64
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Release|x64.ActiveCfg = Release|x64
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}.Release|x64.Build.0 = Release|x64
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Debug|x64.ActiveCfg = Debug|x64
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Debug|x64.Build.0 = Debug|x64
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Release|x64.ActiveCfg = Release|x64
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D}.Release|x64.Build.0 = Release|x64
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Debug|x64.Build.0 = Debug|Any CPU
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Release|Any CPU.Build.0 = Release|Any CPU
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Release|x64.ActiveCfg = Release|Any CPU
+		{62BB0782-2662-4CF4-9482-0E353FE41A97}.Release|x64.Build.0 = Release|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Debug|x64.Build.0 = Debug|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Release|x64.ActiveCfg = Release|Any CPU
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192}.Release|x64.Build.0 = Release|Any CPU
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Debug|x64.ActiveCfg = Debug|x64
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Debug|x64.Build.0 = Debug|x64
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Release|x64.ActiveCfg = Release|x64
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087}.Release|x64.Build.0 = Release|x64
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Debug|x64.Build.0 = Debug|Any CPU
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Release|x64.ActiveCfg = Release|Any CPU
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -98,14 +162,24 @@ Global
 		{2A707B2C-E4FF-4CC9-B2D4-E7CFBD8431BF} = {E3404975-9278-4D4E-8697-A28873B33A1E}
 		{3B33761E-2F7F-456B-8126-B801F5AD7FAC} = {E3404975-9278-4D4E-8697-A28873B33A1E}
 		{74E39841-B2FA-494D-AC40-A6E505DE6B33} = {9A263001-608C-4D44-A9BA-BCF1CD0B2D18}
+		{77D4F346-ACA5-42C8-8522-5EF176F3ADF1} = {9A263001-608C-4D44-A9BA-BCF1CD0B2D18}
+		{DEBC2174-5E31-4B6E-8680-690D75E50E2D} = {9A263001-608C-4D44-A9BA-BCF1CD0B2D18}
+		{62BB0782-2662-4CF4-9482-0E353FE41A97} = {56CACEA2-7EE1-4A29-933C-A66A92E01461}
+		{8C851FC5-B83E-43C9-879B-D6DE72A8E192} = {56CACEA2-7EE1-4A29-933C-A66A92E01461}
+		{9A7D7F9A-4FE1-4053-950B-50B43BC81087} = {9A263001-608C-4D44-A9BA-BCF1CD0B2D18}
+		{5929BA61-81D2-4AD3-9350-4A4191A59D24} = {56CACEA2-7EE1-4A29-933C-A66A92E01461}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5C95D1DD-5BDC-4EDF-87F7-CF5BCEFBFF24}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{5929ba61-81d2-4ad3-9350-4a4191a59d24}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{74e39841-b2fa-494d-ac40-a6e505de6b33}*SharedItemsImports = 5
+		ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{77d4f346-aca5-42c8-8522-5ef176f3adf1}*SharedItemsImports = 5
+		ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{9a7d7f9a-4fe1-4053-950b-50b43bc81087}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{a517a609-cab1-4b33-b83c-1b13b34e4560}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{c3232ef3-2000-44c6-a330-b94531c9cc83}*SharedItemsImports = 13
+		ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{debc2174-5e31-4b6e-8680-690d75e50e2d}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{ed3cf481-06f5-4a60-81b1-757aa8404c75}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal
