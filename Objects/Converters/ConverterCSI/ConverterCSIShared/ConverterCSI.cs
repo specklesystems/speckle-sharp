@@ -143,7 +143,6 @@ namespace Objects.Converter.CSI
       var appObj = new ApplicationObject(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
       List<string> notes = new List<string>();
       List<string> changedProps = new List<string>();
-      string typeName = null;
 
       switch (@object)
       {
@@ -173,7 +172,6 @@ namespace Objects.Converter.CSI
         //  break;
         //case CSITendonProperty o:
         case OSG.Element1D o:
-          typeName = "Frame";
           FrameToNative(o, ref appObj);
           break;
         case OSG.Element2D o:
@@ -206,15 +204,10 @@ namespace Objects.Converter.CSI
       if (reportObj != null && notes.Count > 0)
         reportObj.Update(log: notes);
 
-      if (typeName == null)
-        return appObj;
-
       switch (appObj.Status)
       {
         case ApplicationObject.State.Created:
-          break;
         case ApplicationObject.State.Updated:
-          break;
         case ApplicationObject.State.Removed:
           break;
         default:
