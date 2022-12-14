@@ -39,7 +39,7 @@ namespace Objects.Structural.Analysis
         if (!(typedBase is Base @base))
           throw new Exception($"Object type {typeof(T).FullName} does not extend Speckle.Core.Models.Base");
 
-        @base.applicationId ??= @base.id;
+        @base.applicationId ??= @base.id ??= new Guid().ToString();
         if (string.IsNullOrEmpty(@base.applicationId))
           throw new Exception($"Base object has no id or applicationId");
 
@@ -137,7 +137,7 @@ namespace Objects.Structural.Analysis
             continue;
 
           if (depth == 1)
-            editedProps[incomingChildProp.Key + suffix] = existingValue;
+            editedProps["@" + incomingChildProp.Key + suffix] = incomingChildProp.Value;
           else
             return false;
         }
