@@ -146,17 +146,10 @@ namespace Objects.Converter.Navisworks
 
     private static bool CanConvertToSpeckle(ModelItem item)
     {
-      switch (item.ClassDisplayName)
-      {
-        case "Solid":
-          return true;
-        case "Composite Part":
-          return true;
-        case null:
-          return false;
-        default:
-          return false;
-      }
+
+      // Only Geometry and Geometry with Mesh
+      return item.HasGeometry && (item.Geometry.PrimitiveTypes & PrimitiveTypes.Triangles) != 0;
+
     }
 
 
