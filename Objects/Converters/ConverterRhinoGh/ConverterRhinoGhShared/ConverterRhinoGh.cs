@@ -312,52 +312,65 @@ namespace Objects.Converter.RhinoGh
     private Base MappingToSpeckle(string mapping, RhinoObject @object)
     {
       Base schemaObject = Operations.Deserialize(mapping);
-
-      switch (schemaObject)
+      try
       {
-        case RevitWall o:
-          var extrusion = ((RH.Extrusion)@object.Geometry);
-          var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
-          var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
-          var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
-          o.height = height;
-          o.baseLine = CurveToSpeckle(bottomCrv);
-          break;
+        switch (schemaObject)
+        {
+          case RevitWall o:
+            var extrusion = ((RH.Extrusion)@object.Geometry);
+            var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
+            var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
+            var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
+            o.height = height;
+            o.baseLine = CurveToSpeckle(bottomCrv);
+            break;
 
-        case RevitBeam o:
-          o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
-          break;
+          case RevitBeam o:
+            o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
 
-        case RevitBrace o:
-          o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
-          break;
+          case RevitBrace o:
+            o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
 
-        case DirectShape o:
-          o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
-          break;
+          case DirectShape o:
+            if (@object.Geometry as RH.Brep != null)
+              o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
+            else if (@object.Geometry as RH.Mesh != null)
+              o.baseGeometries = new List<Base> { MeshToSpeckle((RH.Mesh)@object.Geometry) };
+            break;
 
-        case FreeformElement o:
-          o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
-          break;
+          case FreeformElement o:
+            if (@object.Geometry as RH.Brep != null)
+              o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
+            else if (@object.Geometry as RH.Mesh != null)
+              o.baseGeometries = new List<Base> { MeshToSpeckle((RH.Mesh)@object.Geometry) };
+            break;
 
-        case FamilyInstance o:
-          if (@object.Geometry is Rhino.Geometry.Point p)
-          {
-            o.basePoint = PointToSpeckle(p);
-          }
-          else if (@object is InstanceObject)
-          {
-            var block = BlockInstanceToSpeckle(@object as InstanceObject);
-            o.basePoint = block.GetInsertionPoint();
-            o.rotation = block.transform.rotationZ;
-          }
-          break;
+          case FamilyInstance o:
+            if (@object.Geometry is Rhino.Geometry.Point p)
+            {
+              o.basePoint = PointToSpeckle(p);
+            }
+            else if (@object is InstanceObject)
+            {
+              var block = BlockInstanceToSpeckle(@object as InstanceObject);
+              o.basePoint = block.GetInsertionPoint();
+              o.rotation = block.transform.rotationZ;
+            }
+            break;
 
-        default:
-          break;
+          default:
+            break;
+        }
+        schemaObject.applicationId = @object.Id.ToString();
+        schemaObject["units"] = ModelUnits;
       }
-      schemaObject.applicationId = @object.Id.ToString();
-      schemaObject["units"] = ModelUnits;
+      catch (Exception ex)
+      {
+        //ignore schemas if something goes bad
+        //TODO: add to report if possible
+      }
       return schemaObject;
     }
 
