@@ -1,9 +1,10 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
@@ -23,7 +24,7 @@ namespace Speckle.Core.Kits
       get
       {
         if (_kitsFolder == null)
-          _kitsFolder = Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits");
+          _kitsFolder = SpecklePathProvider.KitsFolderPath; 
 
         return _kitsFolder;
       }
@@ -98,7 +99,7 @@ namespace Speckle.Core.Kits
     }
 
     /// <summary>
-    /// TODO: Returns all the kits with potential converters for the software app. 
+    /// Returns all the kits with potential converters for the software app. 
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
@@ -147,9 +148,55 @@ namespace Speckle.Core.Kits
         .SelectMany(kit => kit.Value.Types).ToList();
     }
 
+    // recursive search for referenced assemblies
+    public static List<Assembly> GetReferencedAssemblies()
+    {
+      var returnAssemblies = new List<Assembly>();
+      var loadedAssemblies = new HashSet<string>();
+      var assembliesToCheck = new Queue<Assembly>();
+
+      assembliesToCheck.Enqueue(Assembly.GetEntryAssembly());
+
+      while (assembliesToCheck.Count > 0)
+      {
+        var assemblyToCheck = assembliesToCheck.Dequeue();
+
+        if (assemblyToCheck == null)
+          continue;
+
+        foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
+        {
+          // filtering out system dlls
+          if (reference.FullName.StartsWith("System.") || reference.FullName.StartsWith("Microsoft."))
+            continue;
+
+          if (!loadedAssemblies.Contains(reference.FullName))
+          {
+            Assembly assembly = null;
+            try
+            {
+              assembly = Assembly.Load(reference);
+            }
+            catch
+            {
+              continue;
+            }
+            assembliesToCheck.Enqueue(assembly);
+            loadedAssemblies.Add(reference.FullName);
+            returnAssemblies.Add(assembly);
+          }
+        }
+      }
+
+      return returnAssemblies;
+    }
+
     private static void GetLoadedSpeckleReferencingAssemblies()
     {
-      foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+      List<Assembly> assemblies = AppDomain.CurrentDomain.GetAssemblies().ToList();
+      assemblies.AddRange(GetReferencedAssemblies());
+
+      foreach (var assembly in assemblies)
       {
         if (!assembly.IsDynamic && !assembly.ReflectionOnly)
         {
@@ -184,15 +231,21 @@ namespace Speckle.Core.Kits
           if (unloadedAssemblyName == null)
             continue;
 
-          var assembly = Assembly.LoadFrom(assemblyPath);
-          var kitClass = GetKitClass(assembly);
-          if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
+          try
           {
-            if (!_SpeckleKits.ContainsKey(assembly.FullName))
+            var assembly = Assembly.LoadFrom(assemblyPath);
+            var kitClass = GetKitClass(assembly);
+            if (assembly.IsReferencing(SpeckleAssemblyName) && kitClass != null)
             {
-              var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
-              if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              if (!_SpeckleKits.ContainsKey(assembly.FullName))
+              {
+                var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
+                if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              }
             }
+          }
+          catch (FileLoadException ex)
+          {
           }
         }
       }

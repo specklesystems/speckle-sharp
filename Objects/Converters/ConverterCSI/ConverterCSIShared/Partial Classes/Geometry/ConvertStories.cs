@@ -5,12 +5,14 @@ using CSiAPIv1;
 using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 using Objects.Structural.CSI.Analysis;
+using Speckle.Core.Models;
+using System.Linq;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void StoriesToNative(CSIStories stories)
+    public void StoriesToNative(CSIStories stories, ref ApplicationObject appObj)
     {
       string[] storyNames = new string[stories.NumberStories];
       double[] storyElevations = new double[stories.NumberStories];
@@ -33,7 +35,12 @@ namespace Objects.Converter.CSI
         colors[i] = stories.CSIStory[i].Color;
 
       }
-      Model.Story.SetStories_2(stories.BaseElevation, stories.NumberStories, ref storyNames, ref storyHeights, ref isMasterStory, ref similarToStory, ref spliceAbove, ref spliceHeight, ref colors);
+      var success = Model.Story.SetStories_2(stories.BaseElevation, stories.NumberStories, ref storyNames, ref storyHeights, ref isMasterStory, ref similarToStory, ref spliceAbove, ref spliceHeight, ref colors);
+
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdIds: storyNames.ToList());
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
     public CSIStories StoriesToSpeckle()
     {

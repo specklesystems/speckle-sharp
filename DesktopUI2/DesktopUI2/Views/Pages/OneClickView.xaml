@@ -256,7 +256,7 @@
             HorizontalAlignment="Center"
             Classes="Subtitle1"
             Foreground="White"
-            Text="Done 🎉&#x0a;Your model has been sent!"
+            Text="{Binding SentText}"
             TextAlignment="Center"
             TextWrapping="Wrap" />
           <Button
@@ -265,7 +265,8 @@
             Background="White"
             Command="{Binding ViewOnlineCommand}"
             CornerRadius="25"
-            Foreground="{DynamicResource PrimaryHueMidBrush}">
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            IsVisible="{Binding SuccessfulSend}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
 
               <icons:MaterialIcon VerticalAlignment="Center" Kind="ExternalLink" />
@@ -284,7 +285,8 @@
             Classes="Flat"
             Command="{Binding ShareCommand}"
             CornerRadius="25"
-            Foreground="White">
+            Foreground="White"
+            IsVisible="{Binding SuccessfulSend}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
 
               <icons:MaterialIcon VerticalAlignment="Center" Kind="UsersAdd" />
@@ -303,7 +305,8 @@
             Classes="Flat"
             Command="{Binding CopyCommand}"
             CornerRadius="25"
-            Foreground="White">
+            Foreground="White"
+            IsVisible="{Binding SuccessfulSend}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
 
               <icons:MaterialIcon VerticalAlignment="Center" Kind="LinkVariant" />

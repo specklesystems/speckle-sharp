@@ -7,11 +7,14 @@ using System.Text;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using ConnectorRhinoShared;
+using DesktopUI2.ViewModels.MappingTool;
+using DesktopUI2.Views;
 using Rhino;
 using Rhino.PlugIns;
 using Rhino.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Models.Extensions;
+using Speckle.Core.Helpers;
 
 [assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 
@@ -187,7 +190,7 @@ namespace SpeckleRhino
         {
           // Build a path to the user's staged RUI file.
           var sb = new StringBuilder();
-          sb.Append(Helpers.InstallApplicationDataPath);
+          sb.Append(SpecklePathProvider.InstallApplicationDataPath);
 #if RHINO6
           sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7
@@ -219,6 +222,19 @@ namespace SpeckleRhino
 
     private void RhinoApp_Idle(object sender, EventArgs e)
     {
+
+      //do not hog rhino, to be refractored a bit
+      if (MappingsViewModel.Instance == null)
+        return;
+
+#if !MAC
+      if (!Rhino.UI.Panels.GetOpenPanelIds().Contains(typeof(MappingsPanel).GUID))
+        return;
+#else
+      if (SpeckleMappingsCommandMac.MainWindow == null || !SpeckleMappingsCommandMac.MainWindow.IsVisible)
+        return;
+#endif
+
       try
       {
         if (SelectionExpired && MappingBindings.UpdateSelection != null)

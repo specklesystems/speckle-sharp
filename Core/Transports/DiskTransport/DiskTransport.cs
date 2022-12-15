@@ -4,8 +4,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Core.Api;
-using Speckle.Core.Logging;
+using Speckle.Core.Helpers;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 
@@ -31,7 +30,7 @@ namespace DiskTransport
     public DiskTransport(string basePath = null)
     {
       if (basePath == null)
-        basePath = Path.Combine(Helpers.UserSpeckleFolderPath, "DiskTransportFiles");
+        basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
 
       RootPath = Path.Combine(basePath);
 
@@ -47,7 +46,7 @@ namespace DiskTransport
 
     public string GetObject(string id)
     {
-      if (CancellationToken.IsCancellationRequested)return null; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 
       var filePath = Path.Combine(RootPath, id);
       if (File.Exists(filePath))
@@ -60,10 +59,10 @@ namespace DiskTransport
 
     public void SaveObject(string id, string serializedObject)
     {
-      if (CancellationToken.IsCancellationRequested)return; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       var filePath = Path.Combine(RootPath, id);
-      if (File.Exists(filePath))return;
+      if (File.Exists(filePath)) return;
 
       File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
       SavedObjectCount++;
@@ -72,7 +71,7 @@ namespace DiskTransport
 
     public void SaveObject(string id, ITransport sourceTransport)
     {
-      if (CancellationToken.IsCancellationRequested)return; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       var serializedObject = sourceTransport.GetObject(id);
       SaveObject(id, serializedObject);
@@ -85,7 +84,7 @@ namespace DiskTransport
 
     public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
     {
-      if (CancellationToken.IsCancellationRequested)return null; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 
       var parent = GetObject(id);
 
@@ -93,12 +92,12 @@ namespace DiskTransport
 
       var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
 
-      if (partial.__closure == null || partial.__closure.Count == 0)return parent;
+      if (partial.__closure == null || partial.__closure.Count == 0) return parent;
 
       int i = 0;
       foreach (var kvp in partial.__closure)
       {
-        if (CancellationToken.IsCancellationRequested)return null; // Check for cancellation
+        if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
 
         var child = GetObject(kvp.Key);
         targetTransport.SaveObject(kvp.Key, child);

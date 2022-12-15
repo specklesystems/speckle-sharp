@@ -11,7 +11,6 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterCSIUtils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertBuiltElementModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Analysis\ConvertModelInfo.cs" />
@@ -32,7 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertTendon.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Geometry\ConvertWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\ConvertLoadPattern.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading1DEleemnts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading1DElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\Loading2DElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Loading\LoadingNode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Materials\ConvertMaterials.cs" />

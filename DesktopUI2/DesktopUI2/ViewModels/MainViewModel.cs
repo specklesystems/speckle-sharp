@@ -4,9 +4,11 @@ using DesktopUI2.Models;
 using DesktopUI2.Views.Pages;
 using Material.Styles.Themes;
 using ReactiveUI;
+using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Splat;
 using System;
+using System.Linq;
 using System.Reactive;
 
 namespace DesktopUI2.ViewModels
@@ -78,22 +80,34 @@ namespace DesktopUI2.ViewModels
       Locator.CurrentMutable.Register(() => new CollaboratorsView(), typeof(IViewFor<CollaboratorsViewModel>));
       Locator.CurrentMutable.Register(() => new SettingsView(), typeof(IViewFor<SettingsPageViewModel>));
       Locator.CurrentMutable.Register(() => new NotificationsView(), typeof(IViewFor<NotificationsViewModel>));
+      Locator.CurrentMutable.Register(() => new LogInView(), typeof(IViewFor<LogInViewModel>));
       Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
 
       RouterInstance = Router; // makes the router available app-wide
 
-
       var config = ConfigManager.Load();
       ChangeTheme(config.DarkTheme);
 
+      //reusing the same view model not to lose its state
       Home = new HomeViewModel(this);
+      NavigateToDefaultScreen();
+    }
 
-      if (config.OneClickMode)
+    internal void NavigateToDefaultScreen()
+    {
+      var config = ConfigManager.Load();
+
+      if (!AccountManager.GetAccounts().Any())
+      {
+        Router.Navigate.Execute(new LogInViewModel(this));
+      }
+      else if (config.OneClickMode)
       {
         Router.Navigate.Execute(new OneClickViewModel(this));
       }
       else
       {
+        Home.Refresh();
         Router.Navigate.Execute(Home);
       }
     }
@@ -138,5 +152,7 @@ namespace DesktopUI2.ViewModels
 
       materialTheme.CurrentTheme = theme;
     }
+
+
   }
 }

@@ -19,7 +19,7 @@ namespace DesktopUI2.Views
       this.WhenActivated(disposables => { });
       AvaloniaXamlLoader.Load(this);
 
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launched" } });
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launched" } }, isAction: false);
 
       NotificationManager = this.FindControl<NotificationManager>("NotificationManager");
     }

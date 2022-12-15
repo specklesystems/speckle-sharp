@@ -14,6 +14,7 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Rhino;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
@@ -200,7 +201,33 @@ namespace ConnectorGrasshopper
 
       // Manager button
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo,
-        (o, args) => Process.Start("speckle://"));
+        (o, args) =>
+        {
+          try
+          {
+            string path = "";
+
+            Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
+
+#if MAC
+            path = @"/Applications/Manager for Speckle.app";
+
+#else     
+            path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
+#endif  
+
+            if (File.Exists(path) || Directory.Exists(path))
+              Process.Start(path);
+            else
+            {
+              Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
+            }
+          }
+          catch (Exception ex)
+          {
+            Log.CaptureException(ex, Sentry.SentryLevel.Error);
+          }
+        });
 
 
       if (!MenuHasBeenAdded)
@@ -228,15 +255,15 @@ namespace ConnectorGrasshopper
       main.DropDown.Items.Add(new ToolStripSeparator());
       main.DropDown.Items.Add("Open Templates folder", null, (sender, args) =>
       {
-        var path = Path.Combine(Helpers.InstallSpeckleFolderPath, "Templates");
+        var path = Path.Combine(SpecklePathProvider.InstallSpeckleFolderPath, "Templates");
         
         if (!Directory.Exists(path))
           Directory.CreateDirectory(path);
-        #if MAC
+#if MAC
           Process.Start("file://" + path);
-        #else
+#else
           Process.Start("explorer.exe", "/select, " + path );
-        #endif
+#endif
       });
     }
 

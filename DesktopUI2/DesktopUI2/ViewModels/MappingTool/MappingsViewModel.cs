@@ -51,7 +51,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
-    internal static MappingsViewModel Instance { get; private set; }
+    public static MappingsViewModel Instance { get; private set; }
 
 
 
