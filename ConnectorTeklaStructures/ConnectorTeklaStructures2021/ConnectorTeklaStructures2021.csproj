@@ -79,14 +79,6 @@
       <Project>{3d522de4-1f73-486f-b07d-6ad794f784fd}</Project>
       <Name>DesktopUI2</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
-      <Project>{60b78c35-560a-4111-82a2-d03a68a047c0}</Project>
-      <Name>PolygonMesher</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
-      <Project>{69b9ded4-7b66-4a54-aff8-3a62880b8af9}</Project>
-      <Name>Objects</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">
@@ -134,11 +126,10 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared" />
-  <Import Project="..\..\Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>RD /S /Q "$(TargetDir)arm64\"
-xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2021.0\nt\bin\plugins\Speckle2Tekla" /Y /I /E /EXCLUDE:$(SolutionDir)Exclude.txt
+xcopy "$(TargetDir)*.*" "C:\ProgramData\Trimble\Tekla Structures\2022.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E /EXCLUDE:$(SolutionDir)Exclude.txt
 </PostBuildEvent>
   </PropertyGroup>
 </Project>
