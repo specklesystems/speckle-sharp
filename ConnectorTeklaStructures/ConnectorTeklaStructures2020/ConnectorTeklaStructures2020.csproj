@@ -102,7 +102,11 @@
   <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>RD /S /Q "$(TargetDir)arm64\"
-xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2020.0\nt\bin\plugins\Speckle2Tekla" /Y /I /E /EXCLUDE:$(SolutionDir)Exclude.txt</PostBuildEvent>
+    <PostBuildEvent>if EXIST "C:\Program Files\Tekla Structures\2020.0\bin\TeklaStructures.exe" (
+xcopy "$(TargetDir)*.*" "C:\ProgramData\Trimble\Tekla Structures\2020.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E /EXCLUDE:$(SolutionDir)Exclude.txt
+)
+if EXIST "C:\TeklaStructures\2020.0\nt\bin\TeklaStructures.exe" (
+xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2020.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E /EXCLUDE:$(SolutionDir)Exclude.txt
+)</PostBuildEvent>
   </PropertyGroup>
 </Project>
