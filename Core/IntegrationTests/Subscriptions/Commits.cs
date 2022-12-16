@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using System.Diagnostics;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
@@ -26,9 +21,9 @@ namespace TestsIntegration.Subscriptions
     string streamId;
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
-      testUserAccount = Fixtures.SeedUser();
+      testUserAccount = await Fixtures.SeedUser();
       client = new Client(testUserAccount);
       myServerTransport = new ServerTransport(testUserAccount, null);
       myServerTransport.Api.CompressPayloads = false;

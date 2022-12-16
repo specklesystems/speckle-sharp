@@ -65,7 +65,8 @@ namespace Speckle.DesktopUI.Utils
     public FilterTab SelectedFilterTab
     {
       get => _selectedFilterTab;
-      set {
+      set
+      {
         SetAndNotify(ref _selectedFilterTab, value);
         _selectedFilterTab.RestoreSelectedItems();
       }
@@ -94,9 +95,9 @@ namespace Speckle.DesktopUI.Utils
       }
     }
 
-    private BindableCollection<User> _userSearchResults;
+    private BindableCollection<LimitedUser> _userSearchResults;
 
-    public BindableCollection<User> UserSearchResults
+    public BindableCollection<LimitedUser> UserSearchResults
     {
       get => _userSearchResults;
       set => SetAndNotify(ref _userSearchResults, value);
@@ -126,7 +127,7 @@ namespace Speckle.DesktopUI.Utils
       {
         var client = new Client(AccountToSendFrom);
         var users = await client.UserSearch(UserQuery);
-        UserSearchResults = new BindableCollection<User>(users);
+        UserSearchResults = new BindableCollection<LimitedUser>(users);
       }
       catch (Exception e)
       {

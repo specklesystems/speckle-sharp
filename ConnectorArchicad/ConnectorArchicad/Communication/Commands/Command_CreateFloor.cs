@@ -11,9 +11,9 @@ namespace Archicad.Communication.Commands
     public sealed class Parameters
     {
       [JsonProperty("slabs")]
-      private IEnumerable<Floor> Datas { get; }
+      private IEnumerable<ArchicadFloor> Datas { get; }
 
-      public Parameters(IEnumerable<Floor> datas)
+      public Parameters(IEnumerable<ArchicadFloor> datas)
       {
         Datas = datas;
       }
@@ -26,9 +26,9 @@ namespace Archicad.Communication.Commands
       public IEnumerable<string> ApplicationIds { get; private set; }
     }
 
-    private IEnumerable<Floor> Datas { get; }
+    private IEnumerable<ArchicadFloor> Datas { get; }
 
-    public CreateFloor(IEnumerable<Floor> datas)
+    public CreateFloor(IEnumerable<ArchicadFloor> datas)
     {
       Datas = datas;
     }

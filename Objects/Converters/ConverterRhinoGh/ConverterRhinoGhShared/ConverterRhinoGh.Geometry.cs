@@ -617,12 +617,18 @@ namespace Objects.Converter.RhinoGh
 
     public RH.Box BoxToNative(Box box)
     {
+      
       return new RH.Box(PlaneToNative(box.basePlane), IntervalToNative(box.xSize), IntervalToNative(box.ySize), IntervalToNative(box.zSize));
     }
 
     // Meshes
     public Mesh MeshToSpeckle(RH.Mesh mesh, string units = null)
     {
+      if (mesh.Vertices.Count == 0 || mesh.Faces.Count == 0)
+      {
+        Report.ConversionErrors.Add(new Exception("Cannot convert empty mesh (0 faces, 0 vertices)"));
+        return null;
+      }
       var u = units ?? ModelUnits;
       var verts = PointsToFlatList(mesh.Vertices.ToPoint3dArray());
 
@@ -955,7 +961,6 @@ namespace Objects.Converter.RhinoGh
           break;
       }
       joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-      joinedMesh.Weld(Math.PI);
       return joinedMesh;
     }
 

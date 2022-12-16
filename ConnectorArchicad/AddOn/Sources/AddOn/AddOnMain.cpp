@@ -7,14 +7,19 @@
 #include "FileSystem.hpp"
 
 #include "Commands/GetModelForElements.hpp"
-#include "Commands/GetSelectedApplicationIds.hpp"
+#include "Commands/GetElementIds.hpp"
 #include "Commands/GetElementTypes.hpp"
 #include "Commands/GetWallData.hpp"
+#include "Commands/GetDoorData.hpp"
+#include "Commands/GetWindowData.hpp"
 #include "Commands/GetBeamData.hpp"
 #include "Commands/GetSlabData.hpp"
 #include "Commands/GetRoomData.hpp"
 #include "Commands/GetProjectInfo.hpp"
+#include "Commands/GetSubElementInfo.hpp"
 #include "Commands/CreateWall.hpp"
+#include "Commands/CreateDoor.hpp"
+#include "Commands/CreateWindow.hpp"
 #include "Commands/CreateBeam.hpp"
 #include "Commands/CreateSlab.hpp"
 #include "Commands/CreateZone.hpp"
@@ -74,7 +79,6 @@ private:
     static const char* FileName = "ConnectorArchicad.exe";
 #endif
     static const char* FolderName = "ConnectorArchicad";
-
 
     IO::Location ownFileLoc;
     auto err = ACAPI_GetOwnLocation(&ownFileLoc);
@@ -158,14 +162,19 @@ static GSErrCode MenuCommandHandler(const API_MenuParams* menuParams)
 static GSErrCode RegisterAddOnCommands()
 {
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetModelForElements>()));
-  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSelectedApplicationIds>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetElementIds>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetElementTypes>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetWallData>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetDoorData>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetWindowData>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSubElementInfo>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetBeamData>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetRoomData>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetSlabData>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::GetProjectInfo>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateWall>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateDoor>()));
+  CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateWindow>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateBeam>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateSlab>()));
   CHECKERROR(ACAPI_Install_AddOnCommandHandler(NewOwned<AddOnCommands::CreateZone>()));

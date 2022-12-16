@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Timers;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
-using Speckle.ConnectorRevit.Entry;
+using DesktopUI2;
+using DesktopUI2.Models;
 using Speckle.ConnectorRevit.Storage;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
+using Timer = System.Timers.Timer;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -17,57 +19,38 @@ namespace Speckle.ConnectorRevit.UI
 
     public static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
 
-    /// <summary>
-    /// Stores the actions for the ExternalEvent handler
-    /// </summary>
-    public List<Action> Queue;
-
-    public ExternalEvent Executor;
-
     public Timer SelectionTimer;
+
+    //Only use an instance of the converter as a local variable to avoid conflicts if multiple sending/receiving
+    //operations are happening at the same time
+    public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
+
+    public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
+
+    /// <summary>
+    /// Keeps track of errors in the operations of send/receive.
+    /// </summary>
+    public List<Exception> OperationErrors { get; set; } = new List<Exception>();
 
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
-      Queue = new List<Action>();
-    }
-
-    /// <summary>
-    /// Sets the revit external event handler and initialises the rocket engines.
-    /// </summary>
-    /// <param name="eventHandler"></param>
-    public void SetExecutorAndInit(ExternalEvent eventHandler)
-    {
-      Executor = eventHandler;
-
-      // LOCAL STATE
-      // GetStreamsInFile();
-
-      //// GLOBAL EVENT HANDLERS
-      RevitApp.ViewActivated += RevitApp_ViewActivated;
-      RevitApp.Application.DocumentChanged += Application_DocumentChanged;
-      RevitApp.Application.DocumentOpened += Application_DocumentOpened;
-      RevitApp.Application.DocumentClosed += Application_DocumentClosed;
-
-      SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
-      SelectionTimer.Elapsed += SelectionTimer_Elapsed;
-      // TODO: Find a way to handle when document is closed via middle mouse click
-      // thus triggering the focus on a new project
     }
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
     {
       var selectedObjects = GetSelectedObjects();
 
-      NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selectedObjects.Count });
-      NotifyUi(new UpdateSelectionEvent() { ObjectIds = selectedObjects });
+      //TODO
+
+      //NotifyUi(new UpdateSelectionCountEvent() { SelectionCount = selectedObjects.Count });
+      //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selectedObjects });
     }
 
-    public override string GetHostAppName() => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
+    public override string GetHostAppNameVersion() => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
+    public override string GetHostAppName() => HostApplications.Revit.Slug;
 
-    public override string GetDocumentId() => GetDocHash(CurrentDoc?.Document);
-
-    private string GetDocHash(Document doc) => Utilities.hashString(doc.PathName + doc.Title, Utilities.HashingFuctions.MD5);
+    public override string GetDocumentId() => CurrentDoc?.Document?.GetHashCode().ToString();
 
     public override string GetDocumentLocation() => CurrentDoc.Document.PathName;
 
@@ -75,65 +58,62 @@ namespace Speckle.ConnectorRevit.UI
 
     public override string GetFileName() => CurrentDoc.Document.Title;
 
-    public override void SelectClientObjects(string args)
+    public override List<StreamState> GetStreamsInFile()
     {
-      // TODO!
-    }
-
-    #region app events
-
-    //checks whether to refresh the stream list in case the user changes active view and selects a different document
-    private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
-    {
-
-      if (e.Document == null || e.Document.IsFamilyDocument || e.PreviousActiveView == null || GetDocHash(e.Document) == GetDocHash(e.PreviousActiveView.Document))
-        return;
-
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.ViewActivated,
-        DynamicInfo = GetStreamsInFile()
-      };
-      NotifyUi(appEvent);
-    }
-
-    private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
-    {
-      // the DocumentClosed event is triggered AFTER ViewActivated
-      // is both doc A and B are open and B is closed, this would result in wiping the list of streams retrieved for A
-      // only proceed if it's the last document open (the current is null)
+      var streams = new List<StreamState>();
       if (CurrentDoc != null)
-        return;
+        streams = StreamStateManager.ReadState(CurrentDoc.Document);
 
-      if (SpeckleRevitCommand.Bootstrapper != null && SpeckleRevitCommand.Bootstrapper.Application != null)
-        SpeckleRevitCommand.Bootstrapper.Application.MainWindow.Hide();
-
-      var appEvent = new ApplicationEvent() { Type = ApplicationEvent.EventType.DocumentClosed };
-      NotifyUi(appEvent);
+      return streams;
     }
 
-    // this method is triggered when there are changes in the active document
-    private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
-    { }
-
-    private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
+    public override List<ReceiveMode> GetReceiveModes()
     {
-      var streams = GetStreamsInFile();
-      if (streams != null && streams.Count != 0)
-      {
-        SpeckleRevitCommand.OpenOrFocusSpeckle(RevitApp);
-      }
-
-      var appEvent = new ApplicationEvent()
-      {
-        Type = ApplicationEvent.EventType.DocumentOpened,
-        DynamicInfo = streams
-      };
-
-      NotifyUi(appEvent);
+      return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Create, ReceiveMode.Ignore };
     }
 
-    #endregion
+    //TODO
+    public override List<MenuItem> GetCustomStreamMenuItems()
+    {
+      return new List<MenuItem>();
+    }
 
+    // WARNING: Everything in the 'interop' section must match a corrosponding element in the converter
+    // which can be found in the namespace commented above the element
+    #region interop
+
+    // Objects.Structural.Geometry
+    public enum ElementType1D
+    {
+      Beam,
+      Brace,
+      Bar,
+      Column,
+      Rod,
+      Spring,
+      Tie,
+      Strut,
+      Link,
+      Damper,
+      Cable,
+      Spacer,
+      Other,
+      Null
+    }
+
+    // Objects.Structural
+    public enum PropertyType2D
+    {
+      Stress,
+      Fabric,
+      Plate,
+      Shell,
+      Curved,
+      Wall,
+      Strain,
+      Axi,
+      Load
+    }
+    #endregion
   }
 }
