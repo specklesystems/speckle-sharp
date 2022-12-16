@@ -99,13 +99,13 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterNavisworks", "Conv
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterNavisworks", "ConverterNavisworks", "{A2F9F9A0-0479-4FE0-83B3-AB38A9402821}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2023", "Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks.2023.csproj", "{74081536-2A3E-447D-8F53-BDC5DCB5D98B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2023", "Converters\ConverterNavisworks\ConverterNavisworks2023\ConverterNavisworks2023.csproj", "{74081536-2A3E-447D-8F53-BDC5DCB5D98B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2020", "Converters\ConverterNavisworks\ConverterNavisworks.2020\ConverterNavisworks.2020.csproj", "{F039B09D-BA26-4C26-86EE-7291BE792276}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2020", "Converters\ConverterNavisworks\ConverterNavisworks2020\ConverterNavisworks2020.csproj", "{F039B09D-BA26-4C26-86EE-7291BE792276}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2021", "Converters\ConverterNavisworks\ConverterNavisworks.2021\ConverterNavisworks.2021.csproj", "{5B910BBD-184E-456C-BBAB-AD54C80F1616}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2021", "Converters\ConverterNavisworks\ConverterNavisworks2021\ConverterNavisworks2021.csproj", "{5B910BBD-184E-456C-BBAB-AD54C80F1616}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2022", "Converters\ConverterNavisworks\ConverterNavisworks.2022\ConverterNavisworks.2022.csproj", "{05FF1D88-1B2D-4A25-BF65-2895D4E6746D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2022", "Converters\ConverterNavisworks\ConverterNavisworks2022\ConverterNavisworks2022.csproj", "{05FF1D88-1B2D-4A25-BF65-2895D4E6746D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

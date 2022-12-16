@@ -209,27 +209,27 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests", "Objects\Tests\Test
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterNavisworks", "ConverterNavisworks", "{B6C38DB9-7B20-4B7E-BC90-6A8CAFC16807}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2023", "Objects\Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks.2023.csproj", "{EC2436DB-B7F4-4D78-807B-8D91D7D5165C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2023", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2023\ConverterNavisworks2023.csproj", "{EC2436DB-B7F4-4D78-807B-8D91D7D5165C}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterNavisworks", "Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworks.shproj", "{C3232EF3-2000-44C6-A330-B94531C9CC83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Navisworks", "Navisworks", "{B6887DDC-B9B9-4B00-95DC-1DD930A1E901}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2023", "ConnectorNavisworks\ConnectorNavisworks.2023\ConnectorNavisworks.2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2023", "ConnectorNavisworks\ConnectorNavisworks2023\ConnectorNavisworks2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorNavisworks", "ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.shproj", "{A517A609-CAB1-4B33-B83C-1B13B34E4560}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2022", "ConnectorNavisworks\ConnectorNavisworks.2022\ConnectorNavisworks.2022.csproj", "{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2022", "ConnectorNavisworks\ConnectorNavisworks2022\ConnectorNavisworks2022.csproj", "{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2021", "ConnectorNavisworks\ConnectorNavisworks.2021\ConnectorNavisworks.2021.csproj", "{DEBC2174-5E31-4B6E-8680-690D75E50E2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2021", "ConnectorNavisworks\ConnectorNavisworks2021\ConnectorNavisworks2021.csproj", "{DEBC2174-5E31-4B6E-8680-690D75E50E2D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks.2020", "ConnectorNavisworks\ConnectorNavisworks.2020\ConnectorNavisworks.2020.csproj", "{9A7D7F9A-4FE1-4053-950B-50B43BC81087}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2020", "ConnectorNavisworks\ConnectorNavisworks2020\ConnectorNavisworks2020.csproj", "{9A7D7F9A-4FE1-4053-950B-50B43BC81087}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2020", "Objects\Converters\ConverterNavisworks\ConverterNavisworks.2020\ConverterNavisworks.2020.csproj", "{8B467FF4-6A6C-4071-87A7-0DD7B9822251}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2020", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2020\ConverterNavisworks2020.csproj", "{8B467FF4-6A6C-4071-87A7-0DD7B9822251}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2021", "Objects\Converters\ConverterNavisworks\ConverterNavisworks.2021\ConverterNavisworks.2021.csproj", "{CAFD4EAC-75A8-4FC8-94E5-91CADC39F5B3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2021", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2021\ConverterNavisworks2021.csproj", "{CAFD4EAC-75A8-4FC8-94E5-91CADC39F5B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks.2022", "Objects\Converters\ConverterNavisworks\ConverterNavisworks.2022\ConverterNavisworks.2022.csproj", "{CD334556-BA2B-4272-A1EB-628E8152204A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2022", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2022\ConverterNavisworks2022.csproj", "{CD334556-BA2B-4272-A1EB-628E8152204A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -972,6 +972,8 @@ Global
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
 		ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.projitems*{31e0c098-6813-4571-ab96-a245e0fc1c23}*SharedItemsImports = 4
 		ConnectorMicroStation\ConnectorMicroStationOpenShared\ConnectorMicroStationOpenShared.projitems*{372d9f0f-ede9-4050-bf8c-758911c5c2e0}*SharedItemsImports = 13
+		ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{3af1ef30-0906-4926-a02c-4e3ad666352a}*SharedItemsImports = 4
+		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{3af1ef30-0906-4926-a02c-4e3ad666352a}*SharedItemsImports = 4
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{3cdef4cc-2cfa-4939-8427-3ed00fa9db55}*SharedItemsImports = 5
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{3df12639-78b6-41b3-a046-a675035369be}*SharedItemsImports = 5
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{442116f3-0f4a-4136-894e-ff5f4295500b}*SharedItemsImports = 5
@@ -986,6 +988,8 @@ Global
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{5bbde14e-50f8-4d6e-8e35-747667ad4a09}*SharedItemsImports = 13
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{5fd0d810-03e9-4fd2-93e4-b1b51e5d82c5}*SharedItemsImports = 13
 		ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.projitems*{61374cd0-e774-4dcd-bfab-6356b0931283}*SharedItemsImports = 13
+		ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
+		Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems*{67157264-aaa5-46a8-a38b-16254b49b892}*SharedItemsImports = 4
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{67a463d3-e98b-4b16-b069-d7bbb05386a1}*SharedItemsImports = 5
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{67a463d3-e98b-4b16-b069-d7bbb05386a1}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{74e39841-b2fa-494d-ac40-a6e505de6b33}*SharedItemsImports = 5
