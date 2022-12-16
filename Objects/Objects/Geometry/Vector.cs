@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -23,22 +22,22 @@ namespace Objects.Geometry
       get { return null; }
       set
       {
-        x = value[ 0 ];
-        y = value[ 1 ];
-        z = value.Count > 2 ? value[ 2 ] : 0;
+        x = value[0];
+        y = value[1];
+        z = value.Count > 2 ? value[2] : 0;
       }
     }
-    
+
     /// <inheritdoc/>
     public Box bbox { get; set; }
-    
+
     /// <summary>
     /// The unit's this <see cref="Vector"/> is in.
     /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
     /// </summary>
     public string units { get; set; }
-    
-    
+
+
     /// <inheritdoc/>
     public Vector()
     {
@@ -93,16 +92,16 @@ namespace Objects.Geometry
     /// <returns>A list of coordinates {x, y, z} </returns>
     public List<double> ToList()
     {
-      return new List<double>() { x, y, z };
+      return new List<double>() {x, y, z};
     }
-    
+
     /// <summary>
     /// Creates a new vector based on a list of coordinates and the unit they're drawn in.
     /// </summary>
     /// <param name="list">The list of coordinates {x, y, z}</param>
     /// <param name="units">The units the coordinates are in</param>
     /// <returns>A new <see cref="Vector"/> with the provided coordinates.</returns>
-    public static Vector FromList(List<double> list, string units) => new Vector(list[ 0 ], list[ 1 ], list[ 2 ], units);
+    public static Vector FromList(List<double> list, string units) => new Vector(list[0], list[1], list[2], units);
 
     /// <summary>
     /// The x coordinate of the vector.
@@ -118,7 +117,7 @@ namespace Objects.Geometry
     /// The z coordinate of the vector.
     /// </summary>
     public double z { get; set; }
-    
+
     /// <summary>
     /// Divides a vector by a numerical value. This will divide each coordinate by the provided value.
     /// </summary>
@@ -129,7 +128,7 @@ namespace Objects.Geometry
       vector.x / val,
       vector.y / val,
       vector.z / val, vector.units);
-    
+
     /// <summary>
     /// Multiplies a vector by a numerical value. This will multiply each coordinate by the provided value.
     /// </summary>
@@ -141,7 +140,7 @@ namespace Objects.Geometry
       vector.y * val,
       vector.z * val, vector.units
     );
-    
+
     /// <summary>
     /// Adds two vectors by adding each of their coordinates.
     /// </summary>
@@ -152,7 +151,7 @@ namespace Objects.Geometry
       vector1.x + vector2.x,
       vector1.y + vector2.y,
       vector1.z + vector2.z, vector1.units);
-    
+
     /// <summary>
     /// Subtracts two vectors by subtracting each of their coordinates.
     /// </summary>
@@ -196,15 +195,31 @@ namespace Objects.Geometry
       return new Vector(x, y, z);
     }
 
+    [Obsolete("Renamed to " + nameof(Vector.Normalize))]
+    public void Unitize() => Normalize();
+    
     /// <summary>
-    /// Divides this vector by it's euclidean length.
+    /// Compute and return a unit vector from this vector
     /// </summary>
-    public void Unitize()
+    /// <returns>a normalized unit vector</returns>
+    public void Normalize()
     {
-      var length = this.Length;
-      this.x /= length;
-      this.y /= length;
-      this.z /= length;
+      var length = Length;
+      x /= length;
+      y /= length;
+      z /= length;
+    }
+
+    /// <summary>
+    /// Inverses the direction of the vector, equivalent to multiplying by -1
+    /// </summary>
+    /// <returns>A pointing in the opposite direction</returns>
+    public Vector Negate()
+    {
+      x *= -1;
+      y *= -1;
+      z *= -1;
+      return this;
     }
 
     /// <summary>
