@@ -347,16 +347,16 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Zip installer
           command: |
-            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/
+            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/
             zip -r <<parameters.slug>>.zip ./
       - store_artifacts:
-          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/<<parameters.slug>>.zip
+          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip
       - run:
           name: Copy to installer location
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
+            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - when:
