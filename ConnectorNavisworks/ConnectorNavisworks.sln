@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33122.133
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterNavisworks", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworks.shproj", "{C3232EF3-2000-44C6-A330-B94531C9CC83}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2023", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2023\ConverterNavisworks2023.csproj", "{DFB950BC-E959-4A43-8B2A-4B8EC03C8C1C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2023", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks2023\ConverterNavisworks2023.csproj", "{DFB950BC-E959-4A43-8B2A-4B8EC03C8C1C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{5608C994-F66C-4E3A-B9A5-2D41481C2419}"
 EndProject
@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AvaloniaHwndHost", "..\Desk
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorNavisworks", "ConnectorNavisworks\ConnectorNavisworks.shproj", "{A517A609-CAB1-4B33-B83C-1B13B34E4560}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2023", "ConnectorNavisworks.2023\ConnectorNavisworks2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2023", "ConnectorNavisworks2023\ConnectorNavisworks2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterNavisworks", "ConverterNavisworks", "{09B8CBD5-94AC-4EB6-9B59-D830CE66F691}"
 EndProject
@@ -25,17 +25,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NavisworksVersions", "NavisworksVersions", "{95E1C221-D77A-4EA7-82DF-81A8A3794276}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2022", "ConnectorNavisworks.2022\ConnectorNavisworks2022.csproj", "{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2022", "ConnectorNavisworks2022\ConnectorNavisworks2022.csproj", "{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2021", "ConnectorNavisworks.2021\ConnectorNavisworks2021.csproj", "{DEBC2174-5E31-4B6E-8680-690D75E50E2D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2021", "ConnectorNavisworks2021\ConnectorNavisworks2021.csproj", "{DEBC2174-5E31-4B6E-8680-690D75E50E2D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2020", "ConnectorNavisworks.2020\ConnectorNavisworks2020.csproj", "{9A7D7F9A-4FE1-4053-950B-50B43BC81087}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2020", "ConnectorNavisworks2020\ConnectorNavisworks2020.csproj", "{9A7D7F9A-4FE1-4053-950B-50B43BC81087}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2020", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2020\ConverterNavisworks2020.csproj", "{FE762627-F1E3-47F7-AB6A-BB350AD4950A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2020", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks2020\ConverterNavisworks2020.csproj", "{FE762627-F1E3-47F7-AB6A-BB350AD4950A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2021", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2021\ConverterNavisworks2021.csproj", "{E93FD0BF-5ED4-46D4-A06A-AEDAA96B664D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2021", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks2021\ConverterNavisworks2021.csproj", "{E93FD0BF-5ED4-46D4-A06A-AEDAA96B664D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2022", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks.2022\ConverterNavisworks2022.csproj", "{632D9F4D-9FB7-4E2D-84F1-7B1AE063BC5E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2022", "..\Objects\Converters\ConverterNavisworks\ConverterNavisworks2022\ConverterNavisworks2022.csproj", "{632D9F4D-9FB7-4E2D-84F1-7B1AE063BC5E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
