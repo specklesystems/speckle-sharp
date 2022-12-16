@@ -155,6 +155,9 @@ namespace DesktopUI2.ViewModels
     {
       PreviewOn = false;
       Bindings.ResetDocument();
+      //if not a saved stream dispose client and subs
+      if (!HomeViewModel.Instance.SavedStreams.Any(x => x._guid == _guid))
+        Client.Dispose();
       MainViewModel.GoHome();
     }
 
