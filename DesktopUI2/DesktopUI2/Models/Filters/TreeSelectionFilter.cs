@@ -5,8 +5,6 @@ using System.Collections.ObjectModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using Autodesk.Navisworks.Gui;
-using DynamicData;
 using Speckle.Newtonsoft.Json;
 
 namespace DesktopUI2.Models.Filters

@@ -3,7 +3,6 @@ using Autodesk.Navisworks.Api.Interop;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using Color = System.Drawing.Color;
 

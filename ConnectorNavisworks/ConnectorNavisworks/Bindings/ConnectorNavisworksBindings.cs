@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.ConnectorNavisworks.Bindings
@@ -55,7 +53,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
     public override string GetHostAppNameVersion()
     {
       return Utils.VersionedAppName.Replace("Navisworks", "Navisworks ");
-      //hack for ADSK store;
     }
 
     public override string GetFileName()

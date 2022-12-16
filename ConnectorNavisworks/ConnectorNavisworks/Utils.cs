@@ -1,12 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
-using System.Xml.Linq;
 using Autodesk.Navisworks.Api;
 using Speckle.Core.Kits;
-using System.Drawing;
-using Console = Colorful.Console;
 using System.Runtime.CompilerServices;
 
 namespace Speckle.ConnectorNavisworks

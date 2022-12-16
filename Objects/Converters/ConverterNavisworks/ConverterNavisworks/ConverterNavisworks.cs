@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Autodesk.Navisworks.Api;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Objects.Other;
-using Objects.Primitive;
-using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
 using Version = System.Version;
 
 namespace Objects.Converter.Navisworks

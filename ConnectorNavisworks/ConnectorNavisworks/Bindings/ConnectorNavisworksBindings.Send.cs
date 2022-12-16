@@ -8,7 +8,6 @@ using Autodesk.Navisworks.Api.Interop;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using SkiaSharp;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
