@@ -61,9 +61,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Project>{2530aef3-2238-4166-9aac-f674e3b429b6}</Project>
       <Name>Core</Name>
