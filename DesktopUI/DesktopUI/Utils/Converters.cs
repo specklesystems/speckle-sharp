@@ -104,7 +104,7 @@ namespace Speckle.DesktopUI.Utils
     {
       var imgString = "";
 
-      switch ( value )
+      switch (value)
       {
         case null:
           return null;
@@ -116,12 +116,12 @@ namespace Speckle.DesktopUI.Utils
           break;
         case Account account:
           var client = new Client(account);
-          User userRes = new User();
+          LimitedUser userRes = new LimitedUser();
           try
           {
-            userRes = Task.Run(async () => ( await client.UserSearch(account.userInfo.email) ).FirstOrDefault()).Result;
+            userRes = Task.Run(async () => (await client.UserSearch(account.userInfo.email)).FirstOrDefault()).Result;
           }
-          catch ( Exception )
+          catch (Exception)
           {
             // server is offline
           }
@@ -131,13 +131,13 @@ namespace Speckle.DesktopUI.Utils
           throw new InvalidOperationException("Unrecognised type given to robot converter");
       }
 
-      if ( imgString.StartsWith("http") ) return imgString;
+      if (imgString.StartsWith("http")) return imgString;
       return StringToBitmap(imgString);
     }
 
     private BitmapImage StringToBitmap(string value)
     {
-      if ( !value.StartsWith("data:image/") ) return null;
+      if (!value.StartsWith("data:image/")) return null;
       var str = value.Split(',')[1];
       var img = new BitmapImage();
       img.BeginInit();

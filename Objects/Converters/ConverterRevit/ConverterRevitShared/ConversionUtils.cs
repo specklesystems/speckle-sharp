@@ -6,12 +6,15 @@ using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Speckle.Core.Helpers;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
+using Duct = Objects.BuiltElements.Duct;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -23,7 +26,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     #region hosted elements
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
@@ -45,6 +47,33 @@ namespace Objects.Converter.Revit
       }
       return true;
     }
+
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
+    {
+      //doesn't have a host, go ahead and convert
+      if (host == null)
+        return true;
+
+      // has been converted before (from a parent host), skip it
+      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+        return false;
+
+      // the parent is in our selection list,skip it, as this element will be converted by the host element
+      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      {
+        // there are certain elements in Revit that can be a host to another element
+        // yet not know it.
+        var hostedElementIds = GetDependentElementIds(host);
+        var elementId = element.Id;
+        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        {
+          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId };
+          ((dynamic)extraProps["speckleHost"])["category"] = host.Category.Name;
+        }
+        else return false;
+      }
+      return true;
+    }
     /// <summary>
     /// Gets the hosted element of a host and adds the to a Base object
     /// </summary>
@@ -53,7 +82,7 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
     {
       notes = new List<string>();
-      var hostedElementIds = host.FindInserts(true, false, false, false);
+      var hostedElementIds = GetDependentElementIds(host);
       var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
@@ -108,15 +137,31 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public ApplicationObject SetHostedElements(Base @base, HostObject host, ApplicationObject appObj)
+    public IList<ElementId> GetDependentElementIds(Element host)
     {
-      if (@base["elements"] != null && @base["elements"] is List<Base> elements)
+      if (host is HostObject hostObject)
+        return hostObject.FindInserts(true, false, false, false);
+
+      var typeFilter = new ElementIsElementTypeFilter(true);
+      var categoryFilter = new ElementMulticategoryFilter(
+        new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_SketchLines,
+          BuiltInCategory.OST_WeakDims
+        }, true);
+      return host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+    }
+
+    public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
+    {
+      if (@base != null && @base["elements"] != null && @base["elements"] is IList elements)
       {
         CurrentHostElement = host;
 
-        foreach (var obj in elements)
+        foreach (var el in elements)
         {
-          if (obj == null) continue;
+          if (el == null) continue;
+          if (!(el is Base obj)) continue;
 
           if (!CanConvertToNative(obj))
           {
@@ -207,7 +252,7 @@ namespace Objects.Converter.Revit
           speckleElement["category"] = category.Name;
         }
       }
-        
+
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -339,7 +384,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="revitElement"></param>
     /// <param name="speckleElement"></param>
-    public void SetInstanceParameters(Element revitElement, Base speckleElement)
+    public void SetInstanceParameters(Element revitElement, Base speckleElement, List<string> exclusions = null)
     {
       if (revitElement == null)
         return;
@@ -355,7 +400,11 @@ namespace Objects.Converter.Revit
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
       // so it's a much faster conversion. If we find that's not the case, we might need to change it in the future
-      var revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly);
+      IEnumerable<DB.Parameter> revitParameters = null;
+      if (exclusions == null)
+        revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly);
+      else
+        revitParameters = revitElement.ParametersMap.Cast<DB.Parameter>().Where(x => x != null && !x.IsReadOnly && !exclusions.Contains(GetParamInternalName(x)));
 
       // Here we are creating two  dictionaries for faster lookup
       // one uses the BuiltInName / GUID the other the name as Key
@@ -716,7 +765,7 @@ namespace Objects.Converter.Revit
         //eg: user sends some objects, moves them, receives them 
         element = Doc.GetElement(applicationId);
       }
-      else if(@ref.CreatedIds.Any())
+      else if (@ref.CreatedIds.Any())
       {
         //return the cached object, if it's still in the model
         element = Doc.GetElement(@ref.CreatedIds.First());
@@ -820,22 +869,15 @@ namespace Objects.Converter.Revit
         case ProjectBase:
           if (projectPoint != null)
           {
-#if REVIT2019
-            var point = projectPoint.get_BoundingBox(null).Min;
-#else
+
             var point = projectPoint.Position;
-#endif
             referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
           }
           break;
         case Survey:
           if (surveyPoint != null)
           {
-#if REVIT2019
-            var point = surveyPoint.get_BoundingBox(null).Min;
-#else
             var point = surveyPoint.Position;
-#endif
             var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
           }
@@ -946,7 +988,7 @@ namespace Objects.Converter.Revit
 
     public string GetTemplatePath(string templateName)
     {
-      var directoryPath = Path.Combine(Speckle.Core.Api.Helpers.UserSpeckleFolderPath, "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      var directoryPath = Path.Combine(SpecklePathProvider.ObjectsFolderPath, "Templates", "Revit", RevitVersionHelper.Version);
       string templatePath = "";
       switch (Doc.DisplayUnitSystem)
       {
@@ -1167,7 +1209,6 @@ namespace Objects.Converter.Revit
       }
     }
 
-
     public bool UnboundCurveIfSingle(DB.CurveArray array)
 
     {
@@ -1202,7 +1243,6 @@ namespace Objects.Converter.Revit
       curveArray.Append(b);
 
       return (a, b);
-
     }
 
     public class FallbackToDxfException : Exception

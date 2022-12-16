@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,16 +15,16 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      var floors = new List<Objects.BuiltElements.Archicad.Floor>();
-      foreach ( var el in elements )
+      var floors = new List<Objects.BuiltElements.Archicad.ArchicadFloor>();
+      foreach (var el in elements)
       {
-        switch ( el )
+        switch (el)
         {
-          case Objects.BuiltElements.Archicad.Floor archiFloor:
+          case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
             floors.Add(archiFloor);
             break;
-          case  Objects.BuiltElements.Floor floor:
-            floors.Add(new Objects.BuiltElements.Archicad.Floor
+          case Objects.BuiltElements.Floor floor:
+            floors.Add(new Objects.BuiltElements.Archicad.ArchicadFloor
             {
               shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
             });
@@ -46,13 +46,13 @@ namespace Archicad.Converters
         new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)), token);
 
       var floors = new List<Base>();
-      foreach ( var slab in data )
+      foreach (var slab in data)
       {
         slab.displayValue = Operations.ModelConverter.MeshesToSpeckle(elements
           .First(e => e.applicationId == slab.applicationId)
           .model);
         slab.outline = Utils.PolycurveToSpeckle(slab.shape.contourPolyline);
-        if ( slab.shape.holePolylines?.Count > 0 )
+        if (slab.shape.holePolylines?.Count > 0)
           slab.voids = new List<ICurve>(slab.shape.holePolylines.Select(Utils.PolycurveToSpeckle));
         floors.Add(slab);
       }

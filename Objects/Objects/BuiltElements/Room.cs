@@ -56,3 +56,17 @@ namespace Objects.BuiltElements
     }
   }
 }
+
+namespace Objects.BuiltElements.Archicad
+{
+  public class ArchicadRoom : BuiltElements.Room
+  {
+    public int? floorIndex { get; set; }
+
+    public double height { get; set; }
+
+    public ElementShape shape { get; set; }
+
+    public ArchicadRoom() { }
+  }
+}

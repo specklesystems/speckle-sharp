@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading;
-using System.Threading.Tasks;
-using NUnit.Framework;
+﻿using System.Diagnostics;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
@@ -26,9 +21,9 @@ namespace TestsIntegration.Subscriptions
     string streamId;
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
-      testUserAccount = Fixtures.SeedUser();
+      testUserAccount = await Fixtures.SeedUser();
       client = new Client(testUserAccount);
       myServerTransport = new ServerTransport(testUserAccount, null);
       myServerTransport.Api.CompressPayloads = false;
@@ -94,7 +89,7 @@ namespace TestsIntegration.Subscriptions
       {
         Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitCreatedInfo);
-        Assert.AreEqual(commitInput.message, CommitCreatedInfo.message);
+        Assert.That(CommitCreatedInfo.message, Is.EqualTo(commitInput.message));
       });
     }
 
@@ -126,7 +121,7 @@ namespace TestsIntegration.Subscriptions
       {
         Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitUpdatedInfo);
-        Assert.AreEqual(commitInput.message, CommitUpdatedInfo.message);
+        Assert.That(CommitUpdatedInfo.message, Is.EqualTo(commitInput.message));
       });
     }
 
@@ -157,7 +152,7 @@ namespace TestsIntegration.Subscriptions
       {
         Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitDeletedInfo);
-        Assert.AreEqual(commitId, CommitDeletedInfo.id);
+        Assert.That(CommitDeletedInfo.id, Is.EqualTo(commitId));
       });
     }
 

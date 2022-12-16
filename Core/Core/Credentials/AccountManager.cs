@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,6 +13,7 @@ using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -131,7 +131,7 @@ namespace Speckle.Core.Credentials
     {
       var defaultServerUrl = "https://speckle.xyz";
 
-      var customServerFile = Path.Combine(Helpers.UserSpeckleFolderPath, "server");
+      var customServerFile = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "server");
       if (File.Exists(customServerFile))
       {
         var customUrl = File.ReadAllText(customServerFile);
@@ -206,7 +206,7 @@ namespace Speckle.Core.Credentials
     private static IEnumerable<Account> GetLocalAccounts()
     {
       var accounts = new List<Account>();
-      var accountsDir = Path.Combine(Helpers.UserSpeckleFolderPath, "Accounts");
+      var accountsDir = SpecklePathProvider.AccountsFolderPath;
       if (!Directory.Exists(accountsDir))
       {
         return accounts;

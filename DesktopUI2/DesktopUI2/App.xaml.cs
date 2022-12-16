@@ -3,8 +3,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using DesktopUI2.ViewModels;
+using DesktopUI2.ViewModels.MappingTool;
 using DesktopUI2.Views;
 using Material.Styles.Themes;
+using Speckle.Core.Kits;
 
 namespace DesktopUI2
 {
@@ -18,8 +20,21 @@ namespace DesktopUI2
 
     public override void Initialize()
     {
+      //NOTE: the Mapping Tool is referencing Objects but we're not copying its dll from release and local builds
+      //this is because it could lead to versions incompatibilities
+      //the KitManager is invoked here to load Objects in the current AppDomain for us
+      try
+      {
+        var objects = KitManager.GetDefaultKit();
+      }
+      catch
+      {
+
+      }
+
+
       AvaloniaXamlLoader.Load(this);
-      this.Name = "Speckle";
+      Name = "Speckle";
     }
 
     public override void OnFrameworkInitializationCompleted()
@@ -31,10 +46,15 @@ namespace DesktopUI2
 
       if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
       {
-        desktop.MainWindow = new MainWindow
+        desktop.MainWindow = new MappingsWindow
         {
-          DataContext = new MainViewModel(),
+          DataContext = new MappingsViewModel(),
         };
+
+        //desktop.MainWindow = new MainWindow
+        //{
+        //  DataContext = new MainViewModel(),
+        //};
 
         //desktop.MainWindow = new Scheduler
         //{

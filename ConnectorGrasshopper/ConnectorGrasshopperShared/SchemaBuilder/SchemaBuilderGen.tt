@@ -1,0 +1,97 @@
+<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ output extension=".cs" #>
+<#@ assembly name="System.Core" #>
+<#@ assembly name="..\ConnectorGrasshopperUtils\bin\ConnectorGrasshopperUtils.dll" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.Collections" #>
+<#@ import namespace="System.Reflection" #>
+<#@ import namespace="ConnectorGrasshopperUtils" #>
+
+<#
+    var allTypes = CSOUtils.ListAvailableTypes();
+    var availableTypes = allTypes;
+    static Guid ToGuid(string src)
+    {
+        byte[] stringbytes = Encoding.UTF8.GetBytes(src);
+        byte[] hashedBytes = new System.Security.Cryptography
+            .SHA1CryptoServiceProvider()
+            .ComputeHash(stringbytes);
+        Array.Resize(ref hashedBytes, 16);
+        return new Guid(hashedBytes);
+    }
+#>
+
+using System;
+using System.Linq;
+using Grasshopper.Kernel;
+using ConnectorGrasshopperUtils;
+
+namespace ConnectorGrasshopper {
+<# foreach(Type sType in availableTypes) { #>
+<# 
+    var constructorInfos = CSOUtils.GetValidConstr(sType);
+    var i = 0;
+    foreach (var constructor in constructorInfos)
+    {
+        var compName = sType.Name + (i == 0 ? null : i) + "SchemaComponent";
+        i++;
+        var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
+        var depr = constructor.CustomAttributes.FirstOrDefault(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaDeprecated");
+        var name = attr.ConstructorArguments[0].Value;
+        var description = attr.ConstructorArguments[1].Value;
+        var cat = "Speckle 2 BIM";
+        var subcat = sType.Namespace;
+        if (attr.ConstructorArguments.Count > 2)
+        {
+            var catValue = attr.ConstructorArguments[2].Value;
+            cat = catValue != null ? "Speckle 2 " + catValue : "Speckle 2 BIM";
+            var subcatValue = attr.ConstructorArguments[3].Value;
+            subcat = subcatValue != null ? subcatValue as string : sType.Namespace;
+        }
+#>
+// This is generated code:
+public class <#= compName #>: CreateSchemaObjectBase {
+    static <#= compName #>() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
+    public <#= compName #>(): base("<#= name #>", "<#= name #>", "<#= description #>", "<#= cat #>", "<#= subcat #>") { }
+    
+    internal static string internalCategory { get; }  = "<#= cat #>";
+
+    internal static Guid internalGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
+
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
+<#
+    if (depr != null){
+#>
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+<#
+        } else {
+#>
+    public override GH_Exposure Exposure => internalExposure;
+<#
+        }
+#>
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("<#= CSOUtils.MethodFullName(constructor) #>","<#= constructor.DeclaringType.FullName #>");
+        base.AddedToDocument(document);
+    }
+}
+
+<# } } #>
+
+}

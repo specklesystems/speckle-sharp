@@ -86,16 +86,21 @@ namespace Speckle.Core.Api
 
     public void Dispose()
     {
-      UserStreamAddedSubscription?.Dispose();
-      UserStreamRemovedSubscription?.Dispose();
-      StreamUpdatedSubscription?.Dispose();
-      BranchCreatedSubscription?.Dispose();
-      BranchUpdatedSubscription?.Dispose();
-      BranchDeletedSubscription?.Dispose();
-      CommitCreatedSubscription?.Dispose();
-      CommitUpdatedSubscription?.Dispose();
-      CommitDeletedSubscription?.Dispose();
-      GQLClient?.Dispose();
+      try
+      {
+        UserStreamAddedSubscription?.Dispose();
+        UserStreamRemovedSubscription?.Dispose();
+        StreamUpdatedSubscription?.Dispose();
+        BranchCreatedSubscription?.Dispose();
+        BranchUpdatedSubscription?.Dispose();
+        BranchDeletedSubscription?.Dispose();
+        CommitCreatedSubscription?.Dispose();
+        CommitUpdatedSubscription?.Dispose();
+        CommitDeletedSubscription?.Dispose();
+        CommentActivitySubscription?.Dispose();
+        GQLClient?.Dispose();
+      }
+      catch { }
     }
   }
 }
