@@ -152,7 +152,7 @@ namespace Objects.Converter.Revit
     {
       Func<char, bool> releaseConvert = rel => rel == 'R';
 
-#if !REVIT2023
+#if REVIT2020 || REVIT2021 || REVIT2022
       var analyticalModel = (AnalyticalModelStick)element.GetAnalyticalModel();
       analyticalModel.SetReleases(true, releaseConvert(element1d.end1Releases.code[0]), releaseConvert(element1d.end1Releases.code[1]), releaseConvert(element1d.end1Releases.code[2]), releaseConvert(element1d.end1Releases.code[3]), releaseConvert(element1d.end1Releases.code[4]), releaseConvert(element1d.end1Releases.code[5]));
       analyticalModel.SetReleases(false, releaseConvert(element1d.end2Releases.code[0]), releaseConvert(element1d.end2Releases.code[1]), releaseConvert(element1d.end2Releases.code[2]), releaseConvert(element1d.end2Releases.code[3]), releaseConvert(element1d.end2Releases.code[4]), releaseConvert(element1d.end2Releases.code[5]));
@@ -167,7 +167,7 @@ namespace Objects.Converter.Revit
       //TODO Set offsets
 #endif
     }
-#if !REVIT2023
+#if REVIT2020 || REVIT2021 || REVIT2022
     private Element1D AnalyticalStickToSpeckle(AnalyticalModelStick revitStick)
     {
       if (!revitStick.IsEnabled())

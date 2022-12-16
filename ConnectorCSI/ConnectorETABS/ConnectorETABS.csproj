@@ -69,10 +69,6 @@
       <Project>{f6f813fc-153b-49fe-9b33-25152be85ba8}</Project>
       <Name>Objects</Name>
     </ProjectReference>
-    <ProjectReference Include="..\DriverCSharp\DriverCSharp.csproj">
-      <Project>{c091e499-597d-4077-b83f-08e069091090}</Project>
-      <Name>DriverCSharp</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj">
       <Project>{c59939f6-d383-44e3-a7ef-4e160e3dfb73}</Project>
       <Name>DriverPluginCSharp</Name>
@@ -95,12 +91,6 @@
       <Version>1.3.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Sentry">
-      <Version>3.20.1</Version>
-    </PackageReference>
-    <PackageReference Include="Speckle.Newtonsoft.Json">
-      <Version>12.0.3.1</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />

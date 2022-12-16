@@ -1,25 +1,23 @@
 ﻿using System.Diagnostics;
 using NUnit.Framework;
-using System;
-using Speckle.Core.Models;
 
 namespace Tests
 {
   [TestFixture]
   public class Hashing
   {
-    
+
     [Test(Description = "Checks that hashing (as represented by object ids) actually works.")]
     public void HashChangeCheck()
     {
       var table = new DiningTable();
       var secondTable = new DiningTable();
 
-      Assert.AreEqual(table.GetId(), secondTable.GetId());
+      Assert.That(secondTable.GetId(), Is.EqualTo(table.GetId()));
 
       ((dynamic)secondTable).testProp = "wonderful";
 
-      Assert.AreNotEqual(table.GetId(), secondTable.GetId());
+      Assert.That(secondTable.GetId(), Is.Not.EqualTo(table.GetId()));
     }
 
     [Test(Description = "Tests the convention that dynamic properties that have key names prepended with '__' are ignored.")]
@@ -30,7 +28,7 @@ namespace Tests
 
       ((dynamic)table).__testProp = "wonderful";
 
-      Assert.AreEqual(originalHash, table.GetId());
+      Assert.That(table.GetId(), Is.EqualTo(originalHash));
     }
 
     [Test(Description = "Rather stupid test as results vary wildly even on one machine.")]
@@ -64,7 +62,7 @@ namespace Tests
       Console.WriteLine($"Small obj hash duration: {diff2} ms");
     }
 
-    [Test(Description ="The hash of a decomposed object is different that that of a non-decomposed object.")]
+    [Test(Description = "The hash of a decomposed object is different that that of a non-decomposed object.")]
     public void DecompositionHashes()
     {
       var table = new DiningTable();
@@ -73,7 +71,7 @@ namespace Tests
       var hash1 = table.GetId();
       var hash2 = table.GetId(true);
 
-      Assert.AreNotEqual(hash1, hash2);
+      Assert.That(hash2, Is.Not.EqualTo(hash1));
     }
   }
 }

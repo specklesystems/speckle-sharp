@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Speckle.Core.Kits
 {
@@ -17,7 +15,7 @@ namespace Speckle.Core.Kits
     {
       get => _category;
     }
-    
+
     public virtual string Description
     {
       get { return _description; }
@@ -28,8 +26,8 @@ namespace Speckle.Core.Kits
       get { return _name; }
     }
 
-    public SchemaInfo(string name, string description): this(name,description,null,null){}
-    
+    public SchemaInfo(string name, string description) : this(name, description, null, null) { }
+
     public SchemaInfo(string name, string description, string category, string subcategory)
     {
       _name = name;
@@ -38,12 +36,12 @@ namespace Speckle.Core.Kits
       _subcategory = subcategory;
     }
   }
-  
+
   [AttributeUsage(AttributeTargets.Constructor)]
   public class SchemaDeprecated : Attribute
   {
   }
-  
+
   [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
   public class SchemaParamInfo : Attribute
   {

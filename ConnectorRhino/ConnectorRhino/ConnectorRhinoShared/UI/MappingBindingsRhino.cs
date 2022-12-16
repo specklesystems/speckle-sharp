@@ -185,14 +185,15 @@ namespace SpeckleRhino
 
     }
 
-    public override void ClearMappings()
+    public override void ClearMappings(List<string> ids)
     {
-      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-
-      foreach (var obj in selection)
+      foreach (var id in ids)
       {
         try
         {
+          var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
+          if (obj == null)
+            continue;
           obj.Attributes.DeleteUserString(SpeckleMappingKey);
           obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
         }
@@ -239,7 +240,9 @@ namespace SpeckleRhino
     {
       try
       {
+        RhinoDoc.ActiveDoc.Objects.UnselectAll();
         RhinoDoc.ActiveDoc.Objects.Select(ids.Select(x => Guid.Parse(x)));
+        RhinoDoc.ActiveDoc?.Views.Redraw();
       }
       catch (Exception ex)
       {

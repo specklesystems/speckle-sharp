@@ -14,29 +14,29 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public object updatePoint(Node speckleStructNode){
-      var csiNode = speckleStructNode.name;
-      var basePt = speckleStructNode.basePoint;
-      var GUID = "";
-      Model.PointObj.GetGUID(csiNode, ref GUID);
-      if (speckleStructNode.applicationId == GUID)
-      {
-        double xD = 0;
-        double yD = 0;
-        double zD = 0;
-        Model.PointObj.GetCoordCartesian(csiNode,ref  xD,ref  yD, ref zD);
-        Model.SelectObj.ClearSelection();
-        Model.PointObj.SetSelected(csiNode, true);
-        Model.EditGeneral.Move(speckleStructNode.basePoint.x-xD, speckleStructNode.basePoint.y- yD,  speckleStructNode.basePoint.z - zD);
-        updatePointProperties(speckleStructNode, csiNode);
-      }
-      else
-      {
-        PointToNative(speckleStructNode);
-      }
+    //public object updatePoint(Node speckleStructNode){
+    //  var csiNode = speckleStructNode.name;
+    //  var basePt = speckleStructNode.basePoint;
+    //  var GUID = "";
+    //  Model.PointObj.GetGUID(csiNode, ref GUID);
+    //  if (speckleStructNode.applicationId == GUID)
+    //  {
+    //    double xD = 0;
+    //    double yD = 0;
+    //    double zD = 0;
+    //    Model.PointObj.GetCoordCartesian(csiNode,ref  xD,ref  yD, ref zD);
+    //    Model.SelectObj.ClearSelection();
+    //    Model.PointObj.SetSelected(csiNode, true);
+    //    Model.EditGeneral.Move(speckleStructNode.basePoint.x-xD, speckleStructNode.basePoint.y- yD,  speckleStructNode.basePoint.z - zD);
+    //    updatePointProperties(speckleStructNode, csiNode);
+    //  }
+    //  else
+    //  {
+    //    PointToNative(speckleStructNode);
+    //  }
 
-      return speckleStructNode.name;
-    }
+    //  return speckleStructNode.name;
+    //}
 
     public void updatePointProperties(Node speckleStructNode, string name){
       var point = speckleStructNode.basePoint;
@@ -76,15 +76,21 @@ namespace Objects.Converter.CSI
 
       }
     }
-    public object PointToNative(Node speckleStructNode)
+    public void PointToNative(Node speckleStructNode, ref ApplicationObject appObj)
     {
       if (GetAllPointNames(Model).Contains(speckleStructNode.name))
       {
-        return null;
+        appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"node with name {speckleStructNode.name} already exists");
+        return;
       }
       var point = speckleStructNode.basePoint;
+      if (point == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Node does not have a valid location");
+        return;
+      }
       string name = ""; 
-      Model.PointObj.AddCartesian(
+      var success = Model.PointObj.AddCartesian(
        ScaleToNative(point.x, point.units),
        ScaleToNative(point.y, point.units),
        ScaleToNative(point.z, point.units),
@@ -92,7 +98,10 @@ namespace Objects.Converter.CSI
      );
       updatePointProperties(speckleStructNode, name);
 
-      return speckleStructNode.name;
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: speckleStructNode.name);
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
     public CSINode PointToSpeckle(string name)
     {
