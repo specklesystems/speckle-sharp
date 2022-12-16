@@ -290,9 +290,6 @@
     <Compile Update="Views\Filters\AllFilterView.xaml.cs">
       <DependentUpon>AllFilterView.xaml</DependentUpon>
     </Compile>
-    <Compile Update="Views\Filters\ListFilterView - Copy.xaml.cs">
-      <DependentUpon>ListFilterView.xaml</DependentUpon>
-    </Compile>
     <Compile Update="Views\Filters\ListFilterView.xaml.cs">
       <DependentUpon>ListFilterView.xaml</DependentUpon>
     </Compile>
@@ -401,10 +398,5 @@
       <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
 			<PrivateAssets>all</PrivateAssets>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="navisworks.gui.common">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\navisworks.gui.common.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
