@@ -31,8 +31,9 @@
 		<Configurations>Debug;Release</Configurations>
 
 		<NavisworksBuildNumber>v18</NavisworksBuildNumber>
-		<NavisworksApiPath>C:\Program Files\Autodesk\Navisworks Manage 2021</NavisworksApiPath>
+		<NavisworksVersion>2021</NavisworksVersion>
 		<PluginBundleTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle</PluginBundleTarget>
+		<PluginVersionContentTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle\Contents\$(NavisworksBuildNumber)</PluginVersionContentTarget>
 		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
@@ -61,42 +62,6 @@
 
 	<!-- Includes -->
 	<Import Project="..\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems" Label="Shared" />
-
-	<!-- Post Builds -->
-	<PropertyGroup>
-		<PostBuildEvent>
-			@echo off
-			echo Check for existing bundle build
-			IF EXIST "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)" (
-			echo $(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\ exists
-			echo Remove Existing Bundle Build
-			rmdir /S /Q "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)"
-			)
-
-			echo(
-			echo Write Plugin DLL
-			xcopy /Y "$(TargetPath)" "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\"
-
-			echo(
-			echo Package Content File
-			xcopy /Y "$(TargetDir)Entry\PackageContents.xml" "$(PluginBundleTarget)\"
-
-			echo(
-			echo Copy UI Resources
-			mkdir "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\en-US
-			copy /Y "$(TargetDir)Entry\Ribbon.xaml" "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\en-US\"
-			copy /Y "$(TargetDir)Entry\Ribbon.name" "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\en-US\"
-
-			echo(
-			echo Copy Resources
-			mkdir "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\Resources
-			copy /Y "$(TargetDir)Resources\*.*" "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\Resources\"
-
-			echo(
-			echo Copy Dependencies
-			xcopy /Y "$(TargetDir)*.dll" "$(PluginBundleTarget)\Contents\$(NavisworksBuildNumber)\"
-		</PostBuildEvent>
-	</PropertyGroup>
 
 	<!-- NUGETS -->
 	<ItemGroup>
@@ -176,4 +141,18 @@
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
+
+	<!-- Post Builds -->
+	<PropertyGroup>
+		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' ">
+			if exist "$(PluginVersionContentTarget)" ( rmdir /S /Q "$(PluginVersionContentTarget)" )
+			xcopy /y "$(TargetDir)Entry\PackageContents.xml" "$(PluginBundleTarget)\"
+			xcopy /e /i /y "$(TargetDir)*.*" "$(PluginVersionContentTarget)\"
+		</PostBuildEvent>
+
+		<PostBuildEvent Condition=" '$(Configuration)' == 'Release' ">
+			echo RELEASE copy from $(TargetDir) to $(SolutionDir)Release\Release\$(NavisworksVersion)\"
+			xcopy /e /i /y "$(TargetDir)*.*" "$(SolutionDir)Release\Release$(NavisworksVersion)\"
+		</PostBuildEvent>
+	</PropertyGroup>
 </Project>
