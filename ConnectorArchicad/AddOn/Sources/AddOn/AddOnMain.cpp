@@ -77,6 +77,7 @@ private:
 #else
 		static const char* FileName = "ConnectorArchicad.exe";
 #endif
+		static const char* FolderNameCommon = "Common";
 		static const char* FolderName = "ConnectorArchicad";
 
 		IO::Location ownFileLoc;
@@ -87,6 +88,9 @@ private:
 
 		IO::Location location (ownFileLoc);
 		location.DeleteLastLocalName ();
+		location.DeleteLastLocalName ();
+		location.DeleteLastLocalName ();
+		location.AppendToLocal (IO::Name (FolderNameCommon));
 		location.AppendToLocal (IO::Name (FolderName));
 		location.AppendToLocal (IO::Name (FileName));
 

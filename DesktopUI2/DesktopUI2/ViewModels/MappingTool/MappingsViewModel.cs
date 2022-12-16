@@ -1,5 +1,8 @@
-﻿using Avalonia.Metadata;
+﻿using Avalonia.Controls;
+using Avalonia.Metadata;
+using Avalonia.VisualTree;
 using DesktopUI2.Models;
+using DesktopUI2.Views;
 using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -365,10 +368,32 @@ namespace DesktopUI2.ViewModels.MappingTool
       Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Set" }, { "schema", SelectedSchema.Name } });
     }
 
+    /// <summary>
+    /// Returns the ids of the extiging mapping elements that have been checked
+    /// A bit hacky but it was complicated to set a Binding working across multiple ListBoxes
+    /// </summary>
+    /// <returns></returns>
+    private List<string> GetCheckedBoxesIds()
+    {
+      var ids = new List<string>();
+      var lBoxes = MappingsControl.Instance.GetVisualDescendants().OfType<ListBox>().Where(x => x.Classes.Contains("ExistingMapping"));
+      foreach (var lBox in lBoxes)
+      {
+        ids.AddRange(lBox.SelectedItems.Cast<Schema>().Where(x => x != null).Select(x => x.ApplicationId));
+      }
+      return ids;
+    }
+
     public void ClearMappingsCommand()
     {
-      Bindings.ClearMappings();
+      Bindings.ClearMappings(GetCheckedBoxesIds());
       Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Clear" } });
+    }
+
+    public void SelectElementsCommandCommand()
+    {
+      Bindings.SelectElements(GetCheckedBoxesIds());
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Select Elements" } });
     }
 
 
