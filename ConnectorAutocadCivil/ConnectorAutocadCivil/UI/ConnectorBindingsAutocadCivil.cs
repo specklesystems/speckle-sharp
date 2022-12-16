@@ -7,6 +7,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using Newtonsoft.Json;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
 using Speckle.Core.Api;
@@ -21,6 +22,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using static DesktopUI2.ViewModels.MappingViewModel;
+using static Speckle.ConnectorAutocadCivil.Utils;
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -335,7 +337,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           conversionProgressDict["Conversion"] = 0;
 
           // create a commit prefix: used for layers and block definition names
-          var commitPrefix = Formatting.CommitInfo(stream.name, state.BranchName, id);
+          var commitPrefix = DesktopUI2.Formatting.CommitInfo(stream.name, state.BranchName, id);
 
           // give converter a way to access the commit info
           if (Doc.UserData.ContainsKey("commit"))
@@ -427,6 +429,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             return;
 
           // add applicationID xdata before bake
+          var fileNameHash = GetDocumentId();
           var regAppTable = (RegAppTable)tr.GetObject(Doc.Database.RegAppTableId, OpenMode.ForRead);
           if (!regAppTable.Has(ApplicationIdKey))
           {
@@ -453,7 +456,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             switch (state.ReceiveMode)
             {
               case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-                existingObjs = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
+                existingObjs = ApplicationIdManager.GetObjectsByApplicationId(Doc, tr, commitObj.applicationId, fileNameHash);
                 break;
               default:
                 layer = $"{commitPrefix}${commitObj.Container}";
@@ -654,15 +657,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
                 // set application id
                 var appId = parent != null ? parent.applicationId : obj.applicationId;
-                try
+                var newObj = tr.GetObject(res, OpenMode.ForWrite);
+                if (!SetApplicationId(newObj, appId, out appId))
                 {
-                  var rb = new ResultBuffer(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), new TypedValue(1000, appId));
-                  var newObj = tr.GetObject(res, OpenMode.ForWrite);
-                  newObj.XData = rb;
-                }
-                catch (Exception e)
-                {
-                  appObj.Log.Add($"Could not attach applicationId: {e.Message}");
+                  appObj.Log.Add($"Could not attach applicationId xdata");
                 }
 
                 tr.TransactionManager.QueueForGraphicsFlush();
@@ -941,6 +939,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
         var conversionProgressDict = new ConcurrentDictionary<string, int>();
         conversionProgressDict["Conversion"] = 0;
 
+        // get the hash of the file name to create a more unique application id
+        var fileNameHash = GetDocumentId();
+
         foreach (var autocadObjectHandle in state.SelectedObjectIds)
         {
           // handle user cancellation
@@ -957,7 +958,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
           if (Utils.GetHandle(autocadObjectHandle, out Handle hn))
           {
             obj = hn.GetObject(tr, out string type, out layer, out applicationId);
-            if (applicationId == null) { applicationId = autocadObjectHandle; }
           }
           else
           {
@@ -1010,6 +1010,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
             ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
             // set application id
+            if (applicationId == null) // this object didn't have an xdata appId field
+            {
+              if (!SetApplicationId(obj, autocadObjectHandle, out applicationId, fileNameHash))
+              {
+                reportObj.Log.Add("Could not set application id xdata");
+              }
+            }
             converted.applicationId = applicationId;
 
             // update progress
@@ -1054,6 +1061,31 @@ namespace Speckle.ConnectorAutocadCivil.UI
           return selection;
       }
       return selection;
+    }
+   
+    /// <summary>
+    /// Attaches a custom application Id to an object's application id xdata using the has of the file name.
+    /// This is used because the persistent id of the db object in the file is almost guaranteed to not be unique between files
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <param name="handle"></param>
+    /// <returns></returns>
+    private bool SetApplicationId(DBObject obj, string id, out string applicationId, string fileNameHash = null)
+    {
+      applicationId = fileNameHash == null ? id : $"{fileNameHash}-{id}";
+      var rb = new ResultBuffer(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), new TypedValue(1000, applicationId));
+      
+      try
+      {
+        if (!obj.IsWriteEnabled) obj.UpgradeOpen();
+        obj.XData = rb;
+      }
+      catch (Exception e)
+      {
+        return false;
+      }
+
+      return true;
     }
     #endregion
 
