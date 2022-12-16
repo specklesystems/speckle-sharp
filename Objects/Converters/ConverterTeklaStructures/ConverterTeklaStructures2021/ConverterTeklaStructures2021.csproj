@@ -18,8 +18,8 @@
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent"  Condition="'$(IsDesktopBuild)' == true">
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(ALLUSERSPROFILE)\Speckle\Kits\Objects\&quot;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)\Objects.dll&quot; &quot;$(ALLUSERSPROFILE)\Speckle\Kits\Objects\&quot;" />
   </Target>
 
   <ItemGroup>
