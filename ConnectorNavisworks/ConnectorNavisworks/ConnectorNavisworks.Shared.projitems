@@ -9,14 +9,14 @@
     <Import_RootNamespace>Speckle.ConnectorNavisworks</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Objects.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Filters.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Selections.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_File.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Mapping.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Receive.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Send.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings_Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Objects.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Filters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Selections.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.File.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Mapping.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Receive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Commands\Commands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
