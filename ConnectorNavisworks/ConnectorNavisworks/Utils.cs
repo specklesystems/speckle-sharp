@@ -41,14 +41,14 @@ namespace Speckle.ConnectorNavisworks
     public static string ApplicationIdKey = "applicationId";
 
 
-    public static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue, string hex = "#3b82f6")
+    public static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue)
     {
-      Console.WriteLine(message, color: ColorTranslator.FromHtml(hex));
+      Console.WriteLine(message, color);
     }
 
     public static void WarnLog(string warningMessage)
     {
-      ConsoleLog(warningMessage, hex: "#f59e0b");
+      ConsoleLog(warningMessage, color: ConsoleColor.DarkYellow);
     }
 
     public static void ErrorLog(Exception err)
@@ -57,7 +57,7 @@ namespace Speckle.ConnectorNavisworks
       throw err;
     }
 
-    public static void ErrorLog(string errorMessage) => ConsoleLog(errorMessage, hex: "#ef4444");
+    public static void ErrorLog(string errorMessage) => ConsoleLog(errorMessage, ConsoleColor.DarkRed);
 
 
     public static string GetUnits(Document doc)
