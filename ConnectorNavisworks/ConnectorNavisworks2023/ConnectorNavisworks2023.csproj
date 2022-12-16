@@ -100,7 +100,6 @@
 
 	<!-- NUGETS -->
 	<ItemGroup>
-	  <PackageReference Include="Colorful.Console" Version="1.2.15" />
 	  <PackageReference Include="Speckle.Navisworks.API" Version="2023.0.0" />
 	</ItemGroup>
 
