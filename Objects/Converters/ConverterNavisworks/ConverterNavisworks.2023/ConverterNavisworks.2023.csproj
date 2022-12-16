@@ -4,6 +4,7 @@
 		<Title>SpeckleConverterNavisworks</Title>
 		<AssemblyName>Objects.Converter.Navisworks2023</AssemblyName>
 		<RootNamespace>Objects.Converter.Navisworks</RootNamespace>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -31,6 +32,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Colorful.Console" Version="1.2.15" />
+		<PackageReference Include="Speckle.Navisworks.API" Version="2023.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -38,35 +40,7 @@
 		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<Reference Include="AdWindows">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\AdWindows.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Api">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\Autodesk.Navisworks.Api.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Clash">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\Autodesk.Navisworks.Clash.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.ComApi">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\Autodesk.Navisworks.ComApi.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Controls">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\Autodesk.Navisworks.Controls.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Interop.ComApi">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\Autodesk.Navisworks.Interop.ComApi.dll</HintPath>
-		</Reference>
-		<Reference Include="navisworks.gui.common">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\navisworks.gui.common.dll</HintPath>
-		</Reference>
-		<Reference Include="navisworks.gui.interface">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\navisworks.gui.interface.dll</HintPath>
-		</Reference>
-		<Reference Include="navisworks.gui.roamer">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2023\navisworks.gui.roamer.dll</HintPath>
-		</Reference>
-	</ItemGroup>
+	
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />

@@ -4,6 +4,7 @@
 		<Title>SpeckleConverterNavisworks</Title>
 		<AssemblyName>Objects.Converter.Navisworks2020</AssemblyName>
 		<RootNamespace>Objects.Converter.Navisworks</RootNamespace>
+		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -31,6 +32,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Colorful.Console" Version="1.2.15" />
+		<PackageReference Include="Speckle.Navisworks.API" Version="2020.0.0" />
 	</ItemGroup>
 
 	<ItemGroup>

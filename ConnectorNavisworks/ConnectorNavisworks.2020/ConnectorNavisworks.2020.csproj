@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 
+<!--EXTERNAL_PROPERTIES: AppData-->
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
 	<!-- Project Config -->
@@ -31,6 +32,7 @@
 
 		<NavisworksBuildNumber>v17</NavisworksBuildNumber>
 		<NavisworksApiPath>C:\Program Files\Autodesk\Navisworks Manage 2020</NavisworksApiPath>
+	
 		<PluginBundleTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle</PluginBundleTarget>
 		<Platforms>AnyCPU;x64</Platforms>
 	</PropertyGroup>
@@ -100,57 +102,18 @@
 	<!-- NUGETS -->
 	<ItemGroup>
 	  <PackageReference Include="Colorful.Console" Version="1.2.15" />
+	  <PackageReference Include="Speckle.Navisworks.API" Version="2020.0.0" />
 	</ItemGroup>
 
 	<!--- Local Project Dependencies -->
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Core\Core\Core.csproj" />
 	  <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+	  <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
 	</ItemGroup>
 
 	<!-- References -->
 	<ItemGroup>
-		<Reference Include="AdWindows">
-			<HintPath>$(NavisworksApiPath)\AdWindows.dll</HintPath>
-			<Private>False</Private>
-			<Aliases>global</Aliases>
-			<EmbedInteropTypes>False</EmbedInteropTypes>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Api">
-			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.Api.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Clash">
-			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.Clash.dll</HintPath>
-			<Private>True</Private>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.ComApi">
-			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.ComApi.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Controls">
-			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.Controls.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Interop.ComApi">
-			<HintPath>$(NavisworksApiPath)\Autodesk.Navisworks.Interop.ComApi.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="AvaloniaHwndHost">
-		  <HintPath>..\..\DesktopUI2\AvaloniaHwndHost\bin\Debug\net48\AvaloniaHwndHost.dll</HintPath>
-		</Reference>
-		<Reference Include="navisworks.gui.common">
-			<HintPath>$(NavisworksApiPath)\navisworks.gui.common.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="navisworks.gui.interface">
-			<HintPath>$(NavisworksApiPath)\navisworks.gui.interface.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
-		<Reference Include="navisworks.gui.roamer">
-			<HintPath>$(NavisworksApiPath)\navisworks.gui.roamer.dll</HintPath>
-			<Private>False</Private>
-		</Reference>
 		<Reference Include="System.ComponentModel.Composition">
 		  <Private>False</Private>
 		</Reference>
