@@ -1,4 +1,5 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!--EXTERNAL_PROPERTIES: AppData;AppData-->
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<Title>SpeckleConverterNavisworks</Title>
@@ -38,36 +39,6 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
 		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<Reference Include="AdWindows">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\AdWindows.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Api">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\Autodesk.Navisworks.Api.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Clash">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\Autodesk.Navisworks.Clash.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.ComApi">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\Autodesk.Navisworks.ComApi.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Controls">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\Autodesk.Navisworks.Controls.dll</HintPath>
-		</Reference>
-		<Reference Include="Autodesk.Navisworks.Interop.ComApi">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\Autodesk.Navisworks.Interop.ComApi.dll</HintPath>
-		</Reference>
-		<Reference Include="navisworks.gui.common">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\navisworks.gui.common.dll</HintPath>
-		</Reference>
-		<Reference Include="navisworks.gui.interface">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\navisworks.gui.interface.dll</HintPath>
-		</Reference>
-		<Reference Include="navisworks.gui.roamer">
-			<HintPath>..\..\..\..\..\..\..\..\..\..\Program Files\Autodesk\Navisworks Manage 2020\navisworks.gui.roamer.dll</HintPath>
-		</Reference>
 	</ItemGroup>
 
 	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
