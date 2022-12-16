@@ -147,6 +147,7 @@
 		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' ">
 			if exist "$(PluginVersionContentTarget)" ( rmdir /S /Q "$(PluginVersionContentTarget)" )
 			xcopy /y "$(TargetDir)Entry\PackageContents.xml" "$(PluginBundleTarget)\"
+			xcopy /y "$(TargetDir)Entry\Ribbon.*" "$(PluginVersionContentTarget)\en-US\"
 			xcopy /e /i /y "$(TargetDir)*.*" "$(PluginVersionContentTarget)\"
 		</PostBuildEvent>
 
