@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.ConnectorNavisworks.Bindings
@@ -12,11 +14,22 @@ namespace Speckle.ConnectorNavisworks.Bindings
   {
     // Much of the interaction in Navisworks is through the ActiveDocument API
     public static Document Doc;
+    public System.Windows.Forms.Control Control;
+    public ISpeckleKit DefaultKit;
+    public ISpeckleConverter NavisworksConverter;
 
     public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
     {
       Doc = navisworksActiveDocument;
       SavedSets = Doc.SelectionSets.ToSavedItemCollection();
+
+      // Sets the Main Thread Control to Invoke commands on.
+      Control = new System.Windows.Forms.Control();
+      Control.CreateControl();
+
+      // Kits won't change during the lifecycle of Navisworks.
+      DefaultKit = KitManager.GetDefaultKit();
+      NavisworksConverter = DefaultKit?.LoadConverter(Utils.VersionedAppName);
     }
 
     // Majority of interaction with Speckle will be through the saved selection and search Sets
@@ -28,12 +41,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return "Entire Document";
     }
 
-
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
       return new List<MenuItem>();
     }
-
 
     public override string GetHostAppName()
     {

@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
-using Autodesk.Navisworks.Gui;
+using Autodesk.Navisworks.Api;
+using Autodesk.Navisworks.Api.Interop;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using SkiaSharp;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using static Autodesk.Navisworks.Api.Interop.LcOpRegistry;
+using static Autodesk.Navisworks.Api.Interop.LcUOption;
+using static Speckle.ConnectorNavisworks.Utils;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
@@ -31,33 +35,31 @@ namespace Speckle.ConnectorNavisworks.Bindings
       // TODO!
     }
 
+
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       List<string> filteredObjects = new List<string>();
 
-      // check for converter
-      ISpeckleKit defaultKit = KitManager.GetDefaultKit();
-      if (defaultKit == null)
+      if (DefaultKit == null)
       {
         progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
         return null;
       }
 
-      ISpeckleConverter converter = defaultKit.LoadConverter(Utils.VersionedAppName);
-      if (converter == null)
+      if (NavisworksConverter == null)
       {
-        progress.Report.LogOperationError(new SpeckleException($"Could not find Converter{Utils.VersionedAppName}!"));
+        progress.Report.LogOperationError(new SpeckleException($"Could not find Converter{VersionedAppName}!"));
         return null;
       }
 
-      converter.Report.ReportObjects.Clear();
+      NavisworksConverter.Report.ReportObjects.Clear();
 
       CurrentSettings = state.Settings;
 
       Dictionary<string, string> settings =
         state.Settings.ToDictionary(setting => setting.Slug, setting => setting.Selection);
 
-      converter.SetConverterSettings(settings);
+      NavisworksConverter.SetConverterSettings(settings);
 
       string streamId = state.StreamId;
       Client client = state.Client;
@@ -86,7 +88,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       Base commitObject = new Base
       {
-        ["units"] = Utils.GetUnits(Doc)
+        ["units"] = GetUnits(Doc)
       };
 
       int convertedCount = 0;
@@ -95,10 +97,41 @@ namespace Speckle.ConnectorNavisworks.Bindings
       SortedDictionary<string, bool> toConvertDictionary = new SortedDictionary<string, bool>(new PseudoIdComparer());
       state.SelectedObjectIds.ForEach(x => toConvertDictionary.Add(x, false));
 
-      while (toConvertDictionary.Any((kv) => kv.Value == false))
+      Progress progressBar = Application.BeginProgress($"Sending {state.SelectedObjectIds.Count} Objects to Speckle.");
+      progressBar.Update(0);
+
+
+      // We have to disable autosave because it explodes everything if it tries saving mid send process.
+      bool autosaveSetting = false;
+
+      using (LcUOptionLock optionLock = new LcUOptionLock())
       {
+        LcUOptionSet rootOptions = GetRoot(optionLock);
+        autosaveSetting = rootOptions.GetBoolean("general.autosave.enable");
+        if (autosaveSetting)
+        {
+          rootOptions.SetBoolean("general.autosave.enable", false);
+          SaveGlobalOptions();
+        }
+      }
+
+      while (toConvertDictionary.Any(kv => kv.Value == false))
+      {
+        double navisworksProgressState = (float)progress.Value / progress.Max;
+        progressBar.Update(navisworksProgressState);
+
+        if (progressBar.IsCanceled)
+        {
+          progress.CancellationTokenSource.Cancel();
+          progressBar.Cancel();
+          Application.EndProgress();
+          return null;
+        }
+
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
+          progressBar.Cancel();
+          Application.EndProgress();
           return null;
         }
 
@@ -115,7 +148,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
         var pseudoId = nextToConvert.Key;
 
-        if (!converter.CanConvertToSpeckle(pseudoId))
+        if (!NavisworksConverter.CanConvertToSpeckle(pseudoId))
         {
           reportObject.Update(status: ApplicationObject.State.Skipped,
             logItem: $"Sending this object type is not supported in Navisworks");
@@ -126,8 +159,17 @@ namespace Speckle.ConnectorNavisworks.Bindings
           continue;
         }
 
-        converter.Report.Log(reportObject);
-        converted = converter.ConvertToSpeckle(pseudoId);
+        NavisworksConverter.Report.Log(reportObject);
+
+        // All Conversions should be on the main thread
+        if (Control.InvokeRequired)
+        {
+          Control.Invoke(new Action(() => converted = NavisworksConverter.ConvertToSpeckle(pseudoId)));
+        }
+        else
+        {
+          converted = NavisworksConverter.ConvertToSpeckle(pseudoId);
+        }
 
         if (converted == null)
         {
@@ -144,7 +186,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
         ((List<Base>)commitObject[$"@Elements"]).Add(converted);
 
         // carries the pseudoIds of nested children already converted
-        var convertedChildrenAndSelf = (converted["__convertedIds"] as List<string>);
+        if (!(converted["__convertedIds"] is List<string> convertedChildrenAndSelf)) continue;
 
         convertedChildrenAndSelf.ForEach(x => toConvertDictionary[x] = true);
         conversionProgressDict["Conversion"] += convertedChildrenAndSelf.Count;
@@ -165,7 +207,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
         convertedCount += convertedChildrenAndSelf.Count;
       }
 
-      progress.Report.Merge(converter.Report);
+      progressBar.Update(1.0);
+
+      // Better set the users autosave back on or they might get cross
+      if (autosaveSetting)
+      {
+        using (LcUOptionLock optionLock = new LcUOptionLock())
+        {
+          LcUOptionSet rootOptions = GetRoot(optionLock);
+          rootOptions.SetBoolean("general.autosave.enable", true);
+          SaveGlobalOptions();
+        }
+      }
+
+      Application.EndProgress();
+      progressBar.Dispose();
+
+      progress.Report.Merge(NavisworksConverter.Report);
 
       if (convertedCount == 0)
       {

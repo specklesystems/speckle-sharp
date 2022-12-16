@@ -48,10 +48,7 @@ namespace Objects.Converter.Navisworks
 
     public Document Doc { get; private set; }
 
-    public IEnumerable<string> GetServicedApplications()
-    {
-      return new[] { VersionedAppName };
-    }
+    IEnumerable<string> ISpeckleConverter.GetServicedApplications() => new[] { VersionedAppName };
 
     /// <summary>
     /// Sets the application document that the converter is targeting
