@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>a517a609-cab1-4b33-b83c-1b13b34e4560</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Speckle.ConnectorNavisworks</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Objects.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Filters.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Selections.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.File.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Mapping.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Receive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Commands\Commands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\Ribbon.xaml.cs">
+      <DependentUpon>Ribbon.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleHostPane.xaml.cs">
+      <DependentUpon>SpeckleHostPane.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\forum16.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\forum32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="$(MSBuildThisFileDirectory)Entry\PackageContents.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\logo16.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\logo16.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\logo32.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\logo32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Entry\Ribbon.name">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Entry\Ribbon.xaml">
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)Commands\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)Entry\SpeckleHostPane.xaml">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+      <Generator>XamlIntelliSenseFileGenerator</Generator>
+    </Page>
+  </ItemGroup>
+</Project>

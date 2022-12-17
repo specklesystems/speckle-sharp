@@ -20,9 +20,9 @@ namespace TestsIntegration.Subscriptions
     string streamId;
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
-      testUserAccount = Fixtures.SeedUser();
+      testUserAccount = await Fixtures.SeedUser();
       client = new Client(testUserAccount);
     }
 
@@ -50,13 +50,14 @@ namespace TestsIntegration.Subscriptions
         streamId = streamId
       };
 
-      branchId  = await client.BranchCreate(branchInput);
+      branchId = await client.BranchCreate(branchInput);
       Assert.NotNull(branchId);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(BranchCreatedInfo);
-        Assert.AreEqual(branchInput.name, BranchCreatedInfo.name);
+        Assert.That(BranchCreatedInfo.name, Is.EqualTo(branchInput.name));
       });
     }
 
@@ -84,10 +85,11 @@ namespace TestsIntegration.Subscriptions
       var res = await client.BranchUpdate(branchInput);
       Assert.True(res);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(BranchUpdatedInfo);
-        Assert.AreEqual(branchInput.name, BranchUpdatedInfo.name);
+        Assert.That(BranchUpdatedInfo.name, Is.EqualTo(branchInput.name));
       });
     }
 
@@ -113,10 +115,11 @@ namespace TestsIntegration.Subscriptions
       var res = await client.BranchDelete(branchInput);
       Assert.True(res);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(BranchDeletedInfo);
-        Assert.AreEqual(branchId, BranchDeletedInfo.id);
+        Assert.That(BranchDeletedInfo.id, Is.EqualTo(branchId));
       });
     }
 

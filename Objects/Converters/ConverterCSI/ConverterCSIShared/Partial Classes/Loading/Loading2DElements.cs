@@ -16,33 +16,37 @@ namespace Objects.Converter.CSI
     Dictionary<string, List<Base>> AreaStoring = new Dictionary<string, List<Base>>();
     int counterAreaLoadUniform = 0;
     int counterAreaLoadWind = 0;
-    void LoadFaceToNative(LoadFace loadFace)
+    void LoadFaceToNative(LoadFace loadFace, ref ApplicationObject appObj)
     {
       foreach (Element2D element in loadFace.elements)
       {
         string elementName = null;
-        if (element.name != null) { elementName = element.name; }
-        else { elementName = element.id; }
-        if (loadFace.loadType == FaceLoadType.Constant)
+        if (element.name != null) 
+          elementName = element.name;
+        else 
+          elementName = element.id;
+
+        if (loadFace.loadType != FaceLoadType.Constant) // TODO: support other load types
+          continue;
+
+        int? success = null;
+        switch (loadFace.direction)
         {
-
-
-          switch (loadFace.direction)
-          {
-
-
-            case LoadDirection2D.X:
-
-              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 4);
-              break;
-            case LoadDirection2D.Y:
-              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 5);
-              break;
-            case LoadDirection2D.Z:
-              Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 6);
-              break;
-          }
+          case LoadDirection2D.X:
+            success = Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 4);
+            break;
+          case LoadDirection2D.Y:
+            success = Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 5);
+            break;
+          case LoadDirection2D.Z:
+            success = Model.AreaObj.SetLoadUniform(elementName, loadFace.loadCase.name, loadFace.values[0], 6);
+            break;
         }
+
+        if (success == 0)
+          appObj.Update(status: ApplicationObject.State.Created, createdId: $"{loadFace.name}");
+        else
+          appObj.Update(status: ApplicationObject.State.Failed);
       }
     }
 

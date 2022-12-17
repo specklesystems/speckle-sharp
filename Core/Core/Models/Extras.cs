@@ -1,8 +1,8 @@
-﻿using Speckle.Core.Models.Extensions;
-using Speckle.Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Speckle.Core.Models.Extensions;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Models
 {
@@ -110,7 +110,7 @@ namespace Speckle.Core.Models
     /// The fallback values if direct conversion is not available, typically displayValue
     /// </summary>
     [JsonIgnore]
-    public List<ApplicationObject> Fallback { get; set; } = new List<ApplicationObject>(); 
+    public List<ApplicationObject> Fallback { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// The Speckle id (on receive) or native id (on send)
@@ -152,7 +152,7 @@ namespace Speckle.Core.Models
     [JsonIgnore]
     public List<object> Converted { get; set; } = new List<object>();
 
-    public ApplicationObject(string id, string type) 
+    public ApplicationObject(string id, string type)
     {
       OriginalId = id;
       Descriptor = type;
@@ -292,7 +292,7 @@ namespace Speckle.Core.Models
 
     public void Merge(ProgressReport report)
     {
-      lock(OperationErrorsLock)
+      lock (OperationErrorsLock)
         OperationErrors.AddRange(report.OperationErrors);
 
       lock (ConversionLogLock)

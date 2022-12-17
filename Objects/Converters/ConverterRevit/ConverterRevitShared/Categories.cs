@@ -124,7 +124,8 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_Ramps,
       BuiltInCategory.OST_SpecialityEquipment,
       BuiltInCategory.OST_Rebar,
-#if !REVIT2019 && !REVIT2020 && !REVIT2021
+#if REVIT2020 || REVIT2021
+#else
       BuiltInCategory.OST_AudioVisualDevices,
       BuiltInCategory.OST_FireProtection,
       BuiltInCategory.OST_FoodServiceEquipment,
@@ -134,7 +135,8 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_TemporaryStructure,
       BuiltInCategory.OST_VerticalCirculation,
 #endif
-#if !REVIT2019 && !REVIT2020 && !REVIT2021 && !REVIT2022
+#if REVIT2020 || REVIT2021 || REVIT2022
+#else
        BuiltInCategory.OST_MechanicalControlDevices,
 #endif
 

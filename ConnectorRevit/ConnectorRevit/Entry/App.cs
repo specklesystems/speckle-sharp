@@ -37,22 +37,9 @@ namespace Speckle.ConnectorRevit.Entry
       var specklePanel = application.CreateRibbonPanel(tabName, "Speckle 2");
 
       string path = typeof(App).Assembly.Location;
-#if REVIT2019
-      //desctopui 1
-      var speckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
-
-      if (speckleButton != null)
-      {
-        speckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16_fade.png", path);
-        speckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32_fade.png", path);
-        speckleButton.ToolTip = "Speckle Connector for Revit (old)";
-        speckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        speckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
-      }
-#else
 
       //desktopui 2
-      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand2).FullName)) as PushButton;
+      var speckleButton2 = specklePanel.AddItem(new PushButtonData("Speckle 2", "Revit Connector", typeof(App).Assembly.Location, typeof(SpeckleRevitCommand).FullName)) as PushButton;
 
       if (speckleButton2 != null)
       {
@@ -75,34 +62,6 @@ namespace Speckle.ConnectorRevit.Entry
         schedulerButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
         schedulerButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
       }
-
-      // one click send
-      var speckleButtonSend = specklePanel.AddItem(new PushButtonData("Send", "Send to Speckle", typeof(App).Assembly.Location, typeof(OneClickSendCommand).FullName)) as PushButton;
-
-      if (speckleButtonSend != null)
-      {
-        speckleButtonSend.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick16.png", path);
-        speckleButtonSend.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick32.png", path);
-        speckleButtonSend.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.oneclick32.png", path);
-        speckleButtonSend.ToolTip = "Sends your selected file objects to Speckle, or the entire model if nothing is selected.";
-        speckleButtonSend.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        speckleButtonSend.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
-      }
-
-
-      // quick share
-      var speckleButtonShare = specklePanel.AddItem(new PushButtonData("Share", "Quick Share", typeof(App).Assembly.Location, typeof(QuickShareCommand).FullName)) as PushButton;
-
-      if (speckleButtonShare != null)
-      {
-        speckleButtonShare.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share16.png", path);
-        speckleButtonShare.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
-        speckleButtonShare.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.share32.png", path);
-        speckleButtonShare.ToolTip = "Quickly share the selected evelemtns via Speckle, or the entire model if nothing is selected.";
-        speckleButtonShare.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
-        speckleButtonShare.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
-      }
-#endif
 
       PulldownButton helpPulldown = specklePanel.AddItem(new PulldownButtonData("Help&Resources", "Help & Resources")) as PulldownButton;
       helpPulldown.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.help16.png", path);
@@ -141,29 +100,19 @@ namespace Speckle.ConnectorRevit.Entry
         AppInstance = new UIApplication(sender as Application);
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-
-#if REVIT2019
-      //DUI1 - Set up bindings now as they subscribe to some document events and it's better to do it now
-      SpeckleRevitCommand.Bindings = new ConnectorBindingsRevit(AppInstance);
-      var eventHandler = ExternalEvent.Create(new SpeckleExternalEventHandler(SpeckleRevitCommand.Bindings));
-      SpeckleRevitCommand.Bindings.SetExecutorAndInit(eventHandler);
-#else
         //DUI2 - pre build app, so that it's faster to open up
-        SpeckleRevitCommand2.InitAvalonia();
-        var bindings = new ConnectorBindingsRevit2(AppInstance);
+        SpeckleRevitCommand.InitAvalonia();
+        var bindings = new ConnectorBindingsRevit(AppInstance);
         bindings.RegisterAppEvents();
-        SpeckleRevitCommand2.Bindings = bindings;
+        SpeckleRevitCommand.Bindings = bindings;
         SchedulerCommand.Bindings = bindings;
-        OneClickSendCommand.Bindings = bindings;
-        QuickShareCommand.Bindings = bindings;
 
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
         Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
         Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
-        SpeckleRevitCommand2.RegisterPane();
+        SpeckleRevitCommand.RegisterPane();
 
-#endif
         //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
       }
       catch (Exception ex)

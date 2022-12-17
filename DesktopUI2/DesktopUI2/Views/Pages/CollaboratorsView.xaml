@@ -1,0 +1,61 @@
+﻿<UserControl
+  x:Class="DesktopUI2.Views.Pages.CollaboratorsView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:p="clr-namespace:DesktopUI2.Views.Pages"
+  xmlns:reactiveUi="http://reactiveui.net"
+  xmlns:vm="using:DesktopUI2.ViewModels.DesignViewModels"
+  d:DesignHeight="750"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Grid RowDefinitions="auto,*">
+    <Border
+      Margin="0,0,0,7"
+      Padding="0"
+      assists:ShadowAssist.ShadowDepth="Depth2"
+      Background="{DynamicResource PrimaryHueMidBrush}">
+      <Grid Margin="15" ColumnDefinitions="auto,*,auto, auto">
+        <m:FloatingButton
+          VerticalAlignment="Center"
+          assists:ShadowAssist.ShadowDepth="0"
+          Background="Transparent"
+          Classes=""
+          Command="{Binding GoBack}"
+          ToolTip.Tip="Back">
+          <Button.Content>
+            <Viewbox
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Stretch="Fill">
+              <icons:MaterialIcon
+                Width="24"
+                Height="24"
+                Foreground="White"
+                Kind="ChevronLeft" />
+            </Viewbox>
+          </Button.Content>
+        </m:FloatingButton>
+        <TextBlock
+          Grid.Column="1"
+          Margin="15,0,0,0"
+          VerticalAlignment="Center"
+          Classes="Medium SpeckleFont"
+          FontSize="20"
+          Foreground="White"
+          Text="Collaborators"
+          TextTrimming="CharacterEllipsis" />
+
+      </Grid>
+    </Border>
+
+    <c:CollaboratorsControl Grid.Row="1" Margin="15" />
+  </Grid>
+
+</UserControl>

@@ -10,6 +10,7 @@
 *.userosscache
 *.sln.docstates
 *.tsep
+*.tool-versions
 
 # Intellij Crap
 .idea
@@ -224,6 +225,8 @@ _pkginfo.txt
 !?*.[Cc]ache/
 
 # Others
+Records/
+Sandbox/
 ClientBin/
 ~$*
 *~
@@ -367,3 +370,4 @@ speckle-sharp-ci-tools
 
 .circleci/continuation-config.yml
 .circleci/contiuation-config.yml
+ConnectorNavisworks/ConnectorNavisworks/Sample Models

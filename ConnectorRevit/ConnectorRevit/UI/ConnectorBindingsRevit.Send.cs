@@ -1,180 +1,257 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using Speckle.ConnectorRevit.Storage;
+using Avalonia.Threading;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels;
+using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.DesktopUI.Utils;
-using Stylet;
 
 namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
+    // used to store the Stream State settings when sending/receiving
+    private List<ISetting> CurrentSettings { get; set; }
+
     /// <summary>
     /// Converts the Revit elements that have been added to the stream by the user, sends them to
     /// the Server and the local DB, and creates a commit with the objects.
     /// </summary>
     /// <param name="state">StreamState passed by the UI</param>
-    public override async Task<StreamState> SendStream(StreamState state)
+    public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      ConversionErrors.Clear();
-      OperationErrors.Clear();
-
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
+      //make sure to instance a new copy so all values are reset correctly
+      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
+      converter.Report.ReportObjects.Clear();
 
-      var streamId = state.Stream.id;
+      // set converter settings as tuples (setting slug, setting selection)
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
+
+      var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = new List<Element>();
-
-      if (state.Filter != null)
-      {
-        selectedObjects = GetSelectionFilterObjects(state.Filter, converter);
-        state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
-      }
-      else //selection was by cursor
-      {
-        // TODO: update state by removing any deleted or null object ids
-        selectedObjects = state.SelectedObjectIds.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
-      }
+      var selectedObjects = GetSelectionFilterObjects(state.Filter);
+      state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!selectedObjects.Any())
       {
-        state.Errors.Add(new Exception("There are zero objects to send. Please use a filter, or set some via selection."));
-        return state;
+        progress.Report.LogOperationError(new Exception("There are zero objects to send. Please use a filter, or set some via selection."));
+        return null;
       }
 
       converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
-
-      var commitObject = new Base();
+      var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => state.Progress.Maximum = selectedObjects.Count());
+
+      progress.Max = selectedObjects.Count();
       var convertedCount = 0;
 
-      var placeholders = new List<Base>();
-      foreach (var revitElement in selectedObjects)
+      var cancelSend = await RevitTask.RunAsync(app =>
       {
-        try
+        foreach (var revitElement in selectedObjects)
         {
-          if (revitElement == null)
-            continue;
-
-          if (!converter.CanConvertToSpeckle(revitElement))
+          var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
+          // get the report object
+          // for hosted elements, they may have already been converted and added to the converter report
+          bool alreadyConverted = converter.Report.GetReportObject(revitElement.UniqueId, out int index);
+          var reportObj = alreadyConverted ?
+            converter.Report.ReportObjects[index] :
+            new ApplicationObject(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
+          if (alreadyConverted)
           {
-            state.Errors.Add(new Exception($"Skipping not supported type: {revitElement.GetType()}, name {revitElement.Name}"));
+            progress.Report.Log(reportObj);
             continue;
           }
-
-          var conversionResult = converter.ConvertToSpeckle(revitElement);
-
-          conversionProgressDict["Conversion"]++;
-          UpdateProgress(conversionProgressDict, state.Progress);
-
-          placeholders.Add(new ApplicationObject(revitElement.UniqueId, revitElement.GetType().ToString()) { applicationId = revitElement.UniqueId });
-
-          convertedCount++;
-
-          //hosted elements will be returned as `null` by the ConvertToSpeckle method 
-          //since they are handled when converting their parents
-          if (conversionResult != null)
+          try
           {
-            var category = $"@{revitElement.Category.Name}";
-            if (commitObject[category] == null)
-              commitObject[category] = new List<Base>();
+            if (revitElement == null)
+              continue;
 
-            ((List<Base>)commitObject[category]).Add(conversionResult);
+            if (!converter.CanConvertToSpeckle(revitElement))
+            {
+              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
+              progress.Report.Log(reportObj);
+              continue;
+            }
+
+            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+              return true;
+
+            converter.Report.Log(reportObj); // Log object so converter can access
+
+            var conversionResult = converter.ConvertToSpeckle(revitElement);
+
+            conversionProgressDict["Conversion"]++;
+            progress.Update(conversionProgressDict);
+
+            var s = new CancellationTokenSource();
+            DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(1));
+            Dispatcher.UIThread.MainLoop(s.Token);
+
+            convertedCount++;
+
+            if (conversionResult == null)
+            {
+              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+              progress.Report.Log(reportObj);
+              continue;
+            }
+
+            // here we are checking to see if we're receiving an object that has a host
+            // but the host doesn't know that it is a host
+            if (conversionResult["speckleHost"] is Base host && host["category"] is string catName)
+            {
+              commitObject[$"@{catName}"] ??= new List<Base>();
+              if (commitObject[$"@{catName}"] is List<Base> objs)
+              {
+                var hostIndex = objs.FindIndex(obj => obj.applicationId == host.applicationId);
+                // if the "host" is present, then it has already been converted and we need to 
+                // attach the current, dependent, elements as a hosted element
+                if (hostIndex != -1)
+                {
+                  objs[hostIndex]["elements"] ??= new List<Base>();
+                  ((List<Base>)objs[hostIndex]["elements"]).Add(conversionResult);
+                }
+                // if host is not present, then it hasn't been converted yet
+                // create a placeholder that will be overridden later, but that will contain the hosted element
+                else
+                {
+                  var newBase = new Base() { applicationId = host.applicationId };
+                  newBase["elements"] = new List<Base>() { conversionResult };
+                  objs.Add(newBase);
+                }
+
+                // remove the speckleHost element that we added
+                conversionResult["speckleHost"] = null;
+
+                reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.applicationId}");
+              }
+            }
+            //is an element type, nest it under Types instead
+            else if (typeof(ElementType).IsAssignableFrom(revitElement.GetType()))
+            {
+              var category = $"@{revitElement.Category.Name}";
+
+              if (commitObject["Types"] == null)
+                commitObject["Types"] = new Base();
+
+              if ((commitObject["Types"] as Base)[category] == null)
+                (commitObject["Types"] as Base)[category] = new List<Base>();
+
+              ((List<Base>)((commitObject["Types"] as Base)[category])).Add(conversionResult);
+            }
+            else
+            {
+              var category = conversionResult.GetType().Name == "Network" ?
+                "@Networks" :
+                $"@{revitElement.Category.Name}";
+
+              commitObject[category] ??= new List<Base>();
+
+              if (commitObject[category] is List<Base> objs)
+              {
+                var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
+              
+                // here we are checking to see if we're converting a host that doesn't know it is a host
+                // and if dependent elements of that host have already been converted
+                if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)
+                {
+                  objs.RemoveAt(hostIndex);
+                  if (conversionResult["elements"] is List<Base> els)
+                    els.AddRange(elements);
+                  else
+                    conversionResult["elements"] = elements;
+                }
+                objs.Add(conversionResult);
+              }
+            }
+
+            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}");
           }
+          catch (Exception e)
+          {
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+          }
+          progress.Report.Log(reportObj);
         }
-        catch (Exception e)
-        {
-          state.Errors.Add(e);
-        }
-      }
+        return false;
+      });
 
-      if (converter.Report.ConversionErrorsCount != 0)
-      {
-        // TODO: Get rid of the custom Error class. It's not needed.
-        ConversionErrors.AddRange(converter.Report.ConversionErrors);
-        state.Errors.AddRange(converter.Report.ConversionErrors);
-      }
+      if (cancelSend)
+        return null;
+
+      progress.Report.Merge(converter.Report);
 
       if (convertedCount == 0)
       {
-        Globals.Notify("Zero objects converted successfully. Send stopped.");
-        return state;
+        progress.Report.LogOperationError(new Exception("Zero objects converted successfully. Send stopped."));
+        return null;
       }
 
-      Execute.PostToUIThread(() => state.Progress.Maximum = (int)commitObject.GetTotalChildrenCount());
-
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
-        return state;
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
       var objectId = await Operations.Send(
         @object: commitObject,
-        cancellationToken: state.CancellationTokenSource.Token,
+        cancellationToken: progress.CancellationTokenSource.Token,
         transports: transports,
-        onProgressAction: dict => UpdateProgress(dict, state.Progress),
+        onProgressAction: dict => progress.Update(dict),
         onErrorAction: (s, e) =>
         {
-          OperationErrors.Add(e); // TODO!
-          state.Errors.Add(e);
-          state.CancellationTokenSource.Cancel();
+          progress.Report.LogOperationError(e);
+          progress.CancellationTokenSource.Cancel();
         },
         disposeTransports: true
         );
 
-      if (OperationErrors.Count != 0)
-      {
-        Globals.Notify("Failed to send.");
-        state.Errors.AddRange(OperationErrors);
-        return state;
-      }
+      if (progress.Report.OperationErrorsCount != 0)
+        return null;
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
 
       var actualCommit = new CommitCreateInput()
       {
         streamId = streamId,
         objectId = objectId,
-        branchName = state.Branch.name,
+        branchName = state.BranchName,
         message = state.CommitMessage != null ? state.CommitMessage : $"Sent {convertedCount} objects from {ConnectorRevitUtils.RevitAppName}.",
         sourceApplication = ConnectorRevitUtils.RevitAppName,
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
-
+      string commitId = null;
       try
       {
-        var commitId = await client.CommitCreate(actualCommit);
+        commitId = await client.CommitCreate(actualCommit);
 
-        await state.RefreshStream();
+        //await state.RefreshStream();
         state.PreviousCommitId = commitId;
-
-        WriteStateToFile();
-        RaiseNotification($"{convertedCount} objects sent to Speckle 🚀");
       }
       catch (Exception e)
       {
-        state.Errors.Add(e);
-        Globals.Notify($"Failed to create commit.\n{e.Message}");
+        progress.Report.LogOperationError(e);
       }
 
-      return state;
+      return commitId;
     }
 
   }

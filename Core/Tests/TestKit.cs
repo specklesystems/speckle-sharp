@@ -1,11 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using static Speckle.Core.Models.Utilities;
 
 namespace Tests
 {

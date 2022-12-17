@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using NUnit.Framework;
-using Speckle.Core.Api;
+﻿using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -24,10 +21,10 @@ namespace TestsIntegration
     private string objectId = "";
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
-      firstUserAccount = Fixtures.SeedUser();
-      secondUserAccount = Fixtures.SeedUser();
+      firstUserAccount = await Fixtures.SeedUser();
+      secondUserAccount = await Fixtures.SeedUser();
 
       myClient = new Client(firstUserAccount);
       secondClient = new Client(secondUserAccount);
@@ -47,18 +44,33 @@ namespace TestsIntegration
     }
 
     [Test]
+    public async Task ActiveUserGet()
+    {
+      var res = await myClient.ActiveUserGet();
+      Assert.That(myClient.Account.userInfo.id, Is.EqualTo(res.id));
+    }
+
+    [Test]
+    public async Task OtherUserGet()
+    {
+      var res = await myClient.OtherUserGet(secondUserAccount.userInfo.id);
+      Assert.That(secondUserAccount.userInfo.name, Is.EqualTo(res.name));
+
+    }
+
+    [Test]
     public async Task UserSearch()
     {
       var res = await myClient.UserSearch(firstUserAccount.userInfo.email);
-
-      Assert.NotNull(res);
+      Assert.That(res.Count, Is.EqualTo(1));
+      Assert.That(firstUserAccount.userInfo.id, Is.EqualTo(res[0].id));
     }
 
     [Test]
     public async Task ServerVersion()
     {
       var res = await myClient.GetServerVersion();
-      
+
       Assert.NotNull(res);
     }
 
@@ -91,7 +103,7 @@ namespace TestsIntegration
       var res = await myClient.StreamGet(streamId);
 
       Assert.NotNull(res);
-      Assert.AreEqual("main", res.branches.items[0].name);
+      Assert.That(res.branches.items[0].name, Is.EqualTo("main"));
       Assert.IsNotEmpty(res.collaborators);
     }
 
@@ -117,18 +129,22 @@ namespace TestsIntegration
     }
 
     [Test, Order(30)]
-    public async Task StreamGrantPermission()
+    public void StreamGrantPermission()
     {
-      var exception = Assert.ThrowsAsync<SpeckleException>( async () => await myClient.StreamGrantPermission(
-        new StreamPermissionInput
-        {
-          streamId = streamId, userId = secondUserAccount.userInfo.id, role = "stream:owner"
-        }
-      ) );
-      
+      var exception = Assert.ThrowsAsync<SpeckleException>(
+        async () => await myClient.StreamGrantPermission(
+          new StreamPermissionInput
+          {
+            streamId = streamId,
+            userId = secondUserAccount.userInfo.id,
+            role = "stream:owner"
+          }
+        )
+      );
+
       StringAssert.Contains("no longer supported", exception.Message);
     }
-    
+
     [Test, Order(31)]
     public async Task StreamInviteCreate()
     {
@@ -141,12 +157,12 @@ namespace TestsIntegration
       Assert.ThrowsAsync<SpeckleException>(async () =>
         await myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = streamId }));
     }
-    
+
     [Test, Order(32)]
     public async Task StreamInviteGet()
     {
       var invites = await secondClient.GetAllPendingInvites();
-      
+
       Assert.NotNull(invites);
     }
 
@@ -155,19 +171,21 @@ namespace TestsIntegration
     {
       var invites = await secondClient.GetAllPendingInvites();
 
-      var res = await secondClient.StreamInviteUse(invites[ 0 ].streamId, invites[ 0 ].token);
+      var res = await secondClient.StreamInviteUse(invites[0].streamId, invites[0].token);
 
       Assert.IsTrue(res);
     }
-    
+
     [Test, Order(34)]
     public async Task StreamUpdatePermission()
     {
       var res = await myClient.StreamUpdatePermission(new StreamPermissionInput
       {
-        role = "stream:reviewer", streamId = streamId, userId = secondUserAccount.userInfo.id
+        role = "stream:reviewer",
+        streamId = streamId,
+        userId = secondUserAccount.userInfo.id
       });
-      
+
       Assert.IsTrue(res);
     }
 
@@ -180,7 +198,7 @@ namespace TestsIntegration
 
       Assert.IsTrue(res);
     }
-    
+
     #region branches
 
     [Test, Order(41)]
@@ -203,7 +221,7 @@ namespace TestsIntegration
       var res = await myClient.BranchGet(streamId, branchName);
 
       Assert.NotNull(res);
-      Assert.AreEqual("this is a sample branch", res.description);
+      Assert.That(res.description, Is.EqualTo("this is a sample branch"));
     }
 
     [Test, Order(43)]
@@ -213,7 +231,7 @@ namespace TestsIntegration
 
       Assert.NotNull(res);
       // Branches are now returned in order of creation so 'main' should always go first.
-      Assert.AreEqual("main", res[0].name);
+      Assert.That(res[0].name, Is.EqualTo("main"));
     }
 
     #region commit
@@ -266,7 +284,7 @@ namespace TestsIntegration
       var res = await myClient.CommitGet(streamId, commitId);
 
       Assert.NotNull(res);
-      Assert.AreEqual("Fabber Fabbo", res.message);
+      Assert.That(res.message, Is.EqualTo("Fabber Fabbo"));
     }
 
     [Test, Order(45)]
@@ -275,7 +293,7 @@ namespace TestsIntegration
       var res = await myClient.StreamGetCommits(streamId);
 
       Assert.NotNull(res);
-      Assert.AreEqual(commitId, res[0].id);
+      Assert.That(res[0].id, Is.EqualTo(commitId));
     }
 
     #region object
@@ -286,7 +304,7 @@ namespace TestsIntegration
       var res = await myClient.ObjectGet(streamId, objectId);
 
       Assert.NotNull(res);
-      Assert.AreEqual(100, res.totalChildrenCount);
+      Assert.That(res.totalChildrenCount, Is.EqualTo(100));
     }
 
     #endregion

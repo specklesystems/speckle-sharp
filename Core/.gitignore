@@ -11,6 +11,8 @@ autom4te.cache/
 tarballs/
 test-results/
 
+*.tool-versions
+
 # Mac bundle stuff
 *.dmg
 *.app

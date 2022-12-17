@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Speckle.Core;
-using Speckle.Core.Api;
-using Speckle.Core.Credentials;
 using Newtonsoft.Json;
+using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
+using Speckle.Core.Credentials;
 
 namespace ExampleApp
 {
@@ -34,7 +33,7 @@ namespace ExampleApp
         Console.WriteLine("UserStreamCreated Fired");
         Console.WriteLine(JsonConvert.SerializeObject(e));
       };
-      
+
       Console.ReadLine();
     }
 

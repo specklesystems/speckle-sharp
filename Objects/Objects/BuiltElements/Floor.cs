@@ -68,3 +68,30 @@ namespace Objects.BuiltElements.Revit
     }
   }
 }
+
+
+namespace Objects.BuiltElements.Archicad
+{
+  public sealed class ArchicadFloor : BuiltElements.Floor
+  {
+    public ElementShape shape { get; set; }
+
+    public int? floorIndex { get; set; }
+
+    public string structure { get; set; }
+
+    public double? thickness { get; set; }
+
+    public string edgeAngleType { get; set; }
+
+    public double? edgeAngle { get; set; }
+
+    public string referencePlaneLocation { get; set; }
+
+    public int? compositeIndex { get; set; }
+
+    public int? buildingMaterialIndex { get; set; }
+
+    public ArchicadFloor() { }
+  }
+}

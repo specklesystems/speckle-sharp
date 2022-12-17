@@ -23,17 +23,19 @@
   </UserControl.Styles>
   <StackPanel Margin="0,4" Spacing="10">
     <TextBlock Text="{Binding Filter.Description}" TextWrapping="Wrap" />
-    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+    <StackPanel
+      HorizontalAlignment="Center"
+      Orientation="Horizontal"
+      Spacing="10">
       <Button
         Background="{DynamicResource PrimaryHueMidBrush}"
         Classes="Outline"
-				Width="150"
         Command="{Binding SetObjectSelection}"
         Foreground="White"
         ToolTip.Tip="Sets the currently selected objects.">
         <StackPanel Orientation="Horizontal">
-          <icons:MaterialIcon Kind="Plus" />
-          <TextBlock Classes="ButtonText" Text="SELECT" />
+          <icons:MaterialIcon Kind="CursorDefaultClick" />
+          <TextBlock Classes="ButtonText" Text="SET CURRENT SELECTION" />
         </StackPanel>
       </Button>
 
@@ -59,10 +61,10 @@
       </StackPanel>
     </Button>-->
 
-      <Button
+      <!--<Button
+        Width="150"
         BorderBrush="OrangeRed"
         Classes="Outline"
-				Width="150"
         Command="{Binding ClearObjectSelection}"
         Foreground="OrangeRed"
         ToolTip.Tip="Removes all selected objects.">
@@ -70,14 +72,14 @@
           <icons:MaterialIcon Kind="Delete" />
           <TextBlock Classes="ButtonText" Text="CLEAR" />
         </StackPanel>
-      </Button>
+      </Button>-->
     </StackPanel>
-    <TextBlock
+    <!--<TextBlock
       Margin="0,12,0,8"
       FontSize="14"
       FontWeight="Medium"
       Text="Current selection:" />
-    <TextBlock Text="{Binding Summary}" />
+    <TextBlock Text="{Binding Summary}" />-->
 
   </StackPanel>
 
