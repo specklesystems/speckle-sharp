@@ -155,29 +155,22 @@ namespace Speckle.ConnectorCSI.UI
 
       var transports = new List<SCT.ITransport>() { new SCT.ServerTransport(client.Account, streamId) };
       progress.Max = conversionProgressDict["Conversion"];
-      string objectId = null;
-      try
-      {
-        objectId = await Operations.Send(
-            @object: commitObj,
-            cancellationToken: progress.CancellationTokenSource.Token,
-            transports: transports,
-            onProgressAction: dict =>
-            {
-              progress.Update(dict);
-            },
-            onErrorAction: (Action<string, Exception>)((s, e) =>
-            {
-              progress.Report.LogOperationError(e);
-              progress.CancellationTokenSource.Cancel();
-            }),
-            disposeTransports: true
-            );
-      }
-      catch (Exception ex)
-      {
-        progress.Report.LogOperationError(ex);
-      }
+
+      var objectId = await Operations.Send(
+          @object: commitObj,
+          cancellationToken: progress.CancellationTokenSource.Token,
+          transports: transports,
+          onProgressAction: dict =>
+          {
+            progress.Update(dict);
+          },
+          onErrorAction: (Action<string, Exception>)((s, e) =>
+          {
+            progress.Report.LogOperationError(e);
+            progress.CancellationTokenSource.Cancel();
+          }),
+          disposeTransports: true
+          );
 
       if (progress.Report.OperationErrorsCount != 0)
         return null;

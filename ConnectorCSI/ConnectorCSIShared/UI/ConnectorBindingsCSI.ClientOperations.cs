@@ -66,17 +66,7 @@ namespace Speckle.ConnectorCSI.UI
 
     public override List<ISetting> GetSettings()
     {
-      return new List<ISetting>
-      {
-        new CheckBoxSetting()
-        {
-          Slug = "comprehensive-report",
-          Name = "Generate comprehensive report",
-          Icon ="Link",
-          IsChecked= false,
-          Description = "Extra computation will be used to generate a more detailed report to view in your browser"
-        }
-      };
+      return new List<ISetting>();
     }
 
     //public override void PersistAndUpdateStreamInFile(StreamState state)

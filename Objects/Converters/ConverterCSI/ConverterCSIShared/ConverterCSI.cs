@@ -42,7 +42,6 @@ namespace Objects.Converter.CSI
     public cSapModel Model { get; private set; }
 
     public Model SpeckleModel { get; set; }
-    public AnalyticalModel AnalyticalModel { get; set; } = new AnalyticalModel();
 
     public ResultSetAll AnalysisResults { get; set; }
 
@@ -75,13 +74,7 @@ namespace Objects.Converter.CSI
         throw new Exception("operation setting was not set before calling converter.SetContextDocument");
 
       if (Settings["operation"] == "receive")
-      {
-        Settings.TryGetValue("comprehensive-report", out string s);
-        bool.TryParse(s, out bool comprehensiveReport);
-
-        if (comprehensiveReport) 
-          SpeckleModel = ModelToSpeckle();
-        
+      { 
         ExistingObjectGuids = GetAllGuids(Model);
         // TODO: make sure we are setting the load patterns before we import load combinations
       }
@@ -99,7 +92,6 @@ namespace Objects.Converter.CSI
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
-    public ApplicationObject.State CurrentState = ApplicationObject.State.Unknown;
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
     public bool CanConvertToNative(Base @object)
@@ -142,7 +134,6 @@ namespace Objects.Converter.CSI
     {
       var appObj = new ApplicationObject(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
       List<string> notes = new List<string>();
-      List<string> changedProps = new List<string>();
 
       switch (@object)
       {
@@ -204,21 +195,6 @@ namespace Objects.Converter.CSI
       if (reportObj != null && notes.Count > 0)
         reportObj.Update(log: notes);
 
-      switch (appObj.Status)
-      {
-        case ApplicationObject.State.Created:
-        case ApplicationObject.State.Updated:
-        case ApplicationObject.State.Removed:
-          break;
-        default:
-          return appObj;
-      }
-
-      Settings.TryGetValue("comprehensive-report", out string s);
-      bool.TryParse(s, out bool comprehensiveReport);
-      if (comprehensiveReport)
-        AnalyticalModel.AddDiff(@object, appObj.Status);
-
       return appObj;
     }
 
@@ -242,12 +218,7 @@ namespace Objects.Converter.CSI
           Report.Log($"Created Frame");
           break;
         case "Model":
-          Settings.TryGetValue("comprehensive-report", out string s1);
-          bool.TryParse(s1, out bool comprehensiveReport1);
-          if (comprehensiveReport1)
-            returnObject = AnalyticalModel;
-          else
-            returnObject = SpeckleModel;
+          returnObject = SpeckleModel;
           break;
         case "AnalysisResults":
           returnObject = AnalysisResults;
@@ -406,11 +377,6 @@ namespace Objects.Converter.CSI
           //    returnObject = null;
           //    break;
       }
-
-      Settings.TryGetValue("comprehensive-report", out string s);
-      bool.TryParse(s, out bool comprehensiveReport);
-      if (comprehensiveReport)
-        AnalyticalModel.AddElement(returnObject);
 
       return returnObject;
     }

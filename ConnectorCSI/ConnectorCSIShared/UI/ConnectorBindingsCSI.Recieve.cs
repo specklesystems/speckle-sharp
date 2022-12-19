@@ -1,6 +1,5 @@
 ﻿using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorCSI.Util;
 using Speckle.Core.Api;
@@ -129,16 +128,6 @@ namespace Speckle.ConnectorCSI.UI
         progress.Update(conversionProgressDict);
       };
 
-      settings.TryGetValue("comprehensive-report", out string s1);
-      bool.TryParse(s1, out bool comprehensiveReport);
-      if (comprehensiveReport)
-      {
-        var existingObjIds = GetSelectionFilterObjects(new AllSelectionFilter() { Slug = "all" });
-        var cancelOperation = BuildSendCommitObj(converter, existingObjIds, ref progress, ref conversionProgressDict);
-        if (cancelOperation)
-          return null;
-      }
-
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
         progress.Report.Log(previewObj);
@@ -150,12 +139,6 @@ namespace Speckle.ConnectorCSI.UI
       //converter.SetContextObjects(Preview);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
-
-      if (comprehensiveReport)
-      {
-        var commitObj = GetCommitObj(converter, progress, conversionProgressDict);
-        await SendCommitObj(state, progress, commitObj, conversionProgressDict, "report");
-      }
 
       // receive was cancelled by user
       if (newPlaceholderObjects == null)
