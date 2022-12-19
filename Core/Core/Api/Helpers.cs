@@ -356,7 +356,7 @@ namespace Speckle.Core.Api
       proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
       var client = new HttpClient(new HttpClientHandler() { Proxy = proxy, PreAuthenticate = true });
 
-      return new HttpClient();
+      return client;
     }
   }
 }
