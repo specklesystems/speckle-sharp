@@ -63,7 +63,7 @@ namespace Speckle.Core.Credentials
 
     public async Task<UserInfo> Validate()
     {
-      using var httpClient = new HttpClient();
+      using var httpClient = Api.Helpers.GetHttpProxyClient();
 
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 

@@ -185,7 +185,7 @@ namespace Speckle.Core.Logging
           });
 
           var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
-          HttpClient client = new HttpClient();
+          HttpClient client = Api.Helpers.GetHttpProxyClient();
           client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
           query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
           client.PostAsync(MixpanelServer + "/track?ip=1", query);
@@ -224,7 +224,7 @@ namespace Speckle.Core.Logging
 
 
           var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
-          HttpClient client = new HttpClient();
+          HttpClient client = Api.Helpers.GetHttpProxyClient();
           client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
           query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
           client.PostAsync(MixpanelServer + "/engage#profile-union", query);

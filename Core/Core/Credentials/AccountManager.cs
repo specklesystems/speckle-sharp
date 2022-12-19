@@ -36,7 +36,7 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task<ServerInfo> GetServerInfo(string server)
     {
-      using var httpClient = new HttpClient();
+      using var httpClient = Api.Helpers.GetHttpProxyClient();
 
       using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
 
@@ -63,7 +63,7 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task<UserInfo> GetUserInfo(string token, string server)
     {
-      using var httpClient = new HttpClient();
+      using var httpClient = Api.Helpers.GetHttpProxyClient();
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
       using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
@@ -92,7 +92,7 @@ namespace Speckle.Core.Credentials
 
       try
       {
-        var httpClient = new HttpClient();
+        var httpClient = Api.Helpers.GetHttpProxyClient();
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
 
@@ -125,20 +125,30 @@ namespace Speckle.Core.Credentials
 
 
     /// <summary>
-    /// The Default Server URL for authentication, can be overridden by placing a file with the alternatrive url in the Speckle folder
+    /// The Default Server URL for authentication, can be overridden by placing a file with the alternatrive url in the Speckle folder or with an ENV_VAR
     /// </summary>
     public static string GetDefaultServerUrl()
     {
       var defaultServerUrl = "https://speckle.xyz";
+      var customServerUrl = "";
 
+      // first mechanism, check for local file
       var customServerFile = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "server");
       if (File.Exists(customServerFile))
+        customServerUrl = File.ReadAllText(customServerFile);
+
+
+      // second mechanism, check ENV VAR
+      var customServerEnvVar = Environment.GetEnvironmentVariable("SPECKLE_SERVER");
+      if (!string.IsNullOrEmpty(customServerEnvVar))
+        customServerUrl = customServerEnvVar;
+
+      if (!string.IsNullOrEmpty(customServerUrl))
       {
-        var customUrl = File.ReadAllText(customServerFile);
         Uri url = null;
-        Uri.TryCreate(customUrl, UriKind.Absolute, out url);
+        Uri.TryCreate(customServerUrl, UriKind.Absolute, out url);
         if (url != null)
-          defaultServerUrl = customUrl.TrimEnd(new[] { '/' });
+          defaultServerUrl = customServerUrl.TrimEnd(new[] { '/' });
       }
 
 

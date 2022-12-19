@@ -42,7 +42,7 @@ namespace Speckle.Core.Api
 
       Account = account;
 
-      HttpClient = new HttpClient();
+      HttpClient = Helpers.GetHttpProxyClient();
 
       if (account.token.ToLowerInvariant().Contains("bearer"))
       {

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
 using System.Reflection;
@@ -20,7 +22,8 @@ namespace Speckle.Core.Api
 {
   public static class Helpers
   {
-    private static string _feedsEndpoint = "https://releases.speckle.dev/manager2/feeds";
+    public const string ReleasesUrl = "https://releases.speckle.dev";
+    private static string _feedsEndpoint = ReleasesUrl + "/manager2/feeds";
     /// <summary>
     /// Helper method to Receive from a Speckle Server.
     /// </summary>
@@ -173,7 +176,7 @@ namespace Speckle.Core.Api
 
       try
       {
-        HttpClient client = new HttpClient();
+        HttpClient client = Helpers.GetHttpProxyClient();
         var response = await client.GetStringAsync($"{_feedsEndpoint}/{slug}.json");
         var connector = JsonSerializer.Deserialize<Connector>(response);
 
@@ -286,12 +289,19 @@ namespace Speckle.Core.Api
 
 
     /// <summary>
-    /// Checks if the user has a valid internet connection by pinging cloudfare
+    /// Checks if the user has a valid internet connection
     /// </summary>
     /// <returns>True if the user is connected to the internet, false otherwise.</returns>
-    public static Task<bool> UserHasInternet()
+    public static async Task<bool> UserHasInternet()
     {
-      return Ping("1.1.1.1"); //cloudfare
+      //can ping cloudfare, skip further checks
+      //this method should be the fastest
+      if (await Ping("1.1.1.1"))
+        return true;
+
+
+      //lastly, try getting the default Speckle server, in case this is a sandboxed environment
+      return await HttpPing(AccountManager.GetDefaultServerUrl());
     }
 
     /// <summary>
@@ -320,18 +330,16 @@ namespace Speckle.Core.Api
     /// <summary>
     /// Pings and tries gettign data from a specific address to verify it's online.
     /// </summary>
-    /// <param name="address">Theaddress to use.</param>
-    /// <returns>True if the the status code is 200, false otherwise.</returns>
-    public static async Task<bool> PingAndGet(string address)
+    /// <param name="address">The address to use</param>
+    /// <returns>True if the the status code is successful, false otherwise.</returns>
+    public static async Task<bool> HttpPing(string address)
     {
       try
       {
-        var ping = await Ping(address);
-        if (!ping)
-          return false;
+        HttpClient _httpClient = GetHttpProxyClient();
 
-        HttpClient client = new HttpClient();
-        var response = await client.GetAsync(address);
+        _httpClient.Timeout = TimeSpan.FromSeconds(1);
+        var response = await _httpClient.GetAsync(address);
         return response.IsSuccessStatusCode;
 
       }
@@ -339,6 +347,17 @@ namespace Speckle.Core.Api
       {
         return false;
       }
+    }
+
+    public static HttpClient GetHttpProxyClient()
+    {
+
+      IWebProxy proxy = WebRequest.GetSystemWebProxy();
+      proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
+      var client = new HttpClient(new HttpClientHandler() { Proxy = proxy, PreAuthenticate = true });
+
+
+      return client;
     }
   }
 }
