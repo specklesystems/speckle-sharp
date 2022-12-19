@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -23,10 +23,10 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Tekla.Structures" Version="2021.0.0" />
-    <PackageReference Include="Tekla.Structures.Catalogs" Version="2021.0.0" />
-    <PackageReference Include="Tekla.Structures.Datatype" Version="2021.0.0" />
-    <PackageReference Include="Tekla.Structures.Model" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures" Version="2022.0.10715" />
+    <PackageReference Include="Tekla.Structures.Catalogs" Version="2022.0.10715" />
+    <PackageReference Include="Tekla.Structures.Datatype" Version="2022.0.10715" />
+    <PackageReference Include="Tekla.Structures.Model" Version="2022.0.10715" />
   </ItemGroup>
 
   <ItemGroup>
