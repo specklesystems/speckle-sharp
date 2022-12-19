@@ -240,7 +240,7 @@ namespace SpeckleRhino
     public override bool CanPreviewReceive => true;
 
     private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View");
-    
+
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       // first check if commit is the same and preview objects have already been generated
@@ -280,7 +280,7 @@ namespace SpeckleRhino
           previewObj.CreatedIds = new List<string>() { previewObj.OriginalId }; // temporary store speckle id as created id for Preview report selection to work
 
           var storedObj = StoredObjects[previewObj.OriginalId];
-          if(IsPreviewIgnore(storedObj))
+          if (IsPreviewIgnore(storedObj))
           {
             var status = previewObj.Convertible ? ApplicationObject.State.Created : ApplicationObject.State.Skipped;
             previewObj.Update(status: status, logItem: "No preview available");
@@ -408,7 +408,7 @@ namespace SpeckleRhino
                   logItem: $"Couldn't retrieve stored object from bindings");
                 continue;
               }
-              
+
               if (!IsPreviewIgnore(storedObj))
               {
                 previewObj.Converted = ConvertObject(storedObj, converter);
@@ -418,7 +418,7 @@ namespace SpeckleRhino
             {
               foreach (var fallback in previewObj.Fallback)
               {
-                var storedFallback = StoredObjects[ fallback.OriginalId ];
+                var storedFallback = StoredObjects[fallback.OriginalId];
                 fallback.Converted = ConvertObject(storedFallback, converter);
               }
             }
@@ -468,8 +468,8 @@ namespace SpeckleRhino
           if (previewObj.Convertible)
           {
             BakeObject(previewObj, converter, layer);
-            previewObj.Status = !previewObj.CreatedIds.Any() ? ApplicationObject.State.Failed : 
-            isUpdate ? ApplicationObject.State.Updated : 
+            previewObj.Status = !previewObj.CreatedIds.Any() ? ApplicationObject.State.Failed :
+            isUpdate ? ApplicationObject.State.Updated :
             ApplicationObject.State.Created;
           }
           else
@@ -508,7 +508,7 @@ namespace SpeckleRhino
 
       // first try to find the object by app id user string
       var match = Doc.Objects.Where(o => o.Attributes.GetUserString(ApplicationIdKey) == applicationId)?.ToList() ?? new List<RhinoObject>();
-      
+
       // if nothing is found, look for the geom obj by its guid directly
       if (!match.Any())
       {
@@ -700,7 +700,7 @@ namespace SpeckleRhino
             {
               var invalidMessage = $"{log.Replace("\n", "").Replace("\r", "")}";
               if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.id}: {invalidMessage}");
+                parent.Update(logItem: $"fallback {appObj.applicationId}: {invalidMessage}");
               else
                 appObj.Update(logItem: invalidMessage);
               continue;
@@ -710,7 +710,7 @@ namespace SpeckleRhino
             {
               var layerMessage = $"Could not create layer {layer}.";
               if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.id}: {layerMessage}");
+                parent.Update(logItem: $"fallback {appObj.applicationId}: {layerMessage}");
               else
                 appObj.Update(logItem: layerMessage);
               continue;
@@ -739,7 +739,7 @@ namespace SpeckleRhino
             {
               var bakeMessage = $"Could not bake to document.";
               if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.id}: {bakeMessage}");
+                parent.Update(logItem: $"fallback {appObj.applicationId}: {bakeMessage}");
               else
                 appObj.Update(logItem: bakeMessage);
               continue;
@@ -786,7 +786,7 @@ namespace SpeckleRhino
       if (bakedCount == 0)
       {
         if (parent != null)
-          parent.Update(logItem: $"fallback {appObj.id}: could not bake object");
+          parent.Update(logItem: $"fallback {appObj.applicationId}: could not bake object");
         else
           appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
       }
@@ -1198,9 +1198,9 @@ namespace SpeckleRhino
           RhinoView speckleCommentView = views.First();
           speckleCommentView.ActiveViewport.SetCameraDirection(direction, false);
           speckleCommentView.ActiveViewport.SetCameraLocation(cameraLocation, true);
-          
+
           DisplayModeDescription shaded = DisplayModeDescription.FindByName("Shaded");
-          if (shaded!= null)
+          if (shaded != null)
           {
             speckleCommentView.ActiveViewport.DisplayMode = shaded;
           }

@@ -402,7 +402,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 }
                 catch (Exception e)
                 {
-                  commitObj.Log.Add($"Fallback {fallback.id} failed conversion: {e.Message}");
+                  commitObj.Log.Add($"Fallback {fallback.applicationId} failed conversion: {e.Message}");
                 }
                 commitObj.Log.AddRange(fallback.Log);
               }
@@ -678,7 +678,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               {
                 var bakeMessage = $"Could not bake to document.";
                 if (parent != null)
-                  parent.Update(logItem: $"fallback {appObj.id}: {bakeMessage}");
+                  parent.Update(logItem: $"fallback {appObj.applicationId}: {bakeMessage}");
                 else
                   appObj.Update(logItem: bakeMessage);
                 continue;
@@ -689,7 +689,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             {
               var layerMessage = $"Could not create layer {layer}.";
               if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.id}: {layerMessage}");
+                parent.Update(logItem: $"fallback {appObj.applicationId}: {layerMessage}");
               else
                 appObj.Update(logItem: layerMessage);
               continue;
@@ -703,7 +703,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       if (bakedCount == 0)
       {
         if (parent != null)
-          parent.Update(logItem: $"fallback {appObj.id}: could not bake object");
+          parent.Update(logItem: $"fallback {appObj.applicationId}: could not bake object");
         else
           appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
       }
