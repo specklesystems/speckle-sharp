@@ -12,27 +12,27 @@ namespace Speckle.Core.Kits
     /// Gets all the object types (the object model) provided by this kit.
     /// </summary>
     IEnumerable<Type> Types { get; }
-    
+
     /// <summary>
     /// Gets all available converters for this Kit.
     /// </summary>
     IEnumerable<string> Converters { get; }
-    
+
     /// <summary>
     /// Gets this Kit's description.
     /// </summary>
     string Description { get; }
-    
+
     /// <summary>
     /// Gets this Kit's name.
     /// </summary>
     string Name { get; }
-    
+
     /// <summary>
     /// Gets this Kit's author.
     /// </summary>
     string Author { get; }
-    
+
     /// <summary>
     /// Gets the website (or email) to contact the Kit's author.
     /// </summary>

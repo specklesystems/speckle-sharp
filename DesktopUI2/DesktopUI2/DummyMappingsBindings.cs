@@ -41,7 +41,7 @@ namespace DesktopUI2
     {
     }
 
-    public override void ClearMappings()
+    public override void ClearMappings(List<string> ids)
     {
     }
 
