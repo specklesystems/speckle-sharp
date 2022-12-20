@@ -117,5 +117,21 @@ namespace Speckle.ConnectorNavisworks
 
       return m;
     }
+
+    public static string GetPseudoId(ModelItem modelItem)
+    {
+      // The path for ModelItems is their node position at each level of the Models tree.
+      // This is the de facto UID for that element within the file at that time.
+      InwOaPath path = ComApiBridge.ToInwOaPath(modelItem);
+
+      // Neglect the Root Node
+      if (((Array)path.ArrayData).ToArray<int>().Length == 0) return null;
+
+      // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
+      string pseudoId = ((Array)path.ArrayData).ToArray<int>().Aggregate("",
+        (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-');
+
+      return pseudoId;
+    }
   }
 }
