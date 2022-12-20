@@ -1,17 +1,17 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Objects.Converter.TeklaStructures2021</AssemblyName>
+    <AssemblyName>Objects.Converter.TeklaStructures2022</AssemblyName>
     <RootNamespace>Objects.Converter.TeklaStructures</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;TeklaStructures2021</DefineConstants>
+    <DefineConstants>TRACE;TeklaStructures2022</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>TeklaStructures2021</DefineConstants>
+    <DefineConstants>TeklaStructures2022</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -23,10 +23,10 @@
   </Target>
 
   <ItemGroup>
-    <PackageReference Include="Tekla.Structures" Version="2021.0.0" />
-    <PackageReference Include="Tekla.Structures.Catalogs" Version="2021.0.0" />
-    <PackageReference Include="Tekla.Structures.Datatype" Version="2021.0.0" />
-    <PackageReference Include="Tekla.Structures.Model" Version="2021.0.0" />
+    <PackageReference Include="Tekla.Structures" Version="2022.0.10715" />
+    <PackageReference Include="Tekla.Structures.Catalogs" Version="2022.0.10715" />
+    <PackageReference Include="Tekla.Structures.Datatype" Version="2022.0.10715" />
+    <PackageReference Include="Tekla.Structures.Model" Version="2022.0.10715" />
   </ItemGroup>
 
   <ItemGroup>
