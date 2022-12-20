@@ -14,9 +14,12 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public string UpdatePoint(string name, Point basePoint, Node speckleNode)
+    public string UpdatePoint(string name, Node speckleNode, Point basePoint = null)
     {
-      //Model.EditFrame
+      basePoint = basePoint ?? speckleNode.basePoint;
+      if (basePoint == null)
+        return name;
+
       int numItems = 0;
       int[] objTypes = null;
       string[] objNames = null;

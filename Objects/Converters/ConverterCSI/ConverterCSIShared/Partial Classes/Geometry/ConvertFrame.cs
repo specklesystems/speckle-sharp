@@ -33,8 +33,8 @@ namespace Objects.Converter.CSI
       // as those points may be shared by other frames. Need to check if there are other frames using
       // those points and then check the new location of the endpoints to see if there are existing points
       // that could be used.
-      var pt1Updated = UpdatePoint(pt1, end1node, element1D.end1Node);
-      var pt2Updated = UpdatePoint(pt2, end2node, element1D.end2Node);
+      var pt1Updated = UpdatePoint(pt1, element1D.end1Node, end1node);
+      var pt2Updated = UpdatePoint(pt2, element1D.end2Node, end2node);
 
       if (pt1Updated != pt1 || pt2Updated != pt2)
         Model.EditFrame.ChangeConnectivity(name, pt1Updated, pt2Updated);
@@ -44,9 +44,6 @@ namespace Objects.Converter.CSI
     }
     public void FrameToNative(Element1D element1D, ref ApplicationObject appObj)
     {
-      if (GetAllFrameNames(Model).Contains(element1D.name))
-        element1D.name = element1D.id;
-
       if (element1D.type == ElementType1D.Link)
       {
         LinkToNative((CSIElement1D)element1D, ref appObj);
@@ -110,8 +107,13 @@ namespace Objects.Converter.CSI
       }
       SetFrameElementProperties(element1D, newFrame);
 
-      if (element1D.name != null)
+      if (string.IsNullOrEmpty(element1D.name))
+      {
+        if (GetAllFrameNames(Model).Contains(element1D.name))
+          element1D.name = element1D.id;
         Model.FrameObj.ChangeName(newFrame, element1D.name);
+        newFrame = element1D.name;
+      }
 
       Model.FrameObj.SetGUID(newFrame, element1D.applicationId);
 

@@ -20,12 +20,52 @@ namespace Objects.Converter.CSI
       Model.AreaObj.GetGUID(area.name, ref GUID);
       if (area.applicationId == GUID)
       {
-        setAreaProperties(area.name, area);
+        SetAreaProperties(area.name, area);
       }
       return area.name;
     }
+    public void UpdateArea(Element2D area, string name, ref ApplicationObject appObj)
+    {
+      var points = new string[0];
+      var numPoints = 0;
+      Model.AreaObj.GetPoints(name, ref numPoints, ref points);
+
+      var pointsUpdated = new List<string>();
+      bool connectivityChanged = false;
+      if (points.Length != area.topology.Count)
+        connectivityChanged = true;
+
+      for (int i = 0; i < area.topology.Count; i++)
+      {
+        if (i >= points.Length)
+        {
+          CreatePoint(area.topology[i].basePoint, out string pointName);
+          pointsUpdated.Add(pointName);
+          continue;
+        }
+        
+        pointsUpdated.Add(UpdatePoint(points[i], area.topology[i]));
+        if (!connectivityChanged && pointsUpdated[i] != points[i])
+          connectivityChanged = true;
+      }
+
+      if (connectivityChanged)
+      {
+        var refArray = pointsUpdated.ToArray();
+        Model.EditArea.ChangeConnectivity(name, pointsUpdated.Count, ref refArray);
+      }
+
+      SetAreaProperties(name, area);
+      appObj.Update(status: ApplicationObject.State.Updated);
+    }
     public void AreaToNative(Element2D area, ref ApplicationObject appObj)
     {
+      if (ElementExistsWithApplicationId(area.applicationId, out string areaName))
+      {
+        UpdateArea(area, areaName, ref appObj);
+        return;
+      }
+
       if (GetAllAreaNames(Model).Contains(area.name))
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"There is already a frame object named {area.name} in the model");
@@ -68,19 +108,28 @@ namespace Objects.Converter.CSI
           Property2DToNative(prop2D, ref appObj);
           success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, area.property.name);
         }
+        else if (propNames.Any())
+        {
+          // TODO: support creating of Property2D
+          success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name, propNames.First());
+          appObj.Update(logItem: $"Area section for object could not be created and was replaced with section named \"{propNames.First()}\"");
+        }
+        else
+          appObj.Update(logItem: "Cannot create area. There are no area sections defined in the project file");
       }
       else
       {
         success = Model.AreaObj.AddByCoord(numPoints, ref x, ref y, ref z, ref name);
       }
-      if (area.name != null)
+      if (!string.IsNullOrEmpty(area.name))
       {
+        if (GetAllAreaNames(Model).Contains(area.name))
+          area.name = area.id;
         Model.AreaObj.ChangeName(name, area.name);
+        name = area.name;
       }
-      else
-      {
-        Model.AreaObj.ChangeName(name, area.id);
-      }
+
+      Model.AreaObj.SetGUID(name, area.applicationId);
 
       if (area is CSIElement2D)
       {
@@ -107,7 +156,7 @@ namespace Objects.Converter.CSI
         appObj.Update(status: ApplicationObject.State.Failed);
     }
 
-    public void setAreaProperties(string name, Element2D area)
+    public void SetAreaProperties(string name, Element2D area)
     {
 
       Model.AreaObj.SetProperty(name, area.property.name);
