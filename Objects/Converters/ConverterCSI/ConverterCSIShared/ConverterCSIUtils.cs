@@ -209,20 +209,6 @@ namespace Objects.Converter.CSI
       }
 
       return false;
-
-      // FROM REVIT
-      //var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
-
-      //if (@ref == null)
-      //{
-      //  //element was not cached in a PreviousContex but might exist in the model
-      //  //eg: user sends some objects, moves them, receives them 
-      //  element = Doc.GetElement(applicationId);
-      //}
-      //else if (@ref.CreatedIds.Any())
-      //  return true;
-
-      //return element;
     }
 
 

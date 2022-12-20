@@ -134,9 +134,7 @@ namespace Speckle.ConnectorCSI.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
-      converter.SetPreviousContextObjects(previouslyReceivedObjects);
-      //// needs to be set for openings in floors and roofs to work
-      //converter.SetContextObjects(Preview);
+      // converter.SetPreviousContextObjects(previouslyReceivedObjects);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
 
