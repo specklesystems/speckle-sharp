@@ -33,20 +33,20 @@ namespace Speckle.ConnectorNavisworks.Bindings
         filters.Add(selectionSetsFilter);
       }
 
-      var clashPlugin = Doc.GetClash();
-      var clashTests = clashPlugin.TestsData;
-      var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).OfType<TreeNode>().ToList();
+      //var clashPlugin = Doc.GetClash();
+      //var clashTests = clashPlugin.TestsData;
+      //var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).OfType<TreeNode>().ToList();
 
-      if (groupedClashResults.Count >= 0)
-      {
-        var clashReportFilter = new TreeSelectionFilter
-        {
-          Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
-          Description = "Select group clash test results.",
-          Values = groupedClashResults
-        };
-        filters.Add(clashReportFilter);
-      }
+      //if (groupedClashResults.Count >= 0)
+      //{
+      //  var clashReportFilter = new TreeSelectionFilter
+      //  {
+      //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+      //    Description = "Select group clash test results.",
+      //    Values = groupedClashResults
+      //  };
+      //  filters.Add(clashReportFilter);
+      //}
 
 
       return filters;
