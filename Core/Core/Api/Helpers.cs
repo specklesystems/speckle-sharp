@@ -349,12 +349,20 @@ namespace Speckle.Core.Api
       }
     }
 
-    public static HttpClient GetHttpProxyClient()
+    public static HttpClient GetHttpProxyClient(HttpClientHandler handler = null)
     {
 
       IWebProxy proxy = WebRequest.GetSystemWebProxy();
       proxy.Credentials = System.Net.CredentialCache.DefaultCredentials;
-      var client = new HttpClient(new HttpClientHandler() { Proxy = proxy, PreAuthenticate = true });
+
+      if (handler == null)
+      {
+        handler = new HttpClientHandler();
+      }
+      handler.Proxy = proxy;
+      handler.PreAuthenticate = true;
+
+      var client = new HttpClient(handler);
 
       return client;
     }

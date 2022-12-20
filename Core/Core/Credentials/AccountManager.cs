@@ -1,11 +1,13 @@
 ﻿
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -437,10 +439,8 @@ namespace Speckle.Core.Credentials
     {
       try
       {
-        var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{server}/auth/token");
-        httpWebRequest.ContentType = "application/json";
-        httpWebRequest.Method = "POST";
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        var client = Api.Helpers.GetHttpProxyClient();
 
         var body = new
         {
@@ -450,41 +450,25 @@ namespace Speckle.Core.Credentials
           challenge = challenge,
         };
 
-        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-        {
-          string json = JsonConvert.SerializeObject(body);
+        var content = new StringContent(JsonConvert.SerializeObject(body));
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        var response = await client.PostAsync($"{server}/auth/token", content);
 
-          streamWriter.Write(json);
-          streamWriter.Flush();
-          streamWriter.Close();
-        }
-
-        var httpResponse = (HttpWebResponse)await Task.Factory.FromAsync<WebResponse>(httpWebRequest.BeginGetResponse, httpWebRequest.EndGetResponse, null);
-
-        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-        {
-          var result = streamReader.ReadToEnd();
-          return JsonConvert.DeserializeObject<TokenExchangeResponse>(result);
-        }
-
+        return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
 
       }
       catch (Exception e)
       {
         throw new SpeckleException(e.Message, e);
       }
-
-
     }
 
     private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, string server)
     {
       try
       {
-        var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{server}/auth/token");
-        httpWebRequest.ContentType = "application/json";
-        httpWebRequest.Method = "POST";
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        var client = Api.Helpers.GetHttpProxyClient();
 
         var body = new
         {
@@ -493,24 +477,11 @@ namespace Speckle.Core.Credentials
           refreshToken = refreshToken
         };
 
-        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-        {
-          string json = JsonConvert.SerializeObject(body);
+        var content = new StringContent(JsonConvert.SerializeObject(body));
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        var response = await client.PostAsync($"{server}/auth/token", content);
 
-          streamWriter.Write(json);
-          streamWriter.Flush();
-          streamWriter.Close();
-        }
-
-        var httpResponse = (HttpWebResponse)await Task.Factory.FromAsync<WebResponse>(httpWebRequest.BeginGetResponse, httpWebRequest.EndGetResponse, null);
-
-        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-        {
-          var result = streamReader.ReadToEnd();
-          return JsonConvert.DeserializeObject<TokenExchangeResponse>(result);
-        }
-
-
+        return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
       }
       catch (Exception e)
       {
