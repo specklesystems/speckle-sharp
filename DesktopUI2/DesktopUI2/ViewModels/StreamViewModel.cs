@@ -1200,7 +1200,7 @@ namespace DesktopUI2.ViewModels
           MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
           {
             Title = "😖 Send Error",
-            Message = $"Something went wrong",
+            Message = Progress?.Report?.OperationErrorsString ?? $"Something went wrong",
             Type = Avalonia.Controls.Notifications.NotificationType.Error
           });
         }

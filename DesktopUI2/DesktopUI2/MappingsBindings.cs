@@ -60,7 +60,7 @@ namespace DesktopUI2
     /// <summary>
     /// Clears the mappings on the current selection
     /// </summary>
-    public abstract void ClearMappings();
+    public abstract void ClearMappings(List<string> ids);
 
     /// <summary>
     /// Highlights a list of elements given their IDs
