@@ -210,6 +210,16 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
+  public class RevitFloorViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Floor";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitFloor(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel), false, 0, null, null);
+      return Operations.Serialize(obj);
+    }
+  }
 
   public class RevitBeamViewModel : RevitBasicViewModel
   {

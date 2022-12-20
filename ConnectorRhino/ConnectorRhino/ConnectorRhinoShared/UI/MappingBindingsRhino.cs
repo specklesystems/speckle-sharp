@@ -108,6 +108,22 @@ namespace SpeckleRhino
           case Brep b:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
               result.Add(new DirectShapeFreeformViewModel());
+
+            var srf = b.Surfaces.First();
+            if (b.Surfaces.Count == 1 && srf.IsPlanar())
+            {
+              if (srf.TryGetPlane(out Plane p))
+              {
+                Vector3d normal = p.Normal;
+                if (normal.Unitize())
+                {
+                  if (Math.Abs(normal.Z) == 1)
+                  {
+                    result.Add(new RevitFloorViewModel());
+                  }
+                }
+              }
+            }
             break;
 
           case Extrusion e:

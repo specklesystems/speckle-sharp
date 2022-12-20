@@ -281,6 +281,16 @@ namespace DesktopUI2.ViewModels.MappingTool
             updatedSchemas.Add(o);
             break;
 
+          case RevitFloorViewModel o:
+            var floorFamilies = AvailableRevitTypes.Where(x => x.category == "Floors").ToList();
+            if (!floorFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+            var floorFamiliesViewModels = floorFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            o.Families = floorFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+            break;
+
           case RevitBeamViewModel o:
             var beamFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
             if (!beamFamilies.Any() || !AvailableRevitLevels.Any())
