@@ -24,8 +24,6 @@
     <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
-    </PackageReference>
     <PackageReference Include="RhinoCommon" Version="6.28.20199.17141">
     </PackageReference>
     <PackageReference Include="RhinoWindows" Version="6.28.20199.17141">
