@@ -84,7 +84,7 @@ namespace Speckle.Core.Models
   /// A simple wrapper to keep track of the relationship between speckle objects and their host-application siblings in cases where the
   /// <see cref="Base.applicationId"/> cannot correspond with the <see cref="ApplicationObject.CreatedIds"/> (ie, on receiving operations). 
   /// </summary>
-  public class ApplicationObject : Base
+  public class ApplicationObject
   {
     public enum State
     {
@@ -95,6 +95,11 @@ namespace Speckle.Core.Models
       Removed, //Removed object from application
       Unknown
     }
+
+    /// <summary>
+    /// ID of the object from host application that generated it.
+    /// </summary>
+    public string applicationId { get; set; }
 
     /// <summary>
     /// The container for the object in the native application
