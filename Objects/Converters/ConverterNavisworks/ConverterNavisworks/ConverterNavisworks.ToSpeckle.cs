@@ -171,22 +171,22 @@ namespace Objects.Converter.Navisworks
       }
 
       InwOpState10 oState = ComApiBridge.State;
-      InwOaPath protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath, null, null);
+      InwOaPath protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
 
-      Array oneBasedArray = Array.CreateInstance(typeof(int), new int[1] { pathArray.Length }, new int[1] { 1 });
+      Array oneBasedArray = Array.CreateInstance(
+        typeof(int),
+        // ReSharper disable once RedundantExplicitArraySize
+        new int[1] { pathArray.Length },
+        // ReSharper disable once RedundantExplicitArraySize
+        new int[1] { 1 });
 
       Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
-
-      //for (int index = oneBasedArray.GetLowerBound(0); index <= oneBasedArray.GetUpperBound(0); index++)
-      //{
-      //  oneBasedArray.SetValue(pathArray[index - 1], index);
-      //}
 
       protoPath.ArrayData = oneBasedArray;
 
       ModelItem m = ComApiBridge.ToModelItem(protoPath);
 
-      return m ?? null;
+      return m;
     }
   }
 }

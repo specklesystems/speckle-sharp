@@ -38,6 +38,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       List<string> filteredObjects = new List<string>();
+      Progress progressBar = Application.BeginProgress("Send to Speckle.");
+      progressBar.BeginSubOperation(0, "Filtering Objects.");
 
       if (DefaultKit == null)
       {
@@ -91,17 +93,16 @@ namespace Speckle.ConnectorNavisworks.Bindings
       };
 
       int convertedCount = 0;
-      int skippedCount = 0;
 
       SortedDictionary<string, bool> toConvertDictionary = new SortedDictionary<string, bool>(new PseudoIdComparer());
       state.SelectedObjectIds.ForEach(x => toConvertDictionary.Add(x, false));
 
-      Progress progressBar = Application.BeginProgress($"Sending {state.SelectedObjectIds.Count} Objects to Speckle.");
+      progressBar.EndSubOperation();
+      progressBar.BeginSubOperation(1, $"Converting {state.SelectedObjectIds.Count} Objects.");
       progressBar.Update(0);
 
-
       // We have to disable autosave because it explodes everything if it tries saving mid send process.
-      bool autosaveSetting = false;
+      bool autosaveSetting;
 
       using (LcUOptionLock optionLock = new LcUOptionLock())
       {
@@ -140,12 +141,26 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
         string applicationId = string.Empty;
 
-        ApplicationObject reportObject = new ApplicationObject("id", "object_type")
-        {
-          applicationId = applicationId
-        };
 
         var pseudoId = nextToConvert.Key;
+        var descriptor = ObjectDescriptor(pseudoId);
+
+        bool alreadyConverted = NavisworksConverter.Report.GetReportObject(pseudoId, out int index);
+
+        ApplicationObject reportObject = alreadyConverted
+          ? NavisworksConverter.Report.ReportObjects[index]
+          : new ApplicationObject(pseudoId, descriptor)
+          {
+            applicationId = pseudoId
+          };
+
+        if (alreadyConverted)
+        {
+          progress.Report.Log(reportObject);
+          toConvertDictionary[pseudoId] = true;
+          continue;
+        }
+
 
         if (!NavisworksConverter.CanConvertToSpeckle(pseudoId))
         {
@@ -154,7 +169,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
           progress.Report.Log(reportObject);
 
           toConvertDictionary[pseudoId] = true;
-          skippedCount++;
           continue;
         }
 
@@ -176,7 +190,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
             logItem: $"Conversion returned null");
           progress.Report.Log(reportObject);
           toConvertDictionary[pseudoId] = true;
-          skippedCount++;
           continue;
         }
 
@@ -219,8 +232,9 @@ namespace Speckle.ConnectorNavisworks.Bindings
         }
       }
 
-      Application.EndProgress();
-      progressBar.Dispose();
+      progressBar.EndSubOperation();
+      progressBar.BeginSubOperation(1, $"Sending {convertedCount} objects to Speckle.");
+
 
       progress.Report.Merge(NavisworksConverter.Report);
 
@@ -260,11 +274,15 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       if (progress.Report.OperationErrorsCount != 0)
       {
+        Application.EndProgress();
+        progressBar.Dispose();
         return null;
       }
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
+        Application.EndProgress();
+        progressBar.Dispose();
         return null;
       }
 
@@ -279,13 +297,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       try
       {
+        progressBar.Update(0.25);
         string commitId = await client.CommitCreate(commit);
+
+        progressBar.Update(1.0);
+        Application.EndProgress();
+        progressBar.Dispose();
+
         return commitId;
       }
       catch (Exception ex)
       {
         progress.Report.LogOperationError(ex);
       }
+
+      progressBar.Update(1.0);
+      Application.EndProgress();
+      progressBar.Dispose();
 
       return null;
     }
