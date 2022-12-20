@@ -342,6 +342,22 @@ namespace Objects.Converter.RhinoGh
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
+          case RevitColumn o:
+            o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
+
+          case RevitPipe o:
+            o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
+
+          case RevitDuct o:
+            o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
+
+          case RevitTopography o:
+            o.baseGeometry = MeshToSpeckle((RH.Mesh)@object.Geometry);
+            break;
+
           case DirectShape o:
             if (@object.Geometry as RH.Brep != null)
               o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };

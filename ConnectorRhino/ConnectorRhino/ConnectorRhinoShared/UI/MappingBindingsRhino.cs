@@ -108,8 +108,6 @@ namespace SpeckleRhino
           case Brep b:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
               result.Add(new DirectShapeFreeformViewModel());
-            if (!b.IsSolid)
-              result.Add(new RevitTopographyViewModel());
             break;
 
           case Extrusion e:
@@ -127,13 +125,10 @@ namespace SpeckleRhino
             {
               result.Add(new RevitBeamViewModel());
               result.Add(new RevitBraceViewModel());
+              result.Add(new RevitColumnViewModel());
               result.Add(new RevitPipeViewModel());
               result.Add(new RevitDuctViewModel());
             }
-            else if (!c.IsClosed)
-            {
-              result.Add(new RevitFlexPipeViewModel());
-            }  
 
             //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
             //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);

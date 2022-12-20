@@ -1,0 +1,60 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Mappings.Controls.RevitMEP"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="800"
+  mc:Ignorable="d">
+  <StackPanel Orientation="Vertical" Spacing="5">
+
+    <ComboBox
+      assists:ComboBoxAssist.Label="Family"
+      Classes="Outline"
+      Items="{Binding Families}"
+      SelectedItem="{Binding SelectedFamily, Mode=TwoWay}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock
+            Grid.Column="1"
+            Text="{Binding Name}"
+            TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <ComboBox
+      Grid.Row="1"
+      assists:ComboBoxAssist.Label="Type"
+      Classes="Outline"
+      Items="{Binding SelectedFamily.Types}"
+      SelectedItem="{Binding SelectedType, Mode=TwoWay}" />
+
+    <ComboBox
+      Grid.Row="1"
+      assists:ComboBoxAssist.Label="Base Level"
+      Classes="Outline"
+      Items="{Binding Levels}"
+      SelectedItem="{Binding SelectedLevel, Mode=TwoWay}" />
+
+    <TextBox
+      Grid.Row="1"
+      assists:TextFieldAssist.Label="Height"
+      Text="{Binding SelectedHeight, Mode=TwoWay}"
+      UseFloatingWatermark="True" />
+
+    <TextBox
+      Grid.Row="1"
+      assists:TextFieldAssist.Label="Width"
+      Text="{Binding SelectedWidth, Mode=TwoWay}"
+      UseFloatingWatermark="True" />
+
+    <TextBox
+      Grid.Row="1"
+      assists:TextFieldAssist.Label="Diameter"
+      Text="{Binding SelectedDiameter, Mode=TwoWay}"
+      UseFloatingWatermark="True" />
+  </StackPanel>
+</UserControl>

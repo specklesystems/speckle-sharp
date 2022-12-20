@@ -140,7 +140,63 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
+  /// <summary>
+  /// Revit MEP view model with dimension and system properties
+  /// </summary>
+  public class RevitMEPViewModel : RevitBasicViewModel
+  {
+    private double _selectedHeight;
+    [DataMember]
+    public double SelectedHeight
+    {
+      get => _selectedHeight;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedHeight, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
+    }
 
+    private double _selectedWidth;
+    [DataMember]
+    public double SelectedWidth
+    {
+      get => _selectedWidth;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedWidth, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
+    }
+
+    private double _selectedDiameter;
+    [DataMember]
+    public double SelectedDiameter
+    {
+      get => _selectedDiameter;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedDiameter, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
+    }
+
+    public RevitMEPViewModel()
+    {
+    }
+
+    public override bool IsValid
+    {
+      get
+      {
+        return
+          SelectedFamily != null &&
+          !string.IsNullOrEmpty(SelectedType) &&
+          !string.IsNullOrEmpty(SelectedLevel) &&
+          ((SelectedHeight > 0 && SelectedWidth > 0) || SelectedDiameter > 0);
+      }
+    }
+  }
 
   public class RevitWallViewModel : RevitBasicViewModel
   {
@@ -177,37 +233,52 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
-  public class RevitPipeViewModel : RevitBasicViewModel
+  public class RevitColumnViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Column";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitColumn(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel), false);
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitPipeViewModel : RevitMEPViewModel
   {
     public override string Name => "Pipe";
 
     public override string GetSerializedSchema()
     {
-      var obj = new RevitPipe(SelectedFamily.Name, SelectedType, null, 0, new RevitLevel(SelectedLevel));
+      var obj = new RevitPipe(SelectedFamily.Name, SelectedType, null, SelectedDiameter, new RevitLevel(SelectedLevel));
       return Operations.Serialize(obj);
     }
   }
 
-  public class RevitDuctViewModel : RevitBasicViewModel
+  public class RevitDuctViewModel : RevitMEPViewModel
   {
     public override string Name => "Duct";
 
     public override string GetSerializedSchema()
     {
-      var obj = new RevitDuct(SelectedFamily.Name, SelectedType, null, null, null, new RevitLevel(SelectedLevel), 0, 0, 0);
+      var obj = new RevitDuct(SelectedFamily.Name, SelectedType, null, null, null, new RevitLevel(SelectedLevel), SelectedWidth, SelectedHeight, SelectedDiameter);
       return Operations.Serialize(obj);
     }
   }
 
-  public class RevitFlexPipeViewModel : RevitBasicViewModel
+  public class RevitTopographyViewModel : Schema
   {
-    public override string Name => "FlexPipe";
+    public override string Name => "Topography";
+
+    public override string Summary => $"Topography";
 
     public override string GetSerializedSchema()
     {
-      var obj = new RevitFlexPipe(SelectedFamily.Name, SelectedType, null, 0, new RevitLevel(SelectedLevel), null, null);
+      var obj = new RevitTopography();
       return Operations.Serialize(obj);
     }
+
+    public override bool IsValid => true;
   }
 
   public class RevitFamilyInstanceViewModel : RevitBasicViewModel
@@ -295,17 +366,6 @@ namespace DesktopUI2.ViewModels.MappingTool
           !string.IsNullOrEmpty(ShapeName) &&
           !string.IsNullOrEmpty(SelectedCategory);
       }
-    }
-  }
-
-  public class RevitTopographyViewModel : RevitBasicViewModel
-  {
-    public override string Name => "Topography";
-
-    public override string GetSerializedSchema()
-    {
-      var obj = new RevitTopography();
-      return Operations.Serialize(obj);
     }
   }
 

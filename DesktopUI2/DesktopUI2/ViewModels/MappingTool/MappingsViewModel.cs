@@ -301,22 +301,22 @@ namespace DesktopUI2.ViewModels.MappingTool
             updatedSchemas.Add(o);
             break;
 
+          case RevitColumnViewModel o:
+            var columnFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Columns").ToList();
+            if (!columnFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+            var columnFamiliesViewModels = columnFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            o.Families = columnFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+            break;
+
           case RevitPipeViewModel o:
             var pipeFamilies = AvailableRevitTypes.Where(x => x.category == "Pipes").ToList();
             if (!pipeFamilies.Any() || !AvailableRevitLevels.Any())
               break;
             var pipeFamiliesViewModels = pipeFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
             o.Families = pipeFamiliesViewModels;
-            o.Levels = AvailableRevitLevels;
-            updatedSchemas.Add(o);
-            break;
-
-          case RevitFlexPipeViewModel o:
-            var flexPipeFamilies = AvailableRevitTypes.Where(x => x.category == "Flex Pipes").ToList();
-            if (!flexPipeFamilies.Any() || !AvailableRevitLevels.Any())
-              break;
-            var flexPipeFamiliesViewModels = flexPipeFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
-            o.Families = flexPipeFamiliesViewModels;
             o.Levels = AvailableRevitLevels;
             updatedSchemas.Add(o);
             break;
