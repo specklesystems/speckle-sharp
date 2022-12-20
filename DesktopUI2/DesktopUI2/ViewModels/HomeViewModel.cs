@@ -15,6 +15,7 @@ using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Splat;
 using System;
@@ -455,7 +456,7 @@ namespace DesktopUI2.ViewModels
 
     private async Task<bool> CheckIsOffline()
     {
-      if (!await Helpers.UserHasInternet())
+      if (!await Http.UserHasInternet())
       {
         Dispatcher.UIThread.Post(() =>
           MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()

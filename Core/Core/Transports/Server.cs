@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
@@ -70,7 +71,7 @@ namespace Speckle.Core.Transports
       BaseUri = baseUri;
       StreamId = streamId;
 
-      Client = Api.Helpers.GetHttpProxyClient(new HttpClientHandler()
+      Client = Http.GetHttpProxyClient(new HttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
       });

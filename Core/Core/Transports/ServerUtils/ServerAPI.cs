@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Core.Helpers;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
@@ -48,7 +49,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
       BlobStorageFolder = blobStorageFolder;
 
-      Client = Api.Helpers.GetHttpProxyClient(new HttpClientHandler()
+      Client = Http.GetHttpProxyClient(new HttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
       });

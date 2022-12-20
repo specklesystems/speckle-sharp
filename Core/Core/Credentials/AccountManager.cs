@@ -38,7 +38,7 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task<ServerInfo> GetServerInfo(string server)
     {
-      using var httpClient = Api.Helpers.GetHttpProxyClient();
+      using var httpClient = Http.GetHttpProxyClient();
 
       using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
 
@@ -65,7 +65,7 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task<UserInfo> GetUserInfo(string token, string server)
     {
-      using var httpClient = Api.Helpers.GetHttpProxyClient();
+      using var httpClient = Http.GetHttpProxyClient();
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
       using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
@@ -94,7 +94,7 @@ namespace Speckle.Core.Credentials
 
       try
       {
-        var httpClient = Api.Helpers.GetHttpProxyClient();
+        var httpClient = Http.GetHttpProxyClient();
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
 
@@ -440,7 +440,7 @@ namespace Speckle.Core.Credentials
       try
       {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-        var client = Api.Helpers.GetHttpProxyClient();
+        var client = Http.GetHttpProxyClient();
 
         var body = new
         {
@@ -468,7 +468,7 @@ namespace Speckle.Core.Credentials
       try
       {
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
-        var client = Api.Helpers.GetHttpProxyClient();
+        var client = Http.GetHttpProxyClient();
 
         var body = new
         {
