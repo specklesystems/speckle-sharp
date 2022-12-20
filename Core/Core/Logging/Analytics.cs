@@ -213,6 +213,11 @@ namespace Speckle.Core.Logging
               {
                  {"Connectors", new List<string>{ connector } },
               }
+            },
+            { "set",  new Dictionary<string, object>()
+              {
+                 {"Identified", true },
+              }
             }
           };
           string json = JsonConvert.SerializeObject(data);

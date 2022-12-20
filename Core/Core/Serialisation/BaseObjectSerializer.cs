@@ -171,7 +171,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          throw new SpeckleException("Cannot resolve reference, no transport is defined.", level : Sentry.SentryLevel.Error);
+          throw new SpeckleException("Cannot resolve reference, no transport is defined.", level: Sentry.SentryLevel.Error);
         }
 
         if (str != null && str != "")
@@ -181,7 +181,7 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.", level : Sentry.SentryLevel.Error);
+          throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.", level: Sentry.SentryLevel.Error);
         }
       }
 
@@ -216,7 +216,7 @@ namespace Speckle.Core.Serialisation
 
         // first attempt to find a settable property, otherwise fall back to a dynamic set without type
         JsonProperty property = contract.Properties.GetClosestMatchProperty(jProperty.Name);
-        
+
         if (property != null && property.Writable)
         {
 
@@ -414,7 +414,8 @@ namespace Speckle.Core.Serialisation
               int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
               serializer.Context = new StreamingContext(StreamingContextStates.Other,
                 chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable());
-            } else
+            }
+            else
             {
               serializer.Context = new StreamingContext();
             }
@@ -434,7 +435,8 @@ namespace Speckle.Core.Serialisation
               return; // Check for cancellation
             }
 
-            if (what == null) {
+            if (what == null)
+            {
               return; // HACK: Prevent nulls from borking our serialization on nested schema object refs. (i.e. Line has @SchemaObject, that has ref to line)
             }
 
@@ -531,7 +533,7 @@ namespace Speckle.Core.Serialisation
           {
             if (i == maxCount)
             {
-              if(currChunk.data.Count!=0)
+              if (currChunk.data.Count != 0)
               {
                 chunkList.Add(currChunk);
               }

@@ -48,13 +48,13 @@ namespace Archicad.Converters
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadWindow> datas =
         await AsyncCommandProcessor.Execute(new Communication.Commands.GetWindowData(elementModels.Select(e => e.applicationId)));
 
-      if (datas is null )
+      if (datas is null)
       {
         return new List<Base>();
       }
 
       List<Base> openings = new List<Base>();
-      foreach ( Objects.BuiltElements.Archicad.ArchicadWindow subelement in datas)
+      foreach (Objects.BuiltElements.Archicad.ArchicadWindow subelement in datas)
       {
         subelement.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == subelement.applicationId)

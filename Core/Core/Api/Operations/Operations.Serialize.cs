@@ -1,9 +1,9 @@
-﻿using Speckle.Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Api
 {

@@ -10,8 +10,7 @@
 namespace Utility {
 
 
-class Database
-{
+class Database {
 public:
 	Database ();
 	virtual ~Database ();
@@ -19,8 +18,8 @@ public:
 	bool IsInFloorPlan (void) const;
 	bool IsIn3DWindow (void) const;
 
-	void SwitchToFloorPlan(void);
-	void SwitchToPreviousState(void);
+	void SwitchToFloorPlan (void);
+	void SwitchToPreviousState (void);
 
 private:
 	static API_DatabaseInfo GetCurrent (void);
