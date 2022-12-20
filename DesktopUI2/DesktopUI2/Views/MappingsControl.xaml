@@ -167,6 +167,10 @@
                           <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
+                          <!--  FLOOR  -->
+                          <DataTemplate DataType="{x:Type s:RevitFloorViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
                           <!--  BEAM  -->
                           <DataTemplate DataType="{x:Type s:RevitBeamViewModel}">
                             <map:RevitBasic />
