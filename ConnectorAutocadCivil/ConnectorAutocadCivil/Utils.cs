@@ -384,6 +384,34 @@ namespace Speckle.ConnectorAutocadCivil
     {
       readonly static string ApplicationIdKey = "applicationId";
 
+      /// <summary>
+      /// Creates the application id xdata table in the doc if it doesn't already exist
+      /// </summary>
+      /// <returns></returns>
+      public static bool AddApplicationIdXDataToDoc(Document doc, Transaction tr)
+      {
+        var regAppTable = (RegAppTable)tr.GetObject(doc.Database.RegAppTableId, OpenMode.ForRead);
+        if (!regAppTable.Has(ApplicationIdKey))
+        {
+          try
+          {
+            using (RegAppTableRecord regAppRecord = new RegAppTableRecord())
+            {
+              regAppRecord.Name = ApplicationIdKey;
+              regAppTable.UpgradeOpen();
+              regAppTable.Add(regAppRecord);
+              regAppTable.DowngradeOpen();
+              tr.AddNewlyCreatedDBObject(regAppRecord, true);
+            }
+          }
+          catch(Exception e)
+          {
+            return false;
+          }
+        }
+        return true;
+      }
+
       public static string GetFromXData(Entity obj)
       {
         string appId = null;
@@ -402,6 +430,31 @@ namespace Speckle.ConnectorAutocadCivil
           }
         }
         return appId;
+      }
+
+      /// <summary>
+      /// Attaches a custom application Id to an object's application id xdata using the has of the file name.
+      /// This is used because the persistent id of the db object in the file is almost guaranteed to not be unique between files
+      /// </summary>
+      /// <param name="obj"></param>
+      /// <param name="handle"></param>
+      /// <returns></returns>
+      public static bool SetObjectCustomApplicationId(DBObject obj, string id, out string applicationId, string fileNameHash = null)
+      {
+        applicationId = fileNameHash == null ? id : $"{fileNameHash}-{id}";
+        var rb = new ResultBuffer(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), new TypedValue(1000, applicationId));
+
+        try
+        {
+          if (!obj.IsWriteEnabled) obj.UpgradeOpen();
+          obj.XData = rb;
+        }
+        catch (Exception e)
+        {
+          return false;
+        }
+
+        return true;
       }
 
       /// <summary>
@@ -469,7 +522,6 @@ namespace Speckle.ConnectorAutocadCivil
       }
     }
     #endregion
-
     
 
     /// <summary>
