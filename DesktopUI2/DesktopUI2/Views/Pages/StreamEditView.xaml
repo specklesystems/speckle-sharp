@@ -153,7 +153,7 @@
             </TabItem>
 
             <!--  RECEIVE  -->
-            <TabItem ToolTip.Tip="Receive">
+            <TabItem IsVisible="{Binding CanReceive}" ToolTip.Tip="Receive">
               <TabItem.Header>
                 <StackPanel Orientation="Horizontal">
                   <icons:MaterialIcon

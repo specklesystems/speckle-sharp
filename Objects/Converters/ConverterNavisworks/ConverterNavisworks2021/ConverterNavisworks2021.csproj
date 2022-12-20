@@ -1,0 +1,50 @@
+﻿<!--EXTERNAL_PROPERTIES: AppData;AppData-->
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<Title>SpeckleConverterNavisworks</Title>
+		<AssemblyName>Objects.Converter.Navisworks2021</AssemblyName>
+		<RootNamespace>Objects.Converter.Navisworks</RootNamespace>
+		<AppData></AppData>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Debug'">
+		<OutputPath>bin\x64\Debug\</OutputPath>
+		<DefineConstants>$(DefineConstants);NAVMAN18</DefineConstants>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)'=='Release'">
+		<OutputPath>bin\x64\Release\</OutputPath>
+		<DefineConstants>$(DefineConstants);NAVMAN18</DefineConstants>
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Speckle.Navisworks.API" Version="2021.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+	</ItemGroup>
+
+	
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+		<Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+	</Target>
+
+	<Import Project="..\ConverterNavisworks\ConverterNavisworksShared.projitems" Label="Shared" />
+</Project>

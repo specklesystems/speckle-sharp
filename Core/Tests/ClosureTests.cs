@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
-using Speckle.Core.Transports;
+﻿using Newtonsoft.Json;
 using NUnit.Framework;
-using Speckle.Core.Models;
 using Speckle.Core.Api;
-using Newtonsoft.Json;
+using Speckle.Core.Models;
+using Speckle.Core.Transports;
 
 namespace Tests
 {
@@ -42,7 +41,7 @@ namespace Tests
       var test = Operations.Receive(result, localTransport: transport).Result;
 
       Assert.IsNotNull(test.id);
-      Assert.AreEqual(test.id, d1.GetId(true));
+      Assert.That(d1.GetId(true), Is.EqualTo(test.id));
 
       var d1_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d1.GetId(true)]);
       var d2_ = JsonConvert.DeserializeObject<dynamic>(transport.Objects[d2.GetId(true)]);
@@ -52,19 +51,19 @@ namespace Tests
 
 
       var depthOf_d5_in_d1 = int.Parse((string)d1_.__closure[d5.GetId(true)]);
-      Assert.AreEqual(1, depthOf_d5_in_d1);
+      Assert.That(depthOf_d5_in_d1, Is.EqualTo(1));
 
       var depthOf_d4_in_d1 = int.Parse((string)d1_.__closure[d4.GetId(true)]);
-      Assert.AreEqual(3, depthOf_d4_in_d1);
+      Assert.That(depthOf_d4_in_d1, Is.EqualTo(3));
 
       var depthOf_d5_in_d3 = int.Parse((string)d3_.__closure[d5.GetId(true)]);
-      Assert.AreEqual(2, depthOf_d5_in_d3);
+      Assert.That(depthOf_d5_in_d3, Is.EqualTo(2));
 
       var depthOf_d4_in_d3 = int.Parse((string)d3_.__closure[d4.GetId(true)]);
-      Assert.AreEqual(1, depthOf_d4_in_d3);
+      Assert.That(depthOf_d4_in_d3, Is.EqualTo(1));
 
       var depthOf_d5_in_d2 = int.Parse((string)d2_.__closure[d5.GetId(true)]);
-      Assert.AreEqual(1, depthOf_d5_in_d2);
+      Assert.That(depthOf_d5_in_d2, Is.EqualTo(1));
     }
 
     [Test]
@@ -74,7 +73,7 @@ namespace Tests
 
       var myList = new List<object>();
       // These should be counted! 
-      for(int i = 0; i < 100; i++ )
+      for (int i = 0; i < 100; i++)
       {
         var smolBase = new Base();
         smolBase["test"] = i;
@@ -105,18 +104,18 @@ namespace Tests
       myBase["@detachTheDictionary"] = dictionary;
 
       var count = myBase.GetTotalChildrenCount();
-      Assert.AreEqual(112, count);
+      Assert.That(count, Is.EqualTo(112));
 
       var tableTest = new DiningTable();
       var tableKidsCount = tableTest.GetTotalChildrenCount();
-      Assert.AreEqual(10, tableKidsCount);
+      Assert.That(tableKidsCount, Is.EqualTo(10));
 
       // Explicitely test for recurisve references! 
       var recursiveRef = new Base() { applicationId = "random" };
       recursiveRef["@recursive"] = recursiveRef;
 
       var supriseCount = recursiveRef.GetTotalChildrenCount();
-      Assert.AreEqual(2, supriseCount);
+      Assert.That(supriseCount, Is.EqualTo(2));
     }
 
   }

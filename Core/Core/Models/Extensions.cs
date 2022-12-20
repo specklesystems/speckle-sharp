@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,10 +31,10 @@ namespace Speckle.Core.Models.Extensions
       var traversal = Traverse(root, b =>
       {
         if (!cache.Add(b.id)) return true;
-        
+
         return recursionBreaker.Invoke(b);
       });
-      
+
       foreach (var b in traversal)
       {
         if (!cache.Contains(b.id)) yield return b;
@@ -58,39 +58,39 @@ namespace Speckle.Core.Models.Extensions
       {
         Base current = stack.Pop();
         yield return current;
-        
-        if(recursionBreaker(current)) continue;
-        
+
+        if (recursionBreaker(current)) continue;
+
         foreach (string child in current.GetDynamicMemberNames())
         {
           switch (current[child])
           {
-            case Base o: 
+            case Base o:
               stack.Push(o);
               break;
             case IDictionary dictionary:
-            {
-              foreach (object obj in dictionary.Keys)
               {
-                if (obj is Base b)
-                  stack.Push(b);
+                foreach (object obj in dictionary.Keys)
+                {
+                  if (obj is Base b)
+                    stack.Push(b);
+                }
+                break;
               }
-              break;
-            }
             case IList collection:
-            {
-              foreach (object obj in collection)
               {
-                if (obj is Base b)
-                  stack.Push(b);
+                foreach (object obj in collection)
+                {
+                  if (obj is Base b)
+                    stack.Push(b);
+                }
+                break;
               }
-              break;
-            }
           }
         }
       }
     }
-    
+
     public static string ToFormattedString(this Exception exception)
     {
       var messages = exception

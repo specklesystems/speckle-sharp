@@ -25,14 +25,14 @@ namespace Archicad.Converters
           case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoors:
             doors.Add(archicadDoors);
             break;
-          //case Objects.BuiltElements.Opening window:
-          //  var baseLine = (Line)wall.baseLine;
-          //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
-          //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
-          //  if (el is RevitWall revitWall)
-          //    newWall.flipped = revitWall.flipped;
-          //  walls.Add(newWall);
-          //  break;
+            //case Objects.BuiltElements.Opening window:
+            //  var baseLine = (Line)wall.baseLine;
+            //  var newWall = new Objects.BuiltElements.Archicad.ArchicadDoor(Utils.ScaleToNative(baseLine.start),
+            //    Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
+            //  if (el is RevitWall revitWall)
+            //    newWall.flipped = revitWall.flipped;
+            //  walls.Add(newWall);
+            //  break;
         }
       }
 
@@ -48,13 +48,13 @@ namespace Archicad.Converters
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadDoor> datas =
         await AsyncCommandProcessor.Execute(new Communication.Commands.GetDoorData(elementModels.Select(e => e.applicationId)));
 
-      if (datas is null )
+      if (datas is null)
       {
         return new List<Base>();
       }
 
       List<Base> openings = new List<Base>();
-      foreach ( Objects.BuiltElements.Archicad.ArchicadDoor subelement in datas)
+      foreach (Objects.BuiltElements.Archicad.ArchicadDoor subelement in datas)
       {
         subelement.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == subelement.applicationId)

@@ -230,7 +230,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not Launch Manager", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -262,7 +262,7 @@ namespace DesktopUI2
             }
             catch (Exception e)
             {
-              Log.CaptureException(e, Sentry.SentryLevel.Error);
+              new SpeckleException("Could not Add Account in AccountManager", e, true, Sentry.SentryLevel.Error);
 
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
@@ -280,7 +280,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not Add Account", ex, true, Sentry.SentryLevel.Error);
       }
     }
   }

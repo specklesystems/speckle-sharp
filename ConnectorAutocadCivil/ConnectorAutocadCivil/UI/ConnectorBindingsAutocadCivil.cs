@@ -359,7 +359,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
           // flatten the commit object to retrieve children objs
           int count = 0;
-          var commitObjs = FlattenCommitObject(commitObject, converter, progress, commitPrefix, ref count);
+          var commitObjs = FlattenCommitObject(commitObject, converter, progress, ref count);
 
           // open model space block table record for write
           BlockTableRecord btr = (BlockTableRecord)tr.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite);
@@ -402,7 +402,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 }
                 catch (Exception e)
                 {
-                  commitObj.Log.Add($"Fallback {fallback.id} failed conversion: {e.Message}");
+                  commitObj.Log.Add($"Fallback {fallback.applicationId} failed conversion: {e.Message}");
                 }
                 commitObj.Log.AddRange(fallback.Log);
               }
@@ -449,22 +449,29 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // find existing doc objects if they exist
             var existingObjs = new List<ObjectId>();
+            var layer = commitObj.Container;
             switch (state.ReceiveMode)
             {
               case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
                 existingObjs = Doc.GetObjectsByApplicationId(tr, commitObj.applicationId);
                 break;
               default:
+                layer = $"{commitPrefix}${commitObj.Container}";
                 break;
             }
 
             // bake
             if (commitObj.Convertible)
-              BakeObject(commitObj, converter, tr, existingObjs);
+            {
+              BakeObject(commitObj, converter, tr, layer, existingObjs);
+              commitObj.Status = !commitObj.CreatedIds.Any() ? ApplicationObject.State.Failed :
+                existingObjs.Count > 0 ? ApplicationObject.State.Updated :
+                ApplicationObject.State.Created;
+            }
             else
             {
               foreach (var fallback in commitObj.Fallback)
-                BakeObject(fallback, converter, tr, existingObjs, commitObj);
+                BakeObject(fallback, converter, tr, layer, existingObjs, commitObj);
               commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
                 ApplicationObject.State.Failed : existingObjs.Count > 0 ?
                 ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -485,7 +492,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
     }
     // Recurses through the commit object and flattens it. Returns list of Base objects with their bake layers
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter, ProgressViewModel progress, string layer, ref int count, bool foundConvertibleMember = false)
+    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter, ProgressViewModel progress, ref int count, string layer = null, bool foundConvertibleMember = false)
     {
       var objects = new List<ApplicationObject>();
 
@@ -511,7 +518,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           bool hasFallback = false;
           if (@base.GetMembers().ContainsKey("displayValue"))
           {
-            var fallbackObjects = FlattenCommitObject(@base["displayValue"], converter, progress, layer, ref count, foundConvertibleMember);
+            var fallbackObjects = FlattenCommitObject(@base["displayValue"], converter, progress, ref count, layer, foundConvertibleMember);
             if (fallbackObjects.Count > 0)
             {
               appObj.Fallback.AddRange(fallbackObjects);
@@ -539,9 +546,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // get bake layer name
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
-            string acLayerName = $"{layer}${objLayerName}";
+            string acLayerName = layer == null ? $"{objLayerName}" : $"{layer}${objLayerName}";
 
-            var nestedObjects = FlattenCommitObject(@base[prop], converter, progress, acLayerName, ref count, foundConvertibleMember);
+            var nestedObjects = FlattenCommitObject(@base[prop], converter, progress, ref count, acLayerName, foundConvertibleMember);
             var validNestedObjects = nestedObjects.Where(o => o.Convertible == true || o.Fallback.Count > 0)?.ToList();
             if (validNestedObjects != null && validNestedObjects.Count > 0)
             {
@@ -564,7 +571,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, progress, layer, ref count));
+          objects.AddRange(FlattenCommitObject(listObj, converter, progress, ref count, layer));
         return objects;
       }
 
@@ -572,7 +579,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         count = 0;
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter, progress, layer, ref count));
+          objects.AddRange(FlattenCommitObject(kvp.Value, converter, progress, ref count, layer));
         return objects;
       }
 
@@ -602,7 +609,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return convertedList;
     }
 
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, List<ObjectId> toRemove, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, string layer, List<ObjectId> toRemove, ApplicationObject parent = null)
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
@@ -617,8 +624,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             if (o == null)
               continue;
 
-            string layerPath = appObj.Container;
-            if (GetOrMakeLayer(layerPath, tr, out string cleanName))
+            if (GetOrMakeLayer(layer, tr, out string cleanName))
             {
               var res = o.Append(cleanName);
               if (res.IsValid)
@@ -672,7 +678,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               {
                 var bakeMessage = $"Could not bake to document.";
                 if (parent != null)
-                  parent.Update(logItem: $"fallback {appObj.id}: {bakeMessage}");
+                  parent.Update(logItem: $"fallback {appObj.applicationId}: {bakeMessage}");
                 else
                   appObj.Update(logItem: bakeMessage);
                 continue;
@@ -681,9 +687,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
             }
             else
             {
-              var layerMessage = $"Could not create layer {layerPath}.";
+              var layerMessage = $"Could not create layer {layer}.";
               if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.id}: {layerMessage}");
+                parent.Update(logItem: $"fallback {appObj.applicationId}: {layerMessage}");
               else
                 appObj.Update(logItem: layerMessage);
               continue;
@@ -697,7 +703,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       if (bakedCount == 0)
       {
         if (parent != null)
-          parent.Update(logItem: $"fallback {appObj.id}: could not bake object");
+          parent.Update(logItem: $"fallback {appObj.applicationId}: could not bake object");
         else
           appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
       }
