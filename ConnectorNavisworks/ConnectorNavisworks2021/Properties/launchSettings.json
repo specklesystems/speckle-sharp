@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "SpeckleNavisworks.2021": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Navisworks Manage 2021\\Roamer.exe",
+      "commandLineArgs":
+        "-OpenFile \"C:\\Users\\jsdbroughton\\source\\repos\\speckle\\speckle-sharp\\ConnectorNavisworks\\ConnectorNavisworks\\Sample Models\\KLY_ZHQ_CP2.nwf\""
+    }
+  }
+}
