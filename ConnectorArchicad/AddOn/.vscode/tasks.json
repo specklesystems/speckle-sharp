@@ -1,24 +1,22 @@
 {
   "version": "2.0.0",
-  "tasks": [
+  "tasks": [ 
     {
-      "label": "cmake build AddOn", // not tested on mac - may not work!
+      "label": "Speckle Archicad cmake 26",
       "type": "shell",
       "command": "cmake -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR='../../../../../../Dependencies/SDKs/ARCHICAD/APIDevKit25/macOS' ..",
       "windows": {
-        "command": "cmake -B ./Build/ -DAC_API_DEVKIT_DIR='C:/Program Files/GRAPHISOFT/API Development Kit 25.3002'"
+        "command": "if (!(Test-Path Build.Win.x64.26 -PathType Container)) {New-Item -ItemType Directory -Force -Path Build.Win.x64.26} ; cmake -B ./Build.Win.x64.26 -A \"x64\" -T \"v142\" -DAC_API_DEVKIT_DIR='../../../../../Dependencies/SDKs/Archicad/APIDevKit26/Win' -DAC_MDID_DEV=860313445 -DAC_MDID_LOC=2324968578"
       },
       "problemMatcher": []
     },
     {
-      "label": "msbuild AddOn",
-      "type": "shell",
-      "command": "'C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/MSBuild/Current/Bin/MSBuild.exe' 'Build/Speckle Connector.sln' -property:Configuration=Release"
-    },
-    {
-      "label": "copy AddOn build files (win)",
-      "type": "shell",
-      "command": "cp -a ./Build/Debug/. 'C:/Program Files/GRAPHISOFT/ARCHICAD 25/Add-Ons/ConnectorArchicad'",
+      "label": "Speckle Archicad build 26",
+      "type": "process",
+      "windows": {
+        "command": "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\MSBuild\\Current\\Bin\\MSBuild.exe",
+        "args": [".\\Build.Win.x64.26\\Speckle Connector.sln", "-property:Configuration=Release"]
+      },
       "problemMatcher": []
     },
   ]

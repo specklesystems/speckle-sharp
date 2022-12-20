@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text.Json;
@@ -164,6 +165,8 @@ namespace Speckle.Core.Api
     public static async Task<bool> IsConnectorUpdateAvailable(string slug)
     {
 #if DEBUG
+      if (slug == "dui2")
+        slug = "revit";
       //when debugging the version is not correct, so don't bother
       return false;
 #endif
@@ -252,48 +255,81 @@ namespace Speckle.Core.Api
 
     /// <summary>
     /// Returns the correct location of the AppData folder where Speckle is installed. Usually this would be the user's %appdata% folder, unless the install was made for all users.
+    /// This folder contains Kits and othe data that can be shared among users of the same machine.
     /// </summary>
     /// <returns>The location of the AppData folder where Speckle is installed</returns>
     public static string InstallApplicationDataPath =>
 
         Assembly.GetAssembly(typeof(Helpers)).Location.Contains("ProgramData")
-          ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData)
+          ? Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData, Environment.SpecialFolderOption.Create)
           : UserApplicationDataPath;
 
 
     /// <summary>
-    /// Returns the correct location for `Environment.SpecialFolder.ApplicationData` for the current roaming user.
+    /// Envirenment Variable that allows to overwrite the <see cref="UserApplicationDataPath"/>
+    /// /// </summary>
+    private static string _speckleUserDataEnvVar = "SPECKLE_USERDATA_PATH";
+
+
+    /// <summary>
+    /// Returns the location of the User Application Data folder for the current roaming user, which contains user specific data such as accounts and cache.
     /// </summary>
     /// <returns>The location of the user's `%appdata%` folder.</returns>
-    public static string UserApplicationDataPath
-      // We combine our own path to the %appdata% folder due to solve issues with network account management in windows,
-      // where the normal `SpecialFolder.ApplicationData` would point to the `Default` user instead of the active one.
-      => RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-        ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "AppData", "Roaming")
-        : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData));
+    public static string UserApplicationDataPath =>
+      !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(_speckleUserDataEnvVar)) ?
+      Environment.GetEnvironmentVariable(_speckleUserDataEnvVar) :
+      Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create);
+
 
 
 
     /// <summary>
-    /// Checks if the user has a valid internet connection by pinging 'https://google.com'
+    /// Checks if the user has a valid internet connection by pinging cloudfare
     /// </summary>
     /// <returns>True if the user is connected to the internet, false otherwise.</returns>
     public static Task<bool> UserHasInternet()
     {
-      return Ping("https://google.com");
+      return Ping("1.1.1.1"); //cloudfare
     }
 
     /// <summary>
     /// Pings a specific url to verify it's accessible.
     /// </summary>
-    /// <param name="url">The url to ping.</param>
+    /// <param name="hostnameOrAddress">The hostname or address to ping.</param>
     /// <returns>True if the the status code is 200, false otherwise.</returns>
-    public static async Task<bool> Ping(string url)
+    public static async Task<bool> Ping(string hostnameOrAddress)
     {
       try
       {
+        Ping myPing = new Ping();
+        var hostname = (Uri.CheckHostName(hostnameOrAddress) != UriHostNameType.Unknown) ? hostnameOrAddress : (new Uri(hostnameOrAddress)).DnsSafeHost;
+        byte[] buffer = new byte[32];
+        int timeout = 1000;
+        PingOptions pingOptions = new PingOptions();
+        PingReply reply = myPing.Send(hostname, timeout, buffer, pingOptions);
+        return (reply.Status == IPStatus.Success);
+      }
+      catch (Exception)
+      {
+        return false;
+      }
+    }
+
+    /// <summary>
+    /// Pings and tries gettign data from a specific address to verify it's online.
+    /// </summary>
+    /// <param name="address">Theaddress to use.</param>
+    /// <returns>True if the the status code is 200, false otherwise.</returns>
+    public static async Task<bool> PingAndGet(string address)
+    {
+      try
+      {
+        var ping = await Ping(address);
+        if (!ping)
+          return false;
+
         HttpClient client = new HttpClient();
-        var response = await client.GetAsync(url);
+        var response = await client.GetAsync(address);
         return response.IsSuccessStatusCode;
 
       }

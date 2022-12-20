@@ -2,17 +2,17 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <Version>1.0</Version>
+    <Version>2.0.0-dev</Version>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
-    <Product>ConnectorRhino7</Product>
     <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
-    <Version>2.0.0-dev</Version>
+    <Product>ConnectorRhino7</Product>
+   
     <!--NOTE-->
   <!--
     Since Rhino uses mono we build for win-x64 also on mac
@@ -27,24 +27,24 @@
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\**\*" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" />
+    <AvaloniaXaml Remove="Properties\**" />
+    <Compile Remove="Properties\**" />
+    <EmbeddedResource Remove="Properties\**" />
+    <None Remove="Properties\**" />
   </ItemGroup>
   
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1">
-    </PackageReference>
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001">
-    </PackageReference>
-    <PackageReference Include="RhinoWindows" Version="7.4.21078.1001">
+    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build">
+       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper\ConnectorGrasshopper.csproj" />
+    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
