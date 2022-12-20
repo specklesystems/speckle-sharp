@@ -7,7 +7,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 using Speckle.ConnectorAutocadCivil.Entry;
 using Speckle.ConnectorAutocadCivil.Storage;
 using Speckle.Core.Api;
@@ -968,7 +968,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
             // handle user cancellation
             if (progress.CancellationTokenSource.Token.IsCancellationRequested)
             {
-              tr.Commit();
               return;
             }
 
