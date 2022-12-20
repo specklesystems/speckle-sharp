@@ -49,17 +49,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
         }
       }
 
-      // Converting this flat list of objects back to a tree will be handled in the Converter.
-      var objects = selectedObjects.ToList();
-
-      // Sorting here or in the converter doesn't really matter. Essentially the root nodes will be processed first.
-      // Traversal of child nodes to include will be handled by cross reference with the list.
-      objects.Sort((x, y) =>
-        x.Length == y.Length ? string.Compare(x, y, StringComparison.Ordinal) : x.Length.CompareTo(y.Length));
-
       Cursor.Current = Cursors.Default;
 
-      return objects;
+      // Converting this flat list of objects back to a tree will be handled in the Converter.
+      return selectedObjects.ToList();
     }
   }
 }
