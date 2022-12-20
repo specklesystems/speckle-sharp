@@ -58,7 +58,7 @@ namespace Speckle.Core.Serialisation
 
     public BaseObjectSerializerV2()
     {
-      
+
     }
 
     public string Serialize(Base baseObj)
@@ -165,12 +165,12 @@ namespace Speckle.Core.Serialisation
 
       Dictionary<string, object> convertedBase = new Dictionary<string, object>();
       Dictionary<string, int> closure = new Dictionary<string, int>();
-      if (computeClosures || inheritedDetachInfo.IsDetachable)
+      if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
         ParentClosures.Add(closure);
 
       List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(baseObj);
       IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
-      
+
       // propertyName -> (originalValue, isDetachable, isChunkable, chunkSize)
       Dictionary<string, (object, PropertyAttributeInfo)> allProperties = new Dictionary<string, (object, PropertyAttributeInfo)>();
 
@@ -210,15 +210,28 @@ namespace Speckle.Core.Serialisation
         convertedBase[prop.Key] = convertedValue;
       }
 
-      convertedBase["id"] = ComputeId(convertedBase);
+      if (baseObj is Blob blob)
+      {
+        convertedBase["id"] = blob.id;
+      }
+      else
+      {
+        convertedBase["id"] = ComputeId(convertedBase);
+      }
 
       if (closure.Count > 0)
         convertedBase["__closure"] = closure;
-      if (computeClosures || inheritedDetachInfo.IsDetachable)
+      if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
         ParentClosures.RemoveAt(ParentClosures.Count - 1);
 
       ParentObjects.Remove(baseObj);
 
+      if (baseObj is Blob myBlob)
+      {
+        StoreBlob(myBlob);
+        UpdateParentClosures($"blob:{convertedBase["id"]}");
+        return convertedBase;
+      }
 
       if (inheritedDetachInfo.IsDetachable && WriteTransports != null && WriteTransports.Count > 0)
       {
@@ -233,7 +246,7 @@ namespace Speckle.Core.Serialisation
 
       return convertedBase;
     }
-    
+
     private object PreserializeBasePropertyValue(object baseValue, PropertyAttributeInfo detachInfo)
     {
       bool computeClosuresForChild = (detachInfo.IsDetachable || detachInfo.IsChunkable) && WriteTransports != null && WriteTransports.Count > 0;
@@ -261,7 +274,7 @@ namespace Speckle.Core.Serialisation
           chunks.Add(crtChunk);
         return PreserializeObject(chunks, inheritedDetachInfo: new PropertyAttributeInfo(true, false, 0, null));
       }
-      
+
       return PreserializeObject(baseValue, inheritedDetachInfo: detachInfo);
     }
 
@@ -299,6 +312,24 @@ namespace Speckle.Core.Serialisation
       }
     }
 
+    private void StoreBlob(Blob obj)
+    {
+      if (WriteTransports == null)
+        return;
+      bool hasBlobTransport = false;
+
+      foreach (var transport in WriteTransports)
+      {
+        if (transport is IBlobCapableTransport blobTransport)
+        {
+          hasBlobTransport = true;
+          blobTransport.SaveBlob(obj);
+        }
+      }
+
+      if (!hasBlobTransport)
+        throw new Exception("Object tree contains a Blob (file), but the serialiser has no blob saving capable transports.");
+    }
 
     // (propertyInfo, isDetachable, isChunkable, chunkSize, JsonPropertyAttribute)
     private List<(PropertyInfo, PropertyAttributeInfo)> GetTypedPropertiesWithCache(Base baseObj)

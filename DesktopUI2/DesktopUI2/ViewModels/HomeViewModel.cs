@@ -261,7 +261,7 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("HasSavedStreams");
 
 
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Saved Streams Load" }, { "count", streams.Count } }, isAction: false);
+        //Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Saved Streams Load" }, { "count", streams.Count } }, isAction: false);
       }
       catch (Exception ex)
       {

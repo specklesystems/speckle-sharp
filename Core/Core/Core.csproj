@@ -26,6 +26,10 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="TestsUnit"/>
+  </ItemGroup>
+
   <!--Do not publish a Core nuget when publishing Objects-->
   <PropertyGroup Condition="'$(SolutionName)'=='Objects' Or '$(SolutionName)'=='DesktopUI'">
     <IsPackable>false</IsPackable>
