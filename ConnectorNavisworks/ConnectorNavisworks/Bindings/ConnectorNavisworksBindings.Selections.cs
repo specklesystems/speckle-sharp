@@ -2,12 +2,10 @@
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.DocumentParts;
-using Autodesk.Navisworks.Api.Interop.ComApi;
-using ComApiBridge = Autodesk.Navisworks.Api.ComApi.ComApiBridge;
-using System;
 using Cursor = System.Windows.Forms.Cursor;
 using System.Windows.Forms;
 using Application = Autodesk.Navisworks.Api.Application;
+using static Speckle.ConnectorNavisworks.Utils;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
