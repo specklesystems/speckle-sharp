@@ -145,7 +145,6 @@ namespace Objects.Converter.RhinoGh
           if (ro is BrepObject || ro is ExtrusionObject)
             displayMesh = GetRhinoRenderMesh(ro);
 
-
           //rhino BIM to be deprecated after the mapping tool is released
           if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
             schema = ConvertToSpeckleBE(ro, reportObj, displayMesh) ?? ConvertToSpeckleStr(ro, reportObj);
@@ -243,16 +242,16 @@ namespace Objects.Converter.RhinoGh
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
-            @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()),null, displayMesh);
+            @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()),null, displayMesh, material);
           else
             @base = MeshToSpeckle(o);
           break;
 #endif
           case RH.Extrusion o:
-            @base = BrepToSpeckle(o.ToBrep(), null, displayMesh);
+            @base = BrepToSpeckle(o.ToBrep(), null, displayMesh, material);
             break;
           case RH.Brep o:
-            @base = BrepToSpeckle(o.DuplicateBrep(), null, displayMesh);
+            @base = BrepToSpeckle(o.DuplicateBrep(), null, displayMesh, material);
             break;
           case NurbsSurface o:
             @base = SurfaceToSpeckle(o);
