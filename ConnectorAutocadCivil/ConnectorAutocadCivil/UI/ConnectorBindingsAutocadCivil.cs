@@ -1063,7 +1063,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
       //// GLOBAL EVENT HANDLERS
       Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
       Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
-      Doc.BeginDocumentClose += Application_DocumentClosed;
 
       var layers = Application.UIBindings.Collections.Layers;
       layers.CollectionChanged += Application_LayerChanged;
@@ -1091,29 +1090,19 @@ namespace Speckle.ConnectorAutocadCivil.UI
       catch { }
     }
 
-    private void Application_DocumentClosed(object sender, DocumentBeginCloseEventArgs e)
-    {
-      try
-      {
-        // Triggered just after a request is received to close a drawing.
-        if (Doc != null)
-          return;
-
-        if (SpeckleAutocadCommand.MainWindow != null)
-          SpeckleAutocadCommand.MainWindow.Hide();
-
-        MainViewModel.GoHome();
-      }
-      catch { }
-    }
-
     private void Application_DocumentActivated(object sender, DocumentCollectionEventArgs e)
     {
       try
       {
         // Triggered when a document window is activated. This will happen automatically if a document is newly created or opened.
         if (e.Document == null)
+        {
+          if (SpeckleAutocadCommand.MainWindow != null)
+            SpeckleAutocadCommand.MainWindow.Hide();
+
+          MainViewModel.GoHome();
           return;
+        }
 
         var streams = GetStreamsInFile();
         if (streams.Count > 0)
