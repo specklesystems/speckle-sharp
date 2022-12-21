@@ -9,6 +9,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Objects.Utils;
 using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+using Speckle.Core.Models;
 
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -32,7 +33,7 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using Speckle.Core.Kits;
+using Objects.Geometry;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -697,34 +698,60 @@ namespace Objects.Converter.AutocadCivil
       return curve;
     }
     // handles polycurves with spline segments: bakes segments individually and then joins
-    public AcadDB.Curve PolycurveSplineToNativeDB(Polycurve polycurve)
+    public ApplicationObject PolycurveSplineToNativeDB(Polycurve polycurve)
     {
-      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+      var appObj = new ApplicationObject(polycurve.id, polycurve.speckle_type) { applicationId = polycurve.applicationId };
 
       Entity first = null;
       List<Entity> others = new List<Entity>();
+      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
       for (int i = 0; i < polycurve.segments.Count; i++)
       {
-        var converted = CurveToNativeDB(polycurve.segments[i]);
-        if (converted == null)
+        var segment = polycurve.segments[i];
+        var converted = CurveToNativeDB(segment);
+        if (converted == null || converted.Count == 0)
+        {
+          appObj.Log.Add($"Could not create {(segment as Curve).speckle_type} segment {(segment as Curve).id}");
           continue;
+        }
 
-        var newEntity = Trans.GetObject(modelSpaceRecord.Append(converted), OpenMode.ForWrite) as Entity;
-        if (first == null)
-          first = newEntity;
-        else
-          others.Add(newEntity);
+        foreach (var convertedItem in converted)
+        {
+          var newEntity = Trans.GetObject(modelSpaceRecord.Append(convertedItem), OpenMode.ForWrite) as Entity;
+          appObj.Update(createdId: newEntity.Handle.ToString(), convertedItem: newEntity);
+
+          if (first == null)
+            first = newEntity;
+          else
+            others.Add(newEntity);
+        }
       }
 
-      try
+      if (first == null)
       {
-        first.JoinEntities(others.ToArray());
-        return first as Spline;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "No segments were successfully converted");
+        return appObj;
       }
-      catch (Exception e)
+      else
       {
-        return null;
+        appObj.Status = ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update ? 
+          ApplicationObject.State.Updated : 
+          ApplicationObject.State.Created;
       }
+
+      if (others.Count > 0)
+      {
+        try
+        {
+          first.JoinEntities(others.ToArray());
+          // TODO: this always fails. Fix and edit the createdids and converted to only reflect the new joined entities
+        }
+        catch (Exception e)
+        {
+          appObj.Update(logItem: $"Could not create spline from segments: {e.Message}");
+        }
+      }
+      return appObj;
     }
 
     // Curve
@@ -909,36 +936,47 @@ namespace Objects.Converter.AutocadCivil
       var _curve = AcadDB.Curve.CreateFromGeCurve(NurbcurveToNative(curve));
       return _curve;
     }
-    public AcadDB.Curve CurveToNativeDB(ICurve icurve)
+    public List<AcadDB.Curve> CurveToNativeDB(ICurve icurve)
     {
+      var convertedList = new List<AcadDB.Curve>();
+      AcadDB.Curve converted = null;
       switch (icurve)
       {
         case Line line:
-          return LineToNativeDB(line);
-
+          converted = LineToNativeDB(line);
+          break;
         case Polyline polyline:
-          return PolylineToNativeDB(polyline);
-
+          converted = PolylineToNativeDB(polyline);
+          break;
         case Arc arc:
-          return ArcToNativeDB(arc);
-
+          converted = ArcToNativeDB(arc);
+          break;
         case Circle circle:
-          return CircleToNativeDB(circle);
-
+          converted = CircleToNativeDB(circle);
+          break;
         case Ellipse ellipse:
-          return EllipseToNativeDB(ellipse);
-
+          converted = EllipseToNativeDB(ellipse);
+          break;
         case Polycurve polycurve:
           if (polycurve.segments.Where(o => o is Curve).Count() > 0)
-            return PolycurveSplineToNativeDB(polycurve);
-          return PolycurveToNativeDB(polycurve);
-
+          {
+            var convertedPolycurve = PolycurveSplineToNativeDB(polycurve);
+            convertedList = convertedPolycurve.Converted.Cast<AcadDB.Curve>().ToList();
+          }
+          else
+          {
+            converted = PolycurveToNativeDB(polycurve);
+          }
+          break;  
         case Curve curve:
-          return NurbsToNativeDB(curve);
-
+          converted = NurbsToNativeDB(curve);
+          break;
         default:
-          return null;
+          break;
       }
+      if (converted != null)
+        convertedList.Add(converted);
+      return convertedList;
     }
 
     // Surface

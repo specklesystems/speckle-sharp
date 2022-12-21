@@ -22,7 +22,6 @@ using Speckle.Core.Kits;
 using Autodesk.AutoCAD.Windows.Data;
 using Objects.Other;
 using Autodesk.AutoCAD.Colors;
-using System.Reflection;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -189,8 +188,10 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // TODO: this needs to be improved, hatch curves not being created with HatchLoopTypes.Polyline flag
-    public AcadDB.Hatch HatchToNativeDB(Hatch hatch)
+    public ApplicationObject HatchToNativeDB(Hatch hatch)
     {
+      var appObj = new ApplicationObject(hatch.id, hatch.speckle_type) { applicationId = hatch.applicationId };
+
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
 
       // convert curves
@@ -200,69 +201,102 @@ namespace Objects.Converter.AutocadCivil
         foreach (var loop in hatch.loops)
         {
           var converted = CurveToNativeDB(loop.Curve);
-          if (converted == null)
-            continue;
-
-          var curveId = modelSpaceRecord.Append(converted);
-          if (curveId.IsValid)
+          if (converted == null || converted.Count == 0)
           {
-            HatchLoopTypes type = HatchLoopTypeToNative(loop.Type);
-            loops.Add(converted, type);
+            appObj.Log.Add($"Could not create {loop.Type} loop {loop.id}");
+            continue;
+          }
+          foreach (var convertedItem in converted)
+          {
+            var curveId = modelSpaceRecord.Append(convertedItem);
+            if (curveId.IsValid)
+            {
+              HatchLoopTypes type = HatchLoopTypeToNative(loop.Type);
+              loops.Add(convertedItem, type);
+            }
+            else
+            {
+              appObj.Log.Add($"Could not add {loop.Type} loop {loop.id} to model space");
+            }
           }
         }
       }
-      else // this is just here for backwards compatibility, before loops were introduced. Deprecate a few releases after 2.2.6
+      if (loops.Count == 0)
       {
-        foreach (var loop in hatch.curves)
-        {
-          var converted = CurveToNativeDB(loop);
-          if (converted == null)
-            continue;
-
-          var curveId = modelSpaceRecord.Append(converted);
-          if (curveId.IsValid)
-            loops.Add(converted, HatchLoopTypes.Default);
-        }
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "No loops were successfully created");
+        return appObj;
       }
-      if (loops.Count == 0) return null;
+      else
+      {
+        appObj.Status = ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update ?
+          ApplicationObject.State.Updated :
+          ApplicationObject.State.Created;
+      }
 
       // add hatch to modelspace
       var _hatch = new AcadDB.Hatch();
-      modelSpaceRecord.Append(_hatch);
+      var hatchId = modelSpaceRecord.Append(_hatch);
 
-      _hatch.SetDatabaseDefaults();
-      // try get hatch pattern
-      var patternCategory = HatchPatterns.ValidPatternName(hatch.pattern);
-      switch (patternCategory)
+      if (hatchId.IsValid)
       {
-        case PatPatternCategory.kCustomdef:
-          _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
-          break;
-        case PatPatternCategory.kPredef:
-        case PatPatternCategory.kISOdef:
-          _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
-          break;
-        case PatPatternCategory.kUserdef:
-          _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
-          break;
-        default:
-          _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
-          break;
+        _hatch.SetDatabaseDefaults();
+
+        // try get hatch pattern
+        var patternCategory = HatchPatterns.ValidPatternName(hatch.pattern);
+        switch (patternCategory)
+        {
+          case PatPatternCategory.kCustomdef:
+            _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
+            break;
+          case PatPatternCategory.kPredef:
+          case PatPatternCategory.kISOdef:
+            _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+            break;
+          case PatPatternCategory.kUserdef:
+            _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
+            break;
+          default:
+            _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
+            break;
+        }
+        _hatch.PatternAngle = hatch.rotation;
+        _hatch.PatternScale = hatch.scale;
+
+        var style = hatch["style"] as string;
+        if (style != null)
+          _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
+
+        // create loops
+        foreach (var entry in loops)
+        {
+          var loopHandle = entry.Key.Handle.ToString();
+          try
+          {
+            _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
+            try
+            {
+              entry.Key.Erase(); // delete created hatch loop curve
+            }
+            catch (Exception e)
+            {
+              appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not delete loop {loopHandle}: {e.Message}");
+            }
+          }
+          catch (Exception e)
+          {
+            appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not append loop {loopHandle}: {e.Message}");
+          }
+        }
+         
+        _hatch.EvaluateHatch(true);
       }
-      _hatch.PatternAngle = hatch.rotation;
-      _hatch.PatternScale = hatch.scale;
-      var style = hatch["style"] as string;
-      if (style != null)
-        _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
+      else // update appobj with created loops instead
+      {
+        foreach (var loop in loops.Keys)
+          appObj.Update(createdId: loop.Handle.ToString(), convertedItem: loop, logItem: $"Could not create valid hatch");
+      }
 
-      // create loops
-      foreach (var entry in loops)
-        _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
-      _hatch.EvaluateHatch(true);
-      foreach (var entry in loops) // delete created hatch curves
-        entry.Key.Erase();
-
-      return _hatch;
+      return appObj;
     }
     private AcadDB.Polyline GetPolylineFromBulgeVertexCollection(BulgeVertexCollection bulges)
     {
