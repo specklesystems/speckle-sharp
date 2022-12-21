@@ -41,9 +41,10 @@ ModelInfo::Material::Material (const UMAT& aumat) :
 
 GSErrCode ModelInfo::Material::Store (GS::ObjectState& os) const
 {
+	os.Add (Model::MaterialNameFieldName, name);
 	os.Add (Model::AmbientColorFieldName, ambientColor);
 	os.Add (Model::EmissionColorFieldName, emissionColor);
-	os.Add (Model::TransparencyieldName, transparency);
+	os.Add (Model::TransparencyFieldName, transparency);
 
 	return NoError;
 }
