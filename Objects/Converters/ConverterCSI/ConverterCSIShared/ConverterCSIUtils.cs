@@ -163,35 +163,40 @@ namespace Objects.Converter.CSI
     {
       var guids = new Dictionary<string, string>();
 
-      // there are many model properties that have a method called "GetNameList" which, as far as I can tell,
-      // is the only way to access all elements. Loop through all props of model and use reflection to call
-      // the "GetNameList" method.
-      foreach (PropertyInfo prop in model.GetType().GetProperties(BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static))
+      var names = GetAllFrameNames(model);
+      var guid = "";
+      foreach (var name in names)
       {
-        var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
-        var getNameListMethod = type.GetMethod("GetNameList");
-        var getGuidMethod = type.GetMethod("GetGUID");
-        if (getNameListMethod == null || getGuidMethod == null)
+        var success = Model.FrameObj.GetGUID(name, ref guid);
+        if (success != 0)
           continue;
 
-        var obj = prop.GetValue(model, null);
-        var nameListArgs = new object[] { 0, new string[] { } };
-        var success = (int)getNameListMethod.Invoke(obj, nameListArgs);
-
-        if (success != 0 || (int)nameListArgs[0] == 0 || !(nameListArgs[1] is string[] names))
-          continue;
-
-        foreach (var name in names)
-        {
-          var guidListArgs = new string[] { name, "" };
-          success = (int)getGuidMethod.Invoke(obj, guidListArgs);
-          if (success != 0)
-            continue;
-
-          if (!guids.ContainsKey(guidListArgs[1]))
-            guids.Add(guidListArgs[1], name);
-        }
+        if (!guids.ContainsKey(guid))
+          guids.Add(guid, name);
       }
+
+      names = GetAllAreaNames(model);
+      foreach (var name in names)
+      {
+        var success = Model.AreaObj.GetGUID(name, ref guid);
+        if (success != 0)
+          continue;
+
+        if (!guids.ContainsKey(guid))
+          guids.Add(guid, name);
+      }
+
+      //names = GetAllPointNames(model);
+      //foreach (var name in names)
+      //{
+      //  var guid = "";
+      //  var success = Model.PointObj.GetGUID(name, ref guid);
+      //  if (success != 0)
+      //    continue;
+
+      //  if (!guids.ContainsKey(guid))
+      //    guids.Add(guid, name);
+      //}
 
       return guids;
     }
@@ -202,11 +207,15 @@ namespace Objects.Converter.CSI
       if (string.IsNullOrEmpty(applicationId) || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return false;
 
-      if (ExistingObjectGuids.Keys.Contains(applicationId))
-      {
-        name = ExistingObjectGuids[applicationId];
-        return true;
-      }
+      var projectIds = PreviousContextObjects.Where(o => o.applicationId == applicationId).FirstOrDefault()?.CreatedIds;
+      projectIds = projectIds ?? new List<string> { applicationId };
+
+      foreach (var guid in projectIds)
+        if (ExistingObjectGuids.Keys.Contains(guid))
+        {
+          name = ExistingObjectGuids[guid];
+          return true;
+        }
 
       return false;
     }

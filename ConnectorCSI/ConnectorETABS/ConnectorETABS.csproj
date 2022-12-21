@@ -65,10 +65,6 @@
       <Project>{bf1a4f95-acf7-4353-b60a-4d79c2f44651}</Project>
       <Name>PolygonMesher</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
-      <Project>{f6f813fc-153b-49fe-9b33-25152be85ba8}</Project>
-      <Name>Objects</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj">
       <Project>{c59939f6-d383-44e3-a7ef-4e160e3dfb73}</Project>
       <Name>DriverPluginCSharp</Name>

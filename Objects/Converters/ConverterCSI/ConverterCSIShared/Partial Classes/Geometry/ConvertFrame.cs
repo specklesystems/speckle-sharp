@@ -2,13 +2,11 @@ using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
 using Speckle.Core.Models;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
 using System.Linq;
 using CSiAPIv1;
-using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
@@ -107,7 +105,7 @@ namespace Objects.Converter.CSI
       }
       SetFrameElementProperties(element1D, newFrame);
 
-      if (string.IsNullOrEmpty(element1D.name))
+      if (!string.IsNullOrEmpty(element1D.name))
       {
         if (GetAllFrameNames(Model).Contains(element1D.name))
           element1D.name = element1D.id;
@@ -115,10 +113,11 @@ namespace Objects.Converter.CSI
         newFrame = element1D.name;
       }
 
-      Model.FrameObj.SetGUID(newFrame, element1D.applicationId);
+      var guid = "";
+      Model.FrameObj.GetGUID(newFrame, ref guid);
 
       if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: element1D.applicationId);
+        appObj.Update(status: ApplicationObject.State.Created, createdId: guid);
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }

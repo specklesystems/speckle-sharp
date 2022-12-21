@@ -134,7 +134,7 @@ namespace Speckle.ConnectorCSI.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
-      // converter.SetPreviousContextObjects(previouslyReceivedObjects);
+      converter.SetPreviousContextObjects(previouslyReceivedObjects);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
 
@@ -144,7 +144,14 @@ namespace Speckle.ConnectorCSI.UI
         progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
         return null;
       }
-      Model.View.RefreshWindow();
+
+      await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+      {
+        Model.View.RefreshWindow();
+        Model.View.RefreshView();
+      });
+
+      state.ReceivedObjects = newPlaceholderObjects;
 
       try
       {

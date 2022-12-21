@@ -129,8 +129,6 @@ namespace Objects.Converter.CSI
         name = area.name;
       }
 
-      Model.AreaObj.SetGUID(name, area.applicationId);
-
       if (area is CSIElement2D)
       {
         var CSIarea = (CSIElement2D)area;
@@ -150,8 +148,11 @@ namespace Objects.Converter.CSI
 
       }
 
+      var guid = "";
+      Model.FrameObj.GetGUID(name, ref guid);
+
       if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: $"{name}");
+        appObj.Update(status: ApplicationObject.State.Created, createdId: guid);
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
