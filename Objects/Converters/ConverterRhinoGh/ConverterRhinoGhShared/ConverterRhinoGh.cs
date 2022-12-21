@@ -1,4 +1,5 @@
 ﻿using Grasshopper.Kernel.Types;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
@@ -333,12 +334,36 @@ namespace Objects.Converter.RhinoGh
             o.baseLine = CurveToSpeckle(bottomCrv);
             break;
 
+          case RevitFloor o:
+            var brep = ((RH.Brep)@object.Geometry);
+            var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
+            var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
+            o.outline = extCurves.First();
+            o.voids = intCurves;
+            break;
+
           case RevitBeam o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
           case RevitBrace o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
+
+          case RevitColumn o:
+            o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
+
+          case RevitPipe o:
+            o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
+
+          case RevitDuct o:
+            o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
+            break;
+
+          case RevitTopography o:
+            o.baseGeometry = MeshToSpeckle((RH.Mesh)@object.Geometry);
             break;
 
           case DirectShape o:
