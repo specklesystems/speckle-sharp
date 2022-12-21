@@ -37,6 +37,8 @@ namespace Archicad.Model
 
       #region --- Fields ---
 
+      public string name { get; set; }
+
       public Color ambientColor { get; set; }
 
       public Color emissionColor { get; set; }
