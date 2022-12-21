@@ -31,6 +31,11 @@ namespace Objects.Converter.Revit
         speckleType.hasFamilySymbol = true;
       }
 
+      if (revitType is MEPCurveType)
+      {
+        var mepType = revitType as MEPCurveType;
+        speckleType.shape = mepType.Shape.ToString();
+      }
       GetAllRevitParamsAndIds(speckleType, revitType);
 
 
