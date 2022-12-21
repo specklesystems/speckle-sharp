@@ -2,12 +2,10 @@
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.DocumentParts;
-using Autodesk.Navisworks.Api.Interop.ComApi;
-using ComApiBridge = Autodesk.Navisworks.Api.ComApi.ComApiBridge;
-using System;
 using Cursor = System.Windows.Forms.Cursor;
 using System.Windows.Forms;
 using Application = Autodesk.Navisworks.Api.Application;
+using static Speckle.ConnectorNavisworks.Utils;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
@@ -41,34 +39,18 @@ namespace Speckle.ConnectorNavisworks.Bindings
           var hiddenAncestors = descendant.AncestorsAndSelf.Any(x => x.IsHidden == true);
           if (hiddenAncestors) continue;
 
-          // The path for ModelItems is their node position at each level of the Models tree.
-          // This is the de facto UID for that element within the file at that time.
-          InwOaPath path = ComApiBridge.ToInwOaPath(descendant);
-
-          // Neglect the Root Node
-          if (((Array)path.ArrayData).ToArray<int>().Length == 0) continue;
-
-          // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
-          string pointer = ((Array)path.ArrayData).ToArray<int>().Aggregate("",
-            (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-');
-
-          //var handle = path.nwHandle;
-
-          selectedObjects.Add(pointer);
+          string pseudoId = GetPseudoId(descendant);
+          if (pseudoId != null) // root node
+          {
+            selectedObjects.Add(pseudoId);
+          }
         }
       }
 
-      // Converting this flat list of objects back to a tree will be handled in the Converter.
-      var objects = selectedObjects.ToList();
-
-      // Sorting here or in the converter doesn't really matter. Essentially the root nodes will be processed first.
-      // Traversal of child nodes to include will be handled by cross reference with the list.
-      objects.Sort((x, y) =>
-        x.Length == y.Length ? string.Compare(x, y, StringComparison.Ordinal) : x.Length.CompareTo(y.Length));
-
       Cursor.Current = Cursors.Default;
 
-      return objects;
+      // Converting this flat list of objects back to a tree will be handled in the Converter.
+      return selectedObjects.ToList();
     }
   }
 }

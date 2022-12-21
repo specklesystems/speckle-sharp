@@ -57,6 +57,7 @@
     <None Remove="Views\MappingsControl.xaml" />
     <None Remove="Views\MappingsWindow.xaml" />
     <None Remove="Views\Mappings\Controls\RevitBasic.xaml" />
+    <None Remove="Views\Mappings\Controls\RevitMEP.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
     <None Remove="Views\Pages\LogInView.xaml" />
     <None Remove="Views\Pages\NotificationsView.xaml" />
@@ -166,6 +167,7 @@
     <AvaloniaXaml Include="Views\Mappings\Controls\RevitBasic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Mappings\Controls\RevitMEP.xaml" />
     <AvaloniaXaml Include="Views\Pages\LogInView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
