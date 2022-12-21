@@ -73,6 +73,11 @@ namespace Speckle.ConnectorAutocadCivil.Storage
       if (doc == null)
         return;
 
+      foreach (var streamState in streamStates)
+      {
+        streamState.CachedStream.collaborators = new List<Core.Api.Collaborator>();
+      }
+
       using (DocumentLock l = doc.LockDocument())
       {
         using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
