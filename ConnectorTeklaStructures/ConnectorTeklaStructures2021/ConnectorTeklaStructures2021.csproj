@@ -89,24 +89,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Stylet">
-      <Version>1.3.6</Version>
-    </PackageReference>
     <PackageReference Include="TeklaOpenAPI">
       <Version>2021.0.1</Version>
     </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Manifest.xml" />
-    <Content Include="ManifestGenerator.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>ManifestGenerator.xml</LastGenOutput>
-    </Content>
-    <Content Include="ManifestGenerator.xml">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>ManifestGenerator.tt</DependentUpon>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

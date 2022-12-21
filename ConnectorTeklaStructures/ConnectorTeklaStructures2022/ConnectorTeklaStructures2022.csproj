@@ -80,6 +80,11 @@
     <PackageReference Include="Avalonia.ReactiveUI">
       <Version>0.10.18</Version>
     </PackageReference>
+    <PackageReference Include="MSBuild.AssemblyVersion">
+      <Version>1.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="Tekla.Structures">
       <Version>2022.0.10715</Version>
     </PackageReference>
@@ -95,6 +100,9 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
