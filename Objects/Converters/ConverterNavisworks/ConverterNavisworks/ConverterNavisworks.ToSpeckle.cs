@@ -115,8 +115,14 @@ namespace Objects.Converter.Navisworks
         @base["Source Guid"] = element.Model.SourceGuid;
       }
 
+      var propertiesBase = GetPropertiesBase(element, ref @base);
+
+      @base["Properties"] = propertiesBase;
+
+
       return @base;
     }
+
 
     public List<Base> ConvertToSpeckle(List<object> objects)
     {
@@ -142,10 +148,8 @@ namespace Objects.Converter.Navisworks
 
     private static bool CanConvertToSpeckle(ModelItem item)
     {
-
       // Only Geometry and Geometry with Mesh
       return item.HasGeometry && (item.Geometry.PrimitiveTypes & PrimitiveTypes.Triangles) != 0;
-
     }
 
 

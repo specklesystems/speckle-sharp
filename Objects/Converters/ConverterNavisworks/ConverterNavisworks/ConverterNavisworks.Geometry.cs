@@ -154,23 +154,22 @@ namespace Objects.Converter.Navisworks
             isSame = false;
           }
 
-          if (isSame)
+          if (!isSame) continue;
+
+          InwLTransform3f3 localToWorld = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
+
+          //create Global Coordinate System Matrix
+          object matrix = localToWorld.Matrix;
+          Array matrixArray = (Array)matrix;
+          double[] elements = ConvertArrayToDouble(matrixArray);
+          double[] elementsValue = new double[elements.Length];
+          for (int i = 0; i < elements.Length; i++)
           {
-            InwLTransform3f3 localToWorld = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
-
-            //create Global Coordinate System Matrix
-            object matrix = localToWorld.Matrix;
-            Array matrixArray = (Array)matrix;
-            double[] elements = ConvertArrayToDouble(matrixArray);
-            double[] elementsValue = new double[elements.Length];
-            for (int i = 0; i < elements.Length; i++)
-            {
-              elementsValue[i] = elements[i];
-            }
-
-            callbackListener.Matrix = elementsValue;
-            fragment.GenerateSimplePrimitives(nwEVertexProperty.eNORMAL, callbackListener);
+            elementsValue[i] = elements[i];
           }
+
+          callbackListener.Matrix = elementsValue;
+          fragment.GenerateSimplePrimitives(nwEVertexProperty.eNORMAL, callbackListener);
         }
 
         callbackListeners.Add(callbackListener);
@@ -357,7 +356,7 @@ namespace Objects.Converter.Navisworks
 
       return boundingBox;
     }
-  
+
     public Vector3D TransformVector3D { get; set; }
     public Vector SettingOutPoint { get; set; }
     public Vector TransformVector { get; set; }
@@ -470,7 +469,7 @@ namespace Objects.Converter.Navisworks
 
       List<Base> baseGeometries = new List<Base>();
 
-      Vector3D move = (TransformVector3D == null) ? new Vector3D(0,0,0) : TransformVector3D;
+      Vector3D move = (TransformVector3D == null) ? new Vector3D(0, 0, 0) : TransformVector3D;
 
       foreach (CallbackGeomListener callback in callbackListeners)
       {
@@ -481,7 +480,6 @@ namespace Objects.Converter.Navisworks
 
         List<double> vertices = new List<double>();
         List<int> faces = new List<int>();
-
 
 
         /// TODO: this needs to come from options. For now, no move.
