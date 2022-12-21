@@ -33,7 +33,6 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using Objects.Geometry;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -731,12 +730,6 @@ namespace Objects.Converter.AutocadCivil
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "No segments were successfully converted");
         return appObj;
-      }
-      else
-      {
-        appObj.Status = ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update ? 
-          ApplicationObject.State.Updated : 
-          ApplicationObject.State.Created;
       }
 
       if (others.Count > 0)

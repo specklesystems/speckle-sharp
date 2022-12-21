@@ -226,74 +226,60 @@ namespace Objects.Converter.AutocadCivil
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "No loops were successfully created");
         return appObj;
       }
-      else
-      {
-        appObj.Status = ReceiveMode == Speckle.Core.Kits.ReceiveMode.Update ?
-          ApplicationObject.State.Updated :
-          ApplicationObject.State.Created;
-      }
 
       // add hatch to modelspace
       var _hatch = new AcadDB.Hatch();
-      var hatchId = modelSpaceRecord.Append(_hatch);
+      modelSpaceRecord.Append(_hatch);
 
-      if (hatchId.IsValid)
+
+      _hatch.SetDatabaseDefaults();
+
+      // try get hatch pattern
+      var patternCategory = HatchPatterns.ValidPatternName(hatch.pattern);
+      switch (patternCategory)
       {
-        _hatch.SetDatabaseDefaults();
+        case PatPatternCategory.kCustomdef:
+          _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
+          break;
+        case PatPatternCategory.kPredef:
+        case PatPatternCategory.kISOdef:
+          _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
+          break;
+        case PatPatternCategory.kUserdef:
+          _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
+          break;
+        default:
+          _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
+          break;
+      }
+      _hatch.PatternAngle = hatch.rotation;
+      _hatch.PatternScale = hatch.scale;
 
-        // try get hatch pattern
-        var patternCategory = HatchPatterns.ValidPatternName(hatch.pattern);
-        switch (patternCategory)
+      var style = hatch["style"] as string;
+      if (style != null)
+        _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
+
+      // create loops
+      foreach (var entry in loops)
+      {
+        var loopHandle = entry.Key.Handle.ToString();
+        try
         {
-          case PatPatternCategory.kCustomdef:
-            _hatch.SetHatchPattern(HatchPatternType.CustomDefined, hatch.pattern);
-            break;
-          case PatPatternCategory.kPredef:
-          case PatPatternCategory.kISOdef:
-            _hatch.SetHatchPattern(HatchPatternType.PreDefined, hatch.pattern);
-            break;
-          case PatPatternCategory.kUserdef:
-            _hatch.SetHatchPattern(HatchPatternType.UserDefined, hatch.pattern);
-            break;
-          default:
-            _hatch.SetHatchPattern(HatchPatternType.PreDefined, "SOLID");
-            break;
-        }
-        _hatch.PatternAngle = hatch.rotation;
-        _hatch.PatternScale = hatch.scale;
-
-        var style = hatch["style"] as string;
-        if (style != null)
-          _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
-
-        // create loops
-        foreach (var entry in loops)
-        {
-          var loopHandle = entry.Key.Handle.ToString();
+          _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
+          _hatch.EvaluateHatch(true);
           try
           {
-            _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
-            try
-            {
-              entry.Key.Erase(); // delete created hatch loop curve
-            }
-            catch (Exception e)
-            {
-              appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not delete loop {loopHandle}: {e.Message}");
-            }
+            entry.Key.Erase(); // delete created hatch loop curve
           }
           catch (Exception e)
           {
-            appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not append loop {loopHandle}: {e.Message}");
+            appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not delete loop {loopHandle}: {e.Message}");
           }
         }
-         
-        _hatch.EvaluateHatch(true);
-      }
-      else // update appobj with created loops instead
-      {
-        foreach (var loop in loops.Keys)
-          appObj.Update(createdId: loop.Handle.ToString(), convertedItem: loop, logItem: $"Could not create valid hatch");
+        catch (Exception e)
+        {
+          appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not append loop {loopHandle}: {e.Message}");
+        }
       }
 
       return appObj;
@@ -572,11 +558,31 @@ namespace Objects.Converter.AutocadCivil
     {
       if (TryUseObjDisplay && obj["displayStyle"] as DisplayStyle != null) style = obj["displayStyle"] as DisplayStyle;
       if (TryUseObjDisplay && obj["renderMaterial"] as RenderMaterial != null) material = obj["renderMaterial"] as RenderMaterial;
-      var convertedGeo = ConvertToNative(obj) as Entity;
-      if (convertedGeo != null)
+
+
+      var convertedList = new List<object>();
+      var convertedGeo = ConvertToNative(obj);
+      if (convertedGeo == null)
+        return;
+
+      //Iteratively flatten any lists
+      void FlattenConvertedObject(object item)
       {
-        convertedGeo = (style != null) ? DisplayStyleToNative(style, convertedGeo) : DisplayStyleToNative(material, convertedGeo);
-        converted.Add(convertedGeo);
+        if (item is System.Collections.IList list)
+          foreach (object child in list)
+            FlattenConvertedObject(child);
+        else
+          convertedList.Add(item);
+      }
+      FlattenConvertedObject(convertedGeo);
+
+      foreach (Entity entity in convertedList)
+      {
+        if (entity != null)
+        {
+          var displayedEntity = (style != null) ? DisplayStyleToNative(style, entity) : DisplayStyleToNative(material, entity);
+          converted.Add(displayedEntity);
+        }
       }
     }
 
