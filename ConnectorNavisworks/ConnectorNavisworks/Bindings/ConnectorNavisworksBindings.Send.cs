@@ -117,7 +117,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       while (toConvertDictionary.Any(kv => kv.Value == false))
       {
-        double navisworksProgressState = (float)progress.Value / progress.Max;
+        double navisworksProgressState = Math.Min((float)progress.Value / progress.Max, 1);
         progressBar.Update(navisworksProgressState);
 
         if (progressBar.IsCanceled)
@@ -297,7 +297,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       try
       {
-        progressBar.Update(0.25);
+        progressBar.Update(0.5);
         string commitId = await client.CommitCreate(commit);
 
         progressBar.Update(1.0);
