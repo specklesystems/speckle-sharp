@@ -22,6 +22,7 @@ using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -88,7 +89,7 @@ namespace ConnectorGrasshopper.Ops
                 // Ensure fresh instance of client.
                 ApiResetTask = ResetApiClient(StreamWrapper);
                 await ApiResetTask;
-                
+
                 // Get last commit from the branch
                 var b = ApiClient.BranchGet(BaseWorker.CancellationToken, StreamWrapper.StreamId, StreamWrapper.BranchName ?? "main", 1).Result;
 
@@ -434,12 +435,12 @@ namespace ConnectorGrasshopper.Ops
     {
       try
       {
-        var hasInternet = await Helpers.UserHasInternet();
+        var hasInternet = await Http.UserHasInternet();
         if (!hasInternet)
         {
           throw new Exception("You are not connected to the internet.");
         }
-        
+
         Account account = null;
         try
         {
@@ -564,7 +565,7 @@ namespace ConnectorGrasshopper.Ops
           var msg = exception.Message.Contains("401")
             ? "You don't have access to this stream/transport , or it doesn't exist."
             : exception.ToFormattedString();
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: { msg }"));
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {msg}"));
           Done();
           var asyncParent = (GH_AsyncComponent)Parent;
           asyncParent.CancellationSources.ForEach(source =>
@@ -577,7 +578,7 @@ namespace ConnectorGrasshopper.Ops
         };
 
         receiveComponent.ApiResetTask.Wait();
-        
+
         var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
@@ -594,12 +595,12 @@ namespace ConnectorGrasshopper.Ops
 
         var t = Task.Run(async () =>
         {
-          var hasInternet = await Helpers.UserHasInternet();
+          var hasInternet = await Http.UserHasInternet();
           if (!hasInternet)
           {
             throw new Exception("You are not connected to the internet.");
           }
-          
+
           receiveComponent.PrevReceivedData = null;
           var myCommit = await GetCommit(InputWrapper, receiveComponent.ApiClient, (level, message) =>
           {

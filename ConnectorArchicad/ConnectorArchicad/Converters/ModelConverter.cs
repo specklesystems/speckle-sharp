@@ -90,6 +90,7 @@ namespace Archicad.Operations
 
       return new RenderMaterial
       {
+        name = material.name,
         diffuse = ConvertColor(material.ambientColor).ToArgb(),
         emissive = ConvertColor(material.emissionColor).ToArgb(),
         opacity = 1.0 - material.transparency / 100.0
