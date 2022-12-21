@@ -8,6 +8,7 @@ using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
 
@@ -83,10 +84,10 @@ namespace ConnectorGrasshopper.Streams
         Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
 
         Tracker.TrackNodeRun();
-        
+
         Task.Run(async () =>
         {
-          if (!await Helpers.UserHasInternet())
+          if (!await Http.UserHasInternet())
           {
             AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You are not connected to the internet");
             Message = "Error";
@@ -121,7 +122,7 @@ namespace ConnectorGrasshopper.Streams
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
         }
-        
+
         if (streams != null)
         {
           DA.SetDataList(0, streams.Select(item => new GH_SpeckleStream(item)));
