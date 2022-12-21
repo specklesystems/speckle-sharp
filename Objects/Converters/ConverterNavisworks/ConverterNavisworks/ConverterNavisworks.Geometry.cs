@@ -154,23 +154,22 @@ namespace Objects.Converter.Navisworks
             isSame = false;
           }
 
-          if (isSame)
+          if (!isSame) continue;
+
+          InwLTransform3f3 localToWorld = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
+
+          //create Global Coordinate System Matrix
+          object matrix = localToWorld.Matrix;
+          Array matrixArray = (Array)matrix;
+          double[] elements = ConvertArrayToDouble(matrixArray);
+          double[] elementsValue = new double[elements.Length];
+          for (int i = 0; i < elements.Length; i++)
           {
-            InwLTransform3f3 localToWorld = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
-
-            //create Global Coordinate System Matrix
-            object matrix = localToWorld.Matrix;
-            Array matrixArray = (Array)matrix;
-            double[] elements = ConvertArrayToDouble(matrixArray);
-            double[] elementsValue = new double[elements.Length];
-            for (int i = 0; i < elements.Length; i++)
-            {
-              elementsValue[i] = elements[i];
-            }
-
-            callbackListener.Matrix = elementsValue;
-            fragment.GenerateSimplePrimitives(nwEVertexProperty.eNORMAL, callbackListener);
+            elementsValue[i] = elements[i];
           }
+
+          callbackListener.Matrix = elementsValue;
+          fragment.GenerateSimplePrimitives(nwEVertexProperty.eNORMAL, callbackListener);
         }
 
         callbackListeners.Add(callbackListener);
@@ -297,10 +296,10 @@ namespace Objects.Converter.Navisworks
     public List<float> Vertices { get; set; }
     public List<NavisworksTriangle> Triangles { get; set; }
 
-    public NavisworksMesh(List<NavisworksTriangle> Triangles)
+    public NavisworksMesh(List<NavisworksTriangle> triangles)
     {
       this.Triangles = new List<NavisworksTriangle>();
-      this.Triangles = Triangles;
+      this.Triangles = triangles;
 
       //Add indices and vertices
       Indices = new List<int>();
@@ -308,7 +307,7 @@ namespace Objects.Converter.Navisworks
       int index = 0;
 
       //create indices and vertices lists
-      foreach (NavisworksTriangle triangle in Triangles)
+      foreach (NavisworksTriangle triangle in triangles)
       {
         Indices.Add(index++);
         Indices.Add(index++);
@@ -331,15 +330,16 @@ namespace Objects.Converter.Navisworks
   {
     public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
     {
-      var units = Application.ActiveDocument.Units.ToString();
-      double scale = 1; // TODO: Proper units support.
+      Units source = Application.ActiveDocument.Units;
+      Units target = Units.Meters;
+      double scale = UnitConversion.ScaleFactor(source, target);
 
       Point3D min = boundingBox3D.Min;
       Point3D max = boundingBox3D.Max;
 
       var basePlane = new Plane
       {
-        units = units,
+        units = source.ToString(),
         origin = new Point(0, 0),
         xdir = new Vector(1, 0),
         ydir = new Vector(0, 1),
@@ -348,7 +348,7 @@ namespace Objects.Converter.Navisworks
 
       Box boundingBox = new Box
       {
-        units = units,
+        units = source.ToString(),
         basePlane = basePlane,
         xSize = new Interval(min.X * scale, max.X * scale),
         ySize = new Interval(min.Y * scale, max.Y * scale),
@@ -357,7 +357,7 @@ namespace Objects.Converter.Navisworks
 
       return boundingBox;
     }
-  
+
     public Vector3D TransformVector3D { get; set; }
     public Vector SettingOutPoint { get; set; }
     public Vector TransformVector { get; set; }
@@ -409,15 +409,15 @@ namespace Objects.Converter.Navisworks
 
       foreach (InwOaPath path in geometry.ComSelection.Paths())
       {
-        foreach (InwOaFragment3 frag in path.Fragments())
+        foreach (InwOaFragment3 fragment in path.Fragments())
         {
-          int[] a1 = ((Array)frag.path.ArrayData).ToArray<int>();
+          int[] a1 = ((Array)fragment.path.ArrayData).ToArray<int>();
           int[] a2 = ((Array)path.ArrayData).ToArray<int>();
           bool isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
 
           if (isSame)
           {
-            geometry.ModelFragments.Push(frag);
+            geometry.ModelFragments.Push(fragment);
           }
         }
       }
@@ -432,16 +432,16 @@ namespace Objects.Converter.Navisworks
       {
         // this yields ONLY unique fragments
         // ordered by geometry they belong to
-        foreach (InwOaFragment3 frag in path.Fragments())
+        foreach (InwOaFragment3 fragment in path.Fragments())
         {
-          int[] pathArr = ((Array)frag.path.ArrayData).ToArray<int>();
+          int[] pathArr = ((Array)fragment.path.ArrayData).ToArray<int>();
           if (!PathDictionary.TryGetValue(pathArr, out Stack<InwOaFragment3> frags))
           {
             frags = new Stack<InwOaFragment3>();
             PathDictionary[pathArr] = frags;
           }
 
-          frags.Push(frag);
+          frags.Push(fragment);
         }
       }
     }
@@ -470,11 +470,11 @@ namespace Objects.Converter.Navisworks
 
       List<Base> baseGeometries = new List<Base>();
 
-      Vector3D move = (TransformVector3D == null) ? new Vector3D(0,0,0) : TransformVector3D;
+      Vector3D move = (TransformVector3D == null) ? new Vector3D(0, 0, 0) : TransformVector3D;
 
       foreach (CallbackGeomListener callback in callbackListeners)
       {
-        List<NavisworksDoubleTriangle> Triangles = callback.Triangles;
+        List<NavisworksDoubleTriangle> triangles = callback.Triangles;
         // TODO: Additional Geometry Types
         //List<NavisworksDoubleLine> Lines = callback.Lines;
         //List<NavisworksDoublePoint> Points = callback.Points;
@@ -483,35 +483,35 @@ namespace Objects.Converter.Navisworks
         List<int> faces = new List<int>();
 
 
+        // TODO: this needs to come from options. For now, no move.
 
-        /// TODO: this needs to come from options. For now, no move.
-
-        int triangleCount = Triangles.Count;
+        int triangleCount = triangles.Count;
         if (triangleCount <= 0) continue;
         for (int t = 0; t < triangleCount; t += 1)
         {
-          double
-            scale = 1; // TODO: This will need to relate to the ActiveDocument reality and the target units. Probably metres.
+          Units source = Application.ActiveDocument.Units;
+          Units target = Units.Meters;
+          double scale = UnitConversion.ScaleFactor(source, target);
 
           // Apply the bounding box move.
           // The native API methods for overriding transforms are not thread safe to call from the CEF instance
           vertices.AddRange(new List<double>
           {
-            (Triangles[t].Vertex1.X + move.X) * scale,
-            (Triangles[t].Vertex1.Y + move.Y) * scale,
-            (Triangles[t].Vertex1.Z + move.Z) * scale
+            (triangles[t].Vertex1.X + move.X) * scale,
+            (triangles[t].Vertex1.Y + move.Y) * scale,
+            (triangles[t].Vertex1.Z + move.Z) * scale
           });
           vertices.AddRange(new List<double>
           {
-            (Triangles[t].Vertex2.X + move.X) * scale,
-            (Triangles[t].Vertex2.Y + move.Y) * scale,
-            (Triangles[t].Vertex2.Z + move.Z) * scale
+            (triangles[t].Vertex2.X + move.X) * scale,
+            (triangles[t].Vertex2.Y + move.Y) * scale,
+            (triangles[t].Vertex2.Z + move.Z) * scale
           });
           vertices.AddRange(new List<double>
           {
-            (Triangles[t].Vertex3.X + move.X) * scale,
-            (Triangles[t].Vertex3.Y + move.Y) * scale,
-            (Triangles[t].Vertex3.Z + move.Z) * scale
+            (triangles[t].Vertex3.X + move.X) * scale,
+            (triangles[t].Vertex3.Y + move.Y) * scale,
+            (triangles[t].Vertex3.Z + move.Z) * scale
           });
 
           // TODO: Move this back to Geometry.cs
