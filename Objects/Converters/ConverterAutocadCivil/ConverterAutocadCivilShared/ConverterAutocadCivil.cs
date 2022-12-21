@@ -302,8 +302,10 @@ namespace Objects.Converter.AutocadCivil
 
         case Polycurve o:
           bool convertAsSpline = (o.segments.Where(s => !(s is Line) && !(s is Arc)).Count() > 0) ? true : false;
-          if (!convertAsSpline) convertAsSpline = IsPolycurvePlanar(o) ? false : true;
-          acadObj = convertAsSpline ? PolycurveSplineToNativeDB(o) : PolycurveToNativeDB(o);
+          if (convertAsSpline || !IsPolycurvePlanar(o))
+            acadObj = PolycurveSplineToNativeDB(o);
+          else
+            acadObj = PolycurveToNativeDB(o);
           break;
 
         case Curve o:
@@ -362,8 +364,8 @@ namespace Objects.Converter.AutocadCivil
       switch (acadObj)
       {
         case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
-          acadObj = o.Converted.Any() ? o.Converted.FirstOrDefault() : null;
-          if (reportObj != null) reportObj.Update(status: o.Status, createdIds: o.CreatedIds, container: o.Container, log: o.Log);
+          acadObj = o.Converted.Any() ? o.Converted : null;
+          if (reportObj != null) reportObj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, container: o.Container, log: o.Log);
           break;
         default:
           if (reportObj != null) reportObj.Update(log: notes);
