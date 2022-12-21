@@ -325,7 +325,7 @@ namespace DesktopUI2.ViewModels.MappingTool
             var pipeFamilies = AvailableRevitTypes.Where(x => x.category == "Pipes").ToList();
             if (!pipeFamilies.Any() || !AvailableRevitLevels.Any())
               break;
-            var pipeFamiliesViewModels = pipeFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            var pipeFamiliesViewModels = pipeFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
             o.Families = pipeFamiliesViewModels;
             o.Levels = AvailableRevitLevels;
             updatedSchemas.Add(o);
@@ -335,7 +335,7 @@ namespace DesktopUI2.ViewModels.MappingTool
             var ductFamilies = AvailableRevitTypes.Where(x => x.category == "Ducts").ToList();
             if (!ductFamilies.Any() || !AvailableRevitLevels.Any())
               break;
-            var ductFamiliesViewModels = ductFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            var ductFamiliesViewModels = ductFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
             o.Families = ductFamiliesViewModels;
             o.Levels = AvailableRevitLevels;
             updatedSchemas.Add(o);

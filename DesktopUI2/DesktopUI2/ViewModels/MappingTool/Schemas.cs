@@ -385,6 +385,9 @@ namespace DesktopUI2.ViewModels.MappingTool
     [DataMember]
     public string Name { get; set; }
 
+    [DataMember]
+    public string Shape { get; set; }
+
     private List<string> _types;
     public List<string> Types
     {
@@ -392,10 +395,11 @@ namespace DesktopUI2.ViewModels.MappingTool
       set => this.RaiseAndSetIfChanged(ref _types, value);
     }
 
-    public RevitFamily(string name, List<string> types)
+    public RevitFamily(string name, List<string> types, string shape = "")
     {
       Name = name;
       Types = types;
+      Shape = shape;
     }
 
     public RevitFamily()
