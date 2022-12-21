@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
@@ -70,14 +71,13 @@ namespace Speckle.Core.Transports
       BaseUri = baseUri;
       StreamId = streamId;
 
-      Client = new HttpClient(new HttpClientHandler()
+      Client = Http.GetHttpProxyClient(new HttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-      })
-      {
-        BaseAddress = new Uri(baseUri),
-        Timeout = new TimeSpan(0, 0, timeoutSeconds),
-      };
+      });
+
+      Client.BaseAddress = new Uri(baseUri);
+      Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
 
       if (authorizationToken.ToLowerInvariant().Contains("bearer"))
       {
