@@ -210,6 +210,8 @@ namespace Speckle.ConnectorCSI.UI
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
+
+        //Model.View.RefreshView();
       }
 
       return placeholders;

@@ -34,8 +34,22 @@ namespace Objects.Converter.CSI
       var pt1Updated = UpdatePoint(pt1, element1D.end1Node, end1node);
       var pt2Updated = UpdatePoint(pt2, element1D.end2Node, end2node);
 
+      int success = -1;
       if (pt1Updated != pt1 || pt2Updated != pt2)
-        Model.EditFrame.ChangeConnectivity(name, pt1Updated, pt2Updated);
+      {
+        success = Model.EditFrame.ChangeConnectivity(name, pt1Updated, pt2Updated);
+
+        int numItems = 0;
+        int[] objTypes = null;
+        string[] objNames = null;
+        int[] pointNums = null;
+        Model.PointObj.GetConnectivity(pt1, ref numItems, ref objTypes, ref objNames, ref pointNums);
+        if (numItems == 0)
+          Model.PointObj.DeleteSpecialPoint(pt1);
+        Model.PointObj.GetConnectivity(pt2, ref numItems, ref objTypes, ref objNames, ref pointNums);
+        if (numItems == 0)
+          Model.PointObj.DeleteSpecialPoint(pt2);
+      }
 
       SetFrameElementProperties(element1D, name);
       appObj.Update(status: ApplicationObject.State.Updated);

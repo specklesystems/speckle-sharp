@@ -51,8 +51,42 @@ namespace Objects.Converter.CSI
 
       if (connectivityChanged)
       {
-        var refArray = pointsUpdated.ToArray();
-        Model.EditArea.ChangeConnectivity(name, pointsUpdated.Count, ref refArray);
+        //int tableVersion = 0;
+        //int numberRecords = 0;
+        //string[] fieldsKeysIncluded = null;
+        //string[] tableData = null;
+        //string floorTableKey = "Floor Object Connectivity";
+        //var success = Model.DatabaseTables.GetTableForEditingArray(floorTableKey, "ThisParamIsNotActiveYet", ref tableVersion, ref fieldsKeysIncluded, ref numberRecords, ref tableData);
+
+        //for (int record = 0; record < numberRecords; record++)
+        //{
+        //  if (tableData[record * fieldsKeysIncluded.Length] != name)
+        //    continue;
+
+        //  for (int i = 0; i < pointsUpdated.Count; i++)
+        //    tableData[record * fieldsKeysIncluded.Length + (i + 1)] = pointsUpdated[i];
+        //}
+
+        //success = Model.DatabaseTables.SetTableForEditingArray(floorTableKey, ref tableVersion, ref fieldsKeysIncluded, numberRecords, ref tableData);
+
+        //int numFatalErrors = 0;
+        //int numErrorMsgs = 0;
+        //int numWarnMsgs = 0;
+        //int numInfoMsgs = 0;
+        //string importLog = "";
+        //success = Model.DatabaseTables.ApplyEditedTables(true, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+
+        string GUID = "";
+        Model.AreaObj.GetGUID(name, ref GUID);
+        var updatedArea = AreaToSpeckle(name);
+
+        updatedArea.applicationId = GUID;
+        updatedArea.topology = area.topology;
+
+        Model.AreaObj.Delete(name);
+        ExistingObjectGuids.Remove(GUID);
+        var dummyAppObj = new ApplicationObject(null, null);
+        AreaToNative(updatedArea, ref dummyAppObj);
       }
 
       SetAreaProperties(name, area);
@@ -148,8 +182,11 @@ namespace Objects.Converter.CSI
 
       }
 
+      if (!string.IsNullOrEmpty(area.applicationId))
+        Model.AreaObj.SetGUID(name, area.applicationId);
+
       var guid = "";
-      Model.FrameObj.GetGUID(name, ref guid);
+      Model.AreaObj.GetGUID(name, ref guid);
 
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: guid);
@@ -272,11 +309,11 @@ namespace Objects.Converter.CSI
       var GUID = "";
       Model.AreaObj.GetGUID(name, ref GUID);
       speckleStructArea.applicationId = GUID;
-      List<Base> elements = SpeckleModel.elements;
+      List<Base> elements = SpeckleModel == null ? new List<Base>() : SpeckleModel.elements;
       List<string> application_Id = elements.Select(o => o.applicationId).ToList();
       if (!application_Id.Contains(speckleStructArea.applicationId))
       {
-        SpeckleModel.elements.Add(speckleStructArea);
+        SpeckleModel?.elements.Add(speckleStructArea);
       }
 
       // Should discretize between wall and slab types

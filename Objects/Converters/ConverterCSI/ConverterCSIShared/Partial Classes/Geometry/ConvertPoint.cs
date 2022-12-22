@@ -27,19 +27,28 @@ namespace Objects.Converter.CSI
       Model.PointObj.GetConnectivity(name, ref numItems, ref objTypes, ref objNames, ref pointNums);
 
       // if only connected to one frame, then you are safe to move it (I think?)
-      if (numItems == 1)
-        Model.EditPoint.ChangeCoordinates_1(
-          name,
-          ScaleToNative(basePoint.x, basePoint.units),
-          ScaleToNative(basePoint.y, basePoint.units),
-          ScaleToNative(basePoint.z, basePoint.units),
-          true
-        );
-      else
-      {
+      //if (numItems == 1)
+      //{
+      //  double xD = 0;
+      //  double yD = 0;
+      //  double zD = 0;
+      //  Model.PointObj.GetCoordCartesian(name, ref xD, ref yD, ref zD);
+      //  var deltaX = ScaleToNative(basePoint.x, basePoint.units) - xD;
+      //  var deltaY = ScaleToNative(basePoint.y, basePoint.units) - yD;
+      //  var deltaZ = ScaleToNative(basePoint.z, basePoint.units) - zD;
+
+      //  // the method used to move existing nodes unfortunately refreshes the view every time
+      //  // which takes for ever...
+      //  Model.SelectObj.ClearSelection();
+      //  Model.PointObj.SetSelected(name, true);
+      //  Model.EditGeneral.Move(deltaX, deltaY, deltaZ);
+      //}
+      //else
+      //{
         CreatePoint(basePoint, out string newName);
         name = newName;
-      }
+        Model.View.RefreshView();
+      //}
 
       UpdatePointProperties(speckleNode, ref name);
       return name;
@@ -136,7 +145,7 @@ namespace Objects.Converter.CSI
 
       speckleStructNode.restraint = RestraintToSpeckle(restraints);
 
-      SpeckleModel.restraints.Add(speckleStructNode.restraint);
+      SpeckleModel?.restraints.Add(speckleStructNode.restraint);
 
       string SpringProp = null;
       Model.PointObj.GetSpringAssignment(name, ref SpringProp);
@@ -165,11 +174,11 @@ namespace Objects.Converter.CSI
       var GUID = "";
       Model.PointObj.GetGUID(name, ref GUID);
       speckleStructNode.applicationId = GUID;
-      List<Base> nodes = SpeckleModel.nodes;
+      List<Base> nodes = SpeckleModel == null ? new List<Base>() : SpeckleModel.nodes;
       List<string> application_Id = nodes.Select(o => o.applicationId).ToList();
       if (!application_Id.Contains(speckleStructNode.applicationId))
       {
-        SpeckleModel.nodes.Add(speckleStructNode);
+        SpeckleModel?.nodes.Add(speckleStructNode);
       }
       //SpeckleModel.nodes.Add(speckleStructNode);
 
