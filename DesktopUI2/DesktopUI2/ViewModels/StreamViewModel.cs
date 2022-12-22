@@ -1150,8 +1150,6 @@ namespace DesktopUI2.ViewModels
       {
         UpdateStreamState();
 
-        HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
-
         Reset();
 
         if (!await Http.UserHasInternet())
@@ -1207,6 +1205,9 @@ namespace DesktopUI2.ViewModels
 
         GetActivity();
         GetReport();
+
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
       }
       catch (Exception ex)
       {
@@ -1255,9 +1256,6 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-        //save the stream as well
-        HomeViewModel.Instance.AddSavedStream(this);
-
         Reset();
 
         if (!await Http.UserHasInternet())
@@ -1301,6 +1299,9 @@ namespace DesktopUI2.ViewModels
 
         GetActivity();
         GetReport();
+
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
       }
       catch (Exception ex)
       {
