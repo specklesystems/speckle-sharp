@@ -47,7 +47,6 @@ namespace Objects.Converter.CSI
       //{
         CreatePoint(basePoint, out string newName);
         name = newName;
-        Model.View.RefreshView();
       //}
 
       UpdatePointProperties(speckleNode, ref name);
