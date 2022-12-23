@@ -1,8 +1,0 @@
-{
-  "profiles": {
-    "ConverterTeklaStructures2021": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Tekla Structures\\2021.0\\nt\\bin\\TeklaStructures.exe"
-    }
-  }
-}

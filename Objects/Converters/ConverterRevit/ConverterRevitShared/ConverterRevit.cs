@@ -282,25 +282,6 @@ namespace Objects.Converter.Revit
         }
       }
 
-      //NOTE: adds the quantities of all materials to an element
-      if (returnObject != null && !(returnObject is Model))
-      {
-        try
-        {
-          var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
-          if (qs != null)
-          {
-            returnObject["materialQuantities"] = new List<Base>();
-            (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
-          }
-          else returnObject["materialQuantities"] = null;
-        }
-        catch (System.Exception e)
-        {
-          notes.Add(e.Message);
-        }
-      }
-
       // log 
       var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
       if (reportObj != null && notes.Count > 0)

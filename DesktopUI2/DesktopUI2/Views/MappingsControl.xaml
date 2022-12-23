@@ -167,14 +167,32 @@
                           <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
+                          <!--  FLOOR  -->
+                          <DataTemplate DataType="{x:Type s:RevitFloorViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
                           <!--  BEAM  -->
                           <DataTemplate DataType="{x:Type s:RevitBeamViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  COLUMN  -->
+                          <DataTemplate DataType="{x:Type s:RevitColumnViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
                           <!--  BRACE  -->
                           <DataTemplate DataType="{x:Type s:RevitBraceViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
+                          <!--  PIPE  -->
+                          <DataTemplate DataType="{x:Type s:RevitPipeViewModel}">
+                            <map:RevitMEP />
+                          </DataTemplate>
+                          <!--  DUCT  -->
+                          <DataTemplate DataType="{x:Type s:RevitDuctViewModel}">
+                            <map:RevitMEP />
+                          </DataTemplate>
+                          <!--  TOPOGRAPHY  -->
+                          <DataTemplate DataType="{x:Type s:RevitTopographyViewModel}" />
                           <!--  FAMILY INSTANCE  -->
                           <DataTemplate DataType="{x:Type s:RevitFamilyInstanceViewModel}">
                             <map:RevitBasic />

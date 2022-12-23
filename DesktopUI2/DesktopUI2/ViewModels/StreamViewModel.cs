@@ -15,6 +15,7 @@ using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Splat;
@@ -1149,11 +1150,9 @@ namespace DesktopUI2.ViewModels
       {
         UpdateStreamState();
 
-        HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
-
         Reset();
 
-        if (!await Helpers.UserHasInternet())
+        if (!await Http.UserHasInternet())
         {
           Dispatcher.UIThread.Post(() =>
             MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
@@ -1206,6 +1205,9 @@ namespace DesktopUI2.ViewModels
 
         GetActivity();
         GetReport();
+
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
       }
       catch (Exception ex)
       {
@@ -1254,12 +1256,9 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-        //save the stream as well
-        HomeViewModel.Instance.AddSavedStream(this);
-
         Reset();
 
-        if (!await Helpers.UserHasInternet())
+        if (!await Http.UserHasInternet())
         {
           Dispatcher.UIThread.Post(() =>
             MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
@@ -1300,6 +1299,9 @@ namespace DesktopUI2.ViewModels
 
         GetActivity();
         GetReport();
+
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
       }
       catch (Exception ex)
       {

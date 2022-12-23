@@ -59,7 +59,7 @@ namespace Speckle.Core.Helpers
     {
       _accountsFolderName = accountsFolderName;
     }
-    
+
     /// <summary>
     ///  
     /// </summary>
@@ -73,15 +73,17 @@ namespace Speckle.Core.Helpers
     /// <summary>
     /// Get the platform specific user configuration folder path.
     /// </summary>
-    public static string UserApplicationDataPath() {
+    public static string UserApplicationDataPath()
+    {
       // if we have an override, just return that
       var pathOverride = _path;
-      if ( pathOverride != null && !string.IsNullOrEmpty(pathOverride)) return pathOverride;
+      if (pathOverride != null && !string.IsNullOrEmpty(pathOverride)) return pathOverride;
 
       // on desktop linux and macos we use the appdata.
       // but we might not have write access to the disk
       // so the catch falls back to the user profile
-      try {
+      try
+      {
         return Environment.GetFolderPath(
           Environment.SpecialFolder.ApplicationData,
           // if the folder doesn't exist, we get back an empty string on OSX, 
@@ -90,11 +92,13 @@ namespace Speckle.Core.Helpers
           // which is not a given on all OS-es.
           Environment.SpecialFolderOption.Create
         );
-      } catch {
-      // on server linux, there might not be a user setup, things can run under root
-      // in that case, the appdata variable is most probably not set up
-      // we fall back to the value of the home folder
-      return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+      }
+      catch
+      {
+        // on server linux, there might not be a user setup, things can run under root
+        // in that case, the appdata variable is most probably not set up
+        // we fall back to the value of the home folder
+        return Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
       }
     }
@@ -127,7 +131,7 @@ namespace Speckle.Core.Helpers
     /// Get the folder where the Speckle kits should be stored.
     /// </summary>
     public static string KitsFolderPath => EnsureFolderExists(InstallSpeckleFolderPath, _kitsFolderName);
-    
+
     /// <summary>
     /// 
     /// </summary>
