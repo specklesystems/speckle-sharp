@@ -40,6 +40,7 @@ namespace Objects.Converter.CSI
     public string WebsiteOrEmail => "https://speckle.systems";
 
     public cSapModel Model { get; private set; }
+    public string ProgramVersion { get; private set; }
 
     public Model SpeckleModel { get; set; }
 
@@ -69,6 +70,10 @@ namespace Objects.Converter.CSI
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;
+      double version = 0;
+      string versionString = null;
+      Model.GetVersion(ref versionString, ref version);
+      ProgramVersion = versionString;
 
       if (!Settings.ContainsKey("operation"))
         throw new Exception("operation setting was not set before calling converter.SetContextDocument");

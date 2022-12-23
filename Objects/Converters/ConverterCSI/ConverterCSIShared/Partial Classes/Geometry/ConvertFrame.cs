@@ -34,7 +34,7 @@ namespace Objects.Converter.CSI
       var pt1Updated = UpdatePoint(pt1, element1D.end1Node, end1node);
       var pt2Updated = UpdatePoint(pt2, element1D.end2Node, end2node);
 
-      int success = -1;
+      int success = 0;
       if (pt1Updated != pt1 || pt2Updated != pt2)
       {
         success = Model.EditFrame.ChangeConnectivity(name, pt1Updated, pt2Updated);
@@ -52,7 +52,14 @@ namespace Objects.Converter.CSI
       }
 
       SetFrameElementProperties(element1D, name);
-      appObj.Update(status: ApplicationObject.State.Updated);
+      if (success == 0)
+      {
+        string guid = null;
+        Model.FrameObj.GetGUID(name, ref guid);
+        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid);
+      }
+      else
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to change frame connectivity");
     }
     public void FrameToNative(Element1D element1D, ref ApplicationObject appObj)
     {

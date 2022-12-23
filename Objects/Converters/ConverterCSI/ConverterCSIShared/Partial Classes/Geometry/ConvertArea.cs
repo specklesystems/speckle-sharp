@@ -49,48 +49,93 @@ namespace Objects.Converter.CSI
           connectivityChanged = true;
       }
 
+      int success = 0;
+      int numErrorMsgs = 0;
+      string importLog = "";
       if (connectivityChanged)
       {
-        //int tableVersion = 0;
-        //int numberRecords = 0;
-        //string[] fieldsKeysIncluded = null;
-        //string[] tableData = null;
-        //string floorTableKey = "Floor Object Connectivity";
-        //var success = Model.DatabaseTables.GetTableForEditingArray(floorTableKey, "ThisParamIsNotActiveYet", ref tableVersion, ref fieldsKeysIncluded, ref numberRecords, ref tableData);
+#if SAP2000
+        var refArray = pointsUpdated.ToArray();
+        success = Model.EditArea.ChangeConnectivity(name, pointsUpdated.Count, ref refArray);
+#else
+        int tableVersion = 0;
+        int numberRecords = 0;
+        string[] fieldsKeysIncluded = null;
+        string[] tableData = null;
+        string floorTableKey = "Floor Object Connectivity";
+        Model.DatabaseTables.GetTableForEditingArray(floorTableKey, "ThisParamIsNotActiveYet", ref tableVersion, ref fieldsKeysIncluded, ref numberRecords, ref tableData);
 
-        //for (int record = 0; record < numberRecords; record++)
-        //{
-        //  if (tableData[record * fieldsKeysIncluded.Length] != name)
-        //    continue;
+        // if the floor object now has more points than it previously had
+        // and it has more points that any other floor object, then updating would involve adding a new column to this array
+        // for the moment, forget that, it feels a bit fragile. Just delete the current object and remake it with the same GUID
+        if (pointsUpdated.Count > points.Length && pointsUpdated.Count > fieldsKeysIncluded.Length - 2)
+        {
+          string GUID = "";
+          Model.AreaObj.GetGUID(name, ref GUID);
+          var updatedArea = AreaToSpeckle(name);
 
-        //  for (int i = 0; i < pointsUpdated.Count; i++)
-        //    tableData[record * fieldsKeysIncluded.Length + (i + 1)] = pointsUpdated[i];
-        //}
+          updatedArea.applicationId = GUID;
+          updatedArea.topology = area.topology;
 
-        //success = Model.DatabaseTables.SetTableForEditingArray(floorTableKey, ref tableVersion, ref fieldsKeysIncluded, numberRecords, ref tableData);
+          Model.AreaObj.Delete(name);
+          ExistingObjectGuids.Remove(GUID);
+          var dummyAppObj = new ApplicationObject(null, null);
+          AreaToNative(updatedArea, ref dummyAppObj);
+          if (dummyAppObj.Status != ApplicationObject.State.Created)
+            success = 1;
+        }
+        else
+        {
+          for (int record = 0; record < numberRecords; record++)
+          {
+            if (tableData[record * fieldsKeysIncluded.Length] != name)
+              continue;
 
-        //int numFatalErrors = 0;
-        //int numErrorMsgs = 0;
-        //int numWarnMsgs = 0;
-        //int numInfoMsgs = 0;
-        //string importLog = "";
-        //success = Model.DatabaseTables.ApplyEditedTables(true, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+            for (int i = 0; i < pointsUpdated.Count; i++)
+              tableData[record * fieldsKeysIncluded.Length + (i + 1)] = pointsUpdated[i];
+            break;
+          }
 
-        string GUID = "";
-        Model.AreaObj.GetGUID(name, ref GUID);
-        var updatedArea = AreaToSpeckle(name);
+          // this is a workaround for a CSI bug. The applyEditedTables is looking for "Unique Name", not "UniqueName"
+          // this bug is patched in version 20.0.0
+          if (ProgramVersion.CompareTo("20.0.0") < 0 && fieldsKeysIncluded[0] == "UniqueName")
+            fieldsKeysIncluded[0] = "Unique Name";
 
-        updatedArea.applicationId = GUID;
-        updatedArea.topology = area.topology;
+          Model.DatabaseTables.SetTableForEditingArray(floorTableKey, ref tableVersion, ref fieldsKeysIncluded, numberRecords, ref tableData);
 
-        Model.AreaObj.Delete(name);
-        ExistingObjectGuids.Remove(GUID);
-        var dummyAppObj = new ApplicationObject(null, null);
-        AreaToNative(updatedArea, ref dummyAppObj);
+          int numFatalErrors = 0;
+          int numWarnMsgs = 0;
+          int numInfoMsgs = 0;
+          success = Model.DatabaseTables.ApplyEditedTables(true, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+
+          if (success == 0)
+          {
+            int numItems = 0;
+            int[] objTypes = null;
+            string[] objNames = null;
+            int[] pointNums = null;
+            foreach (var node in points)
+            {
+              Model.PointObj.GetConnectivity(node, ref numItems, ref objTypes, ref objNames, ref pointNums);
+              if (numItems == 0)
+                Model.PointObj.DeleteSpecialPoint(node);
+            }
+          }
+        }
+#endif
       }
 
       SetAreaProperties(name, area);
-      appObj.Update(status: ApplicationObject.State.Updated);
+      if (success == 0)
+      {
+        string guid = null;
+        Model.AreaObj.GetGUID(name, ref guid);
+        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid);
+        if (numErrorMsgs != 0)
+          appObj.Update(log: new List<string>() { $"Area may not have updated successfully. Number of error messages for operation is {numErrorMsgs}", importLog });
+      }
+      else
+        appObj.Update(status: ApplicationObject.State.Failed, log: new List<string>() { "Failed to apply edited database tables", importLog });
     }
     public void AreaToNative(Element2D area, ref ApplicationObject appObj)
     {

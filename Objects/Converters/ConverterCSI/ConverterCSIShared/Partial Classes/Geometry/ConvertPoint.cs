@@ -20,34 +20,8 @@ namespace Objects.Converter.CSI
       if (basePoint == null)
         return name;
 
-      int numItems = 0;
-      int[] objTypes = null;
-      string[] objNames = null;
-      int[] pointNums = null;
-      Model.PointObj.GetConnectivity(name, ref numItems, ref objTypes, ref objNames, ref pointNums);
-
-      // if only connected to one frame, then you are safe to move it (I think?)
-      //if (numItems == 1)
-      //{
-      //  double xD = 0;
-      //  double yD = 0;
-      //  double zD = 0;
-      //  Model.PointObj.GetCoordCartesian(name, ref xD, ref yD, ref zD);
-      //  var deltaX = ScaleToNative(basePoint.x, basePoint.units) - xD;
-      //  var deltaY = ScaleToNative(basePoint.y, basePoint.units) - yD;
-      //  var deltaZ = ScaleToNative(basePoint.z, basePoint.units) - zD;
-
-      //  // the method used to move existing nodes unfortunately refreshes the view every time
-      //  // which takes for ever...
-      //  Model.SelectObj.ClearSelection();
-      //  Model.PointObj.SetSelected(name, true);
-      //  Model.EditGeneral.Move(deltaX, deltaY, deltaZ);
-      //}
-      //else
-      //{
-        CreatePoint(basePoint, out string newName);
-        name = newName;
-      //}
+      CreatePoint(basePoint, out string newName);
+      name = newName;
 
       UpdatePointProperties(speckleNode, ref name);
       return name;
