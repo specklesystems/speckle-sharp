@@ -102,7 +102,9 @@ namespace Objects.Converter.Revit
       var u = units ?? ModelUnits;
       var boundingBox = pointcloud.get_BoundingBox(null);
       var transform = pointcloud.GetTransform();
-      var filter = PointCloudFilterFactory.CreateMultiPlaneFilter(new List<DB.Plane>() { DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, transform.Origin) });
+
+      var minPlane = DB.Plane.CreateByNormalAndOrigin(XYZ.BasisZ, transform.OfPoint(boundingBox.Min));
+      var filter = PointCloudFilterFactory.CreateMultiPlaneFilter(new List<DB.Plane>() { minPlane });
       var points = pointcloud.GetPoints(filter, 0.0001, 999999); // max limit is 1 mil but 1000000 throws error
 
       var _pointcloud = new Pointcloud();
