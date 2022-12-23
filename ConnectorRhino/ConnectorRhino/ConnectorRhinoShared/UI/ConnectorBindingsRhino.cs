@@ -223,7 +223,7 @@ namespace SpeckleRhino
       if (PreviewConduit != null)
         PreviewConduit.Enabled = false;
       else
-        Doc.Objects.UnselectAll(true);
+        Doc.Objects.UnselectAll(false);
 
       Doc.Views.Redraw();
     }
@@ -859,14 +859,13 @@ namespace SpeckleRhino
           continue;
         }
 
-        // get converter
         var appObj = new ApplicationObject(id, obj.ObjectType.ToString()) { Status = ApplicationObject.State.Unknown };
 
         if (converter.CanConvertToSpeckle(obj))
           appObj.Update(status: ApplicationObject.State.Created);
         else
           appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
-
+        progress.Report.Log(appObj);
         existingIds.Add(id);
       }
 

@@ -225,6 +225,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override void ResetDocument()
     {
       Doc.Editor.SetImpliedSelection(new ObjectId[0]);
+      Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     }
 
     public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
@@ -863,7 +864,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
             appObj.Update(status: ApplicationObject.State.Created);
           else
             appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
-
+          progress.Report.Log(appObj);
           existingIds.Add(id);
         }
         tr.Commit();
