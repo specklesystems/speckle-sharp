@@ -826,10 +826,58 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region sending
-    public override bool CanPreviewSend => false;
+    public override bool CanPreviewSend => true;
     public override async void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      // TODO!
+      // report and converter
+      progress.Report = new ProgressReport();
+      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
+      if (converter == null)
+      {
+        progress.Report.LogOperationError(new Exception("Could not load converter"));
+        return;
+      }
+      converter.SetContextDocument(Doc);
+
+      var filterObjs = GetObjectsFromFilter(state.Filter, converter);
+      var existingIds = new List<string>();
+      using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
+      {
+        foreach (var id in filterObjs)
+        {
+          DBObject obj = null;
+          string type = "";
+          if (Utils.GetHandle(id, out Handle hn))
+          {
+            obj = hn.GetObject(tr, out type, out string layer, out string applicationId);
+          }
+          if (obj == null)
+          {
+            progress.Report.Log(new ApplicationObject(id, "unknown") { Status = ApplicationObject.State.Failed, Log = new List<string>() { "Could not find object in document" } });
+            continue;
+          }
+
+          var appObj = new ApplicationObject(id, type) { Status = ApplicationObject.State.Unknown };
+
+          if (converter.CanConvertToSpeckle(obj))
+            appObj.Update(status: ApplicationObject.State.Created);
+          else
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
+
+          existingIds.Add(id);
+        }
+        tr.Commit();
+      }
+
+      if (existingIds.Count == 0)
+      {
+        progress.Report.LogOperationError(new Exception("No valid objects selected, nothing will be sent!"));
+        return;
+      }
+
+      Doc.Editor.SetImpliedSelection(new ObjectId[0]);
+      SelectClientObjects(existingIds);
+      Doc.Editor.Regen();
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {

@@ -821,11 +821,18 @@ namespace SpeckleRhino
     public override bool CanPreviewSend => true;
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
+      // report and converter
       progress.Report = new ProgressReport();
-
-      var filterObjs = GetObjectsFromFilter(state.Filter);
+      var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
+      if (converter == null)
+      {
+        progress.Report.LogOperationError(new Exception("Could not load converter"));
+        return;
+      }
+      converter.SetContextDocument(Doc);
 
       // remove any invalid objs
+      var filterObjs = GetObjectsFromFilter(state.Filter);
       var existingIds = new List<string>();
       foreach (var id in filterObjs)
       {
@@ -854,17 +861,12 @@ namespace SpeckleRhino
 
         // get converter
         var appObj = new ApplicationObject(id, obj.ObjectType.ToString()) { Status = ApplicationObject.State.Unknown };
-        var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-        if (converter != null)
-        {
-          converter.SetContextDocument(Doc);
-          if (converter.CanConvertToSpeckle(obj))
-            appObj.Update(status: ApplicationObject.State.Created);
-          else
-            appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
-        }
+
+        if (converter.CanConvertToSpeckle(obj))
+          appObj.Update(status: ApplicationObject.State.Created);
         else
-          appObj.Update(logItem: "Converter not found, conversion status could not be determined");
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
+
         existingIds.Add(id);
       }
 
