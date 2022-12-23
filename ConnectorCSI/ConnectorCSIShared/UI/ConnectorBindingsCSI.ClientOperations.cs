@@ -23,12 +23,12 @@ namespace Speckle.ConnectorCSI.UI
     public override void WriteStreamsToFile(List<StreamState> streams)
     {
       StreamStateManager.ClearStreamStateList(Model);
+      DocumentStreams = new List<StreamState>();
 
       foreach (var s in streams)
-      {
         DocumentStreams.Add(s);
-        WriteStateToFile();
-      }
+
+      WriteStateToFile();
     }
 
     //public override void AddNewStream(StreamState state)
@@ -66,7 +66,7 @@ namespace Speckle.ConnectorCSI.UI
 
     public override List<ISetting> GetSettings()
     {
-      return new List<ISetting> { };
+      return new List<ISetting>();
     }
 
     //public override void PersistAndUpdateStreamInFile(StreamState state)

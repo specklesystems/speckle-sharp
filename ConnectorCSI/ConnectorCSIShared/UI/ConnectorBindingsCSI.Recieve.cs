@@ -33,6 +33,15 @@ namespace Speckle.ConnectorCSI.UI
       //var converter = new ConverterCSI();
       var appName = GetHostAppVersion(Model);
       var converter = kit.LoadConverter(appName);
+
+      // set converter settings as tuples (setting slug, setting selection)
+      // for csi, these must go before the SetContextDocument method.
+      var settings = new Dictionary<string, string>();
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      settings.Add("operation", "receive");
+      converter.SetConverterSettings(settings);
+
       converter.SetContextDocument(Model);
       Exceptions.Clear();
       var previouslyReceivedObjects = state.ReceivedObjects;
@@ -125,16 +134,21 @@ namespace Speckle.ConnectorCSI.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
-      //converter.SetPreviousContextObjects(previouslyReceivedObjects);
+      converter.SetPreviousContextObjects(previouslyReceivedObjects);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+
       // receive was cancelled by user
       if (newPlaceholderObjects == null)
       {
         progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
         return null;
       }
+
       Model.View.RefreshWindow();
+      Model.View.RefreshView();
+
+      state.ReceivedObjects = newPlaceholderObjects;
 
       try
       {
