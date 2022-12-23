@@ -1,6 +1,10 @@
 ﻿using DesktopUI2.Models.Filters;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Navisworks.Api;
+using Cursor = System.Windows.Forms.Cursor;
+using System.Windows.Forms;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
@@ -49,8 +53,34 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     private static IEnumerable<string> GetObjectsFromSavedSets(ISelectionFilter filter)
     {
+      Cursor.Current = Cursors.WaitCursor;
       // Saved Sets filter stores Guids of the selection sets. This can be converted to ModelItem pseudoIds
-      throw new NotImplementedException();
+      List<Guid> selections = filter.Selection.Select(guid => new Guid(guid)).ToList();
+      List<SelectionSet> savedItems = selections
+        .Select(Doc.SelectionSets.ResolveGuid)
+        .Cast<SelectionSet>()
+        .ToList();
+
+      HashSet<string> objectPseudoIds = new HashSet<string>();
+
+      savedItems.ForEach(
+        item =>
+        {
+          // If the Saved Set is a Selection, add all the saved items and map to pseudoIds
+          if (item.HasExplicitModelItems)
+            objectPseudoIds.UnionWith(item.ExplicitModelItems.Select(Utils.GetPseudoId)
+            );
+
+          // If the Saved Set is a Search, add all the matching items and map to pseudoIds
+          if (item.HasSearch)
+            objectPseudoIds
+              .UnionWith(item.Search
+                .FindAll(Doc, false).Select(Utils.GetPseudoId)
+              );
+        });
+
+      Cursor.Current = Cursors.Default;
+      return objectPseudoIds.ToList();
     }
 
     private static IEnumerable<string> GetObjectsFromClashResults(ISelectionFilter filter)

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Credentials
@@ -275,7 +276,7 @@ namespace Speckle.Core.Credentials
       if (ServerUrl != acc.serverInfo.url)
         throw new SpeckleException($"Account is not from server {ServerUrl}", false);
 
-      var hasInternet = await Api.Helpers.UserHasInternet();
+      var hasInternet = await Http.UserHasInternet();
       if (!hasInternet)
       {
         throw new Exception("You are not connected to the internet.");
