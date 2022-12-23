@@ -7,9 +7,6 @@
     <namespace name="Speckle.ConnectorDynamo.Functions">
       <category>Speckle 2</category>
     </namespace>
-    <namespace name="Speckle.ConnectorDynamo.Functions.Auto">
-      <category>Speckle 2</category>
-    </namespace>
     <namespace name="Speckle.ConnectorDynamo.Functions.Developer">
       <!--important! extra space so it's indexed at the top and icon shows correctly-->
       <category>Speckle 2. Developer</category>

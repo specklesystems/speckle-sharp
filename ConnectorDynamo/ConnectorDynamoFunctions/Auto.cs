@@ -8,7 +8,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 
-namespace Speckle.ConnectorDynamo.Functions.Auto
+namespace Speckle.ConnectorDynamo.Functions
 {
   public static class Auto
   {
