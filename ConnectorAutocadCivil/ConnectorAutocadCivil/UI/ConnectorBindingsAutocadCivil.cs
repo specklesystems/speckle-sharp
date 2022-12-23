@@ -224,7 +224,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     public override void ResetDocument()
     {
-      // TODO!
+      Doc.Editor.SetImpliedSelection(new ObjectId[0]);
     }
 
     public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
@@ -877,7 +877,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       Doc.Editor.SetImpliedSelection(new ObjectId[0]);
       SelectClientObjects(existingIds);
-      Doc.Editor.Regen();
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
