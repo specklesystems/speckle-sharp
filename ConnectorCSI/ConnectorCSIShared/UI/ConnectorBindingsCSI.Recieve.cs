@@ -145,11 +145,8 @@ namespace Speckle.ConnectorCSI.UI
         return null;
       }
 
-      await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
-      {
-        Model.View.RefreshWindow();
-        Model.View.RefreshView();
-      });
+      Model.View.RefreshWindow();
+      Model.View.RefreshView();
 
       state.ReceivedObjects = newPlaceholderObjects;
 
@@ -210,8 +207,6 @@ namespace Speckle.ConnectorCSI.UI
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
-
-        //Model.View.RefreshView();
       }
 
       return placeholders;
