@@ -47,17 +47,22 @@ namespace Speckle.ConnectorNavisworks.Bindings
       Progress progressBar = Application.BeginProgress("Send to Speckle.");
       progressBar.BeginSubOperation(0, "Filtering Objects.");
 
+      DefaultKit = KitManager.GetDefaultKit();
+
       if (DefaultKit == null)
       {
         progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
         return null;
       }
 
+      NavisworksConverter = DefaultKit.LoadConverter(VersionedAppName);
       if (NavisworksConverter == null)
       {
         progress.Report.LogOperationError(new SpeckleException($"Could not find Converter{VersionedAppName}!"));
         return null;
       }
+
+      NavisworksConverter.SetContextDocument(Doc);
 
       NavisworksConverter.Report.ReportObjects.Clear();
 
