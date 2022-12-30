@@ -63,7 +63,7 @@ namespace Objects.Converter.Navisworks
     }
 
     private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode) =>
-      elevationMode ? v : new Vector3D(v.X, v.Z, v.Y);
+      elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
 
     private static Vector3D ApplyTransformation(Vector3 vector3, IReadOnlyList<double> matrix)
     {
@@ -250,7 +250,7 @@ namespace Objects.Converter.Navisworks
       Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
 
 
-    public void AddFragments(NavisworksGeometry geometry)
+    public void PopulateModelFragments(NavisworksGeometry geometry)
     {
       geometry.ModelFragments = new Stack<InwOaFragment3>();
 
