@@ -250,7 +250,7 @@ namespace Objects.Converter.Navisworks
       Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
 
 
-    public void AddFragments(NavisworksGeometry geometry)
+    public void PopulateModelFragments(NavisworksGeometry geometry)
     {
       geometry.ModelFragments = new Stack<InwOaFragment3>();
 

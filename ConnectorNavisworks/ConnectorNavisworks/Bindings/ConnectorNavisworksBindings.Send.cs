@@ -45,7 +45,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
     {
       List<string> filteredObjects = new List<string>();
       Progress progressBar = Application.BeginProgress("Send to Speckle.");
-      progressBar.BeginSubOperation(0, "Filtering Objects.");
 
       DefaultKit = KitManager.GetDefaultKit();
 
@@ -79,7 +78,14 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       if (state.Filter != null)
       {
-        filteredObjects.AddRange(GetObjectsFromFilter(state.Filter));
+        progressBar.BeginSubOperation(0, $"Building object-tree from {state.Filter.Selection.Count} selections.");
+        IEnumerable<string> objects = GetObjectsFromFilter(state.Filter);
+
+        if (objects != null)
+        {
+          filteredObjects.AddRange(objects);
+        }
+
         state.SelectedObjectIds = filteredObjects.ToList();
       }
 
@@ -87,6 +93,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         progress.Report.LogOperationError(new SpeckleException(
           "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        progressBar.Cancel();
+        Application.EndProgress();
         return null;
       }
 
