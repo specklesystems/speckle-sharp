@@ -56,6 +56,8 @@ namespace Objects.Converter.Navisworks
       {
         var geometry = new NavisworksGeometry(element);
 
+        geometry.ElevationMode = ElevationMode;
+
         AddFragments(geometry);
 
         @base["displayValue"] = TranslateFragmentGeometry(geometry);
