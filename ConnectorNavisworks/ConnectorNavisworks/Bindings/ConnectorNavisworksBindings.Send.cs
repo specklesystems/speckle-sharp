@@ -146,7 +146,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
           return null;
         }
 
-        var nextToConvert = toConvertDictionary.First(kv => kv.Value == false);
+        var nextToConvert = toConvertDictionary.First(kv => kv.Value == ConversionState.ToConvert);
 
         Base converted = null;
 
@@ -222,7 +222,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
         progress.Update(conversionProgressDict);
 
-        converted.applicationId = applicationId;
+        //converted.applicationId = applicationId;
         if (converted["@SpeckleSchema"] is Base newSchemaBase)
         {
           newSchemaBase.applicationId = applicationId;
