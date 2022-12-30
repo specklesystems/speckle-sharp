@@ -105,8 +105,12 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       int convertedCount = 0;
 
-      SortedDictionary<string, ConversionState> toConvertDictionary = new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
-      state.SelectedObjectIds.ForEach(x => toConvertDictionary.Add(x, ConversionState.ToConvert));
+      SortedDictionary<string, ConversionState> toConvertDictionary =
+        new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
+      state.SelectedObjectIds.ForEach(pseudoId =>
+      {
+        if (pseudoId != RootNodePseudoId) toConvertDictionary.Add(pseudoId, ConversionState.ToConvert);
+      });
 
       progressBar.EndSubOperation();
       progressBar.BeginSubOperation(1, $"Converting {state.SelectedObjectIds.Count} Objects.");
