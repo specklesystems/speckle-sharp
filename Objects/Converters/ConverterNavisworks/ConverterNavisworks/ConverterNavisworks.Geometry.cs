@@ -63,7 +63,7 @@ namespace Objects.Converter.Navisworks
     }
 
     private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode) =>
-      elevationMode ? v : new Vector3D(v.X, v.Z, v.Y);
+      elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
 
     private static Vector3D ApplyTransformation(Vector3 vector3, IReadOnlyList<double> matrix)
     {
