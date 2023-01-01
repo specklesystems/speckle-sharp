@@ -122,13 +122,14 @@ if (WIN32)
 	)
 else ()
 	add_custom_command (
-		OUTPUT "${ResourceObjectsDir}/AddOnResources.stamp"
-		DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles}
+		OUTPUT "${ResourceObjectsDir}/AddOnResources.stamp" "${CMAKE_BINARY_DIR}/$CONFIGURATION/${AC_ADDON_NAME}.bundle/Contents/Resources/English.lproj/Localizable.strings"
+		DEPENDS ${AddOnResourceFiles} ${AddOnImageFiles} 
 		COMMENT "Compiling resources..."
 		COMMAND ${CMAKE_COMMAND} -E make_directory "${ResourceObjectsDir}"
 		COMMAND python3 "${AddOnResourcesFolderAbsolute}/Tools/CompileResources.py" "${AC_ADDON_LANGUAGE}" "${AC_API_DEVKIT_DIR}" "${AddOnSourcesFolderAbsolute}" "${AddOnResourcesFolderAbsolute}" "${ResourceObjectsDir}" "${CMAKE_BINARY_DIR}/$<CONFIG>/${AC_ADDON_NAME}.bundle/Contents/Resources"
 		COMMAND ${CMAKE_COMMAND} -E copy "${AC_API_DEVKIT_DIR}/Support/Inc/PkgInfo" "${CMAKE_BINARY_DIR}/$<CONFIG>/${AC_ADDON_NAME}.bundle/Contents/PkgInfo"
 		COMMAND ${CMAKE_COMMAND} -E touch "${ResourceObjectsDir}/AddOnResources.stamp"
+		COMMAND python3 "/Users/Shared/Work/Source/Novelkis/Internal/InternalTools/Graphisoft/Archicad/RegisterArchicadAddOn/RegisterArchicadAddOn.py" register "${CMAKE_BINARY_DIR}/$<CONFIG>/${AC_ADDON_NAME}.bundle" ${ARCHICAD_VERSION}
 	)
 endif ()
 
