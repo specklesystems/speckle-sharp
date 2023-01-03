@@ -24,7 +24,6 @@ namespace Speckle.ConnectorCSI.UI
     {
       StreamStateManager.ClearStreamStateList(Model);
       StreamStateManager.WriteStreamStateList(Model, streams);
-      Model.File.Save();
     }
 
     public override List<StreamState> GetStreamsInFile()
