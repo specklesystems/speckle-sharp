@@ -1,4 +1,5 @@
-﻿using DesktopUI2;
+﻿using ConnectorCSI.Storage;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorCSI.Util;
@@ -112,9 +113,6 @@ namespace Speckle.ConnectorCSI.UI
       if (progress.Report.OperationErrorsCount != 0)
         return state;
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-
       Preview.Clear();
       StoredObjects.Clear();
 
@@ -135,6 +133,10 @@ namespace Speckle.ConnectorCSI.UI
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
       converter.SetPreviousContextObjects(previouslyReceivedObjects);
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
+      StreamStateManager.SaveBackupFile(Model);
 
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
 
