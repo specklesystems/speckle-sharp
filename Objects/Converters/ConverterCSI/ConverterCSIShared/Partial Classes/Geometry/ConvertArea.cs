@@ -130,7 +130,7 @@ namespace Objects.Converter.CSI
       {
         string guid = null;
         Model.AreaObj.GetGUID(name, ref guid);
-        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid);
+        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Area{delimiter}{name}");
         if (numErrorMsgs != 0)
           appObj.Update(log: new List<string>() { $"Area may not have updated successfully. Number of error messages for operation is {numErrorMsgs}", importLog });
       }
@@ -234,7 +234,7 @@ namespace Objects.Converter.CSI
       Model.AreaObj.GetGUID(name, ref guid);
 
       if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: guid);
+        appObj.Update(status: ApplicationObject.State.Created, createdId: guid, convertedItem: $"Area{delimiter}{name}");
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }
