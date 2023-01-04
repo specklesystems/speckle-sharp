@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reactive.Concurrency;
+﻿using System.Collections.Generic;
 
 #nullable enable
 namespace Speckle.Core.Models.GraphTraversal
@@ -63,51 +59,5 @@ namespace Speckle.Core.Models.GraphTraversal
       return new TraversalRule();
     }
   }
-
-
-  public class Example
-  {
-
-    public bool CanConvertToNative(Base b)
-    {
-      return false;
-    }
-    
-    public void foo()
-    {
-      IEnumerable<string> OnlyElements(Base x) => new[] { "elements", "element" };
-      IEnumerable<string> AllMembers(Base x) => x.GetMembers().Keys;
-      IEnumerable<string> DynamicOnly(Base x) => x.GetMembers(DynamicBaseMemberType.Dynamic).Keys;
-      
-      var Convertable = TraversalRule.NewTraveralRule()
-        .When(x => x.GetMembers().Keys.Contains("displayValue") )
-        .ContinueTraversing(OnlyElements);
-      
-       var Ignore = TraversalRule.NewTraveralRule()
-         .When(x => x.speckle_type.ToLower().Contains("organisation"))
-         .ContinueTraversing(x => Array.Empty<string>());
-      
-      var Else = TraversalRule.NewTraveralRule()
-        .When(x => true)
-        .ContinueTraversing(DynamicOnly);
-      
-      var traverseFunction = new GraphTraversal(Convertable, Ignore, Else);
-
-      Base myBase = new Base();
-
-      foreach (var @base in traverseFunction.Traverse(myBase))
-      {
-        
-      }
-    }
-
-
-    public void RecursivlyConvert()
-    {
-      Directory<string, 
-      
-      
-    }
-    
-  }
+  
 }

@@ -21,6 +21,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using static DesktopUI2.ViewModels.MappingViewModel;
@@ -566,6 +567,42 @@ namespace SpeckleRhino
       return commitObject;
     }
 
+    
+    private IEnumerable<ApplicationObject> FlattenCommitObject_New(Base obj, ISpeckleConverter converter,
+      string layer, ref int count, bool foundConvertibleMember = false)
+    {
+      ApplicationObject CreateApplicationObject(TraversalContext c)
+      {
+        Base current = c.current;
+        var speckleType = current.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+        var appObj = new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = layer };
+        
+        if (converter.CanConvertToNative(current))
+        {
+          appObj.Convertible = true;
+          if (StoredObjects.ContainsKey(current.id))
+            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id {current.id}. Skipped other object");
+          else
+            StoredObjects.Add(current.id, current);
+          return appObj;
+        }
+        
+        if(current["display"])
+        
+        
+
+        return appObj;
+      }
+      
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
+
+      var objectsToConvert = traverseFunction
+        .Traverse(obj)
+        .Select(CreateApplicationObject);
+      
+      return objectsToConvert;
+    }
+    
     // Recurses through the commit object and flattens it. Returns list of Preview objects
     private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter, ProgressViewModel progress, string layer, ref int count, bool foundConvertibleMember = false)
     {
