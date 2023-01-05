@@ -373,7 +373,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - run: # Could not get ssh to work, so using a personal token
           name: Clone
-          command: git clone https://$GITHUB_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
+          command: git clone https://$GH_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
       - persist_to_workspace:
           root: ./
           paths:
@@ -492,7 +492,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 workflows:
   build:
     jobs:
-      - get-ci-tools
+      - get-ci-tools:
+          context: github-dev-bot
       - build-core:
           requires:
             - get-ci-tools
