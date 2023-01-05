@@ -454,6 +454,12 @@ namespace SpeckleRhino
             case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
               toRemove.ForEach(o => Doc.Objects.Delete(o));
+              
+              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+              {
+                var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
+                if (viewId != -1) Doc.NamedViews.Delete(viewId);
+              }
               break;
             default:
               layer = $"{commitLayerName}{Layer.PathSeparator}{previewObj.Container}"; // use the commit as the top level layer in create mode
@@ -771,11 +777,11 @@ namespace SpeckleRhino
               appObj.Update(status: ApplicationObject.State.Created, createdId: o.Id.ToString());
             bakedCount++;
             break;
-          case string o: // this was prbly a view, baked during conversion
+          case ViewInfo o: // this is a view, baked during conversion
             if (parent != null)
-              parent.Update(createdId: o);
+              parent.Update(createdId: o.Name);
             else
-              appObj.Update(status: ApplicationObject.State.Created, createdId: o);
+              appObj.Update(status: ApplicationObject.State.Created, createdId: o.Name);
             bakedCount++;
             break;
           default:

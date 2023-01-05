@@ -309,7 +309,6 @@ namespace Objects.Converter.RhinoGh
         Report.UpdateReportObject(reportObj);
       }
 
-
       return @base;
     }
 
