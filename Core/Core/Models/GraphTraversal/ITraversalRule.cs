@@ -4,14 +4,26 @@ using System.Linq;
 #nullable enable
 namespace Speckle.Core.Models.GraphTraversal
 {
+  /// <summary>
+  /// Interface for defining conditional traversal of <see cref="Base"/> objects.
+  /// </summary>
   public interface ITraversalRule
   {
+    /// <param name="b"></param>
+    /// <returns>The member names to traverse</returns>
+    /// <remarks>Return may include member names <paramref name="b"/> doesn't have</remarks>
     public IEnumerable<string> MembersToTraverse(Base b);
+    
+    /// <summary>
+    /// Evaluates the traversal rule given <paramref name="o"/>
+    /// </summary>
+    /// <param name="o"></param>
+    /// <returns></returns>
     public bool DoesRuleHold(Base o);
   }
   
   /// <summary>
-  /// The traverse none rule to default, that always holds true
+  /// The "traverse none" rule that always holds true
   /// </summary>
   public class DefaultRule : ITraversalRule
   {
@@ -20,6 +32,7 @@ namespace Speckle.Core.Models.GraphTraversal
 
     private DefaultRule() { }
     public IEnumerable<string> MembersToTraverse(Base b) => Enumerable.Empty<string>();
+    
     public bool DoesRuleHold(Base o) => true;
   }
 }

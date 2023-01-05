@@ -5,13 +5,13 @@ using System.Collections.Generic;
 namespace Speckle.Core.Models.GraphTraversal
 {
 
-  public readonly struct TraversalContext
+  public class TraversalContext
   {
     public readonly string? propName;
-    public readonly Base? parent;
+    public readonly TraversalContext? parent;
     public readonly Base current;
     
-    public TraversalContext(Base current, string? propName = null, Base? parent = null) : this()
+    public TraversalContext(Base current, string? propName = null, TraversalContext? parent = null)
     {
       this.current = current;
       this.parent = parent;
@@ -28,7 +28,11 @@ namespace Speckle.Core.Models.GraphTraversal
       rules = traversalRule;
     }
 
-    
+    /// <summary>
+    /// Given <paramref name="root"/> object, will recursivly traverse members according to the provided traversal rules.
+    /// </summary>
+    /// <param name="root">The object to traverse members</param>
+    /// <returns>Lazily returns <see cref="Base"/> objects found during traversal (including <paramref name="root"/>), wrapped within a <see cref="TraversalContext"/></returns>
     public IEnumerable<TraversalContext> Traverse(Base root)
     {
       var stack = new Stack<TraversalContext>();
@@ -43,23 +47,38 @@ namespace Speckle.Core.Models.GraphTraversal
         var activeRule = GetActiveRuleOrDefault(current);
         foreach (string childProp in activeRule.MembersToTraverse(current))
         {
-          TraverseMember(stack, current[childProp], childProp, current);
+          TraverseMemberToStack(stack, current[childProp], childProp, head);
         }
       }
     }
     
-    private static void TraverseMember(Stack<TraversalContext> stack, object? value, string? memberName = null, Base? parent = null)
+    private static void TraverseMemberToStack(Stack<TraversalContext> stack, object? value, string? memberName = null, TraversalContext? parent = null)
     {
+      foreach (Base o in TraverseMember(value))
+      {
+        stack.Push(new TraversalContext(o, memberName, parent));
+      }
+    }
+    
+    /// <summary>
+    /// Traverses supported Collections yielding <see cref="Base"/> objects.
+    /// Does not traverse <see cref="Base"/>, only (potentially nested) collections.
+    /// </summary>
+    /// <param name="value">The value to traverse</param>
+    public static IEnumerable<Base> TraverseMember(object? value)
+    {
+      //TODO we should benchmark this, as yield returning like this could be suboptimal
       switch (value)
       {
         case Base o:
-          stack.Push(new TraversalContext(o, memberName, parent));
+          yield return o;
           break;
         case IList list:
         {
           foreach (object? obj in list)
           {
-            TraverseMember(stack, obj, memberName, parent);
+            foreach (Base o in TraverseMember(obj))
+              yield return o;
           }
           break;
         }
@@ -67,12 +86,14 @@ namespace Speckle.Core.Models.GraphTraversal
         {
           foreach (object? obj in dictionary.Values)
           {
-            TraverseMember(stack, obj, memberName, parent);
+            foreach (Base o in TraverseMember(obj))
+              yield return o;
           }
           break;
         }
       }
     }
+    
     private ITraversalRule GetActiveRuleOrDefault(Base o)
     {
       return GetActiveRule(o) ?? DefaultRule.Instance;

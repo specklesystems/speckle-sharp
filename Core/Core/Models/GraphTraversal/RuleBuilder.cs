@@ -9,10 +9,10 @@ namespace Speckle.Core.Models.GraphTraversal
     ITraversalBuilderTraverse When(WhenCondition condition);
   }
   
-  public delegate IEnumerable<string> SelectProps(Base o); 
+  public delegate IEnumerable<string> SelectMembers(Base o); 
   public interface ITraversalBuilderTraverse : ITraversalBuilderWhen
   {
-    ITraversalRule ContinueTraversing(SelectProps props);
+    ITraversalRule ContinueTraversing(SelectMembers members);
   }
   
   public sealed class TraversalRule 
@@ -21,7 +21,7 @@ namespace Speckle.Core.Models.GraphTraversal
       ITraversalBuilderTraverse
   {
     private List<WhenCondition> conditions;
-    private SelectProps trueAction;
+    private SelectMembers trueAction;
 
     private TraversalRule()
     {
@@ -48,9 +48,9 @@ namespace Speckle.Core.Models.GraphTraversal
       return this;
     }
 
-    public ITraversalRule ContinueTraversing(SelectProps props)
+    public ITraversalRule ContinueTraversing(SelectMembers members)
     {
-      this.trueAction = props;
+      this.trueAction = members;
       return this;
     }
     

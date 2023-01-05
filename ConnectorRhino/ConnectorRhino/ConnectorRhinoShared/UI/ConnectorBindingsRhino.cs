@@ -270,9 +270,9 @@ namespace SpeckleRhino
         Preview.Clear();
         StoredObjects.Clear();
 
-        int count = 0;
+
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
-        Preview = FlattenCommitObject(commitObject, converter, progress, commitLayerName, ref count);
+        Preview = FlattenCommitObject(commitObject, converter, commitLayerName).ToList();
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
 
         // Convert preview objects
@@ -394,8 +394,7 @@ namespace SpeckleRhino
         if (Preview.Count == 0)
         {
           // flatten the commit object to retrieve children objs
-          int count = 0;
-          Preview = FlattenCommitObject(commitObject, converter, progress, commitLayerName, ref count);
+          Preview = FlattenCommitObject(commitObject, converter, commitLayerName).ToList();
 
           // convert
           foreach (var previewObj in Preview)
@@ -566,45 +565,69 @@ namespace SpeckleRhino
 
       return commitObject;
     }
-
     
-    private IEnumerable<ApplicationObject> FlattenCommitObject_New(Base obj, ISpeckleConverter converter,
-      string layer, ref int count, bool foundConvertibleMember = false)
+    private IEnumerable<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter,
+      string layer)
     {
-      ApplicationObject CreateApplicationObject(TraversalContext c)
+
+      void StoreObject(Base @base, ApplicationObject appObj)
       {
-        Base current = c.current;
+        if (StoredObjects.ContainsKey(@base.id))
+          appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object");
+        else
+          StoredObjects.Add(@base.id, @base);
+      }
+      
+      ApplicationObject CreateApplicationObject(Base current, string containerId)
+      {
         var speckleType = current.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-        var appObj = new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = layer };
+        var appObj = new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         
         if (converter.CanConvertToNative(current))
         {
           appObj.Convertible = true;
-          if (StoredObjects.ContainsKey(current.id))
-            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id {current.id}. Skipped other object");
-          else
-            StoredObjects.Add(current.id, current);
+          StoreObject(current, appObj);
+          return appObj;
+        }
+
+        var fallbackMember = current["displayValue"] ?? current["@displayValue"];
+        if (fallbackMember != null)
+        {
+          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember)
+            .Select(o => CreateApplicationObject(o, containerId));
+          appObj.Fallback.AddRange(fallbackObjects);
+
+          StoreObject(current, appObj);
           return appObj;
         }
         
-        if(current["display"])
-        
-        
-
         return appObj;
+      }
+      
+      
+      string LayerId(TraversalContext context)
+      {
+        if (context.propName == null) return layer;
+
+        var objectLayerName = context.propName[0] == '@'
+          ? context.propName.Substring(1)
+          : context.propName;
+        
+        string parentLayerName = LayerId(context.parent);
+        return $"{parentLayerName}{Layer.PathSeparator}{objectLayerName}";
       }
       
       var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
       var objectsToConvert = traverseFunction
         .Traverse(obj)
-        .Select(CreateApplicationObject);
+        .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)));
       
       return objectsToConvert;
     }
-    
+
     // Recurses through the commit object and flattens it. Returns list of Preview objects
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter, ProgressViewModel progress, string layer, ref int count, bool foundConvertibleMember = false)
+    private List<ApplicationObject> FlattenCommitObject_Old(object obj, ISpeckleConverter converter, ProgressViewModel progress, string layer, ref int count, bool foundConvertibleMember = false)
     {
       var objects = new List<ApplicationObject>();
 
@@ -630,7 +653,7 @@ namespace SpeckleRhino
           bool hasFallback = false;
           if (@base.GetMembers().ContainsKey("displayValue"))
           {
-            var fallbackObjects = FlattenCommitObject(@base["displayValue"], converter, progress, layer, ref count, foundConvertibleMember);
+            var fallbackObjects = FlattenCommitObject_Old(@base["displayValue"], converter, progress, layer, ref count, foundConvertibleMember);
             if (fallbackObjects.Count > 0)
             {
               appObj.Fallback.AddRange(fallbackObjects);
@@ -660,7 +683,7 @@ namespace SpeckleRhino
             string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
             string rhLayerName = objLayerName.StartsWith($"{layer}{Layer.PathSeparator}") ? objLayerName : $"{layer}{Layer.PathSeparator}{objLayerName}";
 
-            var nestedObjects = FlattenCommitObject(@base[prop], converter, progress, rhLayerName, ref count, foundConvertibleMember);
+            var nestedObjects = FlattenCommitObject_Old(@base[prop], converter, progress, rhLayerName, ref count, foundConvertibleMember);
             var validNestedObjects = nestedObjects.Where(o => o.Convertible == true || o.Fallback.Count > 0)?.ToList();
             if (validNestedObjects != null && validNestedObjects.Count > 0)
             {
@@ -683,7 +706,7 @@ namespace SpeckleRhino
       {
         count = 0;
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, progress, layer, ref count));
+          objects.AddRange(FlattenCommitObject_Old(listObj, converter, progress, layer, ref count));
         return objects;
       }
 
@@ -691,7 +714,7 @@ namespace SpeckleRhino
       {
         count = 0;
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter, progress, layer, ref count));
+          objects.AddRange(FlattenCommitObject_Old(kvp.Value, converter, progress, layer, ref count));
         return objects;
       }
 

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Kits;
 
@@ -10,23 +11,27 @@ namespace Speckle.Core.Models.GraphTraversal
 
     ISpeckleConverter converter;
 
-    private static readonly string[] onlyElementsArr = { "elements", "@elements" };
-    public static IEnumerable<string> OnlyElements(Base _) => onlyElementsArr;
-    public static IEnumerable<string> AllMembers(Base x) => x.GetMembers().Keys;
-    public static IEnumerable<string> DynamicOnly(Base x) => x.GetMembers(DynamicBaseMemberType.Dynamic).Keys;
+    private static readonly string[] elementsAliases = { "elements", "@elements" };
+    private static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+    public static IEnumerable<string> ElementsAliases(Base _) => elementsAliases;
+    public static IEnumerable<string> DisplayValueAliases(Base _) => displayValueAliases;
     public static IEnumerable<string> None(Base x) => Enumerable.Empty<string>();
-    
+    public static SelectMembers Members(DynamicBaseMemberType includeMembers) => x => x.GetMembers(includeMembers).Keys;
+    public static SelectMembers Concat(params SelectMembers[] selectProps) => x => selectProps.SelectMany(i => i.Invoke(x));
+
     public static GraphTraversal CreateTraverseFunc(ISpeckleConverter converter)
     {
       //Define traversal Rules
       var convertableRule = TraversalRule.NewTraveralRule()
-        .When(converter.CanConvertToNative)
-        .ContinueTraversing(OnlyElements);
+        .When(x=> x.GetMembers(DynamicBaseMemberType.Instance).Keys.Any(member => elementsAliases.Contains(member)))
+        .ContinueTraversing(x => converter.CanConvertToNative(x)
+          ? elementsAliases.Concat(displayValueAliases)
+          : elementsAliases);
 
       var defaultRule = TraversalRule.NewTraveralRule()
-        .When(x => true)
-        .ContinueTraversing(AllMembers);
-      
+        .When(_ => true)
+        .ContinueTraversing(Members(DynamicBaseMemberType.All));
+
       return new GraphTraversal(convertableRule, defaultRule);
     }
     
@@ -40,11 +45,11 @@ namespace Speckle.Core.Models.GraphTraversal
       var traverseFunction = CreateTraverseFunc(converter);
       
       //Traverse
-      var objectstoTraverse = traverseFunction
+      var objectsToTraverse = traverseFunction
         .Traverse(commitObject)
         .Where(c => converter.CanConvertToNative(c.current));
       
-      foreach (var c in objectstoTraverse)
+      foreach (var c in objectsToTraverse)
       {
         Base current = c.current;
 
