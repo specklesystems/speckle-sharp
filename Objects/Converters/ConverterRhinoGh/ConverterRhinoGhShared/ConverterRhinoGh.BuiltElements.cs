@@ -25,6 +25,7 @@ using Point = Objects.Geometry.Point;
 using View3D = Objects.BuiltElements.View3D;
 using RH = Rhino.Geometry;
 using RV = Objects.BuiltElements.Revit;
+using Grasshopper;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -60,8 +61,10 @@ namespace Objects.Converter.RhinoGh
 
       return _view;
     }
-    public string ViewToNative(View3D view)
+    public ApplicationObject ViewToNative(View3D view)
     {
+      var appObj = new ApplicationObject(view.id, view.speckle_type) { applicationId = view.applicationId };
+
       var bakedViewName = string.Empty;
       Rhino.RhinoApp.InvokeOnUiThread((Action)delegate {
 
@@ -101,11 +104,19 @@ namespace Objects.Converter.RhinoGh
         bakedViewName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {view.name}" : $"{view.name}";
 
         var res = Doc.NamedViews.Add(bakedViewName, viewport.Id);
-        // if (res == -1) TODO: add reporting here and return application object
-
+        if (res == -1)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not add named view to doc");
+        }
+        else
+        {
+          var namedView = Doc.NamedViews[res];
+          var status = ReceiveMode == ReceiveMode.Update ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+          appObj.Update(status: status, createdId: bakedViewName, convertedItem: namedView);
+        }
       });
 
-      return bakedViewName;
+      return appObj;
     }
 
     private void AttachViewParams(Base speckleView, ViewInfo view)
