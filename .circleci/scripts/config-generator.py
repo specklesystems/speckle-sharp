@@ -186,6 +186,7 @@ def getNewDeployJob(jobName: str):
         "extension": "zip" if isMac else "exe",
         "requires": ["deploy-connectors", jobName],
         "filters": getTagFilter([jobName]),
+        "context": "do-spaces-speckle-releases",
     }
     return {"deploy-connector-new": deployJob}
 
