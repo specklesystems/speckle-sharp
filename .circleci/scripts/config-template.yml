@@ -371,9 +371,12 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: cimg/base:2021.01
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "62:b2:1a:86:b7:9f:83:91:9b:61:f8:52:66:38:78:64"
       - run: # Could not get ssh to work, so using a personal token
           name: Clone
-          command: git clone https://$GH_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
+          command: git clone git@github.com:specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
       - persist_to_workspace:
           root: ./
           paths:
