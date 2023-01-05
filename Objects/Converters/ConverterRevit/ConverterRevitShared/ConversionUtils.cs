@@ -79,7 +79,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="host"></param>
     /// <param name="base"></param>
-    public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
+    public void GetHostedElements(Base @base, Element host, out List<string> notes)
     {
       notes = new List<string>();
       var hostedElementIds = GetDependentElementIds(host);
