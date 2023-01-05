@@ -524,7 +524,7 @@ workflows:
           post-steps:
             - packandpublish:
                 projectfilepath: Core/Core.sln
-                context: nuget
+          context: nuget
       - build-objects:
           name: nuget-deploy-objects
           filters:
@@ -535,7 +535,7 @@ workflows:
           post-steps:
             - packandpublish-bash:
                 projectfilepath: Objects/Objects.sln
-                context: nuget
+          context: nuget
       - build-desktopui:
           name: nuget-deploy-desktopui
           filters:
@@ -546,5 +546,5 @@ workflows:
           post-steps:
             - packandpublish:
                 projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
-                context: nuget
+          context: nuget
 # VS Code Extension Version: 1.4.0
