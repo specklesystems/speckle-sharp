@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using GraphQL.Client.Http;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 using Version = System.Version;
@@ -42,7 +43,7 @@ namespace Speckle.Core.Api
 
       Account = account;
 
-      HttpClient = new HttpClient();
+      HttpClient = Http.GetHttpProxyClient();
 
       if (account.token.ToLowerInvariant().Contains("bearer"))
       {

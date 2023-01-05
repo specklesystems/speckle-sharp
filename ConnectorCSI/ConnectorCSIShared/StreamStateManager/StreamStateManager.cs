@@ -1,6 +1,7 @@
 ﻿using CSiAPIv1;
 using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -21,7 +22,7 @@ namespace ConnectorCSI.Storage
       {
         return JsonConvert.DeserializeObject<List<StreamState>>(strings);
       }
-      catch
+      catch (Exception e)
       {
         return new List<StreamState>();
       }
@@ -35,17 +36,15 @@ namespace ConnectorCSI.Storage
     /// <param name="streamStates"></param>
     public static void WriteStreamStateList(cSapModel model, List<StreamState> streamStates)
     {
-      if (_speckleFilePath == null) GetOrCreateSpeckleFilePath(model);
+      if (_speckleFilePath == null) 
+        GetOrCreateSpeckleFilePath(model);
       FileStream fileStream = new FileStream(_speckleFilePath, FileMode.Open, FileAccess.ReadWrite, FileShare.ReadWrite);
-      try
+
+      using (var streamWriter = new StreamWriter(fileStream))
       {
-        using (var streamWriter = new StreamWriter(fileStream))
-        {
-          streamWriter.Write(JsonConvert.SerializeObject(streamStates) as string);
-          streamWriter.Flush();
-        }
+        streamWriter.Write(JsonConvert.SerializeObject(streamStates) as string);
+        streamWriter.Flush();
       }
-      catch { }
     }
 
     public static void ClearStreamStateList(cSapModel model)

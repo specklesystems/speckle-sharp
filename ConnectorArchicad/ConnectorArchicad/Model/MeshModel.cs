@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Archicad.Model
 {
@@ -36,6 +36,8 @@ namespace Archicad.Model
       #endregion
 
       #region --- Fields ---
+
+      public string name { get; set; }
 
       public Color ambientColor { get; set; }
 

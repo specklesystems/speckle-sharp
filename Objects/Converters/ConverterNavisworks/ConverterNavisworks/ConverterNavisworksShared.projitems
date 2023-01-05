@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>c3232ef3-2000-44c6-a330-b94531c9cc83</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConverterNavisworksShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Properties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.ToNative.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.ToSpeckle.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Geometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Other.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Utils.cs" />
+  </ItemGroup>
+</Project>

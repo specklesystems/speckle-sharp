@@ -39,10 +39,11 @@ namespace TestsIntegration.Subscriptions
       streamId = res;
       Assert.NotNull(res);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(1000); //let client catch-up
         Assert.NotNull(StreamAddedInfo);
-        Assert.AreEqual(streamInput.name, StreamAddedInfo.name);
+        Assert.That(StreamAddedInfo.name, Is.EqualTo(streamInput.name));
       });
     }
 
@@ -69,11 +70,12 @@ namespace TestsIntegration.Subscriptions
       var res = await client.StreamUpdate(streamInput);
 
       Assert.True(res);
-      
-      await Task.Run(() => {
+
+      await Task.Run(() =>
+      {
         Thread.Sleep(100); //let client catch-up
         Assert.NotNull(StreamUpdatedInfo);
-        Assert.AreEqual(streamInput.name, StreamUpdatedInfo.name);
+        Assert.That(StreamUpdatedInfo.name, Is.EqualTo(streamInput.name));
       });
 
     }
@@ -95,10 +97,11 @@ namespace TestsIntegration.Subscriptions
 
       Assert.True(res);
 
-      await Task.Run(() => {
+      await Task.Run(() =>
+      {
         Thread.Sleep(100); //let client catch-up
         Assert.NotNull(StreamRemovedInfo);
-        Assert.AreEqual(streamId, StreamRemovedInfo.id);
+        Assert.That(StreamRemovedInfo.id, Is.EqualTo(streamId));
       });
 
     }

@@ -33,13 +33,6 @@
             FontSize="18"
             FontWeight="Medium"
             Text="{Binding Title}" />
-
-          <TextBlock
-            Margin="0,0,0,3"
-            VerticalAlignment="Bottom"
-            FontSize="8"
-            Foreground="Gray"
-            Text="beta" />
         </StackPanel>
       </Grid>
     </m:Card>

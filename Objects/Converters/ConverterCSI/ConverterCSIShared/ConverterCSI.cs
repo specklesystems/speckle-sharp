@@ -1,17 +1,17 @@
 ﻿using CSiAPIv1;
-using Objects.Converter.CSI;
 using Objects.Structural.Analysis;
+using Objects.Structural.CSI.Analysis;
 using Objects.Structural.CSI.Geometry;
+using Objects.Structural.CSI.Properties;
+using Objects.Structural.Geometry;
+using Objects.Structural.Loading;
+using Objects.Structural.Properties;
 using Objects.Structural.Results;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using BE = Objects.BuiltElements;
-using OSEA = Objects.Structural.CSI.Analysis;
 using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
@@ -40,33 +40,84 @@ namespace Objects.Converter.CSI
     public string WebsiteOrEmail => "https://speckle.systems";
 
     public cSapModel Model { get; private set; }
+    public string ProgramVersion { get; private set; }
 
     public Model SpeckleModel { get; set; }
 
     public ResultSetAll AnalysisResults { get; set; }
 
     public ReceiveMode ReceiveMode { get; set; }
+    /// <summary>
+    /// <para>To know which objects are already in the model. These are *mostly* elements that are in the model before the receive operation starts, but certain names will be added for objects that may be referenced by other elements such as load patterns and load cases.</para>
+    /// <para> The keys are typically GUIDS and the values are exclusively names. It is easier to retrieve names, and names are typically used by the api, however GUIDS are more stable and can't be changed in the user interface. Some items (again load patterns and load combinations) don't have GUIDs so those just store the name value twice. </para>
+    /// </summary>
+    public Dictionary<string, string> ExistingObjectGuids { get; set; }
 
+    /// <summary>
+    /// <para>To know which other objects are being converted, in order to sort relationships between them.
+    /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
+    /// </summary>
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
+
+    /// <summary>
+    /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
+    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
+    /// </summary>
+    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
     public void SetContextDocument(object doc)
     {
       Model = (cSapModel)doc;
-      SpeckleModel = ModelToSpeckle();
-      AnalysisResults = ResultsToSpeckle();
+      double version = 0;
+      string versionString = null;
+      Model.GetVersion(ref versionString, ref version);
+      ProgramVersion = versionString;
+
+      if (!Settings.ContainsKey("operation"))
+        throw new Exception("operation setting was not set before calling converter.SetContextDocument");
+
+      if (Settings["operation"] == "receive")
+      { 
+        ExistingObjectGuids = GetAllGuids(Model);
+        // TODO: make sure we are setting the load patterns before we import load combinations
+      }
+      else if (Settings["operation"] == "send")
+      {
+        SpeckleModel = ModelToSpeckle();
+        AnalysisResults = ResultsToSpeckle();
+      }
+      else
+        throw new Exception("operation setting was not set to \"send\" or \"receive\"");
+    }
+    public void SetConverterSettings(object settings)
+    {
+      Settings = settings as Dictionary<string, string>;
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
-
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
     public bool CanConvertToNative(Base @object)
     {
-      foreach (var type in Enum.GetNames(typeof(ConverterCSI.CSIConverterSupported)))
+      switch (@object)
       {
-        if (type == @object.ToString().Split('.').Last())
-        {
+        case CSIDiaphragm csiDiaphragm:
+        case CSIStories csiStories:
+        case Element1D element1D:
+        case Element2D element2D:
+        case Load load:
+        //case Geometry.Line line:
+        case Node node:
+        //case Model o:
+        //case Property property:
+
+        // for the moment we need to have this in here so the flatten traversal skips over this object
+        // otherwise it would add result.element to the list twice and the stored objects dictionary would throw
+        case Result result:
           return true;
-        }
-      }
+      };
       return false;
     }
 
@@ -86,32 +137,70 @@ namespace Objects.Converter.CSI
 
     public object ConvertToNative(Base @object)
     {
+      var appObj = new ApplicationObject(@object.id, @object.speckle_type) { applicationId = @object.applicationId };
+      List<string> notes = new List<string>();
+
       switch (@object)
       {
-        case Objects.Organization.Model o:
-          return BuiltElementModelToNative(o);
-          Report.Log($"Created Model { o.id}");
+        case CSIAreaSpring o:
+          AreaSpringPropertyToNative(o, ref appObj);
+          break;
+        case CSIDiaphragm o:
+          DiaphragmToNative(o, ref appObj);
+          break;
+        case CSILinearSpring o:
+          LinearSpringPropertyToNative(o, ref appObj);
+          break;
+        case CSILinkProperty o:
+          LinkPropertyToNative(o, ref appObj);
+          break;
+        case CSIProperty2D o:
+          Property2DToNative(o, ref appObj);
+          break;
+        case CSISpringProperty o:
+          SpringPropertyToNative(o, ref appObj);
+          break;
+        case CSIStories o:
+          StoriesToNative(o, ref appObj);
+          break;
+        //case CSIWindLoadingFace o:
+        //  LoadFaceToNative(o, ref appObj);
+        //  break;
+        //case CSITendonProperty o:
+        case OSG.Element1D o:
+          FrameToNative(o, ref appObj);
+          break;
+        case OSG.Element2D o:
+          AreaToNative(o, ref appObj);
+          break;
+        case LoadBeam o:
+          LoadFrameToNative(o, ref appObj);
+          break;
+        case LoadFace o:
+          LoadFaceToNative(o, ref appObj);
+          break;
         //case osg.node o:
         //    return pointtonative(o);
-        case OSG.Node o:
-          return PointToNative((CSINode)o);
-          Report.Log($"Created Node {o.id}");
         case Geometry.Line o:
-          return LineToNative(o);
-          Report.Log($"Created Line {o.id}");
-        case OSG.Element1D o:
-          return FrameToNative(o);
-          Report.Log($"Created Element1D {o.id}");
-        case OSG.Element2D o:
-          return AreaToNative(o);
-          Report.Log($"Created Element2D {o.id}");
-        case Model o:
-          return ModelToNative(o);
-          Report.Log($"Created Model {o.id}");
+          LineToNative(o, ref appObj); // do we really want to assume any line is a frame object?
+          break;
+        case OSG.Node o:
+          PointToNative(o, ref appObj);
+          break;
+        case Property1D o:
+          Property1DToNative(o, ref appObj);
+          break;
         default:
-          Report.Log($"Skipped not supported type: {@object.GetType()} {@object.id}");
-          throw new NotSupportedException();
+          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Skipped not supported type: {@object.GetType()}");
+          break;
       }
+
+      // log 
+      var reportObj = Report.GetReportObject(@object.id, out int index) ? Report.ReportObjects[index] : null;
+      if (reportObj != null && notes.Count > 0)
+        reportObj.Update(log: notes);
+
+      return appObj;
     }
 
     public List<object> ConvertToNative(List<Base> objects)
@@ -293,6 +382,7 @@ namespace Objects.Converter.CSI
           //    returnObject = null;
           //    break;
       }
+
       return returnObject;
     }
 
@@ -302,21 +392,5 @@ namespace Objects.Converter.CSI
     }
 
     public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
-
-
-    public void SetContextObjects(List<ApplicationObject> objects)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void SetPreviousContextObjects(List<ApplicationObject> objects)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void SetConverterSettings(object settings)
-    {
-      throw new NotImplementedException("This converter does not have any settings.");
-    }
   }
 }

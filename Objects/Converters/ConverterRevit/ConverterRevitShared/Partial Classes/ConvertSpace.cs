@@ -103,7 +103,7 @@ namespace Objects.Converter.Revit
       speckleSpace.area = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_AREA);
       speckleSpace.volume = GetParamValue<double>(revitSpace, BuiltInParameter.ROOM_VOLUME);
       speckleSpace.spaceType = revitSpace.SpaceType.ToString();
-      speckleSpace.zoneName = revitSpace.Zone.Name;
+      speckleSpace.zoneName = revitSpace.Zone?.Name;
 
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
 

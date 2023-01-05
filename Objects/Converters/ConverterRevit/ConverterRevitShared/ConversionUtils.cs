@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Speckle.Core.Helpers;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Duct = Objects.BuiltElements.Duct;
@@ -252,6 +253,10 @@ namespace Objects.Converter.Revit
         }
       }
 
+      //NOTE: adds the quantities of all materials to an element
+      var qs = MaterialQuantitiesToSpeckle(revitElement, speckleElement["units"] as string);
+      if (qs != null)
+        speckleElement["materialQuantities"] = qs;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -987,7 +992,7 @@ namespace Objects.Converter.Revit
 
     public string GetTemplatePath(string templateName)
     {
-      var directoryPath = Path.Combine(Speckle.Core.Api.Helpers.UserSpeckleFolderPath, "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      var directoryPath = Path.Combine(SpecklePathProvider.ObjectsFolderPath, "Templates", "Revit", RevitVersionHelper.Version);
       string templatePath = "";
       switch (Doc.DisplayUnitSystem)
       {

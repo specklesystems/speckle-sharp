@@ -174,16 +174,16 @@ namespace Speckle.Core.Serialisation
                 {
                   if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(dataItem.GetType()))
                   {
-                    addMethod.Invoke(arr, new object[ ] { dataItem });
+                    addMethod.Invoke(arr, new object[] { dataItem });
                   }
                   else
                   {
-                    addMethod.Invoke(arr, new object[ ] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                    addMethod.Invoke(arr, new object[] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) });
                   }
                 }
                 else
                 {
-                  addMethod.Invoke(arr, new object[ ] { dataItem });
+                  addMethod.Invoke(arr, new object[] { dataItem });
                 }
               }
             }
@@ -191,16 +191,16 @@ namespace Speckle.Core.Serialisation
             {
               if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
               {
-                addMethod.Invoke(arr, new object[ ] { item });
+                addMethod.Invoke(arr, new object[] { item });
               }
               else
               {
-                addMethod.Invoke(arr, new object[ ] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                addMethod.Invoke(arr, new object[] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) });
               }
             }
             else
             {
-              addMethod.Invoke(arr, new object[ ] { item });
+              addMethod.Invoke(arr, new object[] { item });
             }
           }
           return arr;
@@ -317,7 +317,7 @@ namespace Speckle.Core.Serialisation
           if (jsonProperty != null)
           {
             key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-          }((IDictionary)dict)[key] = HandleValue(prop.Value, serializer, CancellationToken);
+          } ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer, CancellationToken);
         }
         return dict;
       }
@@ -342,13 +342,13 @@ namespace Speckle.Core.Serialisation
       var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
       if (myAssembly == null)
       {
-        throw new SpeckleException("Could not load abstract object's assembly.", level : Sentry.SentryLevel.Error);
+        throw new SpeckleException("Could not load abstract object's assembly.", level: Sentry.SentryLevel.Error);
       }
 
       var myType = myAssembly.GetType(pieces[0]);
       if (myType == null)
       {
-        throw new SpeckleException("Could not load abstract object's assembly.", level : Sentry.SentryLevel.Error);
+        throw new SpeckleException("Could not load abstract object's assembly.", level: Sentry.SentryLevel.Error);
       }
 
       cachedAbstractTypes[assemblyQualifiedName] = myType;
