@@ -399,8 +399,10 @@ namespace SpeckleRhino
           // convert
           foreach (var previewObj in Preview)
           {
+            var isPreviewIgnore = false;
             if (previewObj.Convertible)
             {
+              converter.Report.Log(previewObj); // Log object so converter can access
               var storedObj = StoredObjects[previewObj.OriginalId];
               if (storedObj == null)
               {
@@ -408,8 +410,8 @@ namespace SpeckleRhino
                   logItem: $"Couldn't retrieve stored object from bindings");
                 continue;
               }
-
-              if (!IsPreviewIgnore(storedObj))
+              isPreviewIgnore = IsPreviewIgnore(storedObj);
+              if (!isPreviewIgnore)
               {
                 previewObj.Converted = ConvertObject(storedObj, converter);
               }
@@ -423,7 +425,7 @@ namespace SpeckleRhino
               }
             }
 
-            if (previewObj.Converted == null || previewObj.Converted.Count == 0)
+            if (!isPreviewIgnore && (previewObj.Converted == null || previewObj.Converted.Count == 0))
             {
               var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
               if (convertedFallback != null && convertedFallback.Count() > 0)
@@ -494,6 +496,7 @@ namespace SpeckleRhino
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
         }
+        progress.Report.Merge(converter.Report);
 
         // undo notes edit
         var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();

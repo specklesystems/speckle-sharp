@@ -1,4 +1,5 @@
 using GH_IO.Serialization;
+using Objects.BuiltElements.Revit;
 using Objects.Other;
 using Rhino.Display;
 using Rhino.DocObjects;
@@ -265,12 +266,23 @@ namespace Objects.Converter.RhinoGh
         return def;
 
       // base point
+      if (definition.basePoint == null)
+      {
+        notes.Add("definition had no basepoint");
+        return null;
+      }
       Point3d basePoint = PointToNative(definition.basePoint).Location;
 
       // geometry and attributes
       var geometry = new List<GeometryBase>();
       var attributes = new List<ObjectAttributes>();
-      foreach (var geo in definition.geometry)
+      var definitionGeo = definition.geometry ?? (definition["@geometry"] as List<object>).Cast<Base>().ToList();
+      if (definitionGeo == null)
+      {
+        notes.Add("Definition had no geometry");
+        return null;
+      }
+      foreach (var geo in definitionGeo)
       {
         if (CanConvertToNative(geo))
         {
