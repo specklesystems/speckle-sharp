@@ -15,6 +15,7 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Beam = Objects.BuiltElements.Beam;
+using Column = Objects.BuiltElements.Column;
 using Ceiling = Objects.BuiltElements.Ceiling;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Floor;
@@ -136,6 +137,8 @@ namespace Archicad
         return Converters[typeof(Wall)];
       if (elementType.IsSubclassOf(typeof(Beam)))
         return Converters[typeof(Beam)];
+      if (elementType.IsSubclassOf(typeof(Column)))
+        return Converters[typeof(Column)];
       if (elementType.IsSubclassOf(typeof(Door)))
         return Converters[typeof(Door)];
       if (elementType.IsSubclassOf(typeof(Window)))
@@ -155,6 +158,7 @@ namespace Archicad
       {
         Wall _ => true,
         Beam _ => true,
+        Column _ => true,
         Floor _ => true,
         Ceiling _ => true,
         Room _ => true,

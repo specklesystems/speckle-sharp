@@ -665,7 +665,7 @@ namespace Objects.Converter.Revit
         BE.Beam _ => true,
         BE.Brace _ => true,
         BE.Column _ => true,
-#if REVIT2022
+#if !REVIT2020 && !REVIT2021
         BE.Ceiling _ => true,
 #endif
         BERC.DetailCurve _ => true,

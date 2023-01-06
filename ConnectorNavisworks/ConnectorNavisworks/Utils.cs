@@ -42,6 +42,7 @@ namespace Speckle.ConnectorNavisworks
 #endif
     public static string InvalidChars = @"<>/\:;""?*|=,‘";
     public static string ApplicationIdKey = "applicationId";
+    public static string RootNodePseudoId = "___"; // This should be shorter than the padding on indexes and not contain '-'
 
 
     public static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue)
@@ -78,9 +79,16 @@ namespace Speckle.ConnectorNavisworks
         : $"{simpleType} {element.ClassDisplayName}";
     }
 
-    private static ModelItem PointerToModelItem(object @string)
+    internal static ModelItem PointerToModelItem(object @string)
     {
       int[] pathArray;
+
+      if (@string.ToString() == RootNodePseudoId)
+      {
+        var rootItems = Application.ActiveDocument.Models.RootItems;
+
+        return rootItems.First;
+      }
 
       try
       {
@@ -124,14 +132,19 @@ namespace Speckle.ConnectorNavisworks
       // This is the de facto UID for that element within the file at that time.
       InwOaPath path = ComApiBridge.ToInwOaPath(modelItem);
 
+
+      var arrayData = ((Array)path.ArrayData).ToArray<int>();
+
       // Neglect the Root Node
-      if (((Array)path.ArrayData).ToArray<int>().Length == 0) return null;
+      if (arrayData.Length == 0) return RootNodePseudoId;
 
       // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
-      string pseudoId = ((Array)path.ArrayData).ToArray<int>().Aggregate("",
+      string pseudoId = arrayData.Aggregate("",
         (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-');
 
       return pseudoId;
     }
+
+   
   }
 }
