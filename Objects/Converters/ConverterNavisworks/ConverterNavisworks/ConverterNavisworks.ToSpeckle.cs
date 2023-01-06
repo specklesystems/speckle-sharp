@@ -52,14 +52,18 @@ namespace Objects.Converter.Navisworks
 
       if (element.HasGeometry)
       {
-        var geometry = new NavisworksGeometry(element)
+        NavisworksGeometry geometry = new NavisworksGeometry(element)
         {
           ElevationMode = ElevationMode
         };
 
         PopulateModelFragments(geometry);
+        var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
-        @base["displayValue"] = TranslateFragmentGeometry(geometry);
+        if (fragmentGeometry != null && fragmentGeometry.Any())
+        {
+          @base["displayValue"] = fragmentGeometry;
+        }
       }
 
       if (element.Children.Any())
