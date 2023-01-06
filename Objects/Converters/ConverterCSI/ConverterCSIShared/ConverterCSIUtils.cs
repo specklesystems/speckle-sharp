@@ -10,6 +10,8 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
+    // warning: this delimter string needs to be the same as the delimter string in "connectorCSIUtils"
+    public static string delimiter = "::";
     public string ModelUnits()
     {
       var units = Model.GetDatabaseUnits();

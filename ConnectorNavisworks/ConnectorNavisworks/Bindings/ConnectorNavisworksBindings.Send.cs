@@ -34,12 +34,19 @@ namespace Speckle.ConnectorNavisworks.Bindings
       // TODO!
     }
 
+    private enum ConversionState
+    {
+      Converted = 0,
+      Skipped = 1,
+      ToConvert = 2
+    }
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       List<string> filteredObjects = new List<string>();
       Progress progressBar = Application.BeginProgress("Send to Speckle.");
-      progressBar.BeginSubOperation(0, "Filtering Objects.");
+
+      DefaultKit = KitManager.GetDefaultKit();
 
       if (DefaultKit == null)
       {
@@ -47,11 +54,14 @@ namespace Speckle.ConnectorNavisworks.Bindings
         return null;
       }
 
+      NavisworksConverter = DefaultKit.LoadConverter(VersionedAppName);
       if (NavisworksConverter == null)
       {
         progress.Report.LogOperationError(new SpeckleException($"Could not find Converter{VersionedAppName}!"));
         return null;
       }
+
+      NavisworksConverter.SetContextDocument(Doc);
 
       NavisworksConverter.Report.ReportObjects.Clear();
 
@@ -68,7 +78,14 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       if (state.Filter != null)
       {
-        filteredObjects.AddRange(GetObjectsFromFilter(state.Filter));
+        progressBar.BeginSubOperation(0, $"Building object-tree from {state.Filter.Selection.Count} selections.");
+        IEnumerable<string> objects = GetObjectsFromFilter(state.Filter);
+
+        if (objects != null)
+        {
+          filteredObjects.AddRange(objects);
+        }
+
         state.SelectedObjectIds = filteredObjects.ToList();
       }
 
@@ -76,6 +93,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         progress.Report.LogOperationError(new SpeckleException(
           "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        progressBar.Cancel();
+        Application.EndProgress();
         return null;
       }
 
@@ -94,8 +113,12 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       int convertedCount = 0;
 
-      SortedDictionary<string, bool> toConvertDictionary = new SortedDictionary<string, bool>(new PseudoIdComparer());
-      state.SelectedObjectIds.ForEach(x => toConvertDictionary.Add(x, false));
+      SortedDictionary<string, ConversionState> toConvertDictionary =
+        new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
+      state.SelectedObjectIds.ForEach(pseudoId =>
+      {
+        if (pseudoId != RootNodePseudoId) toConvertDictionary.Add(pseudoId, ConversionState.ToConvert);
+      });
 
       progressBar.EndSubOperation();
       progressBar.BeginSubOperation(1, $"Converting {state.SelectedObjectIds.Count} Objects.");
@@ -115,7 +138,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
         }
       }
 
-      while (toConvertDictionary.Any(kv => kv.Value == false))
+      while (toConvertDictionary.Any(kv => kv.Value == ConversionState.ToConvert))
       {
         double navisworksProgressState = Math.Min((float)progress.Value / progress.Max, 1);
         progressBar.Update(navisworksProgressState);
@@ -135,7 +158,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
           return null;
         }
 
-        var nextToConvert = toConvertDictionary.First(kv => kv.Value == false);
+        var nextToConvert = toConvertDictionary.First(kv => kv.Value == ConversionState.ToConvert);
 
         Base converted = null;
 
@@ -157,7 +180,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
         if (alreadyConverted)
         {
           progress.Report.Log(reportObject);
-          toConvertDictionary[pseudoId] = true;
+          toConvertDictionary[pseudoId] = ConversionState.Converted;
           continue;
         }
 
@@ -168,7 +191,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
             logItem: $"Sending this object type is not supported in Navisworks");
           progress.Report.Log(reportObject);
 
-          toConvertDictionary[pseudoId] = true;
+          toConvertDictionary[pseudoId] = ConversionState.Converted;
           continue;
         }
 
@@ -189,23 +212,29 @@ namespace Speckle.ConnectorNavisworks.Bindings
           reportObject.Update(status: ApplicationObject.State.Failed,
             logItem: $"Conversion returned null");
           progress.Report.Log(reportObject);
-          toConvertDictionary[pseudoId] = true;
+          toConvertDictionary[pseudoId] = ConversionState.Skipped;
           continue;
         }
 
         if (commitObject[$"@Elements"] == null)
+        {
           commitObject[$"@Elements"] = new List<Base>();
+        }
+
         ((List<Base>)commitObject[$"@Elements"]).Add(converted);
 
-        // carries the pseudoIds of nested children already converted
-        if (!(converted["__convertedIds"] is List<string> convertedChildrenAndSelf)) continue;
+        // read back the pseudoIds of nested children already converted
+        if (!(converted["__convertedIds"] is List<string> convertedChildrenAndSelf))
+        {
+          continue;
+        }
 
-        convertedChildrenAndSelf.ForEach(x => toConvertDictionary[x] = true);
+        convertedChildrenAndSelf.ForEach(x => toConvertDictionary[x] = ConversionState.Converted);
         conversionProgressDict["Conversion"] += convertedChildrenAndSelf.Count;
 
         progress.Update(conversionProgressDict);
 
-        converted.applicationId = applicationId;
+        //converted.applicationId = applicationId;
         if (converted["@SpeckleSchema"] is Base newSchemaBase)
         {
           newSchemaBase.applicationId = applicationId;
@@ -234,7 +263,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       progressBar.EndSubOperation();
       progressBar.BeginSubOperation(1, $"Sending {convertedCount} objects to Speckle.");
-
 
       progress.Report.Merge(NavisworksConverter.Report);
 

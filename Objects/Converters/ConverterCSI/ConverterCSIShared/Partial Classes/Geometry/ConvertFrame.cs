@@ -56,7 +56,7 @@ namespace Objects.Converter.CSI
       {
         string guid = null;
         Model.FrameObj.GetGUID(name, ref guid);
-        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid);
+        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Frame{delimiter}{name}");
       }
       else
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to change frame connectivity");
@@ -138,7 +138,7 @@ namespace Objects.Converter.CSI
       Model.FrameObj.GetGUID(newFrame, ref guid);
 
       if (success == 0)
-        appObj.Update(status: ApplicationObject.State.Created, createdId: guid);
+        appObj.Update(status: ApplicationObject.State.Created, createdId: guid, convertedItem: $"Frame{delimiter}{newFrame}");
       else
         appObj.Update(status: ApplicationObject.State.Failed);
     }

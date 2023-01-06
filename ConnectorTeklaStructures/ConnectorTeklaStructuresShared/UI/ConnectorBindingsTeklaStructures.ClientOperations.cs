@@ -21,45 +21,16 @@ namespace Speckle.ConnectorTeklaStructures.UI
     public override void WriteStreamsToFile(List<StreamState> streams)
     {
       StreamStateManager.ClearStreamStateList(Model);
-
-      foreach (var s in streams)
-      {
-        DocumentStreams.Add(s);
-        WriteStateToFile();
-      }
+      StreamStateManager.WriteStreamStateList(Model, streams);
     }
-
-    //public override void AddNewStream(StreamState state)
-    //{
-    //    Tracker.TrackPageview(Tracker.STREAM_CREATE);
-    //    var index = DocumentStreams.FindIndex(b => b.Stream.id == state.Stream.id);
-    //    if (index == -1)
-    //    {
-    //        DocumentStreams.Add(state);
-    //        WriteStateToFile();
-    //    }
-    //}
-    private void WriteStateToFile()
-    {
-      StreamStateManager.WriteStreamStateList(Model, DocumentStreams);
-    }
-
-    //public override void RemoveStreamFromFile(string streamId)
-    //{
-    //    var streamState = DocumentStreams.FirstOrDefault(s => s.Stream.id == streamId);
-    //    if (streamState != null)
-    //    {
-    //        DocumentStreams.Remove(streamState);
-    //        WriteStateToFile();
-    //    }
-    //}
 
     public override List<StreamState> GetStreamsInFile()
     {
+      var streams = new List<StreamState>();
       if (Model != null)
-        DocumentStreams = StreamStateManager.ReadState(Model);
+        streams = StreamStateManager.ReadState(Model);
 
-      return DocumentStreams;
+      return streams;
     }
 
     //public override void PersistAndUpdateStreamInFile(StreamState state)
