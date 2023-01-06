@@ -460,7 +460,11 @@ namespace SpeckleRhino
               if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
               {
                 var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
-                if (viewId != -1) Doc.NamedViews.Delete(viewId);
+                if (viewId != -1)
+                {
+                  isUpdate = true;
+                  Doc.NamedViews.Delete(viewId);
+                }
               }
               break;
             default:
@@ -696,7 +700,7 @@ namespace SpeckleRhino
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
       // check if this is a view or block - convert instead of bake if so (since these are "baked" during conversion)
-      if (!appObj.Converted.Any() && IsPreviewIgnore(obj))
+      if (IsPreviewIgnore(obj))
       {
         appObj.Converted = ConvertObject(obj, converter);
       }
@@ -777,14 +781,14 @@ namespace SpeckleRhino
             if (parent != null)
               parent.Update(createdId: o.Id.ToString());
             else
-              appObj.Update(status: ApplicationObject.State.Created, createdId: o.Id.ToString());
+              appObj.Update(createdId: o.Id.ToString());
             bakedCount++;
             break;
           case ViewInfo o: // this is a view, baked during conversion
             if (parent != null)
               parent.Update(createdId: o.Name);
             else
-              appObj.Update(status: ApplicationObject.State.Created, createdId: o.Name);
+              appObj.Update(createdId: o.Name);
             bakedCount++;
             break;
           default:
@@ -797,17 +801,15 @@ namespace SpeckleRhino
         if (parent != null)
           parent.Update(logItem: $"fallback {appObj.applicationId}: could not bake object");
         else
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
+          appObj.Update(logItem: $"Could not bake object");
       }
-      else
-        appObj.Update(status: ApplicationObject.State.Created);
     }
 
     private void SetUserInfo(Base obj, ObjectAttributes attributes, ApplicationObject parent = null)
     {
       if (obj[UserStrings] is Base userStrings)
-        foreach (var key in userStrings.GetMemberNames())
-          attributes.SetUserString(key, userStrings[key] as string);
+        foreach (var member in userStrings.GetMembers(DynamicBaseMemberType.Dynamic))
+          attributes.SetUserString(member.Key, member.Value as string);
 
       // set application id
       var appId = parent != null ? parent.applicationId : obj.applicationId;

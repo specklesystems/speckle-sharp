@@ -427,8 +427,7 @@ namespace Objects.Converter.RhinoGh
       }
 
       // update appobj
-      var status = ReceiveMode == ReceiveMode.Update ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status: status, convertedItem: _instance);
+      appObj.Update(convertedItem: _instance);
       if (AppendToModelSpace)
         appObj.CreatedIds.Add(instanceId.ToString());
       return appObj;

@@ -111,8 +111,7 @@ namespace Objects.Converter.RhinoGh
         else
         {
           var namedView = Doc.NamedViews[res];
-          var status = ReceiveMode == ReceiveMode.Update ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-          appObj.Update(status: status, createdId: bakedViewName, convertedItem: namedView);
+          appObj.Update(createdId: bakedViewName, convertedItem: namedView);
         }
       });
 
