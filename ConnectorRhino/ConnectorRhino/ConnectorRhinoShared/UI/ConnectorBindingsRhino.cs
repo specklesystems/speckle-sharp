@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2;
 using DesktopUI2.Models;
@@ -580,7 +579,6 @@ namespace SpeckleRhino
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
         var speckleType = current.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-        //TODO - Why are we creating app objects if we don't return it
         var appObj = new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         
         if (converter.CanConvertToNative(current))
@@ -621,7 +619,7 @@ namespace SpeckleRhino
       var objectsToConvert = traverseFunction.Traverse(obj)
         .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
         .Where(appObject => appObject != null)
-        .Reverse(); //TODO just for the sake of matching the previous behaivour as close as possible
+        .Reverse(); //just for the sake of matching the previous behaviour as close as possible
 
       return objectsToConvert;
     }

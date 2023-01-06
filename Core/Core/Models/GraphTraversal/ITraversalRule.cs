@@ -5,7 +5,7 @@ using System.Linq;
 namespace Speckle.Core.Models.GraphTraversal
 {
   /// <summary>
-  /// Interface for defining conditional traversal of <see cref="Base"/> objects.
+  /// Interface for a definition of conditional traversal of <see cref="Base"/> objects.
   /// </summary>
   public interface ITraversalRule
   {
