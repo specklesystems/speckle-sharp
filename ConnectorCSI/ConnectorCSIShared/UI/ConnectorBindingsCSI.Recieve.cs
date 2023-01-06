@@ -1,4 +1,5 @@
-﻿using DesktopUI2;
+﻿using ConnectorCSI.Storage;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorCSI.Util;
@@ -112,9 +113,6 @@ namespace Speckle.ConnectorCSI.UI
       if (progress.Report.OperationErrorsCount != 0)
         return state;
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-
       Preview.Clear();
       StoredObjects.Clear();
 
@@ -136,6 +134,10 @@ namespace Speckle.ConnectorCSI.UI
       // needs to be set for editing to work 
       converter.SetPreviousContextObjects(previouslyReceivedObjects);
 
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
+      StreamStateManager.SaveBackupFile(Model);
+
       var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
 
       // receive was cancelled by user
@@ -145,24 +147,20 @@ namespace Speckle.ConnectorCSI.UI
         return null;
       }
 
+      DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects, progress);
+
+      // The following block of code is a hack to properly refresh the view
+      // I've only experienced this bug in ETABS so far
+#if ETABS
+      if (newPlaceholderObjects.Any(o => o.Status == ApplicationObject.State.Updated))
+        RefreshDatabaseTable("Beam Object Connectivity");
+#endif
+
       Model.View.RefreshWindow();
       Model.View.RefreshView();
 
       state.ReceivedObjects = newPlaceholderObjects;
 
-      try
-      {
-        //await state.RefreshStream();
-        WriteStateToFile();
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
-        WriteStateToFile();
-        //state.Errors.Add(e);
-        //Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
-      }
-      progress.Report.Merge(converter.Report);
       return state;
     }
 
@@ -269,6 +267,64 @@ namespace Speckle.ConnectorCSI.UI
       }
 
       return objects;
+    }
+
+    private void RefreshDatabaseTable(string floorTableKey)
+    {
+      int tableVersion = 0;
+      int numberRecords = 0;
+      string[] fieldsKeysIncluded = null;
+      string[] tableData = null;
+      int numFatalErrors = 0;
+      int numWarnMsgs = 0;
+      int numInfoMsgs = 0;
+      int numErrorMsgs = 0;
+      string importLog = "";
+      Model.DatabaseTables.GetTableForEditingArray(floorTableKey, "ThisParamIsNotActiveYet", ref tableVersion, ref fieldsKeysIncluded, ref numberRecords, ref tableData);
+
+      double version = 0;
+      string versionString = null;
+      Model.GetVersion(ref versionString, ref version);
+      var programVersion = versionString;
+
+      // this is a workaround for a CSI bug. The applyEditedTables is looking for "Unique Name", not "UniqueName"
+      // this bug is patched in version 20.0.0
+      if (programVersion.CompareTo("20.0.0") < 0 && fieldsKeysIncluded[0] == "UniqueName")
+        fieldsKeysIncluded[0] = "Unique Name";
+
+      Model.DatabaseTables.SetTableForEditingArray(floorTableKey, ref tableVersion, ref fieldsKeysIncluded, numberRecords, ref tableData);
+      Model.DatabaseTables.ApplyEditedTables(false, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+    }
+
+    // delete previously sent objects that are no longer in this stream
+    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects, ProgressViewModel progress)
+    {
+      foreach (var obj in previouslyReceiveObjects)
+      {
+        if (obj.Converted.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+          continue;
+
+        for (int i = 0; i < obj.Converted.Count; i++)
+        {
+          if (!(obj.Converted[i] is string s && s.Split(new[] { ConnectorCSIUtils.delimiter }, StringSplitOptions.None) is string[] typeAndName && typeAndName.Length == 2))
+            continue;
+
+          switch (typeAndName[0])
+          {
+            case "Frame":
+              Model.FrameObj.Delete(typeAndName[1]);
+              break;
+            case "Area":
+              Model.AreaObj.Delete(typeAndName[1]);
+              break;
+            default:
+              continue;
+          }
+
+          obj.Update(status: ApplicationObject.State.Removed);
+          progress.Report.Log(obj);
+        }
+      }
     }
   }
 }
