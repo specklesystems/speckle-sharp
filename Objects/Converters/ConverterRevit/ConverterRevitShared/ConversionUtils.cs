@@ -50,8 +50,8 @@ namespace Objects.Converter.Revit
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
     {
-      //doesn't have a host, go ahead and convert
-      if (host == null)
+      // doesn't have a host that will convert the element, go ahead and do it now
+      if (host == null || host is DB.Level)
         return true;
 
       // has been converted before (from a parent host), skip it
