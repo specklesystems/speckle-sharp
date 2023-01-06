@@ -25,7 +25,6 @@ using Point = Objects.Geometry.Point;
 using View3D = Objects.BuiltElements.View3D;
 using RH = Rhino.Geometry;
 using RV = Objects.BuiltElements.Revit;
-using Grasshopper;
 
 namespace Objects.Converter.RhinoGh
 {
