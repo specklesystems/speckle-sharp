@@ -572,7 +572,7 @@ namespace SpeckleRhino
       void StoreObject(Base @base, ApplicationObject appObj)
       {
         if (StoredObjects.ContainsKey(@base.id))
-          appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object");
+          appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actualyl ignoring duplicates, since we are returning the app object anyway...
         else
           StoredObjects.Add(@base.id, @base);
       }
@@ -580,6 +580,7 @@ namespace SpeckleRhino
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
         var speckleType = current.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
+        //TODO - Why are we creating app objects if we don't return it
         var appObj = new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         
         if (converter.CanConvertToNative(current))
@@ -600,9 +601,8 @@ namespace SpeckleRhino
           return appObj;
         }
         
-        return appObj;
+        return null;
       }
-      
       
       string LayerId(TraversalContext context)
       {
@@ -618,10 +618,11 @@ namespace SpeckleRhino
       
       var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
-      var objectsToConvert = traverseFunction
-        .Traverse(obj)
-        .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)));
-      
+      var objectsToConvert = traverseFunction.Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
+        .Where(appObject => appObject != null)
+        .Reverse(); //TODO just for the sake of matching the previous behaivour as close as possible
+
       return objectsToConvert;
     }
 
