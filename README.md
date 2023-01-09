@@ -31,8 +31,8 @@ What is Speckle? Check our ![YouTube Video Views](https://img.shields.io/youtube
 
 Give Speckle a try in no time by:
 
-- [![speckle XYZ](https://img.shields.io/badge/https://-speckle.xyz-0069ff?style=flat-square&logo=hackthebox&logoColor=white)](https://speckle.xyz) ⇒ creating an account at 
-- [![create a droplet](https://img.shields.io/badge/Create%20a%20Droplet-0069ff?style=flat-square&logo=digitalocean&logoColor=white)](https://marketplace.digitalocean.com/apps/speckle-server?refcode=947a2b5d7dc1) ⇒ deploying an instance in 1 click 
+- [![speckle XYZ](https://img.shields.io/badge/https://-speckle.xyz-0069ff?style=flat-square&logo=hackthebox&logoColor=white)](https://speckle.xyz) ⇒ creating an account at
+- [![create a droplet](https://img.shields.io/badge/Create%20a%20Droplet-0069ff?style=flat-square&logo=digitalocean&logoColor=white)](https://marketplace.digitalocean.com/apps/speckle-server?refcode=947a2b5d7dc1) ⇒ deploying an instance in 1 click
 
 ### Resources
 
@@ -52,7 +52,7 @@ This monorepo is the home to our Speckle 2.0 .NET projects:
 - Speckle Connectors
   - [`ConnectorAutocadCivil`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorAutocadCivil): for Autodesk AutoCAD and Civil3D 2021+
   - [`ConnectorDynamo`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorDynamo): for Autodesk Dynamo
-  - [`ConnectorGrasshopper`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorGrasshopper): for McNeel Grasshopper 
+  - [`ConnectorGrasshopper`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorGrasshopper): for McNeel Grasshopper
   - [`ConnectorRevit`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorRevit): for Autodesk Revit 2019+
   - [`ConnectorRhino`](https://github.com/specklesystems/speckle-sharp/tree/main/ConnectorRhino): for McNeel Rhino 6+
 - [`DesktopUI`](https://github.com/specklesystems/speckle-sharp/tree/main/DesktopUI): reusable UI for all connectors (except visual programming)
@@ -71,11 +71,9 @@ Make sure to also check and ⭐️ these other Speckle repositories:
 - [`speckle-powerbi`](https://github.com/specklesystems/speckle-powerbi): PowerBi connector
 - and more [connectors & tooling](https://github.com/specklesystems/)!
 
-
-
 ## Developing and Debugging
 
-Clone this monorepo; **each section has its own readme**, so then just follow those instructions. 
+Clone this monorepo; **each section has its own readme**, so then just follow those instructions.
 
 Issues or questions? We encourage everyone interested to debug / hack / contribute / give feedback to this project.
 
@@ -88,7 +86,7 @@ Please make sure you read the [contribution guidelines](.github/CONTRIBUTING.md)
 
 ### Security
 
-For any security vulnerabilities or concerns, please contact us directly at security[at]speckle.systems. 
+For any security vulnerabilities or concerns, please contact us directly at security[at]speckle.systems.
 
 ### License
 
