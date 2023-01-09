@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.ComApi;
 using Autodesk.Navisworks.Api.Interop.ComApi;
+using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks
 {
@@ -13,7 +13,7 @@ namespace Objects.Converter.Navisworks
     public Base ConvertToSpeckle(object @object)
     {
       // is expecting @object to be a pseudoId string or a ModelItem
-      ModelItem element = null;
+      ModelItem element;
 
       switch (@object)
       {
@@ -33,7 +33,7 @@ namespace Objects.Converter.Navisworks
       // the DescendantsAndSelf helper method means we don't need to keep recursing reference 
       // the "__" prefix is skipped in object serialization so we can use Base object to pass data back to the Connector
       List<string> list = element.DescendantsAndSelf.Select(x =>
-        ((Array)ComApiBridge.ToInwOaPath(x).ArrayData)
+        ((Array)ToInwOaPath(x).ArrayData)
         .ToArray<int>().Aggregate("",
           (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-')).ToList();
       @base["__convertedIds"] = list;
@@ -44,19 +44,20 @@ namespace Objects.Converter.Navisworks
 
     private Base ModelItemToBase(ModelItem element)
     {
-      var handle = PseudoIdFromModelItem(element);
-
       var @base = new Base
       {
-        applicationId = handle,
+        applicationId = PseudoIdFromModelItem(element),
         ["bbox"] = BoxToSpeckle(element.BoundingBox()),
       };
 
       if (element.HasGeometry)
       {
-        var geometry = new NavisworksGeometry(element);
+        var geometry = new NavisworksGeometry(element)
+        {
+          ElevationMode = ElevationMode
+        };
 
-        AddFragments(geometry);
+        PopulateModelFragments(geometry);
 
         @base["displayValue"] = TranslateFragmentGeometry(geometry);
       }
@@ -136,18 +137,13 @@ namespace Objects.Converter.Navisworks
     }
 
 
-    public List<Base> ConvertToSpeckle(List<object> objects)
-    {
-      return objects.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
-    }
+    public List<Base> ConvertToSpeckle(List<object> objects) =>
+      objects.Where(CanConvertToSpeckle)
+        .Select(ConvertToSpeckle)
+        .ToList();
 
-    public List<Base> ConvertToSpeckle(List<ModelItem> modelItems)
-    {
-      var canConvert = modelItems.Where(CanConvertToSpeckle);
-      var converted = canConvert.Select(ConvertToSpeckle);
-
-      return modelItems.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
-    }
+    public List<Base> ConvertToSpeckle(List<ModelItem> modelItems) =>
+      modelItems.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
 
     public bool CanConvertToSpeckle(object @object)
     {
@@ -163,12 +159,15 @@ namespace Objects.Converter.Navisworks
 
     private static bool CanConvertToSpeckle(ModelItem item)
     {
-      // Only Geometry and Geometry with Mesh
-      if (item.HasGeometry && (item.Geometry.PrimitiveTypes & PrimitiveTypes.Triangles) != 0) return true;
-
-      if (!item.HasGeometry) return true;
-
-      return false;
+      switch (item.HasGeometry)
+      {
+        // Only Geometry and Geometry with Mesh
+        case true when (item.Geometry.PrimitiveTypes & PrimitiveTypes.Triangles) != 0:
+        case false:
+          return true;
+        default:
+          return false;
+      }
     }
 
 
@@ -178,38 +177,32 @@ namespace Objects.Converter.Navisworks
 
       try
       {
-        pathArray = @string.ToString().Split('-').Select(x =>
-        {
-          if (int.TryParse(x, out var value))
-          {
-            return value;
-          }
-
-          throw (new Exception("malformed path pseudoId"));
-        }).ToArray();
+        pathArray = @string.ToString()
+          .Split('-')
+          .Select(x => int.TryParse(x,
+            out var value)
+            ? value
+            : throw new Exception("malformed path pseudoId"))
+          .ToArray();
       }
       catch
       {
         return null;
       }
 
-      InwOpState10 oState = ComApiBridge.State;
-      InwOaPath protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
+      InwOaPath protoPath = (InwOaPath)State.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
 
+      // ReSharper disable RedundantExplicitArraySize
       Array oneBasedArray = Array.CreateInstance(
         typeof(int),
-        // ReSharper disable once RedundantExplicitArraySize
         new int[1] { pathArray.Length },
-        // ReSharper disable once RedundantExplicitArraySize
         new int[1] { 1 });
 
       Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
 
       protoPath.ArrayData = oneBasedArray;
 
-      ModelItem m = ComApiBridge.ToModelItem(protoPath);
-
-      return m;
+      return ToModelItem(protoPath);
     }
   }
 }

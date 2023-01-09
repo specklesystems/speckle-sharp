@@ -13,6 +13,7 @@
 #include "Commands/GetDoorData.hpp"
 #include "Commands/GetWindowData.hpp"
 #include "Commands/GetBeamData.hpp"
+#include "Commands/GetColumnData.hpp"
 #include "Commands/GetSlabData.hpp"
 #include "Commands/GetRoomData.hpp"
 #include "Commands/GetProjectInfo.hpp"
@@ -21,6 +22,7 @@
 #include "Commands/CreateDoor.hpp"
 #include "Commands/CreateWindow.hpp"
 #include "Commands/CreateBeam.hpp"
+#include "Commands/CreateColumn.hpp"
 #include "Commands/CreateSlab.hpp"
 #include "Commands/CreateZone.hpp"
 #include "Commands/CreateDirectShape.hpp"
@@ -172,6 +174,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetWindowData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSubElementInfo> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetBeamData> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetColumnData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetRoomData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetSlabData> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::GetProjectInfo> ()));
@@ -179,6 +182,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDoor> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateWindow> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateBeam> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateColumn> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateSlab> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateZone> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDirectShape> ()));

@@ -29,6 +29,9 @@ namespace Speckle.ConnectorCSI.Util
 
     public static List<SpeckleException> ConversionErrors { get; set; }
 
+    // warning: this delimter string needs to be the same as the delimter string in "converterCSIUtils"
+    public static string delimiter = "::";
+
     public static void GetObjectIDsTypesAndNames(cSapModel model)
     {
       ObjectIDsTypesAndNames = new Dictionary<string, (string, string)>();

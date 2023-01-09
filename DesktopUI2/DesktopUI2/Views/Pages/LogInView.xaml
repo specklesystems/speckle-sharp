@@ -76,13 +76,16 @@
           </StackPanel>
 
 
-          <StackPanel IsEnabled="{Binding !IsLoggingIn}" Orientation="Horizontal">
+          <StackPanel
+            HorizontalAlignment="Center"
+            IsEnabled="{Binding !IsLoggingIn}"
+            Orientation="Horizontal">
             <Button
               Margin="15"
               Classes="Flat"
               Command="{Binding LaunchManagerCommand}"
               Content="Launch Manager"
-              ToolTip.Tip="Manager is the reccomended way to log in and install Connectors" />
+              ToolTip.Tip="Manager is the recommended way to log in and install Connectors" />
             <Button
               Margin="15"
               Classes="Flat"
