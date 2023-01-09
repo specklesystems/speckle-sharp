@@ -94,6 +94,11 @@
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if EXIST "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" (
+xcopy "$(TargetDir)*.*" "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" /Y /I /E
+)</PostBuildEvent>
+  </PropertyGroup>
   <!--<Target Name="CopySQLliteLib" AfterTargets="AfterBuild">
 		<Copy SourceFiles="$(SolutionDir)\..\Core\Core\bin\Debug\net4.8\runtimes\win-x64\native\e_sqlite3.dll" DestinationFolder="$(OutDir)" />
 	</Target>-->

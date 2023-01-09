@@ -4,6 +4,7 @@ using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
 namespace ConnectorCSI.Storage
@@ -117,5 +118,45 @@ namespace ConnectorCSI.Storage
       catch { return ""; }
     }
 
+    /// <summary>
+    /// Saves a backup file with the extension _speckleBackup1 (number ranges from 1-3)
+    /// if all three backups already exist, it will override the oldest one
+    /// </summary>
+    /// <param name="model"></param>
+    public static void SaveBackupFile(cSapModel model)
+    {
+      string CSIModelfilePath = model.GetModelFilename(true);
+      if (string.IsNullOrEmpty(CSIModelfilePath))
+        // CSI model is probably not saved, so speckle shouldn't do much
+        return;
+
+      string fileExtension = CSIModelfilePath.Split('.').Last();
+      string CSIFileName = Path.GetFileNameWithoutExtension(CSIModelfilePath);
+      string CSIModelFolder = Path.GetDirectoryName(CSIModelfilePath);
+      string speckleFolderPath = Path.Combine(CSIModelFolder, "speckle");
+
+      var backups = new List<(DateTime, string)>();
+      foreach (var fileName in Directory.GetFiles(speckleFolderPath)) 
+      { 
+        if (fileName.Contains($"{CSIFileName}_speckleBackup") && fileName.Split('.').Last().ToLower() == fileExtension.ToLower())
+        {
+          backups.Add((File.GetLastWriteTime(fileName), fileName));
+        }
+      }
+
+      if (backups.Count < 3)
+      {
+        model.File.Save(Path.Combine(speckleFolderPath, $"{CSIFileName}_speckleBackup{backups.Count + 1}.{fileExtension}"));
+      }
+      else
+      {
+        var oldestBackup = backups.Min(o => o.Item1);
+        var oldestFileName = backups.Where(o => o.Item1 == oldestBackup).First().Item2;
+        model.File.Save(oldestFileName);
+      }
+
+      // save back as the original file
+      model.File.Save(CSIModelfilePath);
+    }
   }
 }

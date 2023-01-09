@@ -264,12 +264,23 @@ namespace Objects.Converter.RhinoGh
         return def;
 
       // base point
+      if (definition.basePoint == null)
+      {
+        notes.Add("definition had no basepoint");
+        return null;
+      }
       Point3d basePoint = PointToNative(definition.basePoint).Location;
 
       // geometry and attributes
       var geometry = new List<GeometryBase>();
       var attributes = new List<ObjectAttributes>();
-      foreach (var geo in definition.geometry)
+      var definitionGeo = definition.geometry ?? (definition["@geometry"] as List<object>).Cast<Base>().ToList();
+      if (definitionGeo == null)
+      {
+        notes.Add("Definition had no geometry");
+        return null;
+      }
+      foreach (var geo in definitionGeo)
       {
         if (CanConvertToNative(geo))
         {
@@ -278,7 +289,8 @@ namespace Objects.Converter.RhinoGh
           {
             case BlockInstance o:
               var instanceNotes = new List<string>();
-              var instance = BlockInstanceToNative(o, out instanceNotes);
+              var instanceAppObj = BlockInstanceToNative(o, false);
+              var instance = instanceAppObj.Converted.FirstOrDefault() as InstanceObject;
               if (instance != null)
               {
                 converted.Add(instance.DuplicateGeometry());
@@ -366,14 +378,23 @@ namespace Objects.Converter.RhinoGh
       return _instance;
     }
 
-    public InstanceObject BlockInstanceToNative(BlockInstance instance, out List<string> notes)
+    public ApplicationObject BlockInstanceToNative(BlockInstance instance, bool AppendToModelSpace = true)
     {
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+
       // get the block definition
-      InstanceDefinition definition = BlockDefinitionToNative(instance.blockDefinition, out notes);
+      var def = instance.blockDefinition ?? instance["@blockDefinition"] as BlockDefinition; // some applications need to dynamically attach block defs (eg sketchup)
+      if (def == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a block definition");
+        return appObj;
+      }
+      InstanceDefinition definition = BlockDefinitionToNative(def, out List<string> notes);
+      notes.ForEach(o => appObj.Update(logItem: o));
       if (definition == null)
       {
-        notes.Add("Could not create block definition");
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
+        return appObj;
       }
 
       // get the transform
@@ -387,19 +408,27 @@ namespace Objects.Converter.RhinoGh
 
       if (instanceId == Guid.Empty)
       {
-        notes.Add("Could not add instance to doc");
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add instance to doc");
+        return appObj;
       }
 
       var _instance = Doc.Objects.FindId(instanceId) as InstanceObject;
+
       // add application id
       try
       {
         _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId);
       }
-      catch { }
+      catch (Exception e)
+      {
+        appObj.Update(logItem: $"Could not set application id user string: {e.Message}");
+      }
 
-      return _instance;
+      // update appobj
+      appObj.Update(convertedItem: _instance);
+      if (AppendToModelSpace)
+        appObj.CreatedIds.Add(instanceId.ToString());
+      return appObj;
     }
 
     public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)

@@ -25,7 +25,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
       Control = new System.Windows.Forms.Control();
       Control.CreateControl();
 
-      // Kits won't change during the lifecycle of Navisworks.
       DefaultKit = KitManager.GetDefaultKit();
       NavisworksConverter = DefaultKit?.LoadConverter(Utils.VersionedAppName);
     }

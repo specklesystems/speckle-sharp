@@ -309,7 +309,6 @@ namespace Objects.Converter.RhinoGh
         Report.UpdateReportObject(reportObj);
       }
 
-
       return @base;
     }
 
@@ -697,11 +696,6 @@ namespace Objects.Converter.RhinoGh
             break;
 
           case Alignment o:
-            if (o.curves is null) // TODO: remove after a few releases, this is for backwards compatibility
-            {
-              rhinoObj = CurveToNative(o.baseCurve);
-              break;
-            }
             rhinoObj = AlignmentToNative(o);
             break;
 
@@ -722,7 +716,7 @@ namespace Objects.Converter.RhinoGh
             break;
 
           case BlockInstance o:
-            rhinoObj = BlockInstanceToNative(o, out notes);
+            rhinoObj = BlockInstanceToNative(o);
             break;
 
           case Text o:
@@ -731,7 +725,6 @@ namespace Objects.Converter.RhinoGh
 
           case Dimension o:
             rhinoObj = isFromRhino ? RhinoDimensionToNative(o) : DimensionToNative(o);
-            Report.Log($"Created Dimension {o.id}");
             break;
 
           case Objects.Structural.Geometry.Element1D o:
@@ -766,12 +759,18 @@ namespace Objects.Converter.RhinoGh
         reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{@object.GetType()} unhandled converion error: {ex.Message}\n{ex.StackTrace}");
       }
 
-      if (reportObj != null)
+      switch (rhinoObj)
       {
-        reportObj.Update(log: notes);
-        Report.UpdateReportObject(reportObj);
+        case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
+          rhinoObj = o.Converted.Any() ? o.Converted : null;
+          if (reportObj != null) reportObj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, container: o.Container, log: o.Log);
+          break;
+        default:
+          if (reportObj != null) reportObj.Update(log: notes);
+          break;
       }
 
+      if (reportObj != null) Report.UpdateReportObject(reportObj);
       return rhinoObj;
     }
 
