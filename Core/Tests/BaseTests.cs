@@ -2,11 +2,6 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-<<<<<<< HEAD
-using Speckle.Core.Models.GraphTraversal;
-using Tests;
-=======
->>>>>>> origin/release/2.11
 
 namespace Tests
 {
