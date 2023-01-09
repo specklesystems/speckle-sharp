@@ -4,6 +4,7 @@ using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Column = Objects.BuiltElements.Column;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -243,7 +244,14 @@ namespace Objects.Converter.Revit
       if (revitColumn.Location is LocationPoint)
         speckleColumn.rotation = ((LocationPoint)revitColumn.Location).Rotation;
 
-      speckleColumn.displayValue = GetElementMesh(revitColumn);
+      // structural connection modifiers alter family instance geometry, but the modifiers are view specific
+      // so we need to pass in the view we want in order to get the correct geometry
+      // TODO: we need to make sure we are passing in the correct view
+      var connectionHandlerFilter = new ElementClassFilter(typeof(DB.Structure.StructuralConnectionHandler));
+      if (revitColumn.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitColumn.GetDependentElements(connectionHandlerFilter).Any())
+        speckleColumn.displayValue = GetElementDisplayMesh(revitColumn, new Options() { View = Doc.ActiveView, ComputeReferences = true });
+      else
+        speckleColumn.displayValue = GetElementMesh(revitColumn);
 
       return speckleColumn;
     }
