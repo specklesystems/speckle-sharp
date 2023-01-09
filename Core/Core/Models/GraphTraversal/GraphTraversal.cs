@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace Speckle.Core.Models.GraphTraversal
 {
 
-  public class TraversalContext
+  public sealed class TraversalContext
   {
     public readonly string? propName;
     public readonly TraversalContext? parent;

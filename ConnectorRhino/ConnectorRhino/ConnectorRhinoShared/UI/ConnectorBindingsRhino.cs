@@ -571,7 +571,7 @@ namespace SpeckleRhino
       void StoreObject(Base @base, ApplicationObject appObj)
       {
         if (StoredObjects.ContainsKey(@base.id))
-          appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actualyl ignoring duplicates, since we are returning the app object anyway...
+          appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
         else
           StoredObjects.Add(@base.id, @base);
       }

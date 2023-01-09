@@ -39,8 +39,8 @@ namespace Speckle.Core.Models.GraphTraversal
     internal static SelectMembers Members(DynamicBaseMemberType includeMembers) => x => x.GetMembers(includeMembers).Keys;
     internal static SelectMembers Concat(params SelectMembers[] selectProps) => x => selectProps.SelectMany(i => i.Invoke(x));
     internal static SelectMembers Except(SelectMembers selectProps, IEnumerable<string> excludeProps) => x => selectProps.Invoke(x).Except(excludeProps);
-    internal static bool HasElements(Base x) => x.GetMembers(DynamicBaseMemberType.Instance).Keys.Any(member => elementsAliases.Contains(member));
-    internal static bool HasDisplayValue(Base x) => x.GetMembers(DynamicBaseMemberType.Instance).Keys.Any(member => displayValueAliases.Contains(member));
+    internal static bool HasElements(Base x) => x.GetMembers().Keys.Any(member => elementsAliases.Contains(member));
+    internal static bool HasDisplayValue(Base x) => x.GetMembers().Keys.Any(member => displayValueAliases.Contains(member));
     
     #endregion
   }

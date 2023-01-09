@@ -25,7 +25,7 @@ namespace Speckle.Core.Models.GraphTraversal
   /// <summary>
   /// The "traverse none" rule that always holds true
   /// </summary>
-  public class DefaultRule : ITraversalRule
+  public sealed class DefaultRule : ITraversalRule
   {
     private static DefaultRule? instance;
     public static DefaultRule Instance => instance ??= new DefaultRule();
