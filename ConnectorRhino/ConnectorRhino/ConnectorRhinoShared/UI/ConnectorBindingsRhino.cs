@@ -399,8 +399,10 @@ namespace SpeckleRhino
           // convert
           foreach (var previewObj in Preview)
           {
+            var isPreviewIgnore = false;
             if (previewObj.Convertible)
             {
+              converter.Report.Log(previewObj); // Log object so converter can access
               var storedObj = StoredObjects[previewObj.OriginalId];
               if (storedObj == null)
               {
@@ -408,8 +410,8 @@ namespace SpeckleRhino
                   logItem: $"Couldn't retrieve stored object from bindings");
                 continue;
               }
-
-              if (!IsPreviewIgnore(storedObj))
+              isPreviewIgnore = IsPreviewIgnore(storedObj);
+              if (!isPreviewIgnore)
               {
                 previewObj.Converted = ConvertObject(storedObj, converter);
               }
@@ -423,7 +425,7 @@ namespace SpeckleRhino
               }
             }
 
-            if (previewObj.Converted == null || previewObj.Converted.Count == 0)
+            if (!isPreviewIgnore && (previewObj.Converted == null || previewObj.Converted.Count == 0))
             {
               var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
               if (convertedFallback != null && convertedFallback.Count() > 0)
@@ -454,6 +456,16 @@ namespace SpeckleRhino
             case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
               toRemove = GetObjectsByApplicationId(previewObj.applicationId);
               toRemove.ForEach(o => Doc.Objects.Delete(o));
+              
+              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+              {
+                var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
+                if (viewId != -1)
+                {
+                  isUpdate = true;
+                  Doc.NamedViews.Delete(viewId);
+                }
+              }
               break;
             default:
               layer = $"{commitLayerName}{Layer.PathSeparator}{previewObj.Container}"; // use the commit as the top level layer in create mode
@@ -488,6 +500,7 @@ namespace SpeckleRhino
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
         }
+        progress.Report.Merge(converter.Report);
 
         // undo notes edit
         var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
@@ -687,7 +700,7 @@ namespace SpeckleRhino
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
       // check if this is a view or block - convert instead of bake if so (since these are "baked" during conversion)
-      if (!appObj.Converted.Any() && IsPreviewIgnore(obj))
+      if (IsPreviewIgnore(obj))
       {
         appObj.Converted = ConvertObject(obj, converter);
       }
@@ -768,14 +781,14 @@ namespace SpeckleRhino
             if (parent != null)
               parent.Update(createdId: o.Id.ToString());
             else
-              appObj.Update(status: ApplicationObject.State.Created, createdId: o.Id.ToString());
+              appObj.Update(createdId: o.Id.ToString());
             bakedCount++;
             break;
-          case string o: // this was prbly a view, baked during conversion
+          case ViewInfo o: // this is a view, baked during conversion
             if (parent != null)
-              parent.Update(createdId: o);
+              parent.Update(createdId: o.Name);
             else
-              appObj.Update(status: ApplicationObject.State.Created, createdId: o);
+              appObj.Update(createdId: o.Name);
             bakedCount++;
             break;
           default:
@@ -788,17 +801,15 @@ namespace SpeckleRhino
         if (parent != null)
           parent.Update(logItem: $"fallback {appObj.applicationId}: could not bake object");
         else
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not bake object");
+          appObj.Update(logItem: $"Could not bake object");
       }
-      else
-        appObj.Update(status: ApplicationObject.State.Created);
     }
 
     private void SetUserInfo(Base obj, ObjectAttributes attributes, ApplicationObject parent = null)
     {
       if (obj[UserStrings] is Base userStrings)
-        foreach (var key in userStrings.GetMemberNames())
-          attributes.SetUserString(key, userStrings[key] as string);
+        foreach (var member in userStrings.GetMembers(DynamicBaseMemberType.Dynamic))
+          attributes.SetUserString(member.Key, member.Value as string);
 
       // set application id
       var appId = parent != null ? parent.applicationId : obj.applicationId;
