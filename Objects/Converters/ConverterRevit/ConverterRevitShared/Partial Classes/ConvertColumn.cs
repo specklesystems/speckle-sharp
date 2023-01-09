@@ -226,7 +226,7 @@ namespace Objects.Converter.Revit
       //make line from point and height
       if (baseLine == null && baseGeometry is Point basePoint)
       {
-        if (symbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased)
+        if (symbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased || symbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
           return PointBasedFamilyInstanceToSpeckle(revitColumn, basePoint, out notes);
 
         var elevation = speckleColumn.topLevel.elevation;

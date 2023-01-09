@@ -126,6 +126,9 @@ namespace Objects.Converter.Revit
         case DB.FabricationPart o:
           returnObject = FabricationPartToSpeckle(o, out notes);
           break;
+        case DB.Group o:
+          returnObject = GroupToSpeckle(o);
+          break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
           break;
