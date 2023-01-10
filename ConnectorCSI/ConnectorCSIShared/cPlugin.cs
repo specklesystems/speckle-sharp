@@ -53,6 +53,11 @@ namespace SpeckleConnectorCSI
     private static void AppMain(Application app, string[] args)
     {
       var viewModel = new MainViewModel(Bindings);
+
+      var streams = Bindings.GetStreamsInFile();
+      streams = streams ?? new List<DesktopUI2.Models.StreamState>();
+      Bindings.UpdateSavedStreams?.Invoke(streams);
+
       MainWindow = new MainWindow { DataContext = viewModel };
       MainWindow.Closed += SpeckleWindowClosed;
       MainWindow.Closing += SpeckleWindowClosed;

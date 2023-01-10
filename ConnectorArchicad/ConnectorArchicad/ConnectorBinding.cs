@@ -22,7 +22,7 @@ namespace Archicad.Launcher
   {
     public uint archicadVersion { get; }
 
-    public ArchicadBinding (uint archicadVersion)
+    public ArchicadBinding(uint archicadVersion)
     {
       this.archicadVersion = archicadVersion;
     }

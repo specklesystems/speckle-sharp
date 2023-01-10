@@ -90,7 +90,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not initialize one click screen", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -186,8 +186,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        //TODO: report errors to user
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not send with one click", ex, true, Sentry.SentryLevel.Error);
       }
 
       if (HomeViewModel.Instance != null)

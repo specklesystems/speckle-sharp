@@ -1,5 +1,8 @@
-﻿using Avalonia.Metadata;
+﻿using Avalonia.Controls;
+using Avalonia.Metadata;
+using Avalonia.VisualTree;
 using DesktopUI2.Models;
+using DesktopUI2.Views;
 using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -254,7 +257,6 @@ namespace DesktopUI2.ViewModels.MappingTool
         return;
       }
 
-
     }
 
     /// <summary>
@@ -279,6 +281,16 @@ namespace DesktopUI2.ViewModels.MappingTool
             updatedSchemas.Add(o);
             break;
 
+          case RevitFloorViewModel o:
+            var floorFamilies = AvailableRevitTypes.Where(x => x.category == "Floors").ToList();
+            if (!floorFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+            var floorFamiliesViewModels = floorFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            o.Families = floorFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+            break;
+
           case RevitBeamViewModel o:
             var beamFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
             if (!beamFamilies.Any() || !AvailableRevitLevels.Any())
@@ -299,6 +311,36 @@ namespace DesktopUI2.ViewModels.MappingTool
             updatedSchemas.Add(o);
             break;
 
+          case RevitColumnViewModel o:
+            var columnFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Columns").ToList();
+            if (!columnFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+            var columnFamiliesViewModels = columnFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+            o.Families = columnFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+            break;
+
+          case RevitPipeViewModel o:
+            var pipeFamilies = AvailableRevitTypes.Where(x => x.category == "Pipes").ToList();
+            if (!pipeFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+            var pipeFamiliesViewModels = pipeFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
+            o.Families = pipeFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+            break;
+
+          case RevitDuctViewModel o:
+            var ductFamilies = AvailableRevitTypes.Where(x => x.category == "Ducts").ToList();
+            if (!ductFamilies.Any() || !AvailableRevitLevels.Any())
+              break;
+            var ductFamiliesViewModels = ductFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
+            o.Families = ductFamiliesViewModels;
+            o.Levels = AvailableRevitLevels;
+            updatedSchemas.Add(o);
+            break;
+
           case RevitFamilyInstanceViewModel o:
             var fiFamilies = AvailableRevitTypes.Where(x => x.placementType == "OneLevelBased").ToList();
             if (!fiFamilies.Any() || !AvailableRevitLevels.Any())
@@ -310,6 +352,10 @@ namespace DesktopUI2.ViewModels.MappingTool
             break;
 
           case DirectShapeFreeformViewModel o:
+            updatedSchemas.Add(o);
+            break;
+
+          case RevitTopographyViewModel o:
             updatedSchemas.Add(o);
             break;
         }
@@ -365,10 +411,32 @@ namespace DesktopUI2.ViewModels.MappingTool
       Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Set" }, { "schema", SelectedSchema.Name } });
     }
 
+    /// <summary>
+    /// Returns the ids of the extiging mapping elements that have been checked
+    /// A bit hacky but it was complicated to set a Binding working across multiple ListBoxes
+    /// </summary>
+    /// <returns></returns>
+    private List<string> GetCheckedBoxesIds()
+    {
+      var ids = new List<string>();
+      var lBoxes = MappingsControl.Instance.GetVisualDescendants().OfType<ListBox>().Where(x => x.Classes.Contains("ExistingMapping"));
+      foreach (var lBox in lBoxes)
+      {
+        ids.AddRange(lBox.SelectedItems.Cast<Schema>().Where(x => x != null).Select(x => x.ApplicationId));
+      }
+      return ids;
+    }
+
     public void ClearMappingsCommand()
     {
-      Bindings.ClearMappings();
+      Bindings.ClearMappings(GetCheckedBoxesIds());
       Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Clear" } });
+    }
+
+    public void SelectElementsCommandCommand()
+    {
+      Bindings.SelectElements(GetCheckedBoxesIds());
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Select Elements" } });
     }
 
 

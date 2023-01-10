@@ -1,0 +1,73 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Mappings.Controls.RevitMEP"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="450"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <UserControl.Resources>
+    <conv:StringEqualsValueConverter x:Key="StringEqualsValueConverter" />
+  </UserControl.Resources>
+  <StackPanel Orientation="Vertical" Spacing="5">
+
+    <ComboBox
+      assists:ComboBoxAssist.Label="Family"
+      Classes="Outline"
+      Items="{Binding Families}"
+      SelectedItem="{Binding SelectedFamily, Mode=TwoWay}">
+      <ComboBox.ItemTemplate>
+        <DataTemplate>
+          <TextBlock
+            Grid.Column="1"
+            Text="{Binding Name}"
+            TextTrimming="CharacterEllipsis" />
+        </DataTemplate>
+      </ComboBox.ItemTemplate>
+    </ComboBox>
+
+    <ComboBox
+      Grid.Row="1"
+      assists:ComboBoxAssist.Label="Type"
+      Classes="Outline"
+      Items="{Binding SelectedFamily.Types}"
+      SelectedItem="{Binding SelectedType, Mode=TwoWay}" />
+
+    <ComboBox
+      Grid.Row="1"
+      assists:ComboBoxAssist.Label="Base Level"
+      Classes="Outline"
+      Items="{Binding Levels}"
+      SelectedItem="{Binding SelectedLevel, Mode=TwoWay}" />
+
+    <TextBlock
+      Classes="Overline"
+      Foreground="Gray"
+      Text="Using the Rhino document units."
+      TextWrapping="Wrap" />
+
+    <TextBox
+      Grid.Row="1"
+      assists:TextFieldAssist.Label="Height"
+      IsVisible="{Binding SelectedFamily.Shape, Converter={StaticResource StringEqualsValueConverter}, ConverterParameter=Rectangular, FallbackValue=False}"
+      Text="{Binding SelectedHeight, Mode=TwoWay}"
+      UseFloatingWatermark="True" />
+
+    <TextBox
+      Grid.Row="1"
+      assists:TextFieldAssist.Label="Width"
+      IsVisible="{Binding SelectedFamily.Shape, Converter={StaticResource StringEqualsValueConverter}, ConverterParameter=Rectangular, FallbackValue=False}"
+      Text="{Binding SelectedWidth, Mode=TwoWay}"
+      UseFloatingWatermark="True" />
+
+    <TextBox
+      Grid.Row="1"
+      assists:TextFieldAssist.Label="Diameter"
+      IsVisible="{Binding SelectedFamily.Shape, Converter={StaticResource StringEqualsValueConverter}, ConverterParameter=Round, FallbackValue=False}"
+      Text="{Binding SelectedDiameter, Mode=TwoWay}"
+      UseFloatingWatermark="True" />
+  </StackPanel>
+</UserControl>

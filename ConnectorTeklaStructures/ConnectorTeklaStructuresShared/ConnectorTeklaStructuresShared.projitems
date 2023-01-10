@@ -9,6 +9,13 @@
     <Import_RootNamespace>ConnectorTeklaStructuresShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)MainPlugin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)StreamStateManager\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructure.Settings.cs" />
@@ -17,5 +24,15 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsTeklaStructures.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorTeklaStructuresUtils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)et_element_Speckle.ConnectorTeklaStructures.bmp">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

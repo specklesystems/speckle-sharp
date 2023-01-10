@@ -26,18 +26,22 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="TestsUnit"/>
+  </ItemGroup>
+
   <!--Do not publish a Core nuget when publishing Objects-->
   <PropertyGroup Condition="'$(SolutionName)'=='Objects' Or '$(SolutionName)'=='DesktopUI'">
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="4.0.2" />
+    <PackageReference Include="GraphQL.Client" Version="5.1.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Sentry" Version="3.20.1" />
-    <PackageReference Include="Speckle.Newtonsoft.Json" Version="12.0.3.1">
+    <PackageReference Include="Sentry" Version="3.24.0" />
+    <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2">
       <Aliases></Aliases>
     </PackageReference>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="6.0.8" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Serialisation\" />

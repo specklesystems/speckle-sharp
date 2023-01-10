@@ -14,7 +14,6 @@ namespace DesktopUI2.Models.Filters
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-
       ISelectionFilter filter = default(ISelectionFilter);
 
       JObject jsonObject = null;
@@ -45,14 +44,18 @@ namespace DesktopUI2.Models.Filters
       {
         filter = new PropertySelectionFilter();
       }
+      else if (type == typeof(TreeSelectionFilter).ToString())
+      {
+        filter = new TreeSelectionFilter();
+      }
       else
       {
-        throw new SpeckleException($"Unknown filter type: {type}. Please add a case in DesktopUI2.Models.Filters.SelectionFilterConverter.cs");
+        throw new SpeckleException(
+          $"Unknown filter type: {type}. Please add a case in DesktopUI2.Models.Filters.SelectionFilterConverter.cs");
       }
 
       serializer.Populate(jsonObject.CreateReader(), filter);
       return filter;
-
     }
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)

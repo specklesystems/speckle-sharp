@@ -14,6 +14,7 @@ using Rhino.PlugIns;
 using Rhino.Runtime;
 using Speckle.Core.Api;
 using Speckle.Core.Models.Extensions;
+using Speckle.Core.Helpers;
 
 [assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 
@@ -189,7 +190,7 @@ namespace SpeckleRhino
         {
           // Build a path to the user's staged RUI file.
           var sb = new StringBuilder();
-          sb.Append(Helpers.InstallApplicationDataPath);
+          sb.Append(SpecklePathProvider.InstallApplicationDataPath);
 #if RHINO6
           sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
 #elif RHINO7

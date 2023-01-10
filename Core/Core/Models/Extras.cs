@@ -1,8 +1,8 @@
-﻿using Speckle.Core.Models.Extensions;
-using Speckle.Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Speckle.Core.Models.Extensions;
+using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Models
 {
@@ -84,7 +84,7 @@ namespace Speckle.Core.Models
   /// A simple wrapper to keep track of the relationship between speckle objects and their host-application siblings in cases where the
   /// <see cref="Base.applicationId"/> cannot correspond with the <see cref="ApplicationObject.CreatedIds"/> (ie, on receiving operations). 
   /// </summary>
-  public class ApplicationObject : Base
+  public class ApplicationObject
   {
     public enum State
     {
@@ -95,6 +95,11 @@ namespace Speckle.Core.Models
       Removed, //Removed object from application
       Unknown
     }
+
+    /// <summary>
+    /// ID of the object from host application that generated it.
+    /// </summary>
+    public string applicationId { get; set; }
 
     /// <summary>
     /// The container for the object in the native application
@@ -110,7 +115,7 @@ namespace Speckle.Core.Models
     /// The fallback values if direct conversion is not available, typically displayValue
     /// </summary>
     [JsonIgnore]
-    public List<ApplicationObject> Fallback { get; set; } = new List<ApplicationObject>(); 
+    public List<ApplicationObject> Fallback { get; set; } = new List<ApplicationObject>();
 
     /// <summary>
     /// The Speckle id (on receive) or native id (on send)
@@ -152,7 +157,7 @@ namespace Speckle.Core.Models
     [JsonIgnore]
     public List<object> Converted { get; set; } = new List<object>();
 
-    public ApplicationObject(string id, string type) 
+    public ApplicationObject(string id, string type)
     {
       OriginalId = id;
       Descriptor = type;
@@ -292,7 +297,7 @@ namespace Speckle.Core.Models
 
     public void Merge(ProgressReport report)
     {
-      lock(OperationErrorsLock)
+      lock (OperationErrorsLock)
         OperationErrors.AddRange(report.OperationErrors);
 
       lock (ConversionLogLock)

@@ -6,6 +6,7 @@ using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Credentials
@@ -63,7 +64,7 @@ namespace Speckle.Core.Credentials
 
     public async Task<UserInfo> Validate()
     {
-      using var httpClient = new HttpClient();
+      using var httpClient = Http.GetHttpProxyClient();
 
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 

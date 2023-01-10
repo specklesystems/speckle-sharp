@@ -4,11 +4,50 @@ using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorDynamo.Functions
 {
-  internal static class Utils
+  public static class Utils
   {
+
+    public static Dictionary<ITransport, string> TryConvertInputToTransport(object o)
+    {
+      var defaultBranch = "main";
+      var transports = new Dictionary<ITransport, string>();
+
+      switch (o)
+      {
+        case StreamWrapper s:
+          var wrapperTransport = new ServerTransport(s.GetAccount().Result, s.StreamId);
+          var branch = s.BranchName ?? defaultBranch;
+          transports.Add(wrapperTransport, branch);
+
+          break;
+        case string s:
+          var streamWrapper = new StreamWrapper(s);
+          var transport = new ServerTransport(streamWrapper.GetAccount().Result, streamWrapper.StreamId);
+          var b = streamWrapper.BranchName ?? defaultBranch;
+          transports.Add(transport, b);
+          break;
+        case ITransport t:
+          transports.Add(t, defaultBranch);
+          break;
+        case List<object> s:
+          transports = s
+            .Select(TryConvertInputToTransport)
+            .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
+              .SelectMany(dict => dict)
+              .ToDictionary(pair => pair.Key, pair => pair.Value));
+          break;
+        default:
+          //Warning("Input was neither a transport nor a stream.");
+          break;
+      }
+
+      return transports;
+    }
+
     /// Gets the App name from the injected Doc without requiring a dependency on the Revit dll
     internal static string GetAppName()
     {

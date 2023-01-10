@@ -4,17 +4,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace Speckle.Core.Kits
 {
-
   public static class KitManager
   {
-
     private static string _kitsFolder = null;
+
     /// <summary>
     /// Local installations store kits in C:\Users\USERNAME\AppData\Roaming\Speckle\Kits
     /// Admin/System-wide installations in C:\ProgramData\Speckle\Kits
@@ -24,14 +23,11 @@ namespace Speckle.Core.Kits
       get
       {
         if (_kitsFolder == null)
-          _kitsFolder = Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits");
+          _kitsFolder = SpecklePathProvider.KitsFolderPath; 
 
         return _kitsFolder;
       }
-      set
-      {
-        _kitsFolder = value;
-      }
+      set { _kitsFolder = value; }
     }
 
     public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
@@ -43,7 +39,7 @@ namespace Speckle.Core.Kits
     private static bool _initialized = false;
 
     /// <summary>
-    /// Checks wether a specific kit exists.
+    /// Checks whether a specific kit exists.
     /// </summary>
     /// <param name="assemblyFullName"></param>
     /// <returns></returns>
@@ -99,7 +95,7 @@ namespace Speckle.Core.Kits
     }
 
     /// <summary>
-    /// TODO: Returns all the kits with potential converters for the software app. 
+    /// Returns all the kits with potential converters for the software app. 
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
@@ -118,7 +114,10 @@ namespace Speckle.Core.Kits
     /// <param name="kitFolderLocation"></param>
     public static void Initialize(string kitFolderLocation)
     {
-      if (_initialized) throw new SpeckleException("The kit manager has already been initialised. Make sure you call this method earlier in your code!", level: Sentry.SentryLevel.Warning);
+      if (_initialized)
+        throw new SpeckleException(
+          "The kit manager has already been initialised. Make sure you call this method earlier in your code!",
+          level: Sentry.SentryLevel.Warning);
 
       KitsFolder = kitFolderLocation;
       Load();
@@ -181,6 +180,7 @@ namespace Speckle.Core.Kits
             {
               continue;
             }
+
             assembliesToCheck.Enqueue(assembly);
             loadedAssemblies.Add(reference.FullName);
             returnAssemblies.Add(assembly);
@@ -259,10 +259,7 @@ namespace Speckle.Core.Kits
         {
           return type
             .GetInterfaces()
-            .FirstOrDefault(iface =>
-            {
-              return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name;
-            }) != null;
+            .FirstOrDefault(iface => { return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name; }) != null;
         });
 
         return kitClass;
@@ -326,6 +323,5 @@ namespace Speckle.Core.Kits
 
       return false;
     }
-
   }
 }
