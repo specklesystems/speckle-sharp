@@ -27,6 +27,8 @@ namespace Objects.Geometry
     public string units { get; set; }
 
     public Pointcloud()
+    { }
+
     
     /// <param name="points">Flat list of x,y,z coordinates</param>
     /// <param name="colors">Optional list of colors</param>
@@ -35,6 +37,7 @@ namespace Objects.Geometry
     public Pointcloud(List<double> points, List<int> colors = null, List<double> sizes = null)
     {
       this.points = points;
+      this.colors = colors ?? new List<int>();
       this.sizes = sizes ?? new List<double>();
 
     }
