@@ -322,7 +322,9 @@ namespace Objects.Converter.Revit
       speckleFi.category = revitFi.Category.Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
-      speckleFi.level = lev1 != null ? lev1 : lev2;
+      speckleFi.level = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
+      speckleFi.level ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
+      speckleFi.level ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM);
       speckleFi.mirrored = revitFi.Mirrored;
 
       if (revitFi.Location is LocationPoint)
