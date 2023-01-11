@@ -262,17 +262,20 @@ namespace Objects.Converter.Revit
     private void GetWallVoids(Base speckleElement, Wall wall)
     {
 #if !REVIT2020 && !REVIT2021
-        var profile = ((Sketch)Doc.GetElement(wall.SketchId)).Profile;
+      var profile = ((Sketch)Doc.GetElement(wall.SketchId))?.Profile;
 
-        var voidsList = new List<OG.Polycurve>();
-        for (var i = 1; i < profile.Size; i++)
-        {
-          var segments = CurveListToSpeckle(profile.get_Item(i).Cast<Curve>().ToList());
-          if (segments.segments.Count() > 2)
-            voidsList.Add(segments);
-        }
-        if (voidsList.Count > 0)
-          speckleElement["voids"] = voidsList;
+      if (profile == null)
+        return;
+
+      var voidsList = new List<OG.Polycurve>();
+      for (var i = 1; i < profile.Size; i++)
+      {
+        var segments = CurveListToSpeckle(profile.get_Item(i).Cast<Curve>().ToList());
+        if (segments.segments.Count() > 2)
+          voidsList.Add(segments);
+      }
+      if (voidsList.Count > 0)
+        speckleElement["voids"] = voidsList;
 #endif
     }
     private void SetWallVoids(Wall wall, Base speckleElement)
