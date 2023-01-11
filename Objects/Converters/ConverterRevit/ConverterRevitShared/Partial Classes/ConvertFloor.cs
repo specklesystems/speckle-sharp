@@ -138,8 +138,26 @@ namespace Objects.Converter.Revit
 
       speckleFloor.level = ConvertAndCacheLevel(revitFloor, BuiltInParameter.LEVEL_PARAM);
       speckleFloor.structural = GetParamValue<bool>(revitFloor, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
+      
+      // Divide by 100 to convert from percentage to unitless ratio (rise over run)
+      var slopeParam = GetParamValue<double?>(revitFloor, BuiltInParameter.ROOF_SLOPE) / 100;
 
-      GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
+      GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL", "ROOF_SLOPE" });
+
+      GetSlopeArrowHack(revitFloor.Id, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
+
+      slopeParam ??= slope;
+      speckleFloor.slope = (double)slopeParam;
+
+      if (tail != null && head != null)
+      {
+        speckleFloor.slopeDirection = new Geometry.Line(tail, head);
+        if (speckleFloor["parameters"] is Base parameters && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam && offsetParam.value is double offset)
+        {
+          offsetParam.value = offset + tailOffset;
+          parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] = offsetParam;
+        }
+      }
 
       speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
@@ -170,6 +188,24 @@ namespace Objects.Converter.Revit
         profiles.Add(poly);
       }
       return profiles;
+    }
+
+    private List<ICurve> GetProfiles(DB.Floor floor)
+    {
+#if !REVIT2020 && !REVIT2021
+      var profile = ((Sketch)Doc.GetElement(floor.SketchId)).Profile;
+
+      var profileCurves = new List<ICurve>();
+      for (var i = 0; i < profile.Size; i++)
+      {
+        var segments = CurveListToSpeckle(profile.get_Item(i).Cast<DB.Curve>().ToList());
+        if (segments.segments.Count() > 2)
+          profileCurves.Add(segments);
+      }
+      return profileCurves;
+#else
+      return null;
+#endif
     }
   }
 }

@@ -176,32 +176,7 @@ namespace Objects.Converter.Revit
               slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
             };
 
-            // MEGA HACK to get the slope arrow of a roof which is technically not accessable by the api
-            // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
-            List<ElementId> deleted = null;
-            Geometry.Point tail = null;
-            Geometry.Point head = null;
-            double tailOffset = 0;
-            double headOffset = 0;
-            using (Transaction t = new Transaction(Doc, "TTT"))
-            {
-              t.Start();
-              deleted = Doc.Delete(footPrintRoof.Id).ToList();
-              t.RollBack();
-            }
-            foreach (ElementId id in deleted)
-            {
-              ModelLine l = Doc.GetElement(id) as ModelLine;
-              if (l == null) continue;
-              if (!l.Name.Equals("Slope Arrow")) continue;
-
-              tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0));
-              head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1));
-              tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
-              headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
-
-              break;
-            }
+            GetSlopeArrowHack(footPrintRoof.Id, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
 
             // these two values are not null then the slope arrow exists and we need to capture that
             if (tail != null && head != null)
