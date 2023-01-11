@@ -7,79 +7,7 @@ namespace Objects.Converter.Revit
 
     private string _modelUnits;
 
-#if (REVIT2022 || REVIT2023)
-    public string ModelUnits
-    {
-      get
-      {
-        if (string.IsNullOrEmpty(_modelUnits))
-        {
-          _modelUnits = UnitsToSpeckle(RevitLengthTypeId.TypeId);
-        }
-        return _modelUnits;
-      }
-    }
-
-    private ForgeTypeId _revitUnitsTypeId;
-    public ForgeTypeId RevitLengthTypeId
-    {
-      get
-      {
-        if (_revitUnitsTypeId == null)
-        {
-          var fo = Doc.GetUnits().GetFormatOptions(SpecTypeId.Length);
-          _revitUnitsTypeId = fo.GetUnitTypeId();
-        }
-        return _revitUnitsTypeId;
-      }
-    }
-
-    public double ScaleToNative(double value, string units)
-    {
-      return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
-    }
-
-    public double ScaleToSpeckle(double value, string units = null)
-    {
-      return UnitUtils.ConvertFromInternalUnits(value, units == null ? RevitLengthTypeId : new ForgeTypeId(UnitsToNative(units)));
-    }
-
-    //new units api introduced in 2021, bleah
-    public string UnitsToSpeckle(string typeId)
-    {
-      if (typeId == UnitTypeId.Millimeters.TypeId)
-        return Speckle.Core.Kits.Units.Millimeters;
-      else if (typeId == UnitTypeId.Centimeters.TypeId)
-        return Speckle.Core.Kits.Units.Centimeters;
-      else if (typeId == UnitTypeId.Meters.TypeId || typeId == UnitTypeId.MetersCentimeters.TypeId)
-        return Speckle.Core.Kits.Units.Meters;
-      else if (typeId == UnitTypeId.Inches.TypeId || typeId == UnitTypeId.FractionalInches.TypeId)
-        return Speckle.Core.Kits.Units.Inches;
-      else if (typeId == UnitTypeId.Feet.TypeId || typeId == UnitTypeId.FeetFractionalInches.TypeId)
-        return Speckle.Core.Kits.Units.Feet;
-
-      throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
-    }
-
-    public string UnitsToNative(string units)
-    {
-      switch (units)
-      {
-        case Speckle.Core.Kits.Units.Millimeters:
-          return UnitTypeId.Millimeters.TypeId;
-        case Speckle.Core.Kits.Units.Centimeters:
-          return UnitTypeId.Centimeters.TypeId;
-        case Speckle.Core.Kits.Units.Meters:
-          return UnitTypeId.Meters.TypeId;
-        case Speckle.Core.Kits.Units.Inches:
-          return UnitTypeId.Inches.TypeId;
-        case Speckle.Core.Kits.Units.Feet:
-          return UnitTypeId.Feet.TypeId;
-        default:
-          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
-      }
-    }
-#else
+#if REVIT2020
     public string ModelUnits
     {
       get
@@ -185,6 +113,78 @@ namespace Objects.Converter.Revit
           return DisplayUnitType.DUT_DECIMAL_INCHES;
         case Speckle.Core.Kits.Units.Feet:
           return DisplayUnitType.DUT_DECIMAL_FEET;
+        default:
+          throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
+      }
+    }
+#else
+    public string ModelUnits
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(_modelUnits))
+        {
+          _modelUnits = UnitsToSpeckle(RevitLengthTypeId.TypeId);
+        }
+        return _modelUnits;
+      }
+    }
+
+    private ForgeTypeId _revitUnitsTypeId;
+    public ForgeTypeId RevitLengthTypeId
+    {
+      get
+      {
+        if (_revitUnitsTypeId == null)
+        {
+          var fo = Doc.GetUnits().GetFormatOptions(SpecTypeId.Length);
+          _revitUnitsTypeId = fo.GetUnitTypeId();
+        }
+        return _revitUnitsTypeId;
+      }
+    }
+
+    public double ScaleToNative(double value, string units)
+    {
+      return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
+    }
+
+    public double ScaleToSpeckle(double value, string units = null)
+    {
+      return UnitUtils.ConvertFromInternalUnits(value, units == null ? RevitLengthTypeId : new ForgeTypeId(UnitsToNative(units)));
+    }
+
+    //new units api introduced in 2021, bleah
+    public string UnitsToSpeckle(string typeId)
+    {
+      if (typeId == UnitTypeId.Millimeters.TypeId)
+        return Speckle.Core.Kits.Units.Millimeters;
+      else if (typeId == UnitTypeId.Centimeters.TypeId)
+        return Speckle.Core.Kits.Units.Centimeters;
+      else if (typeId == UnitTypeId.Meters.TypeId || typeId == UnitTypeId.MetersCentimeters.TypeId)
+        return Speckle.Core.Kits.Units.Meters;
+      else if (typeId == UnitTypeId.Inches.TypeId || typeId == UnitTypeId.FractionalInches.TypeId)
+        return Speckle.Core.Kits.Units.Inches;
+      else if (typeId == UnitTypeId.Feet.TypeId || typeId == UnitTypeId.FeetFractionalInches.TypeId)
+        return Speckle.Core.Kits.Units.Feet;
+
+      throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
+    }
+
+    public string UnitsToNative(string units)
+    {
+      switch (units)
+      {
+        case Speckle.Core.Kits.Units.Millimeters:
+          return UnitTypeId.Millimeters.TypeId;
+        case Speckle.Core.Kits.Units.Centimeters:
+          return UnitTypeId.Centimeters.TypeId;
+        case Speckle.Core.Kits.Units.Meters:
+          return UnitTypeId.Meters.TypeId;
+        case Speckle.Core.Kits.Units.Inches:
+          return UnitTypeId.Inches.TypeId;
+        case Speckle.Core.Kits.Units.Feet:
+          return UnitTypeId.Feet.TypeId;
         default:
           throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{units}\" is unsupported.");
       }

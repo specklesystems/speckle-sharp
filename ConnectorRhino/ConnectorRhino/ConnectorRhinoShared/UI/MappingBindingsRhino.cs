@@ -101,12 +101,31 @@ namespace SpeckleRhino
           case Mesh m:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
               result.Add(new DirectShapeFreeformViewModel());
+            if (!m.IsClosed)
+              result.Add(new RevitTopographyViewModel());
             break;
 
           case Brep b:
             if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
               result.Add(new DirectShapeFreeformViewModel());
+
+            var srf = b.Surfaces.First();
+            if (b.Surfaces.Count == 1 && srf.IsPlanar())
+            {
+              if (srf.TryGetPlane(out Plane p))
+              {
+                Vector3d normal = p.Normal;
+                if (normal.Unitize())
+                {
+                  if (Math.Abs(normal.Z) == 1)
+                  {
+                    result.Add(new RevitFloorViewModel());
+                  }
+                }
+              }
+            }
             break;
+
           case Extrusion e:
             if (e.ProfileCount > 1) break;
             var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
@@ -122,6 +141,9 @@ namespace SpeckleRhino
             {
               result.Add(new RevitBeamViewModel());
               result.Add(new RevitBraceViewModel());
+              result.Add(new RevitColumnViewModel());
+              result.Add(new RevitPipeViewModel());
+              result.Add(new RevitDuctViewModel());
             }
 
             //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
@@ -174,14 +196,15 @@ namespace SpeckleRhino
 
     }
 
-    public override void ClearMappings()
+    public override void ClearMappings(List<string> ids)
     {
-      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-
-      foreach (var obj in selection)
+      foreach (var id in ids)
       {
         try
         {
+          var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
+          if (obj == null)
+            continue;
           obj.Attributes.DeleteUserString(SpeckleMappingKey);
           obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
         }
@@ -228,7 +251,9 @@ namespace SpeckleRhino
     {
       try
       {
+        RhinoDoc.ActiveDoc.Objects.UnselectAll();
         RhinoDoc.ActiveDoc.Objects.Select(ids.Select(x => Guid.Parse(x)));
+        RhinoDoc.ActiveDoc?.Views.Redraw();
       }
       catch (Exception ex)
       {

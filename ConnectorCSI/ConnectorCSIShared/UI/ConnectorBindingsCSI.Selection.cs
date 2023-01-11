@@ -12,7 +12,6 @@ namespace Speckle.ConnectorCSI.UI
     public override List<string> GetSelectedObjects()
     {
       var names = new List<string>();
-      var util = new ConnectorCSIUtils();
       var typeNameTupleList = ConnectorCSIUtils.SelectedObjects(Model);
       if (typeNameTupleList == null) return new List<string>() { };
       foreach (var item in typeNameTupleList)

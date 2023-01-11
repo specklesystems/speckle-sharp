@@ -71,14 +71,19 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(revitAc, speckleAc);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
-      appObj.Update(status:state, createdId: revitAc.UniqueId, convertedItem: revitAc, log: notes);
+      appObj.Update(status: state, createdId: revitAc.UniqueId, convertedItem: revitAc, log: notes);
       return appObj;
     }
 
     private AdaptiveComponent AdaptiveComponentToSpeckle(DB.FamilyInstance revitAc)
     {
       var speckleAc = new AdaptiveComponent();
-      speckleAc.family = revitAc.Document.GetElement(revitAc.GetTypeId()).Name;
+
+      var symbol = revitAc.Document.GetElement(revitAc.GetTypeId()) as FamilySymbol;
+
+      speckleAc.family = symbol.FamilyName;
+      speckleAc.type = revitAc.Document.GetElement(revitAc.GetTypeId()).Name;
+
       speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
       speckleAc.displayValue = GetElementMesh(revitAc);

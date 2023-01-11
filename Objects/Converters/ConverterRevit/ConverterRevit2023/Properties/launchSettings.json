@@ -1,12 +1,8 @@
 {
   "profiles": {
-    "ConverterRevit2021": {
+    "ConverterRevit2023": {
       "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2021\\Revit.exe"
-    },
-    "ConverterRevit2022": {
-      "commandName": "Executable",
-      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2022\\Revit.exe"
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2023\\Revit.exe"
     }
   }
 }

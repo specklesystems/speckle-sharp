@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Archicad.Converters;
@@ -14,17 +14,17 @@ namespace Archicad.Operations
     public static List<Mesh> MeshesToSpeckle(MeshModel meshModel)
     {
       var materials = meshModel.materials.Select(MaterialToSpeckle).ToList();
-      var meshes = materials.Select(m => new Mesh { units = Units.Meters, [ "renderMaterial" ] = m }).ToList();
-      var vertCount = new int[ materials.Count ];
+      var meshes = materials.Select(m => new Mesh { units = Units.Meters, ["renderMaterial"] = m }).ToList();
+      var vertCount = new int[materials.Count];
 
-      foreach ( var poly in meshModel.polygons )
+      foreach (var poly in meshModel.polygons)
       {
         var meshIndex = poly.material;
-        meshes[ meshIndex ].vertices.AddRange(poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[ id ]))
+        meshes[meshIndex].vertices.AddRange(poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id]))
           .ToList());
-        meshes[ meshIndex ].faces
-          .AddRange(PolygonToSpeckle(poly, vertCount[ meshIndex ]));
-        vertCount[ meshIndex ] += poly.pointIds.Count;
+        meshes[meshIndex].faces
+          .AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
+        vertCount[meshIndex] += poly.pointIds.Count;
       }
 
       return meshes;
@@ -33,8 +33,8 @@ namespace Archicad.Operations
     public static MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
       var meshModel = new MeshModel();
-      var enumerable = meshes as Mesh[ ] ?? meshes.ToArray();
-      foreach ( var mesh in enumerable )
+      var enumerable = meshes as Mesh[] ?? meshes.ToArray();
+      foreach (var mesh in enumerable)
       {
         int vertexOffset = meshModel.vertices.Count;
         var polygons = PolygonToNative(mesh.faces);
@@ -69,10 +69,10 @@ namespace Archicad.Operations
     {
       var result = new List<MeshModel.Polygon>();
 
-      for ( var i = 0; i < polygon.Count; i++ )
+      for (var i = 0; i < polygon.Count; i++)
       {
-        var n = polygon[ i ];
-        if ( n < 3 ) n += 3;
+        var n = polygon[i];
+        if (n < 3) n += 3;
         result.Add(new MeshModel.Polygon { pointIds = polygon.GetRange(i + 1, n) });
         i += n;
       }
@@ -90,6 +90,7 @@ namespace Archicad.Operations
 
       return new RenderMaterial
       {
+        name = material.name,
         diffuse = ConvertColor(material.ambientColor).ToArgb(),
         emissive = ConvertColor(material.emissionColor).ToArgb(),
         opacity = 1.0 - material.transparency / 100.0

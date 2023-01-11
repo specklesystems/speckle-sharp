@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Serialization;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
@@ -89,7 +91,7 @@ namespace Speckle.Core.Models
         var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
         var obsoleteAttr = prop.GetCustomAttribute<ObsoleteAttribute>(true);
         var jsonIgnoredAttr = prop.GetCustomAttribute<JsonIgnoreAttribute>(true);
-        
+
         if (obsoleteAttr != null || jsonIgnoredAttr != null)
         {
           // Skip properties from the count that are:
@@ -97,7 +99,7 @@ namespace Speckle.Core.Models
           // - Ignored by the serializer
           continue;
         }
-        
+
         object value = prop.GetValue(@base);
 
         if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute == null)
@@ -137,16 +139,16 @@ namespace Speckle.Core.Models
           int chunkSize = -1;
           var match = chunkSyntax.Match(propName);
           int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
-          
+
           var asList = @base[propName] as IList;
-          if(chunkSize != -1 && asList != null)
+          if (chunkSize != -1 && asList != null)
           {
             count += asList.Count / chunkSize;
             continue;
           }
 
           var asArr = @base[propName] as Array;
-          if(chunkSize != -1 && asArr != null)
+          if (chunkSize != -1 && asArr != null)
           {
             count += asArr.Length / chunkSize;
             continue;
@@ -226,8 +228,8 @@ namespace Speckle.Core.Models
       myDuplicate.applicationId = applicationId;
 
       foreach (var kvp in GetMembers(
-                 DynamicBaseMemberType.Instance 
-                 | DynamicBaseMemberType.Dynamic 
+                 DynamicBaseMemberType.Instance
+                 | DynamicBaseMemberType.Dynamic
                  | DynamicBaseMemberType.SchemaIgnored)
                )
       {
@@ -298,5 +300,62 @@ namespace Speckle.Core.Models
         return __type;
       }
     }
+  }
+
+
+  public class Blob : Base
+  {
+    private string _hash;
+    private bool hashExpired = true;
+
+    private string _filePath;
+    public string filePath
+    {
+      get => _filePath;
+      set
+      {
+        if (originalPath is null) originalPath = value;
+        _filePath = value;
+        hashExpired = true;
+      }
+    }
+    public string originalPath { get; set; }
+
+    public Blob() { }
+
+    public Blob(string filePath)
+    {
+      this.filePath = filePath;
+    }
+
+    /// <summary>
+    /// For blobs, the id is the same as the file hash. Please note, when deserialising, the id will be set from the original hash generated on sending.
+    /// </summary>
+    public override string id { get => GetFileHash(); set => base.id = value; }
+
+    public string GetFileHash()
+    {
+      if ((hashExpired || _hash == null) && filePath != null)
+      {
+        _hash = Utilities.hashFile(filePath);
+      }
+
+      return _hash;
+    }
+
+    [OnDeserialized]
+    internal void OnDeserialized(StreamingContext context)
+    {
+      hashExpired = false;
+    }
+
+    public string getLocalDestinationPath(string blobStorageFolder)
+    {
+      var fileName = Path.GetFileName(filePath);
+      return Path.Combine(blobStorageFolder, $"{id.Substring(0, 10)}-{fileName}");
+    }
+
+    [JsonIgnore]
+    public static int LocalHashPrefixLength = 20;
   }
 }

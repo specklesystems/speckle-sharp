@@ -46,15 +46,15 @@ namespace DesktopUI2
 
       if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
       {
-        //desktop.MainWindow = new MappingsWindow
-        //{
-        //  DataContext = new MappingsViewModel(),
-        //};
-
-        desktop.MainWindow = new MainWindow
+        desktop.MainWindow = new MappingsWindow
         {
-          DataContext = new MainViewModel(),
+          DataContext = new MappingsViewModel(),
         };
+
+        //desktop.MainWindow = new MainWindow
+        //{
+        //  DataContext = new MainViewModel(),
+        //};
 
         //desktop.MainWindow = new Scheduler
         //{

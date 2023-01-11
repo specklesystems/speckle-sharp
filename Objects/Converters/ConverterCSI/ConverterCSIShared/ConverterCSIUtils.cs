@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Objects.Structural.Geometry;
 using CSiAPIv1;
-using Objects.Structural.CSI.Properties;
 using Objects.Structural.CSI.Analysis;
 using System.Linq;
-using Speckle.Core.Models;
+using System.Reflection;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-  
- 
+    // warning: this delimter string needs to be the same as the delimter string in "connectorCSIUtils"
+    public static string delimiter = "::";
     public string ModelUnits()
     {
       var units = Model.GetDatabaseUnits();
@@ -163,6 +161,67 @@ namespace Objects.Converter.CSI
       return FloorName;
     }
 
+    public Dictionary<string, string> GetAllGuids(cSapModel model)
+    {
+      var guids = new Dictionary<string, string>();
+
+      var names = GetAllFrameNames(model);
+      var guid = "";
+      foreach (var name in names)
+      {
+        var success = Model.FrameObj.GetGUID(name, ref guid);
+        if (success != 0)
+          continue;
+
+        if (!guids.ContainsKey(guid))
+          guids.Add(guid, name);
+      }
+
+      names = GetAllAreaNames(model);
+      foreach (var name in names)
+      {
+        var success = Model.AreaObj.GetGUID(name, ref guid);
+        if (success != 0)
+          continue;
+
+        if (!guids.ContainsKey(guid))
+          guids.Add(guid, name);
+      }
+
+      //names = GetAllPointNames(model);
+      //foreach (var name in names)
+      //{
+      //  var guid = "";
+      //  var success = Model.PointObj.GetGUID(name, ref guid);
+      //  if (success != 0)
+      //    continue;
+
+      //  if (!guids.ContainsKey(guid))
+      //    guids.Add(guid, name);
+      //}
+
+      return guids;
+    }
+
+    public bool ElementExistsWithApplicationId(string applicationId, out string name)
+    {
+      name = "";
+      if (string.IsNullOrEmpty(applicationId) || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
+        return false;
+
+      var projectIds = PreviousContextObjects.Where(o => o.applicationId == applicationId).FirstOrDefault()?.CreatedIds;
+      projectIds = projectIds ?? new List<string> { applicationId };
+
+      foreach (var guid in projectIds)
+        if (ExistingObjectGuids.Keys.Contains(guid))
+        {
+          name = ExistingObjectGuids[guid];
+          return true;
+        }
+
+      return false;
+    }
+
 
     public ShellType ConvertShellType(eShellType eShellType)
     {
@@ -249,11 +308,12 @@ namespace Objects.Converter.CSI
 
     public enum CSIConverterSupported
     {
+      //CSINode,
       Node,
       Line,
       Element1D,
       Element2D,
-      Model,
+      //Model,
     }
 
     public enum CSIAPIUsableTypes

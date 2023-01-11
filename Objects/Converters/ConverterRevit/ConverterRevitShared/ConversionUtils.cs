@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Speckle.Core.Helpers;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Duct = Objects.BuiltElements.Duct;
@@ -49,8 +50,8 @@ namespace Objects.Converter.Revit
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
     {
-      //doesn't have a host, go ahead and convert
-      if (host == null)
+      // doesn't have a host that will convert the element, go ahead and do it now
+      if (host == null || host is DB.Level)
         return true;
 
       // has been converted before (from a parent host), skip it
@@ -78,11 +79,10 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="host"></param>
     /// <param name="base"></param>
-    public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
+    public void GetHostedElements(Base @base, Element host, out List<string> notes)
     {
       notes = new List<string>();
       var hostedElementIds = GetDependentElementIds(host);
-      var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
         return;
@@ -92,6 +92,13 @@ namespace Objects.Converter.Revit
       {
         ContextObjects.RemoveAt(elementIndex);
       }
+      GetHostedElementsFromIds(@base, host, hostedElementIds, out notes);
+    }
+
+    public void GetHostedElementsFromIds(Base @base, Element host, IList<ElementId> hostedElementIds, out List<string> notes)
+    {
+      notes = new List<string>();
+      var convertedHostedElements = new List<Base>();
 
       foreach (var elemId in hostedElementIds)
       {
@@ -138,17 +145,26 @@ namespace Objects.Converter.Revit
 
     public IList<ElementId> GetDependentElementIds(Element host)
     {
+      IList<ElementId> ids = null;
       if (host is HostObject hostObject)
-        return hostObject.FindInserts(true, false, false, false);
+        ids = hostObject.FindInserts(true, false, false, false);
+      else
+      {
+        var typeFilter = new ElementIsElementTypeFilter(true);
+        var categoryFilter = new ElementMulticategoryFilter(
+          new List<BuiltInCategory>()
+          {
+            BuiltInCategory.OST_CLines,
+            BuiltInCategory.OST_SketchLines,
+            BuiltInCategory.OST_WeakDims
+          }, true);
+        ids = host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+      }
 
-      var typeFilter = new ElementIsElementTypeFilter(true);
-      var categoryFilter = new ElementMulticategoryFilter(
-        new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_SketchLines,
-          BuiltInCategory.OST_WeakDims
-        }, true);
-      return host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+      // dont include host elementId
+      ids.Remove(host.Id);
+
+      return ids;
     }
 
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
@@ -252,6 +268,10 @@ namespace Objects.Converter.Revit
         }
       }
 
+      //NOTE: adds the quantities of all materials to an element
+      var qs = MaterialQuantitiesToSpeckle(revitElement, speckleElement["units"] as string);
+      if (qs != null)
+        speckleElement["materialQuantities"] = qs;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -987,7 +1007,7 @@ namespace Objects.Converter.Revit
 
     public string GetTemplatePath(string templateName)
     {
-      var directoryPath = Path.Combine(Speckle.Core.Api.Helpers.UserSpeckleFolderPath, "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      var directoryPath = Path.Combine(SpecklePathProvider.ObjectsFolderPath, "Templates", "Revit", RevitVersionHelper.Version);
       string templatePath = "";
       switch (Doc.DisplayUnitSystem)
       {
