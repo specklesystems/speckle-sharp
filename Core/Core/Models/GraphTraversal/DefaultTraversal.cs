@@ -7,8 +7,12 @@ namespace Speckle.Core.Models.GraphTraversal
 {
   public static class DefaultTraversal
   {
-
-    // Traversal function mvp based on Rhino connector's traversal
+    
+    /// <summary>
+    /// Traverses until finds a convertable object (or fallback) then traverses members
+    /// </summary>
+    /// <param name="converter"></param>
+    /// <returns></returns>
     public static GraphTraversal CreateTraverseFunc(ISpeckleConverter converter)
     {
       var convertableRule = TraversalRule.NewTraversalRule()
@@ -21,10 +25,36 @@ namespace Speckle.Core.Models.GraphTraversal
 
       var defaultRule = TraversalRule.NewTraversalRule()
         .When(_ => true)
-        .ContinueTraversing(Members(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic));
+        .ContinueTraversing(Members());
 
       return new GraphTraversal(convertableRule, defaultRule);
     }
+    
+    /// <summary>
+    /// Traverses until finds a convertable object then HALTS deeper traversal
+    /// </summary>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
+    {
+      var convertableRule = TraversalRule.NewTraversalRule()
+        .When(converter.CanConvertToNative)
+        .ContinueTraversing(None);
+      
+      var displayValueRule = TraversalRule.NewTraversalRule()
+        .When(HasDisplayValue)
+        .ContinueTraversing(Except(
+          Concat(Members(DynamicBaseMemberType.Dynamic), ElementsAliases), 
+          displayValueAliases)
+        );
+
+      var defaultRule = TraversalRule.NewTraversalRule()
+        .When(_ => true)
+        .ContinueTraversing(Members());
+
+      return new GraphTraversal(convertableRule, defaultRule);
+    }
+
     
     
     //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
@@ -36,7 +66,7 @@ namespace Speckle.Core.Models.GraphTraversal
     internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
     internal static IEnumerable<string> DisplayValueAliases(Base _) => displayValueAliases;
     internal static IEnumerable<string> None(Base x) => Enumerable.Empty<string>();
-    internal static SelectMembers Members(DynamicBaseMemberType includeMembers) => x => x.GetMembers(includeMembers).Keys;
+    internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers) => x => x.GetMembers(includeMembers).Keys;
     internal static SelectMembers Concat(params SelectMembers[] selectProps) => x => selectProps.SelectMany(i => i.Invoke(x));
     internal static SelectMembers Except(SelectMembers selectProps, IEnumerable<string> excludeProps) => x => selectProps.Invoke(x).Except(excludeProps);
     internal static bool HasElements(Base x) => x.GetMembers().Keys.Any(member => elementsAliases.Contains(member));

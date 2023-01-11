@@ -29,7 +29,7 @@ namespace Speckle.Core.Models.GraphTraversal
     }
 
     /// <summary>
-    /// Given <paramref name="root"/> object, will recursivly traverse members according to the provided traversal rules.
+    /// Given <paramref name="root"/> object, will recursively traverse members according to the provided traversal rules.
     /// </summary>
     /// <param name="root">The object to traverse members</param>
     /// <returns>Lazily returns <see cref="Base"/> objects found during traversal (including <paramref name="root"/>), wrapped within a <see cref="TraversalContext"/></returns>

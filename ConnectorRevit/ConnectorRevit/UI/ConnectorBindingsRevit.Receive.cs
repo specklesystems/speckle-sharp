@@ -15,6 +15,7 @@ using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
@@ -244,13 +245,39 @@ namespace Speckle.ConnectorRevit.UI
       uiView.Zoom(1);
     }
 
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
+    {
+      
+      ApplicationObject CreateApplicationObject(Base current)
+      {
+        if (!converter.CanConvertToNative(current)) return null;
+        
+        var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type)) {
+          applicationId = current.applicationId,
+          Convertible = true
+        };
+        StoredObjects.Add(current.id, current);
+        return appObj;
+      }
+      
+      var traverseFunction = DefaultTraversal.CreateRevitTraversalFunc(converter);
+
+      var objectsToConvert = traverseFunction.Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current))
+        .Where(appObject => appObject != null)
+        .Reverse()
+        .ToList();
+
+      return objectsToConvert;
+    }
+    
     /// <summary>
     /// Recurses through the commit object and flattens it. 
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject_old(object obj, ISpeckleConverter converter)
     {
       var objects = new List<ApplicationObject>();
 
@@ -268,7 +295,7 @@ namespace Speckle.ConnectorRevit.UI
         else
         {
           foreach (var prop in @base.GetDynamicMembers())
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
+            objects.AddRange(FlattenCommitObject_old(@base[prop], converter));
           return objects;
         }
       }
@@ -276,14 +303,14 @@ namespace Speckle.ConnectorRevit.UI
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter));
+          objects.AddRange(FlattenCommitObject_old(listObj, converter));
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
+          objects.AddRange(FlattenCommitObject_old(kvp.Value, converter));
         return objects;
       }
 
