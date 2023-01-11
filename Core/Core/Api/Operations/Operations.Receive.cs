@@ -92,6 +92,10 @@ namespace Speckle.Core.Api
         serializerV2.OnProgressAction = internalProgressAction;
         serializerV2.OnErrorAction = onErrorAction;
         serializerV2.CancellationToken = cancellationToken;
+        if (remoteTransport is IBlobCapableTransport t)
+        {
+          serializerV2.BlobStorageFolder = t.BlobStorageFolder;
+        }
       }
 
       // First we try and get the object from the local transport. If it's there, we assume all its children are there, and proceed with deserialisation. 
@@ -114,9 +118,9 @@ namespace Speckle.Core.Api
           {
             localRes = serializerV2.Deserialize(objString);
           }
-          catch ( Exception e )
+          catch (Exception e)
           {
-            if ( serializerV2.OnErrorAction == null ) throw;
+            if (serializerV2.OnErrorAction == null) throw;
             serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", new SpeckleException(
               $"A deserialization error has occurred: {e.Message}", e));
             localRes = null;
@@ -156,9 +160,9 @@ namespace Speckle.Core.Api
         {
           res = serializerV2.Deserialize(objString);
         }
-        catch ( Exception e )
+        catch (Exception e)
         {
-          if ( serializerV2.OnErrorAction == null ) throw;
+          if (serializerV2.OnErrorAction == null) throw;
           serializerV2.OnErrorAction.Invoke($"A deserialization error has occurred: {e.Message}", e);
           res = null;
         }

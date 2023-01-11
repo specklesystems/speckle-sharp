@@ -173,8 +173,8 @@ namespace Objects.Converter.TeklaStructures
 
     public void SetPartProperties(Part part, TeklaBeam teklaBeam)
     {
-      part.Material.MaterialString = teklaBeam.material.name;
-      part.Profile.ProfileString = teklaBeam.profile.name;
+      part.Material.MaterialString = teklaBeam.material?.name;
+      part.Profile.ProfileString = teklaBeam.profile?.name;
       part.Class = teklaBeam.classNumber;
       part.Finish = teklaBeam.finish;
       part.Name = teklaBeam.name;

@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using System.Linq;
-using Speckle.ConnectorCSI.UI;
 using CSiAPIv1;
 
 namespace Speckle.ConnectorCSI.Util
 {
-  public class ConnectorCSIUtils
+  public static class ConnectorCSIUtils
   {
     //#if ETABS
     //    public static string CSIAppName = VersionedHostApplications.ETABS;
@@ -30,7 +27,10 @@ namespace Speckle.ConnectorCSI.Util
 
     public static Dictionary<string, (string, string)> ObjectIDsTypesAndNames { get; set; }
 
-    public List<SpeckleException> ConversionErrors { get; set; }
+    public static List<SpeckleException> ConversionErrors { get; set; }
+
+    // warning: this delimter string needs to be the same as the delimter string in "converterCSIUtils"
+    public static string delimiter = "::";
 
     public static void GetObjectIDsTypesAndNames(cSapModel model)
     {
@@ -591,6 +591,16 @@ namespace Speckle.ConnectorCSI.Util
         }
       }
       return typesAndNames;
+    }
+
+    /// <summary>
+    /// Removes all inherited classes from speckle type string (copied from Revit converter)
+    /// </summary>
+    /// <param name="s"></param>
+    /// <returns></returns>
+    public static string SimplifySpeckleType(string type)
+    {
+      return type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
     }
 
     public enum CSIAPIUsableTypes

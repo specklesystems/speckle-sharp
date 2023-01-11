@@ -51,6 +51,13 @@ namespace DesktopUI2.ViewModels
 
         //TODO:
         //FilterView.DataContext = this;
+
+        if (filter is TreeSelectionFilter tree)
+        {
+           //TODO:
+        }
+
+
       }
       catch (Exception ex)
       {

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
-using Sentry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
@@ -63,7 +62,7 @@ namespace Speckle.Core.Api
 
       if (transports.Count == 0 && useDefaultCache == false)
       {
-        throw new SpeckleException($"You need to provide at least one transport: cannot send with an empty transport list and no default cache.", level : SentryLevel.Error);
+        throw new SpeckleException($"You need to provide at least one transport: cannot send with an empty transport list and no default cache.", level: SentryLevel.Error);
       }
 
       if (useDefaultCache)
@@ -121,7 +120,7 @@ namespace Speckle.Core.Api
         transportAwaits = serializerV2.WriteTransports.Select(t => t.WriteComplete()).ToList();
       }
 
-      if (cancellationToken.IsCancellationRequested)return null;
+      if (cancellationToken.IsCancellationRequested) return null;
 
       await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
@@ -132,7 +131,7 @@ namespace Speckle.Core.Api
         if (disposeTransports && t is IDisposable disp) disp.Dispose();
       }
 
-      if (cancellationToken.IsCancellationRequested)return null;
+      if (cancellationToken.IsCancellationRequested) return null;
 
       var hash = JObject.Parse(obj).GetValue("id").ToString();
       return hash;

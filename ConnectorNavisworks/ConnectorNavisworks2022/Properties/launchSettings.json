@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "SpeckleNavisworks.2022": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Navisworks Manage 2022\\Roamer.exe"
+    }
+  }
+}

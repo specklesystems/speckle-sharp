@@ -53,25 +53,31 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       # - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
       # Node, redis, postgres and speckle-server images for test server
       - image: "cimg/node:16.15"
-      - image: "cimg/redis:6.2"
-      - image: "cimg/postgres:14.2"
+      - image: "cimg/redis:7.0.5"
+      - image: "cimg/postgres:14.5"
         environment:
           POSTGRES_DB: speckle2_test
           POSTGRES_PASSWORD: speckle
           POSTGRES_USER: speckle
+      - image: "minio/minio"
+        command: server /data --console-address ":9001"
       - image: "speckle/speckle-server:latest"
         command: ["bash", "-c", "/wait && node bin/www"]
         environment:
-          POSTGRES_URL: "localhost"
+          POSTGRES_URL: "127.0.0.1"
           POSTGRES_USER: "speckle"
           POSTGRES_PASSWORD: "speckle"
           POSTGRES_DB: "speckle2_test"
-          REDIS_URL: "redis://localhost"
+          REDIS_URL: "redis://127.0.0.1"
           SESSION_SECRET: "keyboard cat"
           STRATEGY_LOCAL: "true"
           CANONICAL_URL: "http://localhost:3000"
-          WAIT_HOSTS: localhost:5432, localhost:6379
-          DISABLE_FILE_UPLOADS: "true"
+          S3_ENDPOINT: "http://127.0.0.1:9000"
+          S3_ACCESS_KEY: "minioadmin"
+          S3_SECRET_KEY: "minioadmin"
+          S3_BUCKET: "speckle-server"
+          S3_CREATE_BUCKET: "true"
+          WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
     steps:
       - checkout
       - run:
@@ -341,16 +347,16 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Zip installer
           command: |
-            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/
+            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/
             zip -r <<parameters.slug>>.zip ./
       - store_artifacts:
-          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip
+          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip
       - run:
           name: Copy to installer location
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
+            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - when:
@@ -365,9 +371,17 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: cimg/base:2021.01
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "62:b2:1a:86:b7:9f:83:91:9b:61:f8:52:66:38:78:64"
+      - run:
+          name: I know Github as a host
+          command: |
+            mkdir ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
       - run: # Could not get ssh to work, so using a personal token
           name: Clone
-          command: git clone https://$GITHUB_TOKEN@github.com/specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
+          command: git clone git@github.com:specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
       - persist_to_workspace:
           root: ./
           paths:
@@ -486,7 +500,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 workflows:
   build:
     jobs:
-      - get-ci-tools
+      - get-ci-tools:
+          context: github-dev-bot
       - build-core:
           requires:
             - get-ci-tools
@@ -509,6 +524,7 @@ workflows:
           post-steps:
             - packandpublish:
                 projectfilepath: Core/Core.sln
+          context: nuget
       - build-objects:
           name: nuget-deploy-objects
           filters:
@@ -519,6 +535,7 @@ workflows:
           post-steps:
             - packandpublish-bash:
                 projectfilepath: Objects/Objects.sln
+          context: nuget
       - build-desktopui:
           name: nuget-deploy-desktopui
           filters:
@@ -529,3 +546,5 @@ workflows:
           post-steps:
             - packandpublish:
                 projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
+          context: nuget
+# VS Code Extension Version: 1.4.0

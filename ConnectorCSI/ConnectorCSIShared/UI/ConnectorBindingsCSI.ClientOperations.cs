@@ -23,61 +23,18 @@ namespace Speckle.ConnectorCSI.UI
     public override void WriteStreamsToFile(List<StreamState> streams)
     {
       StreamStateManager.ClearStreamStateList(Model);
-
-      foreach (var s in streams)
-      {
-        DocumentStreams.Add(s);
-        WriteStateToFile();
-      }
+      StreamStateManager.WriteStreamStateList(Model, streams);
     }
-
-    //public override void AddNewStream(StreamState state)
-    //{
-    //    Tracker.TrackPageview(Tracker.STREAM_CREATE);
-    //    var index = DocumentStreams.FindIndex(b => b.Stream.id == state.Stream.id);
-    //    if (index == -1)
-    //    {
-    //        DocumentStreams.Add(state);
-    //        WriteStateToFile();
-    //    }
-    //}
-    private void WriteStateToFile()
-    {
-      StreamStateManager.WriteStreamStateList(Model, DocumentStreams);
-    }
-
-    //public override void RemoveStreamFromFile(string streamId)
-    //{
-    //    var streamState = DocumentStreams.FirstOrDefault(s => s.Stream.id == streamId);
-    //    if (streamState != null)
-    //    {
-    //        DocumentStreams.Remove(streamState);
-    //        WriteStateToFile();
-    //    }
-    //}
 
     public override List<StreamState> GetStreamsInFile()
     {
-      if (Model != null)
-        DocumentStreams = StreamStateManager.ReadState(Model);
-
-      return DocumentStreams;
+      return Model == null ? new List<StreamState>() : StreamStateManager.ReadState(Model);
     }
 
     public override List<ISetting> GetSettings()
     {
-      return new List<ISetting> { };
+      return new List<ISetting>();
     }
-
-    //public override void PersistAndUpdateStreamInFile(StreamState state)
-    //{
-    //    var index = DocumentStreams.FindIndex(b => b.Stream.id == state.Stream.id);
-    //    if (index != -1)
-    //    {
-    //        DocumentStreams[index] = state;
-    //        WriteStateToFile();
-    //    }
-    //}
 
     #endregion
   }

@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{48C44A7A-122F-4A1F-B3BA-613CB432A7BC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Speckle.ConnectorTeklaStructures</RootNamespace>
+    <AssemblyName>SpeckleConnectorTeklaStructures</AssemblyName>
+    <TargetFrameworkVersion>v4.7.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
+    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
+    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
+    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
+    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+    <PlatformTarget>x64</PlatformTarget>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG;TeklaStructures2022</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x64</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;TeklaStructures2022</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj">
+      <Project>{2530aef3-2238-4166-9aac-f674e3b429b6}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
+      <Project>{3d522de4-1f73-486f-b07d-6ad794f784fd}</Project>
+      <Name>DesktopUI2</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj">
+      <Project>{60b78c35-560a-4111-82a2-d03a68a047c0}</Project>
+      <Name>PolygonMesher</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia">
+      <Version>0.10.18</Version>
+    </PackageReference>
+    <PackageReference Include="Avalonia.Desktop">
+      <Version>0.10.18</Version>
+    </PackageReference>
+    <PackageReference Include="Avalonia.ReactiveUI">
+      <Version>0.10.18</Version>
+    </PackageReference>
+    <PackageReference Include="MSBuild.AssemblyVersion">
+      <Version>1.3.0</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Tekla.Structures">
+      <Version>2022.0.10715</Version>
+    </PackageReference>
+    <PackageReference Include="Tekla.Structures.Dialog">
+      <Version>2022.0.10715</Version>
+    </PackageReference>
+    <PackageReference Include="Tekla.Structures.Model">
+      <Version>2022.0.10715</Version>
+    </PackageReference>
+    <PackageReference Include="Tekla.Structures.Plugins">
+      <Version>2022.0.10715</Version>
+    </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared" />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>RD /S /Q "$(TargetDir)arm64\"
+if EXIST "C:\Program Files\Tekla Structures\2022.0\bin\TeklaStructures.exe" (
+xcopy "$(TargetDir)*.*" "C:\ProgramData\Trimble\Tekla Structures\2022.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E
+)
+if EXIST "C:\TeklaStructures\2022.0\nt\bin\TeklaStructures.exe" (
+xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2022.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E
+)
+</PostBuildEvent>
+  </PropertyGroup>
+</Project>

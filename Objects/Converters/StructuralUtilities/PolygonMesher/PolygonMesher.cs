@@ -41,6 +41,10 @@ namespace StructuralUtilities.PolygonMesher
     // - the lines defined by these vertices don't intersect each other
     public bool Init(IEnumerable<double> coords, IEnumerable<IEnumerable<double>> openingCoordsList = null)
     {
+      // if there are less than 3 coordinates, we cannot create a mesh
+      if (coords.Count() < 9) 
+        return false;
+
       ExternalLoop.Init(coords, ref CoordinateTranslation, tolerance);
 
       if (openingCoordsList != null)

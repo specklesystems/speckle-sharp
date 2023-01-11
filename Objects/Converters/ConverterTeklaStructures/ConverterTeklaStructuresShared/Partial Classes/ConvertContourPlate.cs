@@ -27,7 +27,7 @@ namespace Objects.Converter.TeklaStructures
 
         ContourPlate.Profile.ProfileString = contour.profile.name;
         //ContourPlate.Contour.ContourPoints = countourPoints;
-        ContourPlate.Material.MaterialString = contour.material.name;
+        ContourPlate.Material.MaterialString = contour.material?.name;
         foreach (var cp in contour.contour)
         {
           ContourPlate.AddContourPoint(ToTeklaContourPoint(cp));
@@ -119,7 +119,7 @@ namespace Objects.Converter.TeklaStructures
     }
     public void SetPartProperties(Part part, TeklaContourPlate teklaPlate)
     {
-      part.Material.MaterialString = teklaPlate.material.name;
+      part.Material.MaterialString = teklaPlate.material?.name;
       part.Profile.ProfileString = teklaPlate.profile.name;
       part.Class = teklaPlate.classNumber;
       part.Finish = teklaPlate.finish;
