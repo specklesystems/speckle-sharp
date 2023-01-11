@@ -224,6 +224,8 @@ _pkginfo.txt
 !?*.[Cc]ache/
 
 # Others
+Records/
+Sandbox/
 ClientBin/
 ~$*
 *~

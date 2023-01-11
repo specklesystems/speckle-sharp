@@ -1,0 +1,326 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.OneClickView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="550"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-30deg)" />
+    </Style>
+    <Style Selector="m|FloatingButton:pointerover icons|MaterialIcon#send">
+      <Setter Property="RenderTransform" Value="rotate(-45deg)" />
+    </Style>
+  </UserControl.Styles>
+  <Grid>
+
+
+    <Grid RowDefinitions="auto, *">
+      <!--  HEADER  -->
+      <m:Card
+        Padding="15,10"
+        Background="{DynamicResource PrimaryHueMidBrush}"
+        CornerRadius="0">
+        <Grid ColumnDefinitions="auto,*">
+          <StackPanel
+            VerticalAlignment="Bottom"
+            Orientation="Horizontal"
+            Spacing="6">
+            <Image Height="30" Source="../../Assets/logo.png" />
+            <TextBlock
+              Classes="SpeckleFont"
+              FontSize="18"
+              FontWeight="Medium"
+              Foreground="White"
+              Text="{Binding Title}" />
+
+            <TextBlock
+              Margin="0,0,0,8"
+              VerticalAlignment="Bottom"
+              FontSize="8"
+              Foreground="White"
+              Text="{Binding Version}" />
+          </StackPanel>
+
+          <StackPanel
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Bottom"
+            Orientation="Horizontal"
+            Spacing="6">
+
+
+            <!--  UPDATE NOTIFICATION  -->
+            <!--<Menu
+              VerticalAlignment="Center"
+              IsVisible="{Binding HasUpdate}"
+              ToolTip.Tip="Update available">
+              <MenuItem
+                Width="30"
+                Height="30"
+                Foreground="Red"
+                Header="{icons:MaterialIconExt Notifications}">
+                <MenuItem
+                  Command="{Binding LaunchManagerCommand}"
+                  Header="An update for this connector is available, install it now!"
+                  Icon="{icons:MaterialIconExt ExternalLink}" />
+              </MenuItem>
+            </Menu>-->
+
+          </StackPanel>
+        </Grid>
+      </m:Card>
+
+      <!--  MAIN BODY SEND  -->
+      <Grid
+        Grid.Row="1"
+        Margin="5,10,5,5"
+        IsVisible="{Binding HasAccounts}"
+        RowDefinitions="*,auto">
+        <StackPanel
+          Margin="40"
+          VerticalAlignment="Center"
+          Orientation="Vertical"
+          Spacing="20">
+          <Button
+            Command="{Binding Send}"
+            CornerRadius="40"
+            IsDefault="True"
+            IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
+            ToolTip.Tip="Send the current model to Speckle">
+            <Button.Content>
+              <StackPanel
+                Margin="10"
+                Orientation="Horizontal"
+                Spacing="12">
+
+                <icons:MaterialIcon
+                  Name="send"
+                  Width="20"
+                  Height="20"
+                  Foreground="White"
+                  Kind="CubeSend">
+                  <icons:MaterialIcon.Transitions>
+                    <Transitions>
+                      <TransformOperationsTransition Property="RenderTransform" Duration="0:0:0.2" />
+                    </Transitions>
+                  </icons:MaterialIcon.Transitions>
+                </icons:MaterialIcon>
+                <TextBlock
+                  Classes="ButtonText"
+                  FontWeight="Bold"
+                  Text="SEND" />
+              </StackPanel>
+
+            </Button.Content>
+          </Button>
+          <TextBlock
+            Opacity="0.5"
+            Text="💡 Send the whole model or just the selected objects"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+        </StackPanel>
+
+
+        <Button
+          Grid.Row="1"
+          Margin="5"
+          Classes="Flat Mini"
+          Command="{Binding AdvancedModeCommand}">
+          <Button.Content>
+            <StackPanel
+              Margin="10"
+              Orientation="Horizontal"
+              Spacing="12">
+              <icons:MaterialIcon
+                Width="15"
+                Height="15"
+                Foreground="{DynamicResource PrimaryHueDarkBrush}"
+                Kind="SwapHorizontalVariant" />
+              <TextBlock Classes="ButtonText" Text="Switch to Advanced mode" />
+            </StackPanel>
+          </Button.Content>
+        </Button>
+      </Grid>
+
+      <!--  NO ACCOUNTS  -->
+      <Grid
+        Grid.Row="1"
+        Margin="15"
+        IsVisible="{Binding HasAccounts, Converter={x:Static BoolConverters.Not}, FallbackValue=False}">
+        <m:Card
+          Margin="10"
+          Padding="30"
+          VerticalAlignment="Top">
+          <StackPanel Orientation="Vertical">
+
+
+            <TextBlock TextAlignment="Center">
+              👋 Hello and welcome!&#10;&#10;Please log in to use this connector:
+            </TextBlock>
+            <Button
+              Margin="15,40,15,15"
+              Command="{Binding LaunchManagerCommand}"
+              Content="Log In using Manager"
+              IsEnabled="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
+              ToolTip.Tip="Manager is the reccomended way to log in and install Connectors" />
+            <TextBlock TextAlignment="Center">
+              or
+            </TextBlock>
+            <Button
+              Margin="15"
+              Command="{Binding AddAccountCommand}"
+              Content="Log In directly"
+              IsVisible="{Binding IsLoggingIn, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
+              ToolTip.Tip="Direct log in is currently only supported on our XYZ server" />
+            <StackPanel IsVisible="{Binding IsLoggingIn, FallbackValue=False}" Orientation="Vertical">
+              <TextBlock Margin="15" TextAlignment="Center">
+                ☝ Please follow the instructions in your browser.
+              </TextBlock>
+              <ProgressBar Classes="Circle" IsIndeterminate="True" />
+            </StackPanel>
+
+          </StackPanel>
+
+        </m:Card>
+
+      </Grid>
+    </Grid>
+
+    <!--  SENDING & SENT COMPLETED POPUP  -->
+    <Border Background="{DynamicResource PrimaryHueMidBrush}" IsVisible="{Binding SendClicked, FallbackValue=True}">
+      <Grid RowDefinitions="*">
+        <m:FloatingButton
+          Margin="0,20,20,0"
+          HorizontalAlignment="Right"
+          VerticalAlignment="Top"
+          assists:ShadowAssist.ShadowDepth="0"
+          Background="Transparent"
+          Classes=""
+          Command="{Binding CloseSendModal}"
+          ToolTip.Tip="Close">
+          <Button.Content>
+            <Viewbox
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Stretch="Fill">
+              <icons:MaterialIcon
+                Width="24"
+                Height="24"
+                Foreground="White"
+                Kind="Close" />
+            </Viewbox>
+          </Button.Content>
+        </m:FloatingButton>
+        <!--  SENDING  -->
+        <StackPanel
+          Grid.Row="1"
+          Margin="20"
+          HorizontalAlignment="Stretch"
+          VerticalAlignment="Center"
+          IsVisible="{Binding Progress.IsProgressing}"
+          Orientation="Vertical"
+          Spacing="15">
+          <TextBlock
+            Classes="Subtitle1"
+            Foreground="White"
+            Text="{Binding Progress.ProgressTitle, FallbackValue='Operation XYZ'}"
+            TextTrimming="CharacterEllipsis" />
+          <ProgressBar
+            Classes="notransitions"
+            IsIndeterminate="{Binding Progress.IsIndeterminate, FallbackValue=True}"
+            IsVisible="{Binding Progress.IsProgressing}"
+            Maximum="{Binding Progress.Max}"
+            Value="{Binding Progress.Value}" />
+          <TextBlock
+            Foreground="White"
+            Text="{Binding Progress.ProgressSummary, FallbackValue='Operation in progress...'}"
+            TextTrimming="CharacterEllipsis" />
+        </StackPanel>
+
+        <!--  SEND COMPLETED  -->
+        <StackPanel
+          Grid.Row="1"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          IsVisible="{Binding !Progress.IsProgressing}"
+          Orientation="Vertical">
+          <TextBlock
+            Margin="30"
+            HorizontalAlignment="Center"
+            Classes="Subtitle1"
+            Foreground="White"
+            Text="{Binding SentText}"
+            TextAlignment="Center"
+            TextWrapping="Wrap" />
+          <Button
+            Margin="0"
+            HorizontalAlignment="Center"
+            Background="White"
+            Command="{Binding ViewOnlineCommand}"
+            CornerRadius="25"
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            IsVisible="{Binding SuccessfulSend}">
+            <Grid Margin="0" ColumnDefinitions="auto,*">
+
+              <icons:MaterialIcon VerticalAlignment="Center" Kind="ExternalLink" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="8,0"
+                Padding="0"
+                VerticalAlignment="Center"
+                Text="View online"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </Button>
+          <Button
+            Margin="0,20,0,0"
+            HorizontalAlignment="Center"
+            Classes="Flat"
+            Command="{Binding ShareCommand}"
+            CornerRadius="25"
+            Foreground="White"
+            IsVisible="{Binding SuccessfulSend}">
+            <Grid Margin="0" ColumnDefinitions="auto,*">
+
+              <icons:MaterialIcon VerticalAlignment="Center" Kind="UsersAdd" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="8,0"
+                Padding="0"
+                VerticalAlignment="Center"
+                Text="Enable multiplayer mode!"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </Button>
+          <Button
+            Margin="0,5,0,40"
+            HorizontalAlignment="Center"
+            Classes="Flat"
+            Command="{Binding CopyCommand}"
+            CornerRadius="25"
+            Foreground="White"
+            IsVisible="{Binding SuccessfulSend}">
+            <Grid Margin="0" ColumnDefinitions="auto,*">
+
+              <icons:MaterialIcon VerticalAlignment="Center" Kind="LinkVariant" />
+              <TextBlock
+                Grid.Column="1"
+                Margin="8,0"
+                Padding="0"
+                VerticalAlignment="Center"
+                Text="Copy URL to clipboard"
+                TextTrimming="CharacterEllipsis" />
+            </Grid>
+          </Button>
+        </StackPanel>
+      </Grid>
+    </Border>
+  </Grid>
+</UserControl>

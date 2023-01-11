@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using System.Text;
+using System.Net.Mime;
 
 namespace TestsIntegration
 {
@@ -13,7 +10,7 @@ namespace TestsIntegration
   {
     public static readonly ServerInfo Server = new ServerInfo { url = "http://localhost:3000", name = "Docker Server" };
 
-    public static Account SeedUser()
+    public static async Task<Account> SeedUser()
     {
       var seed = Guid.NewGuid().ToString().ToLower();
       var user = new Dictionary<string, string>();
@@ -21,45 +18,27 @@ namespace TestsIntegration
       user["password"] = "12ABC3456789DEF0GHO";
       user["name"] = $"{seed.Substring(0, 5)} Name";
 
-      var registerRequest = (HttpWebRequest)WebRequest.Create($"{Server.url}/auth/local/register?challenge=challengingchallenge");
-      registerRequest.Method = "POST";
-      registerRequest.ContentType = "application/json";
-      registerRequest.AllowAutoRedirect = false;
-
-
-      using (var streamWriter = new StreamWriter(registerRequest.GetRequestStream()))
+      var httpClient = new HttpClient(new HttpClientHandler()
       {
-        string json = JsonConvert.SerializeObject(user);
-        streamWriter.Write(json);
-        streamWriter.Flush();
-      }
+        AllowAutoRedirect = false
+      });
+      httpClient.BaseAddress = new Uri(Server.url);
 
-      WebResponse response;
-      string redirectUrl = null;
+      string redirectUrl;
       try
       {
-        response = registerRequest.GetResponse();
-        redirectUrl = response.Headers[HttpResponseHeader.Location];
-        Debug.WriteLine(redirectUrl);
+        var response = await httpClient.PostAsync(
+          "/auth/local/register?challenge=challengingchallenge",
+          // $"{Server.url}/auth/local/register?challenge=challengingchallenge",
+          new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, MediaTypeNames.Application.Json)
+        );
+        redirectUrl = response.Headers.Location.AbsoluteUri;
       }
-      catch (WebException e)
+      catch (Exception e)
       {
-        if (e.Message.Contains("302"))
-        {
-          Console.WriteLine("We are redirected!");
-          response = e.Response;
-          redirectUrl = e.Response.Headers[HttpResponseHeader.Location];
-          Console.WriteLine("We are redirected; but in an error.");
-          Console.WriteLine(redirectUrl);
-        }
+        throw new Exception($"Cannot seed user on the server {Server.url}", e);
       }
 
-      var tokenRequest = (HttpWebRequest)WebRequest.Create($"{Server.url}/auth/token");
-      tokenRequest.Method = "POST";
-      tokenRequest.ContentType = "application/json";
-
-      Console.WriteLine(redirectUrl);
-      Console.WriteLine("Why do the tests pass locally?");
       var accessCode = redirectUrl.Split("?access_code=")[1];
       var tokenBody = new Dictionary<string, string>()
       {
@@ -69,25 +48,22 @@ namespace TestsIntegration
         ["challenge"] = "challengingchallenge"
       };
 
-      using (var streamWriter = new StreamWriter(tokenRequest.GetRequestStream()))
-      {
-        string json = JsonConvert.SerializeObject(tokenBody);
-        streamWriter.Write(json);
-        streamWriter.Flush();
-      }
+      var tokenResponse = await httpClient.PostAsync(
+        "/auth/token",
+        new StringContent(JsonConvert.SerializeObject(tokenBody), Encoding.UTF8, MediaTypeNames.Application.Json)
+      );
+      var deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(
+        await tokenResponse.Content.ReadAsStringAsync()
+      );
 
-      var tokenResponse = tokenRequest.GetResponse();
-      var deserialised = new Dictionary<string, string>();
-      using (var streamReader = new StreamReader(tokenResponse.GetResponseStream()))
-      {
-        var text = streamReader.ReadToEnd();
-        deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(text);
-      }
-
-      var acc = new Account { token = deserialised["token"], userInfo = new UserInfo { id = user["name"], email = user["email"] }, serverInfo = Server };
+      var acc = new Account { 
+        token = deserialised["token"], 
+        userInfo = new UserInfo { id = user["name"], email = user["email"], name = user["name"] }, 
+        serverInfo = Server 
+      };
       var client = new Client(acc);
 
-      var user1 = client.UserGet().Result;
+      var user1 = await client.ActiveUserGet();
       acc.userInfo.id = user1.id;
 
       return acc;

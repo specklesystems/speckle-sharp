@@ -3,146 +3,160 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
-using ConnectorRevit;
+using Avalonia.Threading;
 using ConnectorRevit.Revit;
-using Speckle.ConnectorRevit.Entry;
-using Speckle.ConnectorRevit.Storage;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels;
+using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.DesktopUI.Utils;
-using Stylet;
-using RevitElement = Autodesk.Revit.DB.Element;
 
 namespace Speckle.ConnectorRevit.UI
 {
+  
   public partial class ConnectorBindingsRevit
   {
+    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
 
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
-    public override async Task<StreamState> ReceiveStream(StreamState state)
+    /// 
+    public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      ConversionErrors.Clear();
-      OperationErrors.Clear();
-
-      var kit = KitManager.GetDefaultKit();
-      var converter = kit.LoadConverter(ConnectorRevitUtils.RevitAppName);
+      //make sure to instance a new copy so all values are reset correctly
+      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
       var previouslyReceiveObjects = state.ReceivedObjects;
 
-      var transport = new ServerTransport(state.Client.Account, state.Stream.id);
+      // set converter settings as tuples (setting slug, setting selection)
+      var settings = new Dictionary<string, string>();
+      CurrentSettings = state.Settings;
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      converter.SetConverterSettings(settings);
 
-      string referencedObject = state.Commit.referencedObject;
+      var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
-      {
+      var stream = await state.Client.StreamGet(state.StreamId);
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
-      }
 
+      Commit myCommit = null;
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (state.Commit.id == "latest")
+      if (state.CommitId == "latest")
       {
-        var res = await state.Client.BranchGet(state.CancellationTokenSource.Token, state.Stream.id, state.Branch.name, 1);
-        referencedObject = res.commits.items.FirstOrDefault().referencedObject;
+        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
+        myCommit = res.commits.items.FirstOrDefault();
+      }
+      else
+      {
+        myCommit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
 
-      var commit = state.Commit;
+      state.LastSourceApp = myCommit.sourceApplication;
+
+      string referencedObject = myCommit.referencedObject;
 
       var commitObject = await Operations.Receive(
           referencedObject,
-          state.CancellationTokenSource.Token,
+          progress.CancellationTokenSource.Token,
           transport,
-          onProgressAction: dict => UpdateProgress(dict, state.Progress),
+          onProgressAction: dict => progress.Update(dict),
           onErrorAction: (s, e) =>
           {
-            OperationErrors.Add(e);
-            state.Errors.Add(e);
-            state.CancellationTokenSource.Cancel();
+            progress.Report.LogOperationError(e);
+            progress.CancellationTokenSource.Cancel();
           },
-          onTotalChildrenCountKnown: count => Execute.PostToUIThread(() => state.Progress.Maximum = count),
+          onTotalChildrenCountKnown: count => { progress.Max = count; },
           disposeTransports: true
           );
 
-      if (OperationErrors.Count != 0)
+      try
       {
-        Globals.Notify("Failed to get commit.");
+        await state.Client.CommitReceived(new CommitReceivedInput
+        {
+          streamId = stream?.id,
+          commitId = myCommit?.id,
+          message = myCommit?.message,
+          sourceApplication = ConnectorRevitUtils.RevitAppName
+        });
+      }
+      catch
+      {
+        // Do nothing!
+      }
+
+      if (progress.Report.OperationErrorsCount != 0)
         return state;
-      }
 
-      if (state.CancellationTokenSource.Token.IsCancellationRequested)
-      {
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
+
+      Preview.Clear();
+      StoredObjects.Clear();
+
+
+      Preview = FlattenCommitObject(commitObject, converter);
+      foreach (var previewObj in Preview)
+        progress.Report.Log(previewObj);
+
+      converter.ReceiveMode = state.ReceiveMode;
+      // needs to be set for editing to work 
+      converter.SetPreviousContextObjects(previouslyReceiveObjects);
+      // needs to be set for openings in floors and roofs to work
+      converter.SetContextObjects(Preview);
+
+      try
+      {
+        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+      }
+      catch (Exception ex)
+      {
+        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping."));
       }
 
-      // Bake the new ones.
-      Queue.Add(() =>
+      await RevitTask.RunAsync(app =>
       {
-        using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.Stream.name}"))
+        using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
         {
           var failOpts = t.GetFailureHandlingOptions();
           failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
           failOpts.SetClearAfterRollback(true);
           t.SetFailureHandlingOptions(failOpts);
-
           t.Start();
-          var flattenedObjects = FlattenCommitObject(commitObject, converter);
-          // needs to be set for editing to work 
-          converter.SetPreviousContextObjects(previouslyReceiveObjects);
-          // needs to be set for openings in floors and roofs to work
-          converter.SetContextObjects(flattenedObjects.Select(x => new ApplicationObject(x.id, ConnectorRevitUtils.SimplifySpeckleType(x.speckle_type)) { applicationId = x.applicationId }).ToList());
-          var newPlaceholderObjects = ConvertReceivedObjects(flattenedObjects, converter, state);
+          
+          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
           // receive was cancelled by user
           if (newPlaceholderObjects == null)
           {
-            converter.Report.LogConversionError(new Exception("fatal error: receive cancelled by user"));
+            progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
             t.RollBack();
             return;
           }
 
-          DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
+          if (state.ReceiveMode == ReceiveMode.Update)
+            DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
 
           state.ReceivedObjects = newPlaceholderObjects;
 
           t.Commit();
-
-          state.Errors.AddRange(converter.Report.ConversionErrors);
         }
 
       });
 
-      Executor.Raise();
-
-      while (Queue.Count > 0)
-      {
-        //wait to let queue finish
-      }
-
-      if (converter.Report.ConversionErrorsString.Contains("fatal error"))
-      {
-        // the commit is being rolled back
-        return null;
-      }
-
-      try
-      {
-        await state.RefreshStream();
-
-        WriteStateToFile();
-      }
-      catch (Exception e)
-      {
-        WriteStateToFile();
-        state.Errors.Add(e);
-        Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
-      }
+      if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))
+        return null; // the commit is being rolled back
 
       return state;
     }
@@ -152,7 +166,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       foreach (var obj in previouslyReceiveObjects)
       {
-        if (newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        if (obj.CreatedIds.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
           continue;
 
         var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
@@ -161,15 +175,20 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private List<ApplicationObject> ConvertReceivedObjects(List<Base> objects, ISpeckleConverter converter, StreamState state)
+    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
       var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
-      foreach (var @base in objects)
+      // Get setting to skip linked model elements if necessary
+      var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
+      var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
+
+      foreach (var obj in Preview)
       {
-        if (state.CancellationTokenSource.Token.IsCancellationRequested)
+        var @base = StoredObjects[obj.OriginalId];
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
           placeholders = null;
           break;
@@ -178,25 +197,51 @@ namespace Speckle.ConnectorRevit.UI
         try
         {
           conversionProgressDict["Conversion"]++;
-          // wrapped in a dispatcher not to block the ui
-          SpeckleRevitCommand.Bootstrapper.RootWindow.Dispatcher.Invoke(() =>
-          {
-            UpdateProgress(conversionProgressDict, state.Progress);
-          }, System.Windows.Threading.DispatcherPriority.Background);
+          progress.Update(conversionProgressDict);
+
+          var s = new CancellationTokenSource();
+          DispatcherTimer.RunOnce(() => s.Cancel(), TimeSpan.FromMilliseconds(10));
+          Dispatcher.UIThread.MainLoop(s.Token);
+
+          //skip element if is from a linked file and setting is off
+          if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
+            continue;
 
           var convRes = converter.ConvertToNative(@base);
-          if (convRes is ApplicationObject placeholder)
-            placeholders.Add(placeholder);
-          else if (convRes is List<ApplicationObject> placeholderList)
-            placeholders.AddRange(placeholderList);
+          RefreshView();
+
+          switch (convRes)
+          {
+            case ApplicationObject o:
+              placeholders.Add(o);
+              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
+              progress.Report.UpdateReportObject(obj);
+              break;
+            default:
+              break;
+          }
         }
         catch (Exception e)
         {
-          state.Errors.Add(e);
+          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          progress.Report.UpdateReportObject(obj);
         }
       }
 
       return placeholders;
+    }
+
+    private void RefreshView()
+    {
+      //regenerate the document and then implement a hack to "refresh" the view
+      CurrentDoc.Document.Regenerate();
+
+      // get the active ui view
+      var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+      var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+
+      // "refresh" the active view
+      uiView.Zoom(1);
     }
 
     /// <summary>
@@ -205,24 +250,25 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="obj"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
     {
-      List<Base> objects = new List<Base>();
+      var objects = new List<ApplicationObject>();
 
       if (obj is Base @base)
       {
+        var appObj = new ApplicationObject(@base.id, ConnectorRevitUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
+
         if (converter.CanConvertToNative(@base))
         {
-          objects.Add(@base);
-
+          appObj.Convertible = true;
+          objects.Add(appObj);
+          StoredObjects.Add(@base.id, @base);
           return objects;
         }
         else
         {
           foreach (var prop in @base.GetDynamicMembers())
-          {
             objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          }
           return objects;
         }
       }
@@ -230,19 +276,25 @@ namespace Speckle.ConnectorRevit.UI
       if (obj is List<object> list)
       {
         foreach (var listObj in list)
-        {
           objects.AddRange(FlattenCommitObject(listObj, converter));
-        }
         return objects;
       }
 
       if (obj is IDictionary dict)
       {
         foreach (DictionaryEntry kvp in dict)
-        {
           objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        }
         return objects;
+      }
+
+      else
+      {
+        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
+        {
+          var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
+          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Revit");
+          objects.Add(appObj);
+        }
       }
 
       return objects;

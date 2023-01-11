@@ -24,6 +24,7 @@ namespace Utility {
 
   void SetStoryLevel(const double& inLevel, const short& floorInd, double& level);
 
+  GS::Array<API_Guid> GetWallSubelements(API_WallType& wall);
 
 }
 

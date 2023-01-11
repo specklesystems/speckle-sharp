@@ -190,6 +190,18 @@ namespace Objects.Geometry
     public static double Distance(Point point1, Point point2) => Math.Sqrt(
       Math.Pow(point1.x - point2.x, 2) + Math.Pow(point1.y - point2.y, 2) + Math.Pow(point1.z - point2.z, 2));
     
+    /// <summary>
+    /// Computes the distance between two points.
+    /// </summary>
+    /// <param name="point">point for distance measurement</param>
+    /// <returns>The length of the line between this and the other point</returns>
+    public double DistanceTo(Point point)
+    {
+      return Math.Sqrt(Math.Pow((x - point.x), 2) +
+                       Math.Pow((y - point.y), 2) +
+                       Math.Pow((z - point.z), 2));
+    }
+    
     /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {

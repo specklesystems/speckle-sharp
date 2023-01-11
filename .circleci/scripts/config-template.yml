@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  win: circleci/windows@5
+  win: circleci/windows@5.0.0
   aws-s3: circleci/aws-s3@2.0.0
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
@@ -15,7 +15,7 @@ commands:
       - run:
           name: Publish nuget package
           command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.$($env:WORFKLOW_NUM)-beta/a" } else { $env:CIRCLE_TAG }
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999.$($env:WORKFLOW_NUM)" } else { $env:CIRCLE_TAG }
             $version = $tag.Split("/")[1]  
             msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
             dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
@@ -29,7 +29,7 @@ commands:
       - run:
           name: Publish nuget package
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
             msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
@@ -49,8 +49,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     docker:
-      - image: "mcr.microsoft.com/dotnet/core/sdk" # dotnet core 3.1 sdk
-      - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
+      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet
+      # - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
       # Node, redis, postgres and speckle-server images for test server
       - image: "cimg/node:16.15"
       - image: "cimg/redis:6.2"
@@ -154,7 +154,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Build << parameters.slnname >>
           command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "0.0.0" } else { $env:CIRCLE_TAG }
+            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
             $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
             $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
             $version = "$($ver).$($env:WORKFLOW_NUM)"
@@ -207,9 +207,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Upload new version
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >> -o << parameters.os >> -a << parameters.arch >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
 
   build-connector-mac:
     macos:
@@ -265,7 +267,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Set environment variables
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-beta//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
@@ -279,7 +281,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Build << parameters.slnname >>
                 command: |
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER
             # Compress build files
             - run:
                 name: Zip Objects Kit files
@@ -303,9 +307,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Publish x64 and arm64
                 command: |
-                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.0"; fi;)
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
                   SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
                   $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER
+                environment:
+                  WORKFLOW_NUM: << pipeline.number >>
             #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-x64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
             #      $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-arm64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
             #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-arm64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
@@ -342,9 +348,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Copy to installer location
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "0.0.0"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/netcoreapp3.1/osx-x64/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
       - when:
           condition: << pipeline.git.tag >>
           steps:
@@ -397,7 +405,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             cd ConnectorArchicad/AddOn
             mkdir Build.Win.x64.<<parameters.archicadversion>>
             export PATH=$PATH:"C:\Program Files\CMake\bin"
-            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
       - run:
           name: Build add-on
           command: |

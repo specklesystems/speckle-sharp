@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
-using NUnit.Framework;
-using Speckle.Core.Api;
+﻿using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -24,10 +21,10 @@ namespace TestsIntegration
     private string objectId = "";
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
-      firstUserAccount = Fixtures.SeedUser();
-      secondUserAccount = Fixtures.SeedUser();
+      firstUserAccount = await Fixtures.SeedUser();
+      secondUserAccount = await Fixtures.SeedUser();
 
       myClient = new Client(firstUserAccount);
       secondClient = new Client(secondUserAccount);
@@ -47,11 +44,26 @@ namespace TestsIntegration
     }
 
     [Test]
+    public async Task ActiveUserGet()
+    {
+      var res = await myClient.ActiveUserGet();
+      Assert.That(myClient.Account.userInfo.id, Is.EqualTo(res.id));
+    }
+
+    [Test]
+    public async Task OtherUserGet()
+    {
+      var res = await myClient.OtherUserGet(secondUserAccount.userInfo.id);
+      Assert.That(secondUserAccount.userInfo.name, Is.EqualTo(res.name));
+
+    }
+
+    [Test]
     public async Task UserSearch()
     {
       var res = await myClient.UserSearch(firstUserAccount.userInfo.email);
-
-      Assert.NotNull(res);
+      Assert.That(1, Is.EqualTo(res.Count));
+      Assert.That(firstUserAccount.userInfo.id, Is.EqualTo(res[0].id));
     }
 
     [Test]
@@ -117,14 +129,16 @@ namespace TestsIntegration
     }
 
     [Test, Order(30)]
-    public async Task StreamGrantPermission()
+    public void StreamGrantPermission()
     {
-      var exception = Assert.ThrowsAsync<SpeckleException>( async () => await myClient.StreamGrantPermission(
-        new StreamPermissionInput
-        {
-          streamId = streamId, userId = secondUserAccount.userInfo.id, role = "stream:owner"
-        }
-      ) );
+      var exception = Assert.ThrowsAsync<SpeckleException>(
+        async () => await myClient.StreamGrantPermission(
+          new StreamPermissionInput
+          {
+            streamId = streamId, userId = secondUserAccount.userInfo.id, role = "stream:owner"
+          }
+        )
+      );
       
       StringAssert.Contains("no longer supported", exception.Message);
     }
@@ -286,7 +300,7 @@ namespace TestsIntegration
       var res = await myClient.ObjectGet(streamId, objectId);
 
       Assert.NotNull(res);
-      Assert.AreEqual(100, res.totalChildrenCount);
+      Assert.That(100, Is.EqualTo(res.totalChildrenCount));
     }
 
     #endregion

@@ -20,9 +20,9 @@ namespace TestsIntegration.Subscriptions
     string streamId;
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
-      testUserAccount = Fixtures.SeedUser();
+      testUserAccount = await Fixtures.SeedUser();
       client = new Client(testUserAccount);
     }
 
