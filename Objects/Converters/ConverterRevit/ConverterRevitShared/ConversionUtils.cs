@@ -1341,9 +1341,6 @@ namespace Objects.Converter.Revit
           headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
           slope = (headOffset - tailOffset) / lineLength;
         }
-
-        
-
         break;
       }
     }
