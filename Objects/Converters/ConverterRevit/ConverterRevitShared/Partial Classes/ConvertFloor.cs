@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using OG = Objects.Geometry;
 
 namespace Objects.Converter.Revit
 {
@@ -31,8 +32,6 @@ namespace Objects.Converter.Revit
       if (speckleFloor["structural"] is bool isStructural)
         structural = isStructural;
 
-      var outline = CurveToNative(speckleFloor.outline, true);
-      UnboundCurveIfSingle(outline);
       DB.Level level;
       double slope = 0;
       DB.Line slopeDirection = null;
@@ -45,8 +44,12 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out ApplicationObject.State state);
+        level = ConvertLevelToRevit(LevelFromCurve(CurveToNative(speckleFloor.outline).get_Item(0)), out ApplicationObject.State state);
       }
+
+      ChangeZValuesForCurves(speckleFloor.outline, level.Elevation);
+      var outline = CurveToNative(speckleFloor.outline, true);
+      UnboundCurveIfSingle(outline);
 
       if (!GetElementType<FloorType>(speckleFloor, appObj, out FloorType floorType))
       {
@@ -190,22 +193,39 @@ namespace Objects.Converter.Revit
       return profiles;
     }
 
-    private List<ICurve> GetProfiles(DB.Floor floor)
+    // in order to create a revit floor, we need to pass it a flat profile so change all the z values
+    private void ChangeZValuesForCurves(ICurve curve, double z)
     {
-#if !REVIT2020 && !REVIT2021
-      var profile = ((Sketch)Doc.GetElement(floor.SketchId)).Profile;
-
-      var profileCurves = new List<ICurve>();
-      for (var i = 0; i < profile.Size; i++)
+      switch (curve)
       {
-        var segments = CurveListToSpeckle(profile.get_Item(i).Cast<DB.Curve>().ToList());
-        if (segments.segments.Count() > 2)
-          profileCurves.Add(segments);
+        case OG.Line line:
+          // kind of a hack. Editing our speckle objects is so much easier than editing the revit objects
+          // so scale this z value from the model units to the incoming units and then they will get scaled
+          // back to the model units when this entire outline gets scaled to native
+          line.start.z = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.start.units);
+          line.end.z = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.end.units);
+          return;
+
+        //case OG.Arc arc:
+        //case OG.Circle circle:
+        //case OG.Ellipse ellipse:
+        //case OG.Spiral spiral:
+
+        case OG.Curve nurbs:
+          for (int i = 2; i < nurbs.points.Count; i +=3 )
+            nurbs.points[i] = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, nurbs.units);
+          return;
+
+        case OG.Polyline poly:
+          foreach (var point in poly.GetPoints())
+            point.z = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, point.units);
+          return;
+
+        case OG.Polycurve plc:
+          foreach (var seg in plc.segments)
+            ChangeZValuesForCurves(seg, z);
+          return;
       }
-      return profileCurves;
-#else
-      return null;
-#endif
     }
   }
 }
