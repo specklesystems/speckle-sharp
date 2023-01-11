@@ -39,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProfileWall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertStructuralConnectionHandlers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertStructuralModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTeklaObjects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertTopRail.cs" />
