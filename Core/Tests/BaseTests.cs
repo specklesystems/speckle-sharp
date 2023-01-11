@@ -166,6 +166,65 @@ namespace Tests
       Assert.That(names, Has.Member(nameof(@base.attachedProp)));
     }
     
+    [Test]
+    public void CanGetMembers_IsEquivalentTo_GetMemberNames()
+    {
+      var @base = new SampleObject();
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = null;
+      
+      var expected = @base.GetMemberNames();
+      var actual = @base
+        .GetMembers()
+        .Keys;
+      
+      Assert.That(actual, Is.EquivalentTo(expected));
+    }
+    
+    [Test]
+    public void CanGetMembers_IsEquivalentTo_GetDynamicMemberNames()
+    {
+      var @base = new SampleObject();
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = null;
+      
+      var expected = @base.GetDynamicMemberNames();
+      var actual = @base
+        .GetMembers(DynamicBaseMemberType.All)
+        .Keys;
+      
+      Assert.That(actual, Is.EquivalentTo(expected));
+    }
+
+    [Test]
+    public void CanGetMembers_IsEquivalentTo_GetInstanceMembersNames()
+    {
+      var @base = new SampleObject();
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = null;
+      
+      var expected = @base.GetInstanceMembersNames();
+      var actual = @base
+        .GetMembers(DynamicBaseMemberType.InstanceAll)
+        .Keys;
+      
+      Assert.That(actual, Is.EquivalentTo(expected));
+    }
+    
+    [Test]
+    public void CanGetMembers_IsEquivalentTo_GetDynamicMembers()
+    {
+      var @base = new SampleObject();
+      var dynamicProp = "dynamicProp";
+      @base[dynamicProp] = null;
+      
+      var expected = @base.GetDynamicMembers();
+      var actual = @base
+        .GetMembers(DynamicBaseMemberType.Dynamic)
+        .Keys;
+      
+      Assert.That(actual, Is.EquivalentTo(expected));
+    }
     
     [Test]
     public void CanGetDynamicMembers()

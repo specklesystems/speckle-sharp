@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,16 +15,16 @@ namespace Archicad.Converters
 
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
-      var floors = new List<Objects.BuiltElements.Archicad.Floor>();
+      var floors = new List<Objects.BuiltElements.Archicad.ArchicadFloor>();
       foreach ( var el in elements )
       {
         switch ( el )
         {
-          case Objects.BuiltElements.Archicad.Floor archiFloor:
+          case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
             floors.Add(archiFloor);
             break;
           case  Objects.BuiltElements.Floor floor:
-            floors.Add(new Objects.BuiltElements.Archicad.Floor
+            floors.Add(new Objects.BuiltElements.Archicad.ArchicadFloor
             {
               shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
             });

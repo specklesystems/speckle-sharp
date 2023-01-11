@@ -2,6 +2,7 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:animations="clr-namespace:Material.Styles.Additional.Animations;assembly=Material.Styles"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:avalonia="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
   xmlns:converters="clr-namespace:Material.Styles.Converters;assembly=Material.Styles"
@@ -11,7 +12,7 @@
   <Design.PreviewWith>
     <Border
       Width="360"
-      Height="200"
+      Height="400"
       Padding="20">
       <StackPanel Orientation="Vertical">
 
@@ -29,6 +30,11 @@
         <TextBox Classes="Filled Dense">
           I am read only
         </TextBox>
+
+        <TextBox
+          assists:TextFieldAssist.Label="Classic TextBox"
+          FontSize="13"
+          UseFloatingWatermark="True" />
 
 
         <TextBox
@@ -54,6 +60,12 @@
   <Style Selector="TextBox">
     <Setter Property="FontSize" Value="13.0" />
   </Style>
+
+  <Style Selector=" TextBox /template/ TextBlock.Subtitle1">
+    <Setter Property="FontSize" Value="13.0" />
+    <Setter Property="Foreground" Value="Gray" />
+  </Style>
+
 
   <Style Selector="TextBlock.Subtitle1#watermark">
     <Setter Property="FontSize" Value="13.0" />

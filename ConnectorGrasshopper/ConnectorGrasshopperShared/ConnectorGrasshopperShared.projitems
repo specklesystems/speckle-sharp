@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>DBB541D7-49ED-41FC-B94D-D5AFEAD29075</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConnectorGrasshopperShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ListAccounts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\ComponentTracker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleAsyncComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleTaskCapableComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\ISpeckleTrackingComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\SelectKitAsyncComponentBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\SelectKitComponentBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\SelectKitTaskCapableComponentBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ComponentCategories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConnectorGrasshopperInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Conversion\DeserialiseTaskCapableComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Conversion\SerialiseTaskCapableComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Conversion\ToNativeTaskCapableComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Conversion\ToSpeckleTaskCapableComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\DebounceDispatcher.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\GenericAccessParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleGoo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\SendReceiveDataParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\Speckle.IGH_Goo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleBaseParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStatefulParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStateTag.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStreamParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\TreeBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\Utilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Loader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\DeconstructSpeckleObjectTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\Deprecated\ExpandSpeckleObjectTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\GetObjectKeysComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\GetObjectValueByKeyTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.ReceiveComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.ReceiveComponentSync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.SendComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.SendComponentSync.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.UpgradeUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.VariableInputSendComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.ReceiveLocalComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.SendLocalComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.SyncReceiveComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.SyncSendComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.VariableInputReceiveComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.VariableInputSendComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\Resources.Designer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CreateSchemaObject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CreateSchemaObjectBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CreateSchemaObjectDialog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CSOViewModel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpeckleGHSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamCreateComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamDetailsComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamListComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamUpdateComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transports\SendReceiveTransport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transports\Transports.Disk.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transports\Transports.Memory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Transports\Transports.Sqlite.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UpgradeUtilities.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.tt" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Properties\Resources.resx" />
+  </ItemGroup>
+</Project>

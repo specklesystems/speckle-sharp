@@ -29,42 +29,47 @@ namespace Speckle.ConnectorCSI.UI
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      var objectTypes = new List<string>();
-      //var objectIds = new List<string>();
-      string[] groupNames = null;
-      var groups = new List<string>();
-      int numNames = 0;
+      var filters = new List<ISelectionFilter>();
+      filters.Add(new AllSelectionFilter
+      {
+        Slug = "all",
+        Name = "Everything",
+        Icon = "CubeScan",
+        Description = "Selects all document objects."
+      });
+      filters.Add(new ManualSelectionFilter());
+
       if (Model != null)
       {
         ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
-        objectTypes = ConnectorCSIUtils.ObjectIDsTypesAndNames
+        var objectTypes = ConnectorCSIUtils.ObjectIDsTypesAndNames
             .Select(pair => pair.Value.Item1).Distinct().ToList();
-        //objectIds = ConnectorCSIUtils.ObjectIDsTypesAndNames.Select(pair => pair.Key).ToList();
+        
+        if (objectTypes.Any())
+          filters.Add(new ListSelectionFilter
+          {
+            Slug = "type",
+            Name = "Categories",
+            Icon = "Category",
+            Values = objectTypes,
+            Description = "Adds all objects belonging to the selected types."
+          });
+
+        string[] groupNames = new string[0];
+        int numNames = 0;
         Model.GroupDef.GetNameList(ref numNames, ref groupNames);
-        groups = groupNames.ToList();
+        if (groupNames.Any())
+          filters.Add(new ListSelectionFilter
+          {
+            Slug = "group",
+            Name = "Group",
+            Icon = "SelectGroup",
+            Values = groupNames.ToList(),
+            Description = "Add all objects belonging to CSI Group."
+          });
       }
 
-      return new List<ISelectionFilter>()
-        {
-        new AllSelectionFilter {Slug="all",  Name = "Everything",
-            Icon = "CubeScan", Description = "Selects all document objects." },
-        new ListSelectionFilter {Slug="type", Name = "Categories",
-            Icon = "Category", Values = objectTypes,
-            Description="Adds all objects belonging to the selected types"},
-    //new PropertySelectionFilter{
-    //  Slug="param",
-    //  Name = "Param",
-    //  Description="Adds  all objects satisfying the selected parameter",
-    //  Icon = "FilterList",
-    //  HasCustomProperty = false,
-    //  Values = objectNames,
-    //  Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-    //},
-            
-        new ManualSelectionFilter(),
-        new ListSelectionFilter { Slug = "group", Name = "Group",
-        Icon = "SelectGroup", Values = groups, Description = "Add all objects belonging to CSI Group" }
-        };
+      return filters;
     }
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
@@ -83,8 +88,7 @@ namespace Speckle.ConnectorCSI.UI
         case "manual":
           return GetSelectedObjects();
         case "all":
-          if (ConnectorCSIUtils.ObjectIDsTypesAndNames == null)
-            ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
+          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
                       .Select(pair => pair.Key).ToList());
@@ -92,8 +96,7 @@ namespace Speckle.ConnectorCSI.UI
 
         case "type":
           var typeFilter = filter as ListSelectionFilter;
-          if (ConnectorCSIUtils.ObjectIDsTypesAndNames == null)
-            ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
+          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           foreach (var type in typeFilter.Selection)
           {

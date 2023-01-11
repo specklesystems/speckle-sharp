@@ -1,0 +1,338 @@
+<UserControl
+  x:Class="DesktopUI2.Views.MappingsControl"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
+  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+  xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:map="clr-namespace:DesktopUI2.Views.Mappings.Controls"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
+  xmlns:s="clr-namespace:DesktopUI2.ViewModels.MappingTool"
+  d:DesignHeight="650"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <UserControl.Styles>
+    <Style Selector="ContentControl#MappingsUserControl">
+      <Setter Property="FontSize" Value="14" />
+      <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="Background" Value="{DynamicResource MaterialDesignPaper}" />
+      <Setter Property="TextBox.Foreground" Value="{DynamicResource MaterialDesignBody}" />
+      <Setter Property="TextBox.FontWeight" Value="Medium" />
+      <Setter Property="TextBox.FontSize" Value="14" />
+    </Style>
+  </UserControl.Styles>
+  <ContentControl x:Name="MappingsUserControl">
+    <Grid>
+      <Grid RowDefinitions="auto, *">
+        <!--  HEADER  -->
+        <Border
+          Padding="10"
+          Background="{DynamicResource PrimaryHueMidBrush}"
+          CornerRadius="0">
+          <Grid ColumnDefinitions="auto,auto,*,auto,auto,auto,auto">
+
+            <Canvas
+              Grid.Column="0"
+              Width="109"
+              Height="30">
+              <Path Name="path280" Fill="#FFFFFFFF">
+                <Path.Data>
+                  <PathGeometry Figures="M108.934 -0l-108.868 6.02l0 23.98l108.868 -6.02l-0 -23.98Zm-89.08 12.484l0.09 -0.005l-2.404 -2.146l-11.594 0.636l-0 11.563l2.314 2.066l-0 0.08l0.085 -0.004l0.005 0.004l0 -0.005l11.504 -0.631l-0 -11.558Zm8.023 11.148c-1.043 0.057 -1.965 -0.079 -2.767 -0.408c-0.802 -0.329 -1.431 -0.835 -1.887 -1.518c-0.457 -0.683 -0.685 -1.536 -0.685 -2.558l0 -0.512l2.327 -0.128l0 0.511c0 0.905 0.274 1.565 0.822 1.98c0.547 0.416 1.277 0.598 2.19 0.548c0.926 -0.051 1.623 -0.28 2.092 -0.686c0.47 -0.406 0.704 -0.911 0.704 -1.514c0 -0.406 -0.11 -0.731 -0.332 -0.975c-0.222 -0.243 -0.544 -0.432 -0.968 -0.566c-0.424 -0.134 -0.935 -0.256 -1.535 -0.367l-0.587 -0.086c-0.899 -0.16 -1.678 -0.382 -2.337 -0.667c-0.658 -0.285 -1.163 -0.673 -1.515 -1.165c-0.352 -0.492 -0.528 -1.151 -0.528 -1.977c-0 -0.826 0.195 -1.545 0.586 -2.156c0.392 -0.612 0.946 -1.095 1.663 -1.449c0.717 -0.355 1.558 -0.558 2.522 -0.612c0.965 -0.053 1.826 0.063 2.582 0.349c0.756 0.286 1.352 0.745 1.789 1.376c0.437 0.632 0.655 1.439 0.655 2.422l0 0.649l-2.327 0.129l0 -0.649c0 -0.564 -0.111 -1.01 -0.332 -1.339c-0.222 -0.328 -0.535 -0.56 -0.939 -0.695c-0.404 -0.135 -0.88 -0.187 -1.428 -0.157c-0.808 0.045 -1.421 0.236 -1.838 0.574c-0.417 0.337 -0.626 0.795 -0.626 1.371c0 0.368 0.095 0.674 0.284 0.919c0.189 0.245 0.469 0.439 0.841 0.583c0.371 0.143 0.837 0.258 1.398 0.345l0.587 0.106c0.938 0.157 1.76 0.378 2.464 0.66c0.704 0.282 1.255 0.674 1.652 1.177c0.398 0.502 0.597 1.173 0.597 2.012c-0 0.826 -0.212 1.566 -0.636 2.218c-0.424 0.653 -1.017 1.178 -1.78 1.574c-0.762 0.396 -1.665 0.623 -2.708 0.681Zm7.177 -0.673l-0 -13.766l5.534 -0.306c0.861 -0.048 1.617 0.081 2.269 0.386c0.652 0.304 1.167 0.758 1.545 1.36c0.378 0.602 0.567 1.329 0.567 2.181l-0 0.275c-0 0.839 -0.193 1.584 -0.577 2.235c-0.385 0.65 -0.906 1.164 -1.565 1.542c-0.658 0.377 -1.404 0.589 -2.239 0.635l-3.168 0.175l0 5.153l-2.366 0.13Zm11.792 -0.652l0 -13.766l8.722 -0.483l-0 2.144l-6.356 0.352l0 3.618l5.808 -0.321l0 2.144l-5.808 0.321l0 3.717l6.454 -0.357l-0 2.144l-8.82 0.487Zm16.016 -0.61c-1.668 0.092 -2.998 -0.309 -3.989 -1.205c-0.991 -0.896 -1.486 -2.235 -1.486 -4.019l-0 -3.264c-0 -1.783 0.495 -3.177 1.486 -4.183c0.991 -1.005 2.321 -1.554 3.989 -1.646c1.669 -0.093 2.956 0.295 3.863 1.163c0.906 0.868 1.359 2.101 1.359 3.701l-0 0.118l-2.308 0.127l0 -0.177c0 -0.865 -0.238 -1.563 -0.714 -2.094c-0.476 -0.531 -1.209 -0.769 -2.2 -0.714c-0.964 0.053 -1.724 0.393 -2.278 1.021c-0.554 0.627 -0.831 1.465 -0.831 2.514l-0 3.343c-0 1.036 0.277 1.84 0.831 2.412c0.554 0.573 1.314 0.832 2.278 0.779c0.991 -0.055 1.724 -0.374 2.2 -0.957c0.476 -0.584 0.714 -1.308 0.714 -2.174l0 -0.334l2.308 -0.128l-0 0.276c-0 1.599 -0.453 2.883 -1.359 3.851c-0.907 0.968 -2.194 1.498 -3.863 1.59Zm7.431 -0.686l0 -13.767l2.367 -0.131l-0 5.605l0.332 -0.018l4.772 -5.869l3.031 -0.168l-5.965 7.115l6.16 6.641l-3.109 0.172l-4.889 -5.452l-0.332 0.018l-0 5.723l-2.367 0.131Zm12.164 -0.673l0 -13.766l2.366 -0.131l0 11.623l6.415 -0.355l-0 2.144l-8.781 0.485Zm10.619 -0.587l-0 -13.767l8.722 -0.482l-0 2.144l-6.356 0.351l0 3.619l5.808 -0.321l0 2.143l-5.808 0.322l0 3.717l6.454 -0.357l-0 2.143l-8.82 0.488Zm-55.656 -4.219l2.934 -0.162c0.678 -0.037 1.222 -0.251 1.632 -0.641c0.411 -0.39 0.616 -0.906 0.616 -1.548l0 -0.197c0 -0.642 -0.202 -1.136 -0.606 -1.481c-0.404 -0.345 -0.951 -0.498 -1.642 -0.46l-2.934 0.163l0 4.326Z" FillRule="EvenOdd" />
+                </Path.Data>
+              </Path>
+              <Path Name="path282" Fill="#40FFFFFF">
+                <Path.Data>
+                  <PathGeometry Figures="M17.54 10.326l-11.594 0.636l2.404 2.147l11.594 -0.637l-2.404 -2.146Z" FillRule="EvenOdd" />
+                </Path.Data>
+              </Path>
+              <Path Name="path284" Fill="#80FFFFFF">
+                <Path.Data>
+                  <PathGeometry Figures="M8.35 13.109l-2.404 -2.147l-0 11.563l2.404 2.146l0 -11.562Z" FillRule="EvenOdd" />
+                </Path.Data>
+              </Path>
+            </Canvas>
+            <TextBlock
+              Grid.Column="1"
+              Margin="5,0,0,0"
+              VerticalAlignment="Center"
+              Classes="SpeckleFont"
+              FontSize="16"
+              FontWeight="Medium"
+              Foreground="White"
+              Text="Mapping Tool (alpha)"
+              TextTrimming="CharacterEllipsis" />
+
+            <TextBlock
+              Grid.Column="2"
+              Margin="2,0,0,7"
+              VerticalAlignment="Bottom"
+              FontSize="8"
+              Foreground="White"
+              Text="{Binding Version}"
+              TextTrimming="CharacterEllipsis" />
+
+
+          </Grid>
+        </Border>
+
+        <TabControl Grid.Row="1">
+          <TabItem Header="To Revit" ToolTip.Tip="Map to Revit BIM elements">
+            <ScrollViewer>
+
+              <StackPanel
+                Margin="10"
+                Orientation="Vertical"
+                Spacing="10">
+                <m:Card Padding="0">
+                  <!--  NEW MAPPINGS  -->
+                  <StackPanel Orientation="Vertical">
+                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding ShowProgress, FallbackValue=True}" />
+                    <StackPanel
+                      Margin="15"
+                      Orientation="Vertical"
+                      Spacing="5">
+
+                      <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                        <icons:MaterialIcon
+                          VerticalAlignment="Center"
+                          Foreground="Gray"
+                          Kind="InfoCircle"
+                          ToolTip.Tip="Select a stream coming from Revit with types and levels&#x0a;then select some objects.&#x0a;&#x0a;CURRENT MAPPINGS:&#x0a;DirectShape from Brep and Mesh&#x0a;Wall from Extrusion&#x0a;Beam/Brace from Line&#x0a;Family Instance from Point or Block" />
+                        <TextBlock
+                          Margin="5,0"
+                          VerticalAlignment="Center"
+                          Classes="Overline"
+                          Foreground="Gray"
+                          Text="NEW MAPPINGS" />
+                      </StackPanel>
+
+                      <!--  SET STREAM AND ELEMENT TYPE  -->
+                      <StackPanel
+                        IsVisible="{Binding RevitViewModels.Count}"
+                        Orientation="Vertical"
+                        Spacing="5">
+                        <Button
+                          Margin="0,0,0,5"
+                          Command="{Binding OpenStreamSelectorCommand}"
+                          IsEnabled="{Binding !ShowProgress}">
+                          <Grid>
+                            <TextBlock
+                              Classes="SpeckleFont"
+                              IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNull}}"
+                              Text="Select Mapping Source" />
+                            <StackPanel IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNotNull}}" Orientation="Horizontal">
+                              <TextBlock Classes="SpeckleFont" Text="Stream: " />
+                              <TextBlock Classes="SpeckleFont" Text="{Binding SelectedStream.Stream.name}" />
+                            </StackPanel>
+                          </Grid>
+                        </Button>
+                        <ComboBox
+                          Grid.Row="2"
+                          assists:ComboBoxAssist.Label="Revit Element to Map"
+                          Classes="Outline"
+                          IsVisible="{Binding Schemas.Count}"
+                          Items="{Binding Schemas}"
+                          SelectedIndex="0"
+                          SelectedItem="{Binding SelectedSchema, Mode=TwoWay}">
+                          <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                              <TextBlock
+                                Grid.Column="1"
+                                Text="{Binding Name}"
+                                TextTrimming="CharacterEllipsis" />
+                            </DataTemplate>
+                          </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <TextBlock
+                          Margin="5,10"
+                          Classes="Overline"
+                          Foreground="Gray"
+                          IsVisible="{Binding PromptMsg, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                          Text="{Binding PromptMsg}"
+                          TextWrapping="Wrap" />
+
+                      </StackPanel>
+
+                      <!--  DYNAMIC PROPERTIES  -->
+                      <ContentControl Content="{Binding SelectedSchema}" IsVisible="{Binding SelectedSchema, Converter={x:Static ObjectConverters.IsNotNull}}">
+                        <ContentControl.DataTemplates>
+                          <!--  DATA TEMPLATES FOR OUR SCHEMAS  -->
+                          <!--  WALL  -->
+                          <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  BEAM  -->
+                          <DataTemplate DataType="{x:Type s:RevitBeamViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  BRACE  -->
+                          <DataTemplate DataType="{x:Type s:RevitBraceViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  FAMILY INSTANCE  -->
+                          <DataTemplate DataType="{x:Type s:RevitFamilyInstanceViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  DIRECTSHAPE  -->
+                          <DataTemplate DataType="{x:Type s:DirectShapeFreeformViewModel}">
+                            <StackPanel Orientation="Vertical" Spacing="5">
+                              <TextBox
+                                assists:TextFieldAssist.Label="Name"
+                                Text="{Binding ShapeName, Mode=TwoWay}"
+                                UseFloatingWatermark="True" />
+                              <TextBlock
+                                Classes="Overline"
+                                Foreground="Gray"
+                                Text="If sending multiple elements, unique names will be generated for each."
+                                TextWrapping="Wrap" />
+                              <ComboBox
+                                assists:ComboBoxAssist.Label="Category"
+                                Classes="Outline"
+                                Items="{Binding Categories}"
+                                SelectedItem="{Binding SelectedCategory, Mode=TwoWay}" />
+                              <!--<CheckBox
+                              Margin="0,10"
+                              Content="Create as FreeForm element?"
+                              IsChecked="{Binding Freeform}" />-->
+                            </StackPanel>
+                          </DataTemplate>
+                        </ContentControl.DataTemplates>
+
+
+                      </ContentControl>
+
+                      <!--  APPLY MAPPINGS  -->
+                      <StackPanel Orientation="Vertical" Spacing="5">
+
+                        <StackPanel Margin="5" Orientation="Horizontal">
+                          <TextBlock Classes="Caption" Text="Selected elements: " />
+                          <TextBlock Classes="Caption" Text="{Binding Count}" />
+                        </StackPanel>
+                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                          <Button
+                            Margin="0,0,10,0"
+                            Classes="Flat"
+                            Command="{Binding ClearMappingsCommand}"
+                            Content="Clear Mappings"
+                            IsEnabled="{Binding Count}"
+                            ToolTip.Tip="Remove mappings from all the selected elements" />
+                          <Button
+                            Command="{Binding SetMappingsCommand}"
+                            Content="Apply Mappings"
+                            IsEnabled="{Binding SelectedSchema, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            ToolTip.Tip="Apply mappings to all the selected elements" />
+                        </StackPanel>
+
+                      </StackPanel>
+
+                    </StackPanel>
+                  </StackPanel>
+                </m:Card>
+
+                <!--  EXISTING MAPPINGS  -->
+                <m:Card Padding="15" IsVisible="{Binding ExistingSchemas.Count}">
+                  <StackPanel Orientation="Vertical">
+                    <StackPanel Orientation="Horizontal">
+                      <icons:MaterialIcon
+                        VerticalAlignment="Center"
+                        Foreground="Gray"
+                        Kind="InfoCircle"
+                        ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
+                      <TextBlock
+                        Margin="5,0"
+                        VerticalAlignment="Center"
+                        Classes="Overline"
+                        Foreground="Gray"
+                        Text="EXISTING MAPPINGS" />
+                    </StackPanel>
+
+                    <ItemsControl Items="{Binding ExistingSchemas}">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                          <Expander
+                            Classes="Minimal Transparent"
+                            PointerEnter="PointerEnterEvent"
+                            PointerLeave="PointerLeaveEvent">
+                            <Expander.Header>
+                              <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Name}" />
+                                <TextBlock Text=" (" />
+                                <TextBlock Text="{Binding Schemas.Count}" />
+                                <TextBlock Text=")" />
+                              </StackPanel>
+                            </Expander.Header>
+                            <ListBox
+                              Items="{Binding Schemas}"
+                              SelectionChanged="SelectionChanged"
+                              SelectionMode="Multiple">
+                              <ListBox.Styles>
+                                <Style Selector="ListBox ListBoxItem">
+                                  <Setter Property="Padding" Value="0" />
+                                </Style>
+                                <Style Selector="ListBoxItem /template/ Border#selectedBorder">
+                                  <Setter Property="IsVisible" Value="False" />
+                                </Style>
+                              </ListBox.Styles>
+                              <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                  <Grid>
+                                    <TextBlock
+                                      Padding="5,5"
+                                      HorizontalAlignment="Stretch"
+                                      Text="{Binding Summary}" />
+                                    <!--  hack to get the PointerEnter event to trigger  -->
+                                    <Border
+                                      Background="{DynamicResource MaterialDesignCardBackground}"
+                                      Opacity="0.01"
+                                      PointerEnter="PointerEnterEventItem"
+                                      PointerLeave="PointerLeaveEvent" />
+
+                                  </Grid>
+
+                                </DataTemplate>
+                              </ListBox.ItemTemplate>
+                            </ListBox>
+
+                          </Expander>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+
+                  </StackPanel>
+                </m:Card>
+
+
+              </StackPanel>
+            </ScrollViewer>
+
+          </TabItem>
+
+          <TabItem Header="To Archicad" ToolTip.Tip="Coming soon! Map to Archicad BIM elements">
+            <TextBlock
+              Margin="40"
+              HorizontalAlignment="Center"
+              Text="Coming soon!" />
+          </TabItem>
+          <TabItem Header="To Tekla" ToolTip.Tip="Coming soon! Map to Tekla BIM elements">
+            <TextBlock
+              Margin="40"
+              HorizontalAlignment="Center"
+              Text="Coming soon!" />
+          </TabItem>
+        </TabControl>
+
+
+      </Grid>
+
+      <!--  STREAM SELECTOR  -->
+      <c:StreamSelector DataContext="{Binding StreamSelector}" IsVisible="{Binding IsVisible, FallbackValue=False}" />
+    </Grid>
+  </ContentControl>
+</UserControl>

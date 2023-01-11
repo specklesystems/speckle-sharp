@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using Archicad.Converters;
 using Objects.BuiltElements.Archicad;
 using DirectShape = Objects.BuiltElements.Archicad.DirectShape;
-using Floor = Objects.BuiltElements.Archicad.Floor;
-using Room = Objects.BuiltElements.Archicad.Room;
-using Wall = Objects.BuiltElements.Archicad.Wall;
+using Floor = Objects.BuiltElements.Archicad.ArchicadFloor;
+using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
+using Wall = Objects.BuiltElements.Archicad.ArchicadWall;
 using Beam = Objects.BuiltElements.Archicad.ArchicadBeam;
+using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
+using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 
 namespace Archicad
 {
@@ -16,7 +18,10 @@ namespace Archicad
       { "Wall", typeof(Wall) },
       { "Slab", typeof(Floor) },
       { "Zone", typeof(Room) },
-      { "Beam", typeof(Beam) }
+      { "Beam", typeof(Beam) },
+      { "Door", typeof(Door) },
+      { "Window", typeof(Window) }
+
     };
 
     public static Type GetTypeByName(string name)

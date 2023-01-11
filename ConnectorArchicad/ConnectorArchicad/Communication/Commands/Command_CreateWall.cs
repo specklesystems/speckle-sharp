@@ -13,9 +13,9 @@ namespace Archicad.Communication.Commands
     {
 
       [JsonProperty("walls")]
-      private IEnumerable<Wall> Datas { get; }
+      private IEnumerable<ArchicadWall> Datas { get; }
 
-      public Parameters(IEnumerable<Wall> datas)
+      public Parameters(IEnumerable<ArchicadWall> datas)
       {
         Datas = datas;
       }
@@ -31,9 +31,9 @@ namespace Archicad.Communication.Commands
 
     }
 
-    private IEnumerable<Wall> Datas { get; }
+    private IEnumerable<ArchicadWall> Datas { get; }
 
-    public CreateWall(IEnumerable<Wall> datas)
+    public CreateWall(IEnumerable<ArchicadWall> datas)
     {
       foreach (var data in datas)
       {
