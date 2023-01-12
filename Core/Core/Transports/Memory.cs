@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Core.Logging;
+using Serilog;
 
 namespace Speckle.Core.Transports
 {
@@ -25,7 +25,7 @@ namespace Speckle.Core.Transports
 
     public MemoryTransport()
     {
-      Log.AddBreadcrumb("New Memory Transport");
+      Log.Information("Creating a new Memory Transport");
 
       Objects = new Dictionary<string, string>();
     }
@@ -39,7 +39,8 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
-      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)
+        return; // Check for cancellation
 
       Objects[hash] = serializedObject;
 
@@ -54,14 +55,20 @@ namespace Speckle.Core.Transports
 
     public string GetObject(string hash)
     {
-      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)
+        return null; // Check for cancellation
 
-      if (Objects.ContainsKey(hash)) return Objects[hash];
+      if (Objects.ContainsKey(hash))
+        return Objects[hash];
       else
         return null;
     }
 
-    public Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
+    public Task<string> CopyObjectAndChildren(
+      string id,
+      ITransport targetTransport,
+      Action<int> onTotalChildrenCountKnown = null
+    )
     {
       throw new NotImplementedException();
     }
@@ -113,5 +120,4 @@ namespace Speckle.Core.Transports
       };
     }
   }
-
 }
