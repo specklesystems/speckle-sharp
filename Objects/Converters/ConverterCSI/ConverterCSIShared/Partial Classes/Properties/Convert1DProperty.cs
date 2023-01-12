@@ -15,22 +15,7 @@ namespace Objects.Converter.CSI
   {
     public ApplicationObject Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
     {
-      int numbMaterial = 0;
-      string[] materials = new string[] { };
-      Model.PropFrame.GetNameList(ref numbMaterial, ref materials);
-      if (property1D.material != null)
-      {
-        if (!materials.Contains(property1D.material.name))
-        {
-          MaterialToNative(property1D.material);
-        }
-      }
-      else
-      {
-        Structural.Materials.StructuralMaterial material = new Structural.Materials.StructuralMaterial("default", Structural.MaterialType.Steel, "Grade 50", "United States", "ASTM A992");
-        property1D.material = material;
-        MaterialToNative(property1D.material);
-      }
+      var materialName = MaterialToNative(property1D.material);
 
       var catalogue = new Catalogue();
       int? success = null;
@@ -46,8 +31,7 @@ namespace Objects.Converter.CSI
             break;
         }
 
-
-        success = Model.PropFrame.ImportProp(property1D.name, property1D.material.name, sectionProfile.catalogueName + ".xml", sectionProfile.sectionName.ToUpper());
+        success = Model.PropFrame.ImportProp(property1D.name, materialName, sectionProfile.catalogueName + ".xml", sectionProfile.sectionName.ToUpper());
 
         if (success == 0)
           appObj.Update(status: ApplicationObject.State.Created, createdId: $"{property1D.name}");
@@ -62,7 +46,7 @@ namespace Objects.Converter.CSI
         case Angle o:
           success = Model.PropFrame.SetAngle(
             property1D.name, 
-            property1D.material.name,
+            materialName,
             ScaleToNative(o.depth, o.units), 
             ScaleToNative(o.width, o.units), 
             ScaleToNative(o.flangeThickness, o.units), 
@@ -71,7 +55,7 @@ namespace Objects.Converter.CSI
         case Channel o:
           success = Model.PropFrame.SetChannel(
             property1D.name, 
-            property1D.material.name, 
+            materialName, 
             ScaleToNative(o.depth, o.units), 
             ScaleToNative(o.width, o.units), 
             ScaleToNative(o.flangeThickness, o.units), 
@@ -81,19 +65,19 @@ namespace Objects.Converter.CSI
           if (o.wallThickness > 0)
             success = Model.PropFrame.SetPipe(
               property1D.name, 
-              property1D.material.name, 
+              materialName, 
               ScaleToNative(o.radius * 2, o.units), 
               ScaleToNative(o.wallThickness, o.units));
           else
             success = Model.PropFrame.SetCircle(
               property1D.name, 
-              property1D.material.name, 
+              materialName, 
               ScaleToNative(o.radius * 2, o.units));
           break;
         case ISection o:
           success = Model.PropFrame.SetISection(
             property1D.name, 
-            property1D.material.name,
+            materialName,
             ScaleToNative(o.depth, o.units),
             ScaleToNative(o.width, o.units),
             ScaleToNative(o.flangeThickness, o.units),
@@ -105,7 +89,7 @@ namespace Objects.Converter.CSI
           if (o.flangeThickness > 0 && o.webThickness > 0)
             success = Model.PropFrame.SetTube(
               property1D.name,
-              property1D.material.name,
+              materialName,
               ScaleToNative(o.depth, o.units),
               ScaleToNative(o.width, o.units),
               ScaleToNative(o.flangeThickness, o.units),
@@ -113,14 +97,14 @@ namespace Objects.Converter.CSI
           else
             success = Model.PropFrame.SetRectangle(
               property1D.name, 
-              property1D.material.name,
+              materialName,
               ScaleToNative(o.depth, o.units), 
               ScaleToNative(o.width, o.units));
           break;
         case Tee o:
           success = Model.PropFrame.SetConcreteTee(
             property1D.name, 
-            property1D.material.name, 
+            materialName, 
             ScaleToNative(o.depth, o.units), 
             ScaleToNative(o.width, o.units), 
             ScaleToNative(o.flangeThickness, o.units), 
