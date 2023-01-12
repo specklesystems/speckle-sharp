@@ -57,32 +57,76 @@ namespace Objects.Converter.CSI
         return appObj;
       }
 
-      // TODO: these values need to be scaled to native
       switch (property1D.profile)
       {
         case Angle o:
-          success = Model.PropFrame.SetAngle(property1D.name, property1D.material.name, o.depth, o.width, o.flangeThickness, o.webThickness);
+          success = Model.PropFrame.SetAngle(
+            property1D.name, 
+            property1D.material.name,
+            ScaleToNative(o.depth, o.units), 
+            ScaleToNative(o.width, o.units), 
+            ScaleToNative(o.flangeThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units));
           break;
         case Channel o:
-          success = Model.PropFrame.SetChannel(property1D.name, property1D.material.name, o.depth, o.width, o.flangeThickness, o.webThickness);
+          success = Model.PropFrame.SetChannel(
+            property1D.name, 
+            property1D.material.name, 
+            ScaleToNative(o.depth, o.units), 
+            ScaleToNative(o.width, o.units), 
+            ScaleToNative(o.flangeThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units));
           break;
         case Circular o:
           if (o.wallThickness > 0)
-            success = Model.PropFrame.SetPipe(property1D.name, property1D.material.name, o.radius * 2, o.wallThickness);
+            success = Model.PropFrame.SetPipe(
+              property1D.name, 
+              property1D.material.name, 
+              ScaleToNative(o.radius * 2, o.units), 
+              ScaleToNative(o.wallThickness, o.units));
           else
-            success = Model.PropFrame.SetCircle(property1D.name, property1D.material.name, o.radius * 2);
+            success = Model.PropFrame.SetCircle(
+              property1D.name, 
+              property1D.material.name, 
+              ScaleToNative(o.radius * 2, o.units));
           break;
         case ISection o:
-          success = Model.PropFrame.SetISection(property1D.name, property1D.material.name, o.depth, o.width, o.flangeThickness, o.webThickness, o.width, o.flangeThickness);
+          success = Model.PropFrame.SetISection(
+            property1D.name, 
+            property1D.material.name,
+            ScaleToNative(o.depth, o.units),
+            ScaleToNative(o.width, o.units),
+            ScaleToNative(o.flangeThickness, o.units),
+            ScaleToNative(o.webThickness, o.units),
+            ScaleToNative(o.width, o.units),
+            ScaleToNative(o.flangeThickness, o.units));
           break;
         case Rectangular o:
           if (o.flangeThickness > 0 && o.webThickness > 0)
-            success = Model.PropFrame.SetTube(property1D.name, property1D.material.name, o.depth, o.width, o.flangeThickness, o.webThickness);
+            success = Model.PropFrame.SetTube(
+              property1D.name,
+              property1D.material.name,
+              ScaleToNative(o.depth, o.units),
+              ScaleToNative(o.width, o.units),
+              ScaleToNative(o.flangeThickness, o.units),
+              ScaleToNative(o.webThickness, o.units));
           else
-            success = Model.PropFrame.SetRectangle(property1D.name, property1D.material.name, o.depth, o.width);
+            success = Model.PropFrame.SetRectangle(
+              property1D.name, 
+              property1D.material.name,
+              ScaleToNative(o.depth, o.units), 
+              ScaleToNative(o.width, o.units));
           break;
         case Tee o:
-          success = Model.PropFrame.SetConcreteTee(property1D.name, property1D.material.name, o.depth, o.width, o.flangeThickness, o.webThickness, o.webThickness, false);
+          success = Model.PropFrame.SetConcreteTee(
+            property1D.name, 
+            property1D.material.name, 
+            ScaleToNative(o.depth, o.units), 
+            ScaleToNative(o.width, o.units), 
+            ScaleToNative(o.flangeThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units), 
+            false);
           break;
       }
 
