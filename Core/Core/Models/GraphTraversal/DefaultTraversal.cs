@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using Speckle.Core.Kits;
 
 #nullable enable
@@ -19,7 +20,7 @@ namespace Speckle.Core.Models.GraphTraversal
         .When(converter.CanConvertToNative)
         .When(HasDisplayValue)
         .ContinueTraversing(Except(
-          Concat(Members(DynamicBaseMemberType.Dynamic), ElementsAliases), 
+          Concat(DynamicMembers(), ElementsAliases), 
           displayValueAliases)
         );
 
@@ -44,7 +45,7 @@ namespace Speckle.Core.Models.GraphTraversal
       var displayValueRule = TraversalRule.NewTraversalRule()
         .When(HasDisplayValue)
         .ContinueTraversing(Except(
-          Concat(Members(DynamicBaseMemberType.Dynamic), ElementsAliases), 
+          Concat(DynamicMembers(), ElementsAliases), 
           displayValueAliases)
         );
 
@@ -52,7 +53,7 @@ namespace Speckle.Core.Models.GraphTraversal
         .When(_ => true)
         .ContinueTraversing(Members());
 
-      return new GraphTraversal(convertableRule, defaultRule);
+      return new GraphTraversal(convertableRule, displayValueRule, defaultRule);
     }
 
     
@@ -65,13 +66,14 @@ namespace Speckle.Core.Models.GraphTraversal
 
     internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
     internal static IEnumerable<string> DisplayValueAliases(Base _) => displayValueAliases;
-    internal static IEnumerable<string> None(Base x) => Enumerable.Empty<string>();
+    internal static IEnumerable<string> None(Base _) => Enumerable.Empty<string>();
     internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers) => x => x.GetMembers(includeMembers).Keys;
+    internal static SelectMembers DynamicMembers() => x => x.GetDynamicMembers();
     internal static SelectMembers Concat(params SelectMembers[] selectProps) => x => selectProps.SelectMany(i => i.Invoke(x));
     internal static SelectMembers Except(SelectMembers selectProps, IEnumerable<string> excludeProps) => x => selectProps.Invoke(x).Except(excludeProps);
-    internal static bool HasElements(Base x) => x.GetMembers().Keys.Any(member => elementsAliases.Contains(member));
-    internal static bool HasDisplayValue(Base x) => x.GetMembers().Keys.Any(member => displayValueAliases.Contains(member));
-    
+    internal static bool HasElements(Base x) => elementsAliases.Any(m => x[m] != null);
+    internal static bool HasDisplayValue(Base x) => displayValueAliases.Any(m => x[m] != null);
+
     #endregion
   }
 }
