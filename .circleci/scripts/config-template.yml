@@ -18,7 +18,7 @@ commands:
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999.$($env:WORKFLOW_NUM)" } else { $env:CIRCLE_TAG }
             $version = $tag.Split("/")[1]  
             msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
+            dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n -v d --skip-duplicate
           environment:
             WORKFLOW_NUM: << pipeline.number >>
   packandpublish-bash:
@@ -33,7 +33,7 @@ commands:
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
             msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            ~/.dotnet/dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n
+            ~/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n -v d --skip-duplicate
           environment:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
