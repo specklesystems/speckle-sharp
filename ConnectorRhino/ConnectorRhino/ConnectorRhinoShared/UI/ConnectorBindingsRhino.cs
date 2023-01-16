@@ -4,6 +4,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using DesktopUI2;
@@ -582,7 +583,9 @@ namespace SpeckleRhino
       void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
       {
         if (StoredObjects.ContainsKey(@base.id))
-          appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
+          appObj.Update(
+            logItem:
+            "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
         else
           StoredObjects.Add(@base.id, @base);
 
@@ -592,20 +595,28 @@ namespace SpeckleRhino
       
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
-        var speckleType = current.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-        var appObj = new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
+        ApplicationObject NewAppObj()
+        {
+          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault();
+          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
+        }
         
+        //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
+          var appObj = NewAppObj();
           appObj.Convertible = true;
           StoreObject(current, appObj);
           return appObj;
         }
 
+        //Handle objects convertable using displayValues
         var fallbackMember = current["displayValue"] ?? current["@displayValue"];
         var parameters = current["parameters"] as Base;
         if (fallbackMember != null)
         {
+          var appObj = NewAppObj();
           var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember)
             .Select(o => CreateApplicationObject(o, containerId));
           appObj.Fallback.AddRange(fallbackObjects);
@@ -617,24 +628,29 @@ namespace SpeckleRhino
         return null;
       }
       
-      string LayerId(TraversalContext context)
+      string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
+      StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
-        if (context.propName == null) return layer;
+        if (context.propName == null) return stringBuilder;
 
         var objectLayerName = context.propName[0] == '@'
           ? context.propName.Substring(1)
           : context.propName;
+
+        LayerIdRecurse(context.parent, stringBuilder);
+        stringBuilder.Append(Layer.PathSeparator);
+        stringBuilder.Append(objectLayerName);
         
-        string parentLayerName = LayerId(context.parent);
-        return $"{parentLayerName}{Layer.PathSeparator}{objectLayerName}";
+        return stringBuilder;
       }
-      
+
       var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
       var objectsToConvert = traverseFunction.Traverse(obj)
         .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
         .Where(appObject => appObject != null)
-        .Reverse(); //just for the sake of matching the previous behaviour as close as possible
+        .Reverse() //just for the sake of matching the previous behaviour as close as possible
+        .ToList();
 
       return objectsToConvert;
     }

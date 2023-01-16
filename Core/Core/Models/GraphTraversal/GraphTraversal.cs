@@ -35,12 +35,14 @@ namespace Speckle.Core.Models.GraphTraversal
     /// <returns>Lazily returns <see cref="Base"/> objects found during traversal (including <paramref name="root"/>), wrapped within a <see cref="TraversalContext"/></returns>
     public IEnumerable<TraversalContext> Traverse(Base root)
     {
-      var stack = new Stack<TraversalContext>();
-      stack.Push(new TraversalContext(root));
+      var stack = new List<TraversalContext>();
+      stack.Add(new TraversalContext(root));
 
       while (stack.Count > 0)
       {
-        TraversalContext head = stack.Pop();
+        int headIndex = stack.Count - 1;
+        TraversalContext head = stack[headIndex];
+        stack.RemoveAt(headIndex);
         yield return head;
         
         Base current = head.current;
@@ -52,13 +54,34 @@ namespace Speckle.Core.Models.GraphTraversal
       }
     }
     
-    private static void TraverseMemberToStack(Stack<TraversalContext> stack, object? value, string? memberName = null, TraversalContext? parent = null)
+    private static void TraverseMemberToStack(ICollection<TraversalContext> stack, object? value, string? memberName = null, TraversalContext? parent = null)
     {
-      foreach (Base o in TraverseMember(value))
+      //test
+      switch (value)
       {
-        stack.Push(new TraversalContext(o, memberName, parent));
+        case Base o:
+          stack.Add(new TraversalContext(o, memberName, parent));
+          break;
+        case IList list:
+        {
+          foreach (object? obj in list)
+          {
+            TraverseMemberToStack(stack, obj, memberName, parent);
+          }
+          break;
+        }
+        case IDictionary dictionary:
+        {
+          foreach (object? obj in dictionary.Values)
+          {
+            TraverseMemberToStack(stack, obj, memberName, parent);
+          }
+          break;
+        }
       }
     }
+    
+    
     
     /// <summary>
     /// Traverses supported Collections yielding <see cref="Base"/> objects.
