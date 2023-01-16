@@ -168,6 +168,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
+          name: Create Innosetup signing cert
+          command: |
+            echo $env:PFX_B64 > "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt"
+            certutil -decode "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt" "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.pfx"
+      - run:
           name: Build Installer
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p
           shell: cmd.exe #does not work in powershell
