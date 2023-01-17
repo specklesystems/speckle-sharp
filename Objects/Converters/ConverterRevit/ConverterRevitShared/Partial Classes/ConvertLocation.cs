@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
   {
     public Base LocationToSpeckle(DB.Element revitElement)
     {
-      if (revitElement is DB.FamilyInstance familyInstance)
+      if (revitElement is DB.FamilyInstance familyInstance && familyInstance.Location is LocationPoint)
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location
         if (Categories.columnCategories.Contains(familyInstance.Category) ||
