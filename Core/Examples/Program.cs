@@ -56,6 +56,16 @@ namespace ExampleApp
 
       // //await SendReceiveManyLargeObjects(); // defaults to 10k meshes with 1k vertices and faces
 
+
+      // var foo = new Base() { };
+
+      // var chld1 = new ObjectReference();
+      // chld1.referencedId = "f048873d78d8833e1a2c0d7c2391a9bb";
+
+      // foo["Members"] = new[] { chld1 };
+
+      // var ser = Operations.Serialize(foo);
+
       Console.WriteLine("Press any key to exit");
       Console.ReadLine();
 

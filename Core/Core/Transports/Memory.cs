@@ -25,7 +25,7 @@ namespace Speckle.Core.Transports
 
     public MemoryTransport()
     {
-      Log.Information("Creating a new Memory Transport");
+      Log.Debug("Creating a new Memory Transport");
 
       Objects = new Dictionary<string, string>();
     }

@@ -53,7 +53,7 @@ namespace Speckle.Core.Logging
     /// <param name="logToSentry">Flag to enable Sentry log sink</param>
     /// <param name="logToFile">Flag to enable File log sink</param>
     public SpeckleLogConfiguration(
-      LogEventLevel minimumLevel = LogEventLevel.Debug,
+      LogEventLevel minimumLevel = LogEventLevel.Information,
       bool logToConsole = true,
       bool logToSeq = true,
       bool logToSentry = true,
@@ -84,6 +84,9 @@ namespace Speckle.Core.Logging
       SpeckleLogConfiguration? logConfiguration = null
     )
     {
+      // TODO: add environment variable to disable logging all together.
+      // Also, make sure, that logging is disabled during unit / integration test runs
+
       if (_initialized)
         return;
 
@@ -128,6 +131,8 @@ namespace Speckle.Core.Logging
       );
       var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
         .Is(logConfiguration.minimumLevel)
+        .Enrich.WithClientAgent()
+        .Enrich.WithClientIp()
         .Enrich.FromLogContext()
         .Enrich.FromGlobalLogContext()
         .Enrich.WithExceptionDetails();
