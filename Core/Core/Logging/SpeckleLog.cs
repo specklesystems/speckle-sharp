@@ -158,14 +158,14 @@ namespace Speckle.Core.Logging
         {
           o.Dsn =
             "https://94275909c1094f2388224c9222b0cfba@o436188.ingest.sentry.io/4504491155783680";
-          o.Debug = true;
+          o.Debug = false;
           // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
           // We recommend adjusting this value in production.
           o.TracesSampleRate = 1.0;
           // Enable Global Mode if running in a client app
           o.IsGlobalModeEnabled = true;
           // Debug and higher are stored as breadcrumbs (default is Information)
-          o.MinimumBreadcrumbLevel = LogEventLevel.Debug;
+          o.MinimumBreadcrumbLevel = LogEventLevel.Information;
           // Warning and higher is sent as event (default is Error)
           o.MinimumEventLevel = LogEventLevel.Warning;
         });
@@ -178,7 +178,9 @@ namespace Speckle.Core.Logging
 
     private static void _addUserIdToGlobalContextFromDefaultAccount()
     {
-      var id = "unknown";
+      var machineName = Environment.MachineName;
+      var userName = Environment.UserName;
+      var id = Crypt.Hash($"{machineName}:{userName}");
       try
       {
         var defaultAccount = AccountManager.GetDefaultAccount();
