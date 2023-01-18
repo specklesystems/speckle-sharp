@@ -102,7 +102,14 @@ namespace Objects
       }
 
       try
-      {Log
+      {
+        var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
+        var path = Path.Combine(basePath, $"Objects.Converter.{app}.dll");
+
+        //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
+        if (!File.Exists(path))
+        {
           path = Path.Combine(ObjectsFolder, $"Objects.Converter.{app}.dll");
         }
 
