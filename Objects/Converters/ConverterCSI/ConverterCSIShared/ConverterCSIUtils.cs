@@ -222,6 +222,16 @@ namespace Objects.Converter.CSI
       return false;
     }
 
+    public string GetOriginalApplicationId(string csiAppId)
+    {
+      if (string.IsNullOrEmpty(csiAppId))
+        return csiAppId;
+
+      var originalAppId = PreviousContextObjects.Where(o => o.CreatedIds.Contains(csiAppId)).FirstOrDefault()?.applicationId;
+
+      return originalAppId ?? csiAppId;
+    }
+
 
     public ShellType ConvertShellType(eShellType eShellType)
     {
