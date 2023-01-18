@@ -140,10 +140,12 @@
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
-
+	<PropertyGroup>
+		<IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+	</PropertyGroup>
 	<!-- Post Builds -->
 	<PropertyGroup>
-		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' ">
+		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true">
 			if exist "$(PluginVersionContentTarget)" ( rmdir /S /Q "$(PluginVersionContentTarget)" )
 			xcopy /y "$(TargetDir)Entry\PackageContents.xml" "$(PluginBundleTarget)\"
 			xcopy /y "$(TargetDir)Entry\Ribbon.*" "$(PluginVersionContentTarget)\en-US\"

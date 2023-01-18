@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
+using OG = Objects.Geometry;
 
 namespace Objects.Converter.Revit
 {
@@ -31,8 +32,6 @@ namespace Objects.Converter.Revit
       if (speckleFloor["structural"] is bool isStructural)
         structural = isStructural;
 
-      var outline = CurveToNative(speckleFloor.outline, true);
-      UnboundCurveIfSingle(outline);
       DB.Level level;
       double slope = 0;
       DB.Line slopeDirection = null;
@@ -45,8 +44,12 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out ApplicationObject.State state);
+        level = ConvertLevelToRevit(LevelFromCurve(CurveToNative(speckleFloor.outline).get_Item(0)), out ApplicationObject.State state);
       }
+
+      ChangeZValuesForCurves(speckleFloor.outline, level.Elevation);
+      var outline = CurveToNative(speckleFloor.outline, true);
+      UnboundCurveIfSingle(outline);
 
       if (!GetElementType<FloorType>(speckleFloor, appObj, out FloorType floorType))
       {
@@ -138,8 +141,26 @@ namespace Objects.Converter.Revit
 
       speckleFloor.level = ConvertAndCacheLevel(revitFloor, BuiltInParameter.LEVEL_PARAM);
       speckleFloor.structural = GetParamValue<bool>(revitFloor, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
+      
+      // Divide by 100 to convert from percentage to unitless ratio (rise over run)
+      var slopeParam = GetParamValue<double?>(revitFloor, BuiltInParameter.ROOF_SLOPE) / 100;
 
-      GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL" });
+      GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL", "ROOF_SLOPE" });
+
+      GetSlopeArrowHack(revitFloor.Id, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
+
+      slopeParam ??= slope;
+      speckleFloor.slope = (double)slopeParam;
+
+      if (tail != null && head != null)
+      {
+        speckleFloor.slopeDirection = new Geometry.Line(tail, head);
+        if (speckleFloor["parameters"] is Base parameters && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam && offsetParam.value is double offset)
+        {
+          offsetParam.value = offset + tailOffset;
+          parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] = offsetParam;
+        }
+      }
 
       speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
@@ -170,6 +191,41 @@ namespace Objects.Converter.Revit
         profiles.Add(poly);
       }
       return profiles;
+    }
+
+    // in order to create a revit floor, we need to pass it a flat profile so change all the z values
+    private void ChangeZValuesForCurves(ICurve curve, double z)
+    {
+      switch (curve)
+      {
+        case OG.Line line:
+          // kind of a hack. Editing our speckle objects is so much easier than editing the revit objects
+          // so scale this z value from the model units to the incoming units and then they will get scaled
+          // back to the model units when this entire outline gets scaled to native
+          line.start.z = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.start.units);
+          line.end.z = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.end.units);
+          return;
+
+        //case OG.Arc arc:
+        //case OG.Circle circle:
+        //case OG.Ellipse ellipse:
+        //case OG.Spiral spiral:
+
+        case OG.Curve nurbs:
+          for (int i = 2; i < nurbs.points.Count; i +=3 )
+            nurbs.points[i] = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, nurbs.units);
+          return;
+
+        case OG.Polyline poly:
+          foreach (var point in poly.GetPoints())
+            point.z = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, point.units);
+          return;
+
+        case OG.Polycurve plc:
+          foreach (var seg in plc.segments)
+            ChangeZValuesForCurves(seg, z);
+          return;
+      }
     }
   }
 }
