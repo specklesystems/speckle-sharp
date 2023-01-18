@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Text;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -36,7 +37,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
   }
