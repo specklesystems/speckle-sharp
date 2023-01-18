@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Speckle.Core.Helpers;
+using Serilog;
 
 namespace Objects
 {
@@ -101,14 +102,7 @@ namespace Objects
       }
 
       try
-      {
-        var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-        var path = Path.Combine(basePath, $"Objects.Converter.{app}.dll");
-
-        //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
-        if (!File.Exists(path))
-        {
+      {Log
           path = Path.Combine(ObjectsFolder, $"Objects.Converter.{app}.dll");
         }
 
@@ -133,7 +127,7 @@ namespace Objects
       }
       catch (Exception e)
       {
-        Log.CaptureException(e, Sentry.SentryLevel.Error);
+        Log.Error(e, e.Message);
         return null;
       }
     }
