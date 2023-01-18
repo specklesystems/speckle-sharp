@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -289,14 +289,14 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         {
           hasErrors = true;
           var msg = e.ToFormattedString();
-          if(msg.Contains("401 "))
+          if (msg.Contains("401 "))
           {
             Message = "Not authorized";
             Warning(msg);
             ReceiveEnabled = false;
             _cancellationToken.Cancel();
           }
-          else if(msg.Contains("404 "))
+          else if (msg.Contains("404 "))
           {
             Message = "Not found";
             Warning(msg);
@@ -342,7 +342,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         }
       }
     }
-    
+
     /// <summary>
     /// Triggered when the node inputs change
     /// Caches a copy of the inputs (Stream and BranchName)
@@ -358,7 +358,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         Message = "Conversion error";
         _errors = new List<Exception>();
       }
-      
+
       // Load inputs
       var oldStream = Stream;
       StreamWrapper newStream = null;
@@ -501,9 +501,9 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           Message = "Up to date";
         }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        Core.Logging.Log.CaptureException(e);
+        Serilog.Log.Error(ex, ex.Message);
       }
     }
 
@@ -520,9 +520,9 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         Message = "Updates available";
         _objectCount = count;
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        Core.Logging.Log.CaptureException(e);
+        Serilog.Log.Error(ex, ex.Message);
       }
     }
 
@@ -589,7 +589,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     }
 
     #endregion
-    
+
     #region overrides
 
     /// <summary>
@@ -605,7 +605,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
         return OutPorts.Enumerate().Select(output =>
           AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
       }
-      
+
       _hasOutput = false;
       var associativeNodes = new List<AssociativeNode>();
       var primitiveNode = AstFactory.BuildStringNode(LastCommitId);
