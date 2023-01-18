@@ -102,10 +102,12 @@ namespace Speckle.Core.Logging
       _addVersionInfoToGlobalContext();
       _addHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
 
-      Log.ForContext("UserApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
-        .ForContext("InstallApplicationDataPath", SpecklePathProvider.InstallApplicationDataPath)
-        .ForContext("SpeckleLogConfiguration", logConfiguration)
-        .Information("Initialized logger");
+      Log.ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
+        .ForContext("installApplicationDataPath", SpecklePathProvider.InstallApplicationDataPath)
+        .ForContext("speckleLogConfiguration", logConfiguration)
+        .Information(
+          "Initialized logger inside {hostApplication}/{productVersion}/{version} for user {id}. Path info {userApplicationDataPath} {installApplicationDataPath}."
+        );
     }
 
     /// <summary>
@@ -200,7 +202,7 @@ namespace Speckle.Core.Logging
       var fileVersionInfo = FileVersionInfo.GetVersionInfo(assembly);
 
       GlobalLogContext.PushProperty("version", fileVersionInfo.FileVersion);
-      GlobalLogContext.PushProperty("product_version", fileVersionInfo.ProductVersion);
+      GlobalLogContext.PushProperty("productVersion", fileVersionInfo.ProductVersion);
     }
 
     private static void _addHostApplicationDataToGlobalContext(
@@ -209,7 +211,7 @@ namespace Speckle.Core.Logging
     )
     {
       GlobalLogContext.PushProperty(
-        "HostApplication",
+        "hostApplication",
         $"{hostApplicationName}{hostApplicationVersion ?? ""}"
       );
     }
