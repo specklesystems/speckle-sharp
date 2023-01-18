@@ -35,9 +35,9 @@
     <Optimize>False</Optimize>
   </PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;)" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\&quot;&#xD;&#xA;&#xD;&#xA;)" />
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' != false AND $([MSBuild]::IsOsPlatform('Windows'))">
+    <Exec Command="&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;" />
+    <Exec Command="&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\&quot;&#xD;&#xA;&#xD;&#xA;" />
   </Target>
 
   <ItemGroup>

@@ -81,13 +81,13 @@ namespace Speckle.ConnectorCSI.UI
       var doc = Model;
 
       var selection = new List<string>();
+      ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
       switch (filter.Slug)
       {
         case "manual":
           return GetSelectedObjects();
         case "all":
-          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
                       .Select(pair => pair.Key).ToList());
@@ -95,7 +95,6 @@ namespace Speckle.ConnectorCSI.UI
 
         case "type":
           var typeFilter = filter as ListSelectionFilter;
-          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           foreach (var type in typeFilter.Selection)
           {
