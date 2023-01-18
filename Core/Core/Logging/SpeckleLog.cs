@@ -1,4 +1,4 @@
-#nullable enable
+﻿#nullable enable
 
 using System;
 using System.Diagnostics;
@@ -37,6 +37,11 @@ namespace Speckle.Core.Logging
     /// Flag to enable Sentry sink
     /// </summary>
     public bool logToSentry;
+
+    /// <summary>
+    /// Flag to override the default Sentry DNS
+    /// </summary>
+    public string sentryDns = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
     /// <summary>
     /// Flag to enable File sink
@@ -156,11 +161,18 @@ namespace Speckle.Core.Logging
         );
 
       if (logConfiguration.logToSentry)
+      {
+        var env = "production";
+
+#if DEBUG
+        env = "dev";
+#endif
+
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.Sentry(o =>
         {
-          o.Dsn =
-            "https://94275909c1094f2388224c9222b0cfba@o436188.ingest.sentry.io/4504491155783680";
+          o.Dsn = logConfiguration.sentryDns;
           o.Debug = false;
+          o.Environment = env;
           // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
           // We recommend adjusting this value in production.
           o.TracesSampleRate = 1.0;
@@ -171,6 +183,8 @@ namespace Speckle.Core.Logging
           // Warning and higher is sent as event (default is Error)
           o.MinimumEventLevel = LogEventLevel.Warning;
         });
+      }
+
 
       var logger = serilogLogConfiguration.CreateLogger();
       if (logConfiguration.logToFile && !canLogToFile)
