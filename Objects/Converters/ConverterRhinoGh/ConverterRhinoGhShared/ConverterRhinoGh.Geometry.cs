@@ -117,9 +117,11 @@ namespace Objects.Converter.RhinoGh
       return speckleInterval;
     }
 
-    public RH.Interval IntervalToNative(Interval interval)
+    public RH.Interval IntervalToNative(Interval interval, string units = Units.None)
     {
-      return new RH.Interval((double)interval.start, (double)interval.end);
+      return new RH.Interval(
+        ScaleToNative((double)interval.start, units), 
+        ScaleToNative((double)interval.end, units));
     }
 
     // Interval2d
@@ -619,7 +621,7 @@ namespace Objects.Converter.RhinoGh
     public RH.Box BoxToNative(Box box)
     {
       
-      return new RH.Box(PlaneToNative(box.basePlane), IntervalToNative(box.xSize), IntervalToNative(box.ySize), IntervalToNative(box.zSize));
+      return new RH.Box(PlaneToNative(box.basePlane), IntervalToNative(box.xSize, box.units), IntervalToNative(box.ySize, box.units), IntervalToNative(box.zSize, box.units));
     }
 
     // Meshes
