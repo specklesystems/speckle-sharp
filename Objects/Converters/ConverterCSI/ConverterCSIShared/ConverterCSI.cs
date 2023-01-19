@@ -383,6 +383,9 @@ namespace Objects.Converter.CSI
           //    break;
       }
 
+      // send the object out with the same appId that it came in with for updating purposes
+      returnObject.applicationId = GetOriginalApplicationId(returnObject.applicationId);
+
       return returnObject;
     }
 
