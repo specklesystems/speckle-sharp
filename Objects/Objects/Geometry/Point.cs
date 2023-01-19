@@ -125,7 +125,7 @@ namespace Objects.Geometry
     }
 
     /// <inheritdoc/>
-    public bool TransformTo(Transform transform, out Point point)
+    public bool TransformTo(Transform_old transform, out Point point)
     {
       point = transform.ApplyToPoint(this);
       return true;
@@ -203,7 +203,7 @@ namespace Objects.Geometry
     }
     
     /// <inheritdoc/>
-    public bool TransformTo(Transform transform, out ITransformable transformed)
+    public bool TransformTo(Transform_old transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Point pt);
       transformed = pt;

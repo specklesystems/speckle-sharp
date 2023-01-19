@@ -93,7 +93,7 @@ namespace Objects.Geometry
       throw new InvalidCastException();
     }
 
-    public bool TransformTo(Transform transform, out ITransformable polyline)
+    public bool TransformTo(Transform_old transform, out ITransformable polyline)
     {
       polyline = new Polyline
       {

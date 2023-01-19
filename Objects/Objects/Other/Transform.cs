@@ -13,101 +13,79 @@ using Vector = Objects.Geometry.Vector;
 namespace Objects.Other
 {
   /// <summary>
-  /// The 4x4 transform matrix.
+  /// Generic transform class
   /// </summary>
-  /// <remarks>
-  /// The 3x3 sub-matrix determines scaling.
-  /// The 4th column defines translation, where the last value could be a divisor.
-  /// </remarks>
-  public class Transform : Base
+  public class Transform
   {
-    public double[] value { get; set; } = { 1d, 0d, 0d, 0d,
-                                             0d, 1d, 0d, 0d,
-                                             0d, 0d, 1d, 0d,
-                                             0d, 0d, 0d, 1d };
+    /// <summary>
+    /// The column-based 4x4 transform matrix
+    /// </summary>
+    /// <remarks>
+    /// Graphics based apps typically use column-based matrices, where the last column defines translation. 
+    /// Modelling apps may use row-based matrices, where the last row defines translation. Transpose if so.
+    /// </remarks>
+    public Matrix4x4 matrix { get; set; } = Matrix4x4.Identity;
 
+    /// <summary>
+    /// Units for translation
+    /// </summary>
     public string units { get; set; }
 
-    [JsonIgnore]
-    public double[] translation => value.Subset(3, 7, 11, 15);
+    [JsonIgnore] public Vector3 translation => matrix.Translation;
 
     [JsonIgnore]
-    public double rotationZ
+    public Quaternion rotation
     {
-
       get
       {
-
-        var matrix = new Matrix4x4(
-      (float)value[0], (float)value[1], (float)value[2], (float)value[3],
-      (float)value[4], (float)value[5], (float)value[6], (float)value[7],
-      (float)value[8], (float)value[9], (float)value[10], (float)value[11],
-      (float)value[12], (float)value[13], (float)value[14], (float)value[15]);
-
         if (Matrix4x4.Decompose(matrix, out Vector3 _scale, out Quaternion _rotation, out Vector3 _translation))
         {
-          return Math.Acos(_rotation.W) * 2;
+          return _rotation;
         }
         else
         {
-          return 0;
+          return Quaternion.Identity;
         }
       }
     }
 
-
-    [JsonIgnore] public double[] scaling => value.Subset(0, 1, 2, 4, 5, 6, 8, 9, 10);
-
     [JsonIgnore]
-    public bool isIdentity => value[0] == 1d && value[5] == 1d && value[10] == 1d && value[15] == 1d &&
-                              value[1] == 0d && value[2] == 0d && value[3] == 0d &&
-                              value[4] == 0d && value[6] == 0d && value[7] == 0d &&
-                              value[8] == 0d && value[9] == 0d && value[11] == 0d &&
-                              value[12] == 0d && value[13] == 0d && value[14] == 0d;
-
-    [JsonIgnore] public bool isScaled => !(value[0] == 1d && value[5] == 1d && value[10] == 1d);
-
-    public Transform()
+    public Vector3 scale
     {
-    }
-
-    public Transform(double[] value, string units = null)
-    {
-      this.value = value;
-      this.units = units;
-    }
-
-    /// <summary>
-    /// Construct a transform given the x, y, and z bases and the translation vector
-    /// </summary>
-    /// <param name="x"></param>
-    /// <param name="y"></param>
-    /// <param name="z"></param>
-    /// <param name="translation"></param>
-    /// <param name="units"></param>
-    public Transform(double[] x, double[] y, double[] z, double[] translation, string units = null)
-    {
-      this.units = units;
-      value = new[]
+      get
       {
-        x[ 0 ], y[ 0 ], z[ 0 ], translation[ 0 ],
-        x[ 1 ], y[ 1 ], z[ 1 ], translation[ 1 ],
-        x[ 2 ], y[ 2 ], z[ 2 ], translation[ 2 ],
-        0d, 0d, 0d, 1d
-      };
+        Vector3 scale;
+        scale.X = new Vector4(matrix.M11, matrix.M21, matrix.M31, matrix.M41).Length();
+        scale.Y = new Vector4(matrix.M12, matrix.M22, matrix.M32, matrix.M42).Length();
+        scale.Z = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M43).Length();
+        if (matrix.GetDeterminant() < 0) // indicates negative scale
+        {
+          scale.X *= -1;
+        }
+        return scale;
+      }
+    }
+
+    [JsonIgnore] public bool isIdentity => matrix.IsIdentity;
+
+    public Transform() { }
+
+    public Transform(Matrix4x4 matrix, string units = null)
+    {
+      this.matrix = matrix;
+      this.units = units;
     }
 
     /// <summary>
-    /// Get the translation, scaling, and units out of the
+    /// Multiplies two transform matrices together. Assumes they have the same units.
     /// </summary>
-    /// <param name="scaling">The 3x3 sub-matrix</param>
-    /// <param name="translation">The last column of the matrix (the last element being the divisor which is almost always 1)</param>
-    /// <param name="units"></param>
-    public void Deconstruct(out double[] scaling, out double[] translation, out string units)
+    /// <param name="t1">The first source transform</param>
+    /// <param name="t2">The second source transform</param>
+    /// <returns></returns>
+    public static Transform operator *(Transform t1, Transform t2)
     {
-      scaling = this.scaling;
-      translation = this.translation;
-      units = this.units;
+      var newMatrix = t1.matrix * t2.matrix;
+      return new Transform(newMatrix);
     }
 
     /// <summary>
@@ -207,45 +185,6 @@ namespace Objects.Other
       }
 
       return transformed;
-    }
-
-    /// <summary>
-    /// Multiplies two transform matrices together
-    /// </summary>
-    /// <param name="t1">The first source transform</param>
-    /// <param name="t2">The second source transform</param>
-    /// <returns></returns>
-    public static Transform operator *(Transform t1, Transform t2)
-    {
-      var result = new double[16];
-      var row = 0;
-      for (var i = 0; i < 16; i += 4)
-      {
-        for (var j = 0; j < 4; j++)
-        {
-          result[i + j] = t1.value[i] * t2.value[j] +
-                            t1.value[i + 1] * t2.value[j + 4] +
-                            t1.value[i + 2] * t2.value[j + 8] +
-                            t1.value[i + 3] * t2.value[j + 12];
-        }
-      }
-
-      return new Transform(result);
-    }
-  }
-
-  static class ArrayUtils
-  {
-    // create a subset from a specific list of indices
-    public static T[] Subset<T>(this T[] array, params int[] indices)
-    {
-      var subset = new T[indices.Length];
-      for (var i = 0; i < indices.Length; i++)
-      {
-        subset[i] = array[indices[i]];
-      }
-
-      return subset;
     }
   }
 }

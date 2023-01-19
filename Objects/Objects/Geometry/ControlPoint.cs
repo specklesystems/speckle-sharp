@@ -40,7 +40,7 @@ namespace Objects.Geometry
 
     public double weight { get; set; }
 
-    public bool TransformTo(Transform transform, out ControlPoint ctrlPt)
+    public bool TransformTo(Transform_old transform, out ControlPoint ctrlPt)
     {
       var coords = transform.ApplyToPoint(new List<double> {x, y, z});
       ctrlPt = new ControlPoint(coords[0], coords[1], coords[2], weight, units, applicationId);

@@ -23,7 +23,7 @@ using Polyline = Objects.Geometry.Polyline;
 using RenderMaterial = Objects.Other.RenderMaterial;
 using RH = Rhino.DocObjects;
 using Text = Objects.Other.Text;
-using Transform = Objects.Other.Transform;
+using Transform_old = Objects.Other.Transform_old;
 using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Objects.Converter.RhinoGh
@@ -453,7 +453,7 @@ namespace Objects.Converter.RhinoGh
       return speckleMaterial;
     }
 
-    public Rhino.Geometry.Transform TransformToNative(Transform speckleTransform, string units = null)
+    public Rhino.Geometry.Transform TransformToNative(Transform_old speckleTransform, string units = null)
     {
       var u = units ?? speckleTransform.units;
       var transform = Rhino.Geometry.Transform.Identity;
@@ -477,7 +477,7 @@ namespace Objects.Converter.RhinoGh
       return transform;
     }
 
-    public Transform TransformToSpeckle(Rhino.Geometry.Transform t, string units = null)
+    public Transform_old TransformToSpeckle(Rhino.Geometry.Transform t, string units = null)
     {
       var u = units ?? ModelUnits;
       var transformArray = new double[] {

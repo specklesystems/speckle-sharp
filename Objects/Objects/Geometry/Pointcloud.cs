@@ -56,7 +56,7 @@ namespace Objects.Geometry
       return pts;
     }
 
-    public bool TransformTo(Transform transform, out Pointcloud pointcloud)
+    public bool TransformTo(Transform_old transform, out Pointcloud pointcloud)
     {
       pointcloud = new Pointcloud
       {
@@ -70,7 +70,7 @@ namespace Objects.Geometry
       return true;
     }
 
-    public bool TransformTo(Transform transform, out ITransformable transformed)
+    public bool TransformTo(Transform_old transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Pointcloud pc);
       transformed = pc;

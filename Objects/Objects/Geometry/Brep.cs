@@ -496,7 +496,7 @@ namespace Objects.Geometry
     }
 
     /// <inheritdoc/>
-    public bool TransformTo(Transform transform, out Brep brep)
+    public bool TransformTo(Transform_old transform, out Brep brep)
     {
       var displayValues = new List<Mesh>(displayValue.Count);
       foreach (Mesh v in displayValue)
@@ -549,7 +549,7 @@ namespace Objects.Geometry
     }
     
     /// <inheritdoc/>
-    public bool TransformTo(Transform transform, out ITransformable transformed)
+    public bool TransformTo(Transform_old transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Brep brep);
       transformed = brep;

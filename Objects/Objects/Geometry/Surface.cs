@@ -125,7 +125,7 @@ namespace Objects.Geometry
       return srf;
     }
 
-    public bool TransformTo(Transform transform, out Surface surface)
+    public bool TransformTo(Transform_old transform, out Surface surface)
     {
       var ptMatrix = GetControlPoints();
       foreach ( var ctrlPts in ptMatrix )
@@ -156,7 +156,7 @@ namespace Objects.Geometry
       return true;
     }
 
-    public bool TransformTo(Transform transform, out ITransformable transformed)
+    public bool TransformTo(Transform_old transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Surface surface);
       transformed = surface;

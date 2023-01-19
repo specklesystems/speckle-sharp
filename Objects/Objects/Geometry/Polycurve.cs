@@ -87,7 +87,7 @@ namespace Objects.Geometry
       return polycurve;
     }
 
-    public bool TransformTo(Transform transform, out ITransformable polycurve)
+    public bool TransformTo(Transform_old transform, out ITransformable polycurve)
     {
       polycurve = new Polycurve
       {
