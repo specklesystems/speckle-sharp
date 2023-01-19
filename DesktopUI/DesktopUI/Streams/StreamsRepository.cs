@@ -28,11 +28,11 @@ namespace Speckle.DesktopUI.Streams
 
         state = res;
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        Log.CaptureException(e);
-        _bindings.RaiseNotification($"Error: {e.Message}");
-        state.Errors.Add(e);
+        Serilog.Log.Error(ex, ex.Message);
+        _bindings.RaiseNotification($"Error: {ex.Message}");
+        state.Errors.Add(ex);
         return null;
       }
 
@@ -53,11 +53,11 @@ namespace Speckle.DesktopUI.Streams
         state = res;
         state.ServerUpdates = false;
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        Log.CaptureException(e);
-        state.Errors.Add(e);
-        _bindings.RaiseNotification($"Error: {e.Message}");
+        Serilog.Log.Error(ex, ex.Message);
+        state.Errors.Add(ex);
+        _bindings.RaiseNotification($"Error: {ex.Message}");
         return null;
       }
 
@@ -71,14 +71,14 @@ namespace Speckle.DesktopUI.Streams
       try
       {
         var deleted = await state.Client.StreamDelete(state.Stream.id);
-        if (!deleted)return false;
+        if (!deleted) return false;
         _bindings.RemoveStreamFromFile(state.Stream.id);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        Log.CaptureException(e);
-        state.Errors.Add(e);
-        _bindings.RaiseNotification($"Error: {e}");
+        Serilog.Log.Error(ex, ex.Message);
+        state.Errors.Add(ex);
+        _bindings.RaiseNotification($"Error: {ex}");
         return false;
       }
 

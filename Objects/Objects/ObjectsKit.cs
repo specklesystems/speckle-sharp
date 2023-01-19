@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Speckle.Core.Helpers;
+using Serilog;
 
 namespace Objects
 {
@@ -133,7 +134,7 @@ namespace Objects
       }
       catch (Exception e)
       {
-        Log.CaptureException(e, Sentry.SentryLevel.Error);
+        Log.Error(e, e.Message);
         return null;
       }
     }
