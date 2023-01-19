@@ -234,6 +234,7 @@ namespace Objects.Converter.Revit
       prop.profile = speckleSection;
       prop.material = GetStructuralMaterial(structMat);
       prop.name = revitStick.Document.GetElement(revitStick.GetElementId()).Name;
+      prop.applicationId = stickFamily.Symbol.UniqueId;
 
       var structuralElement = revitStick.Document.GetElement(revitStick.GetElementId());
       var mark = GetParamValue<string>(structuralElement, BuiltInParameter.ALL_MODEL_MARK);
@@ -286,7 +287,7 @@ namespace Objects.Converter.Revit
       SetEndReleases(revitStick, ref speckleElement1D);
 
       var prop = new Property1D();
-
+  
       var stickFamily = (Autodesk.Revit.DB.FamilySymbol)revitStick.Document.GetElement(revitStick.SectionTypeId);
 
       var speckleSection = GetSectionProfile(stickFamily);
