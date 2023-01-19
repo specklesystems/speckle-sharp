@@ -5,7 +5,6 @@
 		<Title>SpeckleConverterNavisworks</Title>
 		<AssemblyName>Objects.Converter.Navisworks2021</AssemblyName>
 		<RootNamespace>Objects.Converter.Navisworks</RootNamespace>
-		<AppData></AppData>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -40,9 +39,7 @@
 		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
 	</ItemGroup>
 
-	
-
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent">
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' != false AND $([MSBuild]::IsOsPlatform('Windows'))">
 		<Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
 	</Target>
 
