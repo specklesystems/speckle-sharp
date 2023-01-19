@@ -34,7 +34,7 @@ namespace Objects.Other
       this.geometry = geometry;
     }
 
-    public Transform GetBasePointTransform()
+    public Transform_old GetBasePointTransform()
     {
       var transform = new Transform();
       transform.value[3] = -basePoint.x;
@@ -67,7 +67,7 @@ namespace Objects.Other
     /// the 3x3 sub-matrix determines scaling
     /// the 4th column defines translation, where the last value could be a divisor
     /// </remarks>
-    public Transform transform { get; set; } = new Transform();
+    public Transform_old transform { get; set; } = new Transform();
 
     public string units { get; set; }
 
@@ -77,7 +77,7 @@ namespace Objects.Other
     public BlockInstance() { }
 
     [SchemaInfo("Block Instance", "A Speckle Block Instance")]
-    public BlockInstance(BlockDefinition blockDefinition, Transform transform)
+    public BlockInstance(BlockDefinition blockDefinition, Transform_old transform)
     {
       this.blockDefinition = blockDefinition;
       // Add base translation to transform. This assumes the transform is based on the world origin,

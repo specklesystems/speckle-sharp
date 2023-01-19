@@ -37,7 +37,7 @@ using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Text = Objects.Other.Text;
-using Transform = Objects.Other.Transform;
+using Transform_old = Objects.Other.Transform_old;
 using Vector = Objects.Geometry.Vector;
 using View3D = Objects.BuiltElements.View3D;
 
@@ -742,7 +742,7 @@ namespace Objects.Converter.RhinoGh
             rhinoObj = RenderMaterialToNative(o);
 #endif
             break;
-          case Transform o:
+          case Transform_old o:
             rhinoObj = TransformToNative(o);
             break;
           default:
@@ -861,7 +861,7 @@ namespace Objects.Converter.RhinoGh
         case Structural.Geometry.Element1D _:
           return true;
 #if GRASSHOPPER
-        case Transform _:
+        case Transform_old _:
         case RenderMaterial _:
           return true;
 #else
