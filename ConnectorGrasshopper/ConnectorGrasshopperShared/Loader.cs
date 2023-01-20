@@ -13,6 +13,7 @@ using Grasshopper;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Rhino;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
@@ -34,7 +35,7 @@ namespace ConnectorGrasshopper
     public ISpeckleKit selectedKit;
     private ToolStripMenuItem speckleMenu;
     private IEnumerable<ToolStripItem> kitMenuItems;
-    
+
     public override GH_LoadingInstruction PriorityLoad()
     {
       var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
@@ -52,12 +53,12 @@ namespace ConnectorGrasshopper
         // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
         // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
         // Recommended practice is to assume that our connector would be installed alongside theirs.
-        Log.CaptureException(e);
+        Log.Error(e, e.Message);
       }
 
       Grasshopper.Instances.CanvasCreated += OnCanvasCreated;
 #if RHINO7
-      if(Grasshopper.Instances.RunningHeadless)
+      if (Grasshopper.Instances.RunningHeadless)
       {
         // If GH is running headless, we listen for document added/removed events.
         Grasshopper.Instances.DocumentServer.DocumentAdded += OnDocumentAdded;
@@ -169,7 +170,7 @@ namespace ConnectorGrasshopper
     {
       if (MenuHasBeenAdded) return;
       // Double check that the menu does not exist.
-      
+
       var menuName = "Speckle 2";
       if (mainMenu.Items.ContainsKey(menuName))
         mainMenu.Items.RemoveByKey(menuName);
@@ -223,9 +224,9 @@ namespace ConnectorGrasshopper
               Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
             }
           }
-          catch (Exception ex)
+          catch (Exception e)
           {
-            Log.CaptureException(ex, Sentry.SentryLevel.Error);
+            Log.Error(e, e.Message);
           }
         });
 
@@ -256,13 +257,13 @@ namespace ConnectorGrasshopper
       main.DropDown.Items.Add("Open Templates folder", null, (sender, args) =>
       {
         var path = Path.Combine(SpecklePathProvider.InstallSpeckleFolderPath, "Templates");
-        
+
         if (!Directory.Exists(path))
           Directory.CreateDirectory(path);
 #if MAC
           Process.Start("file://" + path);
 #else
-          Process.Start("explorer.exe", "/select, " + path );
+        Process.Start("explorer.exe", "/select, " + path);
 #endif
       });
     }
@@ -292,7 +293,7 @@ namespace ConnectorGrasshopper
       {
         if (task.Exception != null)
         {
-          Log.CaptureException(task.Exception);
+          Log.Error(task.Exception, task.Exception.Message);
           var errItem = new ToolStripMenuItem("An error occurred while fetching Kits");
           errItem.DropDown.Items.Add(task.Exception.ToFormattedString());
 
@@ -440,16 +441,16 @@ namespace ConnectorGrasshopper
     {
 
 #if RHINO7
-        // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
-        //   SpeckleGHSettings.HeadlessTemplateFilename);
-        // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
-        // _headlessDoc = File.Exists(templatePath)
-        //   ? RhinoDoc.CreateHeadless(templatePath)
-        //   : RhinoDoc.CreateHeadless(null);
-        
-        _headlessDoc = RhinoDoc.CreateHeadless(null);
-        Console.WriteLine(
-          $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
+      // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
+      //   SpeckleGHSettings.HeadlessTemplateFilename);
+      // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
+      // _headlessDoc = File.Exists(templatePath)
+      //   ? RhinoDoc.CreateHeadless(templatePath)
+      //   : RhinoDoc.CreateHeadless(null);
+
+      _headlessDoc = RhinoDoc.CreateHeadless(null);
+      Console.WriteLine(
+        $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
 #endif
     }
 
@@ -461,13 +462,13 @@ namespace ConnectorGrasshopper
     public static RhinoDoc GetCurrentDocument()
     {
 #if RHINO7
-        if(Instances.RunningHeadless)
-        {
-          Console.WriteLine(
-            $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
-          Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
-        }
-        return Grasshopper.Instances.RunningHeadless ? _headlessDoc : RhinoDoc.ActiveDoc;
+      if (Instances.RunningHeadless)
+      {
+        Console.WriteLine(
+          $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
+        Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
+      }
+      return Grasshopper.Instances.RunningHeadless ? _headlessDoc : RhinoDoc.ActiveDoc;
 #else
         return RhinoDoc.ActiveDoc;
 #endif

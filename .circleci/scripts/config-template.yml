@@ -18,7 +18,7 @@ commands:
             $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999.$($env:WORKFLOW_NUM)" } else { $env:CIRCLE_TAG }
             $version = $tag.Split("/")[1]  
             msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n true
+            dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n --skip-duplicate
           environment:
             WORKFLOW_NUM: << pipeline.number >>
   packandpublish-bash:
@@ -33,7 +33,7 @@ commands:
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
             msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            ~/.dotnet/dotnet nuget push **/*.nupkg -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n
+            ~/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
           environment:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
@@ -167,6 +167,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
           environment:
             WORKFLOW_NUM: << pipeline.number >>
+      - run:
+          name: Create Innosetup signing cert
+          command: |
+            echo $env:PFX_B64 > "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt"
+            certutil -decode "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt" "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.pfx"
       - run:
           name: Build Installer
           command: speckle-sharp-ci-tools\InnoSetup\ISCC.exe speckle-sharp-ci-tools\%SLUG%.iss /Sbyparam=$p

@@ -9,6 +9,7 @@
     <Import_RootNamespace>ConnectorAutoCADShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)DocumentUtils\TransactionContext.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleAutocadCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsAutocadCivil.cs" />

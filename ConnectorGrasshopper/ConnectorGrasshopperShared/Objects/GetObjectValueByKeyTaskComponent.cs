@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
+using Serilog;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
@@ -45,10 +46,10 @@ namespace ConnectorGrasshopper.Objects
         var key = "";
         DA.GetData(0, ref speckleObj);
         DA.GetData(1, ref key);
-        
+
         if (DA.Iteration == 0)
           Tracker.TrackNodeRun("Object Value by Key");
-        
+
         var @base = speckleObj?.Value;
         var task = Task.Run(() => DoWork(@base, key, CancelToken));
         TaskList.Add(task);
@@ -119,11 +120,11 @@ namespace ConnectorGrasshopper.Objects
             break;
         }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Logging.Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
+        Log.Error(ex, ex.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
 
       }
       return value;

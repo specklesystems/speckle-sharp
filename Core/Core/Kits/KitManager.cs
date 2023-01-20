@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Serilog;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -23,16 +23,19 @@ namespace Speckle.Core.Kits
       get
       {
         if (_kitsFolder == null)
-          _kitsFolder = SpecklePathProvider.KitsFolderPath; 
+          _kitsFolder = SpecklePathProvider.KitsFolderPath;
 
         return _kitsFolder;
       }
       set { _kitsFolder = value; }
     }
 
-    public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
+    public static readonly AssemblyName SpeckleAssemblyName = typeof(Base)
+      .GetTypeInfo()
+      .Assembly.GetName();
 
-    private static Dictionary<string, ISpeckleKit> _SpeckleKits = new Dictionary<string, ISpeckleKit>();
+    private static Dictionary<string, ISpeckleKit> _SpeckleKits =
+      new Dictionary<string, ISpeckleKit>();
 
     private static List<Type> _AvailableTypes = new List<Type>();
 
@@ -95,7 +98,7 @@ namespace Speckle.Core.Kits
     }
 
     /// <summary>
-    /// Returns all the kits with potential converters for the software app. 
+    /// Returns all the kits with potential converters for the software app.
     /// </summary>
     /// <param name="app"></param>
     /// <returns></returns>
@@ -117,7 +120,8 @@ namespace Speckle.Core.Kits
       if (_initialized)
         throw new SpeckleException(
           "The kit manager has already been initialised. Make sure you call this method earlier in your code!",
-          level: Sentry.SentryLevel.Warning);
+          level: Sentry.SentryLevel.Warning
+        );
 
       KitsFolder = kitFolderLocation;
       Load();
@@ -137,14 +141,18 @@ namespace Speckle.Core.Kits
 
     private static void Load()
     {
-      Log.AddBreadcrumb("Initialize Kit Manager");
+      Log.Information(
+        "Initializing Kit Manager in {KitsFolder}",
+        SpecklePathProvider.KitsFolderPath
+      );
 
       GetLoadedSpeckleReferencingAssemblies();
       LoadSpeckleReferencingAssemblies();
 
       _AvailableTypes = _SpeckleKits
         .Where(kit => kit.Value != null)
-        .SelectMany(kit => kit.Value.Types).ToList();
+        .SelectMany(kit => kit.Value.Types)
+        .ToList();
     }
 
     // recursive search for referenced assemblies
@@ -166,7 +174,9 @@ namespace Speckle.Core.Kits
         foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
         {
           // filtering out system dlls
-          if (reference.FullName.StartsWith("System.") || reference.FullName.StartsWith("Microsoft."))
+          if (
+            reference.FullName.StartsWith("System.") || reference.FullName.StartsWith("Microsoft.")
+          )
             continue;
 
           if (!loadedAssemblies.Contains(reference.FullName))
@@ -206,7 +216,8 @@ namespace Speckle.Core.Kits
             if (!_SpeckleKits.ContainsKey(assembly.FullName))
             {
               var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
-              if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+              if (speckleKit != null)
+                _SpeckleKits.Add(assembly.FullName, speckleKit);
             }
           }
         }
@@ -240,13 +251,12 @@ namespace Speckle.Core.Kits
               if (!_SpeckleKits.ContainsKey(assembly.FullName))
               {
                 var speckleKit = Activator.CreateInstance(kitClass) as ISpeckleKit;
-                if (speckleKit != null) _SpeckleKits.Add(assembly.FullName, speckleKit);
+                if (speckleKit != null)
+                  _SpeckleKits.Add(assembly.FullName, speckleKit);
               }
             }
           }
-          catch (FileLoadException ex)
-          {
-          }
+          catch (FileLoadException ex) { }
         }
       }
     }
@@ -255,12 +265,16 @@ namespace Speckle.Core.Kits
     {
       try
       {
-        var kitClass = assembly.GetTypes().FirstOrDefault(type =>
-        {
-          return type
-            .GetInterfaces()
-            .FirstOrDefault(iface => { return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name; }) != null;
-        });
+        var kitClass = assembly
+          .GetTypes()
+          .FirstOrDefault(type =>
+          {
+            return type.GetInterfaces()
+                .FirstOrDefault(iface =>
+                {
+                  return iface.Name == typeof(Speckle.Core.Kits.ISpeckleKit).Name;
+                }) != null;
+          });
 
         return kitClass;
       }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ namespace Speckle.Core.Logging
   ///  Anonymous telemetry to help us understand how to make a better Speckle.
   ///  This really helps us to deliver a better open source project and product!
   /// </summary>
-  public static class Log
+  public static class OldLog
   {
     private static bool _initialized = false;
 
