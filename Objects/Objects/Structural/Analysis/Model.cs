@@ -10,6 +10,7 @@ namespace Objects.Structural.Analysis
         public ModelInfo specs { get; set; } //container for model and project specifications
 
         [DetachProperty]
+        [Chunkable(5000)]
         public List<Base> nodes { get; set; } //nodes list
 
         [DetachProperty]
