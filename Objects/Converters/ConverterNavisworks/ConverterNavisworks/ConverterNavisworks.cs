@@ -50,6 +50,9 @@ namespace Objects.Converter.Navisworks
     public void SetContextDocument(object doc)
     {
       Doc = (Document)doc;
+
+      // This sets the correct ElevationMode flag for model orientation.
+      SetModelOrientationMode();
     }
 
     public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();

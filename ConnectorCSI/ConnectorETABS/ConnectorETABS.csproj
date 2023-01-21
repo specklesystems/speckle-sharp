@@ -65,10 +65,6 @@
       <Project>{bf1a4f95-acf7-4353-b60a-4d79c2f44651}</Project>
       <Name>PolygonMesher</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
-      <Project>{f6f813fc-153b-49fe-9b33-25152be85ba8}</Project>
-      <Name>Objects</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj">
       <Project>{c59939f6-d383-44e3-a7ef-4e160e3dfb73}</Project>
       <Name>DriverPluginCSharp</Name>
@@ -92,9 +88,17 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe">
+      <Version>6.0.0</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if EXIST "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" (
+xcopy "$(TargetDir)*.*" "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" /Y /I /E
+)</PostBuildEvent>
+  </PropertyGroup>
   <!--<Target Name="CopySQLliteLib" AfterTargets="AfterBuild">
 		<Copy SourceFiles="$(SolutionDir)\..\Core\Core\bin\Debug\net4.8\runtimes\win-x64\native\e_sqlite3.dll" DestinationFolder="$(OutDir)" />
 	</Target>-->

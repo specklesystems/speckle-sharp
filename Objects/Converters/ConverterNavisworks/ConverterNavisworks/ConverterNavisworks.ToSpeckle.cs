@@ -3,8 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.ComApi;
 using Autodesk.Navisworks.Api.Interop.ComApi;
+using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks
 {
@@ -12,20 +12,31 @@ namespace Objects.Converter.Navisworks
   {
     public Base ConvertToSpeckle(object @object)
     {
-      // is expecting @object to be a pseudoId string
-      if (!(@object is string pseudoId)) return null;
+      // is expecting @object to be a pseudoId string or a ModelItem
+      ModelItem element;
 
-      ModelItem element = PointerToModelItem(pseudoId);
+      switch (@object)
+      {
+        case string pseudoId:
+          element = PointerToModelItem(pseudoId);
+          break;
+        case ModelItem item:
+          element = item;
+          break;
+        default:
+          return null;
+      }
 
       var @base = ModelItemToBase(element);
 
       // convertedIds should be populated with all the pseudoIds of nested children already converted in traversal
       // the DescendantsAndSelf helper method means we don't need to keep recursing reference 
       // the "__" prefix is skipped in object serialization so we can use Base object to pass data back to the Connector
-      @base["__convertedIds"] = element.DescendantsAndSelf.Select(x =>
-        ((Array)ComApiBridge.ToInwOaPath(element).ArrayData)
+      List<string> list = element.DescendantsAndSelf.Select(x =>
+        ((Array)ToInwOaPath(x).ArrayData)
         .ToArray<int>().Aggregate("",
           (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-')).ToList();
+      @base["__convertedIds"] = list;
 
       return @base;
     }
@@ -33,26 +44,29 @@ namespace Objects.Converter.Navisworks
 
     private Base ModelItemToBase(ModelItem element)
     {
-      var handle = PseudoIdFromModelItem(element);
-
       var @base = new Base
       {
-        applicationId = handle,
+        applicationId = PseudoIdFromModelItem(element),
         ["bbox"] = BoxToSpeckle(element.BoundingBox()),
       };
 
       if (element.HasGeometry)
       {
-        var geometry = new NavisworksGeometry(element);
+        var geometry = new NavisworksGeometry(element)
+        {
+          ElevationMode = ElevationMode
+        };
 
-        AddFragments(geometry);
+        PopulateModelFragments(geometry);
 
         @base["displayValue"] = TranslateFragmentGeometry(geometry);
       }
 
       if (element.Children.Any())
       {
-        @base["@Elements"] = ConvertToSpeckle(element.Children.ToList());
+        List<ModelItem> children = element.Children.ToList();
+        List<Base> convertedChildren = ConvertToSpeckle(children);
+        @base["@Elements"] = convertedChildren.ToList();
       }
 
       if (element.ClassDisplayName != null)
@@ -115,18 +129,21 @@ namespace Objects.Converter.Navisworks
         @base["Source Guid"] = element.Model.SourceGuid;
       }
 
+      var propertiesBase = GetPropertiesBase(element, ref @base);
+
+      @base["Properties"] = propertiesBase;
+
       return @base;
     }
 
-    public List<Base> ConvertToSpeckle(List<object> objects)
-    {
-      return objects.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
-    }
 
-    public List<Base> ConvertToSpeckle(List<ModelItem> modelItems)
-    {
-      return modelItems.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
-    }
+    public List<Base> ConvertToSpeckle(List<object> objects) =>
+      objects.Where(CanConvertToSpeckle)
+        .Select(ConvertToSpeckle)
+        .ToList();
+
+    public List<Base> ConvertToSpeckle(List<ModelItem> modelItems) =>
+      modelItems.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
 
     public bool CanConvertToSpeckle(object @object)
     {
@@ -142,10 +159,15 @@ namespace Objects.Converter.Navisworks
 
     private static bool CanConvertToSpeckle(ModelItem item)
     {
-
-      // Only Geometry and Geometry with Mesh
-      return item.HasGeometry && (item.Geometry.PrimitiveTypes & PrimitiveTypes.Triangles) != 0;
-
+      switch (item.HasGeometry)
+      {
+        // Only Geometry and Geometry with Mesh
+        case true when (item.Geometry.PrimitiveTypes & PrimitiveTypes.Triangles) != 0:
+        case false:
+          return true;
+        default:
+          return false;
+      }
     }
 
 
@@ -155,38 +177,32 @@ namespace Objects.Converter.Navisworks
 
       try
       {
-        pathArray = @string.ToString().Split('-').Select(x =>
-        {
-          if (int.TryParse(x, out var value))
-          {
-            return value;
-          }
-
-          throw (new Exception("malformed path pseudoId"));
-        }).ToArray();
+        pathArray = @string.ToString()
+          .Split('-')
+          .Select(x => int.TryParse(x,
+            out var value)
+            ? value
+            : throw new Exception("malformed path pseudoId"))
+          .ToArray();
       }
       catch
       {
         return null;
       }
 
-      InwOpState10 oState = ComApiBridge.State;
-      InwOaPath protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath, null, null);
+      InwOaPath protoPath = (InwOaPath)State.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
 
-      Array oneBasedArray = Array.CreateInstance(typeof(int), new int[1] { pathArray.Length }, new int[1] { 1 });
+      // ReSharper disable RedundantExplicitArraySize
+      Array oneBasedArray = Array.CreateInstance(
+        typeof(int),
+        new int[1] { pathArray.Length },
+        new int[1] { 1 });
 
       Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
 
-      //for (int index = oneBasedArray.GetLowerBound(0); index <= oneBasedArray.GetUpperBound(0); index++)
-      //{
-      //  oneBasedArray.SetValue(pathArray[index - 1], index);
-      //}
-
       protoPath.ArrayData = oneBasedArray;
 
-      ModelItem m = ComApiBridge.ToModelItem(protoPath);
-
-      return m ?? null;
+      return ToModelItem(protoPath);
     }
   }
 }

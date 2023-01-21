@@ -40,24 +40,63 @@ namespace Objects.Converter.CSI
     public string WebsiteOrEmail => "https://speckle.systems";
 
     public cSapModel Model { get; private set; }
+    public string ProgramVersion { get; private set; }
 
     public Model SpeckleModel { get; set; }
 
     public ResultSetAll AnalysisResults { get; set; }
 
     public ReceiveMode ReceiveMode { get; set; }
+    /// <summary>
+    /// <para>To know which objects are already in the model. These are *mostly* elements that are in the model before the receive operation starts, but certain names will be added for objects that may be referenced by other elements such as load patterns and load cases.</para>
+    /// <para> The keys are typically GUIDS and the values are exclusively names. It is easier to retrieve names, and names are typically used by the api, however GUIDS are more stable and can't be changed in the user interface. Some items (again load patterns and load combinations) don't have GUIDs so those just store the name value twice. </para>
+    /// </summary>
+    public Dictionary<string, string> ExistingObjectGuids { get; set; }
 
+    /// <summary>
+    /// <para>To know which other objects are being converted, in order to sort relationships between them.
+    /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
+    /// </summary>
+    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
+
+    /// <summary>
+    /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
+    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
+    /// </summary>
+    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
     public void SetContextDocument(object doc)
     {
-      // TODO: make sure we are setting the load patterns before we import load combinations
-      // TODO: why are we calling modelToSpeckle and ResultsToSpeckle on receive?
       Model = (cSapModel)doc;
-      SpeckleModel = ModelToSpeckle();
-      AnalysisResults = ResultsToSpeckle();
+      double version = 0;
+      string versionString = null;
+      Model.GetVersion(ref versionString, ref version);
+      ProgramVersion = versionString;
+
+      if (!Settings.ContainsKey("operation"))
+        throw new Exception("operation setting was not set before calling converter.SetContextDocument");
+
+      if (Settings["operation"] == "receive")
+      { 
+        ExistingObjectGuids = GetAllGuids(Model);
+        // TODO: make sure we are setting the load patterns before we import load combinations
+      }
+      else if (Settings["operation"] == "send")
+      {
+        SpeckleModel = ModelToSpeckle();
+        AnalysisResults = ResultsToSpeckle();
+      }
+      else
+        throw new Exception("operation setting was not set to \"send\" or \"receive\"");
+    }
+    public void SetConverterSettings(object settings)
+    {
+      Settings = settings as Dictionary<string, string>;
     }
 
     public HashSet<Exception> ConversionErrors { get; private set; } = new HashSet<Exception>();
-
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
     public bool CanConvertToNative(Base @object)
@@ -343,6 +382,10 @@ namespace Objects.Converter.CSI
           //    returnObject = null;
           //    break;
       }
+
+      // send the object out with the same appId that it came in with for updating purposes
+      returnObject.applicationId = GetOriginalApplicationId(returnObject.applicationId);
+
       return returnObject;
     }
 
@@ -352,21 +395,5 @@ namespace Objects.Converter.CSI
     }
 
     public IEnumerable<string> GetServicedApplications() => new string[] { CSIAppName };
-
-
-    public void SetContextObjects(List<ApplicationObject> objects)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void SetPreviousContextObjects(List<ApplicationObject> objects)
-    {
-      throw new NotImplementedException();
-    }
-
-    public void SetConverterSettings(object settings)
-    {
-      throw new NotImplementedException("This converter does not have any settings.");
-    }
   }
 }

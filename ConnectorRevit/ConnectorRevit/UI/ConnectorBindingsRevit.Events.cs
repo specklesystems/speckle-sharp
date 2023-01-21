@@ -99,7 +99,7 @@ namespace Speckle.ConnectorRevit.UI
           }
           catch (Exception ex)
           {
-            Log.CaptureException(ex, Sentry.SentryLevel.Error);
+            Serilog.Log.Error(ex, ex.Message);
           }
         };
         dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -189,7 +189,7 @@ namespace Speckle.ConnectorRevit.UI
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
 
-        MainViewModel.GoHome();
+        MainViewModel.Instance.NavigateToDefaultScreen();
       }
       catch (Exception ex)
       {
@@ -215,7 +215,7 @@ namespace Speckle.ConnectorRevit.UI
         if (UpdateSavedStreams != null)
           UpdateSavedStreams(new List<StreamState>());
 
-        MainViewModel.GoHome();
+        MainViewModel.Instance.NavigateToDefaultScreen();
       }
       catch (Exception ex)
       {
@@ -254,7 +254,7 @@ namespace Speckle.ConnectorRevit.UI
         UpdateSavedStreams(streams);
 
       //exit "stream view" when changing documents
-      MainViewModel.GoHome();
+      MainViewModel.Instance.NavigateToDefaultScreen();
     }
 
 
@@ -341,7 +341,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, ex.Message);
         MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
         {
           Title = "📷 Open View Error",

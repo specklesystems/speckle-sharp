@@ -3,7 +3,6 @@ using System.Linq;
 using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using TestsUnit;
 
 namespace Tests
 {

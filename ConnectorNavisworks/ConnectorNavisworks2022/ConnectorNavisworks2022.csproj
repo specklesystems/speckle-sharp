@@ -9,7 +9,7 @@
 		<AssemblyName>SpeckleConnectorNavisworks</AssemblyName>
 		<RootNamespace>Speckle.ConnectorNavisworks</RootNamespace>
 		<ProjectGuid>{77D4F346-ACA5-42C8-8522-5EF176F3ADF1}</ProjectGuid>
-		<Version>0.1.0</Version>
+		<Version>2.11.0-alpha3</Version>
 		
 		<TargetFramework>net48</TargetFramework>
 		<PlatformTarget>x64</PlatformTarget>
@@ -140,10 +140,12 @@
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
-
+	<PropertyGroup>
+		<IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+	</PropertyGroup>
 	<!-- Post Builds -->
 	<PropertyGroup>
-		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' ">
+		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true">
 			if exist "$(PluginVersionContentTarget)" ( rmdir /S /Q "$(PluginVersionContentTarget)" )
 			xcopy /y "$(TargetDir)Entry\PackageContents.xml" "$(PluginBundleTarget)\"
 			xcopy /y "$(TargetDir)Entry\Ribbon.*" "$(PluginVersionContentTarget)\en-US\"

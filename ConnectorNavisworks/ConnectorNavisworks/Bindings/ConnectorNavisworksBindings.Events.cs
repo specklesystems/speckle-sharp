@@ -32,7 +32,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
     // This will happen automatically if a document is newly created or opened.
     private void DocumentChangedEvent(object sender, EventArgs e)
     {
-      var doc = sender as Document;
+      Document doc = sender as Document;
 
       try
       {
@@ -50,6 +50,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         UpdateSelectedStream?.Invoke();
 
         MainViewModel.GoHome();
+
+        NavisworksConverter.SetContextDocument(doc);
       }
       catch (Exception ex)
       {

@@ -128,31 +128,37 @@ namespace Speckle.ConnectorRevit.UI
 
       await RevitTask.RunAsync(app =>
       {
-        using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
+        using var g = new TransactionGroup(CurrentDoc.Document, $"Baking stream {state.StreamId}");
+        using var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}");
+
+        g.Start();
+        var failOpts = t.GetFailureHandlingOptions();
+        failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+        failOpts.SetClearAfterRollback(true);
+        t.SetFailureHandlingOptions(failOpts);
+        t.Start();
+
+        converter.SetContextDocument(t);
+
+        var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+        // receive was cancelled by user
+        if (newPlaceholderObjects == null)
         {
-          var failOpts = t.GetFailureHandlingOptions();
-          failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
-          failOpts.SetClearAfterRollback(true);
-          t.SetFailureHandlingOptions(failOpts);
-          t.Start();
-          
-          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
-          // receive was cancelled by user
-          if (newPlaceholderObjects == null)
-          {
-            progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
-            t.RollBack();
-            return;
-          }
-
-          if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
-
-          state.ReceivedObjects = newPlaceholderObjects;
-
-          t.Commit();
+          progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
+          t.RollBack();
+          return;
         }
 
+        if (state.ReceiveMode == ReceiveMode.Update)
+          DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
+
+        state.ReceivedObjects = newPlaceholderObjects;
+
+        t.Commit();
+        t.Dispose();
+
+        g.Assimilate();
+        g.Dispose();
       });
 
       if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))

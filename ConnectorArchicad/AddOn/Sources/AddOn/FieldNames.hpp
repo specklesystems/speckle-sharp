@@ -18,6 +18,7 @@ static const char* WindowsFieldName = "windows";
 static const char* SubelementModelsFieldName = "subelementModels";
 static const char* DoorsFieldName = "doors";
 static const char* BeamsFieldName = "beams";
+static const char* ColumnsFieldName = "columns";
 static const char* SlabsFieldName = "slabs";
 static const char* ZonesFieldName = "zones";
 static const char* RoofsFieldName = "roofs";
@@ -147,6 +148,61 @@ static const char* width = "width";
 static const char* height = "height";
 }
 
+namespace Column
+{
+static const char* ColumnSegmentName = "Segment #%d";
+static const char* SchemeName = "Scheme #%d";
+static const char* CutName = "Cut #%d";
+
+static const char* origoPos = "origoPos";
+static const char* height = "height";
+static const char* aboveViewLinePen = "aboveViewLinePen";
+static const char* isAutoOnStoryVisibility = "isAutoOnStoryVisibility";
+static const char* hiddenLinePen = "hiddenLinePen";
+static const char* belowViewLinePen = "belowViewLinePen";
+static const char* isFlipped = "isFlipped";
+static const char* isSlanted = "isSlanted";
+static const char* slantAngle = "slantAngle";
+static const char* nSegments = "nSegments";
+static const char* nCuts = "nCuts";
+static const char* nSchemes = "nSchemes";
+static const char* nProfiles = "nProfiles";
+static const char* useCoverFill = "useCoverFill";
+static const char* useCoverFillFromSurface = "useCoverFillFromSurface";
+static const char* coverFillOrientationComesFrom3D = "coverFillOrientationComesFrom3D";
+static const char* coverFillForegroundPen = "coverFillForegroundPen";
+static const char* profileAttrName = "profileAttrName";
+static const char* segmentData = "Segments";
+static const char* schemeData = "Schemes";
+static const char* cutData = "Cuts";
+static const char* cutType = "cutType";
+static const char* customAngle = "customAngle";
+static const char* buildingMaterial = "buildingMaterial";
+
+static const char* circleBased = "circleBased";
+static const char* modelElemStructureType = "modelElemStructureType";
+static const char* nominalHeight = "nominalHeight";
+static const char* nominalWidth = "nominalWidth";
+static const char* isWidthAndHeightLinked = "isWidthAndHeightLinked";
+static const char* isHomogeneous = "isHomogeneous";
+static const char* endWidth = "endWidth";
+static const char* endHeight = "endHeight";
+static const char* isEndWidthAndHeightLinked = "isEndWidthAndHeightLinked";
+
+static const char* lengthType = "lengthType";
+static const char* fixedLength = "fixedLength";
+static const char* lengthProportion = "lengthProportion";
+
+static const char* corePen = "corePen";
+static const char* coreAnchor = "coreAnchor";
+static const char* bottomOffset = "bottomOffset";
+static const char* topOffset = "topOffset";
+static const char* coreSymbolPar1 = "coreSymbolPar1";
+static const char* coreSymbolPar2 = "coreSymbolPar2";
+static const char* slantDirectionAngle = "slantDirectionAngle";
+static const char* axisRotationAngle = "axisRotationAngle";
+static const char* relativeTopStory = "relativeTopStory";
+}
 
 namespace Slab
 {
@@ -178,7 +234,8 @@ static const char* VertexZFieldName = "z";
 static const char* PolygonsFieldName = "polygons";
 static const char* MaterialsFieldName = "materials";
 static const char* PointIdsFieldName = "pointIds";
-static const char* TransparencyieldName = "transparency";
+static const char* MaterialNameFieldName = "name";
+static const char* TransparencyFieldName = "transparency";
 static const char* AmbientColorFieldName = "ambientColor";
 static const char* EmissionColorFieldName = "emissionColor";
 static const char* MaterialFieldName = "material";

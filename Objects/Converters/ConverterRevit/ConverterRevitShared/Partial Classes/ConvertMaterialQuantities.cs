@@ -18,44 +18,48 @@ namespace Objects.Converter.Revit
     /// <param name="element"></param>
     /// <param name="material"></param>
     /// <returns></returns>
-    public Objects.Other.MaterialQuantity MaterialQuantityToSpeckle(DB.Element element, DB.Material material)
+    public Objects.Other.MaterialQuantity MaterialQuantityToSpeckle(DB.Element element, DB.Material material, string units)
     {
-      if (material == null || element == null) return null;
+      if (material == null || element == null) 
+        return null;
 
       //Get quantities
       double volume = element.GetMaterialVolume(material.Id);
       double area = element.GetMaterialArea(material.Id, false); //To-Do: Do we need Paint-Materials
 
-      //Convert Feet to meters
-      string units = Speckle.Core.Kits.Units.Meters;
-      double factor = Speckle.Core.Kits.Units.GetConversionFactor(Speckle.Core.Kits.Units.Feet, units);
+      // Convert revit interal units to speckle commit units
+      double factor = ScaleToSpeckle(1);
       volume *= factor * factor * factor;
       area *= factor * factor;
 
-      //Create and return materialquantity
       var speckleMaterial = ConvertAndCacheMaterial(material.Id, material.Document);
-      return new Objects.Other.MaterialQuantity(speckleMaterial, volume, area, units);
+      var materialQuantity = new Objects.Other.MaterialQuantity(speckleMaterial, volume, area, units);
+
+      if (LocationToSpeckle(element) is ICurve curve)
+        materialQuantity["length"] = curve.length;
+
+      return materialQuantity;
     }
 
     #endregion
 
     #region MaterialQuantities
-    public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element)
+    public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, string units)
     {
       var matIDs = element?.GetMaterialIds(false);
       if (matIDs == null || matIDs.Count() == 0)
         return null;
 
       var materials = matIDs.Select(material => element.Document.GetElement(material) as DB.Material);
-      return MaterialQuantitiesToSpeckle(element, materials);
+      return MaterialQuantitiesToSpeckle(element, materials, units);
     }
-    public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials)
+    public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials, string units)
     {
       if (materials == null || materials.Count() == 0) return null;
       List<Objects.Other.MaterialQuantity> quantities = new List<Objects.Other.MaterialQuantity>();
 
       foreach (var material in materials)
-        quantities.Add(MaterialQuantityToSpeckle(element, material));
+        quantities.Add(MaterialQuantityToSpeckle(element, material, units));
 
       return quantities;
     }

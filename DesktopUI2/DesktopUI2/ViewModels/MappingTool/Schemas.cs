@@ -140,7 +140,63 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
+  /// <summary>
+  /// Revit MEP view model with dimension and system properties
+  /// </summary>
+  public class RevitMEPViewModel : RevitBasicViewModel
+  {
+    private double _selectedHeight;
+    [DataMember]
+    public double SelectedHeight
+    {
+      get => _selectedHeight;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedHeight, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
+    }
 
+    private double _selectedWidth;
+    [DataMember]
+    public double SelectedWidth
+    {
+      get => _selectedWidth;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedWidth, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
+    }
+
+    private double _selectedDiameter;
+    [DataMember]
+    public double SelectedDiameter
+    {
+      get => _selectedDiameter;
+      set
+      {
+        this.RaiseAndSetIfChanged(ref _selectedDiameter, value);
+        this.RaisePropertyChanged(nameof(IsValid));
+      }
+    }
+
+    public RevitMEPViewModel()
+    {
+    }
+
+    public override bool IsValid
+    {
+      get
+      {
+        return
+          SelectedFamily != null &&
+          !string.IsNullOrEmpty(SelectedType) &&
+          !string.IsNullOrEmpty(SelectedLevel) &&
+          ((SelectedHeight > 0 && SelectedWidth > 0) || SelectedDiameter > 0);
+      }
+    }
+  }
 
   public class RevitWallViewModel : RevitBasicViewModel
   {
@@ -154,6 +210,16 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
+  public class RevitFloorViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Floor";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitFloor(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel), false, 0, null, null);
+      return Operations.Serialize(obj);
+    }
+  }
 
   public class RevitBeamViewModel : RevitBasicViewModel
   {
@@ -175,6 +241,54 @@ namespace DesktopUI2.ViewModels.MappingTool
       var obj = new RevitBrace(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
       return Operations.Serialize(obj);
     }
+  }
+
+  public class RevitColumnViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Column";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitColumn(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel), false);
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitPipeViewModel : RevitMEPViewModel
+  {
+    public override string Name => "Pipe";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitPipe(SelectedFamily.Name, SelectedType, null, SelectedDiameter, new RevitLevel(SelectedLevel));
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitDuctViewModel : RevitMEPViewModel
+  {
+    public override string Name => "Duct";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitDuct(SelectedFamily.Name, SelectedType, null, null, null, new RevitLevel(SelectedLevel), SelectedWidth, SelectedHeight, SelectedDiameter);
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitTopographyViewModel : Schema
+  {
+    public override string Name => "Topography";
+
+    public override string Summary => $"Topography";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitTopography();
+      return Operations.Serialize(obj);
+    }
+
+    public override bool IsValid => true;
   }
 
   public class RevitFamilyInstanceViewModel : RevitBasicViewModel
@@ -265,12 +379,14 @@ namespace DesktopUI2.ViewModels.MappingTool
     }
   }
 
-
   [DataContract]
   public class RevitFamily : ReactiveObject
   {
     [DataMember]
     public string Name { get; set; }
+
+    [DataMember]
+    public string Shape { get; set; }
 
     private List<string> _types;
     public List<string> Types
@@ -279,10 +395,11 @@ namespace DesktopUI2.ViewModels.MappingTool
       set => this.RaiseAndSetIfChanged(ref _types, value);
     }
 
-    public RevitFamily(string name, List<string> types)
+    public RevitFamily(string name, List<string> types, string shape = "")
     {
       Name = name;
       Types = types;
+      Shape = shape;
     }
 
     public RevitFamily()
