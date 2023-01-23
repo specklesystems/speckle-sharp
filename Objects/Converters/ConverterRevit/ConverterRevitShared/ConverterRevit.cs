@@ -567,7 +567,7 @@ namespace Objects.Converter.Revit
           return StructuralModelToNative(o);
 
         // other
-        case Other.BlockInstance o:
+        case Other.BlockInstance_old o:
           return BlockInstanceToNative(o);
 
         //hacky but the current comments camera is not a Base object
@@ -713,7 +713,7 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element2D _ => true,
         STR.Geometry.Node _ => true,
         STR.Analysis.Model _ => true,
-        Other.BlockInstance _ => true,
+        Other.BlockInstance_old _ => true,
         _ => false,
       };
     }

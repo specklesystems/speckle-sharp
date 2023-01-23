@@ -11,7 +11,7 @@ using System.Drawing;
 using System.Linq;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
-using BlockInstance = Objects.Other.BlockInstance;
+using BlockInstance_old = Objects.Other.BlockInstance_old;
 using Dimension = Objects.Other.Dimension;
 using DisplayStyle = Objects.Other.DisplayStyle;
 using Hatch = Objects.Other.Hatch;
@@ -287,7 +287,7 @@ namespace Objects.Converter.RhinoGh
           List<GeometryBase> converted = new List<GeometryBase>();
           switch (geo)
           {
-            case BlockInstance o:
+            case BlockInstance_old o:
               var instanceNotes = new List<string>();
               var instanceAppObj = BlockInstanceToNative(o, false);
               var instance = instanceAppObj.Converted.FirstOrDefault() as InstanceObject;
@@ -357,7 +357,7 @@ namespace Objects.Converter.RhinoGh
 
     // Rhino convention seems to order the origin of the vector space last instead of first
     // This results in a transposed transformation matrix - may need to be addressed later
-    public BlockInstance BlockInstanceToSpeckle(InstanceObject instance)
+    public BlockInstance_old BlockInstanceToSpeckle(InstanceObject instance)
     {
       var t = instance.InstanceXform;
       var transformArray = new double[] {
@@ -378,7 +378,7 @@ namespace Objects.Converter.RhinoGh
       return _instance;
     }
 
-    public ApplicationObject BlockInstanceToNative(BlockInstance instance, bool AppendToModelSpace = true)
+    public ApplicationObject BlockInstanceToNative(BlockInstance_old instance, bool AppendToModelSpace = true)
     {
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
 

@@ -1,4 +1,4 @@
-using Objects.Geometry;
+﻿using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -8,6 +8,16 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
 {
+  public class FamilyType : Base, IDisplayValue<List<Mesh>>
+  {
+    public string family { get; set; }
+    public string type { get; set; }
+    public string category { get; set; }
+    [DetachProperty] public List<Mesh> displayValue { get; set; }
+
+    public FamilyType() { }
+  }
+
   public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
   {
     public Point basePoint { get; set; }

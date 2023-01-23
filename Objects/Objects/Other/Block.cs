@@ -36,7 +36,7 @@ namespace Objects.Other
 
     public Transform_old GetBasePointTransform()
     {
-      var transform = new Transform();
+      var transform = new Transform_old();
       transform.value[3] = -basePoint.x;
       transform.value[7] = -basePoint.y;
       transform.value[12] = -basePoint.z;
@@ -47,7 +47,7 @@ namespace Objects.Other
   /// <summary>
   /// Block instance class 
   /// </summary>
-  public class BlockInstance : Base
+  public class BlockInstance_old : Base
   {
     [JsonIgnore, Obsolete("Use GetInsertionPoint method"), SchemaIgnore]
     public Point insertionPoint { get => GetInsertionPoint(); set { } }
@@ -67,17 +67,17 @@ namespace Objects.Other
     /// the 3x3 sub-matrix determines scaling
     /// the 4th column defines translation, where the last value could be a divisor
     /// </remarks>
-    public Transform_old transform { get; set; } = new Transform();
+    public Transform_old transform { get; set; } = new Transform_old();
 
     public string units { get; set; }
 
     [DetachProperty]
     public BlockDefinition blockDefinition { get; set; }
 
-    public BlockInstance() { }
+    public BlockInstance_old() { }
 
     [SchemaInfo("Block Instance", "A Speckle Block Instance")]
-    public BlockInstance(BlockDefinition blockDefinition, Transform_old transform)
+    public BlockInstance_old(BlockDefinition blockDefinition, Transform_old transform)
     {
       this.blockDefinition = blockDefinition;
       // Add base translation to transform. This assumes the transform is based on the world origin,
@@ -103,7 +103,7 @@ namespace Objects.Other
       {
         switch (b)
         {
-          case BlockInstance bi:
+          case BlockInstance_old bi:
             return bi.GetTransformedGeometry()?.Select(b =>
             {
               ITransformable childTransformed = null;

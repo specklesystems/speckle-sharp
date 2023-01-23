@@ -6,16 +6,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using BlockInstance = Objects.Other.BlockInstance;
+using BlockInstance_old = Objects.Other.BlockInstance_old;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
-using Transform = Objects.Other.Transform;
+using Transform_old = Objects.Other.Transform_old;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationObject BlockInstanceToNative(BlockInstance instance, Transform transform = null)
+    public ApplicationObject BlockInstanceToNative(BlockInstance_old instance, Transform_old transform = null)
     {
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
@@ -48,7 +48,7 @@ namespace Objects.Converter.Revit
       var breps = new List<Brep>();
       var meshes = new List<Mesh>();
       var curves = new List<DB.Curve>();
-      var blocks = new List<BlockInstance>();
+      var blocks = new List<BlockInstance_old>();
       foreach (var geometry in instance.blockDefinition.geometry)
       {
         switch (geometry)
@@ -84,7 +84,7 @@ namespace Objects.Converter.Revit
               appObj.Update(logItem: $"Could not convert block curve to native: {e.Message}");
             }
             break;
-          case BlockInstance blk:
+          case BlockInstance_old blk:
             blocks.Add(blk);
             break;
         }
