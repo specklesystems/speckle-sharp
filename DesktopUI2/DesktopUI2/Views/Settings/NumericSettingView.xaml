@@ -33,8 +33,8 @@
       Width="200"
       HorizontalAlignment="Right"
       AllowSpin="{Binding Setting.Spinner}" 
-      Value="{Binding Setting.Value}"
       ShowButtonSpinner="{Binding Setting.Spinner}"
+      Value="{Binding Setting.Value}"
       Increment="{Binding Setting.Increment}" />
   </Grid>
 </UserControl>
