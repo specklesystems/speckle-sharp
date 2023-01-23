@@ -1,4 +1,6 @@
-﻿using System;
+﻿#nullable enable
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -6,7 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
 using Speckle.Core.Logging;
-using Version = System.Version;
+using Polly;
+using System.Net.Http;
+using Serilog;
+using Polly.Contrib.WaitAndRetry;
 
 namespace Speckle.Core.Api
 {
@@ -56,6 +61,111 @@ namespace Speckle.Core.Api
       catch (Exception e)
       {
         throw new SpeckleException(e.Message, e);
+      }
+
+    }
+
+    public class SpeckleGraphQLException: Exception
+    {
+      public IList<string> Errors;
+
+      public SpeckleGraphQLException(string message, IEnumerable<string> errors): base(message)
+      {
+        Errors = errors.ToList();
+      }
+
+    }
+    public class SpeckleGraphQLForbiddenException: SpeckleGraphQLException
+    {
+      public SpeckleGraphQLForbiddenException(IEnumerable<string> errors) : base("Your request was forbidden", errors)
+      {
+
+      }
+    }
+    
+    public async Task<T> ExecuteWithResiliencePolicies<T>(Func<Task<T>> func)
+    {
+      try
+      {
+
+        var delay = Backoff.DecorrelatedJitterBackoffV2(medianFirstRetryDelay: TimeSpan.FromSeconds(1), retryCount: 5);
+
+        var httpRetry = Policy.Handle<HttpRequestException>().OrResult<HttpResponseMessage>(r => !r.IsSuccessStatusCode).WaitAndRetryAsync(delay, onRetry: (ex, retryCount, context) =>
+        {
+          Log
+          // .ForContext("exceptionMessage", ex.Message)
+          .ForContext("context", context)
+          .Warning("The previous attempt at executing function to get {resultType} failed with {exceptionType}. Retrying for the {retryCount}th time.", nameof(T), ex.GetType().Name, retryCount);
+        });
+
+        // TODO: handle
+
+        // 408 Request Timeout
+        // 425 Too Early
+        // 429 Too Many Requests
+        // 500 Internal Server Error
+        // 502 Bad Gateway
+        // 503 Service Unavailable
+        // 504 Gateway Timeout
+        
+
+        var otherRetry = Policy.Handle<Exception>().RetryAsync(3);
+
+        return await httpRetry.ExecuteAsync(func);
+
+        // return await Policy.WrapAsync(httpRetry, otherRetry).ExecuteAsync(func);
+      }
+      catch(Exception ex)
+      {
+        throw;
+      }
+    }
+    
+    public async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken? cancellationToken = null) {
+      return await ExecuteWithResiliencePolicies<T>(async () =>
+      {
+
+        try {
+          var result = await GQLClient.SendMutationAsync<T>(request, cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
+          MaybeThrowFromGraphQLErrors<T>(request, result);
+          return result.Data;
+        }
+        // TODO: don't do this, there are a lot of Ex-es that we don't want to catch.
+        catch (Exception ex)
+        {
+          // HttpRequestException -> Connection refused, dns, timeout etc issues.
+          // We retry these...
+          throw;
+        }
+      }
+      );
+      // try {
+
+      // }
+      // catch (SpeckleGraphQLException ex)
+      // {
+      //   throw;
+      // }
+      // catch (Exception ex)
+      // {
+      //   throw;
+      // }
+
+    }
+
+    private void MaybeThrowFromGraphQLErrors<T>(GraphQLRequest request, GraphQLResponse<T> response) {
+      var errors = response.Errors;
+      if (errors != null && errors.Any())
+      {
+        var errorMessages = errors.Select(e => e.Message);
+        if(errors.Any(
+          e => e.Extensions != null &&
+           (e.Extensions.ContainsValue("FORBIDDEN") || e.Extensions.ContainsValue("UNAUTHENTICATED"))
+           ))
+          throw new SpeckleGraphQLForbiddenException(errorMessages);
+
+
+        throw new SpeckleGraphQLException("Request failed with errors", errorMessages);
       }
 
     }
@@ -112,63 +222,6 @@ namespace Speckle.Core.Api
         throw new SpeckleException(e.Message, e);
       }
     }
-
-    /// <summary>
-    /// Gets the current user.
-    /// </summary>
-    /// <param name="id">If provided, retrieves th user with this user Id</param>
-    /// <returns></returns>
-    [Obsolete("UserGet obsolete, use ActiveUserGet or OtherUserGet", false)]
-    public Task<User> UserGet(string id = "")
-    {
-      return UserGet(CancellationToken.None, id);
-    }
-
-    /// <summary>
-    /// Gets the current user.
-    /// </summary>
-    /// <param name="id">If provided, retrieves th user with this user Id</param>
-    /// <returns></returns>
-    [Obsolete("UserGet obsolete, use ActiveUserGet or OtherUserGet", false)]
-    public async Task<User> UserGet(CancellationToken cancellationToken, string id = "")
-    {
-      try
-      {
-        var request = new GraphQLRequest
-        {
-          Query = @"query User($id: String) {
-                      user(id: $id){
-                        id,
-                        email,
-                        name,
-                        bio,
-                        company,
-                        avatar,
-                        verified,
-                        profiles,
-                        role,
-                      }
-                    }"
-        ,
-          Variables = new
-          {
-            id
-          }
-        };
-
-        var res = await GQLClient.SendMutationAsync<UserData>(request, cancellationToken).ConfigureAwait(false);
-
-        if (res.Errors != null && res.Errors.Any())
-          throw new SpeckleException(res.Errors[0].Message, res.Errors);
-
-        return res.Data.user;
-      }
-      catch (Exception e)
-      {
-        throw new SpeckleException(e.Message, e);
-      }
-    }
-
 
     /// <summary>
     /// Searches for a user on the server.

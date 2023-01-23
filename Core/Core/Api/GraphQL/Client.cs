@@ -81,7 +81,6 @@ namespace Speckle.Core.Api
 
     public Task OnWebSocketConnect(GraphQLHttpClient client)
     {
-      Console.WriteLine("Websocket is open");
       return Task.CompletedTask;
     }
 

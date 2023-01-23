@@ -36,14 +36,6 @@ namespace TestsIntegration
 
 
     [Test]
-    public async Task UserGet()
-    {
-      var res = await myClient.UserGet();
-
-      Assert.NotNull(res);
-    }
-
-    [Test]
     public async Task ActiveUserGet()
     {
       var res = await myClient.ActiveUserGet();
