@@ -16,8 +16,6 @@ namespace DesktopUI2.Models.Filters
 
     public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
     {
-
-
       var settings = new List<ISetting>();
       JArray jsonArray = null;
 
@@ -51,6 +49,14 @@ namespace DesktopUI2.Models.Filters
         {
           setting = new MultiSelectBoxSetting();
         }
+        else if (type == typeof(NumericSetting).ToString())
+        {
+          setting = new NumericSetting();
+        }
+        else if (type == typeof(TextBoxSetting).ToString())
+        {
+          setting = new TextBoxSetting();
+        }
         else
         {
           continue;
@@ -62,7 +68,6 @@ namespace DesktopUI2.Models.Filters
       }
 
       return settings;
-
     }
 
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
