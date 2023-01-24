@@ -182,10 +182,10 @@ namespace Speckle.DesktopUI.Streams
           });
           if (res) success++;
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          Log.CaptureException(e);
-          Notifications.Enqueue($"Failed to add collaborators: {e}");
+          Serilog.Log.Error(ex, ex.Message);
+          Notifications.Enqueue($"Failed to add collaborators: {ex}");
           return;
         }
       }
@@ -217,10 +217,10 @@ namespace Speckle.DesktopUI.Streams
           return;
         }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        Log.CaptureException(e);
-        Notifications.Enqueue($"Could not revoke {collaborator.name}'s permissions: {e}");
+        Serilog.Log.Error(ex, ex.Message);
+        Notifications.Enqueue($"Could not revoke {collaborator.name}'s permissions: {ex}");
         return;
       }
 

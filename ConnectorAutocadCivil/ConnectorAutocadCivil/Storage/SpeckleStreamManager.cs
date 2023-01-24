@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 
 using DesktopUI2.Models;
+using Speckle.ConnectorAutocadCivil.DocumentUtils;
 using Speckle.Newtonsoft.Json;
 
 namespace Speckle.ConnectorAutocadCivil.Storage
@@ -36,31 +38,36 @@ namespace Speckle.ConnectorAutocadCivil.Storage
       if (doc == null)
         return streams;
 
-      using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+      using (TransactionContext.StartTransaction(doc))
       {
+        Transaction tr = doc.Database.TransactionManager.TopTransaction;
         var NOD = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
-        if (NOD.Contains(SpeckleExtensionDictionary))
-        {
-          var speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
-          if (speckleDict != null && speckleDict.Count > 0)
-          {
-            var id = speckleDict.GetAt(SpeckleStreamStates);
-            if (id != ObjectId.Null)
-            {
-              try // careful here: entries are length-capped and a serialized streamstate string could've been cut off, resulting in crash on deserialize
-              {
-                var record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
-                streams = JsonConvert.DeserializeObject<List<StreamState>>(record.Data.AsArray()[0].Value as string);
-              }
-              catch (Exception e)
-              { }
-            }
-          }
-        }
-        tr.Commit();
-      }
+        if (!NOD.Contains(SpeckleExtensionDictionary))
+          return streams;
 
-      return streams;
+        var speckleDict = tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForRead) as DBDictionary;
+        if (speckleDict == null || speckleDict.Count == 0)
+          return streams;
+
+        var id = speckleDict.GetAt(SpeckleStreamStates);
+        if (id == ObjectId.Null)
+          return streams;
+
+        var record = tr.GetObject(id, OpenMode.ForRead) as Xrecord;
+        var value = GetXrecordData(record);
+
+        try
+        {
+          //Try to decode here because there is old data
+          value = Base64Decode(value);
+        }
+        catch (Exception e)
+        { }
+
+        streams = JsonConvert.DeserializeObject<List<StreamState>>(value);
+
+        return streams;
+      }
     }
 
     /// <summary>
@@ -73,37 +80,80 @@ namespace Speckle.ConnectorAutocadCivil.Storage
       if (doc == null)
         return;
 
-      //fix for metadata length limitation issues https://github.com/specklesystems/speckle-sharp/issues/2030
-      foreach (var streamState in streamStates)
+      using (TransactionContext.StartTransaction(doc))
       {
-        streamState.CachedStream.collaborators = new List<Core.Api.Collaborator>();
-      }
-
-      using (DocumentLock l = doc.LockDocument())
-      {
-        using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
+        Transaction tr = doc.Database.TransactionManager.TopTransaction;
+        var NOD = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
+        DBDictionary speckleDict;
+        if (NOD.Contains(SpeckleExtensionDictionary))
         {
-          var NOD = (DBDictionary)tr.GetObject(doc.Database.NamedObjectsDictionaryId, OpenMode.ForRead);
-          DBDictionary speckleDict;
-          if (NOD.Contains(SpeckleExtensionDictionary))
-          {
-            speckleDict = (DBDictionary)tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForWrite);
-          }
-          else
-          {
-            speckleDict = new DBDictionary();
-            NOD.UpgradeOpen();
-            NOD.SetAt(SpeckleExtensionDictionary, speckleDict);
-            tr.AddNewlyCreatedDBObject(speckleDict, true);
-          }
-          var xRec = new Xrecord();
-          var value = JsonConvert.SerializeObject(streamStates) as string;
-          xRec.Data = new ResultBuffer(new TypedValue(Convert.ToInt32(DxfCode.Text), value));
-          speckleDict.SetAt(SpeckleStreamStates, xRec);
-          tr.AddNewlyCreatedDBObject(xRec, true);
-          tr.Commit();
+          speckleDict = (DBDictionary)tr.GetObject(NOD.GetAt(SpeckleExtensionDictionary), OpenMode.ForWrite);
         }
+        else
+        {
+          speckleDict = new DBDictionary();
+          NOD.UpgradeOpen();
+          NOD.SetAt(SpeckleExtensionDictionary, speckleDict);
+          tr.AddNewlyCreatedDBObject(speckleDict, true);
+        }
+        var xRec = new Xrecord();
+        var value = JsonConvert.SerializeObject(streamStates) as string;
+        xRec.Data = CreateResultBuffer(value);
+        speckleDict.SetAt(SpeckleStreamStates, xRec);
+        tr.AddNewlyCreatedDBObject(xRec, true);
       }
     }
+
+    private static ResultBuffer CreateResultBuffer(string value)
+    {
+      int size = 1024;
+      var valueEncoded = Base64Encode(value);
+      var valueEncodedList = SplitString(valueEncoded, size);
+
+      ResultBuffer rb = new ResultBuffer();
+
+      foreach (var valueEncodedSplited in valueEncodedList)
+      {
+        rb.Add(new TypedValue((int)DxfCode.Text, valueEncodedSplited));
+      }
+
+      return rb;
+    }
+
+    private static string GetXrecordData(Xrecord pXrecord)
+    {
+      StringBuilder valueEncoded = new StringBuilder();
+      foreach (TypedValue typedValue in pXrecord.Data)
+      {
+        if (typedValue.TypeCode == (int)DxfCode.Text)
+        {
+          valueEncoded.Append(typedValue.Value.ToString());
+        }
+      }
+
+      return valueEncoded.ToString();
+    }
+
+    private static string Base64Encode(string plainText)
+    {
+      var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+      return System.Convert.ToBase64String(plainTextBytes);
+    }
+
+    private static string Base64Decode(string base64EncodedData)
+    {
+      var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+      return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+    }
+
+    private static IEnumerable<string> SplitString(string text, int chunkSize)
+    {
+      for (int offset = 0; offset < text.Length; offset += chunkSize)
+      {
+        int size = Math.Min(chunkSize, text.Length - offset);
+        yield return text.Substring(offset, size);
+      }
+    }
+
   }
 }
