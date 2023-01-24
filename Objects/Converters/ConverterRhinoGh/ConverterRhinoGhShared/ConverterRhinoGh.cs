@@ -836,7 +836,7 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
-    public bool CanConvertToNative(Base @object)
+    public bool CanConvertToNative_old(Base @object)
     {
       switch (@object)
       {
@@ -884,5 +884,56 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
+    /// <summary>
+    /// Indicates if a Speckle object should be converted to a top-level Rhino document object
+    /// </summary>
+    /// <param name="object"></param>
+    /// <returns>True if the Speckle object should be converted, false if not</returns>
+    /// <remarks>Objects like Planes, Vectors, RenderMaterials, and DisplayStyles can be converted to Rhino native equivalents but not added to the document as top-level objects</remarks>
+    public bool CanConvertToNative(Base @object)
+    {
+      switch (@object)
+      {
+        case Point _:
+        case Line _:
+        case Circle _:
+        case Arc _:
+        case Ellipse _:
+        case Polyline _:
+        case Polycurve _:
+        case Curve _:
+        case Hatch _:
+        case Box _:
+        case Mesh _:
+        case Brep _:
+        case Surface _:
+        case Structural.Geometry.Element1D _:
+          return true;
+#if GRASSHOPPER
+        case Interval _:
+        case Interval2d _:
+        case Plane _:
+        case RenderMaterial _:
+        case Spiral _:
+        case Transform _:
+        case Vector _:
+          return true;
+#else
+        // This types are not supported in GH!
+        case Pointcloud _:
+        case ModelCurve _:
+        case DirectShape _:
+        case View3D _:
+        case BlockInstance _:
+        case Alignment _:
+        case Text _:
+        case Dimension _:
+          return true;
+#endif
+
+        default:
+          return false;
+      }
+    }
   }
 }
