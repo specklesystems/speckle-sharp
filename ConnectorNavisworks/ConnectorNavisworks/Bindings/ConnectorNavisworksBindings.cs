@@ -61,16 +61,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
         : string.Empty;
     }
 
-    /*
-    private List<ISetting>
-        CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
-*/
-
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
-    }
-
     private static string GetDocPath()
     {
       return "";

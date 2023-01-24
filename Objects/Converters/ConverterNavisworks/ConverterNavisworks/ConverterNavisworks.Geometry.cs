@@ -101,10 +101,7 @@ namespace Objects.Converter.Navisworks
       ModelItem = modelItem;
 
       // Add conversion geometry to oModelColl Property
-      ModelItemCollection modelItemCollection = new ModelItemCollection
-      {
-        modelItem
-      };
+      ModelItemCollection modelItemCollection = new ModelItemCollection { modelItem };
 
       //convert to COM selection
       Selection = ComBridge.ToInwOpSelection(modelItemCollection);
@@ -217,6 +214,7 @@ namespace Objects.Converter.Navisworks
     public Vector3D TransformVector3D { get; set; }
     public Vector SettingOutPoint { get; set; }
     public Vector TransformVector { get; set; }
+    public BoundingBox3D ModelBoundingBox { get; set; }
 
     /// <summary>
     /// ElevationMode is the indicator that the model is being handled as an XY ground plane
@@ -284,7 +282,7 @@ namespace Objects.Converter.Navisworks
 
       List<Base> baseGeometries = new List<Base>();
 
-      Vector3D move = TransformVector3D == null ? new Vector3D(0, 0, 0) : TransformVector3D;
+      Vector3D move = TransformVector3D;
 
       foreach (PrimitiveProcessor callback in callbackListeners)
       {
@@ -324,13 +322,42 @@ namespace Objects.Converter.Navisworks
       return baseGeometries; // TODO: Check if this actually has geometries before adding to DisplayValue
     }
 
+    private void SetModelBoundingBox()
+    {
+      ModelBoundingBox = Doc.GetBoundingBox(false);
+    }
+
+    private void SetTransformVector3D()
+    {
+      if (TransformVector3D != null) return;
+
+      Vector3D transform;
+
+      switch (ModelTransform)
+      {
+        case Transforms.ProjectBasePoint:
+          Units source = Application.ActiveDocument.Units;
+          double scale = UnitConversion.ScaleFactor(Units.Meters, source);
+          
+          transform = new Vector3D(-ProjectBasePoint.X * scale, -ProjectBasePoint.Y * scale, 0);
+          break;
+        case Transforms.BoundingBox:
+          transform = new Vector3D(-ModelBoundingBox.Center.X, -ModelBoundingBox.Center.Y, 0);
+          break;
+        case Transforms.Default:
+        default:
+          transform = new Vector3D(0, 0, 0);
+          break;
+      }
+
+      TransformVector3D = transform;
+    }
+
     private static IEnumerable<double> MoveAndScaleVertices(Vector3D vertex1, Vector3D move, double scale)
     {
       return new List<double>
       {
-        (vertex1.X + move.X) * scale,
-        (vertex1.Y + move.Y) * scale,
-        (vertex1.Z + move.Z) * scale
+        (vertex1.X + move.X) * scale, (vertex1.Y + move.Y) * scale, (vertex1.Z + move.Z) * scale
       };
     }
   }

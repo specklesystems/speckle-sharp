@@ -32,7 +32,7 @@ namespace Objects.Converter.Navisworks
       // convertedIds should be populated with all the pseudoIds of nested children already converted in traversal
       // the DescendantsAndSelf helper method means we don't need to keep recursing reference 
       // the "__" prefix is skipped in object serialization so we can use Base object to pass data back to the Connector
-      List<string> list = element.DescendantsAndSelf.Select(x =>
+      var list = element.DescendantsAndSelf.Select(x =>
         ((Array)ToInwOaPath(x).ArrayData)
         .ToArray<int>().Aggregate("",
           (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-')).ToList();
@@ -52,7 +52,7 @@ namespace Objects.Converter.Navisworks
 
       if (element.HasGeometry)
       {
-        NavisworksGeometry geometry = new NavisworksGeometry(element)
+        var geometry = new NavisworksGeometry(element)
         {
           ElevationMode = ElevationMode
         };

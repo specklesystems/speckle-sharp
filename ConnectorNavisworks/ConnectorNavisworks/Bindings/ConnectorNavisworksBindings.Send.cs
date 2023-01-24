@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop;
 using DesktopUI2.Models;
@@ -22,10 +23,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
   public partial class ConnectorBindingsNavisworks
   {
     public override bool CanPreviewSend => false;
-
-    // used to store the Stream State settings when sending
-    private List<ISetting> CurrentSettings { get; set; }
-
 
     // Stub - Preview send is not supported
     public override async void PreviewSend(StreamState state, ProgressViewModel progress)
@@ -61,20 +58,18 @@ namespace Speckle.ConnectorNavisworks.Bindings
         return null;
       }
 
-      NavisworksConverter.SetContextDocument(Doc);
-
-      NavisworksConverter.Report.ReportObjects.Clear();
-
       CurrentSettings = state.Settings;
 
       Dictionary<string, string> settings =
         state.Settings.ToDictionary(setting => setting.Slug, setting => setting.Selection);
-
       NavisworksConverter.SetConverterSettings(settings);
+
+      NavisworksConverter.SetContextDocument(Doc);
+
+      NavisworksConverter.Report.ReportObjects.Clear();
 
       string streamId = state.StreamId;
       Client client = state.Client;
-
 
       if (state.Filter != null)
       {
