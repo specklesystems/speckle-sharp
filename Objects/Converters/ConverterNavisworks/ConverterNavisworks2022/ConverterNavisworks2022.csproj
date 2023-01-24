@@ -1,4 +1,4 @@
-﻿<!--EXTERNAL_PROPERTIES: AppData;IsDesktopBuild;DefineConstants-->
+﻿<!--EXTERNAL_PROPERTIES: AppData-->
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
