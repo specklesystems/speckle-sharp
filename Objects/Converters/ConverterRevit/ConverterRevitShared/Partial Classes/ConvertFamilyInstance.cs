@@ -307,113 +307,6 @@ namespace Objects.Converter.Revit
       return @base; 
     }
 
-    private Other.Transform TransformToSpeckle(Transform transform, out bool isMirrored)
-    {
-      // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
-      var t = transform.Origin;
-      var rX = transform.BasisX;
-      var rY = transform.BasisY;
-      var rZ = transform.BasisZ;
-      var matrix = new Matrix4x4(
-        (float)rX.X, (float)rY.X, (float)rZ.X, (float)t.X, 
-        (float)rX.Y, (float)rY.Y, (float)rZ.Y, (float)t.Y, 
-        (float)rX.Z, (float)rY.Z, (float)rZ.Z, (float)t.Z, 
-        0f, 0f, 0f, 1);
-
-      /*
-      // get the scale: TODO: do revit transforms ever have scaling?
-      var scale = (float)transform.Scale;
-      var scaleVector = new Vector3(scale, scale, scale);
-      */
-
-      // check mirroring
-      isMirrored = transform.Determinant < 0 ? true : false;
-
-      return new Other.Transform(matrix, ModelUnits);
-    }
-
-    public RevitInstance RevitInstanceToSpeckle(DB.FamilyInstance instance, out List<string>notes)
-    {
-      notes = new List<string>();
-
-      // get the definition base of this instance
-      FamilyType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes);
-      notes.AddRange(definitionNotes);
-
-      // get the transform
-      var transform = TransformToSpeckle(instance.GetTotalTransform(), out bool isMirrored);
-
-      var _instance = new RevitInstance();
-      _instance.transform = transform;
-      _instance.definition = definition;
-      _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);
-      _instance.facingFlipped = instance.FacingFlipped;
-      _instance.handFlipped = instance.HandFlipped;
-
-      GetAllRevitParamsAndIds(_instance, instance);
-
-      #region sub elements capture
-
-      var subElementIds = instance.GetSubComponentIds();
-      var convertedSubElements = new List<Base>();
-
-      foreach (var elemId in subElementIds)
-      {
-        var subElem = instance.Document.GetElement(elemId);
-        if (CanConvertToSpeckle(subElem))
-        {
-          var obj = ConvertToSpeckle(subElem);
-
-          if (obj != null)
-          {
-            convertedSubElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
-          }
-        }
-      }
-
-      if (convertedSubElements.Any())
-      {
-        _instance.elements = convertedSubElements;
-      }
-
-      #endregion
-
-      return _instance;
-    }
-
-    private FamilyType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string>notes)
-    {
-      notes = new List<string>();
-      var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
-
-      var symbol = new FamilyType();
-      symbol.family = _symbol.FamilyName;
-      symbol.type = _symbol.Name;
-      symbol.category = instance.Category.Name;
-
-      // get the displayvalue of the family symbol
-      try
-      {
-        var gElem = instance.GetOriginalGeometry(new Options());
-        var solids = gElem.SelectMany(GetSolids);
-        var meshes = GetMeshesFromSolids(solids, instance.Document);
-        symbol.displayValue = meshes;
-      }
-      catch (Exception e)
-      {
-        notes.Add($"Could not retrieve display meshes: {e.Message}");
-      }
-
-      var material = ConverterRevit.GetMEPSystemMaterial(instance);
-
-      if (material != null)
-        foreach (var mesh in symbol.displayValue)
-          mesh["renderMaterial"] = material;
-
-      return symbol;
-    }
-
     /// <summary>
     /// Converts point-based family instances.
     /// </summary>
@@ -519,5 +412,180 @@ namespace Objects.Converter.Revit
 
       return isXNormAligned && isYNormAligned && isZNormAligned;
     }
+
+    #region new instancing
+
+    // transforms
+    private Other.Transform TransformToSpeckle(Transform transform, out bool isMirrored)
+    {
+      // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
+      var t = transform.Origin;
+      var rX = transform.BasisX;
+      var rY = transform.BasisY;
+      var rZ = transform.BasisZ;
+      var matrix = new Matrix4x4(
+        (float)rX.X, (float)rY.X, (float)rZ.X, (float)t.X,
+        (float)rX.Y, (float)rY.Y, (float)rZ.Y, (float)t.Y,
+        (float)rX.Z, (float)rY.Z, (float)rZ.Z, (float)t.Z,
+        0f, 0f, 0f, 1);
+
+      /*
+      // get the scale: TODO: do revit transforms ever have scaling?
+      var scale = (float)transform.Scale;
+      var scaleVector = new Vector3(scale, scale, scale);
+      */
+
+      // check mirroring
+      isMirrored = transform.Determinant < 0 ? true : false;
+
+      return new Other.Transform(matrix, ModelUnits);
+    }
+
+    private Transform TransformToNative(Other.Transform transform, bool useScaling = false)
+    {
+      var _transform = new Transform(Transform.Identity);
+
+      // decompose the matrix to retrieve the translation and rotation factors
+      transform.Decompose(out Geometry.Vector scale, out Quaternion q, out Geometry.Vector translation);
+
+      // translation
+      var convertedTranslation = VectorToNative(translation);
+
+      // rotation
+      // source -> http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation#Quaternion_to_Matrix
+      double x2 = q.X * q.X;
+      double y2 = q.Y * q.Y;
+      double z2 = q.Z * q.Z;
+      double xy = q.X * q.Y;
+      double xz = q.X * q.Z;
+      double yz = q.Y * q.Z;
+      double wx = q.W * q.X;
+      double wy = q.W * q.Y;
+      double wz = q.W * q.Z;
+
+      XYZ xvec = new XYZ(
+        1.0f - 2.0f * (y2 + z2),
+        2.0f * (xy - wz),
+        2.0f * (xz + wy));
+
+      XYZ yvec = new XYZ(
+        2.0f * (xy + wz),
+        1.0f - 2.0f * (x2 + z2),
+        2.0f * (yz - wx));
+
+      XYZ zvec = new XYZ(
+        2.0f * (xz - wy),
+        2.0f * (yz + wx),
+        1.0f - 2.0f * (x2 + y2));
+
+      // apply to new transform
+      _transform.Origin = convertedTranslation;
+      _transform.BasisX = xvec;
+      _transform.BasisY = yvec;
+      _transform.BasisZ = zvec;
+
+      return _transform;
+    }
+
+    // revit instances
+    public ApplicationObject RevitInstanceToNative(RevitInstance instance)
+    {
+      var docObj = GetExistingElementByApplicationId(instance.applicationId);
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(docObj, appObj, out appObj))
+        return appObj;
+
+      if (!GetElementType<DB.FamilySymbol>(instance, appObj, out DB.FamilySymbol familySymbol))
+      {
+        appObj.Update(status: ApplicationObject.State.Failed);
+        return appObj;
+      }
+
+      return appObj;
+    }
+    public RevitInstance RevitInstanceToSpeckle(DB.FamilyInstance instance, out List<string> notes)
+    {
+      notes = new List<string>();
+
+      // get the definition base of this instance
+      FamilyType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes);
+      notes.AddRange(definitionNotes);
+
+      // get the transform
+      var transform = TransformToSpeckle(instance.GetTotalTransform(), out bool isMirrored);
+
+      var _instance = new RevitInstance();
+      _instance.transform = transform;
+      _instance.definition = definition;
+      _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);
+      _instance.facingFlipped = instance.FacingFlipped;
+      _instance.handFlipped = instance.HandFlipped;
+
+      GetAllRevitParamsAndIds(_instance, instance);
+
+      #region sub elements capture
+
+      var subElementIds = instance.GetSubComponentIds();
+      var convertedSubElements = new List<Base>();
+
+      foreach (var elemId in subElementIds)
+      {
+        var subElem = instance.Document.GetElement(elemId);
+        if (CanConvertToSpeckle(subElem))
+        {
+          var obj = ConvertToSpeckle(subElem);
+
+          if (obj != null)
+          {
+            convertedSubElements.Add(obj);
+            ConvertedObjectsList.Add(obj.applicationId);
+          }
+        }
+      }
+
+      if (convertedSubElements.Any())
+      {
+        _instance.elements = convertedSubElements;
+      }
+
+      #endregion
+
+      return _instance;
+    }
+
+    private FamilyType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes)
+    {
+      notes = new List<string>();
+      var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
+
+      var symbol = new FamilyType();
+      symbol.family = _symbol.FamilyName;
+      symbol.type = _symbol.Name;
+      symbol.category = instance.Category.Name;
+
+      // get the displayvalue of the family symbol
+      try
+      {
+        var gElem = instance.GetOriginalGeometry(new Options());
+        var solids = gElem.SelectMany(GetSolids);
+        var meshes = GetMeshesFromSolids(solids, instance.Document);
+        symbol.displayValue = meshes;
+      }
+      catch (Exception e)
+      {
+        notes.Add($"Could not retrieve display meshes: {e.Message}");
+      }
+
+      var material = ConverterRevit.GetMEPSystemMaterial(instance);
+
+      if (material != null)
+        foreach (var mesh in symbol.displayValue)
+          mesh["renderMaterial"] = material;
+
+      return symbol;
+    }
+    #endregion
   }
 }
