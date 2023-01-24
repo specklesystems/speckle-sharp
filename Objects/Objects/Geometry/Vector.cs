@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -232,14 +232,14 @@ namespace Objects.Geometry
     }
 
     /// <inheritdoc/>
-    public bool TransformTo(Transform_old transform, out Vector vector)
+    public bool TransformTo(Transform transform, out Vector vector)
     {
       vector = transform.ApplyToVector(this);
       return true;
     }
 
     /// <inheritdoc/>
-    public bool TransformTo(Transform_old transform, out ITransformable transformed)
+    public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       transformed = transform.ApplyToVector(this);
       return true;

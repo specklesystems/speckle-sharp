@@ -69,7 +69,7 @@ namespace Objects
   public interface ITransformable<T>: ITransformable where T : ITransformable<T>
   {
     /// <inheritdoc cref="ITransformable.TransformTo"/>
-    bool TransformTo(Transform_old transform, out T transformed);
+    bool TransformTo(Transform transform, out T transformed);
   }
 
   /// <summary>
@@ -80,10 +80,10 @@ namespace Objects
     /// <summary>
     /// Returns a copy of the object with it's coordinates transformed by the provided <paramref name="transform"/>
     /// </summary>
-    /// <param name="transform">The <see cref="Transform_old"/> to be applied.</param>
+    /// <param name="transform">The <see cref="Transform"/> to be applied.</param>
     /// <param name="transformed">The transformed copy of the object.</param>
     /// <returns>True if the transform operation was successful, false otherwise.</returns>
-    bool TransformTo(Transform_old transform, out ITransformable transformed);
+    bool TransformTo(Transform transform, out ITransformable transformed);
   }
 
   #endregion

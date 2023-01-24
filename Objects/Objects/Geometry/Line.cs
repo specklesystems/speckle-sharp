@@ -103,7 +103,7 @@ namespace Objects.Geometry
       return line;
     }
 
-    public bool TransformTo(Transform_old transform, out Line transformed)
+    public bool TransformTo(Transform transform, out Line transformed)
     {
       transformed = new Line
       {
@@ -115,7 +115,7 @@ namespace Objects.Geometry
       };
       return true;    }
 
-    public bool TransformTo(Transform_old transform, out ITransformable transformed)
+    public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Line line);
       transformed = line;

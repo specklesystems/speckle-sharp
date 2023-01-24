@@ -126,7 +126,7 @@ namespace Objects.Geometry
       return curve;
     }
 
-    public bool TransformTo(Transform_old transform, out Curve transformed)
+    public bool TransformTo(Transform transform, out Curve transformed)
     {
       var result = displayValue.TransformTo(transform, out ITransformable polyline);
       transformed = new Curve
@@ -147,7 +147,7 @@ namespace Objects.Geometry
       return result;
     }
 
-    public bool TransformTo(Transform_old transform, out ITransformable transformed)
+    public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Curve curve);
       transformed = curve;

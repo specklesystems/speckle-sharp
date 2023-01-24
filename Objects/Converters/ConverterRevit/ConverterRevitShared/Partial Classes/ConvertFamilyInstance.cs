@@ -419,15 +419,10 @@ namespace Objects.Converter.Revit
     private Other.Transform TransformToSpeckle(Transform transform, out bool isMirrored)
     {
       // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
-      var t = transform.Origin;
-      var rX = transform.BasisX;
-      var rY = transform.BasisY;
-      var rZ = transform.BasisZ;
-      var matrix = new Matrix4x4(
-        (float)rX.X, (float)rY.X, (float)rZ.X, (float)t.X,
-        (float)rX.Y, (float)rY.Y, (float)rZ.Y, (float)t.Y,
-        (float)rX.Z, (float)rY.Z, (float)rZ.Z, (float)t.Z,
-        0f, 0f, 0f, 1);
+      var t = VectorToSpeckle(transform.Origin);
+      var rX = VectorToSpeckle(transform.BasisX);
+      var rY = VectorToSpeckle(transform.BasisY);
+      var rZ = VectorToSpeckle(transform.BasisZ);
 
       /*
       // get the scale: TODO: do revit transforms ever have scaling?
@@ -438,7 +433,7 @@ namespace Objects.Converter.Revit
       // check mirroring
       isMirrored = transform.Determinant < 0 ? true : false;
 
-      return new Other.Transform(matrix, ModelUnits);
+      return new Other.Transform(rX, rY, rZ, t);
     }
 
     private Transform TransformToNative(Other.Transform transform, bool useScaling = false)

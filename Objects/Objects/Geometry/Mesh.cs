@@ -169,7 +169,7 @@ namespace Objects.Geometry
     
     #endregion
 
-    public bool TransformTo(Transform_old transform, out Mesh mesh)
+    public bool TransformTo(Transform transform, out Mesh mesh)
     {
       mesh = new Mesh
       {
@@ -184,7 +184,7 @@ namespace Objects.Geometry
       return true;
     }
 
-    public bool TransformTo(Transform_old transform, out ITransformable transformed)
+    public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Mesh brep);
       transformed = brep;

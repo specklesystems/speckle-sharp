@@ -97,7 +97,7 @@ namespace Objects.Organization
     public double longitude { get; set; }
 
     /// <summary>
-    /// A list of origin locations within this model as a list of <see cref="Transform_old"/>s
+    /// A list of origin locations within this model as a list of <see cref="Transform"/>s
     /// </summary>
     public List<Base> locations { get; set; }
 

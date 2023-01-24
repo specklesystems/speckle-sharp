@@ -233,7 +233,7 @@ namespace Objects.Geometry
         }
         
         /// <inheritdoc/>
-        public bool TransformTo(Transform_old transform, out Arc transformed)
+        public bool TransformTo(Transform transform, out Arc transformed)
         {
             plane.TransformTo(transform, out Plane pln);
             var arc = new Arc(pln, transform.ApplyToPoint(startPoint), transform.ApplyToPoint(endPoint), angleRadians, units);
@@ -244,7 +244,7 @@ namespace Objects.Geometry
         }
 
         /// <inheritdoc/>
-        public bool TransformTo(Transform_old transform, out ITransformable transformed)
+        public bool TransformTo(Transform transform, out ITransformable transformed)
         {
             var res = TransformTo(transform, out Arc arc);
             transformed = arc;

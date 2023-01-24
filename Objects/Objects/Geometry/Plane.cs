@@ -60,7 +60,7 @@ namespace Objects.Geometry
       return plane;
     }
 
-    public bool TransformTo(Transform_old transform, out Plane plane)
+    public bool TransformTo(Transform transform, out Plane plane)
     {
       plane = new Plane
       {
@@ -75,7 +75,7 @@ namespace Objects.Geometry
       return true;
     }
 
-    public bool TransformTo(Transform_old transform, out ITransformable transformed)
+    public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Plane plane);
       transformed = plane;

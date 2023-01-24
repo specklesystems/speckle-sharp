@@ -22,7 +22,10 @@ namespace Objects.Other
     /// <summary>
     /// The column-dominant 4x4 transform of this instance.
     /// </summary>
-    public virtual Transform transform { get; set; } = new Transform();
+    /// <remarks>
+    /// Indicates transform from internal origin [0,0,0]
+    /// </remarks>
+    public Transform transform { get; set; } = new Transform();
 
     [DetachProperty]
     public virtual Base definition { get; set; }
@@ -118,8 +121,21 @@ namespace Objects.Other.Revit
     [DetachProperty]
     public List<Base> elements { get; set; }
 
-    [DetachProperty]
-    public FamilyType definition { get; set; }
+    public override Base definition { 
+      get {
+        return familyDefinition;
+      }
+      set 
+      {
+        if (value is FamilyType)
+        {
+          familyDefinition = (FamilyType)value;
+        }
+      }
+    }
+
+    [JsonIgnore]
+    private FamilyType familyDefinition { get; set; }
 
     public RevitInstance() { }
 
