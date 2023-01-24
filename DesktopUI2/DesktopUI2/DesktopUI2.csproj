@@ -51,11 +51,13 @@
     <None Remove="Views\Filters\ListFilterView.xaml" />
     <None Remove="Views\Filters\ManualFilterView.xaml" />
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
+    <None Remove="Views\Filters\TreeFilterView.xaml" />
     <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\MappingsControl.xaml" />
     <None Remove="Views\MappingsWindow.xaml" />
     <None Remove="Views\Mappings\Controls\RevitBasic.xaml" />
+    <None Remove="Views\Mappings\Controls\RevitMEP.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
     <None Remove="Views\Pages\LogInView.xaml" />
     <None Remove="Views\Pages\NotificationsView.xaml" />
@@ -141,6 +143,9 @@
     <AvaloniaXaml Include="Views\Filters\AllFilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Filters\TreeFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Filters\ListFilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -162,6 +167,7 @@
     <AvaloniaXaml Include="Views\Mappings\Controls\RevitBasic.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Mappings\Controls\RevitMEP.xaml" />
     <AvaloniaXaml Include="Views\Pages\LogInView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>

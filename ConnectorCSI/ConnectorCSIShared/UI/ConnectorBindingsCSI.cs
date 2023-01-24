@@ -16,7 +16,6 @@ namespace Speckle.ConnectorCSI.UI
   {
     public static cSapModel Model { get; set; }
     public List<Exception> Exceptions { get; set; } = new List<Exception>();
-    public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
     public ConnectorBindingsCSI(cSapModel model)
     {
       Model = model;
@@ -24,7 +23,7 @@ namespace Speckle.ConnectorCSI.UI
 
     public override List<ReceiveMode> GetReceiveModes()
     {
-      return new List<ReceiveMode> { ReceiveMode.Create };
+      return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Create };
     }
 
     #region boilerplate

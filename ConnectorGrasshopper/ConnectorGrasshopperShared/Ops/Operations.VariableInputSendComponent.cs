@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
@@ -20,10 +20,11 @@ using GrasshopperAsyncComponent;
 using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
 using Speckle.Core.Models.Extensions;
+using Speckle.Core.Transports;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Ops
@@ -162,7 +163,7 @@ namespace ConnectorGrasshopper.Ops
     public bool HasDuplicateKeys => Params.Input.Skip(2)
       .Select(p => p.NickName)
       .GroupBy(x => x).Count(group => group.Count() > 1) > 0;
-    
+
     protected override void SolveInstance(IGH_DataAccess DA)
     {
 
@@ -172,7 +173,7 @@ namespace ConnectorGrasshopper.Ops
         base.SolveInstance(DA);
         return;
       }
-      
+
       if (HasDuplicateKeys)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
@@ -180,7 +181,7 @@ namespace ConnectorGrasshopper.Ops
         Message = "Expired";
         return;
       }
-      
+
       if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
         !JustPastedIn)
       {
@@ -369,17 +370,17 @@ namespace ConnectorGrasshopper.Ops
 
         //the active document may have changed
         sendComponent.Converter.SetContextDocument(Loader.GetCurrentDocument());
-      
-        if (!Helpers.UserHasInternet().Result)
+
+        if (!Http.UserHasInternet().Result)
         {
           throw new Exception("You are not connected to the internet.");
         }
-        
+
         // Note: this method actually converts the objects to speckle too
         ObjectToSend = new Base();
         int convertedCount = 0;
-        
-        
+
+
         foreach (var d in DataInputs)
         {
           try
@@ -388,7 +389,7 @@ namespace ConnectorGrasshopper.Ops
             {
               ReportProgress("Conversion", Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2));
             });
-            
+
             convertedCount++;
             var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
             var key = d.Key;
@@ -412,7 +413,7 @@ namespace ConnectorGrasshopper.Ops
         {
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, error.ToFormattedString()));
         }
-        
+
         if (convertedCount == 0)
         {
           RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
@@ -487,7 +488,7 @@ namespace ConnectorGrasshopper.Ops
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
-            
+
             sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
           }
           else if (transport is ITransport otherTransport)

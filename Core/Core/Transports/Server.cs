@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
@@ -18,10 +19,6 @@ namespace Speckle.Core.Transports
 {
   /// <summary>
   /// Sends data to a speckle server. 
-  /// TODOs:
-  /// - gzip
-  /// - preflight deltas on sending data
-  /// - preflight deltas on receving/copying data to an existing transport? 
   /// </summary>
   public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
@@ -74,14 +71,13 @@ namespace Speckle.Core.Transports
       BaseUri = baseUri;
       StreamId = streamId;
 
-      Client = new HttpClient(new HttpClientHandler()
+      Client = Http.GetHttpProxyClient(new HttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-      })
-      {
-        BaseAddress = new Uri(baseUri),
-        Timeout = new TimeSpan(0, 0, timeoutSeconds),
-      };
+      });
+
+      Client.BaseAddress = new Uri(baseUri);
+      Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
 
       if (authorizationToken.ToLowerInvariant().Contains("bearer"))
       {
@@ -508,9 +504,9 @@ namespace Speckle.Core.Transports
 
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
-      var payload = new Dictionary<string, string>() { {"objects" , JsonConvert.SerializeObject(objectIds)}};
+      var payload = new Dictionary<string, string>() { { "objects", JsonConvert.SerializeObject(objectIds) } };
       var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
-      var response = await Client.PostAsync( uri, new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"), CancellationToken);
+      var response = await Client.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"), CancellationToken);
       response.EnsureSuccessStatusCode();
 
       var hasObjectsJson = await response.Content.ReadAsStringAsync();

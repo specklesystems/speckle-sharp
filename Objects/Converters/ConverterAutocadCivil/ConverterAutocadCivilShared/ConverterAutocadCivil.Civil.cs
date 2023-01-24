@@ -50,42 +50,6 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // alignments
-    public SpiralType SpiralTypeToSpeckle(Civil.SpiralType type)
-    {
-      switch (type)
-      {
-        case Civil.SpiralType.Clothoid:
-          return SpiralType.Clothoid;
-        case Civil.SpiralType.Bloss:
-          return SpiralType.Bloss;
-        case Civil.SpiralType.BiQuadratic:
-          return SpiralType.Biquadratic;
-        case Civil.SpiralType.CubicParabola:
-          return SpiralType.CubicParabola;
-        case Civil.SpiralType.Sinusoidal:
-          return SpiralType.Sinusoid;
-        default:
-          return SpiralType.Unknown;
-      }
-    }
-    public Civil.SpiralType SpiralTypeToNative(SpiralType type)
-    {
-      switch (type)
-      {
-        case SpiralType.Clothoid:
-          return Civil.SpiralType.Clothoid;
-        case SpiralType.Bloss:
-          return Civil.SpiralType.Bloss;
-        case SpiralType.Biquadratic:
-          return Civil.SpiralType.BiQuadratic;
-        case SpiralType.CubicParabola:
-          return Civil.SpiralType.CubicParabola;
-        case SpiralType.Sinusoid:
-          return Civil.SpiralType.Sinusoidal;
-        default:
-          return Civil.SpiralType.Clothoid;
-      }
-    }
     public CivilAlignment AlignmentToSpeckle(CivilDB.Alignment alignment)
     {
       var _alignment = new CivilAlignment();
@@ -187,7 +151,6 @@ namespace Objects.Converter.AutocadCivil
 
       return _alignment;
     }
-
     public ApplicationObject AlignmentToNative(Alignment alignment)
     {
       var appObj = new ApplicationObject(alignment.id, alignment.speckle_type) { applicationId = alignment.applicationId };
@@ -313,7 +276,43 @@ namespace Objects.Converter.AutocadCivil
       return appObj;
     }
 
-#region helper methods
+    #region helper methods
+    private SpiralType SpiralTypeToSpeckle(Civil.SpiralType type)
+    {
+      switch (type)
+      {
+        case Civil.SpiralType.Clothoid:
+          return SpiralType.Clothoid;
+        case Civil.SpiralType.Bloss:
+          return SpiralType.Bloss;
+        case Civil.SpiralType.BiQuadratic:
+          return SpiralType.Biquadratic;
+        case Civil.SpiralType.CubicParabola:
+          return SpiralType.CubicParabola;
+        case Civil.SpiralType.Sinusoidal:
+          return SpiralType.Sinusoid;
+        default:
+          return SpiralType.Unknown;
+      }
+    }
+    private Civil.SpiralType SpiralTypeToNative(SpiralType type)
+    {
+      switch (type)
+      {
+        case SpiralType.Clothoid:
+          return Civil.SpiralType.Clothoid;
+        case SpiralType.Bloss:
+          return Civil.SpiralType.Bloss;
+        case SpiralType.Biquadratic:
+          return Civil.SpiralType.BiQuadratic;
+        case SpiralType.CubicParabola:
+          return Civil.SpiralType.CubicParabola;
+        case SpiralType.Sinusoid:
+          return Civil.SpiralType.Sinusoidal;
+        default:
+          return Civil.SpiralType.Clothoid;
+      }
+    }
     private void AddAlignmentEntity(ICurve curve, ref CivilDB.AlignmentEntityCollection entities)
     {
       switch (curve)
@@ -506,6 +505,7 @@ namespace Objects.Converter.AutocadCivil
       return LineToSpeckle(new LineSegment2d(start, end));
     }
    
+
     // featurelines
     public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
     {
@@ -570,7 +570,6 @@ namespace Objects.Converter.AutocadCivil
 
       return _featureline;
     }
-
     public CivilDB.FeatureLine FeatureLineToNative(Polycurve polycurve)
     {
       return null;

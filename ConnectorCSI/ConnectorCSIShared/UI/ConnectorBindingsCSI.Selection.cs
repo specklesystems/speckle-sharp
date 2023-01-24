@@ -12,7 +12,6 @@ namespace Speckle.ConnectorCSI.UI
     public override List<string> GetSelectedObjects()
     {
       var names = new List<string>();
-      var util = new ConnectorCSIUtils();
       var typeNameTupleList = ConnectorCSIUtils.SelectedObjects(Model);
       if (typeNameTupleList == null) return new List<string>() { };
       foreach (var item in typeNameTupleList)
@@ -82,13 +81,13 @@ namespace Speckle.ConnectorCSI.UI
       var doc = Model;
 
       var selection = new List<string>();
+      ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
       switch (filter.Slug)
       {
         case "manual":
           return GetSelectedObjects();
         case "all":
-          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           selection.AddRange(ConnectorCSIUtils.ObjectIDsTypesAndNames
                       .Select(pair => pair.Key).ToList());
@@ -96,7 +95,6 @@ namespace Speckle.ConnectorCSI.UI
 
         case "type":
           var typeFilter = filter as ListSelectionFilter;
-          ConnectorCSIUtils.GetObjectIDsTypesAndNames(Model);
 
           foreach (var type in typeFilter.Selection)
           {

@@ -152,10 +152,13 @@ def createConfigFile(deploy: bool, outputPath: str):
         main_workflow["jobs"] += [{"deploy-connectors": deploy_job}]
         print("Added deploy job: deployment")
 
-        if "get-ci-tools" in main_workflow["jobs"]:
-            main_workflow["jobs"].remove("get-ci-tools")
+        if main_workflow["jobs"][0]["get-ci-tools"] != None:
+            main_workflow["jobs"].pop(0)
 
-        ci_tools_job = {"filters": getTagFilter(slugs_to_match)}
+        ci_tools_job = {
+            "filters": getTagFilter(slugs_to_match),
+            "context": "github-dev-bot",
+        }
         main_workflow["jobs"] += [{"get-ci-tools": ci_tools_job}]
         print("Modified job for deploy: get-ci-tools")
 
@@ -180,12 +183,13 @@ def getNewDeployJob(jobName: str):
     isMac = jobName.find("-mac") != -1
     deployJob: Dict[str, Any] = {
         "slug": slug.split("-mac")[0] if isMac else slug,
-        "name": slug + "-deploy-mac" if isMac else slug + "-deploy" ,
+        "name": slug + "-deploy-mac" if isMac else slug + "-deploy",
         "os": "OSX" if isMac else "Win",
         "arch": "Any",
         "extension": "zip" if isMac else "exe",
         "requires": ["deploy-connectors", jobName],
         "filters": getTagFilter([jobName]),
+        "context": "do-spaces-speckle-releases",
     }
     return {"deploy-connector-new": deployJob}
 

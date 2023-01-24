@@ -32,6 +32,7 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Pointcloud = Objects.Geometry.Pointcloud;
 using Polyline = Objects.Geometry.Polyline;
+using RenderMaterial = Objects.Other.RenderMaterial;
 using Spiral = Objects.Geometry.Spiral;
 
 using RH = Rhino.Geometry;
@@ -116,9 +117,11 @@ namespace Objects.Converter.RhinoGh
       return speckleInterval;
     }
 
-    public RH.Interval IntervalToNative(Interval interval)
+    public RH.Interval IntervalToNative(Interval interval, string units = Units.None)
     {
-      return new RH.Interval((double)interval.start, (double)interval.end);
+      return new RH.Interval(
+        ScaleToNative((double)interval.start, units), 
+        ScaleToNative((double)interval.end, units));
     }
 
     // Interval2d
@@ -618,7 +621,7 @@ namespace Objects.Converter.RhinoGh
     public RH.Box BoxToNative(Box box)
     {
       
-      return new RH.Box(PlaneToNative(box.basePlane), IntervalToNative(box.xSize), IntervalToNative(box.ySize), IntervalToNative(box.zSize));
+      return new RH.Box(PlaneToNative(box.basePlane), IntervalToNative(box.xSize, box.units), IntervalToNative(box.ySize, box.units), IntervalToNative(box.zSize, box.units));
     }
 
     // Meshes
@@ -816,7 +819,7 @@ namespace Objects.Converter.RhinoGh
     /// </summary>
     /// <param name="brep">BREP to be converted.</param>
     /// <returns></returns>
-    public Brep BrepToSpeckle(RH.Brep brep, string units = null, RH.Mesh previewMesh = null)
+    public Brep BrepToSpeckle(RH.Brep brep, string units = null, RH.Mesh previewMesh = null, RenderMaterial mat = null)
     {
       var tol = Doc.ModelAbsoluteTolerance;
       //tol = 0;
@@ -827,9 +830,14 @@ namespace Objects.Converter.RhinoGh
       //   f.RebuildEdges(tol, false, false);
       // }
       // Create complex
-      var displayMesh = previewMesh != null ? previewMesh : GetBrepDisplayMesh(brep);
 
-      var spcklBrep = new Brep(displayValue: MeshToSpeckle(displayMesh, u), provenance: RhinoAppName, units: u);
+      // get display mesh and attach render material to it if it exists
+      var displayMesh = previewMesh != null ? previewMesh : GetBrepDisplayMesh(brep);
+      var displayValue = MeshToSpeckle(displayMesh, u);
+      if (displayValue != null && mat != null)
+        displayValue["renderMaterial"] = mat;
+
+      var spcklBrep = new Brep(displayValue: displayValue, provenance: RhinoAppName, units: u);
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices

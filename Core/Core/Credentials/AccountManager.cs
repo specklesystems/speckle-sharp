@@ -1,12 +1,13 @@
 ﻿
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
+using System.Net.Http.Headers;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using GraphQL;
 using GraphQL.Client.Http;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -36,7 +38,7 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task<ServerInfo> GetServerInfo(string server)
     {
-      using var httpClient = new HttpClient();
+      using var httpClient = Http.GetHttpProxyClient();
 
       using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
 
@@ -63,7 +65,7 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task<UserInfo> GetUserInfo(string token, string server)
     {
-      using var httpClient = new HttpClient();
+      using var httpClient = Http.GetHttpProxyClient();
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
       using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
@@ -92,7 +94,7 @@ namespace Speckle.Core.Credentials
 
       try
       {
-        var httpClient = new HttpClient();
+        var httpClient = Http.GetHttpProxyClient();
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
 
@@ -125,20 +127,30 @@ namespace Speckle.Core.Credentials
 
 
     /// <summary>
-    /// The Default Server URL for authentication, can be overridden by placing a file with the alternatrive url in the Speckle folder
+    /// The Default Server URL for authentication, can be overridden by placing a file with the alternatrive url in the Speckle folder or with an ENV_VAR
     /// </summary>
     public static string GetDefaultServerUrl()
     {
       var defaultServerUrl = "https://speckle.xyz";
+      var customServerUrl = "";
 
-      var customServerFile = Path.Combine(Helpers.UserSpeckleFolderPath, "server");
+      // first mechanism, check for local file
+      var customServerFile = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "server");
       if (File.Exists(customServerFile))
+        customServerUrl = File.ReadAllText(customServerFile);
+
+
+      // second mechanism, check ENV VAR
+      var customServerEnvVar = Environment.GetEnvironmentVariable("SPECKLE_SERVER");
+      if (!string.IsNullOrEmpty(customServerEnvVar))
+        customServerUrl = customServerEnvVar;
+
+      if (!string.IsNullOrEmpty(customServerUrl))
       {
-        var customUrl = File.ReadAllText(customServerFile);
         Uri url = null;
-        Uri.TryCreate(customUrl, UriKind.Absolute, out url);
+        Uri.TryCreate(customServerUrl, UriKind.Absolute, out url);
         if (url != null)
-          defaultServerUrl = customUrl.TrimEnd(new[] { '/' });
+          defaultServerUrl = customServerUrl.TrimEnd(new[] { '/' });
       }
 
 
@@ -206,7 +218,7 @@ namespace Speckle.Core.Credentials
     private static IEnumerable<Account> GetLocalAccounts()
     {
       var accounts = new List<Account>();
-      var accountsDir = Path.Combine(Helpers.UserSpeckleFolderPath, "Accounts");
+      var accountsDir = SpecklePathProvider.AccountsFolderPath;
       if (!Directory.Exists(accountsDir))
       {
         return accounts;
@@ -427,10 +439,8 @@ namespace Speckle.Core.Credentials
     {
       try
       {
-        var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{server}/auth/token");
-        httpWebRequest.ContentType = "application/json";
-        httpWebRequest.Method = "POST";
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        var client = Http.GetHttpProxyClient();
 
         var body = new
         {
@@ -440,41 +450,25 @@ namespace Speckle.Core.Credentials
           challenge = challenge,
         };
 
-        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-        {
-          string json = JsonConvert.SerializeObject(body);
+        var content = new StringContent(JsonConvert.SerializeObject(body));
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        var response = await client.PostAsync($"{server}/auth/token", content);
 
-          streamWriter.Write(json);
-          streamWriter.Flush();
-          streamWriter.Close();
-        }
-
-        var httpResponse = (HttpWebResponse)await Task.Factory.FromAsync<WebResponse>(httpWebRequest.BeginGetResponse, httpWebRequest.EndGetResponse, null);
-
-        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-        {
-          var result = streamReader.ReadToEnd();
-          return JsonConvert.DeserializeObject<TokenExchangeResponse>(result);
-        }
-
+        return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
 
       }
       catch (Exception e)
       {
         throw new SpeckleException(e.Message, e);
       }
-
-
     }
 
     private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, string server)
     {
       try
       {
-        var httpWebRequest = (HttpWebRequest)WebRequest.Create($"{server}/auth/token");
-        httpWebRequest.ContentType = "application/json";
-        httpWebRequest.Method = "POST";
         ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        var client = Http.GetHttpProxyClient();
 
         var body = new
         {
@@ -483,24 +477,11 @@ namespace Speckle.Core.Credentials
           refreshToken = refreshToken
         };
 
-        using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
-        {
-          string json = JsonConvert.SerializeObject(body);
+        var content = new StringContent(JsonConvert.SerializeObject(body));
+        content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+        var response = await client.PostAsync($"{server}/auth/token", content);
 
-          streamWriter.Write(json);
-          streamWriter.Flush();
-          streamWriter.Close();
-        }
-
-        var httpResponse = (HttpWebResponse)await Task.Factory.FromAsync<WebResponse>(httpWebRequest.BeginGetResponse, httpWebRequest.EndGetResponse, null);
-
-        using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-        {
-          var result = streamReader.ReadToEnd();
-          return JsonConvert.DeserializeObject<TokenExchangeResponse>(result);
-        }
-
-
+        return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
       }
       catch (Exception e)
       {

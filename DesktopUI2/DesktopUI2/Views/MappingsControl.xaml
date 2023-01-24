@@ -109,7 +109,7 @@
                           VerticalAlignment="Center"
                           Classes="Overline"
                           Foreground="Gray"
-                          Text="NEW MAPPINGS" />
+                          Text="SELECTED ELEMENTS" />
                       </StackPanel>
 
                       <!--  SET STREAM AND ELEMENT TYPE  -->
@@ -167,14 +167,32 @@
                           <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
+                          <!--  FLOOR  -->
+                          <DataTemplate DataType="{x:Type s:RevitFloorViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
                           <!--  BEAM  -->
                           <DataTemplate DataType="{x:Type s:RevitBeamViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  COLUMN  -->
+                          <DataTemplate DataType="{x:Type s:RevitColumnViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
                           <!--  BRACE  -->
                           <DataTemplate DataType="{x:Type s:RevitBraceViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
+                          <!--  PIPE  -->
+                          <DataTemplate DataType="{x:Type s:RevitPipeViewModel}">
+                            <map:RevitMEP />
+                          </DataTemplate>
+                          <!--  DUCT  -->
+                          <DataTemplate DataType="{x:Type s:RevitDuctViewModel}">
+                            <map:RevitMEP />
+                          </DataTemplate>
+                          <!--  TOPOGRAPHY  -->
+                          <DataTemplate DataType="{x:Type s:RevitTopographyViewModel}" />
                           <!--  FAMILY INSTANCE  -->
                           <DataTemplate DataType="{x:Type s:RevitFamilyInstanceViewModel}">
                             <map:RevitBasic />
@@ -216,16 +234,9 @@
                         </StackPanel>
                         <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
                           <Button
-                            Margin="0,0,10,0"
-                            Classes="Flat"
-                            Command="{Binding ClearMappingsCommand}"
-                            Content="Clear Mappings"
-                            IsEnabled="{Binding Count}"
-                            ToolTip.Tip="Remove mappings from all the selected elements" />
-                          <Button
                             Command="{Binding SetMappingsCommand}"
                             Content="Apply Mappings"
-                            IsEnabled="{Binding SelectedSchema, Converter={x:Static ObjectConverters.IsNotNull}}"
+                            IsEnabled="{Binding SelectedSchema.IsValid}"
                             ToolTip.Tip="Apply mappings to all the selected elements" />
                         </StackPanel>
 
@@ -268,9 +279,9 @@
                               </StackPanel>
                             </Expander.Header>
                             <ListBox
+                              Classes="ExistingMapping"
                               Items="{Binding Schemas}"
-                              SelectionChanged="SelectionChanged"
-                              SelectionMode="Multiple">
+                              SelectionMode="Multiple,Toggle">
                               <ListBox.Styles>
                                 <Style Selector="ListBox ListBoxItem">
                                   <Setter Property="Padding" Value="0" />
@@ -281,13 +292,17 @@
                               </ListBox.Styles>
                               <ListBox.ItemTemplate>
                                 <DataTemplate>
-                                  <Grid>
+                                  <Grid ColumnDefinitions="auto,*">
+                                    <CheckBox IsChecked="{Binding RelativeSource={RelativeSource AncestorType={x:Type ListBoxItem}}, Path=IsSelected}" />
+
                                     <TextBlock
+                                      Grid.Column="1"
                                       Padding="5,5"
                                       HorizontalAlignment="Stretch"
                                       Text="{Binding Summary}" />
                                     <!--  hack to get the PointerEnter event to trigger  -->
                                     <Border
+                                      Grid.ColumnSpan="2"
                                       Background="{DynamicResource MaterialDesignCardBackground}"
                                       Opacity="0.01"
                                       PointerEnter="PointerEnterEventItem"
@@ -304,6 +319,18 @@
                       </ItemsControl.ItemTemplate>
                     </ItemsControl>
 
+                    <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+                      <Button
+                        Margin="0,0,10,0"
+                        Classes="Flat"
+                        Command="{Binding ClearMappingsCommand}"
+                        Content="Clear Mappings"
+                        ToolTip.Tip="Remove mappings from the selected elements" />
+                      <Button
+                        Command="{Binding SelectElementsCommandCommand}"
+                        Content="Select"
+                        ToolTip.Tip="Select the checked elements" />
+                    </StackPanel>
 
                   </StackPanel>
                 </m:Card>

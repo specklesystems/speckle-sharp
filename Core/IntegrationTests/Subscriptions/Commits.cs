@@ -89,7 +89,7 @@ namespace TestsIntegration.Subscriptions
       {
         Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitCreatedInfo);
-        Assert.AreEqual(commitInput.message, CommitCreatedInfo.message);
+        Assert.That(CommitCreatedInfo.message, Is.EqualTo(commitInput.message));
       });
     }
 
@@ -121,7 +121,7 @@ namespace TestsIntegration.Subscriptions
       {
         Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitUpdatedInfo);
-        Assert.AreEqual(commitInput.message, CommitUpdatedInfo.message);
+        Assert.That(CommitUpdatedInfo.message, Is.EqualTo(commitInput.message));
       });
     }
 
@@ -152,7 +152,7 @@ namespace TestsIntegration.Subscriptions
       {
         Thread.Sleep(2000); //let client catch-up
         Assert.NotNull(CommitDeletedInfo);
-        Assert.AreEqual(commitId, CommitDeletedInfo.id);
+        Assert.That(CommitDeletedInfo.id, Is.EqualTo(commitId));
       });
     }
 
