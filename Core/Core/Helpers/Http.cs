@@ -81,8 +81,9 @@ namespace Speckle.Core.Helpers
           PingReply reply = myPing.Send(hostname, timeout, buffer, pingOptions);
           return (reply.Status == IPStatus.Success);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+          Log.Information("Exception while pinging: {message}", ex.Message);
           return false;
         }
       });
@@ -107,8 +108,9 @@ namespace Speckle.Core.Helpers
           return response.IsSuccessStatusCode;
 
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+          Log.Information("Exception while pinging: {message}", ex.Message);
           return false;
         }
       });
