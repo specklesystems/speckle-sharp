@@ -1,11 +1,13 @@
 ﻿using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Objects.Other;
+using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 using Acad = Autodesk.AutoCAD;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Alignment = Objects.BuiltElements.Alignment;
@@ -46,6 +48,8 @@ namespace Objects.Converter.AutocadCivil
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2022);
 #elif CIVIL2023
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
+#elif ADVANCESTEEL2023
+    public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
 #endif
 
     public ConverterAutocadCivil()
@@ -103,7 +107,10 @@ namespace Objects.Converter.AutocadCivil
             return ObjectToSpeckleBuiltElement(o);
           */
           var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
-          reportObj = new ApplicationObject(obj.Id.ToString(), obj.GetType().ToString()) { applicationId = appId };
+
+          //Use the Handle object to update progressReport object.
+          //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
+          reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().ToString()) { applicationId = appId };
           style = DisplayStyleToSpeckle(obj as Entity);
 
           switch (obj)
@@ -201,6 +208,12 @@ namespace Objects.Converter.AutocadCivil
               break;
             case CivilDB.TinSurface o:
               @base = SurfaceToSpeckle(o);
+              break;
+
+#elif ADVANCESTEEL2023
+
+            default:
+              @base = ObjectASToSpeckle(obj, reportObj, notes);
               break;
 #endif
           }
@@ -426,7 +439,13 @@ namespace Objects.Converter.AutocadCivil
 #endif
 
             default:
-              return false;
+              {
+#if ADVANCESTEEL2023
+                return CanConvertASToSpeckle(o);
+#else
+                return false;
+#endif
+              }
           }
 
         case Acad.Geometry.Point3d _:

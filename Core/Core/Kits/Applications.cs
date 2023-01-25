@@ -87,6 +87,7 @@ namespace Speckle.Core.Kits
     public static HostApplication Python = new HostApplication("Python", "python");
     public static HostApplication NET = new HostApplication(".NET", "net");
     public static HostApplication Navisworks = new HostApplication("Navisworks", "navisworks");
+    public static HostApplication AdvanceSteel = new HostApplication("Advance Steel", "advancesteel");
     public static HostApplication Other = new HostApplication("Other", "other");
 
     /// <summary>
@@ -128,6 +129,7 @@ namespace Speckle.Core.Kits
       if (appname.Contains("python")) return Python;
       if (appname.Contains("net")) return NET;
       if (appname.Contains("navisworks")) return Navisworks;
+      if (appname.Contains("advancesteel")) return AdvanceSteel;
       return new HostApplication(appname, appname);
 
     }

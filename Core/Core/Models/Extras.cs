@@ -164,7 +164,7 @@ namespace Speckle.Core.Models
       Status = State.Unknown;
     }
 
-    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, string container = null, List<string> log = null, string logItem = null, List<object> converted = null, object convertedItem = null)
+    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, string container = null, List<string> log = null, string logItem = null, List<object> converted = null, object convertedItem = null, string descriptor = null)
     {
       if (createdIds != null) createdIds.Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))?.ToList().ForEach(o => CreatedIds.Add(o));
       if (createdId != null && !CreatedIds.Contains(createdId)) CreatedIds.Add(createdId);
@@ -174,6 +174,7 @@ namespace Speckle.Core.Models
       if (convertedItem != null && !Converted.Contains(convertedItem)) Converted.Add(convertedItem);
       if (converted != null) converted.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(o => Converted.Add(o));
       if (!string.IsNullOrEmpty(container)) Container = container;
+      if (!string.IsNullOrEmpty(descriptor)) Descriptor = descriptor;
     }
   }
 
@@ -193,7 +194,7 @@ namespace Speckle.Core.Models
     {
       if (GetReportObject(obj.OriginalId, out int index))
       {
-        ReportObjects[index].Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log);
+        ReportObjects[index].Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log, descriptor: obj.Descriptor);
         if (obj.Status != ApplicationObject.State.Unknown)
           ReportObjects[index].Update(status: obj.Status);
         return ReportObjects[index];
