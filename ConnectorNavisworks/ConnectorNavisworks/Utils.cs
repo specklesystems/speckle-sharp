@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Autodesk.Navisworks.Api.ComApi;
 using System.Linq;
+using Units = Autodesk.Navisworks.Api.Units;
 
 namespace Speckle.ConnectorNavisworks
 {
@@ -42,7 +43,9 @@ namespace Speckle.ConnectorNavisworks
 #endif
     public static string InvalidChars = @"<>/\:;""?*|=,‘";
     public static string ApplicationIdKey = "applicationId";
-    public static string RootNodePseudoId = "___"; // This should be shorter than the padding on indexes and not contain '-'
+
+    public static string
+      RootNodePseudoId = "___"; // This should be shorter than the padding on indexes and not contain '-'
 
 
     public static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue)
@@ -145,6 +148,19 @@ namespace Speckle.ConnectorNavisworks
       return pseudoId;
     }
 
-   
+    public static Dictionary<string, Units> UnitsMap = new Dictionary<string, Units>
+    {
+      { "cm", Units.Centimeters },
+      { "mm", Units.Millimeters },
+      { "m", Units.Meters },
+      { "ft", Units.Feet },
+      { "in", Units.Inches },
+      { "km", Units.Kilometers },
+      { "yd", Units.Yards },
+      { "mi", Units.Miles },
+      { "uin", Units.Microinches },
+      { "mil", Units.Mils },
+      { "µm", Units.Micrometers }
+    };
   }
 }

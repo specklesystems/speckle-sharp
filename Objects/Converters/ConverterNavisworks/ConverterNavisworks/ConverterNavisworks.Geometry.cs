@@ -337,7 +337,10 @@ namespace Objects.Converter.Navisworks
       {
         case Transforms.ProjectBasePoint:
           Units source = Application.ActiveDocument.Units;
-          double scale = UnitConversion.ScaleFactor(Units.Meters, source);
+
+          // Coordinate Units are likely to be set to match the HUD readout which is
+          // different to the internal units of constituent models.
+          double scale = UnitConversion.ScaleFactor(CoordinateUnits, source); 
           
           transform = new Vector3D(-ProjectBasePoint.X * scale, -ProjectBasePoint.Y * scale, 0);
           break;

@@ -21,6 +21,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin, ProxyOrigin, BBoxOrigin };
+      List<string> units = new List<string>(Enum.GetNames(typeof(Units)));
 
       return new List<ISetting>
       {
@@ -43,6 +44,12 @@ namespace Speckle.ConnectorNavisworks.Bindings
           Value = 0,
           Increment = 0.001,
           Spinner = false
+        },
+        new ListBoxSetting
+        {
+          Slug = "units", Name = "Coordinate Units", Values = units,
+          Selection = "Meters",
+          Description = "Units for the Project Basepoint coordinates."
         }
       };
     }

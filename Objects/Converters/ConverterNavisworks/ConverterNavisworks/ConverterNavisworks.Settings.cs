@@ -53,11 +53,15 @@ namespace Objects.Converter.Navisworks
       }
     }
 
+    public Units CoordinateUnits
+    {
+      get
+      {
+        if (!Settings.ContainsKey("units")) return Units.Meters;
+        var value = Settings["units"];
 
-
-
-
-
-
+        return (Units)Enum.Parse(typeof(Units), value, true);
+      }
+    }
   }
 }
