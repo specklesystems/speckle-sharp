@@ -1,21 +1,20 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Geometry;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using BlockInstance_old = Objects.Other.BlockInstance_old;
+using Transform = Objects.Other.Transform;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
-using Transform_old = Objects.Other.Transform_old;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationObject BlockInstanceToNative(BlockInstance_old instance, Transform_old transform = null)
+    public ApplicationObject BlockInstanceToNative(BlockInstance_old instance, Transform transform = null)
     {
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };

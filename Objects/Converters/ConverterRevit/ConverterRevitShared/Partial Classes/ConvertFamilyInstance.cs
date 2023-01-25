@@ -492,7 +492,7 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
 
-      if (!GetElementType<DB.FamilySymbol>(instance, appObj, out DB.FamilySymbol familySymbol))
+      if (!GetElementType<FamilySymbol>(instance, appObj, out FamilySymbol familySymbol))
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
