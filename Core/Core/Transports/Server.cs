@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Serilog;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -66,7 +67,7 @@ namespace Speckle.Core.Transports
 
     private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
     {
-      Log.AddBreadcrumb("New Remote Transport");
+      Log.Information("Initializing New Remote V1 Transport for {baseUri}", baseUri);
 
       BaseUri = baseUri;
       StreamId = streamId;

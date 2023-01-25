@@ -211,11 +211,16 @@ namespace Speckle.Core.Models
     public IEnumerable<string> GetMemberNames() => GetMembers().Keys;
 
     /// <summary>
+    /// Default <see cref="DynamicBaseMemberType"/> value for <see cref="GetMembers"/>
+    /// </summary>
+    public const DynamicBaseMemberType DefaultIncludeMembers = DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic;
+    
+    /// <summary>
     ///  Gets the typed and dynamic properties. 
     /// </summary>
     /// <param name="includeMembers">Specifies which members should be included in the resulting dictionary. Can be concatenated with "|"</param>
     /// <returns>A dictionary containing the key's and values of the object.</returns>
-    public Dictionary<string, object> GetMembers(DynamicBaseMemberType includeMembers = DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic)
+    public Dictionary<string, object> GetMembers(DynamicBaseMemberType includeMembers = DefaultIncludeMembers)
     {
       // Initialize an empty dict
       var dic = new Dictionary<string, object>();
