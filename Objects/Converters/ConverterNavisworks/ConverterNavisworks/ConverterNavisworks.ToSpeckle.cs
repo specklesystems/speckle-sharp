@@ -47,7 +47,7 @@ namespace Objects.Converter.Navisworks
       var @base = new Base
       {
         applicationId = PseudoIdFromModelItem(element),
-        ["bbox"] = BoxToSpeckle(element.BoundingBox()),
+        //["bbox"] = BoxToSpeckle(element.BoundingBox()),
       };
 
       if (element.HasGeometry)
