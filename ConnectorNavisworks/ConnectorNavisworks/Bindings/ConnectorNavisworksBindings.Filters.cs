@@ -33,6 +33,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
         filters.Add(selectionSetsFilter);
       }
 
+
+      var savedViewsRootItem = Doc.SavedViewpoints.RootItem;
+
+      var savedViews = savedViewsRootItem.Children.Select(GetViews).ToList();
+
+      if (savedViews.Count > 0)
+      {
+        var savedViewsFilter = new TreeSelectionFilter
+        {
+          Slug = "views", Name = "Saved Viewpoints", Icon = "FileTree",
+          Description = "Select a saved viewpoint and send its visible items in the commit.",
+          Values = savedViews,
+          SelectionMode = "Toggle"
+        };
+        filters.Add(savedViewsFilter);
+      }
+
       //var clashPlugin = Doc.GetClash();
       //var clashTests = clashPlugin.TestsData;
       //var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).OfType<TreeNode>().ToList();
@@ -70,6 +87,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return treeNode.Elements.Count > 0 ? treeNode : null;
     }
 
+    private static TreeNode GetViews(SavedItem savedItem)
+    {
+      var treeNode = new TreeNode
+      {
+        DisplayName = savedItem.DisplayName,
+        Guid = savedItem.Guid,
+        IndexWith = nameof(TreeNode.Guid),
+        Indices = Doc.SavedViewpoints.CreateIndexPath(savedItem).ToArray(),
+      };
+
+      if (!savedItem.IsGroup) return treeNode;
+
+      //iterate the children and output
+      foreach (var childItem in ((GroupItem)savedItem).Children) treeNode.Elements.Add(GetViews(childItem));
+
+      return treeNode.Elements.Count > 0 ? treeNode : null;
+    }
     private static TreeNode GetClashTestResults(SavedItem savedItem)
     {
       var clashTest = (ClashTest)savedItem;
