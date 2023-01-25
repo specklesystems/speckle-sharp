@@ -1,4 +1,4 @@
-﻿using DesktopUI2.Views.Filters;
+using DesktopUI2.Views.Filters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -6,6 +6,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using Speckle.Newtonsoft.Json;
+using System.Collections.Specialized;
 
 namespace DesktopUI2.Models.Filters
 {
@@ -62,11 +63,13 @@ namespace DesktopUI2.Models.Filters
       }
     }
 
+    public string SelectionMode { get; set; } = "Multiple, Toggle";
+
     private void Items_CollectionChanged(object sender,
-      System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+      NotifyCollectionChangedEventArgs e)
     {
       Selection.Clear();
-      Selection.AddRange(SelectedItems.Select(item => item.ToString()).ToList());
+      if (SelectedItems != null) Selection.AddRange(SelectedItems.Select(item => item.ToString()).ToList());
     }
   }
 
