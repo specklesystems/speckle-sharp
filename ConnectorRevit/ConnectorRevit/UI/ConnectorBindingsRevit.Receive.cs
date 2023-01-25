@@ -15,6 +15,7 @@ using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
@@ -128,31 +129,37 @@ namespace Speckle.ConnectorRevit.UI
 
       await RevitTask.RunAsync(app =>
       {
-        using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
+        using var g = new TransactionGroup(CurrentDoc.Document, $"Baking stream {state.StreamId}");
+        using var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}");
+
+        g.Start();
+        var failOpts = t.GetFailureHandlingOptions();
+        failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+        failOpts.SetClearAfterRollback(true);
+        t.SetFailureHandlingOptions(failOpts);
+        t.Start();
+
+        converter.SetContextDocument(t);
+
+        var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+        // receive was cancelled by user
+        if (newPlaceholderObjects == null)
         {
-          var failOpts = t.GetFailureHandlingOptions();
-          failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
-          failOpts.SetClearAfterRollback(true);
-          t.SetFailureHandlingOptions(failOpts);
-          t.Start();
-          
-          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
-          // receive was cancelled by user
-          if (newPlaceholderObjects == null)
-          {
-            progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
-            t.RollBack();
-            return;
-          }
-
-          if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
-
-          state.ReceivedObjects = newPlaceholderObjects;
-
-          t.Commit();
+          progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
+          t.RollBack();
+          return;
         }
 
+        if (state.ReceiveMode == ReceiveMode.Update)
+          DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
+
+        state.ReceivedObjects = newPlaceholderObjects;
+
+        t.Commit();
+        t.Dispose();
+
+        g.Assimilate();
+        g.Dispose();
       });
 
       if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))
@@ -245,59 +252,36 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Traverses the object graph, returning objects to be converted.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-      var objects = new List<ApplicationObject>();
-
-      if (obj is Base @base)
+      
+      ApplicationObject CreateApplicationObject(Base current)
       {
-        var appObj = new ApplicationObject(@base.id, ConnectorRevitUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
-
-        if (converter.CanConvertToNative(@base))
-        {
-          appObj.Convertible = true;
-          objects.Add(appObj);
-          StoredObjects.Add(@base.id, @base);
-          return objects;
-        }
-        else
-        {
-          foreach (var prop in @base.GetDynamicMembers())
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          return objects;
-        }
+        if (!converter.CanConvertToNative(current)) return null;
+        
+        var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type)) {
+          applicationId = current.applicationId,
+          Convertible = true
+        };
+        StoredObjects.Add(current.id, current);
+        return appObj;
       }
+      
+      var traverseFunction = DefaultTraversal.CreateRevitTraversalFunc(converter);
 
-      if (obj is List<object> list)
-      {
-        foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        return objects;
-      }
+      var objectsToConvert = traverseFunction.Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current))
+        .Where(appObject => appObject != null)
+        .Reverse()
+        .ToList();
 
-      if (obj is IDictionary dict)
-      {
-        foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        return objects;
-      }
-
-      else
-      {
-        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
-        {
-          var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Revit");
-          objects.Add(appObj);
-        }
-      }
-
-      return objects;
+      return objectsToConvert;
     }
+    
   }
 }

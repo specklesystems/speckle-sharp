@@ -4,8 +4,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2;
 using DesktopUI2.Models;
@@ -21,6 +21,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using static DesktopUI2.ViewModels.MappingViewModel;
@@ -269,9 +270,9 @@ namespace SpeckleRhino
         Preview.Clear();
         StoredObjects.Clear();
 
-        int count = 0;
+
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
-        Preview = FlattenCommitObject(commitObject, converter, progress, ref count);
+        Preview = FlattenCommitObject(commitObject, converter);
         Doc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
 
         // Convert preview objects
@@ -393,8 +394,7 @@ namespace SpeckleRhino
         if (Preview.Count == 0)
         {
           // flatten the commit object to retrieve children objs
-          int count = 0;
-          Preview = FlattenCommitObject(commitObject, converter, progress, ref count);
+          Preview = FlattenCommitObject(commitObject, converter);
 
           // convert
           foreach (var previewObj in Preview)
@@ -577,100 +577,85 @@ namespace SpeckleRhino
 
       return commitObject;
     }
-
-    // Recurses through the commit object and flattens it. Returns list of Preview objects
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter, ProgressViewModel progress, ref int count, string layer = null, bool foundConvertibleMember = false)
+    
+    /// <summary>
+    /// Traverses the object graph, returning objects to be converted.
+    /// </summary>
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-      var objects = new List<ApplicationObject>();
 
-      if (obj is Base @base)
+      void StoreObject(Base @base, ApplicationObject appObj)
       {
-        var speckleType = @base.speckle_type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).LastOrDefault();
-        var appObj = new ApplicationObject(@base.id, speckleType) { applicationId = @base.applicationId, Container = layer };
-        if (converter.CanConvertToNative(@base))
-        {
-          appObj.Convertible = true;
-          if (StoredObjects.ContainsKey(@base.id))
-            appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id {@base.id}. Skipped other object");
-          else
-            StoredObjects.Add(@base.id, @base);
-          objects.Add(appObj);
-          return objects;
-        }
+        if (StoredObjects.ContainsKey(@base.id))
+          appObj.Update(
+            logItem:
+            "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
         else
+          StoredObjects.Add(@base.id, @base);
+      }
+      
+      ApplicationObject CreateApplicationObject(Base current, string containerId)
+      {
+        ApplicationObject NewAppObj()
         {
-          appObj.Convertible = false;
-
-          // handle fallback display separately
-          bool hasFallback = false;
-          if (@base.GetMembers().ContainsKey("displayValue"))
-          {
-            var fallbackObjects = FlattenCommitObject(@base["displayValue"], converter, progress, ref count, layer, foundConvertibleMember);
-            if (fallbackObjects.Count > 0)
-            {
-              appObj.Fallback.AddRange(fallbackObjects);
-              foundConvertibleMember = true;
-              hasFallback = true;
-            }
-          }
-          if (hasFallback)
-          {
-            if (StoredObjects.ContainsKey(@base.id))
-              appObj.Update(logItem: $"Found another {speckleType} in this commit with the same id. Skipped other object");
-            else
-              StoredObjects.Add(@base.id, @base);
-            objects.Add(appObj);
-          }
-
-          // handle any children elements, these are added as separate previewObjects
-          List<string> props = @base.GetDynamicMembers().ToList();
-          if (@base.GetMembers().ContainsKey("elements")) // this is for builtelements like roofs, walls, and floors.
-            props.Add("elements");
-          int totalMembers = props.Count;
-          foreach (var prop in props)
-          {
-            count++;
-
-            // get bake layer name
-            string objLayerName = prop.StartsWith("@") ? prop.Remove(0, 1) : prop;
-            string rhLayerName = layer == null || objLayerName.StartsWith($"{layer}{Layer.PathSeparator}") ? objLayerName : $"{layer}{Layer.PathSeparator}{objLayerName}";
-
-            var nestedObjects = FlattenCommitObject(@base[prop], converter, progress, ref count, rhLayerName, foundConvertibleMember);
-            var validNestedObjects = nestedObjects.Where(o => o.Convertible == true || o.Fallback.Count > 0)?.ToList();
-            if (validNestedObjects != null && validNestedObjects.Count > 0)
-            {
-              objects.AddRange(nestedObjects);
-              foundConvertibleMember = true;
-            }
-          }
-
-          if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-          {
-            appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Rhino");
-            objects.Add(appObj);
-          }
-
-          return objects;
+          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault();
+          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
-      }
+        
+        //Handle convertable objects
+        if (converter.CanConvertToNative(current))
+        {
+          var appObj = NewAppObj();
+          appObj.Convertible = true;
+          StoreObject(current, appObj);
+          return appObj;
+        }
 
-      if (obj is IReadOnlyList<object> list)
+        //Handle objects convertable using displayValues
+        var fallbackMember = current["displayValue"] ?? current["@displayValue"];
+        if (fallbackMember != null)
+        {
+          var appObj = NewAppObj();
+          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember)
+            .Select(o => CreateApplicationObject(o, containerId));
+          appObj.Fallback.AddRange(fallbackObjects);
+
+          StoreObject(current, appObj);
+          return appObj;
+        }
+        
+        return null;
+      }
+      
+      string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
+      StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
-        count = 0;
-        foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter, progress, ref count, layer));
-        return objects;
+        if (context.propName == null) return stringBuilder;
+
+        var objectLayerName = context.propName[0] == '@'
+          ? context.propName.Substring(1)
+          : context.propName;
+
+        LayerIdRecurse(context.parent, stringBuilder);
+        stringBuilder.Append(Layer.PathSeparator);
+        stringBuilder.Append(objectLayerName);
+        
+        return stringBuilder;
       }
 
-      if (obj is IDictionary dict)
-      {
-        count = 0;
-        foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter, progress, ref count, layer));
-        return objects;
-      }
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
-      return objects;
+      var objectsToConvert = traverseFunction.Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
+        .Where(appObject => appObject != null)
+        .Reverse() //just for the sake of matching the previous behaviour as close as possible
+        .ToList();
+
+      return objectsToConvert;
     }
 
     // conversion and bake

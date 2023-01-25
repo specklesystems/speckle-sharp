@@ -1,0 +1,7 @@
+secret:
+  ignored-matches:
+    - match: "1bF86pB8XI3s4pYtc2kp"
+      name: "SEQ ingestion api key"
+    - match: "https://94275909c1094f2388224c9222b0cfba@o436188.ingest.sentry.io/4504491155783680"
+      name: "Sentry ingestion DNS"
+version: 2
