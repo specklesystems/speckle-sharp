@@ -1,37 +1,40 @@
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using GraphQL;
+using System.Diagnostics;
 
 namespace TestsIntegration
 {
   public class GraphQLClientTests
   {
-    private Account account;
+    private Account _account;
+    private Client _client;
 
     [OneTimeSetUp]
     public async Task Setup()
     {
-      account = await Fixtures.SeedUser();
+      _account = await Fixtures.SeedUser();
+      _client = new Client(_account);
     }
 
     [Test]
-    public async Task TestExecuteGraphQLRequest()
+    public async Task ThrowsForbiddenException()
     {
-      account.serverInfo.url = "http://localhost:8000";
-      var client = new Client(account);
-
-      var response = await client.ExecuteGraphQLRequest<ServerInfoResponse>(
-        new GraphQLRequest
-        {
-          Query =
-            @"query {
-                adminStreams {
-                  totalCount
-                } 
+      Assert.ThrowsAsync<SpeckleGraphQLForbiddenException<Dictionary<string, object>>>(
+        async () =>
+          await _client.ExecuteGraphQLRequest<Dictionary<string, object>>(
+            new GraphQLRequest
+            {
+              Query =
+                @"query {
+            adminStreams{
+              totalCount
+              }
             }"
-        }
+            },
+            CancellationToken.None
+          )
       );
-      Assert.NotNull(response.serverInfo.version);
     }
   }
 }
