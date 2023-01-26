@@ -37,7 +37,7 @@ using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Text = Objects.Other.Text;
-using Transform_old = Objects.Other.Transform_old;
+using Transform = Objects.Other.Transform;
 using Vector = Objects.Geometry.Vector;
 using View3D = Objects.BuiltElements.View3D;
 
@@ -388,7 +388,14 @@ namespace Objects.Converter.RhinoGh
             {
               var block = BlockInstanceToSpeckle(@object as InstanceObject);
               o.basePoint = block.GetInsertionPoint();
-              o.rotation = block.transform.rotationZ;
+              if (block.transform.Decompose(out Vector scale, out System.Numerics.Quaternion rotation, out Vector translation))
+              {
+                o.rotation = Math.Acos(rotation.W) * 2;
+              }
+              else
+              {
+                o.rotation = 0;
+              }
             }
             break;
 
@@ -712,11 +719,11 @@ namespace Objects.Converter.RhinoGh
             break;
 
           case BlockDefinition o:
-            rhinoObj = BlockDefinitionToNative(o, out notes);
+            rhinoObj = DefinitionToNative(o, out notes);
             break;
 
-          case BlockInstance o:
-            rhinoObj = BlockInstanceToNative(o);
+          case Instance o:
+            rhinoObj = InstanceToNative(o);
             break;
 
           case Text o:
@@ -742,7 +749,7 @@ namespace Objects.Converter.RhinoGh
             rhinoObj = RenderMaterialToNative(o);
 #endif
             break;
-          case Transform_old o:
+          case Transform o:
             rhinoObj = TransformToNative(o);
             break;
           default:
@@ -861,7 +868,7 @@ namespace Objects.Converter.RhinoGh
         case Structural.Geometry.Element1D _:
           return true;
 #if GRASSHOPPER
-        case Transform_old _:
+        case Transform _:
         case RenderMaterial _:
           return true;
 #else
@@ -924,7 +931,7 @@ namespace Objects.Converter.RhinoGh
         case ModelCurve _:
         case DirectShape _:
         case View3D _:
-        case BlockInstance _:
+        case Instance _:
         case Alignment _:
         case Text _:
         case Dimension _:

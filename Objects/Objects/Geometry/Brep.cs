@@ -1,14 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Serialization;
+
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.Serialization;
+
 using Objects.Other;
 using Objects.Primitive;
-
 
 namespace Objects.Geometry
 {
@@ -498,6 +498,7 @@ namespace Objects.Geometry
     /// <inheritdoc/>
     public bool TransformTo(Transform transform, out Brep brep)
     {
+      // transform display values
       var displayValues = new List<Mesh>(displayValue.Count);
       foreach (Mesh v in displayValue)
       {
@@ -505,11 +506,34 @@ namespace Objects.Geometry
         displayValues.Add(mesh);
       }
 
+      // transform surfaces
       var surfaces = new List<Surface>(Surfaces.Count);
       foreach (var srf in Surfaces)
       {
         srf.TransformTo(transform, out Surface surface);
         surfaces.Add(surface);
+      }
+
+      // transform curve3d
+      var success3D = true;
+      var transformedCurve3D = new List<ICurve>();
+      foreach (var curve in Curve3D)
+      {
+        if (curve is ITransformable c)
+        {
+          c.TransformTo(transform, out ITransformable tc);
+          transformedCurve3D.Add((ICurve)tc);
+        }
+        else
+          success3D = false;
+      }
+
+      // transform vertices
+      var transformedVertices = new List<Point>();
+      foreach (var vertex in Vertices)
+      {
+        vertex.TransformTo(transform, out Point transformedVertex);
+        transformedVertices.Add(transformedVertex);
       }
 
       brep = new Brep
@@ -518,9 +542,9 @@ namespace Objects.Geometry
         units = units,
         displayValue = displayValues,
         Surfaces = surfaces,
-        Curve3D = transform.ApplyToCurves(Curve3D, out bool success3D),
+        Curve3D = transformedCurve3D,
         Curve2D = new List<ICurve>(Curve2D),
-        Vertices = transform.ApplyToPoints(Vertices),
+        Vertices = transformedVertices,
         Edges = new List<BrepEdge>(Edges.Count),
         Loops = new List<BrepLoop>(Loops.Count),
         Trims = new List<BrepTrim>(Trims.Count),

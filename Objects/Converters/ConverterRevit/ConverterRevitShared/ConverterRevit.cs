@@ -545,6 +545,9 @@ namespace Objects.Converter.Revit
         case BE.View3D o:
           return ViewToNative(o);
 
+        case Other.Revit.RevitInstance o:
+          return RevitInstanceToNative(o);
+
         case BE.Room o:
           return RoomToNative(o);
 
@@ -567,7 +570,7 @@ namespace Objects.Converter.Revit
           return StructuralModelToNative(o);
 
         // other
-        case Other.BlockInstance_old o:
+        case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
         //hacky but the current comments camera is not a Base object
@@ -702,6 +705,7 @@ namespace Objects.Converter.Revit
         BE.CableTray _ => true,
         BE.Conduit _ => true,
         BE.Revit.RevitRailing _ => true,
+        Other.Revit.RevitInstance _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
         BE.Room _ => true,
@@ -713,7 +717,7 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element2D _ => true,
         STR.Geometry.Node _ => true,
         STR.Analysis.Model _ => true,
-        Other.BlockInstance_old _ => true,
+        Other.BlockInstance _ => true,
         _ => false,
       };
     }

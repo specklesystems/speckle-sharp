@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Text;
@@ -156,15 +157,16 @@ namespace Speckle.Core.Serialisation
         return true;
       }
 
-      if (type == typeof(Matrix4x4) && valueType == typeof(List<double>))
+      if (type == typeof(Matrix4x4) && valueType == typeof(List<object>))
       {
-        var l = value as List<double>;
+        var l = (value as List<object>).Cast<double>().ToList();
         convertedValue = new Matrix4x4(
           (float)l[0], (float)l[1], (float)l[2], (float)l[3],
           (float)l[4], (float)l[5], (float)l[6], (float)l[7],
           (float)l[8], (float)l[9], (float)l[10], (float)l[11],
           (float)l[12], (float)l[13], (float)l[14], (float)l[15]
           );
+        return true;
       }
 
       return false;

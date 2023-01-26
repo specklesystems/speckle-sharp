@@ -95,9 +95,17 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out ITransformable polyline)
     {
+      // transform points
+      var transformedPoints = new List<Point>();
+      foreach (var point in GetPoints())
+      {
+        point.TransformTo(transform, out Point transformedPoint);
+        transformedPoints.Add(transformedPoint);
+      }
+
       polyline = new Polyline
       {
-        value = transform.ApplyToPoints(value),
+        value = transformedPoints.SelectMany(o => o.ToList()).ToList(),
         closed = closed,
         applicationId = applicationId,
         units = units

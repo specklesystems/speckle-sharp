@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
@@ -8,9 +8,9 @@ using Speckle.Newtonsoft.Json;
 
 using Objects.Geometry;
 using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
 using Plane = Objects.Geometry.Plane;
 using Vector = Objects.Geometry.Vector;
-using Objects.BuiltElements.Revit;
 
 namespace Objects.Other
 {
@@ -27,27 +27,25 @@ namespace Objects.Other
     /// </remarks>
     public Transform transform { get; set; } = new Transform();
 
+    /// <summary>
+    /// The units of this Instance, should be the same as the instance transform units
+    /// </summary>
+    public string units { get; set; } 
+
     [DetachProperty]
     public virtual Base definition { get; set; }
 
     public Instance () { }
   }
 
-  /*
-  public class Block : Base
-  {
-    public string name { get; set; }
-
-    public Point basePoint { get; set; }
-
-    [DetachProperty]
-    public List<Base> geometry { get; set; }
-
-    public Block() { }
-  }
-
+  /// <summary>
+  /// Block instance class 
+  /// </summary>
   public class BlockInstance : Instance
   {
+    [JsonIgnore, Obsolete("Use GetInsertionPoint method"), SchemaIgnore]
+    public Point insertionPoint { get => GetInsertionPoint(); set { } }
+
     /// <inheritdoc cref="GetTransformedGeometry"/>
     [JsonIgnore]
     public List<ITransformable> transformedGeometry => GetTransformedGeometry();
@@ -56,14 +54,57 @@ namespace Objects.Other
     [JsonIgnore]
     public Plane insertionPlane => GetInsertionPlane();
 
-    public string units { get; set; }
-
     [DetachProperty]
-    public Block definition { get; set; }
+    [Obsolete("Use definition property")]
+    public BlockDefinition blockDefinition { get; set; }
+
+    public override Base definition
+    {
+      get
+      {
+        return blockDefinition;
+      }
+      set
+      {
+        if (value is BlockDefinition)
+        {
+          blockDefinition = (BlockDefinition)value;
+        }
+      }
+    }
 
     public BlockInstance() { }
 
-    public Point GetInsertionPoint() => GetInsertionPoint(definition.basePoint);
+    [SchemaInfo("Block Instance", "A Speckle Block Instance")]
+    public BlockInstance(BlockDefinition blockDefinition, Transform transform)
+    {
+      this.definition = blockDefinition;
+      this.transform = transform;
+
+      // OLD: TODO: need to verify
+      // Add base translation to transform. This assumes the transform is based on the world origin,
+      // whereas the instance transform assumes it contains the basePoint translation already.
+      //this.transform = transform * blockDefinition.GetBasePointTransform();
+    }
+
+    /// <summary>
+    /// Retrieves Instance insertion point by applying <see cref="transform"/> to <see cref="BlockDefinition.basePoint"/>
+    /// </summary>
+    /// <returns>Insertion point as a <see cref="Point"/></returns>
+    public Point GetInsertionPoint()
+    {
+      if (transform.matrix.IsIdentity) // for backwards compatibility, if a transform had a value set but no matrix
+      {
+        transform.matrix = transform.GetArrayMatrix(transform.value);
+      }
+
+      var newMatrix = transform.matrix;
+      newMatrix.M14 -= (float)blockDefinition.basePoint.x;
+      newMatrix.M24 -= (float)blockDefinition.basePoint.y;
+      newMatrix.M34 -= (float)blockDefinition.basePoint.z;
+      blockDefinition.basePoint.TransformTo(new Transform(newMatrix, units), out Point insertionPoint);
+      return insertionPoint;
+    }
 
     /// <summary>
     /// Returns the a copy of the Block Definition's geometry transformed with this BlockInstance's transform.
@@ -71,7 +112,7 @@ namespace Objects.Other
     /// <returns>The transformed geometry for this BlockInstance.</returns>
     public List<ITransformable> GetTransformedGeometry()
     {
-      return block.geometry.SelectMany(b =>
+      return blockDefinition.geometry.SelectMany(b =>
       {
         switch (b)
         {
@@ -98,14 +139,13 @@ namespace Objects.Other
     /// <returns>A Plane on the insertion point of this Block Instance, with the correct 3-axis rotations.</returns>
     public Plane GetInsertionPlane()
     {
-      var plane = new Plane(block.basePoint, new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
+      // TODO: UPDATE!
+      var plane = new Plane(blockDefinition.basePoint, new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
 
   }
-  */
-
 }
 
 namespace Objects.Other.Revit
