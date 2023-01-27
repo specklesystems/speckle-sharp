@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Autodesk.Navisworks.Api;
 using Speckle.Core.Kits;
 using System.Runtime.CompilerServices;
@@ -129,23 +130,35 @@ namespace Speckle.ConnectorNavisworks
       return m;
     }
 
-    public static string GetPseudoId(ModelItem modelItem)
+    // The path for ModelItems is their node position at each level of the Models tree.
+    // This is the defacto UID for that element within the file at that time.
+    public static string GetPseudoId(object input)
     {
-      // The path for ModelItems is their node position at each level of the Models tree.
-      // This is the de facto UID for that element within the file at that time.
-      InwOaPath path = ComApiBridge.ToInwOaPath(modelItem);
+      int[] arrayData;
+      switch (input)
+      {
+        case ModelItem modelItem:
+          arrayData = ((Array)ComApiBridge.ToInwOaPath(modelItem).ArrayData).ToArray<int>();
+          break;
 
-
-      var arrayData = ((Array)path.ArrayData).ToArray<int>();
+        // Index path is used by SelectionSets and SavedViewpoints - it can try to find the item using the ResolveIndexPath method
+        case Collection<int> indexPath:
+          arrayData = indexPath.ToArray();
+          break;
+        case InwOaPath path:
+          arrayData = ((Array)path.ArrayData).ToArray<int>();
+          break;
+        case int[] indices:
+          arrayData = indices;
+          break;
+        default:
+          throw new ArgumentException("Invalid input type, expected ModelItem, InwOaPath, Collection<int> or int[]");
+      }
 
       // Neglect the Root Node
-      if (arrayData.Length == 0) return RootNodePseudoId;
-
       // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
-      string pseudoId = arrayData.Aggregate("",
-        (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-');
-
-      return pseudoId;
+      return arrayData.Length == 0 ? RootNodePseudoId :
+        string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
     }
 
     public static Dictionary<string, Units> UnitsMap = new Dictionary<string, Units>
