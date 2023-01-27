@@ -163,15 +163,19 @@ namespace Objects.Converter.Navisworks
 
     private static bool CanConvertToSpeckle(ModelItem item)
     {
-      switch (item.HasGeometry)
+      // Only Geometry no children
+      if (!item.HasGeometry || item.Children.Any())
       {
-        // Only Geometry and Geometry with Mesh
-        case true when (item.Geometry.PrimitiveTypes & PrimitiveTypes.Triangles) != 0:
-        case false:
-          return true;
-        default:
-          return false;
+        return true; 
       }
+
+      var allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles;
+
+      var primitives = item.Geometry.PrimitiveTypes;
+
+      var primitiveTypeSupported = (primitives & allowedTypes) == primitives;
+
+      return primitiveTypeSupported;
     }
 
 
