@@ -48,7 +48,7 @@ namespace Speckle.Core.Helpers
     /// <summary>
     /// Checks if the user has a valid internet connection by first pinging cloudfare (fast)
     /// and then trying get from the default Speckle server (slower)
-    /// Each check is retried 2 times every 200ms
+    /// Each check is retried 3 times
     /// </summary>
     /// <returns>True if the user is connected to the internet, false otherwise.</returns>
     public static async Task<bool> UserHasInternet()
@@ -66,7 +66,7 @@ namespace Speckle.Core.Helpers
 
 
     /// <summary>
-    /// Pings a specific url to verify it's accessible. Retries 2 times.
+    /// Pings a specific url to verify it's accessible. Retries 3 times.
     /// </summary>
     /// <param name="hostnameOrAddress">The hostname or address to ping.</param>
     /// <returns>True if the the status code is 200, false otherwise.</returns>
@@ -94,7 +94,7 @@ namespace Speckle.Core.Helpers
     }
 
     /// <summary>
-    /// Pings and tries gettign data from a specific address to verify it's online. Retries 2 times.
+    /// Pings and tries gettign data from a specific address to verify it's online. Retries 3 times.
     /// </summary>
     /// <param name="address">The address to use</param>
     /// <returns>True if the the status code is successful, false otherwise.</returns>
