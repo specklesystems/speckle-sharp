@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using Serilog;
 using Serilog.Context;
-using Serilog.Enrichers.Span;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Speckle.Core.Credentials;
