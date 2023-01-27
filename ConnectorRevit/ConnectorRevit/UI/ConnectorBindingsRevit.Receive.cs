@@ -15,6 +15,7 @@ using Revit.Async;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
@@ -251,59 +252,36 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Traverses the object graph, returning objects to be converted.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-      var objects = new List<ApplicationObject>();
-
-      if (obj is Base @base)
+      
+      ApplicationObject CreateApplicationObject(Base current)
       {
-        var appObj = new ApplicationObject(@base.id, ConnectorRevitUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
-
-        if (converter.CanConvertToNative(@base))
-        {
-          appObj.Convertible = true;
-          objects.Add(appObj);
-          StoredObjects.Add(@base.id, @base);
-          return objects;
-        }
-        else
-        {
-          foreach (var prop in @base.GetDynamicMembers())
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          return objects;
-        }
+        if (!converter.CanConvertToNative(current)) return null;
+        
+        var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type)) {
+          applicationId = current.applicationId,
+          Convertible = true
+        };
+        StoredObjects.Add(current.id, current);
+        return appObj;
       }
+      
+      var traverseFunction = DefaultTraversal.CreateRevitTraversalFunc(converter);
 
-      if (obj is List<object> list)
-      {
-        foreach (var listObj in list)
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        return objects;
-      }
+      var objectsToConvert = traverseFunction.Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current))
+        .Where(appObject => appObject != null)
+        .Reverse()
+        .ToList();
 
-      if (obj is IDictionary dict)
-      {
-        foreach (DictionaryEntry kvp in dict)
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        return objects;
-      }
-
-      else
-      {
-        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
-        {
-          var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Revit");
-          objects.Add(appObj);
-        }
-      }
-
-      return objects;
+      return objectsToConvert;
     }
+    
   }
 }

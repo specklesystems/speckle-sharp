@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Speckle.Core.Helpers;
+using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Duct = Objects.BuiltElements.Duct;
@@ -169,36 +170,31 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
-      if (@base != null && @base["elements"] != null && @base["elements"] is IList elements)
+      if (@base == null) return appObj;
+      
+      CurrentHostElement = host;
+      foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
       {
-        CurrentHostElement = host;
-
-        foreach (var el in elements)
+        if (!CanConvertToNative(obj))
         {
-          if (el == null) continue;
-          if (!(el is Base obj)) continue;
-
-          if (!CanConvertToNative(obj))
-          {
-            appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
-            continue;
-          }
-
-          try
-          {
-            var res = ConvertToNative(obj);
-            if (res is ApplicationObject apl)
-              appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
-          }
-          catch (Exception e)
-          {
-            appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
-            continue;
-          }
+          appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
+          continue;
         }
 
-        CurrentHostElement = null; // unset the current host element.
+        try
+        {
+          var res = ConvertToNative(obj);
+          if (res is ApplicationObject apl)
+            appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
+        }
+        catch (Exception e)
+        {
+          appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
+          continue;
+        }
       }
+
+      CurrentHostElement = null; // unset the current host element.
       return appObj;
     }
 
