@@ -138,7 +138,6 @@ namespace Speckle.Core.Logging
       var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
         .Is(logConfiguration.minimumLevel)
         .Enrich.WithClientAgent()
-        .Enrich.WithSpan()
         .Enrich.WithClientIp()
         .Enrich.FromLogContext()
         .Enrich.FromGlobalLogContext()
