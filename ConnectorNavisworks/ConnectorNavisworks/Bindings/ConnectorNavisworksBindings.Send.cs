@@ -263,6 +263,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       if (convertedCount == 0)
       {
+        progressBar.Cancel();
+        Application.EndProgress();
         progress.Report.LogOperationError(
           new SpeckleException("Zero objects converted successfully. Send stopped.", false));
         return null;
