@@ -16,7 +16,6 @@ using Speckle.Core.Models.GraphTraversal;
 using Utilities = Speckle.Core.Models.Utilities;
 
 using Objects.Other;
-using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Dimension = Objects.Other.Dimension;
@@ -229,6 +228,24 @@ namespace Objects.Converter.RhinoGh
     }
 
     // blocks
+    public Rhino.Geometry.Transform TransformToNative(Transform transform)
+    {
+      var matrix = transform.ConvertTo(ModelUnits).ToArray();
+      var _transform = Rhino.Geometry.Transform.Identity;
+      double homogeneousDivisor = matrix[15]; // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
+      int count = 0;
+      for (var i = 0; i < 4; i++)
+      {
+        for (var j = 0; j < 4; j++)
+        {
+          _transform[i, j] = (j == 3 && homogeneousDivisor != 1) ? matrix[count] / homogeneousDivisor : matrix[count];
+          count++;
+        }
+      }
+
+      return _transform;
+    }
+
     public BlockDefinition BlockDefinitionToSpeckle(InstanceDefinition definition)
     {
       var geometry = new List<Base>();
@@ -239,19 +256,14 @@ namespace Objects.Converter.RhinoGh
           Base converted = ConvertToSpeckle(obj);
           if (converted != null)
           {
-            converted["Layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
+            converted["layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
             geometry.Add(converted);
           }
         }
       }
 
-      var _definition = new BlockDefinition()
-      {
-        name = definition.Name,
-        basePoint = PointToSpeckle(Point3d.Origin), // rhino by default sets selected block def base pt at world origin
-        geometry = geometry,
-        units = ModelUnits
-      };
+      // rhino by default sets selected block def base pt at world origin
+      var _definition = new BlockDefinition(definition.Name, geometry, PointToSpeckle(Point3d.Origin)) { units = ModelUnits };
 
       return _definition;
     }
@@ -442,19 +454,15 @@ namespace Objects.Converter.RhinoGh
     // This results in a transposed transformation matrix - may need to be addressed later
     public BlockInstance BlockInstanceToSpeckle(InstanceObject instance)
     {
-      var t = instance.InstanceXform;
-      var transformArray = new double[] {
-        t.M00, t.M01, t.M02, t.M03,
-        t.M10, t.M11, t.M12, t.M13,
-        t.M20, t.M21, t.M22, t.M23,
-        t.M30, t.M31, t.M32, t.M33 };
+      var t = instance.InstanceXform.ToFloatArray(true);
 
       var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
 
       var _instance = new BlockInstance()
       {
-        transform = new Transform(transformArray, ModelUnits),
-        definition = def
+        transform = new Transform(t, ModelUnits),
+        definition = def,
+        units = ModelUnits
       };
 
       return _instance;
@@ -512,58 +520,6 @@ namespace Objects.Converter.RhinoGh
       return appObj;
     }
 
-    /*
-    public ApplicationObject BlockInstanceToNative(BlockInstance instance, bool AppendToModelSpace = true)
-    {
-      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
-
-      // get the block definition
-      var def = instance.blockDefinition ?? instance["@blockDefinition"] as BlockDefinition; // some applications need to dynamically attach block defs (eg sketchup)
-      if (def == null)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a block definition");
-        return appObj;
-      }
-      InstanceDefinition definition = BlockDefinitionToNative(def, out List<string> notes);
-      notes.ForEach(o => appObj.Update(logItem: o));
-      if (definition == null)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
-        return appObj;
-      }
-
-      // get the transform
-      var transform = TransformToNative(instance.transform);
-
-      // create the instance
-      Guid instanceId = Doc.Objects.AddInstanceObject(definition.Index, transform);
-
-      if (instanceId == Guid.Empty)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add instance to doc");
-        return appObj;
-      }
-
-      var _instance = Doc.Objects.FindId(instanceId) as InstanceObject;
-
-      // add application id
-      try
-      {
-        _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId);
-      }
-      catch (Exception e)
-      {
-        appObj.Update(logItem: $"Could not set application id user string: {e.Message}");
-      }
-
-      // update appobj
-      appObj.Update(convertedItem: _instance);
-      if (AppendToModelSpace)
-        appObj.CreatedIds.Add(instanceId.ToString());
-      return appObj;
-    }
-    */
-
     public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)
     {
       var rhinoMaterial = new RH.Material
@@ -584,29 +540,6 @@ namespace Objects.Converter.RhinoGh
       speckleMaterial.emissive = material.Emission.ToArgb();
       speckleMaterial.opacity = 1.0 - material.Transparency;
       return speckleMaterial;
-    }
-
-    public Rhino.Geometry.Transform TransformToNative(Transform transform)
-    {
-      var matrix = transform.ConvertTo(ModelUnits).GetMatrixArray();
-      var _transform = Rhino.Geometry.Transform.Identity;
-      double homogeneousDivisor = matrix[15]; // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
-      int count = 0;
-      for (var i = 0; i < 4; i++)
-      {
-        for (var j = 0; j < 4; j++)
-        {
-          _transform[i, j] = (j == 3 && homogeneousDivisor != 1) ? matrix[count] / homogeneousDivisor : matrix[count];
-          count++;
-        }
-      }
-      
-      return _transform;
-    }
-
-    public Transform TransformToSpeckle(Rhino.Geometry.Transform t)
-    {
-      return new Transform(t.ToFloatArray(false).Cast<double>().ToArray(), ModelUnits);
     }
 
     // Text

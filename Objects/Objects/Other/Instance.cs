@@ -93,11 +93,6 @@ namespace Objects.Other
     /// <returns>Insertion point as a <see cref="Point"/></returns>
     public Point GetInsertionPoint()
     {
-      if (transform.matrix.IsIdentity) // for backwards compatibility, if a transform had a value set but no matrix
-      {
-        transform.matrix = transform.GetArrayMatrix(transform.value);
-      }
-
       var newMatrix = transform.matrix;
       newMatrix.M14 -= (float)blockDefinition.basePoint.x;
       newMatrix.M24 -= (float)blockDefinition.basePoint.y;

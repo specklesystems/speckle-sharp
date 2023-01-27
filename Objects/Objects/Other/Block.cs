@@ -16,7 +16,7 @@ namespace Objects.Other
   public class BlockDefinition : Base
   {
     public string name { get; set; }
-    
+
     /// <summary>
     /// The definition base point of the block
     /// </summary>
@@ -33,7 +33,7 @@ namespace Objects.Other
     public BlockDefinition(string name, List<Base> geometry, Point basePoint = null )
     {
       this.name = name;
-      this.basePoint = basePoint ?? new Point();
+      this.basePoint = basePoint ?? new Point(0, 0, 0, Units.None);
       this.geometry = geometry;
     }
 

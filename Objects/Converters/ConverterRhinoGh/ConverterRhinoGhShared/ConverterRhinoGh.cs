@@ -232,8 +232,7 @@ namespace Objects.Converter.RhinoGh
 
 #if GRASSHOPPER
         case RH.Transform o:
-          @base = TransformToSpeckle(o);
-          Report.Log("Converter Transform");
+          @base = new Transform(o.ToFloatArray(true), ModelUnits);
           break;
         case DisplayMaterial o:
           @base = DisplayMaterialToSpeckle(o);

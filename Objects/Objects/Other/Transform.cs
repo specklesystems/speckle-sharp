@@ -45,7 +45,22 @@ namespace Objects.Other
       if (value.Length != 16)
         throw new SpeckleException($"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16");
 
-      this.matrix = GetArrayMatrix(value);
+      this.matrix = SetMatrix(value);
+      this.units = units;
+    }
+
+    /// <summary>
+    /// Construct a transform from a row-based float array of size 16
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="units"></param>
+    /// <exception cref="SpeckleException"></exception>
+    public Transform(float[] value, string units = null)
+    {
+      if (value.Length != 16)
+        throw new SpeckleException($"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16");
+
+      this.matrix = SetMatrix(value);
       this.units = units;
     }
 
@@ -103,20 +118,26 @@ namespace Objects.Other
     /// <summary>
     /// Converts this transform to the input units
     /// </summary>
-    /// <param name="units"></param>
+    /// <param name="newUnits"></param>
     /// <returns>A matrix with the translation scaled by input units</returns>
     public Transform ConvertTo(string newUnits)
     {
+      if (newUnits == null || units == null)
+        return this;
+
+      var unitFactor = Units.GetConversionFactor(units, newUnits);
+      if (unitFactor == 1)
+        return this;
+
       var newMatrix = matrix;
-      var unitFactor = (units != null && newUnits != null) ? Units.GetConversionFactor(units, newUnits) : 1d;
-      newMatrix.M14 = (float)(matrix.Translation.X * unitFactor);
-      newMatrix.M24 = (float)(matrix.Translation.Y * unitFactor);
-      newMatrix.M34 = (float)(matrix.Translation.Z * unitFactor);
+      newMatrix.M14 = (float)(matrix.M14 * unitFactor);
+      newMatrix.M24 = (float)(matrix.M24 * unitFactor);
+      newMatrix.M34 = (float)(matrix.M34 * unitFactor);
       return new Transform(newMatrix, newUnits);
     }
 
     /// <summary>
-    /// Returns the dot product of two matrices
+    /// Returns the matrix that results from multiplying two matrices together.
     /// </summary>
     /// <param name="t1">The first transform</param>
     /// <param name="t2">The second transform</param>
@@ -128,8 +149,11 @@ namespace Objects.Other
       return new Transform(newMatrix, t1.units);
     }
 
-    // Retrieves a double array from the matrix
-    public double[] GetMatrixArray()
+    /// <summary>
+    /// Returns the double array of the transform matrix
+    /// </summary>
+    /// <returns></returns>
+    public double[] ToArray()
     {
       return new double[] {
         matrix.M11, matrix.M12, matrix.M13, matrix.M14,
@@ -139,8 +163,8 @@ namespace Objects.Other
       };
     }
 
-    // Retrieves a matrix from a double array
-    public Matrix4x4 GetArrayMatrix(double[] value)
+    // Creates a matrix4x4 from a double array
+    private Matrix4x4 SetMatrix(double[] value)
     {
       return new Matrix4x4
       (
@@ -151,6 +175,18 @@ namespace Objects.Other
       );
     }
 
+    // Creates a matrix from a float array
+    private Matrix4x4 SetMatrix(float[] value)
+    {
+      return new Matrix4x4
+      (
+        value[0], value[1], value[2], value[3],
+        value[4], value[5], value[6], value[7],
+        value[8], value[9], value[10], value[11],
+        value[12], value[13], value[14], value[15]
+      );
+    }
+
     #region obsolete
 
     [JsonIgnore, Obsolete("Use the matrix property")]
@@ -158,11 +194,11 @@ namespace Objects.Other
     {
       get
       {
-        return GetMatrixArray();
+        return ToArray();
       }
       set
       {
-        matrix = GetArrayMatrix(value);
+        matrix = SetMatrix(value);
       }
     }
 
