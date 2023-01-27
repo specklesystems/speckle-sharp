@@ -6,6 +6,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using Polly;
+using Polly.Contrib.WaitAndRetry;
 using Serilog;
 using Speckle.Core.Credentials;
 
@@ -13,6 +14,11 @@ namespace Speckle.Core.Helpers
 {
   public static class Http
   {
+
+    private static IEnumerable<TimeSpan> delay = Backoff.DecorrelatedJitterBackoffV2(
+       medianFirstRetryDelay: TimeSpan.FromMilliseconds(100),
+       retryCount: 3
+     );
     /// <summary>
     /// Policy for retrying failing Http requests
     /// </summary>
@@ -20,8 +26,7 @@ namespace Speckle.Core.Helpers
         .Handle<Exception>()
         .OrResult<bool>(r => r.Equals(false))
         .WaitAndRetry(
-          2,
-          retryAttempt => TimeSpan.FromMilliseconds(200),
+          delay,
           (exception, timeSpan, retryAttempt, context) =>
           {
             Log.Information("Retrying #{retryAttempt}...", retryAttempt);
@@ -34,8 +39,7 @@ namespace Speckle.Core.Helpers
         .Handle<Exception>()
         .OrResult<bool>(r => r.Equals(false))
         .WaitAndRetryAsync(
-          2,
-          retryAttempt => TimeSpan.FromMilliseconds(200),
+          delay,
           (exception, timeSpan, retryAttempt, context) =>
           {
             Log.Information("Retrying #{retryAttempt}...", retryAttempt);
