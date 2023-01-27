@@ -15,7 +15,8 @@ namespace Speckle.Core.Api
     private GraphQLRequest _request;
     private GraphQLResponse<T> _response;
 
-    public IEnumerable<string> ErrorMessages => _response.Errors.Select(e => e.Message);
+    public IEnumerable<string> ErrorMessages =>
+      _response.Errors != null ? _response.Errors.Select(e => e.Message) : new string[] { };
     public IDictionary<string, object>? Extensions => _response.Extensions;
 
     public SpeckleGraphQLException(
