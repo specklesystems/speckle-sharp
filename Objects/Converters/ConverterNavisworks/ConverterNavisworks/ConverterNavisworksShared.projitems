@@ -18,4 +18,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Other.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Utils.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="..\..\..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </Content>
+  </ItemGroup>
 </Project>
