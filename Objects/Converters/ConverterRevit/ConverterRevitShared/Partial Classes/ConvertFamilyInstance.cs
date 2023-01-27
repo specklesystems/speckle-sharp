@@ -1,11 +1,14 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
 using DB = Autodesk.Revit.DB;
+
+using Speckle.Core.Models;
+
 using Point = Objects.Geometry.Point;
 using RevitInstance = Objects.Other.Revit.RevitInstance;
 using FamilyType = Objects.BuiltElements.Revit.FamilyType;
@@ -301,7 +304,7 @@ namespace Objects.Converter.Revit
         //@base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
 
       // add additional props to base object
-      foreach (var prop in extraProps.GetDynamicMembers())
+      foreach (var prop in extraProps.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
         @base[prop] = extraProps[prop];
 
       return @base; 
@@ -433,7 +436,7 @@ namespace Objects.Converter.Revit
       // check mirroring
       isMirrored = transform.Determinant < 0 ? true : false;
 
-      return new Other.Transform(rX, rY, rZ, t);
+      return new Other.Transform(rX, rY, rZ, t) { units = ModelUnits };
     }
 
     private Transform TransformToNative(Other.Transform transform, bool useScaling = false)
@@ -485,6 +488,7 @@ namespace Objects.Converter.Revit
     // revit instances
     public ApplicationObject RevitInstanceToNative(RevitInstance instance)
     {
+      DB.FamilyInstance familyInstance = null;
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
 
@@ -497,6 +501,41 @@ namespace Objects.Converter.Revit
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
+
+      // get the transform, insertion point, and level of the instance
+      var transform = TransformToNative(instance.transform);
+      DB.Level level = ConvertLevelToRevit(instance.level, out ApplicationObject.State levelState);
+      var insertionPoint = transform.OfPoint(XYZ.Zero);
+      var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
+
+      // TODO: HANDLE INSTANCE UPDATING!!
+
+      //create family instance
+      if (familyInstance == null)
+      {
+        familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, level, StructuralType.NonStructural);
+      }
+
+      Doc.Regenerate(); //required for face flipping to work!
+      if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
+        familyInstance.flipHand();
+
+      if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
+        familyInstance.flipFacing();
+
+      // get the rotation about the z axis?
+      try // some point based families don't have a rotation, so keep this in a try catch
+      {
+        var location = familyInstance.Location as LocationPoint;
+        if (rotation != location.Rotation)
+        {
+          var axis = DB.Line.CreateBound(new XYZ(location.Point.X, location.Point.Y, 0), new XYZ(location.Point.X, location.Point.Y, 1000));
+          location.Rotate(axis, rotation - location.Rotation);
+        }
+      }
+      catch { }
+
+      SetInstanceParameters(familyInstance, instance);
 
       return appObj;
     }
