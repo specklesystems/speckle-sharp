@@ -5,6 +5,7 @@ orbs:
   aws-s3: circleci/aws-s3@2.0.0
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
+  discord: antonioned/discord@0.1.0
 
 commands:
   packandpublish:
@@ -505,7 +506,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Proceed to deploy
           command: echo "This step is just here to wait for all build jobs before proceeding to deploy each of them individually. If a job fails, no connector will be deployed."
-
+      - discord/status:
+          mentions: "1067457311980933140"
+          success_message: ":tada: a new version of Speckle-Sharp connectors was build successfully!"
+          failure_message: ":red_circle: oh no! Speckle-Sharp connectors build has failed!"
 # The main workflows for our monorepo pipeline.
 # There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'.
 # These parameters are set by the 'selective-ci' job.
