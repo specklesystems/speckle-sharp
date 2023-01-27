@@ -4,8 +4,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using Serilog;
 using Serilog.Context;
+using Serilog.Enrichers.Span;
 using Serilog.Events;
 using Serilog.Exceptions;
 using Speckle.Core.Credentials;
@@ -58,7 +60,7 @@ namespace Speckle.Core.Logging
     /// <param name="logToSentry">Flag to enable Sentry log sink</param>
     /// <param name="logToFile">Flag to enable File log sink</param>
     public SpeckleLogConfiguration(
-      LogEventLevel minimumLevel = LogEventLevel.Information,
+      LogEventLevel minimumLevel = LogEventLevel.Debug,
       bool logToConsole = true,
       bool logToSeq = true,
       bool logToSentry = true,
@@ -89,9 +91,6 @@ namespace Speckle.Core.Logging
       SpeckleLogConfiguration? logConfiguration = null
     )
     {
-      // TODO: add environment variable to disable logging all together.
-      // Also, make sure, that logging is disabled during unit / integration test runs
-
       if (_initialized)
         return;
 
@@ -105,6 +104,7 @@ namespace Speckle.Core.Logging
 
       _addUserIdToGlobalContextFromDefaultAccount();
       _addVersionInfoToGlobalContext();
+      _addHostOsInfoToGlobalContext();
       _addHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
 
       Log.ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
@@ -139,6 +139,7 @@ namespace Speckle.Core.Logging
       var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
         .Is(logConfiguration.minimumLevel)
         .Enrich.WithClientAgent()
+        .Enrich.WithSpan()
         .Enrich.WithClientIp()
         .Enrich.FromLogContext()
         .Enrich.FromGlobalLogContext()
@@ -179,9 +180,9 @@ namespace Speckle.Core.Logging
           // Enable Global Mode if running in a client app
           o.IsGlobalModeEnabled = true;
           // Debug and higher are stored as breadcrumbs (default is Information)
-          o.MinimumBreadcrumbLevel = LogEventLevel.Information;
+          o.MinimumBreadcrumbLevel = LogEventLevel.Debug;
           // Warning and higher is sent as event (default is Error)
-          o.MinimumEventLevel = LogEventLevel.Warning;
+          o.MinimumEventLevel = LogEventLevel.Error;
         });
       }
 
@@ -217,6 +218,23 @@ namespace Speckle.Core.Logging
 
       GlobalLogContext.PushProperty("version", fileVersionInfo.FileVersion);
       GlobalLogContext.PushProperty("productVersion", fileVersionInfo.ProductVersion);
+    }
+
+    private static string _deterimineHostOsSlug()
+    {
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return "Windows";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return "MacOS";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return "Linux";
+      return RuntimeInformation.OSDescription;
+    }
+    private static void _addHostOsInfoToGlobalContext()
+    {
+
+      var osVersion = Environment.OSVersion;
+      var osArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
+      GlobalLogContext.PushProperty("hostOs", _deterimineHostOsSlug());
+      GlobalLogContext.PushProperty("hostOsVersion", osVersion);
+      GlobalLogContext.PushProperty("hostOsArchitecture", osArchitecture);
     }
 
     private static void _addHostApplicationDataToGlobalContext(
