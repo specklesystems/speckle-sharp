@@ -135,15 +135,18 @@ namespace Speckle.Core.Api
         .Handle<SpeckleGraphQLInternalErrorException<T>>()
         .WaitAndRetryAsync(
           delay,
-          onRetry: (ex, retryCount, context) =>
+          onRetry: (ex, timeout, context) =>
           {
+            var graphqlEx = ex as SpeckleGraphQLException<T>;
             Log.ForContext("exceptionMessage", ex.Message)
               .ForContext("context", context)
+              .ForContext("graphqlExtensions", graphqlEx.Extensions)
+              .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
               .Warning(
-                "The previous attempt at executing function to get {resultType} failed with {exceptionType}. Retrying for the {retryCount}th time.",
+                "The previous attempt at executing function to get {resultType} failed with {exceptionMessage}. Retrying after {timeout}.",
                 nameof(T),
-                ex.GetType().Name,
-                retryCount
+                ex.Message,
+                timeout
               );
           }
         );
@@ -186,6 +189,10 @@ namespace Speckle.Core.Api
           );
         throw;
       }
+    }
+
+    private void LogGraphQLException<T>(SpeckleGraphQLException<T> ex) {
+
     }
 
     internal void MaybeThrowFromGraphQLErrors<T>(

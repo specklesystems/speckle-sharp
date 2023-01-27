@@ -220,7 +220,7 @@ namespace Speckle.DesktopUI.Streams
 
         foreach (var user in Collaborators)
         {
-          var res = await client.StreamGrantPermission(new StreamPermissionInput
+          var res = await client.StreamUpdatePermission(new StreamPermissionInput
           {
             streamId = streamId,
             userId = user.id,
