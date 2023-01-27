@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Structure;
+using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -199,6 +202,12 @@ namespace Objects.Converter.Revit
       }
       catch { }
 
+      if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.TwoLevelsBased && speckleFi["topLevel"] is Objects.BuiltElements.Level topLevel)
+      {
+        var revitTopLevel = ConvertLevelToRevit(topLevel, out ApplicationObject.State topLevelState);
+        TrySetParam(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, revitTopLevel);
+      }
+
       SetInstanceParameters(familyInstance, speckleFi);
       if (speckleFi.mirrored)
         appObj.Update(logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so.");
@@ -318,8 +327,6 @@ namespace Objects.Converter.Revit
     private Base PointBasedFamilyInstanceToSpeckle(DB.FamilyInstance revitFi, Point basePoint, out List<string> notes)
     {
       notes = new List<string>();
-      var lev1 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
-      var lev2 = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
 
       var symbol = revitFi.Document.GetElement(revitFi.GetTypeId()) as DB.FamilySymbol;
 
@@ -330,10 +337,17 @@ namespace Objects.Converter.Revit
       speckleFi.category = revitFi.Category.Name;
       speckleFi.facingFlipped = revitFi.FacingFlipped;
       speckleFi.handFlipped = revitFi.HandFlipped;
+      speckleFi.mirrored = revitFi.Mirrored;
       speckleFi.level = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_LEVEL_PARAM);
       speckleFi.level ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       speckleFi.level ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM);
-      speckleFi.mirrored = revitFi.Mirrored;
+
+      // if a family instance is twoLevelBased, then store the top level
+      if (revitFi.Symbol.Family.FamilyPlacementType == FamilyPlacementType.TwoLevelsBased)
+      {
+        speckleFi["topLevel"] = ConvertAndCacheLevel(revitFi, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+        speckleFi["topLevel"] ??= ConvertAndCacheLevel(revitFi, BuiltInParameter.SCHEDULE_TOP_LEVEL_PARAM);
+      }
 
       if (revitFi.Location is LocationPoint)
         speckleFi.rotation = ((LocationPoint)revitFi.Location).Rotation;
