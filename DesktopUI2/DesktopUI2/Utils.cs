@@ -109,21 +109,21 @@ namespace DesktopUI2
 
   public static class ApiUtils
   {
-    private static Dictionary<string, User> CachedUsers = new Dictionary<string, User>();
+    private static Dictionary<string, UserBase> CachedUsers = new Dictionary<string, UserBase>();
     private static Dictionary<string, AccountViewModel> CachedAccounts = new Dictionary<string, AccountViewModel>();
 
     public static void ClearCache()
     {
       CachedAccounts = new Dictionary<string, AccountViewModel>();
-      CachedUsers = new Dictionary<string, User>();
+      CachedUsers = new Dictionary<string, UserBase>();
     }
 
-    private static async Task<User> GetUser(string userId, Client client)
+    private static async Task<UserBase> GetUser(string userId, Client client)
     {
       if (CachedUsers.ContainsKey(userId))
         return CachedUsers[userId];
 
-      User user = await client.UserGet(userId);
+      var user = await client.OtherUserGet(userId);
 
       if (user != null)
         CachedUsers[userId] = user;
@@ -136,7 +136,7 @@ namespace DesktopUI2
       if (CachedAccounts.ContainsKey(userId))
         return CachedAccounts[userId];
 
-      User user = await GetUser(userId, client);
+      var user = await GetUser(userId, client);
 
       if (user == null)
         return null;
