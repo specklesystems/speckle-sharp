@@ -139,10 +139,10 @@ namespace Speckle.Core.Api
           {
             var graphqlEx = ex as SpeckleGraphQLException<T>;
             Log.ForContext("exceptionMessage", ex.Message)
-              .ForContext("context", context)
               .ForContext("graphqlExtensions", graphqlEx.Extensions)
               .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
               .Warning(
+                ex,
                 "The previous attempt at executing function to get {resultType} failed with {exceptionMessage}. Retrying after {timeout}.",
                 nameof(T),
                 ex.Message,
@@ -178,22 +178,20 @@ namespace Speckle.Core.Api
       // anything else related to graphql gets logged
       catch (SpeckleGraphQLException<T> gqlException)
       {
-        Log.ForContext("errorMessages", gqlException.ErrorMessages.ToList())
-          .ForContext("extensions", gqlException.Extensions)
-          .ForContext("exceptionMessage", gqlException.Message)
+        Log.ForContext("graphqlExtensions", gqlException.Extensions)
+          .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
           .Error(
             gqlException,
-            "Execution of the graphql request {resultType} failed with {graphqlExceptionType}",
+            "Execution of the graphql request to get {resultType} failed with {graphqlExceptionType} {exceptionMessage}.",
             nameof(T),
-            gqlException.GetType().Name
+            gqlException.GetType().Name,
+            gqlException.Message
           );
         throw;
       }
     }
 
-    private void LogGraphQLException<T>(SpeckleGraphQLException<T> ex) {
-
-    }
+    private void LogGraphQLException<T>(SpeckleGraphQLException<T> ex) { }
 
     internal void MaybeThrowFromGraphQLErrors<T>(
       GraphQLRequest request,
