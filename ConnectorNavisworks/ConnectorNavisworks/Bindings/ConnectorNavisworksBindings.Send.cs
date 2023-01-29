@@ -1,22 +1,21 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Documents;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using static Autodesk.Navisworks.Api.Interop.LcOpRegistry;
 using static Autodesk.Navisworks.Api.Interop.LcUOption;
 using static Speckle.ConnectorNavisworks.Utils;
+
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
@@ -269,6 +268,36 @@ namespace Speckle.ConnectorNavisworks.Bindings
           new SpeckleException("Zero objects converted successfully. Send stopped.", false));
         return null;
       }
+
+      #region Views
+
+      var views = new List<Base>();
+
+      if (settings["current-view"] == true.ToString())
+      {
+        var currentView = NavisworksConverter.ConvertToSpeckle(new ViewProxy
+        {
+          Selection = new List<string> { "current_view" }
+        });
+        if (currentView != null) { views.AddRange((List<Base>)currentView["views"]); }
+      }
+
+      if (state.Filter.Slug == "views")
+      {
+        var namedViews = NavisworksConverter.ConvertToSpeckle(new ViewProxy
+        {
+          Selection = state.Filter.Selection
+        });
+
+        if (namedViews != null) { views.AddRange((List<Base>)namedViews["views"]); }
+      }
+
+      if (!views.Any())
+      {
+        commitObject["Views"] = views;
+      }
+
+      #endregion
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {

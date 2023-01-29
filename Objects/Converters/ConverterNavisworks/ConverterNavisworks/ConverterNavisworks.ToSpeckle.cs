@@ -12,7 +12,17 @@ namespace Objects.Converter.Navisworks
   {
     public Base ConvertToSpeckle(object @object)
     {
-      // is expecting @object to be a pseudoId string or a ModelItem
+
+      var type = @object.GetType();
+
+      if (type.Name == "ViewProxy" || (string)@object.GetType().GetProperty("Name").GetValue(obj: @object) == "view-proxy")
+      {
+
+      }
+
+
+
+      // is expecting @object to be a pseudoId string, a ModelItem or a ViewProxy that prompts for View generation.
       ModelItem element;
 
       switch (@object)
@@ -156,7 +166,7 @@ namespace Objects.Converter.Navisworks
       // is expecting @object to be a pseudoId string
       if (!(@object is string pseudoId)) return false;
 
-      ModelItem item = PointerToModelItem(pseudoId);
+      var item = PointerToModelItem(pseudoId);
 
       return CanConvertToSpeckle(item);
     }
@@ -164,15 +174,11 @@ namespace Objects.Converter.Navisworks
     private static bool CanConvertToSpeckle(ModelItem item)
     {
       // Only Geometry no children
-      if (!item.HasGeometry || item.Children.Any())
-      {
-        return true; 
-      }
+      if (!item.HasGeometry || item.Children.Any()) return true;
 
-      var allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles;
+      const PrimitiveTypes allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles;
 
       var primitives = item.Geometry.PrimitiveTypes;
-
       var primitiveTypeSupported = (primitives & allowedTypes) == primitives;
 
       return primitiveTypeSupported;

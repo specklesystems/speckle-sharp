@@ -33,7 +33,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
         filters.Add(selectionSetsFilter);
       }
 
-
       var savedViewsRootItem = Doc.SavedViewpoints.RootItem;
 
       var savedViews = savedViewsRootItem.Children.Select(GetViews).ToList();
@@ -50,21 +49,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
         filters.Add(savedViewsFilter);
       }
 
-      //var clashPlugin = Doc.GetClash();
-      //var clashTests = clashPlugin.TestsData;
-      //var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).OfType<TreeNode>().ToList();
+      var clashPlugin = Doc.GetClash();
+      var clashTests = clashPlugin.TestsData;
 
-      //if (groupedClashResults.Count >= 0)
-      //{
-      //  var clashReportFilter = new TreeSelectionFilter
-      //  {
-      //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
-      //    Description = "Select group clash test results.",
-      //    Values = groupedClashResults
-      //  };
-      //  filters.Add(clashReportFilter);
-      //}
+      var groupedClashResults = clashTests?.Tests.Select(GetClashTestResults)
+        .Where(x => x != null)
+        .ToList();
 
+      if (groupedClashResults?.Count >= 0)
+      {
+        //  var clashReportFilter = new TreeSelectionFilter
+        //  {
+        //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+        //    Description = "Select group clash test results.",
+        //    Values = groupedClashResults
+        //  };
+        //  filters.Add(clashReportFilter);
+      }
 
       return filters;
     }
@@ -93,7 +94,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         DisplayName = savedItem.DisplayName,
         Guid = savedItem.Guid,
-        IndexWith = nameof(TreeNode.Guid),
+        IndexWith = nameof(TreeNode.Indices),
         Indices = Doc.SavedViewpoints.CreateIndexPath(savedItem).ToArray(),
       };
 

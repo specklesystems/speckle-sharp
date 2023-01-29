@@ -1,5 +1,4 @@
-﻿using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Autodesk.Navisworks.Api;
 

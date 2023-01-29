@@ -50,6 +50,11 @@ namespace Speckle.ConnectorNavisworks.Bindings
           Slug = "units", Name = "Coordinate Units", Values = units,
           Selection = "Meters",
           Description = "Units for the Project Basepoint coordinates."
+        },
+        new CheckBoxSetting
+        {
+          Slug = "current-view", Name = "Include View", IsChecked = false,
+          Description = "Include the current display view in the commit."
         }
       };
     }
