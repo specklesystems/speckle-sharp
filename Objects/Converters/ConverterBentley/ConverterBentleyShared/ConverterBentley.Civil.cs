@@ -22,6 +22,7 @@ using Bentley.CifNET.GeometryModel;
 using Bentley.CifNET.SDK;
 using Bentley.CifNET.LinearGeometry;
 using Bentley.CifNET.Formatting;
+using System.Collections;
 
 namespace Objects.Converter.Bentley
 {
@@ -47,6 +48,19 @@ namespace Objects.Converter.Bentley
       var stationFormatter = new CifGM.StationingFormatter(alignment);
 
       _alignment.baseCurve = CurveToSpeckle(alignment.Element as DisplayableElement, ModelUnits);
+
+  
+
+      _alignment.profiles = alignment.Profiles
+        .Select(x => ProfileToSpeckle(x))
+        .Cast<BuiltElements.Profile>()
+        .ToList();
+
+      var profiles = alignment.Profiles
+    .Select(x => x.Element as DisplayableElement)
+    .Select(x => CurveToSpeckle(x, ModelUnits))
+    .ToList();
+
 
       if (alignment.Name != null)
         _alignment.name = alignment.Name;
@@ -125,7 +139,52 @@ namespace Objects.Converter.Bentley
     // profiles
     public Base ProfileToSpeckle(CifGM.Profile profile)
     {
-      return null;
+      var outProfile = new Objects.BuiltElements.Profile();
+
+      var geo = profile.ProfileGeometry;
+
+      IEnumerable<ProfileElement> profileForProcessing;
+
+      if (geo is IEnumerable complexProfile)
+      {
+        profileForProcessing = complexProfile
+          .Cast<object>()
+          .Where(x => x is ProfileElement)
+          .Cast<ProfileElement>();
+      }
+      else
+      {
+        profileForProcessing = new List<ProfileElement>() { geo };
+      }
+
+      outProfile.curves = profileForProcessing.Select(x => ProcessSubcurves(x)).ToList();
+
+      outProfile.name= profile.Name;
+      outProfile.startStation = profile.ProfileGeometry.StartPoint.DistanceAlong; ///????
+
+      return outProfile;
+
+    }
+
+    private ICurve ProcessSubcurves(ProfileElement geo)
+    {
+      if (geo is ProfileCircularArc circularArc)
+      {
+        return null;
+      }
+      else if (geo is ProfileParabola parabola)
+      {
+        return null;
+      }
+      else if (geo is ProfileLineString lineString)
+      {
+        return null;
+      }
+      else if (geo is ProfileLine line)
+      {
+        return null;
+      }
+      else return null;
     }
 
     // corridors
