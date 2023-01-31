@@ -827,6 +827,7 @@ namespace Objects.Converter.RhinoGh
       //tol = 0;
       var u = units ?? ModelUnits;
       brep.Repair(tol);
+      BrepEncoder.ToRawBrep(brep, 1.0);
       // foreach (var f in brep.Faces)
       // {
       //   f.RebuildEdges(tol, false, false);
