@@ -566,6 +566,9 @@ namespace Objects.Converter.Revit
         case STR.Analysis.Model o:
           return StructuralModelToNative(o);
 
+        case STR.Results.ResultSetAll o:
+          return null;
+
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
@@ -711,6 +714,9 @@ namespace Objects.Converter.Revit
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
+        // note that ResultsSetAll can NOT be converted to native, but we just don't want it to be traversed
+        // because it contains so many duplicate elements
+        STR.Results.ResultSetAll _ => true,
         Other.BlockInstance _ => true,
         _ => false,
       };
