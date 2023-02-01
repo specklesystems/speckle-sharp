@@ -47,20 +47,12 @@ namespace Objects.Converter.Bentley
       CifGM.StationFormatSettings settings = CifGM.StationFormatSettings.GetStationFormatSettingsForModel(Model);
       var stationFormatter = new CifGM.StationingFormatter(alignment);
 
-      _alignment.baseCurve = CurveToSpeckle(alignment.Element as DisplayableElement, ModelUnits);
-
-  
+      _alignment.baseCurve = CurveToSpeckle(alignment.Element as DisplayableElement, ModelUnits);  
 
       _alignment.profiles = alignment.Profiles
         .Select(x => ProfileToSpeckle(x))
         .Cast<BuiltElements.Profile>()
         .ToList();
-
-      var profiles = alignment.Profiles
-    .Select(x => x.Element as DisplayableElement)
-    .Select(x => CurveToSpeckle(x, ModelUnits))
-    .ToList();
-
 
       if (alignment.Name != null)
         _alignment.name = alignment.Name;
@@ -143,21 +135,22 @@ namespace Objects.Converter.Bentley
 
       var geo = profile.ProfileGeometry;
 
-      IEnumerable<ProfileElement> profileForProcessing;
+      var profileWithFallback = new List<(ProfileElement profileGeo, DisplayableElement displayGeo)>();
 
       if (geo is IEnumerable complexProfile)
       {
-        profileForProcessing = complexProfile
+        profileWithFallback = complexProfile
           .Cast<object>()
           .Where(x => x is ProfileElement)
-          .Cast<ProfileElement>();
+          .Cast<ProfileElement>()
+          .ToList();
       }
       else
       {
-        profileForProcessing = new List<ProfileElement>() { geo };
+        profileWithFallback = new List<ProfileElement>() { geo };
       }
 
-      outProfile.curves = profileForProcessing.Select(x => ProcessSubcurves(x)).ToList();
+      outProfile.curves = profileWithFallback.ConvertAll(x => ProfileCurveToSpeckle(x));
 
       outProfile.name= profile.Name;
       outProfile.startStation = profile.ProfileGeometry.StartPoint.DistanceAlong; ///????
@@ -166,11 +159,21 @@ namespace Objects.Converter.Bentley
 
     }
 
-    private ICurve ProcessSubcurves(ProfileElement geo)
+    private ICurve ProfileCurveToSpeckle(ProfileElement geo)
     {
+
+
+      var profiles = alignment.Profiles
+    .Select(x => x.Element as DisplayableElement)
+    .Select(x => CurveToSpeckle(x, ModelUnits))
+    .ToList();
+
+
+
+
       if (geo is ProfileCircularArc circularArc)
       {
-        return null;
+        return CurveToSpeckle(circularArc.Sta;
       }
       else if (geo is ProfileParabola parabola)
       {
