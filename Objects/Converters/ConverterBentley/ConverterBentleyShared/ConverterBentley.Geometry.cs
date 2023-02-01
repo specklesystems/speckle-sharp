@@ -942,15 +942,6 @@ namespace Objects.Converter.Bentley
 
         var _points = new List<DPoint3d>();
 
-        // Best I can think to check if this is a Parabola, which I think is just flagged and then custom rendered???
-        if (GetElementProperty(curve, "ProfileParabola_Presentation") != null)
-        {
-          var prof = new ProfileParabola();
-
-        }
-        else
-        {
-
           // get control points
           var controlPoints = GetElementProperty(curve, "ControlPointData.ControlPoints").ContainedValues;
 
@@ -977,7 +968,7 @@ namespace Objects.Converter.Bentley
             }
           }
 
-        }
+        
 
         // set nurbs curve info
         _curve.points = PointsToFlatList(_points).ToList();
