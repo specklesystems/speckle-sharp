@@ -23,6 +23,7 @@ using Bentley.CifNET.SDK;
 using Bentley.CifNET.LinearGeometry;
 using Bentley.CifNET.Formatting;
 using System.Collections;
+using Objects.Structural.Analysis;
 
 namespace Objects.Converter.Bentley
 {
@@ -47,10 +48,12 @@ namespace Objects.Converter.Bentley
       CifGM.StationFormatSettings settings = CifGM.StationFormatSettings.GetStationFormatSettingsForModel(Model);
       var stationFormatter = new CifGM.StationingFormatter(alignment);
 
-      _alignment.baseCurve = CurveToSpeckle(alignment.Element as DisplayableElement, ModelUnits);  
+      _alignment.curves = TryCurveToSpeckleCurveList(alignment.Element as DisplayableElement, ModelUnits);
+
+  
 
       _alignment.profiles = alignment.Profiles
-        .Select(x => ProfileToSpeckle(x))
+        .Select(x => ProfileToSpeckle(x, ModelUnits))
         .Cast<BuiltElements.Profile>()
         .ToList();
 
@@ -129,65 +132,21 @@ namespace Objects.Converter.Bentley
     }
 
     // profiles
-    public Base ProfileToSpeckle(CifGM.Profile profile)
+    public Base ProfileToSpeckle(CifGM.Profile profile, string modelUnits = "m")
     {
-      var outProfile = new Objects.BuiltElements.Profile();
+      var outProfile = new BuiltElements.Profile();
 
       var geo = profile.ProfileGeometry;
 
-      var profileWithFallback = new List<(ProfileElement profileGeo, DisplayableElement displayGeo)>();
+      var profileGeo = profile.Element as DisplayableElement;
 
-      if (geo is IEnumerable complexProfile)
-      {
-        profileWithFallback = complexProfile
-          .Cast<object>()
-          .Where(x => x is ProfileElement)
-          .Cast<ProfileElement>()
-          .ToList();
-      }
-      else
-      {
-        profileWithFallback = new List<ProfileElement>() { geo };
-      }
-
-      outProfile.curves = profileWithFallback.ConvertAll(x => ProfileCurveToSpeckle(x));
+      //Todo, decide if this should be a list of curves or not
+      outProfile.curves = TryCurveToSpeckleCurveList(profileGeo, modelUnits);
 
       outProfile.name= profile.Name;
       outProfile.startStation = profile.ProfileGeometry.StartPoint.DistanceAlong; ///????
 
       return outProfile;
-
-    }
-
-    private ICurve ProfileCurveToSpeckle(ProfileElement geo)
-    {
-
-
-      var profiles = alignment.Profiles
-    .Select(x => x.Element as DisplayableElement)
-    .Select(x => CurveToSpeckle(x, ModelUnits))
-    .ToList();
-
-
-
-
-      if (geo is ProfileCircularArc circularArc)
-      {
-        return CurveToSpeckle(circularArc.Sta;
-      }
-      else if (geo is ProfileParabola parabola)
-      {
-        return null;
-      }
-      else if (geo is ProfileLineString lineString)
-      {
-        return null;
-      }
-      else if (geo is ProfileLine line)
-      {
-        return null;
-      }
-      else return null;
     }
 
     // corridors
