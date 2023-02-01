@@ -111,7 +111,9 @@ namespace Objects.Converter.RhinoGh
               edges.SplitKinkyEdge(ei, RhinoDoc.ActiveDoc.ModelAngleToleranceRadians);
 
             kinkyEdges += edges.Count - edgeCount;
+            #if RHINO7
             microEdges += edges.RemoveNakedMicroEdges(RhinoDoc.ActiveDoc.ModelRelativeTolerance, cleanUp: true);
+            #endif
             mergedEdges += edges.MergeAllEdges(RhinoDoc.ActiveDoc.ModelAngleToleranceRadians) - edgeCount;
           }
 
