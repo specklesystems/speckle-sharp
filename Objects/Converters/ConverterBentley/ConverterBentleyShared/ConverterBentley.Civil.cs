@@ -43,7 +43,14 @@ namespace Objects.Converter.Bentley
     // alignments
     public Alignment AlignmentToSpeckle(CifGM.Alignment alignment)
     {
+      if(alignment.FeatureDefinition is null)
+      {
+        //An alignment without a feature definition is likely a partial peice of geometry being picked up erroneously upstream.
+        throw new Exception("Skipped undefined alignment");
+      }
+
       var _alignment = new Alignment();
+
 
       CifGM.StationFormatSettings settings = CifGM.StationFormatSettings.GetStationFormatSettingsForModel(Model);
       var stationFormatter = new CifGM.StationingFormatter(alignment);
@@ -52,7 +59,8 @@ namespace Objects.Converter.Bentley
 
       _alignment.profiles = new List<BuiltElements.Profile> { };
 
-      //To match LandXML export behaviour we only export the Active profile
+      // To match LandXML export behaviour we only export the Active profile
+      // This also avoids another issue where other profiles are likely to be a partial piece of the active profile anyway.
       if (alignment.ActiveProfile is CifGM.Profile p)
       {
         var activeProfile = ProfileToSpeckle(p, ModelUnits) as BuiltElements.Profile;
