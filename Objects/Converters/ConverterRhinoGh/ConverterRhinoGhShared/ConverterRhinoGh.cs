@@ -1,21 +1,23 @@
-﻿using Grasshopper.Kernel.Types;
-using Objects.BuiltElements;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+
+using Rhino;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Rhino.Display;
+using RH = Rhino.Geometry;
+using Grasshopper.Kernel.Types;
+
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
-using Rhino;
-using Rhino.Display;
-using Rhino.DocObjects;
-using Rhino.Geometry;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -33,7 +35,6 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
-using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Text = Objects.Other.Text;
@@ -387,14 +388,8 @@ namespace Objects.Converter.RhinoGh
             {
               var block = BlockInstanceToSpeckle(@object as InstanceObject);
               o.basePoint = block.GetInsertionPoint();
-              if (block.transform.Decompose(out Vector scale, out System.Numerics.Quaternion rotation, out Vector translation))
-              {
-                o.rotation = Math.Acos(rotation.W) * 2;
-              }
-              else
-              {
-                o.rotation = 0;
-              }
+              block.transform.Decompose(out Vector3 scale, out System.Numerics.Quaternion rotation, out Vector4 translation);
+              o.rotation = Math.Acos(rotation.W) * 2;
             }
             break;
 

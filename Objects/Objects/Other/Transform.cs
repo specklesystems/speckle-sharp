@@ -100,20 +100,79 @@ namespace Objects.Other
     /// <param name="rotation"></param>
     /// <param name="translation"></param>
     /// <returns>True if successful, false otherwise</returns>
-    public bool Decompose(out Vector scale, out Quaternion rotation, out Vector translation)
+    public void Decompose(out Vector3 scale, out Quaternion rotation, out Vector4 translation)
     {
-      scale = null;
-      rotation = Quaternion.Identity;
-      translation = null;
+      // translation
+      translation = new Vector4(matrix.M14, matrix.M24, matrix.M34, matrix.M44);
 
-      if (Matrix4x4.Decompose(matrix, out Vector3 _scale, out rotation, out Vector3 _translation))
-      {
-        scale = new Vector(_scale.X, _scale.Y, _scale.Z) { units = Units.None };
-        translation = new Vector(_translation.X, _translation.Y, _translation.Z) { units = units };
-        return true;
-      }
-      return false;
+      // scale
+      // this should account for non-uniform scaling
+      var scaleX = new Vector4(matrix.M11, matrix.M21, matrix.M31, matrix.M41).Length();
+      var scaleY = new Vector4(matrix.M12, matrix.M22, matrix.M32, matrix.M42).Length();
+      var scaleZ = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M34).Length();
+      scale = new Vector3(scaleX, scaleY, scaleZ);
+
+      // rotation
+      var forward = new Vector3(matrix.M13, matrix.M23, matrix.M33);
+      var up = new Vector3(matrix.M12, matrix.M22, matrix.M32);
+      rotation = LookRotation(forward, up);
     }
+
+    private static Quaternion LookRotation(Vector3 forward, Vector3 up)
+    {
+      Vector3 vector = new Vector3(forward.X / forward.Length(), forward.Y / forward.Length(), forward.Z / forward.Length());
+      Vector3 vector2 = Vector3.Cross(up, forward);
+      Vector3 vector3 = Vector3.Cross(vector, vector2);
+      var m00 = vector2.X;
+      var m01 = vector2.Y;
+      var m02 = vector2.Z;
+      var m10 = vector3.X;
+      var m11 = vector3.Y;
+      var m12 = vector3.Z;
+      var m20 = vector.X;
+      var m21 = vector.Y;
+      var m22 = vector.Z;
+
+      float num8 = m00 + m11 + m22;
+      if (num8 > 0f)
+      {
+        var num = (float)Math.Sqrt(num8 + 1f);
+        num = 0.5f / num;
+        return new Quaternion(
+          (m12 - m21) * num,
+          (m20 - m02) * num,
+          (m01 - m10) * num,
+          num * 0.5f);
+      }
+      if ((m00 >= m11) && (m00 >= m22))
+      {
+        var num7 = (float)Math.Sqrt(1d + m00 - m11 - m22);
+        var num4 = 0.5f / num7;
+        return new Quaternion(
+          0.5f * num7,
+          (m01 + m10) * num4,
+          (m02 + m20) * num4,
+          (m12 - m21) * num4);
+      }
+      if (m11 > m22)
+      {
+        var num6 = (float)Math.Sqrt(1d + m11 - m00 - m22);
+        var num3 = 0.5f / num6;
+        return new Quaternion(
+          (m10 + m01) * num3,
+          0.5f * num6,
+          (m21 + m12) * num3,
+          (m20 - m02) * num3);
+      }
+      var num5 = (float)Math.Sqrt(1d + m22 - m00 - m11);
+      var num2 = 0.5f / num5;
+      return new Quaternion(
+          (m20 + m02) * num2,
+          (m21 + m12) * num2,
+          0.5f * num5,
+          (m01 - m10) * num2);
+    }
+
 
     /// <summary>
     /// Converts this transform to the input units
@@ -207,14 +266,8 @@ namespace Objects.Other
     {
       get
       {
-        if (Decompose(out Vector scale, out Quaternion rotation, out Vector translation))
-        {
-          return Math.Acos(rotation.W) * 2;
-        }
-        else
-        {
-          return 0;
-        }
+        Decompose(out Vector3 scale, out Quaternion rotation, out Vector4 translation);
+        return Math.Acos(rotation.W) * 2;
       }
     }
 

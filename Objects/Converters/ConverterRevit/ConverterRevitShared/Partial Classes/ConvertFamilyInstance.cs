@@ -458,10 +458,17 @@ namespace Objects.Converter.Revit
       var _transform = new Transform(Transform.Identity);
 
       // decompose the matrix to retrieve the translation and rotation factors
-      transform.Decompose(out Geometry.Vector scale, out Quaternion q, out Geometry.Vector translation);
+      transform.Decompose(out Vector3 scale, out Quaternion q, out Vector4 translation);
 
       // translation
-      var convertedTranslation = VectorToNative(translation);
+      if (translation.W == 0) return _transform;
+      if (translation.W != 1)
+      {
+        translation.X /= translation.W;
+        translation.Y /= translation.W;
+        translation.Z /= translation.W;
+      }
+      var convertedTranslation = VectorToNative(new Geometry.Vector(translation.X, translation.Y, translation.Z, transform.units));
 
       // rotation
       // source -> http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation#Quaternion_to_Matrix
@@ -485,7 +492,7 @@ namespace Objects.Converter.Revit
         1.0f - 2.0f * (x2 + z2),
         2.0f * (yz - wx));
 
-      XYZ zvec = new XYZ(
+      XYZ zvec = new XYZ( 
         2.0f * (xz - wy),
         2.0f * (yz + wx),
         1.0f - 2.0f * (x2 + y2));
