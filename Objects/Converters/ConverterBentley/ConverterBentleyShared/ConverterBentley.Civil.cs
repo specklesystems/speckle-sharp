@@ -48,14 +48,17 @@ namespace Objects.Converter.Bentley
       CifGM.StationFormatSettings settings = CifGM.StationFormatSettings.GetStationFormatSettingsForModel(Model);
       var stationFormatter = new CifGM.StationingFormatter(alignment);
 
-      _alignment.curves = TryCurveToSpeckleCurveList(alignment.Element as DisplayableElement, ModelUnits);
+      _alignment.curves = CurveToSpeckleCurveList(alignment.Element as DisplayableElement, ModelUnits);
 
-  
+      _alignment.profiles = new List<BuiltElements.Profile> { };
 
-      _alignment.profiles = alignment.Profiles
-        .Select(x => ProfileToSpeckle(x, ModelUnits))
-        .Cast<BuiltElements.Profile>()
-        .ToList();
+      //To match LandXML export behaviour we only export the Active profile
+      if (alignment.ActiveProfile is CifGM.Profile p)
+      {
+        var activeProfile = ProfileToSpeckle(p, ModelUnits) as BuiltElements.Profile;
+
+        _alignment.profiles.Add(activeProfile);
+      }
 
       if (alignment.Name != null)
         _alignment.name = alignment.Name;
@@ -70,7 +73,7 @@ namespace Objects.Converter.Bentley
       if (stationing != null)
       {
         _alignment.startStation = stationing.StartStation;
-        _alignment.endStation = alignment.LinearGeometry.Length;  // swap for end station
+        _alignment.endStation = alignment.LinearGeometry.Length + stationing.EndStation;  // swap for end station
 
         var region = stationing.GetStationRegionFromDistanceAlong(stationing.StartStation);
 
@@ -104,8 +107,24 @@ namespace Objects.Converter.Bentley
 
     public CifGM.Alignment AlignmentToNative(Alignment alignment)
     {
-      var baseCurve = alignment.baseCurve;
-      var nativeCurve = CurveToNative(baseCurve);
+      if (alignment?.curves?.Any() is null) return null;
+
+      ICurve singleBaseCurve;
+
+      if (alignment.curves?.Count == 1)
+      {
+        singleBaseCurve = alignment.curves.Single();
+      }
+      else
+      {
+        //Not 100% clear on how best to handle the conversion between multiple curves and single element
+        singleBaseCurve = new Polycurve()
+        {
+          segments = alignment.curves
+        };
+      }
+
+      var nativeCurve = CurveToNative(singleBaseCurve);
 
       ConsensusConnectionEdit con = ConsensusConnectionEdit.GetActive();
       con.StartTransientMode();
@@ -134,19 +153,62 @@ namespace Objects.Converter.Bentley
     // profiles
     public Base ProfileToSpeckle(CifGM.Profile profile, string modelUnits = "m")
     {
-      var outProfile = new BuiltElements.Profile();
+      var curves = new List<ICurve>();      
 
-      var geo = profile.ProfileGeometry;
+      switch (profile.ProfileGeometry)
+      {
+        case ProfileParabola profileParabola:
 
-      var profileGeo = profile.Element as DisplayableElement;
+          /// This has thrown exceptions in the past, but should be resolved now that only
+          /// the active profile is being exported, as it was throwing on isolated curve
+          /// elements with no assigned feature properties.
+          /// 
+          /// Pulled out as its own case so it's a bit clearer why the failure is happening
+          /// if it reoccurs.
 
-      //Todo, decide if this should be a list of curves or not
-      outProfile.curves = TryCurveToSpeckleCurveList(profileGeo, modelUnits);
+          try
+          {
+            curves.AddRange(CurveToSpeckleCurveList(profile.Element as DisplayableElement), modelUnits);
+            break;
+          }
+          catch (Exception ex)
+          {
+            throw new Exception("Failed to import isolated profile Parabola", ex);
+          }
 
-      outProfile.name= profile.Name;
-      outProfile.startStation = profile.ProfileGeometry.StartPoint.DistanceAlong; ///????
+        default:
+          curves.AddRange(CurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
+          break;
+      }
+
+      var outProfile = new BuiltElements.Profile
+      {
+        curves = curves,
+
+        name = profile.Name,
+        
+      };
+
+      // The assumption here is that profiles exist in chainage space (x == chainage, y == elevation) 
+      // so the associated bounding box will be in the same space.
+      if (curves.Any() 
+        && curves.First() is IHasBoundingBox startBox 
+        && curves.Last() is IHasBoundingBox endBox
+        && startBox.bbox?.xSize?.start is double startChainage
+        && endBox.bbox?.xSize?.end is double endChainage)
+      {
+        outProfile.startStation = startChainage;
+        outProfile.endStation = endChainage;
+      }
+
+      if (profile.FeatureName is string featureName)
+        outProfile[nameof(featureName)] = featureName;
+
+      if (profile.FeatureDefinition?.Name is string featureDefinitionName)
+        outProfile[nameof(featureDefinitionName)] = featureDefinitionName;
 
       return outProfile;
+
     }
 
     // corridors
