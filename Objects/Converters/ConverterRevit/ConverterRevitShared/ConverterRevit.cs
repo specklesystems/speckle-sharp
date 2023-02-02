@@ -75,6 +75,11 @@ namespace Objects.Converter.Revit
 
     public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
 
+    /// <summary>
+    /// Used to cache already converted family instance FamilyType deifnitions
+    /// </summary>
+    public Dictionary<string, Objects.BuiltElements.Revit.FamilyType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.FamilyType>();
+
     public ReceiveMode ReceiveMode { get; set; }
 
 

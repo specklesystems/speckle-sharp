@@ -13,6 +13,7 @@ using DB = Autodesk.Revit.DB;
 using Speckle.Core.Models;
 
 using Point = Objects.Geometry.Point;
+using Vector = Objects.Geometry.Vector;
 using RevitInstance = Objects.Other.Revit.RevitInstance;
 using FamilyType = Objects.BuiltElements.Revit.FamilyType;
 
@@ -435,11 +436,12 @@ namespace Objects.Converter.Revit
     // transforms
     private Other.Transform TransformToSpeckle(Transform transform, out bool isMirrored)
     {
+
       // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
       var t = VectorToSpeckle(transform.Origin);
-      var rX = VectorToSpeckle(transform.BasisX);
-      var rY = VectorToSpeckle(transform.BasisY);
-      var rZ = VectorToSpeckle(transform.BasisZ);
+      var rX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
+      var rY = new Vector(transform.BasisY.X, transform.BasisY.Y, transform.BasisY.Z); 
+      var rZ = new Vector(transform.BasisZ.X, transform.BasisZ.Y, transform.BasisZ.Z);
 
       /*
       // get the scale: TODO: do revit transforms ever have scaling?
@@ -565,7 +567,7 @@ namespace Objects.Converter.Revit
       notes = new List<string>();
 
       // get the definition base of this instance
-      FamilyType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes);
+      FamilyType definition = ConvertAndCacheRevitInstanceDefinition(instance, Doc, out List<string> definitionNotes);
       notes.AddRange(definitionNotes);
 
       // get the transform
@@ -608,6 +610,18 @@ namespace Objects.Converter.Revit
       #endregion
 
       return _instance;
+    }
+
+    private FamilyType ConvertAndCacheRevitInstanceDefinition(DB.FamilyInstance instance, Document doc, out List<string> notes)
+    {
+      notes = new List<string>();
+      var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
+
+      if (_symbol == null) return null;
+      if (!Symbols.ContainsKey(_symbol.UniqueId))
+        Symbols[_symbol.UniqueId] = GetRevitInstanceDefinition(instance, out notes);
+
+      return Symbols[_symbol.UniqueId] as FamilyType;
     }
 
     private FamilyType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes)
