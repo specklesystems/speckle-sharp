@@ -73,7 +73,7 @@ namespace Objects.Converter.Bentley
       if (stationing != null)
       {
         _alignment.startStation = stationing.StartStation;
-        _alignment.endStation = alignment.LinearGeometry.Length + stationing.EndStation;  // swap for end station
+        _alignment.endStation = alignment.LinearGeometry.Length + stationing.StartStation;  // swap for end station
 
         var region = stationing.GetStationRegionFromDistanceAlong(stationing.StartStation);
 
@@ -168,7 +168,7 @@ namespace Objects.Converter.Bentley
 
           try
           {
-            curves.AddRange(CurveToSpeckleCurveList(profile.Element as DisplayableElement), modelUnits);
+            curves.AddRange(CurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
             break;
           }
           catch (Exception ex)
