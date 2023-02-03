@@ -12,7 +12,6 @@ namespace Objects.Converter.CSI
   {
     public ResultSetNode AllResultSetNodesToSpeckle()
     {
-
       var speckleResultNodeSet = new ResultSetNode();
       speckleResultNodeSet.resultsNode = new List<ResultNode> { };
       List<string> ListPoints = GetAllPointNames(Model);
@@ -25,7 +24,6 @@ namespace Objects.Converter.CSI
 
     public void ResultNodeToSpeckle(string pointName, ResultSetNode resultSetNode)
     {
-
       int numberResults = 0;
       string[] obj = null;
       string[] elm = null;
@@ -65,10 +63,13 @@ namespace Objects.Converter.CSI
 
       Model.Results.JointReact(pointName, eItemTypeElm.Element, ref numberResults, ref obj, ref elm, ref loadCases, ref stepType, ref stepNum, ref F1, ref F2, ref F3, ref M1, ref M2, ref M3);
       Model.Results.JointDispl(pointName, eItemTypeElm.Element, ref numberResults, ref obj, ref elm, ref loadCases, ref stepType, ref stepNum, ref U1, ref U2, ref U3, ref R1, ref R2, ref R3);
+
+      var node = SpeckleModel.nodes.Where(o => (string)o["name"] == pointName).FirstOrDefault() as Node;
+
       foreach (int index in Enumerable.Range(0, numberResults))
       {
         var speckleResultNode = new ResultNode();
-        speckleResultNode.node = PointToSpeckle(pointName);
+        speckleResultNode.node = node;
         speckleResultNode.reactionX = (float)F1[index];
         speckleResultNode.reactionY = (float)F2[index];
         speckleResultNode.reactionZ = (float)F3[index];
@@ -96,7 +97,7 @@ namespace Objects.Converter.CSI
         foreach (int index in Enumerable.Range(0, numberGroundResults))
         {
           var speckleResultNode = new ResultNode();
-          speckleResultNode.node = PointToSpeckle(pointName);
+          speckleResultNode.node = node;
           speckleResultNode.velX = (float)U1Vel[index];
           speckleResultNode.velY = (float)U2Vel[index];
           speckleResultNode.velZ = (float)U3Vel[index];

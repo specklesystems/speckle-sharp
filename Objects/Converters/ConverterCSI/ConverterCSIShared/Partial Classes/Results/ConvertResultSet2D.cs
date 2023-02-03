@@ -1,6 +1,8 @@
-﻿using Objects.Structural.Results;
+﻿using Objects.Structural.Geometry;
+using Objects.Structural.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Objects.Converter.CSI
@@ -33,11 +35,13 @@ namespace Objects.Converter.CSI
         Model.Results.AreaStressShell(areaName, CSiAPIv1.eItemTypeElm.ObjectElm, ref numberOfStressResults, ref stressObj, ref stressElm, ref stressPointElm, ref stressLoadCase, ref stressStepType, ref stressStepNum, ref S11Top, ref S22Top, ref S12Top, ref SMaxTop, ref SMinTop, ref SAngleTop, ref sVonMisesTop, ref S11Bot, ref S22Bot, ref S12Bot, ref SMaxBot, ref SMinBot, ref SAngleBot, ref sVonMisesBot, ref S13Avg, ref S23Avg, ref SMaxAvg, ref SAngleAvg);
         #endregion
 
+        var element = SpeckleModel.elements.Where(o => (string)o["name"] == areaName && o is Element2D).FirstOrDefault() as Element2D;
+
         for (int i = 0; i < numberOfForceResults; i++)
         {
           results.Add(new Result2D
           {
-            element = new Structural.Geometry.Element2D() { name = elm[i] }, //AreaToSpeckle(areaName),
+            element = element, //AreaToSpeckle(areaName),
             permutation = loadCase[i],
             position = new List<double>(),
             dispX = 0, // pulling this data would require large amount of data parsing, implementation TBD

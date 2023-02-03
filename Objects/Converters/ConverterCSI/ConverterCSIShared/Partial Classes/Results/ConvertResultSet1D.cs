@@ -45,6 +45,8 @@ namespace Objects.Converter.CSI
 
       SetLoadCombinationsForResults();
 
+      var element = SpeckleModel.elements.Where(o => (string)o["name"] == elementName && o is Element1D).FirstOrDefault() as Element1D;
+
       // Reference variables for CSI API
       int numberOfResults = 0;
       string[] obj, elm, loadCase, stepType;
@@ -61,7 +63,7 @@ namespace Objects.Converter.CSI
       {
         Result1D result = new Result1D()
         {
-          element = FrameToSpeckle(elementName),
+          element = element,
           position = (float)(objSta[i] / lengthOf1dElement),
           permutation = loadCase[i],
           dispX = 0, // values eventually populated by element.Node.{displacements}
