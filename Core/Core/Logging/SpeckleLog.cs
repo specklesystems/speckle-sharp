@@ -156,7 +156,7 @@ namespace Speckle.Core.Logging
       if (logConfiguration.logToSeq)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.Seq(
           "https://seq.speckle.systems",
-          apiKey: "1bF86pB8XI3s4pYtc2kp"
+          apiKey: "agZqxG4jQELxQQXh0iZQ"
         );
 
       if (logConfiguration.logToSentry)
