@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -72,13 +73,21 @@ namespace Objects.Converter.Navisworks
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => throw new NotImplementedException();
 
 
-    /// <summary>
-    /// Some converters need to be able to receive some settings to modify their internal behaviour (i.e. Rhino's Brep Meshing options). Use this method to set them.
-    /// </summary>
-    /// <param name="settings">The object representing the settings for your converter.</param>
     public void SetConverterSettings(object settings)
     {
-      Settings = settings as Dictionary<string, string>;
+      if (!(settings is Dictionary<string, string> newSettings)) return;
+
+      foreach (var key in newSettings.Keys)
+      {
+        if (Settings.ContainsKey(key))
+        {
+          Settings[key] = newSettings[key];
+        }
+        else
+        {
+          Settings.Add(key, newSettings[key]);
+        }
+      }
     }
   }
 }

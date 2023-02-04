@@ -1,6 +1,7 @@
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -132,6 +133,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         }
       }
 
+      NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
+
       while (toConvertDictionary.Any(kv => kv.Value == ConversionState.ToConvert))
       {
         double navisworksProgressState = Math.Min((float)progress.Value / progress.Max, 1);
@@ -141,6 +144,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
         {
           progress.CancellationTokenSource.Cancel();
           progressBar.Cancel();
+          progressBar.Update(1);
           Application.EndProgress();
           return null;
         }
@@ -148,23 +152,20 @@ namespace Speckle.ConnectorNavisworks.Bindings
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         {
           progressBar.Cancel();
+          progressBar.Update(1);
           Application.EndProgress();
           return null;
         }
 
         var nextToConvert = toConvertDictionary.First(kv => kv.Value == ConversionState.ToConvert);
 
-        Base converted = null;
-
-        string applicationId = string.Empty;
-
-
+        var applicationId = string.Empty;
         var pseudoId = nextToConvert.Key;
         var descriptor = ObjectDescriptor(pseudoId);
 
-        bool alreadyConverted = NavisworksConverter.Report.GetReportObject(pseudoId, out int index);
+        var alreadyConverted = NavisworksConverter.Report.GetReportObject(pseudoId, out int index);
 
-        ApplicationObject reportObject = alreadyConverted
+        var reportObject = alreadyConverted
           ? NavisworksConverter.Report.ReportObjects[index]
           : new ApplicationObject(pseudoId, descriptor)
           {
@@ -178,7 +179,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
           continue;
         }
 
-
         if (!NavisworksConverter.CanConvertToSpeckle(pseudoId))
         {
           reportObject.Update(status: ApplicationObject.State.Skipped,
@@ -191,15 +191,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
         NavisworksConverter.Report.Log(reportObject);
 
-        // All Conversions should be on the main thread
-        if (Control.InvokeRequired)
-        {
-          Control.Invoke(new Action(() => converted = NavisworksConverter.ConvertToSpeckle(pseudoId)));
-        }
-        else
-        {
-          converted = NavisworksConverter.ConvertToSpeckle(pseudoId);
-        }
+        var converted = Convert(pseudoId);
 
         if (converted == null)
         {
@@ -273,31 +265,24 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       var views = new List<Base>();
 
-      if (settings["current-view"] == true.ToString())
+        NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "views" } });
+      if (state.Filter?.Slug == "views")
       {
-        var currentView = NavisworksConverter.ConvertToSpeckle(new ViewProxy
-        {
-          Selection = new List<string> { "current_view" }
-        });
-        if (currentView != null) { views.AddRange((List<Base>)currentView["views"]); }
+        var selectedViews = state.Filter.Selection.Select(Convert).Where(c => c != null);
+        views.AddRange(selectedViews);
+      } else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting checkBox && checkBox.IsChecked)
+      {
+        views.Add(Convert(Doc.CurrentViewpoint.ToViewpoint()));
       }
 
-      if (state.Filter.Slug == "views")
-      {
-        var namedViews = NavisworksConverter.ConvertToSpeckle(new ViewProxy
-        {
-          Selection = state.Filter.Selection
-        });
-
-        if (namedViews != null) { views.AddRange((List<Base>)namedViews["views"]); }
-      }
-
-      if (!views.Any())
+      if (views.Any())
       {
         commitObject["Views"] = views;
       }
 
       #endregion
+      NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", null } });
+
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
       {
@@ -368,6 +353,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
       progressBar.Update(1.0);
       Application.EndProgress();
       progressBar.Dispose();
+
+      return null;
+    }
+
+    private Base Convert(object @object)
+    {
+      try
+      {
+        Base converted = null;
+        if (!Control.InvokeRequired) return NavisworksConverter.ConvertToSpeckle(@object);
+        Control.Invoke(new Action(() => converted = NavisworksConverter.ConvertToSpeckle(@object)));
+        return converted;
+      }
+      catch (Exception ex)
+      {
+        var unused = new SpeckleException("Could not find any Kit!");
+      }
 
       return null;
     }

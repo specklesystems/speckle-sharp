@@ -12,7 +12,7 @@ namespace Objects.Converter.Navisworks
     private const string ProxyOrigin = "Project Base Origin";
     private const string BBoxOrigin = "Boundingbox Origin";
 
-    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
+    public static Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public enum Transforms
     {

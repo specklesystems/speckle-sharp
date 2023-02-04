@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Autodesk.Navisworks.Api;
+using DesktopUI2.Models.Filters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Autodesk.Navisworks.Api;
-using DesktopUI2.Models.Filters;
-using Cursor = System.Windows.Forms.Cursor;
+using Autodesk.Navisworks.Api.Interop;
 using static Speckle.ConnectorNavisworks.Utils;
+using Cursor = System.Windows.Forms.Cursor;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
@@ -46,28 +49,24 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     private static IEnumerable<string> GetObjectsFromSavedViewpoint(ISelectionFilter filter)
     {
-      // TODO: Handle an amended viewpoint hierarchy. Possibly by adding a GUID to the selected viewpoint if none is set at the point of selection.
-      // comparison can then be made by the GUID if the name and path don't align.
-      // This would be better as both order and name could be changed after a stream state is saved.
-      // TODO: Where the SavedViews Filter is amended to accept multiple views for conversion, the logic for returning Object ids will have to change
-      // for processing i.e. Handle lists or id lists instead of a singular list, and in turn handle only converting member objects once.
+      var reference = filter.Selection[0].Split(new string[] { ":" }, StringSplitOptions.None);
+      var savedViewpoint = (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
 
-      var selection = filter.Selection;
+      // TODO: Handle an amended viewpoint hierarchy.
+      // Possibly by adding a GUID to the selected viewpoint if none is set at the
+      // point of selection comparison can then be made by the GUID if the name and
+      // path don't align. This would be better as both order and name could be
+      // changed after a stream state is saved.
+      if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides) return Enumerable.Empty<string>();
 
-      HashSet<string> uniqueIds = new HashSet<string>();
+      var items = savedViewpoint.GetVisibilityOverrides().Hidden;
+      items.Invert(Doc);
 
-      // get view
-
-
-
-
-
-      // get visible elements in view
-      // get all descendants
-      // return list
-
-      return uniqueIds.ToList();
-
+      // TODO: Where the SavedViews Filter is amended to accept multiple views
+      // for conversion, the logic for returning Object ids will have to change
+      // for processing i.e. Handle lists or id lists instead of a singular list,
+      // and in turn handle only converting member objects once.
+      return items.DescendantsAndSelf.Select(GetPseudoId).ToList();
     }
 
     private static IEnumerable<string> GetObjectsFromSelection(ISelectionFilter filter)

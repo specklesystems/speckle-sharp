@@ -94,17 +94,21 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         DisplayName = savedItem.DisplayName,
         Guid = savedItem.Guid,
-        IndexWith = nameof(TreeNode.Indices),
-        Indices = Doc.SavedViewpoints.CreateIndexPath(savedItem).ToArray(),
+        IndexWith = nameof(TreeNode.Reference),
+        Reference = Doc.SavedViewpoints.CreateReference(savedItem).ToString()
       };
 
       if (!savedItem.IsGroup) return treeNode;
 
-      //iterate the children and output
-      foreach (var childItem in ((GroupItem)savedItem).Children) treeNode.Elements.Add(GetViews(childItem));
+      foreach (var childItem in ((GroupItem)savedItem).Children)
+      {
+        treeNode.IsEnabled = false;
+        treeNode.Elements.Add(GetViews(childItem));
+      }
 
       return treeNode.Elements.Count > 0 ? treeNode : null;
     }
+
     private static TreeNode GetClashTestResults(SavedItem savedItem)
     {
       var clashTest = (ClashTest)savedItem;
@@ -113,7 +117,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         DisplayName = clashTest.DisplayName,
         Guid = clashTest.Guid,
-        IndexWith = nameof(TreeNode.Guid)
+        IndexWith = nameof(TreeNode.Guid),
       };
 
       //iterate the children and output only grouped clashes

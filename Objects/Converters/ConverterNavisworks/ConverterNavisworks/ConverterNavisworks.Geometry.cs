@@ -262,7 +262,7 @@ namespace Objects.Converter.Navisworks
       return boundingBox;
     }
 
-    public Vector3D TransformVector3D { get; set; }
+    public static Vector3D TransformVector3D { get; set; }
     public Vector SettingOutPoint { get; set; }
     public Vector TransformVector { get; set; }
     public BoundingBox3D ModelBoundingBox { get; set; }
@@ -272,7 +272,7 @@ namespace Objects.Converter.Navisworks
     /// with Z as elevation height.
     /// This is distinct from the typical "handedness" of 3D models.
     /// </summary>
-    public bool ElevationMode { get; set; }
+    public static bool ElevationMode { get; set; }
 
     public void SetModelOrientationMode()
     {
@@ -299,7 +299,7 @@ namespace Objects.Converter.Navisworks
       Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
 
 
-    public void PopulateModelFragments(NavisworksGeometry geometry)
+    public static void PopulateModelFragments(NavisworksGeometry geometry)
     {
       geometry.ModelFragments = new Stack<InwOaFragment3>();
 
@@ -327,7 +327,7 @@ namespace Objects.Converter.Navisworks
     }
 
 
-    public List<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
+    public static List<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
     {
       var callbackListeners = navisworksGeometry.GetUniqueGeometryFragments();
 
