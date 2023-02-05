@@ -39,6 +39,7 @@ namespace SpeckleRhino
     private static string ApplicationIdKey = "applicationId";
 
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
+    public Dictionary<string, Base> StoredObjectParams = new Dictionary<string, Base>(); // these are to store any parameters found on parent objects to add to fallback objects
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public PreviewConduit PreviewConduit { get; set; }
     private string SelectedReceiveCommit { get; set; }
@@ -267,9 +268,7 @@ namespace SpeckleRhino
         }
 
         SelectedReceiveCommit = commit.id;
-        Preview.Clear();
-        StoredObjects.Clear();
-
+        ClearStorage();
 
         var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id); // get commit layer name 
         Preview = FlattenCommitObject(commitObject, converter);
@@ -367,8 +366,7 @@ namespace SpeckleRhino
 
       if (SelectedReceiveCommit != commit.id)
       {
-        Preview.Clear();
-        StoredObjects.Clear();
+        ClearStorage();
         SelectedReceiveCommit = commit.id;
       }
 
@@ -587,7 +585,7 @@ namespace SpeckleRhino
     private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
 
-      void StoreObject(Base @base, ApplicationObject appObj)
+      void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
       {
         if (StoredObjects.ContainsKey(@base.id))
           appObj.Update(
@@ -595,6 +593,9 @@ namespace SpeckleRhino
             "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
         else
           StoredObjects.Add(@base.id, @base);
+
+        if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
+          StoredObjectParams.Add(@base.id, parameters);
       }
       
       ApplicationObject CreateApplicationObject(Base current, string containerId)
@@ -617,6 +618,7 @@ namespace SpeckleRhino
 
         //Handle objects convertable using displayValues
         var fallbackMember = current["displayValue"] ?? current["@displayValue"];
+        var parameters = current["parameters"] as Base;
         if (fallbackMember != null)
         {
           var appObj = NewAppObj();
@@ -624,7 +626,7 @@ namespace SpeckleRhino
             .Select(o => CreateApplicationObject(o, containerId));
           appObj.Fallback.AddRange(fallbackObjects);
 
-          StoreObject(current, appObj);
+          StoreObject(current, appObj, parameters);
           return appObj;
         }
         
@@ -792,6 +794,7 @@ namespace SpeckleRhino
 
     private void SetUserInfo(Base obj, ObjectAttributes attributes, ApplicationObject parent = null)
     {
+      // set user strings
       if (obj[UserStrings] is Base userStrings)
         foreach (var member in userStrings.GetMembers(DynamicBaseMemberType.Dynamic))
           attributes.SetUserString(member.Key, member.Value as string);
@@ -804,6 +807,27 @@ namespace SpeckleRhino
       }
       catch { }
 
+      // set parameters
+      if (parent != null)
+      {
+        if (StoredObjectParams.ContainsKey(parent.OriginalId))
+        {
+          var parameters = StoredObjectParams[parent.OriginalId];
+          foreach (var member in parameters.GetMembers(DynamicBaseMemberType.Dynamic))
+          {
+            if (member.Value is Base parameter)
+            {
+              try
+              {
+                attributes.SetUserString(member.Key, GetStringFromBaseProp(parameter, "value"));
+              }
+              catch { }
+            }
+          }
+        }
+      }
+
+      // set user dictionaries
       if (obj[UserDictionary] is Base userDictionary)
         ParseDictionaryToArchivable(attributes.UserDictionary, userDictionary);
 
@@ -811,6 +835,13 @@ namespace SpeckleRhino
       if (name != null) attributes.Name = name;
     }
 
+    // Clears the stored objects, params, and preview objects
+    private void ClearStorage()
+    {
+      Preview.Clear();
+      StoredObjects.Clear();
+      StoredObjectParams.Clear();
+    }
     #endregion
 
     #region sending
@@ -1099,6 +1130,23 @@ namespace SpeckleRhino
       return objs;
     }
 
+    private string GetStringFromBaseProp(Base @base, string propName)
+    {
+      var val = @base[propName];
+      if (val == null) return null;
+      switch (val)
+      {
+        case double o:
+          return o.ToString();
+        case bool o:
+          return o.ToString();
+        case int o:
+          return o.ToString();
+        case string o:
+          return o;
+      }
+      return null;
+    }
     /// <summary>
     /// Copies a Base to an ArchivableDictionary
     /// </summary>

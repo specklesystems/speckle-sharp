@@ -17,7 +17,6 @@ namespace Speckle.Core.Models.GraphTraversal
   {
     private List<WhenCondition> conditions;
     private SelectMembers membersToTraverse;
-    private Func<bool> shouldReturnObject;
 
     private TraversalRule()
     {

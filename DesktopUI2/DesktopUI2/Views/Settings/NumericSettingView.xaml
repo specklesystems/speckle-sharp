@@ -1,4 +1,5 @@
 <UserControl
+
     x:Class="DesktopUI2.Views.Settings.NumericSettingView"
     xmlns="https://github.com/avaloniaui"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"

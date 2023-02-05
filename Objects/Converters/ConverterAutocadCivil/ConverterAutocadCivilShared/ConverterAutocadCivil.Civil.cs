@@ -944,29 +944,6 @@ namespace Objects.Converter.AutocadCivil
       List<Featureline> featurelines = new List<Featureline>();
       foreach (var baseline in corridor.Baselines)
       {
-        /* this is just for construction
-        var type = baseline.BaselineType.ToString();
-        if (baseline.IsFeatureLineBased()) // featurelines will only be created if assembly has point codes
-        {
-          var featureline = Trans.GetObject(baseline.FeatureLineId, OpenMode.ForRead) as CivilDB.FeatureLine;
-          var convertedFeatureline = FeatureLineToSpeckle(featureline);
-          if (convertedFeatureline != null)
-          {
-            convertedFeatureline["baselineType"] = type;
-            featurelines.Add(convertedFeatureline);
-          }
-        }
-        else
-        {
-          var alignment = Trans.GetObject(baseline.AlignmentId, OpenMode.ForRead) as CivilDB.Alignment;
-          var convertedAlignment = AlignmentToSpeckle(alignment);
-          if (convertedAlignment != null)
-          {
-            convertedAlignment["baselineType"] = type;
-            alignments.Add(convertedAlignment);
-          }
-        }
-        */
 
         // get the collection of featurelines for this baseline
         foreach (var mainFeaturelineCollection in baseline.MainBaselineFeatureLines.FeatureLineCollectionMap) // main featurelines
@@ -1000,9 +977,13 @@ namespace Objects.Converter.AutocadCivil
       List<Mesh> surfaces = new List<Mesh>();
       foreach (var corridorSurface in corridor.CorridorSurfaces)
       {
-        var surface = Trans.GetObject(corridorSurface.SurfaceId, OpenMode.ForRead);
-        var mesh = ConvertToSpeckle(surface) as Mesh;
-        if (mesh != null) surfaces.Add(mesh);
+        try
+        {
+          var surface = Trans.GetObject(corridorSurface.SurfaceId, OpenMode.ForRead);
+          var mesh = ConvertToSpeckle(surface) as Mesh;
+          if (mesh != null) surfaces.Add(mesh);
+        }
+        catch { }
       }
 
       _corridor["@alignments"] = alignments;
