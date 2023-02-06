@@ -92,6 +92,7 @@ namespace Objects.Converter.Revit
       {
         var physicalMemberAppObj = CreatePhysicalMember(speckleStick);
         physicalMember = (DB.FamilyInstance)physicalMemberAppObj.Converted.FirstOrDefault();
+        analyticalToPhysicalManager.AddAssociation(revitMember.Id, physicalMember.Id);
 
         appObj.Update(createdId: physicalMember.UniqueId, convertedItem: physicalMember);
       }
@@ -449,8 +450,8 @@ namespace Objects.Converter.Revit
       speckleSection.name = familySymbol.Name;
       speckleSection.area = revitSection.SectionArea;
       speckleSection.weight = revitSection.NominalWeight;
-      speckleSection.Izz = revitSection.MomentOfInertiaStrongAxis;
-      speckleSection.Iyy = revitSection.MomentOfInertiaWeakAxis;
+      speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis;
+      speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis;
       speckleSection.J = revitSection.TorsionalMomentOfInertia;
 
       return speckleSection;
