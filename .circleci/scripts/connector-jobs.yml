@@ -10,12 +10,14 @@ rhino:
       slug: rhino
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: grasshopper
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector-mac:
       name: rhino-build-mac
       slnname: ConnectorRhino
@@ -54,6 +56,7 @@ dynamo:
       slnname: ConnectorDynamo
       dllname: SpeckleConnectorDynamo.dll
       slug: dynamo
+      context: innosetup
 
 revit:
   - build-connector:
@@ -62,6 +65,7 @@ revit:
       slug: revit
       requires:
         - build-desktopui
+      context: innosetup
 
 autocadcivil:
   - build-connector:
@@ -70,12 +74,14 @@ autocadcivil:
       slug: autocad
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: civil3d
       requires:
         - build-desktopui
+      context: innosetup
 
 microstation:
   - build-connector:
@@ -84,22 +90,26 @@ microstation:
       slug: microstation
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorMicroStation
       dllname: SpeckleConnectorOpenBuildings.dll
       slug: openbuildings
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorMicroStation
       dllname: SpeckleConnectorOpenRail.dll
       slug: openrail
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorMicroStation
       dllname: SpeckleConnectorOpenRoads.dll
       slug: openroads
+      context: innosetup
 
 teklastructures:
   - build-connector:
@@ -108,6 +118,7 @@ teklastructures:
       slug: teklastructures
       requires:
         - build-desktopui
+      context: innosetup
 csi:
   - build-connector:
       slnname: ConnectorCSI
@@ -115,24 +126,28 @@ csi:
       slug: etabs
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: sap2000
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: safe
       requires:
         - build-desktopui
+      context: innosetup
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: csibridge
       requires:
         - build-desktopui
+      context: innosetup
 
 archicad:
   - build-archicad-add-on:
@@ -155,6 +170,7 @@ archicad:
       slnname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
       slug: archicad
+      context: innosetup
   - build-archicad-add-on-mac:
       archicadversion: "25"
       requires:
@@ -180,3 +196,12 @@ archicad:
       slug: archicad
       build-with-mono: false
       installername: SpeckleArchicadInstall
+
+navisworks:
+  - build-connector:
+      slnname: ConnectorNavisworks
+      dllname: SpeckleConnectorNavisworks.dll
+      slug: navisworks
+      requires:
+        - build-desktopui
+      context: innosetup

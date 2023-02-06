@@ -10,6 +10,7 @@ using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Splat;
 using System;
@@ -172,7 +173,7 @@ namespace DesktopUI2.ViewModels
       if (SearchQuery.Length < 3)
         return;
 
-      if (!await Helpers.UserHasInternet())
+      if (!await Http.UserHasInternet())
       {
         Dispatcher.UIThread.Post(() =>
           MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
@@ -264,7 +265,7 @@ namespace DesktopUI2.ViewModels
     async void SaveCommand()
     {
 
-      if (!await Helpers.UserHasInternet())
+      if (!await Http.UserHasInternet())
       {
         Dispatcher.UIThread.Post(() =>
           MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()

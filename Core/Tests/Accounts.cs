@@ -90,10 +90,10 @@ namespace Tests
     {
       var accs = AccountManager.GetAccounts("baz").ToList();
 
-      Assert.AreEqual(1, accs.Count);
-      Assert.AreEqual("qux", accs[0].serverInfo.company);
-      Assert.AreEqual("baz", accs[0].serverInfo.url);
-      Assert.AreEqual("foo", accs[0].refreshToken);
+      Assert.That(accs.Count, Is.EqualTo(1));
+      Assert.That(accs[0].serverInfo.company, Is.EqualTo("qux"));
+      Assert.That(accs[0].serverInfo.url, Is.EqualTo("baz"));
+      Assert.That(accs[0].refreshToken, Is.EqualTo("foo"));
     }
 
     [Test]
@@ -101,8 +101,8 @@ namespace Tests
     {
       var acc = AccountManager.GetAccounts().Where(x => x.userInfo.id == "123345").FirstOrDefault();
 
-      Assert.AreEqual("https://sample.com", acc.serverInfo.url);
-      Assert.AreEqual("secret", acc.token);
+      Assert.That(acc.serverInfo.url, Is.EqualTo("https://sample.com"));
+      Assert.That(acc.token, Is.EqualTo("secret"));
     }
   }
 }

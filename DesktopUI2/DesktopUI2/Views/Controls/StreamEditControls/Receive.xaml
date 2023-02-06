@@ -171,7 +171,8 @@
             assists:ShadowAssist.ShadowDepth="Depth0"
             Background="Transparent"
             Command="{Binding OpenSettingsCommand}"
-            Foreground="{DynamicResource PrimaryHueMidBrush}">
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            IsVisible="{Binding HasSettings}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
               <icons:MaterialIcon VerticalAlignment="Center" Kind="Settings" />
               <TextBlock
@@ -211,6 +212,7 @@
             <Image
               x:Name="Image360"
               Height="200"
+              Opacity="0"
               Source="{Binding PreviewImage360}" />
           </Viewbox>
         </Grid>

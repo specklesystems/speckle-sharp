@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
 using Speckle.Core.Models;
 using Objects.Structural.CSI.Geometry;
 using Objects.Structural.CSI.Properties;
@@ -13,35 +12,69 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
-    public object updateFrametoNative(Element1D element1D)
+    public void UpdateFrame(Element1D element1D, string name, ref ApplicationObject appObj)
     {
-      string GUID = "";
-      Model.FrameObj.GetGUID(element1D.name, ref GUID);
-      if (GUID == element1D.applicationId)
+      string pt1 = "";
+      string pt2 = "";
+      Model.FrameObj.GetPoints(name, ref pt1, ref pt2);
+
+      var end1node = element1D.end1Node?.basePoint ?? element1D.baseLine?.start;
+      var end2node = element1D.end2Node?.basePoint ?? element1D.baseLine?.end;
+
+      if (end1node == null || end2node == null)
       {
-        string pt1 = "";
-        string pt2 = "";
-        //Model.FrameObj.GetPoints(element1D.name, ref pt1, ref pt2);
-        //var specklePt1 = element1D.end1Node.basePoint;
-        //var specklePt2 = element1D.end2Node.basePoint;
-        //Model.EditPoint.ChangeCoordinates_1(pt1, specklePt1.x, specklePt1.y, specklePt1.z);
-        //Model.EditPoint.ChangeCoordinates_1(pt2, specklePt2.x, specklePt2.y, specklePt2.z);
-        setFrameElementProperties(element1D, element1D.name);
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Frame {element1D.name} does not have valid endpoints");
+        return;
+      }
+
+      // unfortunately this isn't as easy as just changing the coords of the end points of the frame,
+      // as those points may be shared by other frames. Need to check if there are other frames using
+      // those points and then check the new location of the endpoints to see if there are existing points
+      // that could be used.
+      var pt1Updated = UpdatePoint(pt1, element1D.end1Node, end1node);
+      var pt2Updated = UpdatePoint(pt2, element1D.end2Node, end2node);
+
+      int success = 0;
+      if (pt1Updated != pt1 || pt2Updated != pt2)
+      {
+        success = Model.EditFrame.ChangeConnectivity(name, pt1Updated, pt2Updated);
+
+        int numItems = 0;
+        int[] objTypes = null;
+        string[] objNames = null;
+        int[] pointNums = null;
+        Model.PointObj.GetConnectivity(pt1, ref numItems, ref objTypes, ref objNames, ref pointNums);
+        if (numItems == 0)
+          Model.PointObj.DeleteSpecialPoint(pt1);
+        Model.PointObj.GetConnectivity(pt2, ref numItems, ref objTypes, ref objNames, ref pointNums);
+        if (numItems == 0)
+          Model.PointObj.DeleteSpecialPoint(pt2);
+      }
+
+      SetFrameElementProperties(element1D, name);
+      if (success == 0)
+      {
+        string guid = null;
+        Model.FrameObj.GetGUID(name, ref guid);
+        appObj.Update(status: ApplicationObject.State.Updated, createdId: guid, convertedItem: $"Frame{delimiter}{name}");
       }
       else
-      {
-        return FrameToNative(element1D);
-      }
-      return element1D.name;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Failed to change frame connectivity");
     }
-    public object FrameToNative(Element1D element1D)
+    public void FrameToNative(Element1D element1D, ref ApplicationObject appObj)
     {
-      if (GetAllFrameNames(Model).Contains(element1D.name))
+      if (element1D.type == ElementType1D.Link)
       {
-        return null;
+        LinkToNative((CSIElement1D)element1D, ref appObj);
+        return;
       }
-      string units = ModelUnits();
+
+      if (ElementExistsWithApplicationId(element1D.applicationId, out string name))
+      {
+        UpdateFrame(element1D, name, ref appObj);
+        return;
+      }
+
       string newFrame = "";
       Line baseline = element1D.baseLine;
       string[] properties = new string[] { };
@@ -49,7 +82,7 @@ namespace Objects.Converter.CSI
       Model.PropFrame.GetNameList(ref number, ref properties);
       if (!properties.Contains(element1D.property.name))
       {
-        Property1DToNative(element1D.property);
+        Property1DToNative(element1D.property, ref appObj);
         Model.PropFrame.GetNameList(ref number, ref properties);
       }
       Point end1node;
@@ -65,9 +98,10 @@ namespace Objects.Converter.CSI
         end2node = element1D.end2Node.basePoint;
       }
 
+      int? success = null;
       if (properties.Contains(element1D.property.name))
       {
-        Model.FrameObj.AddByCoord(
+        success = Model.FrameObj.AddByCoord(
           ScaleToNative(end1node.x, end1node.units),
           ScaleToNative(end1node.y, end1node.units),
           ScaleToNative(end1node.z, end1node.units),
@@ -80,7 +114,7 @@ namespace Objects.Converter.CSI
       }
       else
       {
-        Model.FrameObj.AddByCoord(
+        success = Model.FrameObj.AddByCoord(
           ScaleToNative(end1node.x, end1node.units),
           ScaleToNative(end1node.y, end1node.units),
           ScaleToNative(end1node.z, end1node.units),
@@ -90,19 +124,23 @@ namespace Objects.Converter.CSI
           ref newFrame
         );
       }
-      setFrameElementProperties(element1D, newFrame);
+      SetFrameElementProperties(element1D, newFrame);
 
-
-      if (element1D.name != null)
+      if (!string.IsNullOrEmpty(element1D.name))
       {
+        if (GetAllFrameNames(Model).Contains(element1D.name))
+          element1D.name = element1D.id;
         Model.FrameObj.ChangeName(newFrame, element1D.name);
-      }
-      else
-      {
-        Model.FrameObj.SetGUID(newFrame, element1D.id);
+        newFrame = element1D.name;
       }
 
-      return element1D.name;
+      var guid = "";
+      Model.FrameObj.GetGUID(newFrame, ref guid);
+
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: guid, convertedItem: $"Frame{delimiter}{newFrame}");
+      else
+        appObj.Update(status: ApplicationObject.State.Failed);
     }
 
     public CSIElement1D FrameToSpeckle(string name)
@@ -263,7 +301,7 @@ namespace Objects.Converter.CSI
       return speckleStructFrame;
     }
 
-    public void setFrameElementProperties(Element1D element1D, string newFrame)
+    public void SetFrameElementProperties(Element1D element1D, string newFrame)
     {
       bool[] end1Release = null;
       bool[] end2Release = null;

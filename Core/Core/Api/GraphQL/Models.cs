@@ -490,17 +490,27 @@ namespace Speckle.Core.Api
     }
   }
 
+  /// <summary>
+  /// OS
+  /// NOTE: do not edit order and only append new items as they are serialized to ints
+  /// </summary>
   public enum Os
   {
-    Win,
-    OSX
+    Win, //0
+    OSX, //1
+    Linux, //2
+    Any //3
   }
 
+  /// <summary>
+  /// Architecture
+  /// NOTE: do not edit order and only append new items as they are serialized to ints
+  /// </summary>
   public enum Architecture
   {
-    Any,
-    Arm,
-    Intel
+    Any, //0
+    Arm, //1
+    Intel //2
   }
 
 

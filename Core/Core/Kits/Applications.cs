@@ -57,8 +57,6 @@ namespace Speckle.Core.Kits
   /// </summary>
   public static class HostApplications
   {
-
-
     public static HostApplication Rhino = new HostApplication("Rhino", "rhino");
     public static HostApplication Grasshopper = new HostApplication("Grasshopper", "grasshopper");
     public static HostApplication Revit = new HostApplication("Revit", "revit");
@@ -88,6 +86,7 @@ namespace Speckle.Core.Kits
     public static HostApplication TopSolid = new HostApplication("TopSolid", "topsolid");
     public static HostApplication Python = new HostApplication("Python", "python");
     public static HostApplication NET = new HostApplication(".NET", "net");
+    public static HostApplication Navisworks = new HostApplication("Navisworks", "navisworks");
     public static HostApplication Other = new HostApplication("Other", "other");
 
     /// <summary>
@@ -128,6 +127,7 @@ namespace Speckle.Core.Kits
       if (appname.Contains("topsolid")) return TopSolid;
       if (appname.Contains("python")) return Python;
       if (appname.Contains("net")) return NET;
+      if (appname.Contains("navisworks")) return Navisworks;
       return new HostApplication(appname, appname);
 
     }

@@ -56,18 +56,35 @@ namespace Objects.Converter.RhinoGh
     /// <param name="obj">The converted Base object to attach info to</param>
     /// <param name="nativeObj">The Rhino object containing info</param>
     /// <returns></returns>
-    public void GetUserInfo(Base obj, ObjectAttributes attributes)
+    public void GetUserInfo(Base obj, ObjectAttributes attributes, out List<string> notes)
     {
-      var userStringsBase = new Base();
-      var userDictionaryBase = new Base();
+      notes = new List<string>();
 
+      // user strings
       var userStrings = attributes.GetUserStrings();
-      userStrings.AllKeys.ToList().ForEach(k => userStringsBase[k] = userStrings[k]);
-      ParseArchivableToDictionary(userDictionaryBase, attributes.UserDictionary);
+      if (userStrings.Count > 0)
+      {
+        var userStringsBase = new Base();
+        foreach (var key in userStrings.AllKeys)
+        {
+          try
+          {
+            userStringsBase[key] = userStrings[key];
+          }
+          catch (Exception e)
+          {
+            notes.Add($"Could not attach user string: {e.Message}");
+          }
+        }
+        obj[UserStrings] = userStringsBase;
+      }
 
-      obj[UserStrings] = userStringsBase;
+      // user dictionary
+      var userDictionaryBase = new Base();
+      ParseArchivableToDictionary(userDictionaryBase, attributes.UserDictionary);
       obj[UserDictionary] = userDictionaryBase;
 
+      // obj name
       if (!string.IsNullOrEmpty(attributes.Name)) obj["name"] = attributes.Name;
     }
 

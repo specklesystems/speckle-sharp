@@ -62,19 +62,21 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentSynchronizingWithCentral += Application_DocumentSynchronizingWithCentral;
       RevitApp.Application.DocumentSynchronizedWithCentral += Application_DocumentSynchronizedWithCentral;
       RevitApp.Application.FileExported += Application_FileExported;
-      RevitApp.Application.FileExporting += Application_FileExporting;
-      RevitApp.Application.FileImporting += Application_FileImporting;
+      //RevitApp.Application.FileExporting += Application_FileExporting;
+      //RevitApp.Application.FileImporting += Application_FileImporting;
       //SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
       //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
     }
 
+    //DISABLED
     private void Application_FileExporting(object sender, FileExportingEventArgs e)
     {
       ShowImportExportAlert();
     }
 
+    //DISABLED
     private void Application_FileImporting(object sender, FileImportingEventArgs e)
     {
       ShowImportExportAlert();
@@ -187,7 +189,7 @@ namespace Speckle.ConnectorRevit.UI
         var streams = GetStreamsInFile();
         UpdateSavedStreams(streams);
 
-        MainViewModel.GoHome();
+        MainViewModel.Instance.NavigateToDefaultScreen();
       }
       catch (Exception ex)
       {
@@ -213,7 +215,7 @@ namespace Speckle.ConnectorRevit.UI
         if (UpdateSavedStreams != null)
           UpdateSavedStreams(new List<StreamState>());
 
-        MainViewModel.GoHome();
+        MainViewModel.Instance.NavigateToDefaultScreen();
       }
       catch (Exception ex)
       {
@@ -252,7 +254,7 @@ namespace Speckle.ConnectorRevit.UI
         UpdateSavedStreams(streams);
 
       //exit "stream view" when changing documents
-      MainViewModel.GoHome();
+      MainViewModel.Instance.NavigateToDefaultScreen();
     }
 
 

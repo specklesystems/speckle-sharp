@@ -14,6 +14,7 @@ using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Rhino;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
@@ -254,7 +255,7 @@ namespace ConnectorGrasshopper
       main.DropDown.Items.Add(new ToolStripSeparator());
       main.DropDown.Items.Add("Open Templates folder", null, (sender, args) =>
       {
-        var path = Path.Combine(Helpers.InstallSpeckleFolderPath, "Templates");
+        var path = Path.Combine(SpecklePathProvider.InstallSpeckleFolderPath, "Templates");
         
         if (!Directory.Exists(path))
           Directory.CreateDirectory(path);

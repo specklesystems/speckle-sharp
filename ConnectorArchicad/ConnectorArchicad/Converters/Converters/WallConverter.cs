@@ -19,18 +19,18 @@ namespace Archicad.Converters
     public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
     {
       var walls = new List<Objects.BuiltElements.Archicad.ArchicadWall>();
-      foreach ( var el in elements )
+      foreach (var el in elements)
       {
-        switch ( el )
+        switch (el)
         {
           case Objects.BuiltElements.Archicad.ArchicadWall archiWall:
             walls.Add(archiWall);
             break;
           case Objects.BuiltElements.Wall wall:
-            var baseLine = ( Line )wall.baseLine;
+            var baseLine = (Line)wall.baseLine;
             var newWall = new Objects.BuiltElements.Archicad.ArchicadWall(Utils.ScaleToNative(baseLine.start),
               Utils.ScaleToNative(baseLine.end), Utils.ScaleToNative(wall.height, wall.units));
-            if ( el is RevitWall revitWall )
+            if (el is RevitWall revitWall)
               newWall.flipped = revitWall.flipped;
             walls.Add(newWall);
             break;
@@ -46,17 +46,17 @@ namespace Archicad.Converters
       CancellationToken token)
     {
       List<Base> walls = new List<Base>();
-      var elementModels = elements as ElementModelData[ ] ?? elements.ToArray();
+      var elementModels = elements as ElementModelData[] ?? elements.ToArray();
 
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadWall> data =
         await AsyncCommandProcessor.Execute(
           new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
           token);
 
-      if ( data is null )
+      if (data is null)
         return walls;
 
-      foreach ( Objects.BuiltElements.Archicad.ArchicadWall wall in data )
+      foreach (Objects.BuiltElements.Archicad.ArchicadWall wall in data)
       {
         wall.displayValue =
           Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == wall.applicationId)

@@ -24,7 +24,7 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
-    internal static MainViewModel Instance { get; private set; }
+    public static MainViewModel Instance { get; private set; }
 
     public static HomeViewModel Home { get; private set; }
 
@@ -93,7 +93,7 @@ namespace DesktopUI2.ViewModels
       NavigateToDefaultScreen();
     }
 
-    internal void NavigateToDefaultScreen()
+    public void NavigateToDefaultScreen()
     {
       var config = ConfigManager.Load();
 

@@ -23,10 +23,9 @@ namespace Objects.Converter.Revit
       if (profiles.Count > 1)
         speckleCeiling.voids = profiles.Skip(1).ToList();
 
-      speckleCeiling.offset = GetParamValue<double>(revitCeiling, BuiltInParameter.CEILING_HEIGHTABOVELEVEL_PARAM);
       speckleCeiling.level = ConvertAndCacheLevel(revitCeiling, BuiltInParameter.LEVEL_PARAM);
 
-      GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM", "CEILING_HEIGHTABOVELEVEL_PARAM" });
+      GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM" });
 
       GetHostedElements(speckleCeiling, revitCeiling, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);
@@ -36,7 +35,8 @@ namespace Objects.Converter.Revit
       return speckleCeiling;
     }
 
-#if REVIT2022
+#if REVIT2020  || REVIT2021
+#else
     public ApplicationObject CeilingToNative(Ceiling speckleCeiling)
     {
       var docObj = GetExistingElementByApplicationId(speckleCeiling.applicationId);

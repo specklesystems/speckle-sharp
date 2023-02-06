@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 
@@ -33,12 +34,16 @@ namespace Objects.Converter.Revit
       speckleElement.category = revitElement.Category.Name;
       speckleElement.displayValue = GetElementDisplayMesh(revitElement, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
+      GetHostedElements(speckleElement, revitElement, out notes);
+      var elements = speckleElement["elements"] as List<Base>;
+      elements ??= new List<Base>();
+
       //Only send elements that have a mesh, if not we should probably support them properly via direct conversions
       if (speckleElement.displayValue == null || speckleElement.displayValue.Count == 0)
       {
         speckleElement.displayValue = GetFabricationMeshes(revitElement);
 
-        if (speckleElement.displayValue == null || speckleElement.displayValue.Count == 0)
+        if ((speckleElement.displayValue == null || speckleElement.displayValue.Count == 0) && elements.Count == 0)
         {
           notes.Add("Not sending elements without display meshes");
           return null;

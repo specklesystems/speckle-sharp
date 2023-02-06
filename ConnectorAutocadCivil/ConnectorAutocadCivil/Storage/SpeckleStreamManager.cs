@@ -73,6 +73,12 @@ namespace Speckle.ConnectorAutocadCivil.Storage
       if (doc == null)
         return;
 
+      //fix for metadata length limitation issues https://github.com/specklesystems/speckle-sharp/issues/2030
+      foreach (var streamState in streamStates)
+      {
+        streamState.CachedStream.collaborators = new List<Core.Api.Collaborator>();
+      }
+
       using (DocumentLock l = doc.LockDocument())
       {
         using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
