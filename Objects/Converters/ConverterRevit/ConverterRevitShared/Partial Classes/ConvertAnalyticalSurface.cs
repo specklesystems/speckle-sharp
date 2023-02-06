@@ -103,7 +103,19 @@ namespace Objects.Converter.Revit
           physicalMember = Doc.GetElement(physicalMemberId);
 
           if (physicalMember.GetTypeId() != elementType.Id)
+          {
+            // collect info about current floor location and depth
+            var currentType = Doc.GetElement(physicalMember.GetTypeId());
+            var currentTypeDepth = GetParamValue<double>(currentType, BuiltInParameter.FLOOR_ATTR_DEFAULT_THICKNESS_PARAM);
+            var currentHeightOffset = GetParamValue<double>(physicalMember, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
+
+            // change type
             physicalMember.ChangeTypeId(elementType.Id);
+
+            // make sure that the bottom of the floor remains in the same location
+            var newTypeDepth = GetParamValue<double>(elementType, BuiltInParameter.FLOOR_ATTR_DEFAULT_THICKNESS_PARAM);
+            TrySetParam(physicalMember, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM, currentHeightOffset + (newTypeDepth - currentTypeDepth));
+          }
         }
       }
 
