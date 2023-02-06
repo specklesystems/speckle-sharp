@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
@@ -43,9 +44,13 @@ namespace Objects.Converter.CSI
     {
       List<Result1D> results = new List<Result1D>();
 
-      SetLoadCombinationsForResults();
-
       var element = SpeckleModel.elements.Where(o => (string)o["name"] == elementName && o is Element1D).FirstOrDefault() as Element1D;
+
+      // if the element is null, then it was not part of the user's selection, so don't send its results
+      if (element == null)
+        return null;
+
+      SetLoadCombinationsForResults();
 
       // Reference variables for CSI API
       int numberOfResults = 0;

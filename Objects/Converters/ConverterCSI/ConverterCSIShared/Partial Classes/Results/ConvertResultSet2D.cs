@@ -15,6 +15,11 @@ namespace Objects.Converter.CSI
 
       foreach (var areaName in areaNames)
       {
+        var element = SpeckleModel.elements.Where(o => (string)o["name"] == areaName && o is Element2D).FirstOrDefault() as Element2D;
+        // if the element is null, then it was not part of the user's selection, so don't send its results
+        if (element == null)
+          continue;
+
         #region Return force results
         int numberOfForceResults = 0;
         string[] obj, elm, pointElm, loadCase, stepType;
@@ -34,8 +39,6 @@ namespace Objects.Converter.CSI
 
         Model.Results.AreaStressShell(areaName, CSiAPIv1.eItemTypeElm.ObjectElm, ref numberOfStressResults, ref stressObj, ref stressElm, ref stressPointElm, ref stressLoadCase, ref stressStepType, ref stressStepNum, ref S11Top, ref S22Top, ref S12Top, ref SMaxTop, ref SMinTop, ref SAngleTop, ref sVonMisesTop, ref S11Bot, ref S22Bot, ref S12Bot, ref SMaxBot, ref SMinBot, ref SAngleBot, ref sVonMisesBot, ref S13Avg, ref S23Avg, ref SMaxAvg, ref SAngleAvg);
         #endregion
-
-        var element = SpeckleModel.elements.Where(o => (string)o["name"] == areaName && o is Element2D).FirstOrDefault() as Element2D;
 
         for (int i = 0; i < numberOfForceResults; i++)
         {
