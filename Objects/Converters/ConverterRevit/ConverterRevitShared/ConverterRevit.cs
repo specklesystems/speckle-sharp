@@ -1,4 +1,4 @@
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -563,6 +563,9 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
+        case Other.Material o:
+          return MaterialToNative(o);
+
         //hacky but the current comments camera is not a Base object
         //used only from DUI and not for normal geometry conversion
         case Base b:
@@ -707,6 +710,9 @@ namespace Objects.Converter.Revit
         STR.Geometry.Node _ => true,
         STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
+
+        //Material
+        Other.Material _ => true,
         _ => false,
       };
     }

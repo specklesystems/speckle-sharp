@@ -41,7 +41,112 @@ namespace Objects.Converter.Revit
       return Materials[material.Name] as Objects.Other.Material;
     }
 
+    private void SetProprtyValue(AssetProperty property, RenderingAssetProperty asstProp)
+    {
+  
+      if (asstProp.Type == "String")
+      {
+        AssetPropertyString aps = property as AssetPropertyString;
+        if (aps.IsEditable())
+        {
+          aps.Value = asstProp.Value;
+        }
+      }
+      else if (asstProp.Type == "Boolean")
+      {
+        AssetPropertyBoolean apb = property as AssetPropertyBoolean;
+        if (apb.IsEditable())
+          apb.Value = asstProp.Value.ToLower() == "true";
+      }
+      else if (asstProp.Type == "Double1")
+      {
+        AssetPropertyDouble apd1 = property as AssetPropertyDouble;
+        if (apd1.IsEditable())
+          apd1.Value = Double.Parse(asstProp.Value);
+      }
+      else if (asstProp.Type == "Double2")
+      {
+        AssetPropertyDoubleArray2d apd2 = property as AssetPropertyDoubleArray2d;
+        {
+        }
+      }
+      else if (asstProp.Type == "Double4")
+      {
+        AssetPropertyDoubleArray4d apd4 = property as AssetPropertyDoubleArray4d;
+      }
+      else if (asstProp.Type == "Integer")
+      {
+        AssetPropertyInteger api = property as AssetPropertyInteger;
+        if (api.IsEditable())
+          api.Value = int.Parse(asstProp.Value);
+      }
 
+      foreach (var subPram in asstProp.ConnectedProperties)
+      {
+        var connectedProp = property.GetSingleConnectedAsset().FindByName(subPram.Name);
+
+        SetProprtyValue(connectedProp, subPram);
+      }
+    }
+
+
+    public ApplicationObject MaterialToNative(Other.Material instance)
+    {
+      var docObj = GetExistingElementByApplicationId(instance.applicationId);
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      var RevitMaterial = instance as RevitMaterial;
+      var allMaterials = new DB.FilteredElementCollector(Doc).OfClass(typeof(DB.Material)).Cast<DB.Material>().ToList();
+      var selectedMaterial = allMaterials.FirstOrDefault(x => x.Name == instance.name);
+      //Material is already found, so we will update it 
+      if (selectedMaterial != null)
+      {
+        selectedMaterial.Shininess = RevitMaterial.shininess;
+        selectedMaterial.Smoothness = RevitMaterial.smoothness;
+        selectedMaterial.Transparency = RevitMaterial.transparency;
+        selectedMaterial.MaterialClass = RevitMaterial.materialClass;
+        selectedMaterial.MaterialCategory = selectedMaterial.MaterialCategory;
+
+
+        var AssestId = selectedMaterial.AppearanceAssetId;
+
+        DB.AppearanceAssetElement aa = Doc.GetElement(AssestId) as DB.AppearanceAssetElement;
+        var renderingAssets = aa.GetRenderingAsset();
+        if (aa.Name == RevitMaterial.AppearanceAssetElement.AssestName)
+        {
+          using (AppearanceAssetEditScope editScope = new AppearanceAssetEditScope(Doc))
+          {
+            Asset editableAsset = editScope.Start(aa.Id);
+            foreach (var asstProp in RevitMaterial.AppearanceAssetElement.RenderingAssest.AssestProperties)
+            {
+              try
+              {
+                var property = editableAsset.FindByName(asstProp.Name);
+                SetProprtyValue(property, asstProp);
+              }
+              catch (Exception ex)
+              {
+              }
+            }
+
+
+            editScope.Commit(true);
+          }
+        }
+
+        appObj.Status = ApplicationObject.State.Updated;
+      }
+      else
+      {
+        // the material is not found and the receiving mode is to create a one 
+        if (ReceiveMode == ReceiveMode.Create)
+        {
+          //to do later
+        }
+      }
+
+
+      return appObj;
+    }
     private RevitAppearanceAssetElement GetAppearanceAssetProperties(DB.Material material)
     {
       RevitAppearanceAssetElement appearanceAssetElement = new RevitAppearanceAssetElement();
