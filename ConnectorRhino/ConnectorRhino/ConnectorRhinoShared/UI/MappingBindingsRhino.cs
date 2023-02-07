@@ -132,8 +132,11 @@ namespace SpeckleRhino
             if (!(crv.IsLinear() || crv.IsArc())) break;
             if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
 
-            if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
-              result.Add(new RevitWallViewModel());
+
+            //if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
+            result.Add(new RevitWallViewModel());
+            //if (!result.Any(x => typeof(RevitDefaultWallViewModel) == x.GetType()))
+            result.Add(new RevitDefaultWallViewModel());
             break;
 
           case Curve c:
@@ -144,6 +147,12 @@ namespace SpeckleRhino
               result.Add(new RevitColumnViewModel());
               result.Add(new RevitPipeViewModel());
               result.Add(new RevitDuctViewModel());
+
+              result.Add(new RevitDefaultBeamViewModel());
+              result.Add(new RevitDefaultBraceViewModel());
+              result.Add(new RevitDefaultColumnViewModel());
+              result.Add(new RevitDefaultPipeViewModel());
+              result.Add(new RevitDefaultDuctViewModel());
             }
 
             //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
