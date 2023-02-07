@@ -5,7 +5,6 @@ using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
-using Autodesk.Navisworks.Api.Interop;
 using Objects.BuiltElements;
 using Objects.Geometry;
 

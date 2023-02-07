@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;

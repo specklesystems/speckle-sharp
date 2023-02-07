@@ -366,7 +366,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
         Control.Invoke(new Action(() => converted = NavisworksConverter.ConvertToSpeckle(@object)));
         return converted;
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         var unused = new SpeckleException("Could not find any Kit!");
       }

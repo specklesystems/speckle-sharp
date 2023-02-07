@@ -4,11 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Autodesk.Navisworks.Api.Interop;
 using static Speckle.ConnectorNavisworks.Utils;
 using Cursor = System.Windows.Forms.Cursor;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {

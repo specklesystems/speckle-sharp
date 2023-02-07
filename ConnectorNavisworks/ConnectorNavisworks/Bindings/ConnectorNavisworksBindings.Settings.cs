@@ -1,10 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Autodesk.Navisworks.Api;
-using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels;
-using static Speckle.ConnectorNavisworks.Utils;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {

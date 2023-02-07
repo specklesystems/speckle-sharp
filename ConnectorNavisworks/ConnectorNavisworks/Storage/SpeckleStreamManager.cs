@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Data;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Data;
-using Autodesk.Navisworks.Api.DocumentParts;
 using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
 using static Speckle.ConnectorNavisworks.Utils;

@@ -2,7 +2,6 @@
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 

@@ -1,6 +1,5 @@
 ﻿using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.ComApi;
-using Autodesk.Navisworks.Api.Interop.ComApi;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
