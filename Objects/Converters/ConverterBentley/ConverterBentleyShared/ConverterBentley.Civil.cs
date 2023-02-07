@@ -22,8 +22,6 @@ using Bentley.CifNET.GeometryModel;
 using Bentley.CifNET.SDK;
 using Bentley.CifNET.LinearGeometry;
 using Bentley.CifNET.Formatting;
-using System.Collections;
-using Objects.Structural.Analysis;
 
 namespace Objects.Converter.Bentley
 {
