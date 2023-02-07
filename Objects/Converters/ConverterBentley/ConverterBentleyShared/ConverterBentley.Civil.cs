@@ -45,7 +45,10 @@ namespace Objects.Converter.Bentley
     {
       if(alignment.FeatureDefinition is null)
       {
-        //An alignment without a feature definition is likely a partial peice of geometry being picked up erroneously upstream.
+        // An alignment without a feature definition is likely a partial peice of geometry being picked up erroneously upstream.
+        //
+        // This is an assumption and hasn't been tested with larger OpenRoads models so may need to be revisted.
+        //
         throw new Exception("Skipped undefined alignment");
       }
 
@@ -60,22 +63,27 @@ namespace Objects.Converter.Bentley
       _alignment.profiles = new List<BuiltElements.Profile> { };
 
       // To match LandXML export behaviour we only export the Active profile
+      // As I understand it other profiles are likely reference and work in progress and are generally not shared
+      // If designer wants to share multiple profiles they can swap active profile and export to a different branch
+      // This behaviour would be best exposed in the editor rather than in the converter.
+      //
       // This also avoids another issue where other profiles are likely to be a partial piece of the active profile anyway.
+      // Haven't tracked down how to differentiate between partial and complete profiles
+      //
       if (alignment.ActiveProfile is CifGM.Profile p)
       {
         var activeProfile = ProfileToSpeckle(p, ModelUnits) as BuiltElements.Profile;
-
-        _alignment.profiles.Add(activeProfile);
+        _alignment.profiles.Add(activeProfile); 
       }
 
       if (alignment.Name != null)
         _alignment.name = alignment.Name;
 
-      if (alignment.FeatureName != null)
-        _alignment["featureName"] = alignment.FeatureName;
+      if (alignment.FeatureName is string featureName)
+        _alignment[nameof(featureName)] = alignment.FeatureName;
 
-      if (alignment.FeatureDefinition != null)
-        _alignment["featureDefinitionName"] = alignment.FeatureDefinition.Name;
+      if (alignment.FeatureDefinition?.Name is string featureDefinitionName)
+        _alignment[nameof(featureDefinitionName)] = featureDefinitionName;
 
       var stationing = alignment.Stationing;
       if (stationing != null)
@@ -87,20 +95,20 @@ namespace Objects.Converter.Bentley
 
         // handle station equations
         var equations = new List<double>();
-        var formattedEquation = new List<string>();
+        var formattedStationEquations = new List<string>();
         //var directions = new List<bool>();
         foreach (var stationEquation in stationing.StationEquations)
         {
-          string stnVal = "";
+          var stnVal = "";
           stationFormatter.FormatStation(ref stnVal, stationEquation.DistanceAlong, settings);
-          formattedEquation.Add(stnVal);
+          formattedStationEquations.Add(stnVal);
 
           // DistanceAlong represents Back Station/BackLocation, EquivalentStation represents Ahead Station
           equations.AddRange(new List<double> { stationEquation.DistanceAlong, stationEquation.DistanceAlong, stationEquation.EquivalentStation });
 
         }
         _alignment.stationEquations = equations;
-        _alignment["formattedStationEquations"] = formattedEquation;
+        _alignment[nameof(formattedStationEquations)] = formattedStationEquations;
         //_alignment.stationEquationDirections = directions;
       }
       else
@@ -115,11 +123,17 @@ namespace Objects.Converter.Bentley
 
     public CifGM.Alignment AlignmentToNative(Alignment alignment)
     {
-      if (alignment?.curves?.Any() is null) return null;
-
       ICurve singleBaseCurve;
 
-      if (alignment.curves?.Count == 1)
+      if (alignment.baseCurve is ICurve basecurve)
+      {
+        singleBaseCurve = basecurve;
+      }
+      else if (alignment?.curves?.Any() is null)
+      {
+        return null;
+      }
+      else if (alignment.curves?.Count == 1)
       {
         singleBaseCurve = alignment.curves.Single();
       }
@@ -192,13 +206,12 @@ namespace Objects.Converter.Bentley
       var outProfile = new BuiltElements.Profile
       {
         curves = curves,
-
-        name = profile.Name,
-        
+        name = profile.Name,        
       };
 
       // The assumption here is that profiles exist in chainage space (x == chainage, y == elevation) 
-      // so the associated bounding box will be in the same space.
+      // so the associated bounding box will be in the same space and can be used to extract the bounds.
+      // If this can't be calculated we leave them empty.
       if (curves.Any() 
         && curves.First() is IHasBoundingBox startBox 
         && curves.Last() is IHasBoundingBox endBox
@@ -216,7 +229,6 @@ namespace Objects.Converter.Bentley
         outProfile[nameof(featureDefinitionName)] = featureDefinitionName;
 
       return outProfile;
-
     }
 
     // corridors
@@ -243,6 +255,14 @@ namespace Objects.Converter.Bentley
 
       return _corridor;
     }
+
+    public Point LinearPointToSpeckle(LinearPoint pt, string units = null)
+    {
+      var u = units ?? ModelUnits;
+      return new Point(ScaleToSpeckle(pt.DistanceAlong, UoR), ScaleToSpeckle(pt.Offset, UoR), 0, u);
+    }
   }
+
+
 }
 #endif

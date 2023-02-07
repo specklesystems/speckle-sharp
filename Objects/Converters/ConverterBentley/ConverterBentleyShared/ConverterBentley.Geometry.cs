@@ -25,8 +25,6 @@ using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using Objects.Converter.OpenRoads;
-using Bentley.CifNET.LinearGeometry;
 
 namespace Objects.Converter.Bentley
 {
@@ -809,18 +807,8 @@ namespace Objects.Converter.Bentley
                 }                
                 break;
               case CurvePrimitive.CurvePrimitiveType.BsplineCurve:
-
-                try
-                {
-
                   var spline = primitive.GetBsplineCurve();
                   segments.Add(BSplineCurveToSpeckle(spline));
-
-                }
-                catch(Exception ex)
-                {
-                  segments.Add(new FailedCurveSegment(new Point(), new Point(), ex, ModelUnits));
-                }
                 break;
               case CurvePrimitive.CurvePrimitiveType.Spiral:
                 var spiralSpline = primitive.GetProxyBsplineCurve();
