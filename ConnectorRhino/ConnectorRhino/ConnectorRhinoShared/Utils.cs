@@ -74,6 +74,35 @@ namespace SpeckleRhino
       }
       return layer;
     }
+
+    /// <summary>
+    /// Get the NamedViews in the specified doc.
+    /// </summary>
+    /// <param name="doc">A RhinoDoc.</param>
+    /// <returns>A string List of NamedViews name.</returns>
+    public static List<string> NamedViews(this RhinoDoc doc)
+    {
+      List<string> views = doc.NamedViews
+        .Select(v => v.Name)
+        .ToList();
+
+      return views;
+    }
+
+    /// <summary>
+    /// Get the StandardViews in the specified doc.
+    /// </summary>
+    /// <param name="doc">A RhinoDoc.</param>
+    /// <returns>A string List of ViewportID.</returns>
+    public static List<string> StandardViews(this RhinoDoc doc)
+    {
+      List<string> views = doc.Views
+        .GetStandardRhinoViews()
+        .Select(v => v.ActiveViewportID.ToString())
+        .ToList();
+
+      return views;
+    }
     #endregion
 
     #region internal methods
