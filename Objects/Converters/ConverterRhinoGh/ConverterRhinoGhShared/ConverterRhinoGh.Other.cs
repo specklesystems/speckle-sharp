@@ -473,7 +473,7 @@ namespace Objects.Converter.RhinoGh
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
 
       // get the definition
-      var definition = instance.definition ?? instance["@definition"] as Base; // some applications need to dynamically attach defs (eg sketchup)
+      var definition = instance.definition ?? instance["@definition"] as Base ?? instance["@blockDefinition"] as Base; // some applications need to dynamically attach defs (eg sketchup)
       if (definition == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a definition");
