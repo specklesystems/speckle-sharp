@@ -1,7 +1,4 @@
-﻿using Avalonia;
-using Avalonia.ReactiveUI;
-using DesktopUI2.Views;
-using Speckle.ConnectorNavisworks.Bindings;
+﻿using DesktopUI2.Views;
 using System;
 using System.Windows.Controls;
 using Application = Autodesk.Navisworks.Api.Application;
