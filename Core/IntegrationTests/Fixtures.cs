@@ -1,15 +1,41 @@
 ﻿using System.Net.Mime;
 using System.Text;
 using Newtonsoft.Json;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace TestsIntegration
 {
+  [SetUpFixture]
+  public class SetUp
+  {
+    [OneTimeSetUp]
+    public void BeforeAll()
+    {
+      SpeckleLog.Initialize(
+        "Core",
+        "Testing",
+        new SpeckleLogConfiguration(
+          Serilog.Events.LogEventLevel.Debug,
+          logToConsole: true,
+          logToFile: false,
+          logToSeq: false
+        )
+      );
+      Log.Information("Initialized logger for testing");
+    }
+  }
+
   public static class Fixtures
   {
-    public static readonly ServerInfo Server = new ServerInfo { url = "http://localhost:3000", name = "Docker Server" };
+    public static readonly ServerInfo Server = new ServerInfo
+    {
+      url = "http://localhost:3000",
+      name = "Docker Server"
+    };
 
     public static async Task<Account> SeedUser()
     {
@@ -19,10 +45,7 @@ namespace TestsIntegration
       user["password"] = "12ABC3456789DEF0GHO";
       user["name"] = $"{seed.Substring(0, 5)} Name";
 
-      var httpClient = new HttpClient(new HttpClientHandler()
-      {
-        AllowAutoRedirect = false
-      });
+      var httpClient = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
       httpClient.BaseAddress = new Uri(Server.url);
 
       string redirectUrl;
@@ -31,7 +54,11 @@ namespace TestsIntegration
         var response = await httpClient.PostAsync(
           "/auth/local/register?challenge=challengingchallenge",
           // $"{Server.url}/auth/local/register?challenge=challengingchallenge",
-          new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, MediaTypeNames.Application.Json)
+          new StringContent(
+            JsonConvert.SerializeObject(user),
+            Encoding.UTF8,
+            MediaTypeNames.Application.Json
+          )
         );
         redirectUrl = response.Headers.Location.AbsoluteUri;
       }
@@ -51,7 +78,11 @@ namespace TestsIntegration
 
       var tokenResponse = await httpClient.PostAsync(
         "/auth/token",
-        new StringContent(JsonConvert.SerializeObject(tokenBody), Encoding.UTF8, MediaTypeNames.Application.Json)
+        new StringContent(
+          JsonConvert.SerializeObject(tokenBody),
+          Encoding.UTF8,
+          MediaTypeNames.Application.Json
+        )
       );
       var deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(
         await tokenResponse.Content.ReadAsStringAsync()
@@ -60,7 +91,12 @@ namespace TestsIntegration
       var acc = new Account
       {
         token = deserialised["token"],
-        userInfo = new UserInfo { id = user["name"], email = user["email"], name = user["name"] },
+        userInfo = new UserInfo
+        {
+          id = user["name"],
+          email = user["email"],
+          name = user["name"]
+        },
         serverInfo = Server
       };
       var client = new Client(acc);
@@ -93,11 +129,13 @@ namespace TestsIntegration
       return @base;
     }
 
-    public static Blob[] GenerateThreeBlobs() => new Blob[] {
+    public static Blob[] GenerateThreeBlobs() =>
+      new Blob[]
+      {
         GenerateBlob("blob 1 data"),
         GenerateBlob("blob 2 data"),
         GenerateBlob("blob 3 data"),
-    };
+      };
 
     private static Blob GenerateBlob(string content)
     {

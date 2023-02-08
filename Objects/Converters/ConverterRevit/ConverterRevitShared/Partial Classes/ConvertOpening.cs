@@ -65,8 +65,8 @@ namespace Objects.Converter.Revit
             }
 
             var poly = rwo.outline as Polyline;
-            if (poly == null || !(poly.GetPoints().Count == 4 && poly.closed))
-            {
+            if (poly == null || !((poly.GetPoints().Count == 5 && poly.closed) || (poly.GetPoints().Count == 4 && !poly.closed)))
+            { 
               appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Curve outline for wall opening must be a rectangle-shaped polyline");
               return appObj;
             }
@@ -144,7 +144,10 @@ namespace Objects.Converter.Revit
         poly.value.AddRange(new Point(btmLeft.x, btmLeft.y, topRight.z, ModelUnits).ToList());
         poly.value.AddRange(topRight.ToList());
         poly.value.AddRange(new Point(topRight.x, topRight.y, btmLeft.z, ModelUnits).ToList());
+
         poly.value.AddRange(btmLeft.ToList());
+        // setting closed to true because we added the first point again.
+        poly.closed = true;
         poly.units = ModelUnits;
         speckleOpening.outline = poly;
       }

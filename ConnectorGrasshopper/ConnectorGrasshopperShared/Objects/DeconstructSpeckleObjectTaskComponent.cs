@@ -8,6 +8,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using Serilog;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
@@ -52,16 +53,18 @@ namespace ConnectorGrasshopper.Objects
         }
 
         Base @base;
-        if(inputObj is GH_SpeckleBase speckleBase)
+        if (inputObj is GH_SpeckleBase speckleBase)
         {
           @base = speckleBase.Value.ShallowCopy();
-        } else if(inputObj is IGH_Goo goo)
+        }
+        else if (inputObj is IGH_Goo goo)
         {
           var value = goo.GetType().GetProperty("Value")?.GetValue(goo);
-          if (value is Base baseObj) {
+          if (value is Base baseObj)
+          {
             @base = baseObj;
           }
-          else if(Converter.CanConvertToSpeckle(value))
+          else if (Converter.CanConvertToSpeckle(value))
           {
             @base = Converter.ConvertToSpeckle(value);
             AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Input object was not a Speckle object, but has been converted to one.");
@@ -275,7 +278,7 @@ namespace ConnectorGrasshopper.Objects
       }
       catch (Exception e)
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,$"Failed to fetch outputs:\n\t{e.ToFormattedString()}");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"Failed to fetch outputs:\n\t{e.ToFormattedString()}");
       }
       base.BeforeSolveInstance();
     }
@@ -294,7 +297,7 @@ namespace ConnectorGrasshopper.Objects
         }
         else
         {
-          converted = Utilities.TryConvertItemToSpeckle(ghGoo,Converter);
+          converted = Utilities.TryConvertItemToSpeckle(ghGoo, Converter);
         }
         if (converted is Base b)
         {
@@ -316,11 +319,11 @@ namespace ConnectorGrasshopper.Objects
       {
         return CreateOutputDictionary(@base);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Logging.Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
+        Log.Error(ex, ex.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
         return null;
       }
     }

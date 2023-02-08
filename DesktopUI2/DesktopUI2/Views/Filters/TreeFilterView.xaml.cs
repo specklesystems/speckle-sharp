@@ -1,6 +1,4 @@
-using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Controls.Selection;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
@@ -22,16 +20,14 @@ namespace DesktopUI2.Views.Filters
 
     private void TreeView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        try
-        {
-            (this.DataContext as FilterViewModel).RaisePropertyChanged("Summary");
-        }
-        catch
-        {
-            // ignore
-        }
+      try
+      {
+        (this.DataContext as FilterViewModel).RaisePropertyChanged("Summary");
+      }
+      catch
+      {
+        // ignore
+      }
     }
-
-   
   }
 }
