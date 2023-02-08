@@ -24,11 +24,15 @@ namespace Speckle.Core.Models.GraphTraversal
           displayValueAliases)
         );
 
+      var ignoreResultsRule = TraversalRule.NewTraversalRule()
+        .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
+        .ContinueTraversing(None);
+
       var defaultRule = TraversalRule.NewTraversalRule()
         .When(_ => true)
         .ContinueTraversing(Members());
 
-      return new GraphTraversal(convertableRule, defaultRule);
+      return new GraphTraversal(convertableRule, ignoreResultsRule, defaultRule);
     }
     
     /// <summary>
@@ -49,11 +53,15 @@ namespace Speckle.Core.Models.GraphTraversal
           displayValueAliases)
         );
 
+      var ignoreResultsRule = TraversalRule.NewTraversalRule()
+        .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
+        .ContinueTraversing(None);
+
       var defaultRule = TraversalRule.NewTraversalRule()
         .When(_ => true)
         .ContinueTraversing(Members());
 
-      return new GraphTraversal(convertableRule, displayValueRule, defaultRule);
+      return new GraphTraversal(convertableRule, displayValueRule, ignoreResultsRule, defaultRule);
     }
 
     

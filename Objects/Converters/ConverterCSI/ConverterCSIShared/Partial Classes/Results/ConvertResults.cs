@@ -11,9 +11,25 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-
-    public ResultSetAll ResultsToSpeckle()
+    public Base ResultsToSpeckle()
     {
+      var sendNodeResults = false;
+      var send1DResults = false;
+      var send2DResults = false;
+      if (Settings.ContainsKey(SendNodeResults))
+        bool.TryParse(Settings[SendNodeResults], out sendNodeResults);
+      if (Settings.ContainsKey(Send1DResults))
+        bool.TryParse(Settings[Send1DResults], out send1DResults);
+      if (Settings.ContainsKey(Send2DResults))
+        bool.TryParse(Settings[Send2DResults], out send2DResults);
+
+      if (!sendNodeResults && !send1DResults && !send2DResults)
+      {
+        var resultsAll = new Base();
+        resultsAll["Data"] = "Did not send any analytical results to Speckle. To send results, change the settings in the \"Advanced Settings\" tab";
+        return resultsAll;
+      }
+
       #region Retrieve frame names
       int numberOfFrameNames = 0;
       var frameNames = new string[] { };
@@ -56,7 +72,11 @@ namespace Objects.Converter.CSI
 
       #endregion
 
-      ResultSetAll results = new ResultSetAll(AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames), AreaResultSet2dToSpeckle(convertedAreaNames), new ResultSet3D(), new ResultGlobal(), AllResultSetNodesToSpeckle());
+      var resultsNode = sendNodeResults ? AllResultSetNodesToSpeckle() : null;
+      var results1D = send1DResults ? AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames) : null;
+      var results2D = send2DResults ? AreaResultSet2dToSpeckle(convertedAreaNames) : null;
+
+      var results = new ResultSetAll(results1D, results2D, new ResultSet3D(), new ResultGlobal(), resultsNode);
 
       return results;
     }

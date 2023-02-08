@@ -18,6 +18,7 @@ namespace ConnectorGrasshopper
     public static string SYNCHRONOUS = "[Dev/Synchronous]";
     public static string CONVERSION = "[Dev/Conversion]";
     public static string TRANSPORTS = "[Dev/Transports]";
+    public static string COMPUTE = "[Dev/Compute]";
 
     public static string PRIMARY_RIBBON = "Speckle 2";
     public static string SECONDARY_RIBBON = "Speckle 2";

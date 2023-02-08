@@ -1,9 +1,4 @@
 ﻿using Autodesk.Navisworks.Api.Plugins;
-using Speckle.ConnectorNavisworks.Bindings;
-using Speckle.ConnectorNavisworks.Entry;
-using System.Reflection;
-using System.IO;
-using System;
 using System.Text;
 using System.Windows.Forms;
 using NavisworksApp = Autodesk.Navisworks.Api.Application;

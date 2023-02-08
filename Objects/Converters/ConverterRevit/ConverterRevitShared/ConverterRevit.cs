@@ -720,8 +720,6 @@ namespace Objects.Converter.Revit
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
-        STR.Geometry.Node _ => true,
-        STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
         _ => false,
       };

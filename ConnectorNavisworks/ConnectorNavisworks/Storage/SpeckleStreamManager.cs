@@ -1,9 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Data;
-using Autodesk.Navisworks.Api.DocumentParts;
 using DesktopUI2.Models;
 using Speckle.Newtonsoft.Json;
 using static Speckle.ConnectorNavisworks.Utils;
@@ -115,9 +114,9 @@ namespace Speckle.ConnectorNavisworks.Storage
 
     internal static void WriteStreamStateList(Document doc, List<StreamState> streamStates)
     {
-      if (doc == null) return;
+      var documentDatabase = doc?.Database;
 
-      DocumentDatabase documentDatabase = doc.Database;
+      if (documentDatabase == null) return;
 
       string streamStatesStore = JsonConvert.SerializeObject(streamStates);
 

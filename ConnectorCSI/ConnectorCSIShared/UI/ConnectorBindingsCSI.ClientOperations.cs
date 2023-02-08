@@ -31,11 +31,6 @@ namespace Speckle.ConnectorCSI.UI
       return Model == null ? new List<StreamState>() : StreamStateManager.ReadState(Model);
     }
 
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
-    }
-
     #endregion
   }
 }
