@@ -12,6 +12,11 @@ namespace Objects.Converter.CSI
   {
     // warning: this delimter string needs to be the same as the delimter string in "connectorCSIUtils"
     public static string delimiter = "::";
+
+    // WARNING: These strings need to have the same value as the strings in ConnectorBindingsCSI.Settings
+    readonly string SendNodeResults = "sendNodeResults";
+    readonly string Send1DResults = "send1DResults";
+    readonly string Send2DResults = "send2DResults";
     public string ModelUnits()
     {
       var units = Model.GetDatabaseUnits();
