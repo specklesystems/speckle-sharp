@@ -95,91 +95,14 @@ namespace Objects.Converter.Revit
         //If the current host element is not null, it means we're coming from inside a nested conversion. 
         if (CurrentHostElement != null)
         {
-          if (level == null)
-            level = Doc.GetElement(CurrentHostElement.LevelId) as Level;
-
-          // there are two (i think) main types of hosted elements which can be found with family.familyplacementtype
-          // the two placement types for hosted elements are onelevelbasedhosted and workplanebased
-
-          if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBasedHosted)
-          {
-            familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
-          }
-          else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
-          {
-            if (CurrentHostElement == null)
-            {
-              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Object is work plane based but does not have a host element");
-              return appObj;
-            }
-            if (CurrentHostElement is Element el)
-            {
-              Doc.Regenerate();
-
-              Options op = new Options();
-              op.ComputeReferences = true;
-              GeometryElement geomElement = el.get_Geometry(op);
-              Reference faceRef = null;
-              var planeDist = double.MaxValue;
-
-              GetReferencePlane(geomElement, basePoint, ref faceRef, ref planeDist);
-
-              XYZ norm = new XYZ(0, 0, 0);
-              familyInstance = Doc.Create.NewFamilyInstance(faceRef, basePoint, norm, familySymbol);
-
-              // parameters
-              IList<Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
-              IList<Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
-
-              if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
-                InstanceVoidCutUtils.AddInstanceVoidCut(Doc, el, familyInstance);
-              if (lvlParams.ElementAtOrDefault(0) != null)
-                lvlParams[0].Set(level.Id);
-            }
-            else if (CurrentHostElement is Floor floor)
-            {
-              // TODO: support hosted elements on floors. Should be very similar to above implementation
-              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Work Plane based families on floors to be supported soon");
-              return appObj;
-            }
-          }
-          else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased)
-          {
-            if (CurrentHostElement is FootPrintRoof roof)
-            {
-              // handle receiving mullions on a curtain roof
-              var curtainGrids = roof.CurtainGrids;
-              CurtainGrid lastGrid = null;
-              foreach (var curtainGrid in curtainGrids)
-                if (curtainGrid is CurtainGrid c)
-                  lastGrid = c;
-
-              if (lastGrid != null && speckleFi["isUGridLine"] is bool isUGridLine)
-              {
-                var gridLine = lastGrid.AddGridLine(isUGridLine, basePoint, false);
-                foreach (var seg in gridLine.AllSegmentCurves)
-                  gridLine.AddMullions(seg as Curve, familySymbol as MullionType, isUGridLine);
-              }
-            }
-          }
-          else
-          {
-            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}");
-            return appObj;
-          }
-          // try a catch all solution as a last resort
-          if (familyInstance == null)
-          {
-            try
-            {
-              familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
-            }
-            catch { }
-          }
+          var isUGridLine = speckleFi["isUGridLine"] as bool? != null ? (bool)speckleFi["isUGridLine"] : false;
+          familyInstance = CreateHostedFamilyInstance(appObj, familySymbol, basePoint, level, isUGridLine);
         }
         //Otherwise, proceed as normal.
         else
+        {
           familyInstance = Doc.Create.NewFamilyInstance(basePoint, familySymbol, level, StructuralType.NonStructural);
+        }
       }
 
       //required for face flipping to work!
@@ -431,6 +354,100 @@ namespace Objects.Converter.Revit
       return isXNormAligned && isYNormAligned && isZNormAligned;
     }
 
+    private DB.FamilyInstance CreateHostedFamilyInstance(ApplicationObject appObj, DB.FamilySymbol familySymbol, XYZ insertionPoint, DB.Level level, bool isUGridLine = false)
+    {
+      DB.FamilyInstance familyInstance = null;
+      //If the current host element is not null, it means we're coming from inside a nested conversion. 
+
+      if (level == null)
+        level = Doc.GetElement(CurrentHostElement.LevelId) as DB.Level;
+
+      // there are two (i think) main types of hosted elements which can be found with family.familyplacementtype
+      // the two placement types for hosted elements are onelevelbasedhosted and workplanebased
+
+      if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBasedHosted)
+      {
+        familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+      }
+      else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
+      {
+        if (CurrentHostElement == null)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Object is work plane based but does not have a host element");
+          return null;
+        }
+        if (CurrentHostElement is Element el)
+        {
+          Doc.Regenerate();
+
+          Options op = new Options();
+          op.ComputeReferences = true;
+          GeometryElement geomElement = el.get_Geometry(op);
+          Reference faceRef = null;
+          var planeDist = double.MaxValue;
+
+          GetReferencePlane(geomElement, insertionPoint, ref faceRef, ref planeDist);
+
+          XYZ norm = new XYZ(0, 0, 0);
+          familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);
+
+          // parameters
+          IList<DB.Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
+          IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
+
+          if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
+            InstanceVoidCutUtils.AddInstanceVoidCut(Doc, el, familyInstance);
+          try
+          {
+            if (lvlParams.ElementAtOrDefault(0) != null)
+              lvlParams[0].Set(level.Id); // this can be null
+          }
+          catch { }
+        }
+        else if (CurrentHostElement is DB.Floor floor)
+        {
+          // TODO: support hosted elements on floors. Should be very similar to above implementation
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Work Plane based families on floors to be supported soon");
+          return null;
+        }
+      }
+      else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased)
+      {
+        if (CurrentHostElement is FootPrintRoof roof)
+        {
+          // handle receiving mullions on a curtain roof
+          var curtainGrids = roof.CurtainGrids;
+          CurtainGrid lastGrid = null;
+          foreach (var curtainGrid in curtainGrids)
+            if (curtainGrid is CurtainGrid c)
+              lastGrid = c;
+
+          if (lastGrid != null && isUGridLine)
+          {
+            var gridLine = lastGrid.AddGridLine(isUGridLine, insertionPoint, false);
+            foreach (var seg in gridLine.AllSegmentCurves)
+              gridLine.AddMullions(seg as Curve, familySymbol as MullionType, isUGridLine);
+          }
+        }
+      }
+      else
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}");
+        return null;
+      }
+      // try a catch all solution as a last resort
+      if (familyInstance == null)
+      {
+        try
+        {
+          familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+        }
+        catch { }
+      }
+
+      return familyInstance;
+    }
+
     #region new instancing
 
     // transforms
@@ -514,6 +531,7 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance familyInstance = null;
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      var isUpdate = false;
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
@@ -531,12 +549,55 @@ namespace Objects.Converter.Revit
       var insertionPoint = transform.OfPoint(XYZ.Zero);
       var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
 
-      // TODO: HANDLE INSTANCE UPDATING!!
+      if (docObj != null)
+      {
+        try
+        {
+          var revitType = Doc.GetElement(docObj.GetTypeId()) as ElementType;
+
+          // if family changed, tough luck. delete and let us create a new one.
+          if (familySymbol.FamilyName != revitType.FamilyName)
+            Doc.Delete(docObj.Id);
+          else
+          {
+            familyInstance = (DB.FamilyInstance)docObj;
+
+            var newLocationPoint = new XYZ(insertionPoint.X, insertionPoint.Y, (familyInstance.Location as LocationPoint).Point.Z);
+            (familyInstance.Location as LocationPoint).Point = newLocationPoint;
+
+            if ((familyInstance.Location as LocationPoint).Point != newLocationPoint)
+              (familyInstance.Location as LocationPoint).Point = newLocationPoint;
+
+            // check for a type change
+            var definition = instance.definition as FamilyType;
+            if (definition.type != null && definition.type != revitType.Name)
+              familyInstance.ChangeTypeId(familySymbol.Id);
+
+            TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
+            TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
+          }
+          isUpdate = true;
+        }
+        catch
+        {
+          //something went wrong, re-create it
+        }
+      }
 
       //create family instance
       if (familyInstance == null)
       {
-        familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, level, StructuralType.NonStructural);
+        //If the current host element is not null, it means we're coming from inside a nested conversion. 
+        if (CurrentHostElement != null)
+        {
+          var isUGridLine = instance["isUGridLine"] as bool? != null ? (bool)instance["isUGridLine"] : false;
+          familyInstance = CreateHostedFamilyInstance(appObj, familySymbol, insertionPoint, level, isUGridLine);
+        }
+        //Otherwise, proceed as normal.
+        else
+        {
+          familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, level, StructuralType.NonStructural);
+        }
       }
 
       Doc.Regenerate(); //required for face flipping to work!
@@ -557,9 +618,10 @@ namespace Objects.Converter.Revit
         }
       }
       catch { }
-
       SetInstanceParameters(familyInstance, instance);
-
+      var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
+      appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
+      appObj = SetHostedElements(instance, familyInstance, appObj);
       return appObj;
     }
     public RevitInstance RevitInstanceToSpeckle(DB.FamilyInstance instance, out List<string> notes)

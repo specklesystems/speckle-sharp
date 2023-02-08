@@ -109,12 +109,12 @@ namespace Objects.Other
       // this should account for non-uniform scaling
       var scaleX = new Vector4(matrix.M11, matrix.M21, matrix.M31, matrix.M41).Length();
       var scaleY = new Vector4(matrix.M12, matrix.M22, matrix.M32, matrix.M42).Length();
-      var scaleZ = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M34).Length();
+      var scaleZ = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M43).Length();
       scale = new Vector3(scaleX, scaleY, scaleZ);
 
       // rotation
-      var forward = new Vector3(matrix.M13, matrix.M23, matrix.M33);
-      var up = new Vector3(matrix.M12, matrix.M22, matrix.M32);
+      var up = new Vector3(matrix.M13, matrix.M23, matrix.M33);
+      var forward = new Vector3(matrix.M12, matrix.M22, matrix.M32);
       rotation = LookRotation(forward, up);
     }
 
@@ -172,7 +172,6 @@ namespace Objects.Other
           0.5f * num5,
           (m01 - m10) * num2);
     }
-
 
     /// <summary>
     /// Converts this transform to the input units
