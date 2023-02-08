@@ -159,12 +159,13 @@ namespace Speckle.Core.Serialisation
 
       if (type == typeof(Matrix4x4) && valueType == typeof(List<object>))
       {
-        var l = (value as List<object>).Cast<double>().ToList();
+        var l = (value as List<object>).ToList();
+        float I(int index) => Convert.ToSingle(l[index]);
         convertedValue = new Matrix4x4(
-          (float)l[0], (float)l[1], (float)l[2], (float)l[3],
-          (float)l[4], (float)l[5], (float)l[6], (float)l[7],
-          (float)l[8], (float)l[9], (float)l[10], (float)l[11],
-          (float)l[12], (float)l[13], (float)l[14], (float)l[15]
+          I(0), I(1), I(2), I(3),
+          I(4), I(5), I(6), I(7),
+          I(8), I(9), I(10), I(11),
+          I(12), I(13), I(14), I(15)
           );
         return true;
       }
