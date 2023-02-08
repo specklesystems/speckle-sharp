@@ -1,22 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-
-using Speckle.DesktopUI;
-using Speckle.DesktopUI.Utils;
-using Stylet.Xaml;
-
-using Bentley.DgnPlatformNET;
+﻿using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.GeometryNET;
 using Bentley.MstnPlatformNET;
-
+using DesktopUI2;
 using Speckle.ConnectorBentley.UI;
-using System.Reflection;
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Reflection;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
 
 namespace Speckle.ConnectorBentley.Entry
 {
@@ -65,5 +60,5 @@ namespace Speckle.ConnectorBentley.Entry
       return a;
     }
   }
-  
+
 }

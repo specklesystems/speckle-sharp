@@ -9,8 +9,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "..\Core\Core\Core.csproj", "{772726BA-8DD5-4276-826D-B37744DAE387}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DesktopUI", "..\DesktopUI\DesktopUI\DesktopUI.csproj", "{A97C3046-2D55-4C49-AB40-A3C2194B82FA}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Objects", "..\Objects\Objects\Objects.csproj", "{887018C0-D6F4-42F5-97BE-038677250BF9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorOpenRoads", "ConnectorOpenRoads\ConnectorOpenRoads.csproj", "{57BF94A8-8F73-4D1A-91D2-B10CC64178B6}"
@@ -33,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BentleyVersionProjects", "B
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2\DesktopUI2\DesktopUI2.csproj", "{C1DB41F0-1E90-4518-B8D6-3CB171F2AAA7}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterBentleyShared", "..\Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.shproj", "{208B25E4-2D0E-4534-B197-4C5C96CC53CE}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterBentleyShared", "..\Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.shproj", "{425F0D00-6608-4BD2-A1E0-2730C9F2BFD3}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorBentleyShared", "ConnectorBentleyShared\ConnectorBentleyShared.shproj", "{372D9F0F-EDE9-4050-BF8C-758911C5C2E0}"
 EndProject
@@ -61,14 +59,6 @@ Global
 		{772726BA-8DD5-4276-826D-B37744DAE387}.Release|Any CPU.Build.0 = Release|Any CPU
 		{772726BA-8DD5-4276-826D-B37744DAE387}.Release|x64.ActiveCfg = Release|Any CPU
 		{772726BA-8DD5-4276-826D-B37744DAE387}.Release|x64.Build.0 = Release|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|x64.ActiveCfg = Debug|x64
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Debug|x64.Build.0 = Debug|x64
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|x64.ActiveCfg = Release|x64
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA}.Release|x64.Build.0 = Release|x64
 		{887018C0-D6F4-42F5-97BE-038677250BF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{887018C0-D6F4-42F5-97BE-038677250BF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{887018C0-D6F4-42F5-97BE-038677250BF9}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -148,7 +138,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{0420D74A-2997-4B92-844B-C3769DEAA1AD} = {E4E50A0B-1175-44A0-BA61-03C918B1ECED}
 		{772726BA-8DD5-4276-826D-B37744DAE387} = {D7520378-CDB0-481F-94B8-E1F45D8F37DB}
-		{A97C3046-2D55-4C49-AB40-A3C2194B82FA} = {D7520378-CDB0-481F-94B8-E1F45D8F37DB}
 		{887018C0-D6F4-42F5-97BE-038677250BF9} = {D7520378-CDB0-481F-94B8-E1F45D8F37DB}
 		{57BF94A8-8F73-4D1A-91D2-B10CC64178B6} = {E4E50A0B-1175-44A0-BA61-03C918B1ECED}
 		{FC044D89-0FF3-441D-B35D-87454A693C16} = {E4E50A0B-1175-44A0-BA61-03C918B1ECED}
@@ -159,15 +148,15 @@ Global
 		{7AD741DD-D4FD-4813-9970-09E4FD0A5CE2} = {EB2BF8F6-C76F-4C86-9A43-62937FB2CFEF}
 		{5C03AC5B-834E-48B4-AB7C-854BBA3E872A} = {EB2BF8F6-C76F-4C86-9A43-62937FB2CFEF}
 		{C1DB41F0-1E90-4518-B8D6-3CB171F2AAA7} = {D7520378-CDB0-481F-94B8-E1F45D8F37DB}
-		{208B25E4-2D0E-4534-B197-4C5C96CC53CE} = {EB2BF8F6-C76F-4C86-9A43-62937FB2CFEF}
+		{425F0D00-6608-4BD2-A1E0-2730C9F2BFD3} = {EB2BF8F6-C76F-4C86-9A43-62937FB2CFEF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0034A7B6-7FC4-49B8-A8D7-2B0F4D3C7DB9}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ConnectorBentleyShared\ConnectorBentleyShared.projitems*{0420d74a-2997-4b92-844b-c3769deaa1ad}*SharedItemsImports = 4
-		..\Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{208b25e4-2d0e-4534-b197-4c5c96cc53ce}*SharedItemsImports = 13
 		ConnectorBentleyShared\ConnectorBentleyShared.projitems*{372d9f0f-ede9-4050-bf8c-758911c5c2e0}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{425f0d00-6608-4bd2-a1e0-2730c9f2bfd3}*SharedItemsImports = 13
 		ConnectorBentleyShared\ConnectorBentleyShared.projitems*{57bf94a8-8f73-4d1a-91d2-b10cc64178b6}*SharedItemsImports = 4
 		..\Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{5c03ac5b-834e-48b4-ab7c-854bba3e872a}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{7ad741dd-d4fd-4813-9970-09e4fd0a5ce2}*SharedItemsImports = 5

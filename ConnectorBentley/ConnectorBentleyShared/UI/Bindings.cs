@@ -33,7 +33,6 @@ using Bentley.CifNET.LinearGeometry;
 using Bentley.CifNET.SDK;
 #endif
 
-using Stylet;
 
 namespace Speckle.ConnectorBentley.UI
 {
@@ -251,7 +250,7 @@ namespace Speckle.ConnectorBentley.UI
         progress.CancellationTokenSource.Token,
         transport,
         onProgressAction: dict => progress.Update(dict),
-        onTotalChildrenCountKnown: num => Execute.PostToUIThread(() => progress.Max = num),
+        onTotalChildrenCountKnown: num => progress.Max = num,
         onErrorAction: (message, exception) =>
         {
           progress.Report.LogOperationError(exception);
@@ -320,7 +319,7 @@ namespace Speckle.ConnectorBentley.UI
       var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+      progress.Max = state.SelectedObjectIds.Count();
       Action updateProgressAction = () =>
       {
         conversionProgressDict["Conversion"]++;
@@ -407,7 +406,7 @@ namespace Speckle.ConnectorBentley.UI
           }
 
           if (!foundConvertibleMember && count == totalMembers) // this was an unsupported geo
-            converter.Report.Log($"Skipped not supported type: { @base.speckle_type }. Object {@base.id} not baked.");
+            converter.Report.Log($"Skipped not supported type: {@base.speckle_type}. Object {@base.id} not baked.");
 
           return objects;
         }
@@ -491,7 +490,7 @@ namespace Speckle.ConnectorBentley.UI
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      Execute.PostToUIThread(() => progress.Max = state.SelectedObjectIds.Count());
+      progress.Max = state.SelectedObjectIds.Count();
       int convertedCount = 0;
 
       // grab elements from active model           
@@ -651,7 +650,7 @@ namespace Speckle.ConnectorBentley.UI
       if (progress.CancellationTokenSource.Token.IsCancellationRequested)
         return null;
 
-      Execute.PostToUIThread(() => progress.Max = convertedCount);
+      progress.Max = convertedCount;
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 

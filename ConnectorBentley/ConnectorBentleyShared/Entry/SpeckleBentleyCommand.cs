@@ -1,22 +1,18 @@
-﻿using System;
-using System.IO;
-using System.Reflection;
-using System.Threading.Tasks;
-
+﻿using Avalonia;
+using Avalonia.Controls;
+using Avalonia.ReactiveUI;
 using Bentley.DgnPlatformNET;
 using Bentley.DgnPlatformNET.Elements;
 using Bentley.GeometryNET;
 using Bentley.MstnPlatformNET;
-
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-
-using Speckle.ConnectorBentley.UI;
 using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
-using Stylet.Xaml;
+using Speckle.ConnectorBentley.UI;
+using System;
+using System.IO;
+using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Speckle.ConnectorBentley.Entry
 {
