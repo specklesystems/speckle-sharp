@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.GetAccountToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\ComponentTracker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleAsyncComponent.cs" />
@@ -67,6 +68,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamCreateComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamDetailsComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetWithTokenComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamListComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamUpdateComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transports\SendReceiveTransport.cs" />
@@ -76,6 +78,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)UpgradeUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Resources\AccountToken.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\StreamGetWithToken.png" />
     <Content Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.tt" />
   </ItemGroup>
   <ItemGroup>
