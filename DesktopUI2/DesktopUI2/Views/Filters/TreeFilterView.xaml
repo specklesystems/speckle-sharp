@@ -21,7 +21,7 @@
             Items="{Binding Filter.Values}"
             SelectedItems="{Binding Filter.SelectedItems}"
             SelectionChanged="TreeView_OnSelectionChanged"
-            SelectionMode="Multiple, Toggle">
+            SelectionMode="{Binding Filter.SelectionMode}">
             <TreeView.DataTemplates>
                 <TreeDataTemplate DataType="filters:TreeNode" ItemsSource="{Binding Elements}">
                     <TextBlock Text="{Binding DisplayName}" />
