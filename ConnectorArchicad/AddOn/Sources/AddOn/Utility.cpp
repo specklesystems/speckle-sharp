@@ -1,6 +1,8 @@
 #include "Utility.hpp"
 #include "RealNumber.h"
-
+#include "ObjectState.hpp"
+#include "FieldNames.hpp"
+#include "TypeNameTables.hpp"
 
 namespace Utility {
 
@@ -182,5 +184,322 @@ GS::Array<API_Guid> GetWallSubelements (API_WallType& wall)
 	}
 
 	return result;
+}
+
+GSErrCode GetSegmentData (const API_AssemblySegmentData& segmentData, GS::ObjectState& out)
+{
+	// Currently there is no any serious case to check with GSErrCode, may be useful later.
+	out.Add (AssemblySegmentData::circleBased, segmentData.circleBased);
+	out.Add (AssemblySegmentData::modelElemStructureType, structureTypeNames.Get (segmentData.modelElemStructureType));
+	out.Add (AssemblySegmentData::nominalHeight, segmentData.nominalHeight);
+	out.Add (AssemblySegmentData::nominalWidth, segmentData.nominalWidth);
+	out.Add (AssemblySegmentData::isWidthAndHeightLinked, segmentData.isWidthAndHeightLinked);
+	out.Add (AssemblySegmentData::isHomogeneous, segmentData.isHomogeneous);
+	out.Add (AssemblySegmentData::endWidth, segmentData.endWidth);
+	out.Add (AssemblySegmentData::endHeight, segmentData.endHeight);
+	out.Add (AssemblySegmentData::isEndWidthAndHeightLinked, segmentData.isEndWidthAndHeightLinked);
+
+	API_Attribute attrib;
+	switch (segmentData.modelElemStructureType) {
+	case API_CompositeStructure:
+		DBASSERT (segment.modelElemStructureType != API_CompositeStructure)
+			break;
+	case API_BasicStructure:
+		BNZeroMemory (&attrib, sizeof (API_Attribute));
+		attrib.header.typeID = API_BuildingMaterialID;
+		attrib.header.index = segmentData.buildingMaterial;
+		ACAPI_Attribute_Get (&attrib);
+
+		out.Add (AssemblySegmentData::buildingMaterial, GS::UniString{attrib.header.name});
+		break;
+	case API_ProfileStructure:
+		BNZeroMemory (&attrib, sizeof (API_Attribute));
+		attrib.header.typeID = API_ProfileID;
+		attrib.header.index = segmentData.profileAttr;
+		ACAPI_Attribute_Get (&attrib);
+
+		out.Add (AssemblySegmentData::profileAttrName, GS::UniString{attrib.header.name});
+		break;
+	default:
+		break;
+
+	}
+
+	return NoError;
+}
+
+
+GSErrCode GetOneSchemeData (const API_AssemblySegmentSchemeData& schemeData, GS::ObjectState& out)
+{
+	out.Add (AssemblySegmentSchemeData::lengthType, segmentLengthTypeNames.Get (schemeData.lengthType));
+	out.Add (AssemblySegmentSchemeData::fixedLength, schemeData.fixedLength);
+	out.Add (AssemblySegmentSchemeData::lengthProportion, schemeData.lengthProportion);
+
+	return NoError;
+}
+
+
+GSErrCode GetAllSchemeData (API_AssemblySegmentSchemeData* schemeData, GS::ObjectState& out)
+{
+	if (schemeData == nullptr) return Error;
+
+	GSSize schemesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(schemeData)) / sizeof (API_AssemblySegmentSchemeData);
+	DBASSERT (schemesCount == elem.column.nSchemes)
+
+		for (GSSize idx = 0; idx < schemesCount; ++idx) {
+			GS::ObjectState currentScheme;
+			Utility::GetOneSchemeData (schemeData[idx], currentScheme);
+			out.Add (GS::String::SPrintf (AssemblySegmentSchemeData::SchemeName, idx + 1), currentScheme);
+		}
+
+	return NoError;
+}
+
+
+GSErrCode GetOneCutData (const API_AssemblySegmentCutData& cutData, GS::ObjectState& out)
+{
+	out.Add (AssemblySegmentCutData::cutType, assemblySegmentCutTypeNames.Get (cutData.cutType));
+	out.Add (AssemblySegmentCutData::customAngle, cutData.customAngle);
+
+	return NoError;
+}
+
+GSErrCode GetAllCutData (API_AssemblySegmentCutData* cutData, GS::ObjectState& out)
+{
+	if (cutData == nullptr) return Error;
+
+	GSSize cutsCount = BMGetPtrSize (reinterpret_cast<GSPtr>(cutData)) / sizeof (API_AssemblySegmentCutData);
+	DBASSERT (cutsCount == elem.column.nCuts)
+
+		for (GSSize idx = 0; idx < cutsCount; ++idx) {
+			GS::ObjectState currentCut;
+			Utility::GetOneCutData (cutData[idx], currentCut);
+			out.Add (GS::String::SPrintf (AssemblySegmentCutData::CutName, idx + 1), currentCut);
+		}
+
+	return NoError;
+}
+
+
+GSErrCode CreateOneSegmentData (GS::ObjectState& currentSegment, API_AssemblySegmentData& segmentData, API_Element& columnMask)
+{
+	GSErrCode err = NoError;
+	if (!currentSegment.IsEmpty ()) {
+
+		if (currentSegment.Contains (AssemblySegmentData::circleBased))
+			currentSegment.Get (AssemblySegmentData::circleBased, segmentData.circleBased);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.circleBased);
+
+		if (currentSegment.Contains (AssemblySegmentData::nominalHeight))
+			currentSegment.Get (AssemblySegmentData::nominalHeight, segmentData.nominalHeight);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.nominalHeight);
+
+		if (currentSegment.Contains (AssemblySegmentData::nominalWidth))
+			currentSegment.Get (AssemblySegmentData::nominalWidth, segmentData.nominalWidth);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.nominalWidth);
+
+		if (currentSegment.Contains (AssemblySegmentData::isWidthAndHeightLinked))
+			currentSegment.Get (AssemblySegmentData::isWidthAndHeightLinked, segmentData.isWidthAndHeightLinked);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.isWidthAndHeightLinked);
+
+		if (currentSegment.Contains (AssemblySegmentData::isHomogeneous))
+			currentSegment.Get (AssemblySegmentData::isHomogeneous, segmentData.isHomogeneous);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.isHomogeneous);
+
+		if (currentSegment.Contains (AssemblySegmentData::endWidth))
+			currentSegment.Get (AssemblySegmentData::endWidth, segmentData.endWidth);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.endWidth);
+
+		if (currentSegment.Contains (AssemblySegmentData::endHeight))
+			currentSegment.Get (AssemblySegmentData::endHeight, segmentData.endHeight);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.endHeight);
+
+		if (currentSegment.Contains (AssemblySegmentData::isEndWidthAndHeightLinked))
+			currentSegment.Get (AssemblySegmentData::isEndWidthAndHeightLinked, segmentData.isEndWidthAndHeightLinked);
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.isEndWidthAndHeightLinked);
+
+		if (currentSegment.Contains (AssemblySegmentData::modelElemStructureType)) {
+			API_ModelElemStructureType realStructureType = API_BasicStructure;
+			GS::UniString structureName;
+			currentSegment.Get (AssemblySegmentData::modelElemStructureType, structureName);
+
+			GS::Optional<API_ModelElemStructureType> tmpStructureType = structureTypeNames.FindValue (structureName);
+			if (tmpStructureType.HasValue ())
+				realStructureType = tmpStructureType.Get ();
+			segmentData.modelElemStructureType = realStructureType;
+		}
+		ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.modelElemStructureType);
+
+		if (currentSegment.Contains (AssemblySegmentData::profileAttrName)) {
+			GS::UniString attrName;
+			currentSegment.Get (AssemblySegmentData::profileAttrName, attrName);
+
+			if (!attrName.IsEmpty ()) {
+				API_Attribute attrib;
+				BNZeroMemory (&attrib, sizeof (API_Attribute));
+				attrib.header.typeID = API_ProfileID;
+				CHCopyC (attrName.ToCStr (), attrib.header.name);
+				err = ACAPI_Attribute_Get (&attrib);
+
+				if (err == NoError)
+					segmentData.profileAttr = attrib.header.index;
+			}
+		}
+
+		if (currentSegment.Contains (AssemblySegmentData::buildingMaterial)) {
+			GS::UniString attrName;
+			currentSegment.Get (AssemblySegmentData::buildingMaterial, attrName);
+
+			if (!attrName.IsEmpty ()) {
+				API_Attribute attrib;
+				BNZeroMemory (&attrib, sizeof (API_Attribute));
+				attrib.header.typeID = API_BuildingMaterialID;
+				CHCopyC (attrName.ToCStr (), attrib.header.name);
+				err = ACAPI_Attribute_Get (&attrib);
+
+				if (err == NoError)
+					segmentData.buildingMaterial = attrib.header.index;
+			}
+		}
+	}
+
+	return err;
+}
+
+
+GSErrCode CreateOneSchemeData (GS::ObjectState& currentScheme, API_AssemblySegmentSchemeData& schemeData, API_Element& mask)
+{
+	UNUSED_PARAMETER (mask); // TODO: add ACAPI_ELEMENT_MASK_SET things
+	GSErrCode err = NoError;
+
+	if (!currentScheme.IsEmpty ()) {
+
+		if (currentScheme.Contains (AssemblySegmentSchemeData::lengthType)) {
+			API_AssemblySegmentLengthTypeID lengthType = APIAssemblySegment_Fixed;
+			GS::UniString lengthTypeName;
+			currentScheme.Get (AssemblySegmentSchemeData::lengthType, lengthTypeName);
+
+			GS::Optional<API_AssemblySegmentLengthTypeID> type = segmentLengthTypeNames.FindValue (lengthTypeName);
+			if (type.HasValue ())
+				lengthType = type.Get ();
+			schemeData.lengthType = lengthType;
+
+			if (lengthType == APIAssemblySegment_Fixed && currentScheme.Contains (AssemblySegmentSchemeData::fixedLength)) {
+				currentScheme.Get (AssemblySegmentSchemeData::fixedLength, schemeData.fixedLength);
+				schemeData.lengthProportion = 0.0;
+			} else if (lengthType == APIAssemblySegment_Proportional && currentScheme.Contains (AssemblySegmentSchemeData::lengthProportion)) {
+				currentScheme.Get (AssemblySegmentSchemeData::lengthProportion, schemeData.lengthProportion);
+				schemeData.fixedLength = 0.0;
+			}
+		}
+	}
+	return err;
+}
+
+
+GSErrCode CreateOneCutData (GS::ObjectState& currentCut, API_AssemblySegmentCutData& cutData, API_Element& mask)
+{
+	UNUSED_PARAMETER (mask); // TODO: add ACAPI_ELEMENT_MASK_SET things
+	GSErrCode err = NoError;
+
+	if (!currentCut.IsEmpty ()) {
+
+		if (currentCut.Contains (AssemblySegmentCutData::cutType)) {
+			API_AssemblySegmentCutTypeID realCutType = APIAssemblySegmentCut_Vertical;
+			GS::UniString structureName;
+			currentCut.Get (AssemblySegmentCutData::cutType, structureName);
+
+			GS::Optional<API_AssemblySegmentCutTypeID> tmpCutType = assemblySegmentCutTypeNames.FindValue (structureName);
+			if (tmpCutType.HasValue ())
+				realCutType = tmpCutType.Get ();
+			cutData.cutType = realCutType;
+		}
+		if (currentCut.Contains (AssemblySegmentCutData::customAngle)) {
+			currentCut.Get (AssemblySegmentCutData::customAngle, cutData.customAngle);
+		}
+	}
+	return err;
+}
+
+GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts, API_Element& element, API_Element& mask, API_ElementMemo* memo)
+{
+	GSErrCode err = NoError;
+	API_AssemblySegmentCutData defaultSegmentCut;
+	if (memo->assemblySegmentCuts != nullptr) {
+		defaultSegmentCut = memo->assemblySegmentCuts[0];
+
+#ifdef ServerMainVers_2600
+		switch (element.header.type.typeID) {
+#else
+		switch (element.header.type) {
+#endif
+		case API_BeamID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+			break;
+		case API_ColumnID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+		default: // In case if not beam or column
+			return Error;
+			break;
+		}
+
+	} else {
+		return Error;
+	}
+
+	GS::ObjectState allCuts;
+	if (os.Contains (PartialObjects::CutData))
+		os.Get (PartialObjects::CutData, allCuts);
+
+	for (GS::UInt32 idx = 0; idx < numberOfCuts; ++idx) {
+		GS::ObjectState currentCut;
+		allCuts.Get (GS::String::SPrintf (AssemblySegmentCutData::CutName, idx + 1), currentCut);
+
+		memo->assemblySegmentCuts[idx] = defaultSegmentCut;
+		Utility::CreateOneCutData (currentCut, memo->assemblySegmentCuts[idx], mask);
+	}
+	return err;
+}
+
+
+GSErrCode CreateAllSchemeData (const GS::ObjectState& os, GS::UInt32& numberOfCuts, API_Element& element, API_Element& mask, API_ElementMemo* memo)
+{
+	GSErrCode err = NoError;
+	API_AssemblySegmentSchemeData defaultSegmentScheme;
+	if (memo->assemblySegmentSchemes != nullptr) {
+		defaultSegmentScheme = memo->assemblySegmentSchemes[0];
+#ifdef ServerMainVers_2600
+		switch (element.header.type.typeID) {
+#else
+		switch (element.header.type) {
+#endif
+		case API_BeamID:
+			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+			break;
+		case API_ColumnID:
+			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+			break;
+		default:  // In case if not beam or column
+			return Error;
+			break;
+		}
+	} else {
+		return Error;
+	}
+
+	GS::ObjectState allSchemes;
+	if (os.Contains (PartialObjects::SchemeData))
+		os.Get (PartialObjects::SchemeData, allSchemes);
+
+	for (UInt32 idx = 0; idx < numberOfCuts; ++idx) {
+		if (!allSchemes.IsEmpty ()) {
+			GS::ObjectState currentScheme;
+			allSchemes.Get (GS::String::SPrintf (AssemblySegmentSchemeData::SchemeName, idx + 1), currentScheme);
+
+			memo->assemblySegmentSchemes[idx] = defaultSegmentScheme;
+			Utility::CreateOneSchemeData (currentScheme, memo->assemblySegmentSchemes[idx], mask);
+		}
+	}
+	return err;
 }
 }
