@@ -320,7 +320,6 @@ namespace Objects.Converter.Revit
       return SketchPlane.Create(doc, plane);
     }
 
-
     /// <summary>
     /// Get the first plan view associated to the curve level.
     /// Will return the Doc.ActiveView If no appropriate view is found.
