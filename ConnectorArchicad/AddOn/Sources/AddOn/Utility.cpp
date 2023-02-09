@@ -431,7 +431,7 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 #ifdef ServerMainVers_2600
 		switch (element.header.type.typeID) {
 #else
-		switch (element.header.type) {
+		switch (element.header.typeID) {
 #endif
 		case API_BeamID:
 			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
@@ -471,7 +471,7 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os, GS::UInt32& numberOfCu
 #ifdef ServerMainVers_2600
 		switch (element.header.type.typeID) {
 #else
-		switch (element.header.type) {
+		switch (element.header.typeID) {
 #endif
 		case API_BeamID:
 			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
