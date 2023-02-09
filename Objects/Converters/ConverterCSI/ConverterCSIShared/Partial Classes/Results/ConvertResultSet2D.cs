@@ -1,6 +1,8 @@
-﻿using Objects.Structural.Results;
+﻿using Objects.Structural.Geometry;
+using Objects.Structural.Results;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace Objects.Converter.CSI
@@ -13,6 +15,11 @@ namespace Objects.Converter.CSI
 
       foreach (var areaName in areaNames)
       {
+        var element = SpeckleModel.elements.Where(o => (string)o["name"] == areaName && o is Element2D).FirstOrDefault() as Element2D;
+        // if the element is null, then it was not part of the user's selection, so don't send its results
+        if (element == null)
+          continue;
+
         #region Return force results
         int numberOfForceResults = 0;
         string[] obj, elm, pointElm, loadCase, stepType;
@@ -37,7 +44,7 @@ namespace Objects.Converter.CSI
         {
           results.Add(new Result2D
           {
-            element = new Structural.Geometry.Element2D() { name = elm[i] }, //AreaToSpeckle(areaName),
+            element = element, //AreaToSpeckle(areaName),
             permutation = loadCase[i],
             position = new List<double>(),
             dispX = 0, // pulling this data would require large amount of data parsing, implementation TBD

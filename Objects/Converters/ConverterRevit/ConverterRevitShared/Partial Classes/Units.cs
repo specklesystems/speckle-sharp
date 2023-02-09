@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
@@ -146,6 +146,8 @@ namespace Objects.Converter.Revit
 
     public double ScaleToNative(double value, string units)
     {
+      if (string.IsNullOrEmpty(units))
+        return value;
       return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
     }
 

@@ -2,7 +2,6 @@
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
@@ -59,16 +58,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return Application.ActiveDocument != null
         ? Application.ActiveDocument.CurrentFileName
         : string.Empty;
-    }
-
-    /*
-    private List<ISetting>
-        CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
-*/
-
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
     }
 
     private static string GetDocPath()

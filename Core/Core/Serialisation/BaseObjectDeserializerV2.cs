@@ -46,10 +46,15 @@ namespace Speckle.Core.Serialisation
 
     }
 
-    public Base Deserialize(String rootObjectJson)
+    /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
+    /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
+    /// <exception cref="InvalidOperationException">Thrown when <see cref="Busy"/></exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="rootObjectJson"/> deserializes to a type other than <see cref="Base"/></exception>
+    public Base Deserialize(string rootObjectJson)
     {
       if (Busy)
-        throw new Exception("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
+        throw new InvalidOperationException("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
+      
       try
       {
         Busy = true;
@@ -71,7 +76,12 @@ namespace Speckle.Core.Serialisation
         }
 
         object ret = DeserializeTransportObject(rootObjectJson);
-        return ret as Base;
+        
+        if (ret is Base b) return b;
+        
+        else throw new Exception(
+          $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
+        );
       }
       finally
       {
