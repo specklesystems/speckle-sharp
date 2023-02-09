@@ -268,6 +268,9 @@ namespace Speckle.ConnectorRevit.UI
           applicationId = current.applicationId,
           Convertible = true
         };
+        if (StoredObjects.ContainsKey(current.id))
+          return null;
+
         StoredObjects.Add(current.id, current);
         return appObj;
       }

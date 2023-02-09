@@ -132,7 +132,9 @@ namespace Objects.Converter.Revit
       var profiles = GetProfiles(revitFloor);
 
       var speckleFloor = new RevitFloor();
-      speckleFloor.type = revitFloor.Document.GetElement(revitFloor.GetTypeId()).Name;
+      var type = revitFloor.Document.GetElement(revitFloor.GetTypeId()) as ElementType;
+      speckleFloor.family = type?.FamilyName;
+      speckleFloor.type = type?.Name;
       speckleFloor.outline = profiles[0];
       if (profiles.Count > 1)
       {

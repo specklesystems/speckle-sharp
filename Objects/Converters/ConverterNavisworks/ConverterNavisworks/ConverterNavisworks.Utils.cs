@@ -1,6 +1,5 @@
 ﻿using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.ComApi;
-using Autodesk.Navisworks.Api.Interop.ComApi;
 using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -24,10 +23,12 @@ namespace Objects.Converter.Navisworks
     {
       // The path for ModelItems is their node position at each level of the Models tree.
       // This is the de facto UID for that element within the file at that time.
-      InwOaPath path = ComApiBridge.ToInwOaPath(element);
+      if (element == null) return null;
+
+      var path = ComApiBridge.ToInwOaPath(element);
 
       // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
-      string pointer = ((Array)path.ArrayData).ToArray<int>().Aggregate("",
+      var pointer = ((Array)path.ArrayData).ToArray<int>().Aggregate("",
         (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-');
 
       return pointer;
