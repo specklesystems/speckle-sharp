@@ -361,7 +361,7 @@ namespace DesktopUI2.ViewModels.MappingTool
       if (Freeform)
         return Operations.Serialize(new FreeformElement());
 
-      var cat = RevitCategory.GenericModels;
+      var cat = RevitCategory.GenericModel;
       Enum.TryParse(SelectedCategory, out cat);
       var ds = new DirectShape(); //don't use the constructor
       ds.name = ShapeName;
