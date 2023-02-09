@@ -237,7 +237,7 @@ namespace Speckle.DesktopUI.Streams
         StreamState = new StreamState();
         CloseDialog();
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
         try
         {
@@ -248,8 +248,8 @@ namespace Speckle.DesktopUI.Streams
           // POKEMON! (server is prob down)
         }
 
-        Log.CaptureException(e);
-        Notifications.Enqueue($"Error: {e.Message}");
+        Serilog.Log.Error(ex, ex.Message);
+        Notifications.Enqueue($"Error: {ex.Message}");
       }
 
       CreateButtonLoading = false;

@@ -6,6 +6,7 @@ using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
+using Serilog;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
@@ -49,17 +50,18 @@ namespace ConnectorGrasshopper.Objects
         DA.GetData(0, ref inputObj);
         DA.GetDataList(1, keys);
         DA.GetDataTree(2, out valueTree);
-        
+
         Base @base;
-        if(inputObj is GH_SpeckleBase speckleBase)
+        if (inputObj is GH_SpeckleBase speckleBase)
         {
           @base = speckleBase.Value.ShallowCopy();
-        } else
+        }
+        else
         {
-          if(inputObj != null)
+          if (inputObj != null)
           {
             var value = inputObj.GetType().GetProperty("Value")?.GetValue(inputObj);
-            if(Converter.CanConvertToSpeckle(value))
+            if (Converter.CanConvertToSpeckle(value))
             {
               @base = Converter.ConvertToSpeckle(value);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Input object was not a Speckle object, but has been converted to one.");
@@ -184,11 +186,11 @@ namespace ConnectorGrasshopper.Objects
 
         return @base;
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Logging.Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
+        Log.Error(ex, ex.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
         return null;
       }
     }

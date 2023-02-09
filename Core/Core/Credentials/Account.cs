@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -11,7 +9,6 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Credentials
 {
-
   public class Account : IEquatable<Account>
   {
     private string _id { get; set; } = null;
@@ -21,18 +18,18 @@ namespace Speckle.Core.Credentials
       {
         if (_id == null)
         {
-
           if (serverInfo == null || userInfo == null)
-            throw new SpeckleException("Incomplete account info: cannot generate id.", level: Sentry.SentryLevel.Error);
-          _id = Speckle.Core.Models.Utilities.hashString(userInfo.email + serverInfo.url, Models.Utilities.HashingFuctions.MD5).ToUpper();
-
+            throw new SpeckleException(
+              "Incomplete account info: cannot generate id.",
+              level: Sentry.SentryLevel.Error
+            );
+          _id = Speckle.Core.Models.Utilities
+            .hashString(userInfo.email + serverInfo.url, Models.Utilities.HashingFuctions.MD5)
+            .ToUpper();
         }
         return _id;
       }
-      set
-      {
-        _id = value;
-      }
+      set { _id = value; }
     }
     public string token { get; set; }
 
@@ -51,15 +48,14 @@ namespace Speckle.Core.Credentials
 
     public string GetHashedEmail()
     {
-
       string email = userInfo?.email ?? "unknown";
-      return "@" + Hash(email);
+      return "@" + Crypt.Hash(email);
     }
 
     public string GetHashedServer()
     {
       string url = serverInfo?.url ?? "https://speckle.xyz/";
-      return Hash(CleanURL(url));
+      return Crypt.Hash(CleanURL(url));
     }
 
     public async Task<UserInfo> Validate()
@@ -68,12 +64,13 @@ namespace Speckle.Core.Credentials
 
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-      using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
+      using var gqlClient = new GraphQLHttpClient(
+        new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") },
+        new NewtonsoftJsonSerializer(),
+        httpClient
+      );
 
-      var request = new GraphQLRequest
-      {
-        Query = @" query { user { name email id company } }"
-      };
+      var request = new GraphQLRequest { Query = @" query { user { name email id company } }" };
 
       var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request);
 
@@ -105,24 +102,6 @@ namespace Speckle.Core.Credentials
         server = NewUri.Authority;
       }
       return server;
-    }
-
-    private static string Hash(string input)
-    {
-
-      using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
-      {
-        byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input.ToLowerInvariant());
-        byte[] hashBytes = md5.ComputeHash(inputBytes);
-
-        StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < hashBytes.Length; i++)
-        {
-          sb.Append(hashBytes[i].ToString("X2"));
-        }
-        return sb.ToString();
-      }
-
     }
 
     #endregion

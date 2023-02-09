@@ -17,11 +17,11 @@ namespace Objects.Converter.Navisworks
 
     public static Other.RenderMaterial TranslateMaterial(ModelItem geom)
     {
-      var settings = new { Mode = "original" };
+      var materialSettings = new { Mode = "original" };
 
       Color renderColor;
 
-      switch (settings.Mode)
+      switch (materialSettings.Mode)
       {
         case "original":
           renderColor = NavisworksColorToColor(geom.Geometry.OriginalColor);
