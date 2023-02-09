@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Sentry;
 using Serilog;
 using Serilog.Context;
 using Serilog.Events;
@@ -207,6 +208,11 @@ namespace Speckle.Core.Logging
         Log.Warning(ex, "Cannot set user id for the global log context.");
       }
       GlobalLogContext.PushProperty("id", id);
+
+      SentrySdk.ConfigureScope(scope =>
+      {
+        scope.User = new User { Id = id, };
+      });
     }
 
     private static void _addVersionInfoToGlobalContext()
@@ -244,6 +250,11 @@ namespace Speckle.Core.Logging
         "hostApplication",
         $"{hostApplicationName}{hostApplicationVersion ?? ""}"
       );
+
+      SentrySdk.ConfigureScope(scope =>
+      {
+        scope.SetTag("hostApplication", hostApplicationName);
+      });
     }
   }
 }
