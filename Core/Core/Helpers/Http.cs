@@ -107,7 +107,7 @@ namespace Speckle.Core.Helpers
         {
           HttpClient _httpClient = GetHttpProxyClient();
 
-          _httpClient.Timeout = TimeSpan.FromSeconds(1);
+          //_httpClient.Timeout = TimeSpan.FromSeconds(1);
           var response = await _httpClient.GetAsync(address);
           return response.IsSuccessStatusCode;
 

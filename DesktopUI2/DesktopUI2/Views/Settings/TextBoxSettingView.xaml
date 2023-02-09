@@ -10,7 +10,6 @@
   d:DesignWidth="400"
   mc:Ignorable="d">
 
-
   <Grid
     Margin="10"
     ColumnDefinitions="auto,1*,1*"

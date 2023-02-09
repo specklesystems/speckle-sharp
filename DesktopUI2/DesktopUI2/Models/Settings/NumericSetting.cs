@@ -1,6 +1,5 @@
 ﻿using DesktopUI2.Views.Settings;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 
 namespace DesktopUI2.Models.Settings

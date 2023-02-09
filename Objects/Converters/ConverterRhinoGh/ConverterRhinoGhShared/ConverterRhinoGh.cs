@@ -1,4 +1,8 @@
-﻿using Grasshopper.Kernel.Types;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Grasshopper.Kernel.Types;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -12,10 +16,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -324,7 +324,8 @@ namespace Objects.Converter.RhinoGh
       {
         switch (schemaObject)
         {
-          case RevitWall o:
+          //NOTE: this works for BOTH the Wall.cs class and RevitWall.cs class etc :)
+          case Wall o:
             var extrusion = ((RH.Extrusion)@object.Geometry);
             var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
             var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
@@ -333,7 +334,7 @@ namespace Objects.Converter.RhinoGh
             o.baseLine = CurveToSpeckle(bottomCrv);
             break;
 
-          case RevitFloor o:
+          case Floor o:
             var brep = ((RH.Brep)@object.Geometry);
             var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
             var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
@@ -341,23 +342,23 @@ namespace Objects.Converter.RhinoGh
             o.voids = intCurves;
             break;
 
-          case RevitBeam o:
+          case Beam o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitBrace o:
+          case Brace o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitColumn o:
+          case Column o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitPipe o:
+          case Pipe o:
             o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitDuct o:
+          case Duct o:
             o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 

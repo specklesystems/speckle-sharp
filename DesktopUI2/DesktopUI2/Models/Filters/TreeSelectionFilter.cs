@@ -88,15 +88,16 @@ namespace DesktopUI2.Models.Filters
     [JsonProperty("Guid")] public Guid Guid { get; set; }
 
     // For applications that record the pointer as a Guid
-    [JsonProperty("Reference")] public String Reference { get; set; }
+    [JsonProperty("Reference")] public string Reference { get; set; }
 
     // For applications that record the pointer as successive indexes
-    [JsonProperty("Indices")] public int[] Indices { get; set; }
+    [JsonProperty("Indices")] public int[] Indices { get; set; } = { };
 
     // For applications that record the pointer as a hash
     [JsonProperty("Hash")] public object Hash { get; set; }
 
     [JsonProperty("IndexWith")] public string IndexWith { get; set; } = nameof(Guid);
+    [JsonProperty("IsEnabled")] public bool IsEnabled { get; set; } = true;
 
     #region Dynamic Property Handling
 

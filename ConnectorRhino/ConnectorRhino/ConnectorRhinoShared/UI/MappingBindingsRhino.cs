@@ -18,6 +18,7 @@ using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -73,6 +74,7 @@ namespace SpeckleRhino
       }
       catch (Exception ex)
       {
+        Log.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
         return new MappingSelectionInfo(new List<Schema>(), 0);
       }
     }
@@ -86,75 +88,93 @@ namespace SpeckleRhino
     {
       var result = new List<Schema>();
 
-      var existingSchema = GetExistingObjectSchema(obj);
-      if (existingSchema != null)
-        result.Add(existingSchema);
+      try
+      {
 
-      if (obj is InstanceObject)
-      {
-        result.Add(new RevitFamilyInstanceViewModel());
-      }
-      else
-      {
-        switch (obj.Geometry)
+
+        var existingSchema = GetExistingObjectSchema(obj);
+        if (existingSchema != null)
+          result.Add(existingSchema);
+
+        if (obj is InstanceObject)
         {
-          case Mesh m:
-            if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
-              result.Add(new DirectShapeFreeformViewModel());
-            if (!m.IsClosed)
-              result.Add(new RevitTopographyViewModel());
-            break;
+          result.Add(new RevitFamilyInstanceViewModel());
+        }
+        else
+        {
+          switch (obj.Geometry)
+          {
+            case Mesh m:
+              if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+                result.Add(new DirectShapeFreeformViewModel());
+              if (!m.IsClosed)
+                result.Add(new RevitTopographyViewModel());
+              break;
 
-          case Brep b:
-            if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
-              result.Add(new DirectShapeFreeformViewModel());
+            case Brep b:
+              if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+                result.Add(new DirectShapeFreeformViewModel());
 
-            var srf = b.Surfaces.First();
-            if (b.Surfaces.Count == 1 && srf.IsPlanar())
-            {
-              if (srf.TryGetPlane(out Plane p))
+              var srf = b.Surfaces.First();
+              if (b.Surfaces.Count == 1 && srf.IsPlanar())
               {
-                Vector3d normal = p.Normal;
-                if (normal.Unitize())
+                if (srf.TryGetPlane(out Plane p))
                 {
-                  if (Math.Abs(normal.Z) == 1)
+                  Vector3d normal = p.Normal;
+                  if (normal.Unitize())
                   {
-                    result.Add(new RevitFloorViewModel());
+                    if (Math.Abs(normal.Z) == 1)
+                    {
+                      result.Add(new RevitFloorViewModel());
+                    }
                   }
                 }
               }
-            }
-            break;
+              break;
 
-          case Extrusion e:
-            if (e.ProfileCount > 1) break;
-            var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
-            if (!(crv.IsLinear() || crv.IsArc())) break;
-            if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
+            case Extrusion e:
+              if (e.ProfileCount > 1) break;
+              var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
+              if (!(crv.IsLinear() || crv.IsArc())) break;
+              if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
 
-            if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
+
+              //if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
               result.Add(new RevitWallViewModel());
-            break;
+              //if (!result.Any(x => typeof(RevitDefaultWallViewModel) == x.GetType()))
+              result.Add(new RevitDefaultWallViewModel());
+              break;
 
-          case Curve c:
-            if (c.IsLinear())
-            {
-              result.Add(new RevitBeamViewModel());
-              result.Add(new RevitBraceViewModel());
-              result.Add(new RevitColumnViewModel());
-              result.Add(new RevitPipeViewModel());
-              result.Add(new RevitDuctViewModel());
-            }
+            case Curve c:
+              if (c.IsLinear())
+              {
+                result.Add(new RevitBeamViewModel());
+                result.Add(new RevitBraceViewModel());
+                result.Add(new RevitColumnViewModel());
+                result.Add(new RevitPipeViewModel());
+                result.Add(new RevitDuctViewModel());
 
-            //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-            //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
-            //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-            break;
+                result.Add(new RevitDefaultBeamViewModel());
+                result.Add(new RevitDefaultBraceViewModel());
+                result.Add(new RevitDefaultColumnViewModel());
+                result.Add(new RevitDefaultPipeViewModel());
+                result.Add(new RevitDefaultDuctViewModel());
+              }
 
-          case Point p:
-            result.Add(new RevitFamilyInstanceViewModel());
-            break;
+              //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+              //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
+              //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+              break;
+
+            case Point p:
+              result.Add(new RevitFamilyInstanceViewModel());
+              break;
+          }
         }
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
       }
 
       return result;
