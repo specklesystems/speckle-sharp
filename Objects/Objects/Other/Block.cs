@@ -99,15 +99,21 @@ namespace Objects.Other
     /// <returns>The transformed geometry for this BlockInstance.</returns>
     public List<ITransformable> GetTransformedGeometry()
     {
-      return blockDefinition.geometry.SelectMany(b =>
+      // HACK: Sketchup passes all props that need to be detached with it's "@" prefix, so we need to check for now.
+      // TODO: This should be removed once we implement a more general fix.
+      var definition = blockDefinition ?? this["@blockDefinition"] as BlockDefinition;
+      if (definition == null) throw new Exception("This block instance has no block definition.");
+      var geom = definition.geometry ?? (this["@geometry"] as List<object>)?.Cast<Base>();
+      if (geom == null) throw new Exception("This block's definition has no geometry.");
+      return geom.SelectMany(b =>
       {
         switch (b)
         {
           case BlockInstance bi:
-            return bi.GetTransformedGeometry()?.Select(b =>
+            return bi.GetTransformedGeometry()?.Select(geo =>
             {
               ITransformable childTransformed = null;
-              b?.TransformTo(transform, out childTransformed);
+              geo?.TransformTo(transform, out childTransformed);
               return childTransformed;
             });
           case ITransformable bt:
