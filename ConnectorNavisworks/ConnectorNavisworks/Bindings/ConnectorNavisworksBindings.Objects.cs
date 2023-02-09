@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Autodesk.Navisworks.Api;
+using DesktopUI2.Models.Filters;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
-using Autodesk.Navisworks.Api;
-using DesktopUI2.Models.Filters;
-using Cursor = System.Windows.Forms.Cursor;
 using static Speckle.ConnectorNavisworks.Utils;
+using Cursor = System.Windows.Forms.Cursor;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
@@ -35,9 +35,35 @@ namespace Speckle.ConnectorNavisworks.Bindings
           filteredObjects.AddRange(GetObjectsFromClashResults(filter));
           return filteredObjects;
 
+        case "views":
+          filteredObjects.AddRange(GetObjectsFromSavedViewpoint(filter));
+          return filteredObjects;
+
         default:
           return filteredObjects;
       }
+    }
+
+    private static IEnumerable<string> GetObjectsFromSavedViewpoint(ISelectionFilter filter)
+    {
+      var reference = filter.Selection[0].Split(new string[] { ":" }, StringSplitOptions.None);
+      var savedViewpoint = (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+
+      // TODO: Handle an amended viewpoint hierarchy.
+      // Possibly by adding a GUID to the selected viewpoint if none is set at the
+      // point of selection comparison can then be made by the GUID if the name and
+      // path don't align. This would be better as both order and name could be
+      // changed after a stream state is saved.
+      if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides) return Enumerable.Empty<string>();
+
+      var items = savedViewpoint.GetVisibilityOverrides().Hidden;
+      items.Invert(Doc);
+
+      // TODO: Where the SavedViews Filter is amended to accept multiple views
+      // for conversion, the logic for returning Object ids will have to change
+      // for processing i.e. Handle lists or id lists instead of a singular list,
+      // and in turn handle only converting member objects once.
+      return items.DescendantsAndSelf.Select(GetPseudoId).ToList();
     }
 
     private static IEnumerable<string> GetObjectsFromSelection(ISelectionFilter filter)

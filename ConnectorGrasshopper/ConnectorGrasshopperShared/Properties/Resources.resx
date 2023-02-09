@@ -124,6 +124,9 @@
   <data name="Accounts" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\Accounts.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="AccountToken" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\AccountToken.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
   <data name="BaseParam" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\BaseParam.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -225,6 +228,9 @@
   </data>
   <data name="StreamGet" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\StreamGet.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="StreamGetWithToken" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\StreamGetWithToken.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
   <data name="StreamList" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>..\Resources\StreamList.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>

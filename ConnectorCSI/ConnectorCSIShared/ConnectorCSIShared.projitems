@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Recieve.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Selection.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Send.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsCSI.Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Util\ConnectorCSIUtils.cs" />
   </ItemGroup>
 </Project>
