@@ -251,10 +251,9 @@ namespace DesktopUI2
             Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
           else
           {
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
             try
             {
-              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
-
               await AccountManager.AddAccount(result);
               await Task.Delay(1000);
 
@@ -262,7 +261,7 @@ namespace DesktopUI2
             }
             catch (Exception e)
             {
-              new SpeckleException("Could not Add Account in AccountManager", e, true, Sentry.SentryLevel.Error);
+              //errors already handled in AddAccount
 
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
