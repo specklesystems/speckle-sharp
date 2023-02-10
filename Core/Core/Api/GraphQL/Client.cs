@@ -191,8 +191,6 @@ namespace Speckle.Core.Api
       }
     }
 
-    private void LogGraphQLException<T>(SpeckleGraphQLException<T> ex) { }
-
     internal void MaybeThrowFromGraphQLErrors<T>(
       GraphQLRequest request,
       GraphQLResponse<T> response
@@ -230,6 +228,37 @@ namespace Speckle.Core.Api
           throw new SpeckleGraphQLInternalErrorException<T>(request, response);
 
         throw new SpeckleGraphQLException<T>("Request failed with errors", request, response);
+      }
+    }
+
+    internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
+    {
+      try
+      {
+        var res = GQLClient.CreateSubscriptionStream<T>(request);
+        return res.Subscribe(response =>
+        {
+          MaybeThrowFromGraphQLErrors<T>(request, response);
+
+          if (response.Data != null)
+            callback(this, response.Data);
+        });
+      }
+      catch (Exception e)
+      {
+        var logger = Log.Logger;
+        if (e is SpeckleGraphQLException<T> gqex)
+          logger = logger.ForContext("graphQLErrors", gqex.ErrorMessages);
+
+        logger.Warning(
+          e,
+          "Subscribing to {subscriptionType} failed with {exceptionType}, {exceptionMessage}",
+          nameof(T),
+          e.GetType().Name,
+          e.Message
+        );
+        // TODO: should we wrap the exceptions here
+        throw;
       }
     }
   }
