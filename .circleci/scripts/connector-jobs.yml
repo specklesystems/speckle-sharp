@@ -83,30 +83,30 @@ autocadcivil:
         - build-desktopui
       context: innosetup
 
-microstation:
+bentley:
   - build-connector:
-      slnname: ConnectorMicroStation
+      slnname: ConnectorBentley
       dllname: SpeckleConnectorMicroStation.dll
       slug: microstation
       requires:
         - build-desktopui
       context: innosetup
   - build-connector:
-      slnname: ConnectorMicroStation
+      slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenBuildings.dll
       slug: openbuildings
       requires:
         - build-desktopui
       context: innosetup
   - build-connector:
-      slnname: ConnectorMicroStation
+      slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRail.dll
       slug: openrail
       requires:
         - build-desktopui
       context: innosetup
   - build-connector:
-      slnname: ConnectorMicroStation
+      slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRoads.dll
       slug: openroads
       context: innosetup

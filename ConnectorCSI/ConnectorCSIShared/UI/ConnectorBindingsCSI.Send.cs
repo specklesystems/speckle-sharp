@@ -39,6 +39,7 @@ namespace Speckle.ConnectorCSI.UI
       converter.SetConverterSettings(settings);
 
       converter.SetContextDocument(Model);
+      converter.SetPreviousContextObjects(state.ReceivedObjects);
       Exceptions.Clear();
 
       int objCount = 0;

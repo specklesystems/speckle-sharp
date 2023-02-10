@@ -17,7 +17,7 @@ static GS::ObjectState SerializeBeamType (const API_Element& elem, const API_Ele
 	os.Add (ApplicationIdFieldName, APIGuidToString (elem.beam.head.guid));
 	os.Add (FloorIndexFieldName, elem.beam.head.floorInd);
 
-	double z = Utility::GetStoryLevel (elem.beam.head.floorInd) + elem.beam.offset;
+	double z = Utility::GetStoryLevel (elem.beam.head.floorInd) + elem.beam.level;
 	os.Add (Beam::begC, Objects::Point3D (elem.beam.begC.x, elem.beam.begC.y, z));
 	os.Add (Beam::endC, Objects::Point3D (elem.beam.endC.x, elem.beam.endC.y, z));
 
@@ -56,87 +56,26 @@ static GS::ObjectState SerializeBeamType (const API_Element& elem, const API_Ele
 
 		for (GSSize idx = 0; idx < segmentsCount; ++idx) {
 			GS::ObjectState currentSegment;
-			API_BeamSegmentType beamSegment = memo.beamSegments[idx];
+			Utility::GetSegmentData (memo.beamSegments[idx].assemblySegmentData, currentSegment);
 
-			currentSegment.Add (Beam::circleBased, beamSegment.assemblySegmentData.circleBased);
-			currentSegment.Add (Beam::modelElemStructureType, structureTypeNames.Get (beamSegment.assemblySegmentData.modelElemStructureType));
-			currentSegment.Add (Beam::nominalHeight, beamSegment.assemblySegmentData.nominalHeight);
-			currentSegment.Add (Beam::nominalWidth, beamSegment.assemblySegmentData.nominalWidth);
-			currentSegment.Add (Beam::isWidthAndHeightLinked, beamSegment.assemblySegmentData.isWidthAndHeightLinked);
-			currentSegment.Add (Beam::isHomogeneous, beamSegment.assemblySegmentData.isHomogeneous);
-			currentSegment.Add (Beam::endWidth, beamSegment.assemblySegmentData.endWidth);
-			currentSegment.Add (Beam::endHeight, beamSegment.assemblySegmentData.endHeight);
-			currentSegment.Add (Beam::isEndWidthAndHeightLinked, beamSegment.assemblySegmentData.isEndWidthAndHeightLinked);
-
-			API_Attribute attrib;
-			switch (beamSegment.assemblySegmentData.modelElemStructureType) {
-			case API_CompositeStructure:
-				DBASSERT (beamSegment.assemblySegmentData.modelElemStructureType != API_CompositeStructure)
-					break;
-			case API_BasicStructure:
-				BNZeroMemory (&attrib, sizeof (API_Attribute));
-				attrib.header.typeID = API_BuildingMaterialID;
-				attrib.header.index = beamSegment.assemblySegmentData.buildingMaterial;
-				ACAPI_Attribute_Get (&attrib);
-
-				currentSegment.Add (Beam::buildingMaterial, GS::UniString{attrib.header.name});
-				break;
-			case API_ProfileStructure:
-				BNZeroMemory (&attrib, sizeof (API_Attribute));
-				attrib.header.typeID = API_ProfileID;
-				attrib.header.index = beamSegment.assemblySegmentData.profileAttr;
-				ACAPI_Attribute_Get (&attrib);
-
-				currentSegment.Add (Beam::profileAttrName, GS::UniString{attrib.header.name});
-				break;
-			default:
-				break;
-			}
-			allSegments.Add (GS::String::SPrintf (Beam::BeamSegmentName, idx + 1), currentSegment);
+			allSegments.Add (GS::String::SPrintf (AssemblySegmentData::SegmentName, idx + 1), currentSegment);
 		}
 
-		os.Add (Beam::segmentData, allSegments);
+		os.Add (PartialObjects::SegmentData, allSegments);
 	}
 
 	// Scheme
 	if (memo.assemblySegmentSchemes != nullptr) {
 		GS::ObjectState allSchemes;
-
-		GSSize schemesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
-		DBASSERT (schemesCount == elem.beam.nSchemes)
-
-			for (GSSize idx = 0; idx < schemesCount; ++idx) {
-				GS::ObjectState currentScheme;
-				API_AssemblySegmentSchemeData beamAssemblySegmentScheme = memo.assemblySegmentSchemes[idx];
-
-				currentScheme.Add (Beam::lengthType, segmentLengthTypeNames.Get (beamAssemblySegmentScheme.lengthType));
-				currentScheme.Add (Beam::fixedLength, beamAssemblySegmentScheme.fixedLength);
-				currentScheme.Add (Beam::lengthProportion, beamAssemblySegmentScheme.lengthProportion);
-
-				allSchemes.Add (GS::String::SPrintf (Beam::SchemeName, idx + 1), currentScheme);
-			}
-
-		os.Add (Beam::schemeData, allSchemes);
+		Utility::GetAllSchemeData (memo.assemblySegmentSchemes, allSchemes);
+		os.Add (PartialObjects::SchemeData, allSchemes);
 	}
 
 	// Cut
 	if (memo.assemblySegmentCuts != nullptr) {
 		GS::ObjectState allCuts;
-
-		GSSize cutsCount = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.assemblySegmentCuts)) / sizeof (API_AssemblySegmentCutData);
-		DBASSERT (cutsCount == elem.beam.nCuts)
-
-			for (GSSize idx = 0; idx < cutsCount; ++idx) {
-				GS::ObjectState currentCut;
-				API_AssemblySegmentCutData assemblySegmentCuts = memo.assemblySegmentCuts[idx];
-
-				currentCut.Add (Beam::cutType, assemblySegmentCutTypeNames.Get (assemblySegmentCuts.cutType));
-				currentCut.Add (Beam::customAngle, assemblySegmentCuts.customAngle);
-
-				allCuts.Add (GS::String::SPrintf (Beam::CutName, idx + 1), currentCut);
-			}
-
-		os.Add (Beam::cutData, allCuts);
+		Utility::GetAllCutData (memo.assemblySegmentCuts, allCuts);
+		os.Add (PartialObjects::CutData, allCuts);
 	}
 
 	// Hole
@@ -158,7 +97,7 @@ static GS::ObjectState SerializeBeamType (const API_Element& elem, const API_Ele
 			allHoles.Add (GS::String::SPrintf (Beam::HoleName, idx + 1), currentHole);
 		}
 
-		os.Add (Beam::holeData, allHoles);
+		os.Add (PartialObjects::HoleData, allHoles);
 	}
 
 	return os;

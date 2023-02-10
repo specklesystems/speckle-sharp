@@ -38,7 +38,7 @@ jobs:
                   (Core|Objects|ConnectorDynamo|.*/ConverterDynamo)/.* dynamo true
                   (Core|Objects|ConnectorAutocadCivil|.*/ConverterAutocadCivil)/.* autocadcivil true
                   (Core|Objects|ConnectorCSI|.*/ConverterCSI)/.* csi true
-                  (Core|Objects|ConnectorMicroStation|.*/ConverterMicroStation)/.* microstation true
+                  (Core|Objects|ConnectorBentley|.*/ConverterBentley)/.* bentley true
                   (Core|Objects|ConnectorTeklaStructures|.*/ConverterTeklaStructures)/.* teklastructures true
                   (Core|Objects|ConnectorArchicad)/.* archicad true
                   (Core|Objects|ConnectorNavisworks|.*/ConverterNavisworks)/.* navisworks true

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
+using Serilog;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
@@ -61,7 +62,7 @@ namespace ConnectorGrasshopper.Objects
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You cannot set all parameters as optional");
           return;
         }
-        
+
         //TODO: Original node 
         if (DA.Iteration == 0)
           Tracker.TrackNodeRun("Create Object");
@@ -171,10 +172,10 @@ namespace ConnectorGrasshopper.Objects
                 return result;
               }).ToList();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.ToFormattedString()}");
+              Log.Error(ex, ex.Message);
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
 
@@ -182,10 +183,10 @@ namespace ConnectorGrasshopper.Objects
             {
               @base[key] = converted;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
+              Log.Error(ex, ex.Message);
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
           }
@@ -202,7 +203,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Logging.Log.CaptureException(e);
+              Log.Error(e, e.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
               hasErrors = true;
             }
@@ -219,7 +220,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Logging.Log.CaptureException(e);
+        Log.Error(e, e.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
       }
 

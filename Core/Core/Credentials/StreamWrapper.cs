@@ -258,6 +258,11 @@ namespace Speckle.Core.Credentials
       throw err;
     }
 
+    public void SetAccount(Account acc)
+    {
+      _Account = acc;
+      UserId = _Account.userInfo.id;
+    }
     public bool Equals(StreamWrapper wrapper)
     {
       if (wrapper == null) return false;
