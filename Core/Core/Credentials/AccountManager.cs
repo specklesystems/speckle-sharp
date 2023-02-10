@@ -27,6 +27,7 @@ namespace Speckle.Core.Credentials
   public static class AccountManager
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
+    private static bool _isAddingAccount = false;
 
     /// <summary>
     /// Gets the basic information about a server.
@@ -335,9 +336,24 @@ namespace Speckle.Core.Credentials
     public static async Task AddAccount(string server = "")
     {
       Log.Debug("Starting to add account for {serverUrl}", server);
+
+      if (!HttpListener.IsSupported)
+      {
+        Log.Error(
+          "HttpListener not supported"
+        );
+        throw new Exception("Your operating system is not supported");
+      }
+
+      //prevent launching this flow multiple times
+      if (_isAddingAccount)
+        return;
+
+      _isAddingAccount = true;
       server = server.TrimEnd(new[] { '/' });
 
-      if (string.IsNullOrEmpty(server)) {
+      if (string.IsNullOrEmpty(server))
+      {
         server = GetDefaultServerUrl();
         Log.Debug("Changed server url to the default usl {serverUrl}", server);
       }
@@ -349,30 +365,21 @@ namespace Speckle.Core.Credentials
         new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true }
       );
 
-      HttpListener listener = new HttpListener();
+
 
       //does nothing?
-      var timeout = TimeSpan.FromMinutes(2);
+      var timeout = TimeSpan.FromMinutes(1);
       //listener.TimeoutManager.HeaderWait = timeout;
       //listener.TimeoutManager.EntityBody = timeout;
       //listener.TimeoutManager.IdleConnection = timeout;
 
       var task = Task.Run(() =>
       {
+        var listener = new HttpListener();
+        var localUrl = "http://localhost:29363/";
+        listener.Prefixes.Add(localUrl);
         try
         {
-          if (!HttpListener.IsSupported)
-          {
-            Log.Warning(
-              "Windows XP SP2 or Server 2003 is required to use the HttpListener class."
-            );
-            return;
-          }
-
-          listener = new HttpListener();
-          var localUrl = "http://localhost:29363/";
-          listener.Prefixes.Add(localUrl);
-
           listener.Start();
           Log.Debug("Listening for auth redirects on {localUrl}", localUrl);
           // Note: The GetContext method blocks while waiting for a request.
@@ -384,18 +391,12 @@ namespace Speckle.Core.Credentials
           Log.Debug("Got access code {accessCode}", accessCode);
           var message = "";
           if (accessCode != null)
-          {
-            message =
-              "Yay!<br/><br/>You can close this window now.<script>window.close();</script>";
-          }
+            message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
           else
-          {
             message = "Oups, something went wrong...!";
-          }
 
           var responseString =
             $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
-
           byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
           response.ContentLength64 = buffer.Length;
           System.IO.Stream output = response.OutputStream;
@@ -405,43 +406,67 @@ namespace Speckle.Core.Credentials
           listener.Stop();
         }
         catch (Exception ex)
-        { 
-          Log.Error(ex, "Getting access code flow failed with {exceptionMessage}", ex.Message);
+        {
+          listener.Abort();
+          throw ex;
         }
       });
 
+      var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
+
       //Timeout
-      if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
+      if (completedTask == task)
       {
-        Log.Information("Local auth flow completed within the timeout window. Access code is {accessCode}", accessCode);
+        if (task.IsFaulted)
+        {
+          Log.Error(task.Exception, "Getting access code flow failed with {exceptionMessage}", task.Exception.Message);
+          _isAddingAccount = false;
+          throw new Exception($"Auth flow failed: {task.Exception.Message}", task.Exception);
+        }
+
         // task completed within timeout
+        Log.Information("Local auth flow completed successfully within the timeout window. Access code is {accessCode}", accessCode);
       }
       else
       {
-        // nada
+        // task timed out
         Log.Warning("Local auth flow failed to complete within the timeout window. Access code is {accessCode}", accessCode);
+        _isAddingAccount = false;
+        throw new Exception("Local auth flow failed to complete within the timeout window");
       }
 
       if (string.IsNullOrEmpty(accessCode))
-        return;
-
-      var tokenResponse = (await GetToken(accessCode, challenge, server));
-
-      var userResponse = await GetUserServerInfo(tokenResponse.token, server);
-
-      var account = new Account()
       {
-        token = tokenResponse.token,
-        refreshToken = tokenResponse.refreshToken,
-        isDefault = GetAccounts().Count() == 0,
-        serverInfo = userResponse.serverInfo,
-        userInfo = userResponse.user
-      };
-      Log.Information("Successfully created account for {serverUrl}", server);
-      account.serverInfo.url = server;
+        _isAddingAccount = false;
+        Log.Warning("Access code is invalid {accessCode}", accessCode);
+        throw new Exception("Access code is ivalid");
+      }
+      try
+      {
+        var tokenResponse = await GetToken(accessCode, challenge, server);
+        var userResponse = await GetUserServerInfo(tokenResponse.token, server);
 
-      //if the account already exists it will not be added again
-      AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+        var account = new Account()
+        {
+          token = tokenResponse.token,
+          refreshToken = tokenResponse.refreshToken,
+          isDefault = GetAccounts().Count() == 0,
+          serverInfo = userResponse.serverInfo,
+          userInfo = userResponse.user
+        };
+        Log.Information("Successfully created account for {serverUrl}", server);
+        account.serverInfo.url = server;
+
+        //if the account already exists it will not be added again
+        AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Error adding the account");
+        throw new Exception("Something went wrong adding the account, please try again");
+      }
+      _isAddingAccount = false;
+
     }
 
     private static async Task<TokenExchangeResponse> GetToken(
