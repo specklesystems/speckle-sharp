@@ -365,14 +365,9 @@ namespace Speckle.Core.Credentials
         new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true }
       );
 
-
-
-      //does nothing?
+      //timeout for the task
       var timeout = TimeSpan.FromMinutes(1);
       var listener = new HttpListener();
-      //listener.TimeoutManager.HeaderWait = timeout;
-      //listener.TimeoutManager.EntityBody = timeout;
-      //listener.TimeoutManager.IdleConnection = timeout;
 
       var task = Task.Run(() =>
       {
@@ -408,7 +403,7 @@ namespace Speckle.Core.Credentials
 
       var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
 
-      //ensure the listener is closed if the task has timed out or failed
+      //ensure the listener is closed even if the task has timed out or failed
       if (listener.IsListening)
         listener.Abort();
 
