@@ -404,9 +404,11 @@ namespace Speckle.Core.Credentials
           output.Close();
           Log.Debug("Processed finished processing the access code.");
           listener.Stop();
+          listener.Close();
         }
         catch (Exception ex)
         {
+          listener.Close();
           listener.Abort();
           throw ex;
         }
