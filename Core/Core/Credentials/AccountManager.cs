@@ -369,54 +369,50 @@ namespace Speckle.Core.Credentials
 
       //does nothing?
       var timeout = TimeSpan.FromMinutes(1);
+      var listener = new HttpListener();
       //listener.TimeoutManager.HeaderWait = timeout;
       //listener.TimeoutManager.EntityBody = timeout;
       //listener.TimeoutManager.IdleConnection = timeout;
 
       var task = Task.Run(() =>
       {
-        var listener = new HttpListener();
+
         var localUrl = "http://localhost:29363/";
         listener.Prefixes.Add(localUrl);
-        try
-        {
-          listener.Start();
-          Log.Debug("Listening for auth redirects on {localUrl}", localUrl);
-          // Note: The GetContext method blocks while waiting for a request.
-          HttpListenerContext context = listener.GetContext();
-          HttpListenerRequest request = context.Request;
-          HttpListenerResponse response = context.Response;
+        listener.Start();
+        Log.Debug("Listening for auth redirects on {localUrl}", localUrl);
+        // Note: The GetContext method blocks while waiting for a request.
+        HttpListenerContext context = listener.GetContext();
+        HttpListenerRequest request = context.Request;
+        HttpListenerResponse response = context.Response;
 
-          accessCode = request.QueryString["access_code"];
-          Log.Debug("Got access code {accessCode}", accessCode);
-          var message = "";
-          if (accessCode != null)
-            message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
-          else
-            message = "Oups, something went wrong...!";
+        accessCode = request.QueryString["access_code"];
+        Log.Debug("Got access code {accessCode}", accessCode);
+        var message = "";
+        if (accessCode != null)
+          message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
+        else
+          message = "Oups, something went wrong...!";
 
-          var responseString =
-            $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
-          byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-          response.ContentLength64 = buffer.Length;
-          System.IO.Stream output = response.OutputStream;
-          output.Write(buffer, 0, buffer.Length);
-          output.Close();
-          Log.Debug("Processed finished processing the access code.");
-          listener.Stop();
-          listener.Close();
-        }
-        catch (Exception ex)
-        {
-          listener.Close();
-          listener.Abort();
-          throw ex;
-        }
+        var responseString =
+          $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
+        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+        response.ContentLength64 = buffer.Length;
+        System.IO.Stream output = response.OutputStream;
+        output.Write(buffer, 0, buffer.Length);
+        output.Close();
+        Log.Debug("Processed finished processing the access code.");
+        listener.Stop();
+        listener.Close();
       });
 
       var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
 
-      //Timeout
+      //ensure the listener is closed if the task has timed out or failed
+      if (listener.IsListening)
+        listener.Abort();
+
+      //check if timed out or not
       if (completedTask == task)
       {
         if (task.IsFaulted)
