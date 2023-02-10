@@ -25,12 +25,18 @@ namespace Archicad.Converters
             beams.Add(archiBeam);
             break;
           case Objects.BuiltElements.Beam beam:
-            var baseLine = (Line)beam.baseLine;
-            var newBeam = new Objects.BuiltElements.Archicad.ArchicadBeam(
-              Utils.ScaleToNative(baseLine.start),
-              Utils.ScaleToNative(baseLine.end)
-              );
-            beams.Add(newBeam);
+
+            // upgrade (if not Archicad beam): Objects.BuiltElements.Beam --> Objects.BuiltElements.Archicad.ArchicadBeam
+            {
+              var baseLine = (Line)beam.baseLine;
+              var newBeam = new Objects.BuiltElements.Archicad.ArchicadBeam(
+                Utils.ScaleToNative(baseLine.start),
+                Utils.ScaleToNative(baseLine.end)
+                );
+
+              beams.Add(newBeam);
+            }
+                      
             break;
         }
       }
@@ -56,11 +62,14 @@ namespace Archicad.Converters
       List<Base> beams = new List<Base>();
       foreach (Objects.BuiltElements.Archicad.ArchicadBeam beam in data)
       {
-        beam.displayValue =
-          Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == beam.applicationId)
-            .model);
-        beam.baseLine = new Line(beam.begC, beam.endC);
-        beams.Add(beam);
+        // downgrade (always): Objects.BuiltElements.Archicad.ArchicadBeam --> Objects.BuiltElements.Beam
+        {
+          beam.displayValue =
+            Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == beam.applicationId)
+              .model);
+          beam.baseLine = new Line(beam.begC, beam.endC);
+          beams.Add(beam);
+        }
       }
 
       return beams;

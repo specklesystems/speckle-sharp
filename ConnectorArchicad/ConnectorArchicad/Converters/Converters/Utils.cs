@@ -11,6 +11,11 @@ namespace Archicad.Converters
 {
   public static class Utils
   {
+    public static Point VertexToPoint (MeshModel.Vertex vertex)
+    {
+      return new Point { x = vertex.x, y = vertex.y , z = vertex.z };
+    }
+
     public static Point ScaleToNative(Point point, string? units = null)
     {
       units ??= point.units;
