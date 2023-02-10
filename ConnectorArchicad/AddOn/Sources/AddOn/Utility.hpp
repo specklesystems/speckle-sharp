@@ -26,6 +26,21 @@ void SetStoryLevel (const double& inLevel, const short& floorInd, double& level)
 
 GS::Array<API_Guid> GetWallSubelements (API_WallType& wall);
 
+// API_AssemblySegmentData
+GSErrCode GetSegmentData (const API_AssemblySegmentData&, GS::ObjectState&);
+GSErrCode CreateOneSegmentData (GS::ObjectState&, API_AssemblySegmentData&, API_Element&);
+
+// API_AssemblySegmentSchemeData
+GSErrCode GetOneSchemeData (const API_AssemblySegmentSchemeData&, GS::ObjectState&);
+GSErrCode GetAllSchemeData (API_AssemblySegmentSchemeData*, GS::ObjectState&);
+GSErrCode CreateOneSchemeData (GS::ObjectState&, API_AssemblySegmentSchemeData&, API_Element&);
+GSErrCode CreateAllSchemeData (const GS::ObjectState&, GS::UInt32&, API_Element&, API_Element&, API_ElementMemo*);
+
+// API_AssemblySegmentCutData
+GSErrCode GetOneCutData (const API_AssemblySegmentCutData&, GS::ObjectState&);
+GSErrCode GetAllCutData (API_AssemblySegmentCutData*, GS::ObjectState&);
+GSErrCode CreateOneCutData (GS::ObjectState&, API_AssemblySegmentCutData&, API_Element&);
+GSErrCode CreateAllCutData (const GS::ObjectState&, GS::UInt32&, API_Element&, API_Element&, API_ElementMemo*);
 }
 
 
