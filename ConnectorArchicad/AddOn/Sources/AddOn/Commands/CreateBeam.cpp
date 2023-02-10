@@ -199,184 +199,30 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 		return Error;
 	}
 
-	API_AssemblySegmentSchemeData defaultBeamSegmentScheme;
-	if (memo->assemblySegmentSchemes != nullptr) {
-		defaultBeamSegmentScheme = memo->assemblySegmentSchemes[0];
-		memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-	} else {
-		return Error;
-	}
-
-	API_AssemblySegmentCutData defaultBeamSegmentCut;
-	if (memo->assemblySegmentCuts != nullptr) {
-		defaultBeamSegmentCut = memo->assemblySegmentCuts[0];
-		memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-	} else {
-		return Error;
-	}
-
 #pragma region Segment
 	GS::ObjectState allSegments;
-	if (os.Contains (Beam::segmentData))
-		os.Get (Beam::segmentData, allSegments);
+	if (os.Contains (PartialObjects::SegmentData))
+		os.Get (PartialObjects::SegmentData, allSegments);
 
 	for (UInt32 idx = 0; idx < element.beam.nSegments; ++idx) {
 		GS::ObjectState currentSegment;
-		allSegments.Get (GS::String::SPrintf (Beam::BeamSegmentName, idx + 1), currentSegment);
+		allSegments.Get (GS::String::SPrintf (AssemblySegmentData::SegmentName, idx + 1), currentSegment);
 
 		memo->beamSegments[idx] = defaultBeamSegment;
-		if (!currentSegment.IsEmpty ()) {
+		Utility::CreateOneSegmentData (currentSegment, memo->beamSegments[idx].assemblySegmentData, beamMask);
 
-			if (currentSegment.Contains (Beam::circleBased))
-				currentSegment.Get (Beam::circleBased, memo->beamSegments[idx].assemblySegmentData.circleBased);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.circleBased);
-
-			if (currentSegment.Contains (Beam::nominalHeight))
-				currentSegment.Get (Beam::nominalHeight, memo->beamSegments[idx].assemblySegmentData.nominalHeight);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.nominalHeight);
-
-			if (currentSegment.Contains (Beam::nominalWidth))
-				currentSegment.Get (Beam::nominalWidth, memo->beamSegments[idx].assemblySegmentData.nominalWidth);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.nominalWidth);
-
-			if (currentSegment.Contains (Beam::isWidthAndHeightLinked))
-				currentSegment.Get (Beam::isWidthAndHeightLinked, memo->beamSegments[idx].assemblySegmentData.isWidthAndHeightLinked);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.isWidthAndHeightLinked);
-
-			if (currentSegment.Contains (Beam::isHomogeneous))
-				currentSegment.Get (Beam::isHomogeneous, memo->beamSegments[idx].assemblySegmentData.isHomogeneous);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.isHomogeneous);
-
-			if (currentSegment.Contains (Beam::endWidth))
-				currentSegment.Get (Beam::endWidth, memo->beamSegments[idx].assemblySegmentData.endWidth);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.endWidth);
-
-			if (currentSegment.Contains (Beam::endHeight))
-				currentSegment.Get (Beam::endHeight, memo->beamSegments[idx].assemblySegmentData.endHeight);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.endHeight);
-
-			if (currentSegment.Contains (Beam::isEndWidthAndHeightLinked))
-				currentSegment.Get (Beam::isEndWidthAndHeightLinked, memo->beamSegments[idx].assemblySegmentData.isEndWidthAndHeightLinked);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.isEndWidthAndHeightLinked);
-
-			if (currentSegment.Contains (Beam::modelElemStructureType)) {
-				API_ModelElemStructureType realStructureType = API_BasicStructure;
-				GS::UniString structureName;
-				currentSegment.Get (Beam::modelElemStructureType, structureName);
-
-				GS::Optional<API_ModelElemStructureType> tmpStructureType = structureTypeNames.FindValue (structureName);
-				if (tmpStructureType.HasValue ())
-					realStructureType = tmpStructureType.Get ();
-				memo->beamSegments[idx].assemblySegmentData.modelElemStructureType = realStructureType;
-			}
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, assemblySegmentData.modelElemStructureType);
-
-			if (currentSegment.Contains (Beam::profileAttrName)) {
-				GS::UniString attrName;
-				currentSegment.Get (Beam::profileAttrName, attrName);
-
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_ProfileID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
-
-					if (err == NoError)
-						memo->beamSegments[idx].assemblySegmentData.profileAttr = attrib.header.index;
-				}
-			}
-
-			if (currentSegment.Contains (Beam::buildingMaterial)) {
-				GS::UniString attrName;
-				currentSegment.Get (Beam::buildingMaterial, attrName);
-
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_BuildingMaterialID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
-
-					if (err == NoError)
-						memo->beamSegments[idx].assemblySegmentData.buildingMaterial = attrib.header.index;
-				}
-			}
-		}
 	}
 #pragma endregion
 
-#pragma region Scheme
-	GS::ObjectState allSchemes;
-	if (os.Contains (Beam::schemeData))
-		os.Get (Beam::schemeData, allSchemes);
-
-	for (UInt32 idx = 0; idx < element.beam.nSchemes; ++idx) {
-		if (!allSchemes.IsEmpty ()) {
-			GS::ObjectState currentScheme;
-			allSchemes.Get (GS::String::SPrintf (Beam::SchemeName, idx + 1), currentScheme);
-
-			memo->assemblySegmentSchemes[idx] = defaultBeamSegmentScheme;
-			if (!currentScheme.IsEmpty ()) {
-
-				if (currentScheme.Contains (Beam::lengthType)) {
-					API_AssemblySegmentLengthTypeID lengthType = APIAssemblySegment_Fixed;
-					GS::UniString lengthTypeName;
-					currentScheme.Get (Beam::lengthType, lengthTypeName);
-
-					GS::Optional<API_AssemblySegmentLengthTypeID> type = segmentLengthTypeNames.FindValue (lengthTypeName);
-					if (type.HasValue ())
-						lengthType = type.Get ();
-					memo->assemblySegmentSchemes[idx].lengthType = lengthType;
-
-					if (lengthType == APIAssemblySegment_Fixed && currentScheme.Contains (Beam::fixedLength)) {
-						currentScheme.Get (Beam::fixedLength, memo->assemblySegmentSchemes[idx].fixedLength);
-						memo->assemblySegmentSchemes[idx].lengthProportion = 0.0;
-					} else if (lengthType == APIAssemblySegment_Proportional && currentScheme.Contains (Beam::lengthProportion)) {
-						currentScheme.Get (Beam::lengthProportion, memo->assemblySegmentSchemes[idx].lengthProportion);
-						memo->assemblySegmentSchemes[idx].fixedLength = 0.0;
-					}
-				}
-			}
-		}
-	}
-#pragma endregion
-
-#pragma region Cut
-	GS::ObjectState allCuts;
-	if (os.Contains (Beam::cutData))
-		os.Get (Beam::cutData, allCuts);
-
-	for (UInt32 idx = 0; idx < element.beam.nCuts; ++idx) {
-		GS::ObjectState currentCut;
-		allCuts.Get (GS::String::SPrintf (Beam::CutName, idx + 1), currentCut);
-
-		memo->assemblySegmentCuts[idx] = defaultBeamSegmentCut;
-		if (!currentCut.IsEmpty ()) {
-
-			if (currentCut.Contains (Beam::cutType)) {
-				API_AssemblySegmentCutTypeID realCutType = APIAssemblySegmentCut_Vertical;
-				GS::UniString structureName;
-				currentCut.Get (Beam::cutType, structureName);
-
-				GS::Optional<API_AssemblySegmentCutTypeID> tmpCutType = assemblySegmentCutTypeNames.FindValue (structureName);
-				if (tmpCutType.HasValue ())
-					realCutType = tmpCutType.Get ();
-				memo->assemblySegmentCuts[idx].cutType = realCutType;
-			}
-			if (currentCut.Contains (Beam::customAngle)) {
-				currentCut.Get (Beam::customAngle, memo->assemblySegmentCuts[idx].customAngle);
-			}
-		}
-	}
-#pragma endregion
+	Utility::CreateAllSchemeData (os, element.beam.nSchemes, element, beamMask, memo);
+	Utility::CreateAllCutData (os, element.beam.nCuts, element, beamMask, memo);
 
 #pragma region Hole
 	GS::ObjectState allHoles;
 	UInt32 holesCount = 0;
 
-	if (os.Contains (Beam::holeData)) {
-		os.Get (Beam::holeData, allHoles);
+	if (os.Contains (PartialObjects::HoleData)) {
+		os.Get (PartialObjects::HoleData, allHoles);
 		holesCount = allHoles.GetFieldCount ();
 	}
 
@@ -418,10 +264,10 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 			}
 		}
 	}
+#pragma endregion
 
 	return NoError;
 }
-#pragma endregion
 
 GS::String CreateBeam::GetName () const
 {
