@@ -1,0 +1,81 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<RibbonItems xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="RibbonDefinitions.xsd">
+  <TabCollections>
+    <TabCollection Name="RailTabs">
+      <TabRef Name="Speckle.Home" Priority="100000">
+      </TabRef>
+    </TabCollection>	  
+    <TabCollection Name="Mstn.Drawing">
+      <TabRef Name="Speckle.Home" Priority="100000">
+      </TabRef>
+    </TabCollection>
+    <TabCollection Name="ModelingTabs">
+      <TabRef Name="Speckle.Home" Priority="120000">
+      </TabRef>
+    </TabCollection>
+    <TabCollection Name="VisualizationTabs">
+      <TabRef Name="Speckle.Home" Priority="100000">
+      </TabRef>
+    </TabCollection>	
+  </TabCollections>
+  <Tabs>
+    <Tab Name="Speckle.Home" Priority="100">
+      <Label>Speckle 2</Label>
+      <TabItems>
+        <GroupRef Name="Speckle.AttributeGroup" Priority="-10000">
+          <GroupParams>
+            <GroupLauncherAccessText>1</GroupLauncherAccessText>
+            <AccessText>1</AccessText>
+          </GroupParams>
+        </GroupRef>
+        <GroupRef Name="Speckle.ToolsGroup" Priority="-10000">
+        </GroupRef>
+      </TabItems>
+    </Tab>
+  </Tabs>
+  <Groups>
+    <Group GroupZone="Primary" Name="Speckle.AttributeGroup" PanelType="Collapsible" Priority="100">
+      <Label>Speckle 2</Label>
+      <Icon Type="NamedIcon">
+        <NamedIcon>RibbonGroupPrimary</NamedIcon>
+      </Icon>
+      <GroupParams>
+        <AccessText>S2</AccessText>
+      </GroupParams>
+      <GroupItems>
+        <ButtonRef Name="Speckle.ShowUI" Priority="10000">
+          <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
+            <AccessText>SS</AccessText>
+            <PopupAccessText>s</PopupAccessText>
+          </ButtonParams>
+        </ButtonRef>
+      </GroupItems>
+    </Group>
+    <Group GroupZone="Primary" Name="Speckle.ToolsGroup" PanelType="Collapsible" Priority="1000">
+      <Label>Tools</Label>
+      <Icon Type="NamedIcon">
+        <NamedIcon>RibbonGroupPrimary</NamedIcon>
+      </Icon>
+      <GroupItems>
+      </GroupItems>
+    </Group>
+  </Groups>
+  <Buttons>
+    <Button Name="Speckle.ShowUI" Priority="100">
+      <Label>Connector OpenRail</Label>
+      <Description>Launches the Speckle OpenRail Connector</Description>
+      <ButtonParams CollapseToSmall="WhenGroupIsSmall" Size="Large">
+      </ButtonParams>
+      <ButtonData>
+        <CommandData Type="UserKeyinCommand">
+          <UserKeyinCommand>
+            <Keyin>Speckle Speckle</Keyin>
+            <Icon Type="NamedIcon">
+              <NamedIcon>s2block</NamedIcon>
+            </Icon>
+          </UserKeyinCommand>
+        </CommandData>
+      </ButtonData>
+    </Button>
+  </Buttons>
+</RibbonItems>

@@ -55,87 +55,25 @@ static GS::ObjectState SerializeColumnType (const API_Element& elem, const API_E
 
 		for (GSSize idx = 0; idx < segmentsCount; ++idx) {
 			GS::ObjectState currentSegment;
-			API_ColumnSegmentType columnSegment = memo.columnSegments[idx];
-
-			currentSegment.Add (Column::circleBased, columnSegment.assemblySegmentData.circleBased);
-			currentSegment.Add (Column::modelElemStructureType, structureTypeNames.Get (columnSegment.assemblySegmentData.modelElemStructureType));
-			currentSegment.Add (Column::nominalHeight, columnSegment.assemblySegmentData.nominalHeight);
-			currentSegment.Add (Column::nominalWidth, columnSegment.assemblySegmentData.nominalWidth);
-			currentSegment.Add (Column::isWidthAndHeightLinked, columnSegment.assemblySegmentData.isWidthAndHeightLinked);
-			currentSegment.Add (Column::isHomogeneous, columnSegment.assemblySegmentData.isHomogeneous);
-			currentSegment.Add (Column::endWidth, columnSegment.assemblySegmentData.endWidth);
-			currentSegment.Add (Column::endHeight, columnSegment.assemblySegmentData.endHeight);
-			currentSegment.Add (Column::isEndWidthAndHeightLinked, columnSegment.assemblySegmentData.isEndWidthAndHeightLinked);
-
-			API_Attribute attrib;
-			switch (columnSegment.assemblySegmentData.modelElemStructureType) {
-			case API_CompositeStructure:
-				DBASSERT (columnSegment.assemblySegmentData.modelElemStructureType != API_CompositeStructure)
-					break;
-			case API_BasicStructure:
-				BNZeroMemory (&attrib, sizeof (API_Attribute));
-				attrib.header.typeID = API_BuildingMaterialID;
-				attrib.header.index = columnSegment.assemblySegmentData.buildingMaterial;
-				ACAPI_Attribute_Get (&attrib);
-
-				currentSegment.Add (Column::buildingMaterial, GS::UniString{attrib.header.name});
-				break;
-			case API_ProfileStructure:
-				BNZeroMemory (&attrib, sizeof (API_Attribute));
-				attrib.header.typeID = API_ProfileID;
-				attrib.header.index = columnSegment.assemblySegmentData.profileAttr;
-				ACAPI_Attribute_Get (&attrib);
-
-				currentSegment.Add (Column::profileAttrName, GS::UniString{attrib.header.name});
-				break;
-			default:
-				break;
-			}
-			allSegments.Add (GS::String::SPrintf (Column::ColumnSegmentName, idx + 1), currentSegment);
+			Utility::GetSegmentData (memo.columnSegments[idx].assemblySegmentData, currentSegment);
+			allSegments.Add (GS::String::SPrintf (AssemblySegmentData::SegmentName, idx + 1), currentSegment);
 		}
 
-		os.Add (Column::segmentData, allSegments);
+		os.Add (PartialObjects::SegmentData, allSegments);
 	}
 
 	// Scheme
 	if (memo.assemblySegmentSchemes != nullptr) {
 		GS::ObjectState allSchemes;
-
-		GSSize schemesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.assemblySegmentSchemes)) / sizeof (API_AssemblySegmentSchemeData);
-		DBASSERT (schemesCount == elem.column.nSchemes)
-
-			for (GSSize idx = 0; idx < schemesCount; ++idx) {
-				GS::ObjectState currentScheme;
-				API_AssemblySegmentSchemeData columnAssemblySegmentScheme = memo.assemblySegmentSchemes[idx];
-
-				currentScheme.Add (Column::lengthType, segmentLengthTypeNames.Get (columnAssemblySegmentScheme.lengthType));
-				currentScheme.Add (Column::fixedLength, columnAssemblySegmentScheme.fixedLength);
-				currentScheme.Add (Column::lengthProportion, columnAssemblySegmentScheme.lengthProportion);
-
-				allSchemes.Add (GS::String::SPrintf (Column::SchemeName, idx + 1), currentScheme);
-			}
-
-		os.Add (Column::schemeData, allSchemes);
+		Utility::GetAllSchemeData (memo.assemblySegmentSchemes, allSchemes);
+		os.Add (PartialObjects::SchemeData, allSchemes);
 	}
 
 	// Cut
 	if (memo.assemblySegmentCuts != nullptr) {
 		GS::ObjectState allCuts;
-
-		GSSize cutsCount = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.assemblySegmentCuts)) / sizeof (API_AssemblySegmentCutData);
-		DBASSERT (cutsCount == elem.column.nCuts)
-
-			for (GSSize idx = 0; idx < cutsCount; ++idx) {
-				GS::ObjectState currentCut;
-				API_AssemblySegmentCutData assemblySegmentCuts = memo.assemblySegmentCuts[idx];
-
-				currentCut.Add (Column::cutType, assemblySegmentCutTypeNames.Get (assemblySegmentCuts.cutType));
-				currentCut.Add (Column::customAngle, assemblySegmentCuts.customAngle);
-
-				allCuts.Add (GS::String::SPrintf (Column::CutName, idx + 1), currentCut);
-			}
-
-		os.Add (Column::cutData, allCuts);
+		Utility::GetAllCutData (memo.assemblySegmentCuts, allCuts);
+		os.Add (PartialObjects::CutData, allCuts);
 	}
 
 	return os;

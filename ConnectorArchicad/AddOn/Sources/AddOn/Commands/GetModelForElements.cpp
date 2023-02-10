@@ -70,6 +70,18 @@ static void GetModelInfoForElement (const Modeler::Elem& elem, const Modeler::At
 }
 
 
+template<typename T>
+GSErrCode GetSubElements (T* ptr, GS::Array<API_Guid>& applicationIds)
+{
+	GSSize nSubElements = BMGetPtrSize (reinterpret_cast<GSPtr>(ptr)) / sizeof (T);
+	for (Int32 idx = 0; idx < nSubElements; ++idx) {
+		applicationIds.Push (ptr[idx].head.guid);
+	}
+
+	return NoError;
+}
+
+
 static GS::Array<API_Guid> GetCurtainWallSubElements (const API_Guid& applicationId)
 {
 	GS::Array<API_Guid> applicationIds;
@@ -77,25 +89,44 @@ static GS::Array<API_Guid> GetCurtainWallSubElements (const API_Guid& applicatio
 	API_ElementMemo memo{};
 	ACAPI_Element_GetMemo (applicationId, &memo, APIMemoMask_CWallFrames | APIMemoMask_CWallPanels | APIMemoMask_CWallJunctions | APIMemoMask_CWallAccessories);
 
-	GSSize nFrames = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallFrames)) / sizeof (API_CWFrameType);
-	for (Int32 idx = 0; idx < nFrames; ++idx) {
-		applicationIds.Push (memo.cWallFrames[idx].head.guid);
-	}
+	GetSubElements<API_CWFrameType> (memo.cWallFrames, applicationIds);
+	GetSubElements<API_CWPanelType> (memo.cWallPanels, applicationIds);
+	GetSubElements<API_CWJunctionType> (memo.cWallJunctions, applicationIds);
+	GetSubElements<API_CWAccessoryType> (memo.cWallAccessories, applicationIds);
 
-	GSSize nPanels = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallPanels)) / sizeof (API_CWPanelType);
-	for (Int32 idx = 0; idx < nPanels; ++idx) {
-		applicationIds.Push (memo.cWallPanels[idx].head.guid);
-	}
+	return applicationIds;
+}
 
-	GSSize nJunctions = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallJunctions)) / sizeof (API_CWJunctionType);
-	for (Int32 idx = 0; idx < nJunctions; ++idx) {
-		applicationIds.Push (memo.cWallJunctions[idx].head.guid);
-	}
 
-	GSSize nAccessories = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.cWallAccessories)) / sizeof (API_CWAccessoryType);
-	for (Int32 idx = 0; idx < nAccessories; ++idx) {
-		applicationIds.Push (memo.cWallAccessories[idx].head.guid);
-	}
+static GS::Array<API_Guid> GetStairSubElements (const API_Guid& applicationId)
+{
+	GS::Array<API_Guid> applicationIds;
+
+	API_ElementMemo memo{};
+	ACAPI_Element_GetMemo (applicationId, &memo, APIMemoMask_StairRiser | APIMemoMask_StairTread | APIMemoMask_StairStructure );
+
+	GetSubElements<API_StairRiserType> (memo.stairRisers, applicationIds);
+	GetSubElements<API_StairTreadType> (memo.stairTreads, applicationIds);
+	GetSubElements<API_StairStructureType> (memo.stairStructures, applicationIds);
+
+	return applicationIds;
+}
+
+
+static GS::Array<API_Guid> GetRailingSubElements (const API_Guid& applicationId)
+{
+	GS::Array<API_Guid> applicationIds;
+
+	API_ElementMemo memo{};
+	ACAPI_Element_GetMemo (applicationId, &memo, APIMemoMask_RailingToprail | APIMemoMask_RailingHandrail | APIMemoMask_RailingRail | APIMemoMask_RailingPost | APIMemoMask_RailingInnerPost | APIMemoMask_RailingBaluster | APIMemoMask_RailingPanel );
+
+	GetSubElements<API_RailingToprailType> (memo.railingToprails, applicationIds);
+	GetSubElements<API_RailingHandrailType> (memo.railingHandrails, applicationIds);
+	GetSubElements<API_RailingRailType> (memo.railingRails, applicationIds);
+	GetSubElements<API_RailingPostType> (memo.railingPosts, applicationIds);
+	GetSubElements<API_RailingInnerPostType> (memo.railingInnerPosts, applicationIds);
+	GetSubElements<API_RailingBalusterType> (memo.railingBalusters, applicationIds);
+	GetSubElements<API_RailingPanelType> (memo.railingPanels, applicationIds);
 
 	return applicationIds;
 }
@@ -108,10 +139,7 @@ static GS::Array<API_Guid> GetBeamSubElements (const API_Guid& applicationId)
 	API_ElementMemo memo{};
 	ACAPI_Element_GetMemo (applicationId, &memo, APIMemoMask_BeamSegment);
 
-	GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.beamSegments)) / sizeof (API_BeamSegmentType);
-	for (Int32 idx = 0; idx < nSegments; ++idx) {
-		applicationIds.Push (memo.beamSegments[idx].head.guid);
-	}
+	GetSubElements<API_BeamSegmentType> (memo.beamSegments, applicationIds);
 
 	return applicationIds;
 }
@@ -124,10 +152,7 @@ static GS::Array<API_Guid> GetColumnSubElements (const API_Guid& applicationId)
 	API_ElementMemo memo{};
 	ACAPI_Element_GetMemo (applicationId, &memo, APIMemoMask_ColumnSegment);
 
-	GSSize nSegments = BMGetPtrSize (reinterpret_cast<GSPtr>(memo.columnSegments)) / sizeof (API_ColumnSegmentType);
-	for (Int32 idx = 0; idx < nSegments; ++idx) {
-		applicationIds.Push (memo.columnSegments[idx].head.guid);
-	}
+	GetSubElements<API_ColumnSegmentType> (memo.columnSegments, applicationIds);
 
 	return applicationIds;
 }
@@ -149,11 +174,13 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& applicationId)
 	switch (header.typeID) {
 #endif
 	case API_CurtainWallID:					return GetCurtainWallSubElements (applicationId);
+	case API_StairID:						return GetStairSubElements (applicationId);
+	case API_RailingID:						return GetRailingSubElements (applicationId);
 	case API_BeamID:						return GetBeamSubElements (applicationId);
 	case API_ColumnID:						return GetColumnSubElements (applicationId);
 	default:								return GS::Array<API_Guid> { applicationId };
 	}
-	}
+}
 
 
 static ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer & modelViewer, const API_Guid & applicationId)

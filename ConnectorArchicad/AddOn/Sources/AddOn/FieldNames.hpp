@@ -19,11 +19,18 @@ static const char* SubelementModelsFieldName = "subelementModels";
 static const char* DoorsFieldName = "doors";
 static const char* BeamsFieldName = "beams";
 static const char* ColumnsFieldName = "columns";
+static const char* ObjectsFieldName = "objects";
 static const char* SlabsFieldName = "slabs";
 static const char* ZonesFieldName = "zones";
 static const char* RoofsFieldName = "roofs";
 static const char* ModelsFieldName = "models";
 
+namespace PartialObjects {
+static const char* HoleData = "Holes";
+static const char* SegmentData = "Segments";
+static const char* SchemeData = "Schemes";
+static const char* CutData = "Cuts";
+}
 
 namespace Wall
 {
@@ -81,11 +88,6 @@ static const char* dirVector = "dirVector";
 
 namespace Beam
 {
-// Naming
-static const char* BeamSegmentName = "Segment #%d";
-static const char* SchemeName = "Scheme #%d";
-static const char* CutName = "Cut #%d";
-static const char* HoleName = "Hole #%d";
 // Main
 static const char* begC = "begC";
 static const char* endC = "endC";
@@ -116,29 +118,7 @@ static const char* coverFillOrientationComesFrom3D = "coverFillOrientationComesF
 static const char* coverFillForegroundPen = "coverFillForegroundPen";
 static const char* coverFillBackgroundPen = "coverFillBackgroundPen";
 static const char* modelElemStructureType = "modelElemStructureType";
-// From API_BeamSegmentType
-static const char* segmentData = "Segments";
-static const char* circleBased = "circleBased";
-static const char* profileAttrName = "profileAttrName";
-static const char* buildingMaterial = "buildingMaterial";
-static const char* nominalWidth = "nominalWidth";
-static const char* nominalHeight = "nominalHeight";
-static const char* isHomogeneous = "isHomogeneous";
-static const char* endWidth = "endWidth";
-static const char* endHeight = "endHeight";
-static const char* isEndWidthAndHeightLinked = "isEndWidthAndHeightLinked";
-static const char* isWidthAndHeightLinked = "isWidthAndHeightLinked";
-// From API_AssemblySegmentSchemeData
-static const char* schemeData = "Schemes";
-static const char* lengthType = "lengthType";
-static const char* fixedLength = "fixedLength";
-static const char* lengthProportion = "lengthProportion";
-// From API_AssemblySegmentCutData
-static const char* cutData = "Cuts";
-static const char* cutType = "cutType";
-static const char* customAngle = "customAngle";
-// From API_Beam_Hole
-static const char* holeData = "Holes";
+static const char* HoleName = "Hole #%d";
 static const char* holeType = "holeType";
 static const char* holeContourOn = "holeContourOn";
 static const char* holeId = "holeId";
@@ -150,10 +130,6 @@ static const char* height = "height";
 
 namespace Column
 {
-static const char* ColumnSegmentName = "Segment #%d";
-static const char* SchemeName = "Scheme #%d";
-static const char* CutName = "Cut #%d";
-
 static const char* origoPos = "origoPos";
 static const char* height = "height";
 static const char* aboveViewLinePen = "aboveViewLinePen";
@@ -171,13 +147,23 @@ static const char* useCoverFill = "useCoverFill";
 static const char* useCoverFillFromSurface = "useCoverFillFromSurface";
 static const char* coverFillOrientationComesFrom3D = "coverFillOrientationComesFrom3D";
 static const char* coverFillForegroundPen = "coverFillForegroundPen";
-static const char* profileAttrName = "profileAttrName";
+static const char* corePen = "corePen";
+static const char* coreAnchor = "coreAnchor";
+static const char* bottomOffset = "bottomOffset";
+static const char* topOffset = "topOffset";
+static const char* coreSymbolPar1 = "coreSymbolPar1";
+static const char* coreSymbolPar2 = "coreSymbolPar2";
+static const char* slantDirectionAngle = "slantDirectionAngle";
+static const char* axisRotationAngle = "axisRotationAngle";
+static const char* relativeTopStory = "relativeTopStory";
+
 static const char* segmentData = "Segments";
 static const char* schemeData = "Schemes";
 static const char* cutData = "Cuts";
-static const char* cutType = "cutType";
-static const char* customAngle = "customAngle";
-static const char* buildingMaterial = "buildingMaterial";
+}
+
+namespace AssemblySegmentData {
+static const char* SegmentName = "Segment #%d";
 
 static const char* circleBased = "circleBased";
 static const char* modelElemStructureType = "modelElemStructureType";
@@ -188,21 +174,31 @@ static const char* isHomogeneous = "isHomogeneous";
 static const char* endWidth = "endWidth";
 static const char* endHeight = "endHeight";
 static const char* isEndWidthAndHeightLinked = "isEndWidthAndHeightLinked";
+static const char* buildingMaterial = "buildingMaterial";
+static const char* profileAttrName = "profileAttrName";
+}
+
+namespace AssemblySegmentSchemeData {
+static const char* SchemeName = "Scheme #%d";
 
 static const char* lengthType = "lengthType";
 static const char* fixedLength = "fixedLength";
 static const char* lengthProportion = "lengthProportion";
-
-static const char* corePen = "corePen";
-static const char* coreAnchor = "coreAnchor";
-static const char* bottomOffset = "bottomOffset";
-static const char* topOffset = "topOffset";
-static const char* coreSymbolPar1 = "coreSymbolPar1";
-static const char* coreSymbolPar2 = "coreSymbolPar2";
-static const char* slantDirectionAngle = "slantDirectionAngle";
-static const char* axisRotationAngle = "axisRotationAngle";
-static const char* relativeTopStory = "relativeTopStory";
 }
+
+namespace AssemblySegmentCutData {
+static const char* CutName = "Cut #%d";
+
+static const char* cutType = "cutType";
+static const char* customAngle = "customAngle";
+}
+
+namespace Object
+{
+// Main
+static const char* pos = "pos";
+}
+
 
 namespace Slab
 {
@@ -215,6 +211,7 @@ static const char* CompositeIndexFieldName = "compositeIndex";
 static const char* BuildingMaterialIndexFieldName = "buildingMaterialIndex";
 }
 
+
 namespace Room
 {
 static const char* NameFieldName = "name";
@@ -224,6 +221,7 @@ static const char* HeightFieldName = "height";
 static const char* AreaFieldName = "area";
 static const char* VolumeFieldName = "volume";
 }
+
 
 namespace Model
 {
@@ -240,6 +238,8 @@ static const char* AmbientColorFieldName = "ambientColor";
 static const char* EmissionColorFieldName = "emissionColor";
 static const char* MaterialFieldName = "material";
 static const char* ModelFieldName = "model";
+static const char* IdsFieldName = "ids";
+static const char* EdgesFieldName = "edges";
 }
 
 
