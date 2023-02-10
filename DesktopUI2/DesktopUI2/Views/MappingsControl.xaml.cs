@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
@@ -20,6 +21,8 @@ namespace DesktopUI2.Views
       AvaloniaXamlLoader.Load(this);
 
       Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Launched" } });
+
+
     }
     //these methods are here as it wasn't easy to have them in the MappingsViewModel
 

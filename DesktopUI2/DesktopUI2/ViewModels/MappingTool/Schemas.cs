@@ -1,4 +1,5 @@
 ﻿using Avalonia.Metadata;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -360,7 +361,7 @@ namespace DesktopUI2.ViewModels.MappingTool
       if (Freeform)
         return Operations.Serialize(new FreeformElement());
 
-      var cat = RevitCategory.GenericModels;
+      var cat = RevitCategory.GenericModel;
       Enum.TryParse(SelectedCategory, out cat);
       var ds = new DirectShape(); //don't use the constructor
       ds.name = ShapeName;
@@ -376,6 +377,99 @@ namespace DesktopUI2.ViewModels.MappingTool
           !string.IsNullOrEmpty(ShapeName) &&
           !string.IsNullOrEmpty(SelectedCategory);
       }
+    }
+  }
+
+
+
+
+  public class RevitDefaultWallViewModel : Schema
+  {
+    public override string Name => "Default Wall";
+
+    public override string Summary => Name;
+
+    public override bool IsValid => true;
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new Wall();
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitDefaultBeamViewModel : Schema
+  {
+    public override string Name => "Default Beam";
+
+    public override string Summary => Name;
+
+    public override bool IsValid => true;
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new Beam();
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitDefaultBraceViewModel : Schema
+  {
+    public override string Name => "Default Brace";
+
+    public override string Summary => Name;
+
+    public override bool IsValid => true;
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new Brace();
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitDefaultColumnViewModel : Schema
+  {
+    public override string Name => "Default Column";
+
+    public override string Summary => Name;
+
+    public override bool IsValid => true;
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new Column();
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitDefaultPipeViewModel : Schema
+  {
+    public override string Name => "Default Pipe";
+
+    public override string Summary => Name;
+
+    public override bool IsValid => true;
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new Pipe();
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitDefaultDuctViewModel : Schema
+  {
+    public override string Name => "Default Duct";
+
+    public override string Summary => Name;
+
+    public override bool IsValid => true;
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new Duct();
+      return Operations.Serialize(obj);
     }
   }
 
