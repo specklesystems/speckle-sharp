@@ -103,7 +103,7 @@ namespace Objects.Other
       // TODO: This should be removed once we implement a more general fix.
       var definition = blockDefinition ?? this["@blockDefinition"] as BlockDefinition;
       if (definition == null) throw new Exception("This block instance has no block definition.");
-      var geom = definition.geometry ?? (this["@geometry"] as List<object>)?.Cast<Base>();
+      var geom = definition.geometry ?? (definition["@geometry"] as List<object>)?.Cast<Base>();
       if (geom == null) throw new Exception("This block's definition has no geometry.");
       return geom.SelectMany(b =>
       {
@@ -132,7 +132,12 @@ namespace Objects.Other
     /// <returns>A Plane on the insertion point of this Block Instance, with the correct 3-axis rotations.</returns>
     public Plane GetInsertionPlane()
     {
-      var plane = new Plane(blockDefinition.basePoint,new Vector(0,0,1,units),new Vector(1,0,0,units),new Vector(0,1,0,units), units);
+      // HACK: Sketchup passes all props that need to be detached with it's "@" prefix, so we need to check for now.
+      // TODO: This should be removed once we implement a more general fix.
+      var definition = blockDefinition ?? this["@blockDefinition"] as BlockDefinition;
+      if (definition == null) throw new Exception("This block instance has no block definition.");
+      var basePoint = definition.basePoint ?? definition["@basePoint"] as Point;
+      var plane = new Plane(basePoint,new Vector(0,0,1,units),new Vector(1,0,0,units),new Vector(0,1,0,units), units);
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
