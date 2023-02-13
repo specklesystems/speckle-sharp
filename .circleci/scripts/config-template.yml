@@ -98,6 +98,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - checkout
       - run:
+          name: Restore Objects
+          command: | # Restore only the projects we're about to build.
+            dotnet restore Objects/Objects/Objects.csproj
+            dotnet restore Objects/Tests/Tests.csproj
+      - run:
           name: Build Objects
           command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run:
