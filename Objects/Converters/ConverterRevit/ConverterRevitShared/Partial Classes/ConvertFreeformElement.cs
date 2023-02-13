@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
@@ -14,7 +14,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationObject FreeformElementToNative( Objects.BuiltElements.Revit.FreeformElement freeformElement )
+    public ApplicationObject FreeformElementToNative(Objects.BuiltElements.Revit.FreeformElement freeformElement)
     {
       var appObj = new ApplicationObject(freeformElement.id, freeformElement.speckle_type) { applicationId = freeformElement.applicationId };
 
@@ -60,7 +60,16 @@ namespace Objects.Converter.Revit
       }
       catch { }
 
-      var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      FamilyInstance freeform;
+      if (Doc.IsFamilyDocument)
+      {
+        freeform = Doc.FamilyCreate.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      }
+      else
+      {
+        freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      }
+
       appObj.Update(status: ApplicationObject.State.Created, createdId: freeform.UniqueId, convertedItem: freeform);
       SetInstanceParameters(freeform, freeformElement);
       return appObj;

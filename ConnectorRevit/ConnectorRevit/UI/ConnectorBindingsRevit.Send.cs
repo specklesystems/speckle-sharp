@@ -158,16 +158,19 @@ namespace Speckle.ConnectorRevit.UI
             }
             else
             {
-              var category = conversionResult.GetType().Name == "Network" ?
-                "@Networks" :
-                $"@{revitElement.Category.Name}";
+              var category = conversionResult.GetType().Name switch
+              {
+                "Network" => "@Networks",
+                "FreeformElement" => "@FreeformElement",
+                _ => $"@{revitElement.Category.Name}"
+              };
 
               commitObject[category] ??= new List<Base>();
 
               if (commitObject[category] is List<Base> objs)
               {
                 var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
-              
+
                 // here we are checking to see if we're converting a host that doesn't know it is a host
                 // and if dependent elements of that host have already been converted
                 if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)
