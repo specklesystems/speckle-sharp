@@ -39,13 +39,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extras\Utilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Loader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectByKeyValueV2TaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\DeconstructSpeckleObjectTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\Deprecated\ExpandSpeckleObjectTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectByKeyValueV2TaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\GetObjectKeysComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\GetObjectValueByKeyTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\SpeckleObjectGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.ReceiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.ReceiveComponentSync.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ops\Deprecated\Operations.SendComponent.cs" />
