@@ -122,7 +122,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - checkout
       - run:
           name: Build DesktopUI2
-          command: dotnet build DesktopUI2/DesktopUI2.sln -c Release -v q
+          command: dotnet build DesktopUI2/DesktopUI2/DesktopUI2.csproj -c Release -v q
 
   build-connector: # Reusable job for basic connectors
     executor:
