@@ -13,6 +13,7 @@
 #define GetWindowCommandName					"GetWindowData";
 #define GetBeamDataCommandName					"GetBeamData";
 #define GetColumnDataCommandName				"GetColumnData";
+#define GetObjectDataCommandName				"GetObjectData";
 #define GetSlabDataCommandName					"GetSlabData";
 #define GetRoomDataCommandName					"GetRoomData";
 #define GetRoofDataCommandName					"GetRoofData";
@@ -24,6 +25,7 @@
 #define CreateWindowCommandName					"CreateWindow";
 #define CreateBeamCommandName					"CreateBeam";
 #define CreateColumnCommandName					"CreateColumn";
+#define CreateObjectCommandName                 "CreateObject";
 #define CreateSlabCommandName					"CreateSlab";
 #define CreateZoneCommandName					"CreateZone";
 

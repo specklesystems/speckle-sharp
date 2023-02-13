@@ -68,14 +68,14 @@ namespace ConnectorCSI.Storage
     private static void GetOrCreateSpeckleFilePath(cSapModel model)
     {
       string CSIModelfilePath = model.GetModelFilename(true);
-      if (CSIModelfilePath == "")
+      string CSIModelFolder = Path.GetDirectoryName(CSIModelfilePath);
+      if (string.IsNullOrEmpty(CSIModelFolder))
       {
         // CSI model is probably not saved, so speckle shouldn't do much
         _speckleFilePath = null;
         return;
       }
       string CSIFileName = Path.GetFileNameWithoutExtension(CSIModelfilePath);
-      string CSIModelFolder = Path.GetDirectoryName(CSIModelfilePath);
       string speckleFolderPath = Path.Combine(CSIModelFolder, "speckle");
       string speckleFilePath = Path.Combine(CSIModelFolder, "speckle", $"{CSIFileName}.txt");
       try
@@ -126,13 +126,13 @@ namespace ConnectorCSI.Storage
     public static void SaveBackupFile(cSapModel model)
     {
       string CSIModelfilePath = model.GetModelFilename(true);
-      if (string.IsNullOrEmpty(CSIModelfilePath))
+      string CSIModelFolder = Path.GetDirectoryName(CSIModelfilePath);
+      if (string.IsNullOrEmpty(CSIModelFolder))
         // CSI model is probably not saved, so speckle shouldn't do much
         return;
 
       string fileExtension = CSIModelfilePath.Split('.').Last();
       string CSIFileName = Path.GetFileNameWithoutExtension(CSIModelfilePath);
-      string CSIModelFolder = Path.GetDirectoryName(CSIModelfilePath);
       string speckleFolderPath = Path.Combine(CSIModelFolder, "speckle");
 
       var backups = new List<(DateTime, string)>();

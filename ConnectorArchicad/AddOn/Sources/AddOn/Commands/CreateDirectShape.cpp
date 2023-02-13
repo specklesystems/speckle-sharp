@@ -4,6 +4,7 @@
 #include "ModelInfo.hpp"
 #include "FieldNames.hpp"
 #include "OnExit.hpp"
+#include "AttributeManager.hpp"
 
 
 namespace AddOnCommands {
@@ -35,7 +36,7 @@ static GSErrCode FindAndDeleteOldElement (const API_Guid& applicationId)
 }
 
 
-static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, const GS::Array<ModelInfo::Vertex>&vertices, const GS::Array<ModelInfo::Polygon> polygons)
+static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, const ModelInfo& modelInfo, AttributeManager& attributeManager)
 {
 	GSErrCode err = FindAndDeleteOldElement (applicationId);
 	if (err != NoError) {
@@ -60,6 +61,7 @@ static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, con
 		return GS::NoValue;
 	}
 
+	const GS::Array<ModelInfo::Vertex>& vertices = modelInfo.GetVertices ();
 	GS::Array<UInt32> bodyVertices;
 	for (UInt32 i = 0; i < vertices.GetSize (); i++) {
 		UInt32 bodyVertex = 0;
@@ -67,7 +69,7 @@ static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, con
 		bodyVertices.Push (bodyVertex);
 	}
 
-	for (const auto& polygon : polygons) {
+	for (const auto& polygon : modelInfo.GetPolygons()) {
 		UInt32 bodyPolygon = 0;
 		Int32 bodyEdge = 0;
 
@@ -81,7 +83,18 @@ static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, con
 			polygonEdges.Push (bodyEdge);
 		}
 
-		ACAPI_Body_AddPolygon (bodyData, polygonEdges, 0, API_OverriddenAttribute{}, bodyPolygon);
+		API_OverriddenAttribute overrideMaterial;
+		ModelInfo::Material material;
+		if (NoError == modelInfo.GetMaterial (polygon.GetMaterial (), material)) {
+			API_Attribute materialAttribute;
+			err = attributeManager.GetMaterial (material, materialAttribute);
+			if (NoError == err) {
+				overrideMaterial.attributeIndex = materialAttribute.header.index;
+				overrideMaterial.overridden = true;
+			}
+		}
+	
+		ACAPI_Body_AddPolygon (bodyData, polygonEdges, 0, overrideMaterial, bodyPolygon);
 	}
 
 	API_ElementMemo memo = {};
@@ -106,18 +119,12 @@ static GS::Optional<API_Guid> CreateElement (const GS::ObjectState & elementMode
 		GS::UniString id;
 		elementModelOs.Get (ApplicationIdFieldName, id);
 
-		const GS::ObjectState* modelOs = elementModelOs.Get (Model::ModelFieldName);
-		if (modelOs == nullptr) {
-			return GS::NoValue;
-		}
+		// get the mesh
+		ModelInfo modelInfo;
+		elementModelOs.Get (Model::ModelFieldName, modelInfo);
 
-		GS::Array<ModelInfo::Vertex> vertices;
-		modelOs->Get (Model::VerticesFieldName, vertices);
-
-		GS::Array<ModelInfo::Polygon> polygons;
-		modelOs->Get (Model::PolygonsFieldName, polygons);
-
-		return CreateElement (APIGuidFromString (id.ToCStr ()), vertices, polygons);
+		AttributeManager attributeManager;
+		return CreateElement (APIGuidFromString (id.ToCStr ()), modelInfo, attributeManager);
 	} catch (...) {
 		return GS::NoValue;
 	}
