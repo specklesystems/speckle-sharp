@@ -38,9 +38,8 @@ commands:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-core:
-    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
       - run:
@@ -112,9 +111,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           path: TestResults
 
   build-desktopui:
-    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
       - run:
