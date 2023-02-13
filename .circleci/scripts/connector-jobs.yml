@@ -185,7 +185,7 @@ archicad:
       name: build-archicad-add-on-26-mac
       slug: archicad
       installername: SpeckleArchicadInstall
-  - build-connector-mac:
+  - build-connector-linux:
       name: archicad-build-mac
       requires:
         - build-archicad-add-on-25-mac
