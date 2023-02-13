@@ -95,33 +95,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   build-objects:
     docker:
-      - image: mono:latest
       - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
-      # - run:
-      #     name: Install mono
-      #     command: 'HOMEBREW_NO_AUTO_UPDATE=1 brew install mono mono-libgdiplus
-
-      #       '
-      # - run:
-      #     name: Install dotnet
-      #     command: 'curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-
-      #       curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel
-      #       3.1
-
-      #       '
-      # - run:
-      #     name: Restore Objects
-      #     command: ~/.dotnet/dotnet restore Objects/Objects.sln
       - run:
           name: Build Objects
-          command: msbuild Objects/Objects.sln -t:restore,build -p:RestorePackagesConfig=true -p:IsDesktopBuild=false
+          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run:
           name: Test Objects
-          command:
-            ~/.dotnet/dotnet test Objects/Tests/Tests.csproj --no-restore -c
+          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c
             Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults
             --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - store_test_results:
