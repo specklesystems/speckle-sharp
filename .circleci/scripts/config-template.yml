@@ -85,8 +85,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-      - store_test_results:
-          path: TestResults
       - store_artifacts:
           path: TestResults
 
