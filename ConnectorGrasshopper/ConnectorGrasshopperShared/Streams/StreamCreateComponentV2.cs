@@ -69,13 +69,19 @@ namespace ConnectorGrasshopper.Streams
 
           TaskList.Add(CreateStream(userId));
         }
-
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
-          "Cannot create multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another stream, please use a new component.");
+        else
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+            "Cannot create multiple streams at the same time. This is an explicit guard against possibly unintended behaviour. If you want to create another stream, please use a new component.");
+        }
+        return;
       }
 
       if (GetSolveResults(DA, out var value))
+      {
+        stream = value;
         DA.SetData(0, value);
+      }
     }
 
     public async Task<StreamWrapper> CreateStream(string userId)
@@ -99,7 +105,7 @@ namespace ConnectorGrasshopper.Streams
 
       var client = new Client(account);
 
-      var streamId = await client.StreamCreate(new StreamCreateInput { isPublic = false });
+      var streamId = client.StreamCreate(new StreamCreateInput { isPublic = false }).Result;
       return new StreamWrapper(
         streamId,
         account.userInfo.id,

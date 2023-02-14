@@ -77,7 +77,7 @@ namespace ConnectorGrasshopper.Streams
       var account = streamWrapper.GetAccount().Result;
       var client = new Client(account);
       var input = new StreamUpdateInput();
-      var stream = await client.StreamGet(streamWrapper.StreamId);
+      var stream = client.StreamGet(streamWrapper.StreamId).Result;
       input.id = streamWrapper.StreamId;
 
       input.name = name ?? stream.name;

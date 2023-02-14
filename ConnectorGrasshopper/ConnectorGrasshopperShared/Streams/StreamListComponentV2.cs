@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Streams
       var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);
       pManager.AddIntegerParameter("Limit", "L", "Max number of streams to fetch", GH_ParamAccess.item, 10);
       pManager.AddIntegerParameter("Page", "P", "Increase this number to get consecutive requests",
-        GH_ParamAccess.item);
+        GH_ParamAccess.item, 0);
       Params.Input[acc].Optional = true;
     }
 
@@ -95,11 +95,12 @@ namespace ConnectorGrasshopper.Streams
       Tracker.TrackNodeRun();
           
       var client = new Client(account);
-      var result = await client.StreamsGet(limit);
-      var streams = result
+
+      return client.StreamsGet(limit)
+        .Result
         .Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
         .ToList();
-      return streams;
+
     }
   }
 }

@@ -75,7 +75,7 @@ namespace ConnectorGrasshopper.Streams
       if (account == null || account.serverInfo.url != idWrapper.ServerUrl)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error,
-          $"Could not find an account for server ${idWrapper.ServerUrl}. Use the Speckle Manager to add an account.");
+          $"Could not find an account for server {idWrapper.ServerUrl}. Use the Speckle Manager to add an account.");
         return null;
       }
 
