@@ -43,10 +43,6 @@ namespace ConnectorGrasshopper.Streams.Upgrade
     public override void CustomUpgrade(StreamListComponent oldComponent, StreamListComponentV2 newComponent,
       GH_Document document)
     {
-      newComponent.Params.Input.Add(new Param_Integer
-      {
-        Name = "Page", NickName = "P", Description = "Increase this number to get consecutive requests", Optional = true
-      });
     }
 
     public override DateTime Version => new DateTime(2023, 2, 14);
