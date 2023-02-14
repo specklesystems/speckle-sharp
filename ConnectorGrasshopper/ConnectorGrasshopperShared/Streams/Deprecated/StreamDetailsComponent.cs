@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override Bitmap Icon => Properties.Resources.StreamDetails;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
