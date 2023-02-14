@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -21,7 +22,8 @@ namespace ConnectorGrasshopper.Streams
 
 
     public override Guid ComponentGuid => new Guid("500F0509-C91F-47B5-AE09-8635275979EC");
-
+    protected override Bitmap Icon => Properties.Resources.StreamList;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);

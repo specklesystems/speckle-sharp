@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
@@ -16,7 +17,8 @@ namespace ConnectorGrasshopper.Streams
     }
 
     public override Guid ComponentGuid => new Guid("16558783-8A26-4B87-8023-245E312E0CE9");
-
+    protected override Bitmap Icon => Properties.Resources.StreamGet;
+    public override GH_Exposure Exposure => GH_Exposure.primary;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleStreamParam("Stream ID/URL", "ID/URL", "Speckle stream ID or URL",

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
@@ -16,10 +17,12 @@ namespace ConnectorGrasshopper.Streams
     }
 
     public override Guid ComponentGuid => new Guid("3FE4CDCE-725A-4C4D-B580-ED6E6C7826DA");
-
+    protected override Bitmap Icon => Properties.Resources.StreamUpdate;
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var stream = pManager.AddParameter(new SpeckleStreamParam("Stream", "S", "Unique ID of the stream to be updated.",
+      pManager.AddParameter(new SpeckleStreamParam("Stream", "S", "Unique ID of the stream to be updated.",
         GH_ParamAccess.item));
       var name = pManager.AddTextParameter("Name", "N", "Name of the stream.", GH_ParamAccess.item);
       var desc = pManager.AddTextParameter("Description", "D", "Description of the stream", GH_ParamAccess.item);

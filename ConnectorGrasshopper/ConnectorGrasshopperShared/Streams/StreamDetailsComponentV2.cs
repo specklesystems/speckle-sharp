@@ -1,14 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
-using Grasshopper.Kernel.Data;
-using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Models.Extensions;
+using Bitmap = System.Drawing.Bitmap;
 
 namespace ConnectorGrasshopper.Streams
 {
@@ -21,7 +17,9 @@ namespace ConnectorGrasshopper.Streams
     }
 
     public override Guid ComponentGuid => new Guid("9E29DDE3-E6BF-499D-A7FD-AD2E38B0F6FF");
+    protected override Bitmap Icon => Properties.Resources.StreamDetails;
 
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
       pManager.AddParameter(new SpeckleStreamParam("Stream", "S",
