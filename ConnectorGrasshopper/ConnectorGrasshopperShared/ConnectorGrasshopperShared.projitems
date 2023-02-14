@@ -66,11 +66,16 @@
     <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleGHSettings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamCreateComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamCreateComponentV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamDetailsComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamDetailsComponentV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetComponentV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetWithTokenComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamListComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamListComponentV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamUpdateComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamUpdateComponentV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transports\SendReceiveTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transports\Transports.Disk.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transports\Transports.Memory.cs" />
