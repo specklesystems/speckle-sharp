@@ -14,7 +14,7 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamListComponentV2 : GH_SpeckleTaskCapableComponent<List<StreamWrapper>>
   {
-    public StreamListComponentV2() : base("Stream List", "sList", "Lists all the streams for this account",
+    public StreamListComponentV2() : base("Stream List V2", "sList", "Lists all the streams for this account",
       ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
     {
