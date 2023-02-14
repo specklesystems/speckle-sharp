@@ -10,6 +10,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
+  [Obsolete]
   public class StreamUpdateComponent : GH_SpeckleComponent
   {
     public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", ComponentCategories.PRIMARY_RIBBON,

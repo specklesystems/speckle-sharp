@@ -11,6 +11,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
+  [Obsolete]
   public class StreamGetComponent : GH_SpeckleComponent
   {
     public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account",

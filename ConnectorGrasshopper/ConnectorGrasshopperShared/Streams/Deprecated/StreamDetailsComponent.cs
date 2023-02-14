@@ -14,6 +14,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
+  [Obsolete]
   public class StreamDetailsComponent : GH_SpeckleComponent
   {
     public StreamDetailsComponent() : base("Stream Details", "sDet", "Extracts the details of a given stream, use is limited to 20 streams.",

@@ -14,6 +14,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
+  [Obsolete]
   public class StreamCreateComponent : GH_SpeckleComponent
   {
     public override Guid ComponentGuid => new Guid("722690DE-218D-45E1-9183-98B13C7F411D");
