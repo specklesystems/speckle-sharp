@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Autodesk.Navisworks.Api;
-using Speckle.Core.Kits;
-using System.Runtime.CompilerServices;
-using Autodesk.Navisworks.Api.Interop.ComApi;
-using Autodesk.Navisworks.Api.ComApi;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using Autodesk.Navisworks.Api;
+using Autodesk.Navisworks.Api.ComApi;
+using Autodesk.Navisworks.Api.Interop.ComApi;
+using Speckle.Core.Kits;
 using Units = Autodesk.Navisworks.Api.Units;
 
 namespace Speckle.ConnectorNavisworks
@@ -16,7 +16,7 @@ namespace Speckle.ConnectorNavisworks
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] ToArray<T>(this Array arr) where T : struct
     {
-      T[] result = new T[arr.Length];
+      var result = new T[arr.Length];
       Array.Copy(arr, result, result.Length);
       return result;
     }
@@ -25,10 +25,14 @@ namespace Speckle.ConnectorNavisworks
 
   internal class PseudoIdComparer : IComparer<string>
   {
-    public int Compare(string x, string y) =>
-      x != null && y != null
-        ? x.Length == y.Length ? string.Compare(x, y, StringComparison.Ordinal) : x.Length.CompareTo(y.Length)
+    public int Compare(string x, string y)
+    {
+      return x != null && y != null
+        ? x.Length == y.Length
+          ? string.Compare(x, y, StringComparison.Ordinal)
+          : x.Length.CompareTo(y.Length)
         : 0;
+    }
   }
 
   public static class Utils
@@ -56,7 +60,7 @@ namespace Speckle.ConnectorNavisworks
 
     public static void WarnLog(string warningMessage)
     {
-      ConsoleLog(warningMessage, color: ConsoleColor.DarkYellow);
+      ConsoleLog(warningMessage, ConsoleColor.DarkYellow);
     }
 
     public static void ErrorLog(Exception err)
@@ -65,7 +69,10 @@ namespace Speckle.ConnectorNavisworks
       throw err;
     }
 
-    public static void ErrorLog(string errorMessage) => ConsoleLog(errorMessage, ConsoleColor.DarkRed);
+    public static void ErrorLog(string errorMessage)
+    {
+      ConsoleLog(errorMessage, ConsoleColor.DarkRed);
+    }
 
 
     public static string GetUnits(Document doc)
@@ -75,8 +82,8 @@ namespace Speckle.ConnectorNavisworks
 
     internal static string ObjectDescriptor(string pseudoId)
     {
-      ModelItem element = PointerToModelItem(pseudoId);
-      string simpleType = element.GetType().ToString().Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries)
+      var element = PointerToModelItem(pseudoId);
+      var simpleType = element.GetType().ToString().Split(new[] { "." }, StringSplitOptions.RemoveEmptyEntries)
         .LastOrDefault();
       return string.IsNullOrEmpty(element.ClassDisplayName)
         ? $"{simpleType}"
@@ -98,12 +105,9 @@ namespace Speckle.ConnectorNavisworks
       {
         pathArray = @string.ToString().Split('-').Select(x =>
         {
-          if (int.TryParse(x, out var value))
-          {
-            return value;
-          }
+          if (int.TryParse(x, out var value)) return value;
 
-          throw (new Exception("malformed path pseudoId"));
+          throw new Exception("malformed path pseudoId");
         }).ToArray();
       }
       catch
@@ -111,10 +115,10 @@ namespace Speckle.ConnectorNavisworks
         return null;
       }
 
-      InwOpState10 oState = ComApiBridge.State;
-      InwOaPath protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
+      var oState = ComApiBridge.State;
+      var protoPath = (InwOaPath)oState.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
 
-      Array oneBasedArray = Array.CreateInstance(
+      var oneBasedArray = Array.CreateInstance(
         typeof(int),
         // ReSharper disable once RedundantExplicitArraySize
         new int[1] { pathArray.Length },
@@ -125,7 +129,7 @@ namespace Speckle.ConnectorNavisworks
 
       protoPath.ArrayData = oneBasedArray;
 
-      ModelItem m = ComApiBridge.ToModelItem(protoPath);
+      var m = ComApiBridge.ToModelItem(protoPath);
 
       return m;
     }
@@ -157,8 +161,9 @@ namespace Speckle.ConnectorNavisworks
 
       // Neglect the Root Node
       // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
-      return arrayData.Length == 0 ? RootNodePseudoId :
-        string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
+      return arrayData.Length == 0
+        ? RootNodePseudoId
+        : string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
     }
 
     public static Dictionary<string, Units> UnitsMap = new Dictionary<string, Units>
