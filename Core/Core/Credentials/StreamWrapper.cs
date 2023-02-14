@@ -181,6 +181,10 @@ namespace Speckle.Core.Credentials
           default:
             throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
         }
+        
+      var queryDictionary = System.Web.HttpUtility.ParseQueryString(uri.Query);
+      UserId = queryDictionary["u"];
+
     }
 
     private Account _Account;
