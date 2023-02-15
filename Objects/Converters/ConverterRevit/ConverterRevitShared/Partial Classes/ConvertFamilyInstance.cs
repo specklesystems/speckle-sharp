@@ -532,12 +532,14 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
       var isUpdate = false;
-
+      
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
 
-      if (!GetElementType<FamilySymbol>(instance, appObj, out FamilySymbol familySymbol))
+      // get the definition
+      var definition = instance.definition as FamilyType;
+      if (!GetElementType<FamilySymbol>(definition, appObj, out FamilySymbol familySymbol))
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -548,6 +550,7 @@ namespace Objects.Converter.Revit
       DB.Level level = ConvertLevelToRevit(instance.level, out ApplicationObject.State levelState);
       var insertionPoint = transform.OfPoint(XYZ.Zero);
       var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
+      
 
       if (docObj != null)
       {
@@ -569,7 +572,7 @@ namespace Objects.Converter.Revit
               (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
-            var definition = instance.definition as FamilyType;
+            
             if (definition.type != null && definition.type != revitType.Name)
               familyInstance.ChangeTypeId(familySymbol.Id);
 
@@ -642,34 +645,14 @@ namespace Objects.Converter.Revit
       _instance.facingFlipped = instance.FacingFlipped;
       _instance.handFlipped = instance.HandFlipped;
 
+      // if a family instance is twoLevelBased, then store the top level
+      if (instance.Symbol.Family.FamilyPlacementType == FamilyPlacementType.TwoLevelsBased)
+      {
+        _instance["topLevel"] = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+        _instance["topLevel"] ??= ConvertAndCacheLevel(instance, BuiltInParameter.SCHEDULE_TOP_LEVEL_PARAM);
+      }
+
       GetAllRevitParamsAndIds(_instance, instance);
-
-      #region sub elements capture
-
-      var subElementIds = instance.GetSubComponentIds();
-      var convertedSubElements = new List<Base>();
-
-      foreach (var elemId in subElementIds)
-      {
-        var subElem = instance.Document.GetElement(elemId);
-        if (CanConvertToSpeckle(subElem))
-        {
-          var obj = ConvertToSpeckle(subElem);
-
-          if (obj != null)
-          {
-            convertedSubElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
-          }
-        }
-      }
-
-      if (convertedSubElements.Any())
-      {
-        _instance.elements = convertedSubElements;
-      }
-
-      #endregion
 
       return _instance;
     }
@@ -708,6 +691,32 @@ namespace Objects.Converter.Revit
       {
         notes.Add($"Could not retrieve display meshes: {e.Message}");
       }
+
+      #region sub elements capture
+
+      var subElementIds = instance.GetSubComponentIds();
+      var convertedSubElements = new List<Base>();
+
+      foreach (var elemId in subElementIds)
+      {
+        var subElem = instance.Document.GetElement(elemId);
+        if (CanConvertToSpeckle(subElem))
+        {
+          var obj = ConvertToSpeckle(subElem);
+
+          if (obj != null)
+          {
+            convertedSubElements.Add(obj);
+            ConvertedObjectsList.Add(obj.applicationId);
+          }
+        }
+      }
+
+      if (convertedSubElements.Any())
+      {
+        symbol.elements = convertedSubElements;
+      }
+      #endregion
 
       var material = ConverterRevit.GetMEPSystemMaterial(instance);
 

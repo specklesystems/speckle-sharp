@@ -153,9 +153,6 @@ namespace Objects.Other.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
 
-    [DetachProperty]
-    public List<Base> elements { get; set; }
-
     public override Base definition { 
       get {
         return familyDefinition;

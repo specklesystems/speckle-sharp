@@ -113,6 +113,7 @@ namespace Objects.Other
       scale = new Vector3(scaleX, scaleY, scaleZ);
 
       // rotation
+      // this is using a z-up convention for basis vectors
       var up = new Vector3(matrix.M13, matrix.M23, matrix.M33);
       var forward = new Vector3(matrix.M12, matrix.M22, matrix.M32);
       rotation = LookRotation(forward, up);
