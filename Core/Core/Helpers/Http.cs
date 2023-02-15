@@ -58,10 +58,16 @@ namespace Speckle.Core.Helpers
       //this method should be the fastest
       if (await Ping("1.1.1.1"))
         return true;
-
-
+      
       //lastly, try getting the default Speckle server, in case this is a sandboxed environment
-      return await HttpPing(AccountManager.GetDefaultServerUrl());
+      string defaultServer = AccountManager.GetDefaultServerUrl();
+      bool hasInternet = await HttpPing(defaultServer);
+      
+      if(!hasInternet)
+        Log.ForContext("defaultServer", defaultServer)
+          .Warning("Failed to ping internet");
+
+      return hasInternet;
     }
 
 

@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace DesktopUI2
 {
@@ -205,10 +206,9 @@ namespace DesktopUI2
 
     public static void LaunchManager()
     {
+      string path = "";
       try
       {
-        string path = "";
-
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -230,7 +230,8 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not Launch Manager", ex, true, Sentry.SentryLevel.Error);
+        Log.ForContext("path", path)
+          .Error(ex, "Failed to launch Manager");
       }
     }
 
@@ -259,14 +260,17 @@ namespace DesktopUI2
 
               MainViewModel.Instance.NavigateToDefaultScreen();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+              Log.ForContext("dialogResult", result)
+                .Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+              
               //errors already handled in AddAccount
 
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
                 Title = "Something went wrong...",
-                Message = e.Message,
+                Message = ex.Message,
                 Expiration = TimeSpan.Zero,
                 Type = Avalonia.Controls.Notifications.NotificationType.Error,
 
@@ -279,7 +283,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not Add Account", ex, true, Sentry.SentryLevel.Error);
+        Log.Fatal(ex, "Failed to add account {viewModel} {exceptionMessage}",ex.Message);
       }
     }
   }

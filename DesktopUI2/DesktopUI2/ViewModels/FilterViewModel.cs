@@ -5,6 +5,7 @@ using Splat;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -61,7 +62,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}",GetType(), ex.Message);
       }
     }
 
@@ -83,7 +84,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.Warning(ex, "Swallowing exception {exceptionMessage}", ex.Message);
       }
     }
     private bool isSearching = false;
@@ -132,7 +133,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.Warning(ex, "Swallowing exception {exceptionMessage}", ex.Message);
       }
     }
 

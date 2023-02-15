@@ -90,7 +90,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not initialize one click screen", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Fatal(ex, "Could not initialize one click screen {exceptionMessage}",ex.Message);
       }
     }
 
@@ -107,9 +107,10 @@ namespace DesktopUI2.ViewModels
       {
         fileName = Bindings.GetFileName();
       }
-      catch
+      catch(Exception ex)
       {
         //todo: handle properly in each connector bindings
+        Serilog.Log.Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
       }
 
       //filename is different, might have been renamed or be a different document
@@ -172,7 +173,7 @@ namespace DesktopUI2.ViewModels
         }
         else
         {
-          SentText = "Semething went wrong!\nPlease try again or switch to advanced mode.";
+          SentText = "Something went wrong!\nPlease try again or switch to advanced mode.";
           SuccessfulSend = false;
         }
 
@@ -186,7 +187,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not send with one click", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Could not send with one click {exceptionMessage}",ex.Message);
       }
 
       if (HomeViewModel.Instance != null)
@@ -230,7 +231,11 @@ namespace DesktopUI2.ViewModels
         var streams = await client.StreamSearch(_fileName);
         stream = streams.FirstOrDefault(s => s.name == _fileName);
       }
-      catch (Exception) { }
+      catch (Exception ex)
+      {
+        Serilog.Log.ForContext("fileName", _fileName)
+          .Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+      }
       return stream;
     }
 
