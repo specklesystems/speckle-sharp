@@ -7,6 +7,7 @@ function (SetCompilerOptions target)
 		target_compile_options (${target} PUBLIC /W4 /WX
 			/Zc:wchar_t-
 			/wd4499
+			/wd4996
 		)
 	else ()
 		target_compile_options (${target} PUBLIC -Wall -Wextra -Werror

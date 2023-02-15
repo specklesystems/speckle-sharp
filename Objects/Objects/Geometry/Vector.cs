@@ -195,6 +195,11 @@ namespace Objects.Geometry
       return new Vector(x, y, z);
     }
 
+    public static double Angle(Vector u, Vector v)
+    {
+      return Math.Acos(DotProduct(u, v) / (u.Length * v.Length));
+    }
+
     [Obsolete("Renamed to " + nameof(Vector.Normalize))]
     public void Unitize() => Normalize();
     

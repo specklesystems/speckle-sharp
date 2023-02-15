@@ -165,179 +165,24 @@ static GSErrCode GetColumnFromObjectState (const GS::ObjectState& os, API_Elemen
 		return Error;
 	}
 
-	API_AssemblySegmentSchemeData defaultColumnSegmentScheme;
-	if (memo->assemblySegmentSchemes != nullptr) {
-		defaultColumnSegmentScheme = memo->assemblySegmentSchemes[0];
-		memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-	} else {
-		return Error;
-	}
-
-	API_AssemblySegmentCutData defaultColumnSegmentCut;
-	if (memo->assemblySegmentCuts != nullptr) {
-		defaultColumnSegmentCut = memo->assemblySegmentCuts[0];
-		memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-	} else {
-		return Error;
-	}
-
 #pragma region Segment
 	GS::ObjectState allSegments;
-	if (os.Contains (Column::segmentData))
-		os.Get (Column::segmentData, allSegments);
+	if (os.Contains (PartialObjects::SegmentData))
+		os.Get (PartialObjects::SegmentData, allSegments);
 
 	for (UInt32 idx = 0; idx < element.column.nSegments; ++idx) {
 		GS::ObjectState currentSegment;
-		allSegments.Get (GS::String::SPrintf (Column::ColumnSegmentName, idx + 1), currentSegment);
+		allSegments.Get (GS::String::SPrintf (AssemblySegmentData::SegmentName, idx + 1), currentSegment);
 
 		memo->columnSegments[idx] = defaultColumnSegment;
-		if (!currentSegment.IsEmpty ()) {
-
-			if (currentSegment.Contains (Column::circleBased))
-				currentSegment.Get (Column::circleBased, memo->columnSegments[idx].assemblySegmentData.circleBased);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.circleBased);
-
-			if (currentSegment.Contains (Column::nominalHeight))
-				currentSegment.Get (Column::nominalHeight, memo->columnSegments[idx].assemblySegmentData.nominalHeight);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.nominalHeight);
-
-			if (currentSegment.Contains (Column::nominalWidth))
-				currentSegment.Get (Column::nominalWidth, memo->columnSegments[idx].assemblySegmentData.nominalWidth);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.nominalWidth);
-
-			if (currentSegment.Contains (Column::isWidthAndHeightLinked))
-				currentSegment.Get (Column::isWidthAndHeightLinked, memo->columnSegments[idx].assemblySegmentData.isWidthAndHeightLinked);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.isWidthAndHeightLinked);
-
-			if (currentSegment.Contains (Column::isHomogeneous))
-				currentSegment.Get (Column::isHomogeneous, memo->columnSegments[idx].assemblySegmentData.isHomogeneous);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.isHomogeneous);
-
-			if (currentSegment.Contains (Column::endWidth))
-				currentSegment.Get (Column::endWidth, memo->columnSegments[idx].assemblySegmentData.endWidth);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.endWidth);
-
-			if (currentSegment.Contains (Column::endHeight))
-				currentSegment.Get (Column::endHeight, memo->columnSegments[idx].assemblySegmentData.endHeight);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.endHeight);
-
-			if (currentSegment.Contains (Column::isEndWidthAndHeightLinked))
-				currentSegment.Get (Column::isEndWidthAndHeightLinked, memo->columnSegments[idx].assemblySegmentData.isEndWidthAndHeightLinked);
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.isEndWidthAndHeightLinked);
-
-			if (currentSegment.Contains (Column::modelElemStructureType)) {
-				API_ModelElemStructureType realStructureType = API_BasicStructure;
-				GS::UniString structureName;
-				currentSegment.Get (Column::modelElemStructureType, structureName);
-
-				GS::Optional<API_ModelElemStructureType> tmpStructureType = structureTypeNames.FindValue (structureName);
-				if (tmpStructureType.HasValue ())
-					realStructureType = tmpStructureType.Get ();
-				memo->columnSegments[idx].assemblySegmentData.modelElemStructureType = realStructureType;
-			}
-			ACAPI_ELEMENT_MASK_SET (columnMask, API_ColumnSegmentType, assemblySegmentData.modelElemStructureType);
-
-			if (currentSegment.Contains (Column::profileAttrName)) {
-				GS::UniString attrName;
-				currentSegment.Get (Column::profileAttrName, attrName);
-
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_ProfileID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
-
-					if (err == NoError)
-						memo->columnSegments[idx].assemblySegmentData.profileAttr = attrib.header.index;
-				}
-			}
-
-			if (currentSegment.Contains (Column::buildingMaterial)) {
-				GS::UniString attrName;
-				currentSegment.Get (Column::buildingMaterial, attrName);
-
-				if (!attrName.IsEmpty ()) {
-					API_Attribute attrib;
-					BNZeroMemory (&attrib, sizeof (API_Attribute));
-					attrib.header.typeID = API_BuildingMaterialID;
-					CHCopyC (attrName.ToCStr (), attrib.header.name);
-					err = ACAPI_Attribute_Get (&attrib);
-
-					if (err == NoError)
-						memo->columnSegments[idx].assemblySegmentData.buildingMaterial = attrib.header.index;
-				}
-			}
-		}
+		Utility::CreateOneSegmentData (currentSegment, memo->columnSegments[idx].assemblySegmentData, columnMask);
 	}
 #pragma endregion
 
-#pragma region Scheme
-	GS::ObjectState allSchemes;
-	if (os.Contains (Column::schemeData))
-		os.Get (Column::schemeData, allSchemes);
+	Utility::CreateAllSchemeData (os, element.column.nSchemes, element, columnMask, memo);
+	Utility::CreateAllCutData (os, element.column.nCuts, element, columnMask, memo);
 
-	for (UInt32 idx = 0; idx < element.column.nSchemes; ++idx) {
-		if (!allSchemes.IsEmpty ()) {
-			GS::ObjectState currentScheme;
-			allSchemes.Get (GS::String::SPrintf (Column::SchemeName, idx + 1), currentScheme);
-
-			memo->assemblySegmentSchemes[idx] = defaultColumnSegmentScheme;
-			if (!currentScheme.IsEmpty ()) {
-
-				if (currentScheme.Contains (Column::lengthType)) {
-					API_AssemblySegmentLengthTypeID lengthType = APIAssemblySegment_Fixed;
-					GS::UniString lengthTypeName;
-					currentScheme.Get (Column::lengthType, lengthTypeName);
-
-					GS::Optional<API_AssemblySegmentLengthTypeID> type = segmentLengthTypeNames.FindValue (lengthTypeName);
-					if (type.HasValue ())
-						lengthType = type.Get ();
-					memo->assemblySegmentSchemes[idx].lengthType = lengthType;
-
-					if (lengthType == APIAssemblySegment_Fixed && currentScheme.Contains (Column::fixedLength)) {
-						currentScheme.Get (Column::fixedLength, memo->assemblySegmentSchemes[idx].fixedLength);
-						memo->assemblySegmentSchemes[idx].lengthProportion = 0.0;
-					} else if (lengthType == APIAssemblySegment_Proportional && currentScheme.Contains (Column::lengthProportion)) {
-						currentScheme.Get (Column::lengthProportion, memo->assemblySegmentSchemes[idx].lengthProportion);
-						memo->assemblySegmentSchemes[idx].fixedLength = 0.0;
-					}
-				}
-			}
-		}
-	}
-#pragma endregion
-
-#pragma region Cut
-	GS::ObjectState allCuts;
-	if (os.Contains (Column::cutData))
-		os.Get (Column::cutData, allCuts);
-
-	for (UInt32 idx = 0; idx < element.column.nCuts; ++idx) {
-		GS::ObjectState currentCut;
-		allCuts.Get (GS::String::SPrintf (Column::CutName, idx + 1), currentCut);
-
-		memo->assemblySegmentCuts[idx] = defaultColumnSegmentCut;
-		if (!currentCut.IsEmpty ()) {
-
-			if (currentCut.Contains (Column::cutType)) {
-				API_AssemblySegmentCutTypeID realCutType = APIAssemblySegmentCut_Vertical;
-				GS::UniString structureName;
-				currentCut.Get (Column::cutType, structureName);
-
-				GS::Optional<API_AssemblySegmentCutTypeID> tmpCutType = assemblySegmentCutTypeNames.FindValue (structureName);
-				if (tmpCutType.HasValue ())
-					realCutType = tmpCutType.Get ();
-				memo->assemblySegmentCuts[idx].cutType = realCutType;
-			}
-			if (currentCut.Contains (Column::customAngle)) {
-				currentCut.Get (Column::customAngle, memo->assemblySegmentCuts[idx].customAngle);
-			}
-		}
-	}
-#pragma endregion
-
-	return NoError;
+	return err;
 }
 #pragma endregion
 
