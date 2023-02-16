@@ -455,7 +455,8 @@ namespace Objects.Converter.Revit
     {
 
       // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
-      var t = VectorToSpeckle(transform.Origin);
+      var point = PointToSpeckle(transform.Origin);
+      var t = new Vector(point.x, point.y, point.z, point.units);
       var rX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
       var rY = new Vector(transform.BasisY.X, transform.BasisY.Y, transform.BasisY.Z); 
       var rZ = new Vector(transform.BasisZ.X, transform.BasisZ.Y, transform.BasisZ.Z);
@@ -487,7 +488,7 @@ namespace Objects.Converter.Revit
         translation.Y /= translation.W;
         translation.Z /= translation.W;
       }
-      var convertedTranslation = VectorToNative(new Geometry.Vector(translation.X, translation.Y, translation.Z, transform.units));
+      var convertedTranslation = PointToNative(new Geometry.Point(translation.X, translation.Y, translation.Z, transform.units));
 
       // rotation
       // source -> http://content.gpwiki.org/index.php/OpenGL:Tutorials:Using_Quaternions_to_represent_rotation#Quaternion_to_Matrix
@@ -550,7 +551,6 @@ namespace Objects.Converter.Revit
       DB.Level level = ConvertLevelToRevit(instance.level, out ApplicationObject.State levelState);
       var insertionPoint = transform.OfPoint(XYZ.Zero);
       var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
-      
 
       if (docObj != null)
       {
@@ -636,7 +636,8 @@ namespace Objects.Converter.Revit
       notes.AddRange(definitionNotes);
 
       // get the transform
-      var transform = TransformToSpeckle(instance.GetTotalTransform(), out bool isMirrored);
+      var totalTransform = instance.GetTotalTransform();
+      var transform = TransformToSpeckle(totalTransform, out bool isMirrored);
 
       var _instance = new RevitInstance();
       _instance.transform = transform;

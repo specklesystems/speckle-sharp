@@ -56,22 +56,9 @@ namespace Objects.Other
 
     [DetachProperty]
     [Obsolete("Use definition property")]
-    public BlockDefinition blockDefinition { get; set; }
+    public BlockDefinition blockDefinition { get => definition as BlockDefinition; set => definition = blockDefinition; }
 
-    public override Base definition
-    {
-      get
-      {
-        return blockDefinition;
-      }
-      set
-      {
-        if (value is BlockDefinition)
-        {
-          blockDefinition = (BlockDefinition)value;
-        }
-      }
-    }
+    public override Base definition { get; set; }
 
     public BlockInstance() { }
 
@@ -94,9 +81,9 @@ namespace Objects.Other
     public Point GetInsertionPoint()
     {
       var newMatrix = transform.matrix;
-      newMatrix.M14 -= (float)blockDefinition.basePoint.x;
-      newMatrix.M24 -= (float)blockDefinition.basePoint.y;
-      newMatrix.M34 -= (float)blockDefinition.basePoint.z;
+      newMatrix.M14 -= Convert.ToSingle(blockDefinition.basePoint.x);
+      newMatrix.M24 -= Convert.ToSingle(blockDefinition.basePoint.y);
+      newMatrix.M34 -= Convert.ToSingle(blockDefinition.basePoint.z);
       blockDefinition.basePoint.TransformTo(new Transform(newMatrix, units), out Point insertionPoint);
       return insertionPoint;
     }

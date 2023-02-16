@@ -85,9 +85,9 @@ namespace Objects.Other
     public Transform(Vector x, Vector y, Vector z, Vector translation)
     {
       this.matrix = new Matrix4x4(
-       (float)x.x, (float)y.x, (float)z.x, (float)translation.x,
-       (float)x.y, (float)y.y, (float)z.y, (float)translation.y,
-       (float)x.z, (float)y.z, (float)z.z, (float)translation.z,
+       Convert.ToSingle(x.x), Convert.ToSingle(y.x), Convert.ToSingle(z.x), Convert.ToSingle(translation.x),
+       Convert.ToSingle(x.y), Convert.ToSingle(y.y), Convert.ToSingle(z.y), Convert.ToSingle(translation.y),
+       Convert.ToSingle(x.z), Convert.ToSingle(y.z), Convert.ToSingle(z.z), Convert.ToSingle(translation.z),
        0f, 0f, 0f, 1f
        );
       this.units = translation.units;
@@ -189,9 +189,9 @@ namespace Objects.Other
         return this;
 
       var newMatrix = matrix;
-      newMatrix.M14 = (float)(matrix.M14 * unitFactor);
-      newMatrix.M24 = (float)(matrix.M24 * unitFactor);
-      newMatrix.M34 = (float)(matrix.M34 * unitFactor);
+      newMatrix.M14 = Convert.ToSingle(matrix.M14 * unitFactor);
+      newMatrix.M24 = Convert.ToSingle(matrix.M24 * unitFactor);
+      newMatrix.M34 = Convert.ToSingle(matrix.M34 * unitFactor);
       return new Transform(newMatrix, newUnits);
     }
 
@@ -227,10 +227,10 @@ namespace Objects.Other
     {
       return new Matrix4x4
       (
-        (float)value[0], (float)value[1], (float)value[2], (float)value[3],
-        (float)value[4], (float)value[5], (float)value[6], (float)value[7],
-        (float)value[8], (float)value[9], (float)value[10], (float)value[11],
-        (float)value[12], (float)value[13], (float)value[14], (float)value[15]
+        Convert.ToSingle(value[0]), Convert.ToSingle(value[1]), Convert.ToSingle(value[2]), Convert.ToSingle(value[3]),
+        Convert.ToSingle(value[4]), Convert.ToSingle(value[5]), Convert.ToSingle(value[6]), Convert.ToSingle(value[7]),
+        Convert.ToSingle(value[8]), Convert.ToSingle(value[9]), Convert.ToSingle(value[10]), Convert.ToSingle(value[11]),
+        Convert.ToSingle(value[12]), Convert.ToSingle(value[13]), Convert.ToSingle(value[14]), Convert.ToSingle(value[15])
       );
     }
 
