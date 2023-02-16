@@ -56,9 +56,22 @@ namespace Objects.Other
 
     [DetachProperty]
     [Obsolete("Use definition property")]
-    public BlockDefinition blockDefinition { get => definition as BlockDefinition; set => definition = blockDefinition; }
+    public BlockDefinition blockDefinition { get; set; }
 
-    public override Base definition { get; set; }
+    public override Base definition
+    {
+      get
+      {
+        return blockDefinition;
+      }
+      set
+      {
+        if (value is BlockDefinition)
+        {
+          blockDefinition = (BlockDefinition)value;
+        }
+      }
+    }
 
     public BlockInstance() { }
 
