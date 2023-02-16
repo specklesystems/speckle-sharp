@@ -24,7 +24,7 @@ namespace Speckle.Core.Models.GraphTraversal
         {
           var membersToTraverse = b.GetDynamicMembers()
             .Concat(displayValueAliases)
-            .Except(elementsAliases)
+            .Concat(elementsAliases)
             .Except(ignoreProps);
           return membersToTraverse;
         });
