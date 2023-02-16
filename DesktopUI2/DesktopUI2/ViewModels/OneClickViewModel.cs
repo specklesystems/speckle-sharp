@@ -109,8 +109,8 @@ namespace DesktopUI2.ViewModels
       }
       catch(Exception ex)
       {
-        //todo: handle properly in each connector bindings
-        Serilog.Log.Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        //todo: must handle properly in each connector bindings
+        Serilog.Log.Error(ex, "Swallowing exception {exceptionMessage}",ex.Message);
       }
 
       //filename is different, might have been renamed or be a different document
