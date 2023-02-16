@@ -17,18 +17,21 @@ namespace Objects.Converter.CSI
     readonly string SendNodeResults = "sendNodeResults";
     readonly string Send1DResults = "send1DResults";
     readonly string Send2DResults = "send2DResults";
+
+    private string _modelUnits;
     public string ModelUnits()
     {
-      var units = Model.GetDatabaseUnits();
+      if (_modelUnits != null) 
+        return _modelUnits;
+
+      var units = Model.GetPresentUnits();
       if (units != 0)
       {
         string[] unitsCat = units.ToString().Split('_');
-        return unitsCat[1];
+        _modelUnits = unitsCat[1];
+        return _modelUnits;
       }
-      else
-      {
-        return null;
-      }
+      return null;
     }
     public double ScaleToNative(double value, string units)
     {
