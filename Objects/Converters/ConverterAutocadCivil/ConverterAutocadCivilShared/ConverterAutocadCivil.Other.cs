@@ -526,7 +526,7 @@ namespace Objects.Converter.AutocadCivil
         }
       }
 
-      if (converted.Count == 0)
+      if (converted.Count == 0 && bakedGeometry.Count == 0)
       {
         notes.Add("Could not convert any definition geometry");
         return ObjectId.Null;
