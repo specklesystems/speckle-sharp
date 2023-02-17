@@ -173,7 +173,9 @@ namespace Objects.Converter.Bentley
     // profiles
     public Base ProfileToSpeckle(CifGM.Profile profile, string modelUnits = "m")
     {
-      var curves = new List<ICurve>();      
+      var curves = new List<ICurve>();
+
+
 
       switch (profile.ProfileGeometry)
       {
@@ -204,7 +206,9 @@ namespace Objects.Converter.Bentley
       var outProfile = new BuiltElements.Profile
       {
         curves = curves,
-        name = profile.Name,        
+        name = profile.Name,
+        startStation = profile.ProfileGeometry.StartPoint.Parameter,
+        endStation = profile.ProfileGeometry.EndPoint.Parameter,
       };
 
       // The assumption here is that profiles exist in chainage space (x == chainage, y == elevation) 
@@ -216,8 +220,8 @@ namespace Objects.Converter.Bentley
         && startBox.bbox?.xSize?.start is double startChainage
         && endBox.bbox?.xSize?.end is double endChainage)
       {
-        outProfile.startStation = startChainage;
-        outProfile.endStation = endChainage;
+        var diffA = outProfile.startStation - startChainage;
+        var diffB = outProfile.endStation - endChainage;
       }
 
       if (profile.FeatureName is string featureName)
