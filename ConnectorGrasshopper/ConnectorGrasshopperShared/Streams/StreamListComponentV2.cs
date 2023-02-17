@@ -26,9 +26,8 @@ namespace ConnectorGrasshopper.Streams
     public override GH_Exposure Exposure => GH_Exposure.primary;
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var acc = pManager.AddTextParameter("Account", "A", "Account to get streams from", GH_ParamAccess.item);
+      var acc = pManager.AddParameter(new SpeckleAccountParam{Optional = true});
       pManager.AddIntegerParameter("Limit", "L", "Max number of streams to fetch", GH_ParamAccess.item, 10);
-      Params.Input[acc].Optional = true;
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -41,21 +40,39 @@ namespace ConnectorGrasshopper.Streams
     {
       if (InPreSolve)
       {
-        if (DA.Iteration == 0) hasInternetTask = Http.UserHasInternet();
-        string userId = null;
+        if (DA.Iteration == 0)
+        {
+          hasInternetTask = Http.UserHasInternet();
+          Tracker.TrackNodeRun();
+        }
+        
+        Account account = null;
         var limit = 10;
 
 
-        DA.GetData(0, ref userId);
+        DA.GetData(0, ref account);
         DA.GetData(1, ref limit); // Has default value so will never be empty.
+
+        if (account == null)
+        {
+          account = AccountManager.GetDefaultAccount();
+          if (account == null)
+          {
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Could not find default account in this machine. Use the Speckle Manager to add an account.");
+            return;
+          }
+
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Using default account: {account}");
+          
+        }
 
         if (limit > 50)
         {
           limit = 50;
-          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50.");
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50. Limit has been capped.");
         }
         
-        TaskList.Add(ListStreams(userId, limit));
+        TaskList.Add(ListStreams(account, limit));
         return;
       }
 
@@ -66,32 +83,14 @@ namespace ConnectorGrasshopper.Streams
     }
 
     private Task<bool> hasInternetTask;
-    private async Task<List<StreamWrapper>> ListStreams(string userId, int limit)
+    private async Task<List<StreamWrapper>> ListStreams(Account account, int limit)
     {
-      var account = string.IsNullOrEmpty(userId)
-        ? AccountManager.GetDefaultAccount()
-        : AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
-
-      if (userId == null)
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account was provided, using default.");
-        
-      if (account == null)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error,
-          "Could not find default account in this machine. Use the Speckle Manager to add an account.");
-        return null;
-      }
-      
       if (!hasInternetTask.Result)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You are not connected to the internet");
         return null;
       }
-          
-      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
-          
-      Tracker.TrackNodeRun();
-          
+      
       var client = new Client(account);
 
       return client.StreamsGet(limit)

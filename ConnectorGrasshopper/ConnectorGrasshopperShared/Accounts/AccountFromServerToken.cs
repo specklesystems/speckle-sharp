@@ -9,19 +9,19 @@ using Speckle.Core.Credentials;
 
 namespace ConnectorGrasshopper.Accounts
 {
-  public class StreamGetWithTokenComponent: GH_TaskCapableComponent<StreamWrapper>
+  public class AccountFromServerTokenComponent: GH_TaskCapableComponent<Account>
   {
     public override GH_Exposure Exposure => internalExposure;
     internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
-    internal static Guid internalGuid => new Guid("89AC8586-9F37-4C99-9A65-9C3A029BA07D");
+    internal static Guid internalGuid => new Guid("943B15DB-0A34-4A54-B10F-7FD7219954A3");
     public override Guid ComponentGuid => internalGuid;
 
-    protected override Bitmap Icon => Properties.Resources.StreamGetWithToken;
+    protected override Bitmap Icon => null;
 
-    public StreamGetWithTokenComponent() : base(
-      "Stream Get with Token", 
-      "SGetWT", 
-      "Returns a stream that will authenticate with a specific user by their Personal Access Token.\n TREAT EACH TOKEN AS A PASSWORD AND NEVER SHARE/SAVE IT IN THE FILE ITSELF", 
+    public AccountFromServerTokenComponent() : base(
+      "Account from Server/Token", 
+      "AccST", 
+      "Returns an account based on a Server URL and a token. URL can be a stream url too.\n TREAT EACH TOKEN AS A PASSWORD AND NEVER SHARE/SAVE IT IN THE FILE ITSELF", 
       ComponentCategories.PRIMARY_RIBBON, 
       ComponentCategories.COMPUTE)
     {
@@ -37,48 +37,62 @@ namespace ConnectorGrasshopper.Accounts
     
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleStreamParam("Stream", "S",
-        "A stream object of the stream to be updated.", GH_ParamAccess.item));
+      pManager.AddTextParameter("Server", "S",
+        "The url of the speckle server, can be a stream url too.", GH_ParamAccess.item);
       pManager.AddTextParameter("Auth Token", "t", "The auth token to access the account", GH_ParamAccess.item);
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      pManager.AddParameter(new SpeckleStreamParam("Stream", "S",
-        "The stream object, with the authenticated account based on the input token.", GH_ParamAccess.item));    }
+      pManager.AddParameter(new SpeckleAccountParam());    
+    }
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      DA.DisableGapLogic();
+      if (DA.Iteration != 0)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
+          "Cannot fetch multiple accounts at the same time. This is an explicit guard against possibly unintended behaviour. If you want to get another account, please use a new component.");
+        return;
+      }
+      
       if (InPreSolve)
       {
-        GH_SpeckleStream ssp = null;
+        string sw = null;
         string token = null;
-        if (!DA.GetData(0, ref ssp)) return;
+        if (!DA.GetData(0, ref sw)) return;
         if (!DA.GetData(1, ref token)) return;
-
-        var sw = ssp.Value;
+        Uri url = null;
+        try
+        {
+          url = new Uri(sw);
+        }
+        catch (Exception e)
+        {
+          AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Server input is not a valid url: {sw}");
+          return;
+        }
         
         var task = Task.Run(() =>
         {
           var acc = new Account();
           acc.token = token;
-          acc.serverInfo = new ServerInfo { url = sw.ServerUrl };
+          acc.serverInfo = AccountManager.GetServerInfo($"{url.Scheme}://{url.Host}").Result;
           acc.userInfo = acc.Validate().Result;
-          sw.SetAccount(acc);
-          return sw;
+          return acc;
         }, CancelToken);
         TaskList.Add(task);
         return;
       }
 
-      var solveResults = GetSolveResults(DA, out var streamWrapper);
-      if (!solveResults)
+      if (!GetSolveResults(DA, out var account))
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $@"Could not fetch account");
         return;
       }
       
-      DA.SetData(0, streamWrapper);
+      if(account != null)
+        DA.SetData(0, account);
     }
   }
 }

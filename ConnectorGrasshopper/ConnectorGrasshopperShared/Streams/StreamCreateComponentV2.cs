@@ -29,7 +29,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      pManager.AddTextParameter("Account", "A", "Account to be used when creating the stream.", GH_ParamAccess.item);
+      pManager.AddParameter(new SpeckleAccountParam());
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -64,10 +64,16 @@ namespace ConnectorGrasshopper.Streams
       {
         if (DA.Iteration == 0)
         {
-          string userId = null;
-          DA.GetData(0, ref userId);
-
-          TaskList.Add(CreateStream(userId));
+          Account account = null;
+          if(!DA.GetData(0, ref account)) return;
+          if (account == null)
+          {
+            // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"Cannot create stream with null account.");
+            return;
+          }
+          
+          TaskList.Add(CreateStream(account));
         }
         else
         {
@@ -84,16 +90,8 @@ namespace ConnectorGrasshopper.Streams
       }
     }
 
-    public async Task<StreamWrapper> CreateStream(string userId)
+    public async Task<StreamWrapper> CreateStream(Account account)
     {
-      var account = AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
-      if (account == null)
-      {
-        // Really last ditch effort - in case people delete accounts from the manager, and the selection dropdown is still using an outdated list.
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"The user with id of {userId} was not found.");
-        return null;
-      }
-
       if (stream != null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
@@ -106,11 +104,13 @@ namespace ConnectorGrasshopper.Streams
       var client = new Client(account);
 
       var streamId = client.StreamCreate(new StreamCreateInput { isPublic = false }).Result;
-      return new StreamWrapper(
+      var sw =  new StreamWrapper(
         streamId,
         account.userInfo.id,
         account.serverInfo.url
       );
+      sw.SetAccount(account);
+      return sw;
     }
   }
 }

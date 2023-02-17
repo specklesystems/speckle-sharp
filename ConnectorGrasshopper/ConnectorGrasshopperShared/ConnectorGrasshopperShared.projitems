@@ -9,7 +9,9 @@
     <Import_RootNamespace>ConnectorGrasshopperShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\AccountFromServerToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetailsV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.GetAccountToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ListAccounts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\ComponentTracker.cs" />
@@ -28,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Conversion\ToSpeckleTaskCapableComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\DebounceDispatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\GenericAccessParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleGoo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SendReceiveDataParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\Speckle.IGH_Goo.cs" />

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Speckle.Core.Credentials;
@@ -9,15 +10,14 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
-  [Obsolete]
-  public class AccountDetailsComponent : GH_SpeckleComponent
+  public class AccountDetailsComponentV2 : GH_SpeckleComponent
   {
-    public AccountDetailsComponent() : base("Account Details", "AccDet", "Gets the details from a specific account", ComponentCategories.PRIMARY_RIBBON,
+    public AccountDetailsComponentV2() : base("Account Details", "AccDet", "Gets the details from a specific account", ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
     {
     }
 
-    public override Guid ComponentGuid => new Guid("04822A33-777A-457B-BEF3-E54044322DB0");
+    public override Guid ComponentGuid => new Guid("075AE5E1-F345-4678-B3E9-11B2BF29DF7A");
 
     protected override Bitmap Icon => Properties.Resources.AccountDetails;
 
@@ -25,7 +25,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      var acc = pManager.AddTextParameter("Account", "A", "Account to get stream with.", GH_ParamAccess.item);
+      pManager.AddParameter(new SpeckleAccountParam(){ Optional = true });
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -44,17 +44,15 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
-      string userId = null;
-      if (!DA.GetData(0, ref userId)) return;
+      Account account = null;
+      DA.GetData(0, ref account);
 
 
-      if (string.IsNullOrEmpty(userId))
+      if (account == null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No account provided. Trying with default account.");
+        account = AccountManager.GetDefaultAccount();
       }
-
-      var account = string.IsNullOrEmpty(userId) ? AccountManager.GetDefaultAccount() :
-        AccountManager.GetAccounts().FirstOrDefault(a => a.userInfo.id == userId);
 
       if (account == null)
       {
@@ -65,7 +63,7 @@ namespace ConnectorGrasshopper.Streams
       if (DA.Iteration == 0) // Only report on first iteration of the component.
         Tracker.TrackNodeRun();      
 
-      Params.Input[0].AddVolatileData(new GH_Path(0), 0, account.userInfo.id);
+      //Params.Input[0].AddVolatileData(new GH_Path(0), 0, account);
 
       DA.SetData(0, account.isDefault);
       DA.SetData(1, account.serverInfo.name);
@@ -75,11 +73,6 @@ namespace ConnectorGrasshopper.Streams
       DA.SetData(5, account.userInfo.name);
       DA.SetData(6, account.userInfo.company);
       DA.SetData(7, account.userInfo.email);
-    }
-
-    protected override void BeforeSolveInstance()
-    {
-      base.BeforeSolveInstance();
     }
   }
 }

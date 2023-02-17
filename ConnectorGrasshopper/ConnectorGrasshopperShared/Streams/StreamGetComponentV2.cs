@@ -23,9 +23,7 @@ namespace ConnectorGrasshopper.Streams
     {
       pManager.AddParameter(new SpeckleStreamParam("Stream ID/URL", "ID/URL", "Speckle stream ID or URL",
         GH_ParamAccess.item));
-      var acc = pManager.AddTextParameter("Account", "A", "Account to get stream with.", GH_ParamAccess.item);
-
-      Params.Input[acc].Optional = true;
+      var acc = pManager.AddParameter(new SpeckleAccountParam());
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
@@ -36,6 +34,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override void SolveInstance(IGH_DataAccess DA)
     {
+      DA.DisableGapLogic();
       if (DA.Iteration != 0)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Warning,
@@ -45,43 +44,37 @@ namespace ConnectorGrasshopper.Streams
 
       if (InPreSolve)
       {
-        string userId = null;
+        Account account = null;
         GH_SpeckleStream ghIdWrapper = null;
         if (!DA.GetData(0, ref ghIdWrapper)) return;
-        DA.GetData(1, ref userId);
+        if (!DA.GetData(1, ref account)) return;
         var idWrapper = ghIdWrapper.Value;
         
         if (DA.Iteration == 0)
           Tracker.TrackNodeRun();
         
-        TaskList.Add(AssignAccountToStream(idWrapper, userId));
+        TaskList.Add(AssignAccountToStream(idWrapper, account));
       }
 
       if (!GetSolveResults(DA, out var data))
         return;
-
-      DA.SetData(0, new GH_SpeckleStream(data));
+      if(data != null)
+        DA.SetData(0, new GH_SpeckleStream(data));
     }
 
-    private async Task<StreamWrapper> AssignAccountToStream(StreamWrapper idWrapper, string userId)
+    private async Task<StreamWrapper> AssignAccountToStream(StreamWrapper idWrapper, Account account)
     {
-      var account = string.IsNullOrEmpty(userId)
-        ? AccountManager.GetAccounts()
-          .FirstOrDefault(a =>
-            a.serverInfo.url == idWrapper.ServerUrl) // If no user is passed in, get the first account for this server
-        : AccountManager.GetAccounts()
-          .FirstOrDefault(a => a.userInfo.id == userId); // If user is passed in, get matching user in the db
-
-      if (account == null || account.serverInfo.url != idWrapper.ServerUrl)
+      var newWrapper = new StreamWrapper(idWrapper.OriginalInput);
+      try
       {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error,
-          $"Could not find an account for server {idWrapper.ServerUrl}. Use the Speckle Manager to add an account.");
+        await newWrapper.ValidateWithAccount(account).ConfigureAwait(false); // Validates the stream
+      }
+      catch (Exception e)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.Message);
         return null;
       }
-
-      var newWrapper = new StreamWrapper(idWrapper.OriginalInput);
       newWrapper.SetAccount(account);
-      await newWrapper.GetAccount();
       return newWrapper;
     }
   }
