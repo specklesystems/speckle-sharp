@@ -14,6 +14,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
+  [Obsolete]
   public class ExtendSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
   {
     public ExtendSpeckleObjectByKeyValueTaskComponent() : base("Extend Speckle Object by Key/Value", "ESOKV",
