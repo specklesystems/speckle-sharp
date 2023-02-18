@@ -9,7 +9,7 @@
     <Import_RootNamespace>ConnectorGrasshopperShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Accounts\AccountFromServerToken.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ServerAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetailsV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.GetAccountToken.cs" />
@@ -88,6 +88,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)UpgradeUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Resources\ServerAccount.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\AccountParam.png" />
     <None Include="$(MSBuildThisFileDirectory)Resources\AccountToken.png" />
     <None Include="$(MSBuildThisFileDirectory)Resources\StreamGetWithToken.png" />
     <Content Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.tt" />

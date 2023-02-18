@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Drawing;
 using System.Linq;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
@@ -106,7 +107,7 @@ namespace ConnectorGrasshopper.Extras
     }
 
     public override Guid ComponentGuid => new Guid("2092EB37-5EA1-4779-BC4E-12074523228E");
-    
-    
+
+    protected override Bitmap Icon => Properties.Resources.AccountParam;
   }
 }

@@ -9,16 +9,16 @@ using Speckle.Core.Credentials;
 
 namespace ConnectorGrasshopper.Accounts
 {
-  public class AccountFromServerTokenComponent: GH_TaskCapableComponent<Account>
+  public class ServerAccountComponent: GH_SpeckleTaskCapableComponent<Account>
   {
     public override GH_Exposure Exposure => internalExposure;
     internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.secondary : GH_Exposure.hidden;
     internal static Guid internalGuid => new Guid("943B15DB-0A34-4A54-B10F-7FD7219954A3");
     public override Guid ComponentGuid => internalGuid;
 
-    protected override Bitmap Icon => null;
+    protected override Bitmap Icon => Properties.Resources.ServerAccount;
 
-    public AccountFromServerTokenComponent() : base(
+    public ServerAccountComponent() : base(
       "Account from Server/Token", 
       "AccST", 
       "Returns an account based on a Server URL and a token. URL can be a stream url too.\n TREAT EACH TOKEN AS A PASSWORD AND NEVER SHARE/SAVE IT IN THE FILE ITSELF", 
