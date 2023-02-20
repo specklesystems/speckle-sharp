@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using GraphQL.Client.Abstractions.Utilities;
-using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Converters;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Speckle.Core.Api.GraphQL.Serializer
 {

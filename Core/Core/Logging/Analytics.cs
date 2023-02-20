@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.Core.Logging
 {

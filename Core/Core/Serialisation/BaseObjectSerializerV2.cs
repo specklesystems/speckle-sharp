@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.Core.Serialisation
 {

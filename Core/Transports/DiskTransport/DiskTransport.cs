@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Helpers;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace DiskTransport
 {

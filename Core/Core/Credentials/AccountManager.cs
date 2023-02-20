@@ -17,7 +17,7 @@ using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.Core.Credentials
 {

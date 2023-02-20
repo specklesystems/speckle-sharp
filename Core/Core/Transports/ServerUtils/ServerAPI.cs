@@ -11,8 +11,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Helpers;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Transports.ServerUtils
 {

@@ -9,7 +9,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Models;
 using Speckle.Core.Transports.ServerUtils;
-using Speckle.Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Transports
 {

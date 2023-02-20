@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Serialisation
 {

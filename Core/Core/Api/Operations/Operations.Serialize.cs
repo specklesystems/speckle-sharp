@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.Core.Api
 {

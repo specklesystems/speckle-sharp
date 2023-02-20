@@ -9,7 +9,7 @@ using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using Version = System.Version;
 
 namespace Speckle.Core.Api

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Models.Extensions;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.Core.Models
 {

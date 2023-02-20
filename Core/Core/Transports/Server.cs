@@ -14,7 +14,7 @@ using Serilog;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.Core.Transports
 {

@@ -6,8 +6,8 @@ using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Abstractions;
 using GraphQL.Client.Abstractions.Websocket;
-using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Speckle.Core.Api.GraphQL.Serializer
 {

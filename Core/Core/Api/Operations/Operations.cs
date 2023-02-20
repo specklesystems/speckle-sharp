@@ -2,8 +2,8 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Speckle.Core.Serialisation;
-using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Serialization;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Speckle.Core.Api
 {
