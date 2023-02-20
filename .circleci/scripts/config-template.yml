@@ -259,11 +259,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - attach_workspace:
           at: ./
       - run:
-          name: Install dotnet and brew dependencies
+          name: Install dotnet
           command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1
             curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
-            brew install create-dmg
 
             $HOME/.dotnet/dotnet --version
             $HOME/.dotnet/dotnet --list-runtimes
