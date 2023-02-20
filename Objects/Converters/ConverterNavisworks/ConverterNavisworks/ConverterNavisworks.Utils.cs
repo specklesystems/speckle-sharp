@@ -1,8 +1,8 @@
-﻿using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.ComApi;
-using System;
+﻿using System;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using Autodesk.Navisworks.Api;
+using Autodesk.Navisworks.Api.ComApi;
 
 namespace Objects.Converter.Navisworks
 {
@@ -11,7 +11,7 @@ namespace Objects.Converter.Navisworks
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static T[] ToArray<T>(this Array arr) where T : struct
     {
-      T[] result = new T[arr.Length];
+      var result = new T[arr.Length];
       Array.Copy(arr, result, result.Length);
       return result;
     }
@@ -29,7 +29,7 @@ namespace Objects.Converter.Navisworks
 
       // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
       var pointer = ((Array)path.ArrayData).ToArray<int>().Aggregate("",
-        (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-');
+        (current, value) => current + value.ToString().PadLeft(4, '0') + "-").TrimEnd('-');
 
       return pointer;
     }

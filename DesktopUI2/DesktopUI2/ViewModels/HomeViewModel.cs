@@ -13,6 +13,7 @@ using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -29,7 +30,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Stream = Speckle.Core.Api.Stream;
-using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -644,7 +644,9 @@ namespace DesktopUI2.ViewModels
 
     public async void AddAccountCommand()
     {
+      InProgress = true;
       await Utils.AddAccountCommand();
+      InProgress = false;
     }
     public async void RemoveAccountCommand(Account account)
     {
