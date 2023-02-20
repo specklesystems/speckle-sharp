@@ -2,5 +2,8 @@
 
 namespace Speckle.ConnectorNavisworks
 {
-  class ViewProxy { public List<string> Selection { get; set; } }
+  internal class ViewProxy
+  {
+    public List<string> Selection { get; set; }
+  }
 }
