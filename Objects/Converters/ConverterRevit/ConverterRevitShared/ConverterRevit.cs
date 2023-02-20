@@ -244,8 +244,8 @@ namespace Objects.Converter.Revit
         case DB.Structure.StructuralConnectionHandler o:
           returnObject = StructuralConnectionHandlerToSpeckle(o);
           break;
-        case DB.GenericForm o:
-          returnObject = GenericFormToSpeckle(o);
+        case DB.CombinableElement o:
+          returnObject = CombinableElementToSpeckle(o);
           break;
 #if REVIT2020 || REVIT2021 || REVIT2022
         case DB.Structure.AnalyticalModelStick o:

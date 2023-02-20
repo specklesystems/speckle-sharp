@@ -35,7 +35,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGridLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPipe.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGenericFormElement.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCombinableElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpace.cs" />
