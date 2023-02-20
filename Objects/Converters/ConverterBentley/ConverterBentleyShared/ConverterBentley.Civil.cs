@@ -71,7 +71,7 @@ namespace Objects.Converter.Bentley
       if (alignment.ActiveProfile is CifGM.Profile p)
       {
         var activeProfile = ProfileToSpeckle(p, ModelUnits) as BuiltElements.Profile;
-        _alignment.profiles.Add(activeProfile); 
+        _alignment.profiles.Add(activeProfile);
       }
 
       if (alignment.Name != null)
@@ -207,22 +207,9 @@ namespace Objects.Converter.Bentley
       {
         curves = curves,
         name = profile.Name,
-        startStation = profile.ProfileGeometry.StartPoint.Parameter,
-        endStation = profile.ProfileGeometry.EndPoint.Parameter,
+        startStation = profile.ProfileGeometry.StartPoint.Coordinates.X,
+        endStation = profile.ProfileGeometry.EndPoint.Coordinates.X,
       };
-
-      // The assumption here is that profiles exist in chainage space (x == chainage, y == elevation) 
-      // so the associated bounding box will be in the same space and can be used to extract the bounds.
-      // If this can't be calculated we leave them empty.
-      if (curves.Any() 
-        && curves.First() is IHasBoundingBox startBox 
-        && curves.Last() is IHasBoundingBox endBox
-        && startBox.bbox?.xSize?.start is double startChainage
-        && endBox.bbox?.xSize?.end is double endChainage)
-      {
-        var diffA = outProfile.startStation - startChainage;
-        var diffB = outProfile.endStation - endChainage;
-      }
 
       if (profile.FeatureName is string featureName)
         outProfile[nameof(featureName)] = featureName;
