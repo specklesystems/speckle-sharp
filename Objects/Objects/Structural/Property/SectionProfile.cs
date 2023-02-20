@@ -10,7 +10,7 @@ namespace Objects.Structural.Properties.Profiles
   public class SectionProfile : Base //section profile description
   {
     public string name { get; set; }
-    public ShapeType shapeType { get; set; }
+    public virtual ShapeType shapeType { get; set; }
     public double area { get; set; }
     //Moment of inertia about the Major axis
     public double Iyy { get; set; }
@@ -42,6 +42,7 @@ namespace Objects.Structural.Properties.Profiles
     public double width { get; set; }
     public double webThickness { get; set; } // tw 
     public double flangeThickness { get; set; } // tf
+    public override ShapeType shapeType { get; set; } = ShapeType.Rectangular;
 
     public Rectangular() { }
 
@@ -53,7 +54,6 @@ namespace Objects.Structural.Properties.Profiles
       this.width = width;
       this.webThickness = webThickness;
       this.flangeThickness = flangeThickness;
-      this.shapeType = ShapeType.Rectangular;
     }
   }
 
@@ -61,6 +61,7 @@ namespace Objects.Structural.Properties.Profiles
   {
     public double radius { get; set; }
     public double wallThickness { get; set; }
+    public override ShapeType shapeType { get; set; } = ShapeType.Circular;
 
     public Circular() { }
 
@@ -70,7 +71,6 @@ namespace Objects.Structural.Properties.Profiles
       this.name = name;
       this.radius = radius;
       this.wallThickness = wallThickness;
-      this.shapeType = ShapeType.Circular;
     }
   }
 
@@ -80,7 +80,8 @@ namespace Objects.Structural.Properties.Profiles
     public double width { get; set; }
     public double webThickness { get; set; }
     public double flangeThickness { get; set; }
-        
+    public override ShapeType shapeType { get; set; } = ShapeType.I;
+
     public ISection() { }
 
     [SchemaInfo("ISection", "Creates a Speckle structural I section profile", "Structural", "Section Profile")]
@@ -91,7 +92,6 @@ namespace Objects.Structural.Properties.Profiles
       this.width = width;
       this.webThickness = webThickness;
       this.flangeThickness = flangeThickness;
-      this.shapeType = ShapeType.I;
     }
   }
 
@@ -101,6 +101,7 @@ namespace Objects.Structural.Properties.Profiles
     public double width { get; set; }
     public double webThickness { get; set; }
     public double flangeThickness { get; set; }
+    public override ShapeType shapeType { get; set; } = ShapeType.Tee;
 
     public Tee() { }
 
@@ -112,7 +113,6 @@ namespace Objects.Structural.Properties.Profiles
       this.width = width;
       this.webThickness = webThickness;
       this.flangeThickness = flangeThickness;
-      this.shapeType = ShapeType.Tee;
     }
   }
 
@@ -122,6 +122,7 @@ namespace Objects.Structural.Properties.Profiles
     public double width { get; set; }
     public double webThickness { get; set; }
     public double flangeThickness { get; set; }
+    public override ShapeType shapeType { get; set; } = ShapeType.Angle;
 
     public Angle() { }
 
@@ -133,7 +134,6 @@ namespace Objects.Structural.Properties.Profiles
       this.width = width;
       this.webThickness = webThickness;
       this.flangeThickness = flangeThickness;
-      this.shapeType = ShapeType.Angle;
     }
   }
 
@@ -143,6 +143,7 @@ namespace Objects.Structural.Properties.Profiles
     public double width { get; set; }
     public double webThickness { get; set; }
     public double flangeThickness { get; set; }
+    public override ShapeType shapeType { get; set; } = ShapeType.Channel;
 
     public Channel() { }
 
@@ -154,7 +155,6 @@ namespace Objects.Structural.Properties.Profiles
       this.width = width;
       this.webThickness = webThickness;
       this.flangeThickness = flangeThickness;
-      this.shapeType = ShapeType.Channel;
     }
   }
   public class Perimeter : SectionProfile
@@ -199,6 +199,7 @@ namespace Objects.Structural.Properties.Profiles
 
   public class Explicit : SectionProfile
   {
+    public override ShapeType shapeType { get; set; } = ShapeType.Explicit;
     public Explicit() { }
 
     [SchemaInfo("Explicit", "Creates a Speckle structural section profile based on explicitly defining geometric properties", "Structural", "Section Profile")]
@@ -211,7 +212,6 @@ namespace Objects.Structural.Properties.Profiles
       this.J = J;
       this.Ky = Ky;
       this.Kz = Kz;
-      this.shapeType = ShapeType.Explicit;
     }
   }
 }
