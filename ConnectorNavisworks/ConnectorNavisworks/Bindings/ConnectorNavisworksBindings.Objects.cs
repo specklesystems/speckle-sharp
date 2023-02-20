@@ -1,9 +1,9 @@
-﻿using Autodesk.Navisworks.Api;
-using DesktopUI2.Models.Filters;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
+using Autodesk.Navisworks.Api;
+using DesktopUI2.Models.Filters;
 using static Speckle.ConnectorNavisworks.Utils;
 using Cursor = System.Windows.Forms.Cursor;
 
@@ -46,7 +46,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     private static IEnumerable<string> GetObjectsFromSavedViewpoint(ISelectionFilter filter)
     {
-      var reference = filter.Selection[0].Split(new string[] { ":" }, StringSplitOptions.None);
+      var reference = filter.Selection[0].Split(new[] { ":" }, StringSplitOptions.None);
       var savedViewpoint = (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
 
       // TODO: Handle an amended viewpoint hierarchy.
@@ -78,9 +78,9 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       var selection = filter.Selection;
 
-      HashSet<string> uniqueIds = new HashSet<string>();
+      var uniqueIds = new HashSet<string>();
 
-      for (int i = 0; i < selection.Count; i += 1)
+      for (var i = 0; i < selection.Count; i += 1)
       {
         var modelItem = PointerToModelItem(selection[i]);
 
@@ -89,7 +89,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
         if (!IsElementVisible(modelItem)) continue;
         var descendants = modelItem.DescendantsAndSelf.ToList();
 
-        for (int j = 0; j < descendants.Count; j += 1)
+        for (var j = 0; j < descendants.Count; j += 1)
         {
           var item = descendants[j];
           if (!IsElementVisible(item)) continue;
