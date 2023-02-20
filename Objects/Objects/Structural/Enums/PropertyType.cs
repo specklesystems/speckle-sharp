@@ -80,7 +80,8 @@ namespace Objects.Structural
         Perimeter,
         Box,
         Catalogue,
-        Explicit
+        Explicit,
+        Undefined
     }
 
 }

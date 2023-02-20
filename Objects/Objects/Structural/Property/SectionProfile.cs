@@ -10,7 +10,7 @@ namespace Objects.Structural.Properties.Profiles
   public class SectionProfile : Base //section profile description
   {
     public string name { get; set; }
-    public virtual ShapeType shapeType { get; set; }
+    public virtual ShapeType shapeType { get; set; } = ShapeType.Undefined;
     public double area { get; set; }
     //Moment of inertia about the Major axis
     public double Iyy { get; set; }
