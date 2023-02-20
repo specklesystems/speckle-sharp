@@ -6,14 +6,6 @@ namespace Objects.Converter.Navisworks
 {
   public partial class ConverterNavisworks
   {
-
-    // CAUTION: these strings need to have the same values as in the converter
-    private const string InternalOrigin = "Model Origin (default)";
-    private const string ProxyOrigin = "Project Base Origin";
-    private const string BBoxOrigin = "Boundingbox Origin";
-
-    public static Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
-
     public enum Transforms
     {
       Default,
@@ -21,13 +13,20 @@ namespace Objects.Converter.Navisworks
       BoundingBox
     }
 
+    // CAUTION: these strings need to have the same values as in the converter
+    private const string InternalOrigin = "Model Origin (default)";
+    private const string ProxyOrigin = "Project Base Origin";
+    private const string BBoxOrigin = "Boundingbox Origin";
+
+
+    public static Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
+
+
     public Vector2D ProjectBasePoint
     {
-      get {
-        if (!Settings.ContainsKey("x-coordinate") || !Settings.ContainsKey("y-coordinate"))
-        {
-          return new Vector2D(0, 0);
-        }
+      get
+      {
+        if (!Settings.ContainsKey("x-coordinate") || !Settings.ContainsKey("y-coordinate")) return new Vector2D(0, 0);
 
         var x = Settings["x-coordinate"];
         var y = Settings["y-coordinate"];
@@ -36,7 +35,8 @@ namespace Objects.Converter.Navisworks
       }
     }
 
-    public Transforms ModelTransform {
+    public Transforms ModelTransform
+    {
       get
       {
         if (!Settings.ContainsKey("reference-point")) return Transforms.Default;
@@ -44,8 +44,8 @@ namespace Objects.Converter.Navisworks
 
         switch (value)
         {
-          case ProxyOrigin : return Transforms.ProjectBasePoint;
-          case BBoxOrigin : return Transforms.BoundingBox;
+          case ProxyOrigin: return Transforms.ProjectBasePoint;
+          case BBoxOrigin: return Transforms.BoundingBox;
           default:
             return Transforms.Default;
         }

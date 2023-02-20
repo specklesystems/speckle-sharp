@@ -32,7 +32,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
     // This will happen automatically if a document is newly created or opened.
     private void DocumentChangedEvent(object sender, EventArgs e)
     {
-      Document doc = sender as Document;
+      var doc = sender as Document;
 
       try
       {
