@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
+using Autodesk.Navisworks.Api.ComApi;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks
@@ -103,41 +105,109 @@ namespace Objects.Converter.Navisworks
       return null;
     }
 
+    public static Point ToPoint(InwLPos3f v)
+    {
+      return new Point(v.data1, v.data2, v.data3);
+    }
+
+    public static Vector ToVector(InwLVec3f v)
+    {
+      return new Vector(v.data1, v.data2, v.data3);
+    }
 
     private static Base ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
     {
-      var position = viewpoint.Position;
-      var forward = GetViewDir(viewpoint);
-      var up = viewpoint.HasWorldUpVector
-        ? viewpoint.WorldUpVector
-        : new UnitVector3D(0, 0, 1);
-      var focalDistance = viewpoint.HasFocalDistance
-        ? viewpoint.FocalDistance
-        : 1;
-      var isOrtho = viewpoint.Projection == ViewpointProjection.Orthographic;
-      var target = new Point3D(position.X + forward.X * focalDistance, position.Y + forward.Y * focalDistance,
-        position.Z + forward.Z * focalDistance);
-
       var scaleFactor = UnitConversion.ScaleFactor(Application.ActiveDocument.Units, Units.Meters);
+
+      var vp = viewpoint.CreateCopy();
+      var anonView = ToInwOpAnonView(vp);
+      var viewPoint = anonView.ViewPoint;
+
+      var camera = viewPoint.Camera;
+
+      var viewDirection = ToVector(camera.GetViewDir());
+      var viewUp = ToVector(camera.GetUpVector());
+
+      var focalDistance = viewPoint.FocalDistance;
+
+      var position = ToPoint(camera.Position);
+
+      var origin = ScalePoint(position, scaleFactor);
+      var target = ScalePoint(GetViewTarget(position, viewDirection, focalDistance), scaleFactor);
+
+      string cameraType;
+      string zoom;
+      double zoomValue = 1;
+      
+      switch (vp.Projection)
+      {
+        case ViewpointProjection.Orthographic:
+
+          cameraType = "Orthogonal Camera";
+          zoom = "ViewToWorldScale";
+
+          var dist = vp.VerticalExtentAtFocalDistance / 2 * scaleFactor;
+          zoomValue = 3.125 * dist / viewUp.Length;
+
+          break;
+        case ViewpointProjection.Perspective:
+
+          cameraType = "PerspectiveCamera";
+          zoom = "FieldOfView";
+
+          try
+          {
+            zoomValue = vp.FocalDistance * scaleFactor;
+          }
+          catch (Exception err)
+          {
+            Console.WriteLine($"No Focal Distance, Are you looking at anything?\n{err.Message}");
+          }
+
+          break;
+        default:
+          Console.WriteLine("No View");
+          return null;
+      }
 
       var view = new View3D
       {
         applicationId = name,
         name = name,
-        origin = ScaleViewpointPosition(new Point(position.X, position.Y, position.Z), scaleFactor),
-        target = ScaleViewpointPosition(new Point(target.X, target.Y, target.Z), scaleFactor),
-        upDirection = ToSpeckleVector(up),
-        forwardDirection = ToSpeckleVector(forward),
-        isOrthogonal = isOrtho
+        origin = origin,
+        target = target,
+        upDirection = viewUp,
+        forwardDirection = viewDirection,
+        isOrthogonal = cameraType == "Orthogonal Camera",
+        ["Camera Type"] = cameraType,
+        ["Zoom Strategy"] = zoom,
+        ["Zoom Value"] = zoomValue,
+        ["Field of View"] = camera.HeightField,
+        ["Aspect Ratio"] = camera.AspectRatio,
+        ["Focal Distance"] = focalDistance,
+        // TODO: Handle Clipping planes when the Speckle Viewer supports it or if some smart BCF interop comes into scope.
+        ["Clipping Planes"] = JsonConvert.SerializeObject(anonView.ClippingPlanes())
       };
+
       return view;
     }
 
-    private static Point ScaleViewpointPosition(Point point, double scaleFactor = 1)
+    private static Point ScalePoint(Point cameraPosition, double scaleFactor)
     {
-      var newPoint = new Point(point.x * scaleFactor, point.y * scaleFactor, point.z * scaleFactor);
+      return new Point(
+        cameraPosition.x * scaleFactor,
+        cameraPosition.y * scaleFactor,
+        cameraPosition.z * scaleFactor
+      );
+    }
 
-      return newPoint;
+    private static Point GetViewTarget(Point cameraPosition, Vector viewDirection, double focalDistance)
+    {
+      return new Point(
+        cameraPosition.x + viewDirection.x * focalDistance,
+        cameraPosition.y + viewDirection.y * focalDistance,
+        cameraPosition.z + viewDirection.z * focalDistance
+      );
     }
 
     private static Base ViewpointToBase(SavedViewpoint savedViewpoint)
@@ -147,39 +217,11 @@ namespace Objects.Converter.Navisworks
       return view;
     }
 
-    private static Vector ToSpeckleVector(Vector3D forward)
-    {
-      return new Vector(forward.X, forward.Y, forward.Z);
-    }
-
-    private static Vector3D GetViewDir(Viewpoint vp)
-    {
-      var negZ = new Rotation3D(0, 0, -1, 0);
-      var tempRot = MultiplyRotation3D(negZ, vp.Rotation.Invert());
-      var viewDirRot = MultiplyRotation3D(vp.Rotation, tempRot);
-      var viewDir = new Vector3D(viewDirRot.A, viewDirRot.B, viewDirRot.C);
-      return viewDir.Normalize();
-    }
-
-
-    private static Rotation3D MultiplyRotation3D(Rotation3D first, Rotation3D second)
-    {
-      var result = new Rotation3D(
-        second.D * first.A + second.A * first.D + second.B * first.C - second.C * first.B,
-        second.D * first.B + second.B * first.D + second.C * first.A - second.A * first.C,
-        second.D * first.C + second.C * first.D + second.A * first.B - second.B * first.A,
-        second.D * first.D - second.A * first.A - second.B * first.B - second.C * first.C
-      );
-      result.Normalize();
-      return result;
-    }
-
     private Base ModelItemToBase(ModelItem element)
     {
       var @base = new Base
       {
         applicationId = PseudoIdFromModelItem(element)
-        //["bbox"] = BoxToSpeckle(element.BoundingBox()),
       };
 
 
