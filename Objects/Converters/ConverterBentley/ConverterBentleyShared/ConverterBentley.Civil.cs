@@ -56,7 +56,7 @@ namespace Objects.Converter.Bentley
       CifGM.StationFormatSettings settings = CifGM.StationFormatSettings.GetStationFormatSettingsForModel(Model);
       var stationFormatter = new CifGM.StationingFormatter(alignment);
 
-      _alignment.curves = CurveToSpeckleCurveList(alignment.Element as DisplayableElement, ModelUnits);
+      _alignment.curves = TryCurveToSpeckleCurveList(alignment.Element as DisplayableElement, ModelUnits);
 
       _alignment.profiles = new List<BuiltElements.Profile> { };
 
@@ -190,7 +190,7 @@ namespace Objects.Converter.Bentley
 
           try
           {
-            curves.AddRange(CurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
+            curves.AddRange(TryCurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
             break;
           }
           catch (Exception ex)
@@ -199,7 +199,7 @@ namespace Objects.Converter.Bentley
           }
 
         default:
-          curves.AddRange(CurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
+          curves.AddRange(TryCurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
           break;
       }
 
