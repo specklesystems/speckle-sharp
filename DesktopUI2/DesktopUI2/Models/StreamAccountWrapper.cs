@@ -1,5 +1,6 @@
 ﻿using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.Models
 {

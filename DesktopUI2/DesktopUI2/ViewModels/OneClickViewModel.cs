@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
 {

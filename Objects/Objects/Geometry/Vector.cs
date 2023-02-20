@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Objects.Geometry
 {

@@ -1,5 +1,5 @@
 ﻿using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Archicad
 {

@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Text;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Objects.Other
 {

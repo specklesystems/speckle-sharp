@@ -5,7 +5,7 @@ using System.Collections.ObjectModel;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Collections.Specialized;
 
 namespace DesktopUI2.Models.Filters

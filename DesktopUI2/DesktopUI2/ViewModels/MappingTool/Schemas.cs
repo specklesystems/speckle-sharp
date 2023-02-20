@@ -4,7 +4,7 @@ using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;

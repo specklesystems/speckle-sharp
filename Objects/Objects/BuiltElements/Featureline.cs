@@ -2,7 +2,7 @@
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
 

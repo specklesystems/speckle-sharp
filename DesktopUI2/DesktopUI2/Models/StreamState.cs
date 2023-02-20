@@ -4,10 +4,11 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.Models
 {

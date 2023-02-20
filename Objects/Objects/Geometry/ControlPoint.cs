@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using Objects.Other;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Objects.Geometry
 {

@@ -24,7 +24,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Point = Rhino.Geometry.Point;

@@ -1,7 +1,7 @@
 ﻿using DesktopUI2.Models.Settings;
 using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 

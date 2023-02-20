@@ -7,7 +7,7 @@ using Autodesk.AutoCAD.DatabaseServices;
 
 using DesktopUI2.Models;
 using Speckle.ConnectorAutocadCivil.DocumentUtils;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Speckle.ConnectorAutocadCivil.Storage
 {

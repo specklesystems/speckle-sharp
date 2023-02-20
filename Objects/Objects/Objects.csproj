@@ -1,38 +1,22 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>Objects</RootNamespace>
     <AssemblyName>Objects</AssemblyName>
     <PackageId>Speckle.Objects</PackageId>
-    <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
     <Product>Objects</Product>
     <Version>2.1.1</Version>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>Objects is the default object model for Speckle</Description>
     <PackageTags>speckle objects</PackageTags>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <Copyright>Copyright (c) AEC Systems Ltd and Speckle Contributors</Copyright>
     <Configurations>Debug;Release</Configurations>
     <Platforms>AnyCPU</Platforms>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Private>false</Private>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
   </ItemGroup>
   <PropertyGroup>
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>

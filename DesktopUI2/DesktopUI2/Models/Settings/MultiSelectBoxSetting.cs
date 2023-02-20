@@ -2,7 +2,7 @@
 using Avalonia.Controls.Selection;
 using DesktopUI2.Views.Settings;
 using ReactiveUI;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

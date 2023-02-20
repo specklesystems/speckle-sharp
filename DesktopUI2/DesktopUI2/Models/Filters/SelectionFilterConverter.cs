@@ -1,6 +1,6 @@
 ﻿using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json;
-using Speckle.Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 
 namespace DesktopUI2.Models.Filters

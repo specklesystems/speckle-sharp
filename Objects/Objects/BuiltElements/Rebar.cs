@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using Objects.Structural.Materials;
 
 namespace Objects.BuiltElements

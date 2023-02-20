@@ -1,5 +1,5 @@
 ﻿using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using System;
 
 namespace DesktopUI2.Models

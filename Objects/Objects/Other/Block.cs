@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Objects.Geometry;
 using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 
 namespace Objects.Other
 {

@@ -23,7 +23,7 @@ using System.Threading;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Avalonia.Threading;

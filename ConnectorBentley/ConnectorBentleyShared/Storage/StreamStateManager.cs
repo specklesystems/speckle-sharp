@@ -11,7 +11,7 @@ using Bentley.ECObjects;
 using Bentley.ECObjects.Instance;
 using Bentley.EC.Persistence.Query;
 
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using DesktopUI2.Models;
 
 namespace Speckle.ConnectorBentley.Storage

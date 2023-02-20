@@ -1,4 +1,4 @@
-﻿using Speckle.Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Objects.Geometry;
 using Objects.Structural.Properties;

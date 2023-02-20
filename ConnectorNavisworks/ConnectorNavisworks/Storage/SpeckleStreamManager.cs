@@ -4,7 +4,7 @@ using System.Data;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Data;
 using DesktopUI2.Models;
-using Speckle.Newtonsoft.Json;
+using Newtonsoft.Json;
 using static Speckle.ConnectorNavisworks.Utils;
 
 namespace Speckle.ConnectorNavisworks.Storage
