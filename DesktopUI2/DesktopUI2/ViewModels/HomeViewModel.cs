@@ -291,7 +291,7 @@ namespace DesktopUI2.ViewModels
       catch (Exception ex)
       {
         //FIXME: This branch can't ever get hit right?
-        Log.Error(ex, ex.Message);
+        Log.Error(ex, "Failed updating selected stream {exceptionMessage}",ex.Message);
       }
     }
 
@@ -446,7 +446,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Error(ex, "Swallowing exception {exceptionMessage}", ex.Message);
       }
     }
 
@@ -503,7 +503,10 @@ namespace DesktopUI2.ViewModels
           await AccountManager.UpdateAccounts();
           Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
         }
-        catch { }
+        catch(Exception ex)
+        {
+          Log.Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        }
 
         foreach (var account in Accounts)
         {

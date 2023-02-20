@@ -176,7 +176,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          bool isError = ex is TaskCanceledException || ex.InnerException is TaskCanceledException;
+          bool isError = !(ex is TaskCanceledException || ex.InnerException is TaskCanceledException);
           var logLevel = isError ? LogEventLevel.Error : LogEventLevel.Debug;
           Serilog.Log.Write(logLevel, ex , "Failed to fetch streams {exceptionMessage} for account", ex.Message);
         }

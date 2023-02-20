@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -113,8 +114,8 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.ForContext("imageUrl", url)
-          .Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        Log.ForContext("imageUrl", url)
+          .Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
       }
     }
 
@@ -170,7 +171,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        Log.Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         AvatarUrl = null; // Could not download...
       }

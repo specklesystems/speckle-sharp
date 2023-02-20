@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -90,7 +91,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Fatal(ex, "Could not initialize one click screen {exceptionMessage}",ex.Message);
+        Log.Fatal(ex, "Could not initialize one click screen {exceptionMessage}",ex.Message);
       }
     }
 
@@ -109,8 +110,8 @@ namespace DesktopUI2.ViewModels
       }
       catch(Exception ex)
       {
-        //todo: must handle properly in each connector bindings
-        Serilog.Log.Error(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        //todo: handle properly in each connector bindings
+        Log.Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
       }
 
       //filename is different, might have been renamed or be a different document
@@ -187,7 +188,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Could not send with one click {exceptionMessage}",ex.Message);
+        Log.Error(ex, "Could not send with one click {exceptionMessage}",ex.Message);
       }
 
       if (HomeViewModel.Instance != null)
@@ -233,7 +234,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.ForContext("fileName", _fileName)
+        Log.ForContext("fileName", _fileName)
           .Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
       }
       return stream;
