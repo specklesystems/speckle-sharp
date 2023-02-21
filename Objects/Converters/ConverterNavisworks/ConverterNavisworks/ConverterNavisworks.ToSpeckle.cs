@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.ComApi;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
+// ReSharper disable RedundantExplicitArraySize
 
 namespace Objects.Converter.Navisworks
 {
@@ -138,7 +138,7 @@ namespace Objects.Converter.Navisworks
       string cameraType;
       string zoom;
       double zoomValue = 1;
-      
+
       switch (vp.Projection)
       {
         case ViewpointProjection.Orthographic:
@@ -219,10 +219,7 @@ namespace Objects.Converter.Navisworks
 
     private Base ModelItemToBase(ModelItem element)
     {
-      var @base = new Base
-      {
-        applicationId = PseudoIdFromModelItem(element)
-      };
+      var @base = new Base { applicationId = PseudoIdFromModelItem(element) };
 
 
       if (element.HasGeometry)
