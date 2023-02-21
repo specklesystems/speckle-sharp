@@ -1,5 +1,4 @@
 ﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -380,7 +379,7 @@ namespace Objects.Converter.Revit
             return FreeformElementToNativeFamily(o);
           case Geometry.Mesh o:
             return FreeformElementToNativeFamily(o);
-          case FreeformElement o:
+          case BER.FreeformElement o:
             return FreeformElementToNative(o);
           default:
             return null;
@@ -653,7 +652,7 @@ namespace Objects.Converter.Revit
           ICurve _ => true,
           Geometry.Brep _ => true,
           Geometry.Mesh _ => true,
-          FreeformElement _ => true,
+          BER.FreeformElement _ => true,
           _ => false
         };
       }

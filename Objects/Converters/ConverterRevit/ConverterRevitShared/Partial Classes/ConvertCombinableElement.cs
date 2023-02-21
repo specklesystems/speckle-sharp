@@ -13,7 +13,14 @@ namespace Objects.Converter.Revit
     {
       var cat = ((BuiltInCategory)combinableElement.Document.OwnerFamily.FamilyCategoryId.IntegerValue).ToString();
 
-      var element = combinableElement.get_Geometry(new Options());
+      Options options = new Options();
+      if (combinableElement is GenericForm gf && gf.Combinations.Size != 0)
+      {
+        //for receive and convert to native
+        options.IncludeNonVisibleObjects = true;
+      }
+
+      var element = combinableElement.get_Geometry(options);
       var geometries = new List<Base>();
       foreach (var obj in element)
       {
@@ -30,6 +37,8 @@ namespace Objects.Converter.Revit
       var speckleForm = new FreeformElement();
       speckleForm.subcategory = cat;
       speckleForm["type"] = combinableElement.Name;
+      speckleForm.baseGeometries = new List<Base>();
+
       if (combinableElement is GenericForm)
       {
         speckleForm.baseGeometries = geometries;
