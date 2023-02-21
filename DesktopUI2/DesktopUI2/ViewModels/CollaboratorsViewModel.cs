@@ -371,7 +371,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Debug(ex, "Swallowing Exception {exceptionMessage}", ex.Message);
+        Log.Warning(ex, "Swallowing Exception {exceptionMessage}", ex.Message);
       }
 
       if (IsDialog)

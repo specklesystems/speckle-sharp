@@ -171,7 +171,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        Log.Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         AvatarUrl = null; // Could not download...
       }
