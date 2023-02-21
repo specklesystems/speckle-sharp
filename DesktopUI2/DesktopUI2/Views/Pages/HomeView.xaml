@@ -76,6 +76,7 @@
         <Menu
           Grid.Column="5"
           VerticalAlignment="Center"
+          IsEnabled="{Binding !InProgress}"
           Items="{Binding MenuItems}">
           <Menu.Styles>
             <Style Selector="MenuItem">

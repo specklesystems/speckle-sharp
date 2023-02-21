@@ -1,12 +1,12 @@
-﻿using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
-using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 using Objects.BuiltElements;
 using Objects.Geometry;
+using Speckle.Core.Models;
+using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks
 {
@@ -45,7 +45,7 @@ namespace Objects.Converter.Navisworks
           var list = element.DescendantsAndSelf.Select(x =>
             ((Array)ToInwOaPath(x).ArrayData)
             .ToArray<int>().Aggregate("",
-              (current, value) => current + (value.ToString().PadLeft(4, '0') + "-")).TrimEnd('-')).ToList();
+              (current, value) => current + value.ToString().PadLeft(4, '0') + "-").TrimEnd('-')).ToList();
           @base["__convertedIds"] = list;
 
           return @base;
@@ -72,16 +72,33 @@ namespace Objects.Converter.Navisworks
       }
     }
 
+
+    public List<Base> ConvertToSpeckle(List<object> objects)
+    {
+      return objects.Where(CanConvertToSpeckle)
+        .Select(ConvertToSpeckle)
+        .ToList();
+    }
+
+    public bool CanConvertToSpeckle(object @object)
+    {
+      if (@object is ModelItem modelItem) return CanConvertToSpeckle(modelItem);
+
+      // is expecting @object to be a pseudoId string
+      if (!(@object is string pseudoId)) return false;
+
+      var item = PointerToModelItem(pseudoId);
+
+      return CanConvertToSpeckle(item);
+    }
+
     private SavedViewpoint ReferenceToSavedViewpoint(string referenceId)
     {
       var reference = referenceId.Split(':');
 
       var savedItemReference = Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
 
-      if (savedItemReference != null)
-      {
-        return (SavedViewpoint)savedItemReference;
-      }
+      if (savedItemReference != null) return (SavedViewpoint)savedItemReference;
 
       return null;
     }
@@ -91,39 +108,43 @@ namespace Objects.Converter.Navisworks
     {
       var position = viewpoint.Position;
       var forward = GetViewDir(viewpoint);
-      var up = viewpoint.HasWorldUpVector ? viewpoint.WorldUpVector : new UnitVector3D(0, 0, 1);
-      var focalDistance = viewpoint.HasFocalDistance ? viewpoint.FocalDistance : 1;
+      var up = viewpoint.HasWorldUpVector
+        ? viewpoint.WorldUpVector
+        : new UnitVector3D(0, 0, 1);
+      var focalDistance = viewpoint.HasFocalDistance
+        ? viewpoint.FocalDistance
+        : 1;
       var isOrtho = viewpoint.Projection == ViewpointProjection.Orthographic;
       var target = new Point3D(position.X + forward.X * focalDistance, position.Y + forward.Y * focalDistance,
         position.Z + forward.Z * focalDistance);
 
       var scaleFactor = UnitConversion.ScaleFactor(Application.ActiveDocument.Units, Units.Meters);
 
-      var @view = new View3D
+      var view = new View3D
       {
         applicationId = name,
         name = name,
-        origin = ScaleViewpointPosition( new Point(position.X, position.Y, position.Z),scaleFactor),
-        target = ScaleViewpointPosition(new Point(target.X, target.Y, target.Z),scaleFactor),
+        origin = ScaleViewpointPosition(new Point(position.X, position.Y, position.Z), scaleFactor),
+        target = ScaleViewpointPosition(new Point(target.X, target.Y, target.Z), scaleFactor),
         upDirection = ToSpeckleVector(up),
         forwardDirection = ToSpeckleVector(forward),
         isOrthogonal = isOrtho
       };
-      return @view;
+      return view;
     }
 
     private static Point ScaleViewpointPosition(Point point, double scaleFactor = 1)
     {
       var newPoint = new Point(point.x * scaleFactor, point.y * scaleFactor, point.z * scaleFactor);
-      
+
       return newPoint;
     }
 
     private static Base ViewpointToBase(SavedViewpoint savedViewpoint)
     {
-      var @view = ViewpointToBase(savedViewpoint.Viewpoint, savedViewpoint.DisplayName);
+      var view = ViewpointToBase(savedViewpoint.Viewpoint, savedViewpoint.DisplayName);
 
-      return @view;
+      return view;
     }
 
     private static Vector ToSpeckleVector(Vector3D forward)
@@ -157,11 +178,10 @@ namespace Objects.Converter.Navisworks
     {
       var @base = new Base
       {
-        applicationId = PseudoIdFromModelItem(element),
+        applicationId = PseudoIdFromModelItem(element)
         //["bbox"] = BoxToSpeckle(element.BoundingBox()),
       };
 
-      
 
       if (element.HasGeometry)
       {
@@ -170,10 +190,7 @@ namespace Objects.Converter.Navisworks
         PopulateModelFragments(geometry);
         var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
-        if (fragmentGeometry != null && fragmentGeometry.Any())
-        {
-          @base["displayValue"] = fragmentGeometry;
-        }
+        if (fragmentGeometry != null && fragmentGeometry.Any()) @base["displayValue"] = fragmentGeometry;
       }
 
       if (element.Children.Any())
@@ -183,65 +200,30 @@ namespace Objects.Converter.Navisworks
         @base["@Elements"] = convertedChildren.ToList();
       }
 
-      if (element.ClassDisplayName != null)
-      {
-        @base["ClassDisplayName"] = element.ClassDisplayName;
-      }
+      if (element.ClassDisplayName != null) @base["ClassDisplayName"] = element.ClassDisplayName;
 
-      if (element.ClassName != null)
-      {
-        @base["ClassName"] = element.ClassName;
-      }
+      if (element.ClassName != null) @base["ClassName"] = element.ClassName;
 
-      if (element.Model != null)
-      {
-        @base["Creator"] = element.Model.Creator;
-      }
+      if (element.Model != null) @base["Creator"] = element.Model.Creator;
 
-      if (element.DisplayName != null)
-      {
-        @base["DisplayName"] = element.DisplayName;
-      }
+      if (element.DisplayName != null) @base["DisplayName"] = element.DisplayName;
 
-      if (element.Model != null)
-      {
-        @base["Filename"] = element.Model.FileName;
-      }
+      if (element.Model != null) @base["Filename"] = element.Model.FileName;
 
       if (element.InstanceGuid.ToByteArray().Select(x => (int)x).Sum() > 0)
-      {
         @base["InstanceGuid"] = element.InstanceGuid;
-      }
 
-      if (element.IsCollection)
-      {
-        @base["NodeType"] = "Collection";
-      }
+      if (element.IsCollection) @base["NodeType"] = "Collection";
 
-      if (element.IsComposite)
-      {
-        @base["NodeType"] = "Composite Object";
-      }
+      if (element.IsComposite) @base["NodeType"] = "Composite Object";
 
-      if (element.IsInsert)
-      {
-        @base["NodeType"] = "Geometry Insert";
-      }
+      if (element.IsInsert) @base["NodeType"] = "Geometry Insert";
 
-      if (element.IsLayer)
-      {
-        @base["NodeType"] = "Layer";
-      }
+      if (element.IsLayer) @base["NodeType"] = "Layer";
 
-      if (element.Model != null)
-      {
-        @base["Source"] = element.Model.SourceFileName;
-      }
+      if (element.Model != null) @base["Source"] = element.Model.SourceFileName;
 
-      if (element.Model != null)
-      {
-        @base["Source Guid"] = element.Model.SourceGuid;
-      }
+      if (element.Model != null) @base["Source Guid"] = element.Model.SourceGuid;
 
       var propertiesBase = GetPropertiesBase(element, ref @base);
 
@@ -250,25 +232,9 @@ namespace Objects.Converter.Navisworks
       return @base;
     }
 
-
-    public List<Base> ConvertToSpeckle(List<object> objects) =>
-      objects.Where(CanConvertToSpeckle)
-        .Select(ConvertToSpeckle)
-        .ToList();
-
-    public List<Base> ConvertToSpeckle(List<ModelItem> modelItems) =>
-      modelItems.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
-
-    public bool CanConvertToSpeckle(object @object)
+    public List<Base> ConvertToSpeckle(List<ModelItem> modelItems)
     {
-      if (@object is ModelItem modelItem) return CanConvertToSpeckle(modelItem);
-
-      // is expecting @object to be a pseudoId string
-      if (!(@object is string pseudoId)) return false;
-
-      var item = PointerToModelItem(pseudoId);
-
-      return CanConvertToSpeckle(item);
+      return modelItems.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
     }
 
     private static bool CanConvertToSpeckle(ModelItem item)
