@@ -329,7 +329,7 @@ namespace Objects.Converter.Revit
     private View GetCurvePlanView(RoomBoundaryLine speckleCurve)
     {
       View drawingView = Doc.ActiveView;
-      Level level = ConvertLevelToRevit(speckleCurve.level, out ApplicationObject.State levelState);
+      Level level = ConvertLevelToRevit(speckleCurve.level, out var _);
       ElementId viewId = level?.FindAssociatedPlanViewId();
 
       // If there is a plan view associated to the curve level use it otherwise use the activeView
