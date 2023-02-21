@@ -22,7 +22,7 @@ namespace TestsIntegration
           Serilog.Events.LogEventLevel.Debug,
           logToConsole: true,
           logToFile: false,
-          logToSeq: false
+          logToSeq: true
         )
       );
       Log.Information("Initialized logger for testing");

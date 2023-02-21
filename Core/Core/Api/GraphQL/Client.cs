@@ -188,7 +188,7 @@ namespace Speckle.Core.Api
         // anything else related to graphql gets logged
         catch (SpeckleGraphQLException<T> gqlException)
         {
-          Log.ForContext("grapqlResponse", gqlException.Response)
+          Log.ForContext("graphqlResponse", gqlException.Response)
             .ForContext("graphqlExtensions", gqlException.Extensions)
             .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
             .Warning(
@@ -206,7 +206,7 @@ namespace Speckle.Core.Api
         {
           Log.Warning(
             ex,
-            "Execution of the grapql request to get {resultType} failed without a grapql response. Cause {exceptionMessage}",
+            "Execution of the graphql request to get {resultType} failed without a graphql response. Cause {exceptionMessage}",
             typeof(T).Name,
             ex.Message
           );
@@ -225,7 +225,7 @@ namespace Speckle.Core.Api
           timer.Stop();
           var status = success ? "succeeded" : "failed";
           Log.Information(
-            "Execution of grapql request to get {resultType} {resultStatus} after {elapsed} seconds",
+            "Execution of graphql request to get {resultType} {resultStatus} after {elapsed} seconds",
             typeof(T).Name,
             status,
             timer.Elapsed.TotalSeconds
@@ -310,7 +310,7 @@ namespace Speckle.Core.Api
               // anything else related to graphql gets logged
               catch (SpeckleGraphQLException<T> gqlException)
               {
-                Log.ForContext("grapqlResponse", gqlException.Response)
+                Log.ForContext("graphqlResponse", gqlException.Response)
                   .ForContext("graphqlExtensions", gqlException.Extensions)
                   .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
                   .Warning(
@@ -346,7 +346,7 @@ namespace Speckle.Core.Api
         {
           Log.Warning(
             ex,
-            "Subscribing to grapql {resultType} failed without a grapql response. Cause {exceptionMessage}",
+            "Subscribing to graphql {resultType} failed without a graphql response. Cause {exceptionMessage}",
             typeof(T).Name,
             ex.Message
           );
