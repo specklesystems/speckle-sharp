@@ -1,4 +1,5 @@
-﻿using System;
+﻿# nullable enable
+using System;
 using System.Collections.Specialized;
 using System.Net.Http;
 using System.Net.WebSockets;
@@ -19,6 +20,9 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using Serilog.Context;
+using Serilog.Core;
+using Serilog.Core.Enrichers;
+using System.Dynamic;
 
 namespace Speckle.Core.Api
 {
@@ -160,8 +164,7 @@ namespace Speckle.Core.Api
       CancellationToken? cancellationToken
     )
     {
-      using (LogContext.PushProperty("graphqlRequest", request))
-      using (LogContext.PushProperty("resultType", typeof(T).Name))
+      using (LogContext.Push(_createEnrichers<T>(request)))
       {
         Log.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
         var timer = new Stopwatch();
@@ -274,10 +277,46 @@ namespace Speckle.Core.Api
       }
     }
 
+    private Dictionary<string, object?> _convertExpandoToDict(ExpandoObject expando)
+    {
+      var variables = new Dictionary<string, object?>();
+      foreach (KeyValuePair<string, object> kvp in expando)
+      {
+        object value;
+        if (kvp.Value is ExpandoObject ex)
+        {
+          value = _convertExpandoToDict(ex);
+        }
+        else
+        {
+          value = kvp.Value;
+        }
+        variables[kvp.Key] = value;
+      }
+      return variables;
+    }
+
+    private ILogEventEnricher[] _createEnrichers<T>(GraphQLRequest request)
+    {
+      // i know this is double  (de)serializing, but we need a recursive convert to
+      // dict<str, object> here
+      var expando = JsonConvert.DeserializeObject<ExpandoObject>(
+        JsonConvert.SerializeObject(request.Variables)
+      );
+      var variables =
+        request.Variables != null && expando != null ? _convertExpandoToDict(expando) : null;
+      return new ILogEventEnricher[]
+      {
+        new PropertyEnricher("serverUrl", ServerUrl),
+        new PropertyEnricher("graphqlQuery", request.Query),
+        new PropertyEnricher("graphqlVariables", variables),
+        new PropertyEnricher("resultType", typeof(T).Name)
+      };
+    }
+
     internal IDisposable SubscribeTo<T>(GraphQLRequest request, Action<object, T> callback)
     {
-      using (LogContext.PushProperty("graphqlRequest", request))
-      using (LogContext.PushProperty("resultType", typeof(T).Name))
+      using (LogContext.Push(_createEnrichers<T>(request)))
       {
         try
         {
