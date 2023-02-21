@@ -1,6 +1,7 @@
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
@@ -38,7 +39,7 @@ namespace Objects.Converter.Revit
             }
             break;
           case Objects.Geometry.Mesh mesh:
-            var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+            var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort, mesh["renderMaterial"] as RenderMaterial)
                 .Select(m => m as DB.Solid);
             solids.AddRange(meshSolids);
             break;
