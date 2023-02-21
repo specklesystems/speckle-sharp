@@ -1,5 +1,6 @@
 #nullable enable
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using GraphQL;
@@ -13,21 +14,37 @@ namespace Speckle.Core.Api
   public class SpeckleGraphQLException<T> : SpeckleException
   {
     private GraphQLRequest _request;
-    private GraphQLResponse<T> _response;
+    public GraphQLResponse<T>? Response;
 
     public IEnumerable<string> ErrorMessages =>
-      _response.Errors != null ? _response.Errors.Select(e => e.Message) : new string[] { };
-    public IDictionary<string, object>? Extensions => _response.Extensions;
+      Response?.Errors != null ? Response.Errors.Select(e => e.Message) : new string[] { };
+    public IDictionary<string, object>? Extensions => Response?.Extensions;
 
     public SpeckleGraphQLException(
       string message,
       GraphQLRequest request,
-      GraphQLResponse<T> response
+      GraphQLResponse<T>? response
     ) : base(message)
     {
       _request = request;
-      _response = response;
+      Response = response;
     }
+
+    public SpeckleGraphQLException(
+      string message,
+      Exception inner,
+      GraphQLRequest request,
+      GraphQLResponse<T>? response
+    ) : base(message, inner) { }
+  }
+
+  public class SpeckleGraphQLException : SpeckleGraphQLException<object>
+  {
+    public SpeckleGraphQLException(
+      string message,
+      GraphQLRequest request,
+      GraphQLResponse<object>? response
+    ) : base(message, request, response) { }
   }
 
   /// <summary>
