@@ -1,4 +1,4 @@
-using Objects.Other;
+﻿using Objects.Other;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
@@ -47,51 +47,62 @@ namespace Objects.Converter.RhinoGh
       return attributes;
     }
 
-    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes)
+    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes, Layer layer = null)
     {
-      var style = new DisplayStyle();
-
-      // color
-      switch (attributes.ColorSource)
-      {
-        case ObjectColorSource.ColorFromObject:
-          style.color = attributes.ObjectColor.ToArgb();
-          break;
-        case ObjectColorSource.ColorFromMaterial:
-          style.color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
-          break;
-        default: // use layer color as default
-          style.color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
-          break;
-      }
-
-      // line type
+      var style = new DisplayStyle() { units = Units.Millimeters};
+      int color = Color.LightGray.ToArgb();
       Linetype lineType = null;
-      switch (attributes.LinetypeSource)
-      {
-        case ObjectLinetypeSource.LinetypeFromObject:
-          lineType = Doc.Linetypes[attributes.LinetypeIndex];
-          break;
-        default: // use layer linetype as default
-          lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
-          break;
-      }
-      if (lineType.HasName)
-        style.linetype = lineType.Name;
+      double lineWeight = 0;
 
-      // line weight
-      switch (attributes.PlotWeightSource)
+      // use layer attributes if a layer is provided
+      if (layer != null)
       {
-        case ObjectPlotWeightSource.PlotWeightFromObject:
-          style.lineweight = attributes.PlotWeight;
-          break;
-        default: // use layer lineweight as default
-          style.lineweight = Doc.Layers[attributes.LayerIndex].PlotWeight;
-          break;
+        color = layer.Color.ToArgb();
+        lineType = Doc.Linetypes[layer.LinetypeIndex];
+        lineWeight = layer.PlotWeight;
       }
-      if (style.lineweight == 0) style.lineweight = 0.25;
+      else
+      {
+        // color
+        switch (attributes.ColorSource)
+        {
+          case ObjectColorSource.ColorFromObject:
+            color = attributes.ObjectColor.ToArgb();
+            break;
+          case ObjectColorSource.ColorFromMaterial:
+            color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
+            break;
+          default: // use layer color as default
+            color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
+            break;
+        }
 
-      style.units = Units.Millimeters;
+        // line type
+        switch (attributes.LinetypeSource)
+        {
+          case ObjectLinetypeSource.LinetypeFromObject:
+            lineType = Doc.Linetypes[attributes.LinetypeIndex];
+            break;
+          default: // use layer linetype as default
+            lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
+            break;
+        }
+
+        // line weight
+        switch (attributes.PlotWeightSource)
+        {
+          case ObjectPlotWeightSource.PlotWeightFromObject:
+            lineWeight = attributes.PlotWeight;
+            break;
+          default: // use layer lineweight as default
+            lineWeight = Doc.Layers[attributes.LayerIndex].PlotWeight;
+            break;
+        }
+      }
+
+      style.color = color;
+      style.lineweight = lineWeight;
+      style.linetype = lineType?.Name ?? "Default";
 
       return style;
     }

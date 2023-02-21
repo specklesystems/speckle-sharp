@@ -37,6 +37,8 @@ namespace SpeckleRhino
     private static string UserStrings = "userStrings";
     private static string UserDictionary = "userDictionary";
     private static string ApplicationIdKey = "applicationId";
+    private static string LayersString = "Layers";
+    private static string ElementsString = "elements";
 
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
     public Dictionary<string, Base> StoredObjectParams = new Dictionary<string, Base>(); // these are to store any parameters found on parent objects to add to fallback objects
@@ -163,7 +165,7 @@ namespace SpeckleRhino
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var layers = Doc.Layers.ToList().Where(layer => !layer.IsDeleted).Select(layer => layer.FullPath).ToList();
-      var projectInfo = new List<string> { "Named Views", "Standard Views" };
+      var projectInfo = new List<string> { "Named Views", "Standard Views", "Layers" };
 
       return new List<ISelectionFilter>()
       {
@@ -962,13 +964,17 @@ namespace SpeckleRhino
 
       progress.Max = state.SelectedObjectIds.Count;
 
+      // store converted commit objects and layers by layer paths
+      var commitLayerObjects = new Dictionary<string, List<Base>>();
+      var commitLayers = new Dictionary<string, Layer>();
+
+      // convert all commit objs
       foreach (var guid in state.SelectedObjectIds)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
           return null;
 
         Base converted = null;
-        string containerName = string.Empty;
 
         // applicationId can either be doc obj/view guid or name of a NamedView
         RhinoObject obj = null;
@@ -1023,13 +1029,15 @@ namespace SpeckleRhino
             continue;
           }
 
-          if (obj is InstanceObject)
-            containerName = "Blocks";
+          var layer = Doc.Layers[obj.Attributes.LayerIndex];
+          if (commitLayerObjects.ContainsKey(layer.FullPath))
+          {
+            commitLayerObjects[layer.FullPath].Add(converted); 
+          }
           else
           {
-            var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
-            string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
-            containerName = cleanLayerPath;
+            commitLayerObjects.Add(layer.FullPath, new List<Base>() { converted });
+            commitLayers.Add(layer.FullPath, layer);
           }
         }
         else if (isView)
@@ -1044,17 +1052,17 @@ namespace SpeckleRhino
             progress.Report.Log(reportObj);
             continue;
           }
-          containerName = viewIndex != -1 ? "Named Views" : "Standard Views";
+          var containerName = viewIndex != -1 ? "Named Views" : "Standard Views";
+
+          if (commitObject[$"@{containerName}"] == null)
+            commitObject[$"@{containerName}"] = new List<Base>();
+          ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
         }
         else
         {
           progress.Report.LogOperationError(new Exception($"Failed to find doc object ${guid}."));
           continue;
         }
-
-        if (commitObject[$"@{containerName}"] == null)
-          commitObject[$"@{containerName}"] = new List<Base>();
-        ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
@@ -1074,6 +1082,68 @@ namespace SpeckleRhino
 
         objCount++;
       }
+
+      #region layer handling
+      // convert layers as collections and attach all layer objects
+      var commitCollections = new Dictionary<string, Base>();
+      foreach (var layerPath in commitLayers.Keys)
+      {
+        var collection = converter.ConvertToSpeckle(commitLayers[layerPath]);
+        if (collection != null)
+        {
+          collection[$"@{ElementsString}"] = commitLayerObjects[layerPath];
+          commitCollections.Add(layerPath, collection);
+        }
+      }
+
+      // attach children collections to their parents and the base commit
+      var orderedPaths = commitCollections.Keys.OrderByDescending(path => path.Count(c => c == ':')).ToList(); // this ensures we attach children collections first
+      if (commitObject[$"@{LayersString}"] == null)
+      {
+        commitObject[$"@{LayersString}"] = new List<Base>();
+      }
+      var processedPaths = new List<string>();
+      foreach (var path in orderedPaths)
+      {
+        var collection = commitCollections[path];
+        FindParent(path);
+
+        void FindParent(string childPath)
+        {
+          if (processedPaths.Contains(childPath)) // skip if this path has already been processed
+          {
+            return;
+          }
+          var parentIndex = childPath.LastIndexOf(Layer.PathSeparator);
+          if (parentIndex == -1) // this should be attached to base commit directly
+          {
+            ((List<Base>)commitObject[$"@{LayersString}"]).Add(collection);
+            processedPaths.Add(childPath);
+            processedPaths.Add(childPath);
+          }
+          else
+          {
+            var parentPath = childPath.Substring(0, parentIndex);
+            Base parent = null;
+            if (commitCollections.ContainsKey(parentPath)) // add child collection to elements prop on parent collection
+            {
+              parent = commitCollections[parentPath];
+            }
+            else // create the parent collection
+            {
+              var parentLayer = Doc.GetLayer(parentPath);
+              parent = converter.ConvertToSpeckle(parentLayer);
+              commitCollections.Add(parentPath, parent);
+            }
+            // add child collection to elements prop on parent collection
+            ((List<Base>)parent[$"@{ElementsString}"]).Add(commitCollections[childPath]);
+            processedPaths.Add(childPath);
+
+            FindParent(parentPath);
+          }
+        }
+      }
+      #endregion
 
       progress.Report.Merge(converter.Report);
 
@@ -1168,6 +1238,8 @@ namespace SpeckleRhino
             objs.AddRange(Doc.StandardViews());
           if (filter.Selection.Contains("Named Views"))
             objs.AddRange(Doc.NamedViews());
+          if (filter.Selection.Contains("Layers"))
+            objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()).ToList());
           break;
         default:
           //RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
@@ -1194,6 +1266,7 @@ namespace SpeckleRhino
       }
       return null;
     }
+
     /// <summary>
     /// Copies a Base to an ArchivableDictionary
     /// </summary>

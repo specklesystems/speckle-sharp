@@ -2,25 +2,30 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+
+using Rhino;
+using Rhino.Display;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using RH = Rhino.Geometry;
 using Grasshopper.Kernel.Types;
+
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
+
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
-using Rhino;
-using Rhino.Display;
-using Rhino.DocObjects;
-using Rhino.Geometry;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
+using Collection = Objects.Organization.Collection;
 using Curve = Objects.Geometry.Curve;
 using Dimension = Objects.Other.Dimension;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
@@ -33,7 +38,6 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
-using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Text = Objects.Other.Text;
@@ -133,7 +137,6 @@ namespace Objects.Converter.RhinoGh
       var notes = new List<string>();
       try
       {
-
         if (@object is RhinoObject ro)
         {
           var applicationId = ro.Attributes.GetUserString(ApplicationIdKey) ?? ro.Id.ToString();
@@ -271,6 +274,9 @@ namespace Objects.Converter.RhinoGh
             break;
           case Rhino.Geometry.Dimension o:
             @base = DimensionToSpeckle(o);
+            break;
+          case Layer o:
+            @base = LayerToSpeckle(o);
             break;
           default:
             if (reportObj != null)
@@ -830,6 +836,7 @@ namespace Objects.Converter.RhinoGh
         case InstanceObject _:
         case TextEntity _:
         case RH.Dimension _:
+        case Layer _:
           return true;
 #endif
         default:
