@@ -10,6 +10,7 @@ using Splat;
 using System;
 using System.Linq;
 using System.Reactive;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -113,9 +114,9 @@ namespace DesktopUI2.ViewModels
     }
 
     //https://github.com/AvaloniaUI/Avalonia/issues/5290
-    private void CatchReactiveException(Exception e)
+    private void CatchReactiveException(Exception ex)
     {
-      Log.CaptureException(e, Sentry.SentryLevel.Error);
+      Log.Error(ex, ex.Message);
     }
 
 

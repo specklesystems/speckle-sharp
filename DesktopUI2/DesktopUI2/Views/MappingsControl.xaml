@@ -76,7 +76,25 @@
               Foreground="White"
               Text="{Binding Version}"
               TextTrimming="CharacterEllipsis" />
-
+            <m:FloatingButton
+              Grid.Column="3"
+              VerticalAlignment="Center"
+              assists:ShadowAssist.ShadowDepth="Depth0"
+              Background="Transparent"
+              Classes="Mini"
+              Command="{Binding FeedbackCommand}"
+              ToolTip.Tip="Feedback">
+              <Button.Content>
+                <Grid>
+                  <icons:MaterialIcon
+                    Width="15"
+                    Height="15"
+                    assists:ShadowAssist.ShadowDepth="0"
+                    Foreground="White"
+                    Kind="Feedback" />
+                </Grid>
+              </Button.Content>
+            </m:FloatingButton>
 
           </Grid>
         </Border>
@@ -89,6 +107,50 @@
                 Margin="10"
                 Orientation="Vertical"
                 Spacing="10">
+                <!--  SELECT ELEMENTS  -->
+                <m:Card Padding="0">
+                  <StackPanel Orientation="Vertical">
+                    <StackPanel
+                      Margin="15"
+                      Orientation="Vertical"
+                      Spacing="5">
+
+                      <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                        <icons:MaterialIcon
+                          VerticalAlignment="Center"
+                          Foreground="Gray"
+                          Kind="InfoCircle"
+                          ToolTip.Tip="Select objects in your model to apply mappings to" />
+                        <TextBlock
+                          Margin="5,0"
+                          VerticalAlignment="Center"
+                          Classes="Overline"
+                          Foreground="Gray"
+                          Text="1. SELECT ELEMENTS" />
+                      </StackPanel>
+
+                      <StackPanel Orientation="Vertical" Spacing="5">
+                        <StackPanel Margin="5" Orientation="Horizontal">
+                          <TextBlock Classes="Caption" Text="Selected elements: " />
+                          <TextBlock Classes="Caption" Text="{Binding Count}" />
+                        </StackPanel>
+                        <StackPanel Margin="5" Orientation="Horizontal">
+                          <TextBlock
+                            VerticalAlignment="Center"
+                            Classes="Overline"
+                            Text="For a list of supported geometries check our" />
+                          <Button
+                            Padding="5"
+                            Classes="Hyperlink Flat Mini"
+                            Command="{Binding OpenGuideCommand}"
+                            Content="guide." />
+                        </StackPanel>
+                      </StackPanel>
+                    </StackPanel>
+                  </StackPanel>
+                </m:Card>
+
+                <!--  SELECT MAPPINGS  -->
                 <m:Card Padding="0">
                   <!--  NEW MAPPINGS  -->
                   <StackPanel Orientation="Vertical">
@@ -103,13 +165,13 @@
                           VerticalAlignment="Center"
                           Foreground="Gray"
                           Kind="InfoCircle"
-                          ToolTip.Tip="Select a stream coming from Revit with types and levels&#x0a;then select some objects.&#x0a;&#x0a;CURRENT MAPPINGS:&#x0a;DirectShape from Brep and Mesh&#x0a;Wall from Extrusion&#x0a;Beam/Brace from Line&#x0a;Family Instance from Point or Block" />
+                          ToolTip.Tip="Select a stream coming from Revit with types and levels" />
                         <TextBlock
                           Margin="5,0"
                           VerticalAlignment="Center"
                           Classes="Overline"
                           Foreground="Gray"
-                          Text="SELECTED ELEMENTS" />
+                          Text="2. SELECT A MAPPING SOURCE (optional)" />
                       </StackPanel>
 
                       <!--  SET STREAM AND ELEMENT TYPE  -->
@@ -125,13 +187,55 @@
                             <TextBlock
                               Classes="SpeckleFont"
                               IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNull}}"
-                              Text="Select Mapping Source" />
+                              Text="Choose Stream" />
                             <StackPanel IsVisible="{Binding SelectedStream, Converter={x:Static ObjectConverters.IsNotNull}}" Orientation="Horizontal">
                               <TextBlock Classes="SpeckleFont" Text="Stream: " />
                               <TextBlock Classes="SpeckleFont" Text="{Binding SelectedStream.Stream.name}" />
                             </StackPanel>
                           </Grid>
                         </Button>
+                        <TextBlock
+                          Margin="5"
+                          VerticalAlignment="Center"
+                          Classes="Overline"
+                          Text="Use a mapping source to pick the right types and levels for your elements." />
+                      </StackPanel>
+
+
+
+
+                    </StackPanel>
+                  </StackPanel>
+                </m:Card>
+
+                <m:Card Padding="0">
+                  <!--  NEW MAPPINGS  -->
+                  <StackPanel Orientation="Vertical">
+                    <StackPanel
+                      Margin="15"
+                      Orientation="Vertical"
+                      Spacing="5">
+
+                      <StackPanel Margin="0,0,0,5" Orientation="Horizontal">
+                        <icons:MaterialIcon
+                          VerticalAlignment="Center"
+                          Foreground="Gray"
+                          Kind="InfoCircle"
+                          ToolTip.Tip="Available types are shown based on the current selection" />
+                        <TextBlock
+                          Margin="5,0"
+                          VerticalAlignment="Center"
+                          Classes="Overline"
+                          Foreground="Gray"
+                          Text="3. APPLY MAPPINGS" />
+                      </StackPanel>
+
+                      <!--  SET STREAM AND ELEMENT TYPE  -->
+                      <StackPanel
+                        IsVisible="{Binding RevitViewModels.Count}"
+                        Orientation="Vertical"
+                        Spacing="5">
+
                         <ComboBox
                           Grid.Row="2"
                           assists:ComboBoxAssist.Label="Revit Element to Map"
@@ -150,9 +254,8 @@
                           </ComboBox.ItemTemplate>
                         </ComboBox>
                         <TextBlock
-                          Margin="5,10"
+                          Margin="5"
                           Classes="Overline"
-                          Foreground="Gray"
                           IsVisible="{Binding PromptMsg, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                           Text="{Binding PromptMsg}"
                           TextWrapping="Wrap" />
@@ -162,6 +265,13 @@
                       <!--  DYNAMIC PROPERTIES  -->
                       <ContentControl Content="{Binding SelectedSchema}" IsVisible="{Binding SelectedSchema, Converter={x:Static ObjectConverters.IsNotNull}}">
                         <ContentControl.DataTemplates>
+                          <!--  Default = empty  -->
+                          <DataTemplate DataType="{x:Type s:RevitDefaultWallViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultBeamViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultBraceViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultColumnViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultPipeViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultDuctViewModel}" />
                           <!--  DATA TEMPLATES FOR OUR SCHEMAS  -->
                           <!--  WALL  -->
                           <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
@@ -220,27 +330,19 @@
                               IsChecked="{Binding Freeform}" />-->
                             </StackPanel>
                           </DataTemplate>
+
+
                         </ContentControl.DataTemplates>
-
-
                       </ContentControl>
 
                       <!--  APPLY MAPPINGS  -->
-                      <StackPanel Orientation="Vertical" Spacing="5">
+                      <Button
+                        Command="{Binding SetMappingsCommand}"
+                        Content="Apply Mappings"
+                        IsEnabled="{Binding SelectedSchema.IsValid}"
+                        ToolTip.Tip="Apply mappings to all the selected elements" />
 
-                        <StackPanel Margin="5" Orientation="Horizontal">
-                          <TextBlock Classes="Caption" Text="Selected elements: " />
-                          <TextBlock Classes="Caption" Text="{Binding Count}" />
-                        </StackPanel>
-                        <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                          <Button
-                            Command="{Binding SetMappingsCommand}"
-                            Content="Apply Mappings"
-                            IsEnabled="{Binding SelectedSchema.IsValid}"
-                            ToolTip.Tip="Apply mappings to all the selected elements" />
-                        </StackPanel>
 
-                      </StackPanel>
 
                     </StackPanel>
                   </StackPanel>

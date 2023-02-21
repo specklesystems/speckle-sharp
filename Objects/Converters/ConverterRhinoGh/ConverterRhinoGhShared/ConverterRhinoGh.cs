@@ -1,4 +1,8 @@
-﻿using Grasshopper.Kernel.Types;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Grasshopper.Kernel.Types;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -12,10 +16,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -324,7 +324,8 @@ namespace Objects.Converter.RhinoGh
       {
         switch (schemaObject)
         {
-          case RevitWall o:
+          //NOTE: this works for BOTH the Wall.cs class and RevitWall.cs class etc :)
+          case Wall o:
             var extrusion = ((RH.Extrusion)@object.Geometry);
             var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
             var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
@@ -333,7 +334,7 @@ namespace Objects.Converter.RhinoGh
             o.baseLine = CurveToSpeckle(bottomCrv);
             break;
 
-          case RevitFloor o:
+          case Floor o:
             var brep = ((RH.Brep)@object.Geometry);
             var extCurves = GetSurfaceBrepEdges(brep, getExterior: true); // extract outline
             var intCurves = GetSurfaceBrepEdges(brep, getInterior: true); // extract voids
@@ -341,23 +342,23 @@ namespace Objects.Converter.RhinoGh
             o.voids = intCurves;
             break;
 
-          case RevitBeam o:
+          case Beam o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitBrace o:
+          case Brace o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitColumn o:
+          case Column o:
             o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitPipe o:
+          case Pipe o:
             o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
-          case RevitDuct o:
+          case Duct o:
             o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
@@ -836,7 +837,7 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
-    public bool CanConvertToNative(Base @object)
+    public bool CanConvertToNative_old(Base @object)
     {
       switch (@object)
       {
@@ -884,5 +885,56 @@ namespace Objects.Converter.RhinoGh
       }
     }
 
+    /// <summary>
+    /// Indicates if a Speckle object should be converted to a top-level Rhino document object
+    /// </summary>
+    /// <param name="object"></param>
+    /// <returns>True if the Speckle object should be converted, false if not</returns>
+    /// <remarks>Objects like Planes, Vectors, RenderMaterials, and DisplayStyles can be converted to Rhino native equivalents but not added to the document as top-level objects</remarks>
+    public bool CanConvertToNative(Base @object)
+    {
+      switch (@object)
+      {
+        case Point _:
+        case Line _:
+        case Circle _:
+        case Arc _:
+        case Ellipse _:
+        case Polyline _:
+        case Polycurve _:
+        case Curve _:
+        case Hatch _:
+        case Box _:
+        case Mesh _:
+        case Brep _:
+        case Surface _:
+        case Structural.Geometry.Element1D _:
+          return true;
+#if GRASSHOPPER
+        case Interval _:
+        case Interval2d _:
+        case Plane _:
+        case RenderMaterial _:
+        case Spiral _:
+        case Transform _:
+        case Vector _:
+          return true;
+#else
+        // This types are not supported in GH!
+        case Pointcloud _:
+        case ModelCurve _:
+        case DirectShape _:
+        case View3D _:
+        case BlockInstance _:
+        case Alignment _:
+        case Text _:
+        case Dimension _:
+          return true;
+#endif
+
+        default:
+          return false;
+      }
+    }
   }
 }

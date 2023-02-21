@@ -18,6 +18,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -456,7 +457,7 @@ namespace ConnectorGrasshopper.Ops
             var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
             transportBranches.Add(serverTransport, sw.BranchName ?? "main");
             Transports.Add(serverTransport);
-            
+
             sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
           }
           else if (transport is ITransport otherTransport)
@@ -595,7 +596,7 @@ namespace ConnectorGrasshopper.Ops
       {
 
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
+        Log.Error(e, e.Message);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString()));
         //Parent.Message = "Error";
         //((SendComponent)Parent).CurrentComponentState = "expired";

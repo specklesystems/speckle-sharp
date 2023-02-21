@@ -1,6 +1,4 @@
-﻿
-using System;
-using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
@@ -22,17 +21,16 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Credentials
 {
-
   /// <summary>
   /// Manage accounts locally for desktop applications.
   /// </summary>
   public static class AccountManager
   {
-
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
+    private static bool _isAddingAccount = false;
 
     /// <summary>
-    /// Gets the basic information about a server. 
+    /// Gets the basic information about a server.
     /// </summary>
     /// <param name="server">Server URL</param>
     /// <returns></returns>
@@ -40,12 +38,13 @@ namespace Speckle.Core.Credentials
     {
       using var httpClient = Http.GetHttpProxyClient();
 
-      using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
+      using var gqlClient = new GraphQLHttpClient(
+        new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") },
+        new NewtonsoftJsonSerializer(),
+        httpClient
+      );
 
-      var request = new GraphQLRequest
-      {
-        Query = @" query { serverInfo { name company } }"
-      };
+      var request = new GraphQLRequest { Query = @" query { serverInfo { name company } }" };
 
       var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request);
 
@@ -68,12 +67,13 @@ namespace Speckle.Core.Credentials
       using var httpClient = Http.GetHttpProxyClient();
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-      using var gqlClient = new GraphQLHttpClient(new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") }, new NewtonsoftJsonSerializer(), httpClient);
+      using var gqlClient = new GraphQLHttpClient(
+        new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") },
+        new NewtonsoftJsonSerializer(),
+        httpClient
+      );
 
-      var request = new GraphQLRequest
-      {
-        Query = @" query { user { name email id company } }"
-      };
+      var request = new GraphQLRequest { Query = @" query { user { name email id company } }" };
 
       var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request);
 
@@ -91,27 +91,26 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     private static async Task<UserServerInfoResponse> GetUserServerInfo(string token, string server)
     {
-
       try
       {
         var httpClient = Http.GetHttpProxyClient();
         httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-
         var client = new GraphQLHttpClient(
-         new GraphQLHttpClientOptions
-         {
-           EndPoint = new Uri(new Uri(server), "/graphql"),
-         },
-         new NewtonsoftJsonSerializer(),
-         httpClient);
+          new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql"), },
+          new NewtonsoftJsonSerializer(),
+          httpClient
+        );
 
         var request = new GraphQLRequest
         {
-          Query = @"query { user { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
+          Query =
+            @"query { user { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
         };
 
-        var res = await client.SendQueryAsync<UserServerInfoResponse>(request).ConfigureAwait(false);
+        var res = await client
+          .SendQueryAsync<UserServerInfoResponse>(request)
+          .ConfigureAwait(false);
 
         if (res.Errors != null && res.Errors.Any())
           throw new SpeckleException(res.Errors[0].Message, res.Errors);
@@ -122,9 +121,7 @@ namespace Speckle.Core.Credentials
       {
         throw new SpeckleException(e.Message, e);
       }
-
     }
-
 
     /// <summary>
     /// The Default Server URL for authentication, can be overridden by placing a file with the alternatrive url in the Speckle folder or with an ENV_VAR
@@ -139,7 +136,6 @@ namespace Speckle.Core.Credentials
       if (File.Exists(customServerFile))
         customServerUrl = File.ReadAllText(customServerFile);
 
-
       // second mechanism, check ENV VAR
       var customServerEnvVar = Environment.GetEnvironmentVariable("SPECKLE_SERVER");
       if (!string.IsNullOrEmpty(customServerEnvVar))
@@ -152,7 +148,6 @@ namespace Speckle.Core.Credentials
         if (url != null)
           defaultServerUrl = customServerUrl.TrimEnd(new[] { '/' });
       }
-
 
       return defaultServerUrl;
     }
@@ -177,13 +172,8 @@ namespace Speckle.Core.Credentials
       if (defaultAccount == null)
       {
         var firstAccount = GetAccounts().FirstOrDefault();
-        // We disabled this logging cause of the infinite loop:
-        // - Log.CaptureException -> Log.Initialize -> AccountManager.GetDefaultAccount -> null -> Log.CaptureException
-        // check with Matteo if we really need this
-        // if (firstAccount == null)
-        // {
-        //   Log.CaptureException(new SpeckleException("No Speckle accounts found. Visit the Speckle web app to create one."), level: Sentry.SentryLevel.Info);
-        // }
+        if (firstAccount == null)
+          Log.Information("No Speckle accounts found. Visit the Speckle web app to create one.");
         return firstAccount;
       }
       return defaultAccount;
@@ -195,7 +185,9 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static IEnumerable<Account> GetAccounts()
     {
-      var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
+      var sqlAccounts = AccountStorage
+        .GetAllObjects()
+        .Select(x => JsonConvert.DeserializeObject<Account>(x));
       var localAccounts = GetLocalAccounts();
 
       //prevent invalid account from slipping out
@@ -232,13 +224,13 @@ namespace Speckle.Core.Credentials
           var account = JsonConvert.DeserializeObject<Account>(json);
 
           if (
-            !string.IsNullOrEmpty(account.token) &&
-            !string.IsNullOrEmpty(account.userInfo.id) &&
-            !string.IsNullOrEmpty(account.userInfo.email) &&
-            !string.IsNullOrEmpty(account.userInfo.name) &&
-            !string.IsNullOrEmpty(account.serverInfo.url) &&
-            !string.IsNullOrEmpty(account.serverInfo.name)
-            )
+            !string.IsNullOrEmpty(account.token)
+            && !string.IsNullOrEmpty(account.userInfo.id)
+            && !string.IsNullOrEmpty(account.userInfo.email)
+            && !string.IsNullOrEmpty(account.userInfo.name)
+            && !string.IsNullOrEmpty(account.serverInfo.url)
+            && !string.IsNullOrEmpty(account.serverInfo.name)
+          )
             accounts.Add(account);
         }
         catch
@@ -262,15 +254,22 @@ namespace Speckle.Core.Credentials
         {
           var userServerInfo = await GetUserServerInfo(account.token, url);
 
-
           //the token has expired
           //TODO: once we get a token expired exception from the server use that instead
-          if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+          if (
+            userServerInfo == null
+            || userServerInfo.user == null
+            || userServerInfo.serverInfo == null
+          )
           {
             var tokenResponse = await GetRefreshedToken(account.refreshToken, url);
             userServerInfo = await GetUserServerInfo(tokenResponse.token, url);
 
-            if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+            if (
+              userServerInfo == null
+              || userServerInfo.user == null
+              || userServerInfo.serverInfo == null
+            )
               throw new SpeckleException("Could not refresh token");
 
             account.token = tokenResponse.token;
@@ -281,7 +280,6 @@ namespace Speckle.Core.Credentials
           account.userInfo = userServerInfo.user;
           account.serverInfo = userServerInfo.serverInfo;
           account.serverInfo.url = url;
-
         }
         catch (Exception ex)
         {
@@ -330,7 +328,6 @@ namespace Speckle.Core.Credentials
       }
     }
 
-
     /// <summary>
     /// Adds an account by propting the user to log in via a web flow
     /// </summary>
@@ -338,108 +335,143 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task AddAccount(string server = "")
     {
+      Log.Debug("Starting to add account for {serverUrl}", server);
+
+      if (!HttpListener.IsSupported)
+      {
+        Log.Error(
+          "HttpListener not supported"
+        );
+        throw new Exception("Your operating system is not supported");
+      }
+
+      //prevent launching this flow multiple times
+      if (_isAddingAccount)
+        return;
+
+      _isAddingAccount = true;
       server = server.TrimEnd(new[] { '/' });
 
       if (string.IsNullOrEmpty(server))
+      {
         server = GetDefaultServerUrl();
+        Log.Debug("Changed server url to the default usl {serverUrl}", server);
+      }
 
       var accessCode = "";
       var challenge = GenerateChallenge();
-      Process.Start(new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true });
+      Log.Debug("Starting auth process for {server}/authn/verify/sca/{challenge}", server, challenge);
+      Process.Start(
+        new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true }
+      );
 
-      HttpListener listener = new HttpListener();
-
-      //does nothing?
-      var timeout = TimeSpan.FromMinutes(2);
-      //listener.TimeoutManager.HeaderWait = timeout;
-      //listener.TimeoutManager.EntityBody = timeout;
-      //listener.TimeoutManager.IdleConnection = timeout;
+      //timeout for the task
+      var timeout = TimeSpan.FromMinutes(1);
+      var listener = new HttpListener();
 
       var task = Task.Run(() =>
       {
-        try
-        {
-          if (!HttpListener.IsSupported)
-          {
-            Console.WriteLine("Windows XP SP2 or Server 2003 is required to use the HttpListener class.");
-            return;
-          }
 
+        var localUrl = "http://localhost:29363/";
+        listener.Prefixes.Add(localUrl);
+        listener.Start();
+        Log.Debug("Listening for auth redirects on {localUrl}", localUrl);
+        // Note: The GetContext method blocks while waiting for a request.
+        HttpListenerContext context = listener.GetContext();
+        HttpListenerRequest request = context.Request;
+        HttpListenerResponse response = context.Response;
 
-          listener = new HttpListener();
-          listener.Prefixes.Add("http://localhost:29363/");
+        accessCode = request.QueryString["access_code"];
+        Log.Debug("Got access code {accessCode}", accessCode);
+        var message = "";
+        if (accessCode != null)
+          message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
+        else
+          message = "Oups, something went wrong...!";
 
-          listener.Start();
-          Console.WriteLine("Listening...");
-          // Note: The GetContext method blocks while waiting for a request.
-          HttpListenerContext context = listener.GetContext();
-          HttpListenerRequest request = context.Request;
-          HttpListenerResponse response = context.Response;
-
-          accessCode = request.QueryString["access_code"];
-          var message = "";
-          if (accessCode != null)
-          {
-            message = "Yay!<br/><br/>You can close this window now.<script>window.close();</script>";
-          }
-          else
-          {
-            message = "Oups, something went wrong...!";
-          }
-
-          var responseString = $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
-
-          byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-          response.ContentLength64 = buffer.Length;
-          System.IO.Stream output = response.OutputStream;
-          output.Write(buffer, 0, buffer.Length);
-          output.Close();
-          listener.Stop();
-
-        }
-        catch (Exception ex)
-        {
-
-        }
+        var responseString =
+          $"<HTML><BODY Style='background: linear-gradient(to top right, #ffffff, #c8e8ff); font-family: Roboto, sans-serif; font-size: 2rem; font-weight: 500; text-align: center;'><br/>{message}</BODY></HTML>";
+        byte[] buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
+        response.ContentLength64 = buffer.Length;
+        System.IO.Stream output = response.OutputStream;
+        output.Write(buffer, 0, buffer.Length);
+        output.Close();
+        Log.Debug("Processed finished processing the access code.");
+        listener.Stop();
+        listener.Close();
       });
 
-      //Timeout
-      if (await Task.WhenAny(task, Task.Delay(timeout)) == task)
+      var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
+
+      //ensure the listener is closed even if the task has timed out or failed
+      if (listener.IsListening)
+        listener.Abort();
+
+      //check if timed out or not
+      if (completedTask == task)
       {
+        if (task.IsFaulted)
+        {
+          Log.Error(task.Exception, "Getting access code flow failed with {exceptionMessage}", task.Exception.Message);
+          _isAddingAccount = false;
+          throw new Exception($"Auth flow failed: {task.Exception.Message}", task.Exception);
+        }
+
         // task completed within timeout
+        Log.Information("Local auth flow completed successfully within the timeout window. Access code is {accessCode}", accessCode);
       }
       else
       {
-        // nada
+        // task timed out
+        Log.Warning("Local auth flow failed to complete within the timeout window. Access code is {accessCode}", accessCode);
+        _isAddingAccount = false;
+        throw new Exception("Local auth flow failed to complete within the timeout window");
       }
 
       if (string.IsNullOrEmpty(accessCode))
-        return;
-
-      var tokenResponse = (await GetToken(accessCode, challenge, server));
-
-      var userResponse = await GetUserServerInfo(tokenResponse.token, server);
-
-      var account = new Account()
       {
-        token = tokenResponse.token,
-        refreshToken = tokenResponse.refreshToken,
-        isDefault = GetAccounts().Count() == 0,
-        serverInfo = userResponse.serverInfo,
-        userInfo = userResponse.user
-      };
+        _isAddingAccount = false;
+        Log.Warning("Access code is invalid {accessCode}", accessCode);
+        throw new Exception("Access code is ivalid");
+      }
+      try
+      {
+        var tokenResponse = await GetToken(accessCode, challenge, server);
+        var userResponse = await GetUserServerInfo(tokenResponse.token, server);
 
-      account.serverInfo.url = server;
+        var account = new Account()
+        {
+          token = tokenResponse.token,
+          refreshToken = tokenResponse.refreshToken,
+          isDefault = GetAccounts().Count() == 0,
+          serverInfo = userResponse.serverInfo,
+          userInfo = userResponse.user
+        };
+        Log.Information("Successfully created account for {serverUrl}", server);
+        account.serverInfo.url = server;
 
-      //if the account already exists it will not be added again
-      AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+        //if the account already exists it will not be added again
+        AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Error adding the account");
+        throw new Exception("Something went wrong adding the account, please try again");
+      }
+      _isAddingAccount = false;
+
     }
 
-    private static async Task<TokenExchangeResponse> GetToken(string accessCode, string challenge, string server)
+    private static async Task<TokenExchangeResponse> GetToken(
+      string accessCode,
+      string challenge,
+      string server
+    )
     {
       try
       {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        ServicePointManager.SecurityProtocol =
+          SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
         var client = Http.GetHttpProxyClient();
 
         var body = new
@@ -454,8 +486,9 @@ namespace Speckle.Core.Credentials
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         var response = await client.PostAsync($"{server}/auth/token", content);
 
-        return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
-
+        return JsonConvert.DeserializeObject<TokenExchangeResponse>(
+          await response.Content.ReadAsStringAsync()
+        );
       }
       catch (Exception e)
       {
@@ -463,11 +496,15 @@ namespace Speckle.Core.Credentials
       }
     }
 
-    private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, string server)
+    private static async Task<TokenExchangeResponse> GetRefreshedToken(
+      string refreshToken,
+      string server
+    )
     {
       try
       {
-        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
+        ServicePointManager.SecurityProtocol =
+          SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
         var client = Http.GetHttpProxyClient();
 
         var body = new
@@ -481,16 +518,15 @@ namespace Speckle.Core.Credentials
         content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         var response = await client.PostAsync($"{server}/auth/token", content);
 
-        return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
+        return JsonConvert.DeserializeObject<TokenExchangeResponse>(
+          await response.Content.ReadAsStringAsync()
+        );
       }
       catch (Exception e)
       {
         throw new SpeckleException(e.Message, e);
       }
-
-
     }
-
 
     private static string GenerateChallenge()
     {
@@ -503,9 +539,5 @@ namespace Speckle.Core.Credentials
         return Regex.Replace(Convert.ToBase64String(challengeData), @"[^\w\.@-]", "");
       }
     }
-
   }
-
-
-
 }

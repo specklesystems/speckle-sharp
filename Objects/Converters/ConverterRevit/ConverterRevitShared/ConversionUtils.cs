@@ -12,6 +12,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Speckle.Core.Helpers;
+using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Duct = Objects.BuiltElements.Duct;
@@ -169,36 +170,31 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
-      if (@base != null && @base["elements"] != null && @base["elements"] is IList elements)
+      if (@base == null) return appObj;
+      
+      CurrentHostElement = host;
+      foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
       {
-        CurrentHostElement = host;
-
-        foreach (var el in elements)
+        if (!CanConvertToNative(obj))
         {
-          if (el == null) continue;
-          if (!(el is Base obj)) continue;
-
-          if (!CanConvertToNative(obj))
-          {
-            appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
-            continue;
-          }
-
-          try
-          {
-            var res = ConvertToNative(obj);
-            if (res is ApplicationObject apl)
-              appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
-          }
-          catch (Exception e)
-          {
-            appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
-            continue;
-          }
+          appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
+          continue;
         }
 
-        CurrentHostElement = null; // unset the current host element.
+        try
+        {
+          var res = ConvertToNative(obj);
+          if (res is ApplicationObject apl)
+            appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
+        }
+        catch (Exception e)
+        {
+          appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
+          continue;
+        }
       }
+
+      CurrentHostElement = null; // unset the current host element.
       return appObj;
     }
 
@@ -1298,6 +1294,51 @@ namespace Objects.Converter.Revit
       if (string.IsNullOrEmpty(s))
         return s;
       return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
+    }
+
+    // MEGA HACK to get the slope arrow of a roof which is technically not accessable by the api
+    // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
+    private void GetSlopeArrowHack(ElementId elementId, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
+    {
+      List<ElementId> deleted = null;
+      tail = null;
+      head = null;
+      tailOffset = 0;
+      headOffset = 0;
+      slope = 0;
+      using (var t = new Transaction(Doc, "TTT"))
+      {
+        t.Start();
+        deleted = Doc.Delete(elementId).ToList();
+        t.RollBack();
+      }
+      foreach (ElementId id in deleted)
+      {
+        ModelLine l = Doc.GetElement(id) as ModelLine;
+        if (l == null) continue;
+        if (!l.Name.Equals("Slope Arrow")) continue; // TODO: does this work with other languages of Revit?
+
+        tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0));
+        head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1));
+        tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
+
+        var specifyOffset = GetParamValue<int>(l, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
+        var lineLength = GetParamValue<double>(l, BuiltInParameter.CURVE_ELEM_LENGTH);
+
+        // 1 corrosponds to the "slope" option
+        if (specifyOffset == 1)
+        {
+          // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
+          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100; 
+          headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
+        }
+        else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
+        {
+          headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
+          slope = (headOffset - tailOffset) / lineLength;
+        }
+        break;
+      }
     }
   }
 }

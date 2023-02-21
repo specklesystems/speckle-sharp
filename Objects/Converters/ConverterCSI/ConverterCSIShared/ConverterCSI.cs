@@ -44,8 +44,6 @@ namespace Objects.Converter.CSI
 
     public Model SpeckleModel { get; set; }
 
-    public ResultSetAll AnalysisResults { get; set; }
-
     public ReceiveMode ReceiveMode { get; set; }
     /// <summary>
     /// <para>To know which objects are already in the model. These are *mostly* elements that are in the model before the receive operation starts, but certain names will be added for objects that may be referenced by other elements such as load patterns and load cases.</para>
@@ -86,7 +84,6 @@ namespace Objects.Converter.CSI
       else if (Settings["operation"] == "send")
       {
         SpeckleModel = ModelToSpeckle();
-        AnalysisResults = ResultsToSpeckle();
       }
       else
         throw new Exception("operation setting was not set to \"send\" or \"receive\"");
@@ -226,7 +223,7 @@ namespace Objects.Converter.CSI
           returnObject = SpeckleModel;
           break;
         case "AnalysisResults":
-          returnObject = AnalysisResults;
+          returnObject = ResultsToSpeckle();
           break;
         case "Stories":
           returnObject = StoriesToSpeckle();
@@ -382,6 +379,10 @@ namespace Objects.Converter.CSI
           //    returnObject = null;
           //    break;
       }
+
+      // send the object out with the same appId that it came in with for updating purposes
+      if (returnObject != null)
+        returnObject.applicationId = GetOriginalApplicationId(returnObject.applicationId);
 
       return returnObject;
     }

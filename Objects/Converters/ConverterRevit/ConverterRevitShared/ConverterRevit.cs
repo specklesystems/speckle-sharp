@@ -67,6 +67,8 @@ namespace Objects.Converter.Revit
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
+    public Transaction T { get; private set; }
+
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
@@ -89,9 +91,14 @@ namespace Objects.Converter.Revit
 
     public void SetContextDocument(object doc)
     {
-      Doc = (Document)doc;
-      Report.Log($"Using document: {Doc.PathName}");
-      Report.Log($"Using units: {ModelUnits}");
+      if (doc is Transaction t)
+        T = t;
+      else
+      {
+        Doc = (Document)doc;
+        Report.Log($"Using document: {Doc.PathName}");
+        Report.Log($"Using units: {ModelUnits}");
+      }
     }
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
@@ -710,8 +717,6 @@ namespace Objects.Converter.Revit
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
-        STR.Geometry.Node _ => true,
-        STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
         _ => false,
       };

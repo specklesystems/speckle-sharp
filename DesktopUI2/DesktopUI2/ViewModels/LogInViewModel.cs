@@ -11,6 +11,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -63,7 +64,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
   }

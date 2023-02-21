@@ -311,9 +311,9 @@ namespace Speckle.ConnectorRevit.UI
                 selection.AddRange(query.ToList());
               }
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              Log.CaptureException(e);
+              Serilog.Log.Error(ex, ex.Message);
             }
             return selection;
         }
