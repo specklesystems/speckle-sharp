@@ -216,10 +216,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 root: ./
                 paths:
                   - speckle-sharp-ci-tools/Installers
-      - persist_to_workspace:
-          root: ./
-          paths:
-            - speckle-sharp-ci-tools/Installers
+      - store_artifacts:
+          path: speckle-sharp-ci-tools/Installers
 
   deploy-connector-new:
     docker:
