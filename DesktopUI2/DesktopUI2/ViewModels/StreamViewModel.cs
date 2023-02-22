@@ -1,5 +1,4 @@
-﻿using Avalonia;
-using Avalonia.Controls;
+﻿using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -24,11 +23,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
-using System.Reactive;
 using System.Threading.Tasks;
-using System.Web;
 using System.Windows.Input;
 using Stream = Speckle.Core.Api.Stream;
 
@@ -568,7 +564,8 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error creating stream view model", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.ForContext("StreamState", streamState)
+          .Fatal(ex, "Failed to create stream view model");
       }
     }
 
@@ -581,11 +578,12 @@ namespace DesktopUI2.ViewModels
         GetActivity();
         GetReport();
         GetComments();
-
+      
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error creating stream view model", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Warning(ex, "Failed to initialise stream view model");
+        throw;
       }
     }
 
@@ -617,7 +615,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error generating menu items", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Failed to generate menu items {exceptionMessage}", ex.Message);
       }
     }
 
@@ -635,9 +633,9 @@ namespace DesktopUI2.ViewModels
 
         StreamState.CachedStream = Stream;
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        new SpeckleException("Error retrieving stream", e, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Failed retrieving stream");
       }
     }
 
@@ -651,7 +649,7 @@ namespace DesktopUI2.ViewModels
           ReceiveModes = Bindings.GetReceiveModes();
 
           if (!ReceiveModes.Any())
-            throw new SpeckleException("No Receive Mode is available.");
+            throw new InvalidOperationException("No Receive Mode is available.");
 
           //by default the first available receive mode is selected
           SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
@@ -702,7 +700,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error restoring stream state", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Failed restoring stream state {exceptionMessage}", ex.Message);
       }
     }
 
@@ -746,7 +744,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error getting activity", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Failed getting activity {exceptionMessage}", ex.Message);
       }
     }
 
@@ -765,7 +763,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error getting comments", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Failed getting comments {exceptionMessage}", ex.Message);
       }
     }
 
@@ -786,7 +784,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(ScrollToBottom), ex.Message);
       }
     }
 
@@ -810,7 +808,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error updating state", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Failed updating stream state {exceptionMessage}", ex.Message);
       }
     }
 
@@ -852,7 +850,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error getting commits", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Error(ex, "Failed getting commits {exceptionMessage}", ex.Message);
       }
     }
 
@@ -985,7 +983,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Client_OnCommitCreated),ex.Message);
       }
     }
 
@@ -1016,6 +1014,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage),ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         _previewImage = null; // Could not download...
       }
@@ -1046,6 +1045,8 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
+        Serilog.Log.ForContext("imageUrl", url)
+          .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage360), ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         _previewImage360 = null; // Could not download...
       }
@@ -1077,10 +1078,10 @@ namespace DesktopUI2.ViewModels
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Branch Create" } });
 
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
-          new SpeckleException("Error creating branch", e, true, Sentry.SentryLevel.Error);
+          Serilog.Log.Error(ex, "Failed adding new branch {exceptionMessage}", ex.Message);
+          Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
         finally
         {
@@ -1211,7 +1212,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error sending", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(SendCommand),ex.Message);
       }
     }
 
@@ -1236,12 +1237,12 @@ namespace DesktopUI2.ViewModels
             Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Preview Send" } });
             await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
           }
-          Progress.IsPreviewProgressing = false;
+          Progress.IsPreviewProgressing = false; //BUG: potentially never sets to false on exception
           GetReport();
         }
         catch (Exception ex)
         {
-          new SpeckleException("Error preview", ex, true, Sentry.SentryLevel.Error);
+          Serilog.Log.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(PreviewCommand),ex.Message);
         }
       }
       else
@@ -1305,7 +1306,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error receiving", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(ReceiveCommand),ex.Message);
       }
     }
 
@@ -1360,7 +1361,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error saving", ex, true, Sentry.SentryLevel.Error);
+        Serilog.Log.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(SaveCommand),ex.Message);
       }
     }
 
@@ -1372,8 +1373,9 @@ namespace DesktopUI2.ViewModels
         MainViewModel.RouterInstance.Navigate.Execute(settingsPageViewModel);
         Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Settings Open" } });
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
+        Serilog.Log.Error(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(OpenSettingsCommand),ex.Message);
       }
     }
 
