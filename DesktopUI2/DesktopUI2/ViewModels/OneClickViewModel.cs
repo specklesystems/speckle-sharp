@@ -111,7 +111,7 @@ namespace DesktopUI2.ViewModels
       catch(Exception ex)
       {
         //todo: handle properly in each connector bindings
-        Log.Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Send), ex.Message);
       }
 
       //filename is different, might have been renamed or be a different document
@@ -235,7 +235,7 @@ namespace DesktopUI2.ViewModels
       catch (Exception ex)
       {
         Log.ForContext("fileName", _fileName)
-          .Debug(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+          .Debug(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SearchStreams), ex.Message);
       }
       return stream;
     }

@@ -84,7 +84,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Warning(ex, "Swallowing exception {exceptionMessage}", ex.Message);
+        Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SelectionChanged),ex.Message);
       }
     }
     private bool isSearching = false;
@@ -133,7 +133,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Warning(ex, "Swallowing exception {exceptionMessage}", ex.Message);
+        Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(RestoreSelectedItems),ex.Message);
       }
     }
 

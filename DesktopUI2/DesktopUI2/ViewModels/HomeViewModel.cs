@@ -446,7 +446,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Swallowing exception {exceptionMessage}", ex.Message);
+        Log.Error(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(GetNotifications),ex.Message);
       }
     }
 
@@ -505,7 +505,7 @@ namespace DesktopUI2.ViewModels
         }
         catch(Exception ex)
         {
-          Log.Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+          Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Refresh), ex.Message);
         }
 
         foreach (var account in Accounts)

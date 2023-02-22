@@ -263,7 +263,7 @@ namespace DesktopUI2
             catch (Exception ex)
             {
               Log.ForContext("dialogResult", result)
-                .Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+                .Warning(ex, "Swallowing exception in {methodName} {exceptionMessage}", nameof(AddAccountCommand), nameof(AddAccountCommand), ex.Message);
               
               //errors already handled in AddAccount
 

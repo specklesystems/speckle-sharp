@@ -784,7 +784,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing Exception {exceptionMessage}", ex.Message);
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(ScrollToBottom), ex.Message);
       }
     }
 
@@ -983,7 +983,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing exception {exceptionMessage}", ex.Message);
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Client_OnCommitCreated),ex.Message);
       }
     }
 
@@ -1014,7 +1014,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing exception {exceptionMessage}", ex.Message);
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage),ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         _previewImage = null; // Could not download...
       }
@@ -1045,7 +1045,8 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.ForContext("imageUrl", url).Warning(ex, "Swallowing exception {exceptionMessage}", ex.Message);
+        Serilog.Log.ForContext("imageUrl", url)
+          .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage360), ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         _previewImage360 = null; // Could not download...
       }

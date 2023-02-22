@@ -115,7 +115,7 @@ namespace DesktopUI2.ViewModels
       catch (Exception ex)
       {
         Log.ForContext("imageUrl", url)
-          .Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+          .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage), ex.Message);
       }
     }
 
@@ -171,7 +171,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Warning(ex, "Swallowing exception {exceptionMessage}",ex.Message);
+        Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadComplete),ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         AvatarUrl = null; // Could not download...
       }
