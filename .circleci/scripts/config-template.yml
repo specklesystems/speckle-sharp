@@ -142,6 +142,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     parameters:
       slnname:
         type: string
+      projname:
+        type: string
+        default: ''
       dllname:
         type: string
       slug:

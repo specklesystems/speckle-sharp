@@ -168,6 +168,7 @@ archicad:
         - build-archicad-add-on-26
         - build-desktopui
       slnname: ConnectorArchicad
+      projname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
       slug: archicad
       build-with-msbuild: false
