@@ -152,7 +152,13 @@ namespace Objects.Converter.Revit
 
       try
       {
-        var revitCurve = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+        View drawingView = GetCurvePlanView(speckleCurve, out bool isTempView);
+        var revitCurve = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, drawingView).get_Item(0);
+
+        // Delete the temp view after drawing
+        if (isTempView)
+          Doc.Delete(drawingView.Id);
+
         appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
       catch (Exception)
@@ -252,6 +258,7 @@ namespace Objects.Converter.Revit
     {
       var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve));
       speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.level = ConvertAndCacheLevel(revitCurve.LevelId, revitCurve.Document);
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
       return speckleCurve;
@@ -316,6 +323,41 @@ namespace Objects.Converter.Revit
       }
 
       return SketchPlane.Create(doc, plane);
+    }
+
+    /// <summary>
+    /// Get a plan view associated to the curve level.
+    /// Will return the Doc.ActiveView If no appropriate view is found.
+    /// </summary>
+    /// <param name="speckleCurve">A Speckle curve</param>
+    /// <param name="isTempView">A bool flag indicating if this view should be deleted after drawing the curve.</param>
+    /// <returns>A Revit View.</returns>
+    private View GetCurvePlanView(RoomBoundaryLine speckleCurve, out bool isTempView)
+    {
+      View drawingView;
+      Level level = ConvertLevelToRevit(speckleCurve.level, out _);
+      ElementId viewId = level?.FindAssociatedPlanViewId();
+
+      // If there is a plan view associated to the curve level use it otherwise create a temp plan view
+      if (viewId != null && viewId != ElementId.InvalidElementId)
+      {
+        drawingView = Doc.GetElement(viewId) as ViewPlan;
+        isTempView = false;
+      }
+      else
+      {
+        drawingView = CreateViewPlan("temp", level.Id);
+        isTempView = true;
+      }
+
+      // If plan view retrieval/creation still fail use the activeView as a last recourse
+      if (drawingView == null)
+      {
+        drawingView = Doc.ActiveView;
+        isTempView = false;
+      }
+
+      return drawingView;
     }
   }
 }
