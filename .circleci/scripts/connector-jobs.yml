@@ -170,6 +170,7 @@ archicad:
       slnname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
       slug: archicad
+      build-with-msbuild: false
       context: innosetup
   - build-archicad-add-on-mac:
       archicadversion: "25"

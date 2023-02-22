@@ -147,6 +147,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       slug:
         type: string
         default: ""
+      build-with-msbuild:
+        type: boolean
+        default: true
       installer:
         type: boolean
         default: false
@@ -157,16 +160,32 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Restore << parameters.slnname >>
           command: nuget restore << parameters.slnname >>/<< parameters.slnname >>.sln
-      - run:
-          name: Build << parameters.slnname >>
-          command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
-            $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
-            $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
-            $version = "$($ver).$($env:WORKFLOW_NUM)"
-            msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
+      - when:
+          condition: << parameters.build-with-msbuild >>
+          steps:
+          - run:
+              name: Build << parameters.slnname >>
+              command: |
+                $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
+                $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
+                $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
+                $version = "$($ver).$($env:WORKFLOW_NUM)"
+                msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+              environment:
+                WORKFLOW_NUM: << pipeline.number >>
+      - unless:
+          condition: << parameters.build-with-msbuild >>
+          steps:
+            - run:
+                name: Build << parameters.slnname >>
+                command: |
+                  $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
+                  $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
+                  $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
+                  $version = "$($ver).$($env:WORKFLOW_NUM)"
+                  dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+                environment:
+                  WORKFLOW_NUM: << pipeline.number >> 
       - run:
           name: Create Innosetup signing cert
           command: |
