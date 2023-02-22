@@ -32,7 +32,7 @@ namespace Objects.Organization
     /// This can include additional nested <see cref="Collection"/>s.
     /// </remarks>
     [DetachProperty]
-    public List<Base> elements { get; set; }
+    public List<Base> elements { get; set; } = new List<Base>();
     
     public Collection() {}
 

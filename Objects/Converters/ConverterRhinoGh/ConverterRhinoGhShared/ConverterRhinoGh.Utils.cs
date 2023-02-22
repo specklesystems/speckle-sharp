@@ -2,16 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
+using System.Collections.Specialized;
 
 using Rhino;
 using Rhino.DocObjects;
+using Rhino.Collections;
 using Grasshopper.Kernel.Types;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Objects.Geometry;
-using Objects.Primitive;
-using Objects.Other;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -51,18 +50,16 @@ namespace Objects.Converter.RhinoGh
     private static string UserDictionary = "userDictionary";
 
     /// <summary>
-    /// Attaches user strings, user dictionaries, and object name from a RhinoObject to  Base
+    /// Attaches the provided user strings, user dictionaries, and and name to Base
     /// </summary>
     /// <param name="obj">The converted Base object to attach info to</param>
-    /// <param name="nativeObj">The Rhino object containing info</param>
     /// <returns></returns>
-    public void GetUserInfo(Base obj, ObjectAttributes attributes, out List<string> notes)
+    public void GetUserInfo(Base obj, out List<string> notes, ArchivableDictionary userDictionary = null, NameValueCollection userStrings = null, string name = null)
     {
       notes = new List<string>();
 
       // user strings
-      var userStrings = attributes.GetUserStrings();
-      if (userStrings.Count > 0)
+      if (userStrings != null && userStrings.Count > 0)
       {
         var userStringsBase = new Base();
         foreach (var key in userStrings.AllKeys)
@@ -80,12 +77,15 @@ namespace Objects.Converter.RhinoGh
       }
 
       // user dictionary
-      var userDictionaryBase = new Base();
-      ParseArchivableToDictionary(userDictionaryBase, attributes.UserDictionary);
-      obj[UserDictionary] = userDictionaryBase;
+      if (userDictionary != null && userDictionary.Count > 0)
+      {
+        var userDictionaryBase = new Base();
+        ParseArchivableToDictionary(userDictionaryBase, userDictionary);
+        obj[UserDictionary] = userDictionaryBase;
+      }
 
       // obj name
-      if (!string.IsNullOrEmpty(attributes.Name)) obj["name"] = attributes.Name;
+      if (!string.IsNullOrEmpty(name)) obj["name"] = name;
     }
 
     /// <summary>

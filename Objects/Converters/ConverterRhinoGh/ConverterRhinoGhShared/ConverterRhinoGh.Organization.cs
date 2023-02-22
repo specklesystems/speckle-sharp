@@ -36,10 +36,6 @@ namespace Objects.Converter.RhinoGh
       // add dynamic rhino props
       collection["path"] = layer.FullPath;
       collection["visible"] = layer.IsVisible;
-      var renderMaterial = RenderMaterialToSpeckle(layer.RenderMaterial.SimulateMaterial(true));
-      if (renderMaterial != null) collection["renderMaterial"] = renderMaterial;
-      var displayStyle = DisplayStyleToSpeckle(new ObjectAttributes(), layer);
-      if (displayStyle != null) collection["displayStyle"] = displayStyle;
 
       return collection;
     }

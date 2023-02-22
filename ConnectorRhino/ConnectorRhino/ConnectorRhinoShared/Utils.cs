@@ -40,6 +40,61 @@ namespace SpeckleRhino
       string cleanStr = str.Replace("{", "").Replace("}", "");
       return cleanStr;
     }
+
+    /// <summary>
+    /// Tries to retrieve a doc object from its selected id. THis can be a RhinoObject, Layer, or ViewInfo
+    /// </summary>
+    /// <param name="doc"></param>
+    /// <param name="id"></param>
+    /// <param name="obj"></param>
+    /// <param name="descriptor">The descriptor of this object, used for reporting</param>
+    /// <returns>True if successful, false if not</returns>
+    public static bool FindObjectBySelectedId(RhinoDoc doc, string id, out object obj, out string descriptor)
+    {
+      descriptor = String.Empty;
+      obj = null;
+      try
+      {
+        Guid guid = new Guid(id); // try to get guid from object id
+
+        RhinoObject geom = doc.Objects.FindId(guid);
+        if (geom != null)
+        {
+          descriptor = Formatting.ObjectDescriptor(geom);
+          obj = geom;
+        } 
+        else 
+        { 
+          var layer = doc.Layers.FindId(guid);
+          if (layer != null)
+          {
+            descriptor = "Layer";
+            obj = layer;
+          }
+          else
+          {
+            var standardView = doc.Views.Find(guid)?.ActiveViewport;
+            if (standardView != null) 
+            {
+              descriptor = "Standard View";
+              obj = new ViewInfo(standardView); 
+            }
+          }
+        }
+      }
+      catch // this was a named view name
+      {
+        var viewIndex = doc.NamedViews.FindByName(id);
+        if (viewIndex != -1)
+        {
+          obj = doc.NamedViews[viewIndex];
+          descriptor = "Named View";
+        }
+      }
+
+      return obj == null ? false : true;
+    }
+
     #region extension methods
     /// <summary>
     /// Finds a layer from its full path

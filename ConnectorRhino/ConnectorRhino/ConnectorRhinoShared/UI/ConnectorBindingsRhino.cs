@@ -868,55 +868,72 @@ namespace SpeckleRhino
       // remove any invalid objs
       var filterObjs = GetObjectsFromFilter(state.Filter);
       var existingIds = new List<string>();
+      // todo: update with FindObjectBySelectedId!!
       foreach (var id in filterObjs)
       {
-        RhinoObject obj = null;
-        bool isView = false;
-        int viewId = -1;
-        RhinoView rhinoView = null;
+        // find the object from object id
+        RhinoObject obj = null; // geom object
+        Layer layer = null; // layer
+        ViewInfo view = null; // view
+        string descriptor = String.Empty; // the descriptor of this objectId object
         try
         {
-          obj = Doc.Objects.FindId(new Guid(id)); // this is a rhinoobj
-          if (obj == null)
+          Guid guid = new Guid(id); // try to get guid from object id
+
+          obj = Doc.Objects.FindId(guid);
+          if (obj != null) descriptor = Formatting.ObjectDescriptor(obj);
+          else { layer = Doc.Layers.FindId(guid); }
+          if (layer != null) descriptor = "Layer";
+          else
           {
-            // Try to check if it's a standard view
-            rhinoView = Doc.Views.Find(new Guid(id));
-            if (rhinoView != null)
-              isView = true;
+            var standardView = Doc.Views.Find(guid)?.ActiveViewport;
+            if (standardView != null) { view = new ViewInfo(standardView); }
+          }
+          if (view != null) descriptor = "Standard View";
+        }
+        catch // this was a named view name
+        {
+          var viewIndex = Doc.NamedViews.FindByName(id);
+          if (viewIndex != -1)
+          {
+            view = Doc.NamedViews[viewIndex];
+            descriptor = "Named View";
           }
         }
-        catch
-        {
-          viewId = Doc.NamedViews.FindByName(id);
-          if(viewId != -1)
-            isView= true;
-        }
 
+        // create applicationObject
+        var applicationId = obj?.Attributes.GetUserString(ApplicationIdKey) ?? layer?.GetUserString(ApplicationIdKey) ?? id;
+        ApplicationObject reportObj = new ApplicationObject(id, descriptor) { applicationId = applicationId };
+
+        // object conversion
         if (obj != null)
         {
-          var appObj = new ApplicationObject(id, obj.ObjectType.ToString()) { Status = ApplicationObject.State.Unknown };
-
           if (converter.CanConvertToSpeckle(obj))
-            appObj.Update(status: ApplicationObject.State.Created);
+            reportObj.Update(status: ApplicationObject.State.Created);
           else
-            appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
-          progress.Report.Log(appObj);
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
           existingIds.Add(id);
         }
-        else if (isView)
+
+        // layer conversion
+        else if (layer != null)
         {
-          var viewObj = viewId != -1 ? new ApplicationObject(id, "Named View") : new ApplicationObject(id, "Standard View");
-          if (viewId != -1 || rhinoView != null)
-            viewObj.Update(status: ApplicationObject.State.Created);
-          else
-            viewObj.Update(status: ApplicationObject.State.Failed, logItem: "Does not exist in document");
-          progress.Report.Log(viewObj);
+          reportObj.Update(status: ApplicationObject.State.Created);
         }
+
+        // view conversion
+        else if (view != null)
+        {
+          reportObj.Update(status: ApplicationObject.State.Created);
+        }
+
         else
         {
-          progress.Report.Log(new ApplicationObject(id, "unknown") { Status = ApplicationObject.State.Failed, Log = new List<string>() { "Could not find object in document" } });
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find object in document");
+          progress.Report.Log(reportObj);
           continue;
         }
+        progress.Report.Log(reportObj);
       }
 
       if (existingIds.Count == 0)
@@ -967,6 +984,7 @@ namespace SpeckleRhino
       // store converted commit objects and layers by layer paths
       var commitLayerObjects = new Dictionary<string, List<Base>>();
       var commitLayers = new Dictionary<string, Layer>();
+      var commitCollections = new Dictionary<string, Base>();
 
       // convert all commit objs
       foreach (var selectedId in state.SelectedObjectIds)
@@ -975,6 +993,7 @@ namespace SpeckleRhino
           return null;
 
         // find the object from object id
+        // todo: update with FindObjectBySelectedId!!
         RhinoObject obj = null; // geom object
         Layer layer = null; // layer
         ViewInfo view = null; // view
@@ -1046,6 +1065,7 @@ namespace SpeckleRhino
           if (converted != null)
           {
             commitLayers.Add(layer.FullPath, layer);
+            commitCollections.Add(layer.FullPath, converted);
           }
         }
 
@@ -1093,9 +1113,10 @@ namespace SpeckleRhino
 
       #region layer handling
       // convert layers as collections and attach all layer objects
-      var commitCollections = new Dictionary<string, Base>();
+      
       foreach (var layerPath in commitLayers.Keys)
       {
+        if (commitCollections.ContainsKey(layerPath)) { continue; } // this layer was already converted
         var collection = converter.ConvertToSpeckle(commitLayers[layerPath]);
         if (collection != null)
         {
@@ -1110,7 +1131,7 @@ namespace SpeckleRhino
       {
         commitObject[$"@{LayersString}"] = new List<Base>();
       }
-      var processedPaths = new List<string>();
+      var processedPaths = new HashSet<string>();
       foreach (var path in orderedPaths)
       {
         var collection = commitCollections[path];
@@ -1126,7 +1147,6 @@ namespace SpeckleRhino
           if (parentIndex == -1) // this should be attached to base commit directly
           {
             ((List<Base>)commitObject[$"@{LayersString}"]).Add(collection);
-            processedPaths.Add(childPath);
             processedPaths.Add(childPath);
           }
           else
