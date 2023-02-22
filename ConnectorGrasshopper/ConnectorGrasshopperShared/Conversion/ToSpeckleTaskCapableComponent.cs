@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
+using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Serilog;
@@ -121,6 +124,31 @@ namespace ConnectorGrasshopper.Conversion
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
         return new GH_SpeckleBase();
       }
+    }
+
+    private bool preprocessGeometry = false;
+    
+    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+    {
+      base.AppendAdditionalMenuItems(menu);
+      var item = Menu_AppendItem(menu, "Pre-process geometry", (sender, args) =>
+      {
+        preprocessGeometry = !preprocessGeometry;
+        Converter.SetConverterSettings(new Dictionary<string, object> { { "preprocessGeometry", preprocessGeometry } });
+      },null, true, preprocessGeometry);
+      
+    }
+
+    public override bool Write(GH_IWriter writer)
+    {
+      writer.SetBoolean("preprocessGeometry", preprocessGeometry);
+      return base.Write(writer);
+    }
+
+    public override bool Read(GH_IReader reader)
+    {
+      reader.TryGetBoolean("preprocessGeometry", ref preprocessGeometry);
+      return base.Read(reader);
     }
   }
 }

@@ -13,10 +13,10 @@ namespace Objects.Converter.RhinoGh
   static class BrepEncoder
   {
     #region Encode
-    public static Brep ToRawBrep(/*const*/ Brep brep, double scaleFactor)
+    public static Brep ToRawBrep(/*const*/ Brep brep, double scaleFactor = 1.0)
     {
-      brep = brep.DuplicateShallow() as Brep;
-      return EncodeRaw(ref brep, scaleFactor) ? brep : default;
+      var duplicate = brep.DuplicateShallow() as Brep;
+      return EncodeRaw(ref duplicate, scaleFactor) ? duplicate : brep;
     }
 
     internal static bool EncodeRaw(ref Brep brep, double scaleFactor)

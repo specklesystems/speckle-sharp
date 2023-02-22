@@ -827,15 +827,12 @@ namespace Objects.Converter.RhinoGh
       //tol = 0;
       var u = units ?? ModelUnits;
       brep.Repair(tol);
-      BrepEncoder.ToRawBrep(brep, 1.0);
-      // foreach (var f in brep.Faces)
-      // {
-      //   f.RebuildEdges(tol, false, false);
-      // }
-      // Create complex
+      
+      if(PreprocessGeometry)
+        brep = BrepEncoder.ToRawBrep(brep);
 
       // get display mesh and attach render material to it if it exists
-      var displayMesh = previewMesh != null ? previewMesh : GetBrepDisplayMesh(brep);
+      var displayMesh = previewMesh ?? GetBrepDisplayMesh(brep);
       var displayValue = MeshToSpeckle(displayMesh, u);
       if (displayValue != null && mat != null)
         displayValue["renderMaterial"] = mat;
@@ -844,55 +841,18 @@ namespace Objects.Converter.RhinoGh
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
-        .Select(vertex => PointToSpeckle(vertex, u)).ToList();
+        .Select(vertex => PointToSpeckle(vertex, u))
+        .ToList();
       spcklBrep.Curve3D = brep.Curves3D
-        .Select(curve3d =>
-        {
-          Rhino.Geometry.Curve crv = curve3d;
-          if (crv is NurbsCurve nurbsCurve)
-          {
-            // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
-            if (nurbsCurve.Degree < 3)
-              nurbsCurve.IncreaseDegree(3);
-            // Check for invalid multiplicity in the curves. This is also to better support Revit.
-            var invalid = HasInvalidMultiplicity(nurbsCurve);
-
-            // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
-            // TODO: Figure out why closed curves don't like this hack?
-            if (invalid )
-            {
-              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);;
-              var in1 = HasInvalidMultiplicity(nurbsCurve);
-              Console.WriteLine(in1);
-            }
-            nurbsCurve.Domain = curve3d.Domain;
-            crv = nurbsCurve;
-          }
-          var icrv = ConvertToSpeckle(crv) as ICurve;
-          return icrv;
-
-          // And finally convert to speckle
-        }).ToList();
-      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
-      {
-        var curve = c;
-        if (c is NurbsCurve nurbsCurve)
-        {
-          var invalid = HasInvalidMultiplicity(nurbsCurve);
-          if (invalid)
-          {
-            //nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0, 0).ToNurbsCurve();
-            nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);
-            var in1 = HasInvalidMultiplicity(nurbsCurve);
-          }
-
-          curve = nurbsCurve;
-        }
-        var crv = CurveToSpeckle(c, Units.None);
-        return crv;
-      }).ToList();
+        .Select(curve3d => ConvertToSpeckle(curve3d) as ICurve)
+        .ToList();
+      spcklBrep.Curve2D = brep.Curves2D
+        .Select(c => CurveToSpeckle(c, Units.None))
+        .ToList();
       spcklBrep.Surfaces = brep.Surfaces
-        .Select(srf => SurfaceToSpeckle(srf.ToNurbsSurface(), u)).ToList();
+        .Select(srf => SurfaceToSpeckle(srf.ToNurbsSurface(), u))
+        .ToList();
+      
       spcklBrep.IsClosed = brep.IsSolid;
       spcklBrep.Orientation = (BrepOrientation)brep.SolidOrientation;
 
@@ -948,9 +908,8 @@ namespace Objects.Converter.RhinoGh
           return t;
         })
         .ToList();
-      //spcklBrep.volume = brep.GetVolume();
+      
       spcklBrep.volume = brep.IsSolid ? brep.GetVolume() : 0;
-
       spcklBrep.area = brep.GetArea();
       spcklBrep.bbox = BoxToSpeckle(new RH.Box(brep.GetBoundingBox(false)), u);
       
