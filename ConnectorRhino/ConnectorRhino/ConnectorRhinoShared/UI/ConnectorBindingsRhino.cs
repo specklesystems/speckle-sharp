@@ -969,48 +969,50 @@ namespace SpeckleRhino
       var commitLayers = new Dictionary<string, Layer>();
 
       // convert all commit objs
-      foreach (var guid in state.SelectedObjectIds)
+      foreach (var selectedId in state.SelectedObjectIds)
       {
         if (progress.CancellationTokenSource.Token.IsCancellationRequested)
           return null;
 
-        Base converted = null;
-
-        // applicationId can either be doc obj/view guid or name of a NamedView
-        RhinoObject obj = null;
-        bool isView = false;
-        int viewIndex = -1;
+        // find the object from object id
+        RhinoObject obj = null; // geom object
+        Layer layer = null; // layer
+        ViewInfo view = null; // view
+        string descriptor = String.Empty; // the descriptor of this objectId object
         try
         {
-          obj = Doc.Objects.FindId(new Guid(guid)); // try get geom object
-          if (obj == null)
+          Guid guid = new Guid(selectedId); // try to get guid from object id
+          
+          obj = Doc.Objects.FindId(guid);
+          if (obj != null) descriptor = Formatting.ObjectDescriptor(obj);
+          else { layer = Doc.Layers.FindId(guid); }
+          if (layer != null) descriptor = "Layer";
+          else 
           {
-            // Try to check if it's a standard view
-            RhinoView view = Doc.Views.Find(new Guid(guid));
-            if (view != null)
-              isView = true;
+            var standardView = Doc.Views.Find(guid)?.ActiveViewport;
+            if (standardView != null) { view = new ViewInfo(standardView); }
+          }
+          if (view != null) descriptor = "Standard View";
+        }
+        catch // this was a named view name
+        {
+          var viewIndex = Doc.NamedViews.FindByName(selectedId);
+          if (viewIndex != -1)
+          {
+            view = Doc.NamedViews[viewIndex];
+            descriptor = "Named View";
           }
         }
-        catch
-        {
-          viewIndex = Doc.NamedViews.FindByName(guid); // try get a NamedView
-          if (viewIndex != -1)
-            isView = true;
-        }
 
-        string descriptor = string.Empty; ;
-        if (isView)
-        {
-          descriptor = viewIndex != -1 ? "Named View" : "Standard View"; 
-        }
-        else if(obj != null)
-        {
-          descriptor = Formatting.ObjectDescriptor(obj);
-        }
+        // create applicationObject
+        var applicationId = obj?.Attributes.GetUserString(ApplicationIdKey) ?? layer?.GetUserString(ApplicationIdKey) ?? selectedId;
+        ApplicationObject reportObj = new ApplicationObject(selectedId, descriptor) { applicationId = applicationId };
 
-        var applicationId = obj?.Attributes.GetUserString(ApplicationIdKey) ?? guid;
-        ApplicationObject reportObj = new ApplicationObject(guid, descriptor) { applicationId = applicationId };
+        // conversion
+        Base converted = null;
+        converter.Report.Log(reportObj); // Log object so converter can access
 
+        // object conversion
         if (obj != null)
         {
           if (!converter.CanConvertToSpeckle(obj))
@@ -1020,47 +1022,53 @@ namespace SpeckleRhino
             continue;
           }
 
-          converter.Report.Log(reportObj); // Log object so converter can access
           converted = converter.ConvertToSpeckle(obj);
-          if (converted == null)
-          {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
-            progress.Report.Log(reportObj);
-            continue;
-          }
 
-          var layer = Doc.Layers[obj.Attributes.LayerIndex];
-          if (commitLayerObjects.ContainsKey(layer.FullPath))
+          if (converted != null)
           {
-            commitLayerObjects[layer.FullPath].Add(converted); 
+            var objectLayer = Doc.Layers[obj.Attributes.LayerIndex];
+            if (commitLayerObjects.ContainsKey(objectLayer.FullPath))
+            {
+              commitLayerObjects[objectLayer.FullPath].Add(converted);
+            }
+            else
+            {
+              commitLayerObjects.Add(objectLayer.FullPath, new List<Base>() { converted });
+              commitLayers.Add(objectLayer.FullPath, layer);
+            }
           }
-          else
+        }
+
+        // layer conversion
+        else if (layer != null)
+        {
+          converted = converter.ConvertToSpeckle(layer);
+          if (converted != null)
           {
-            commitLayerObjects.Add(layer.FullPath, new List<Base>() { converted });
             commitLayers.Add(layer.FullPath, layer);
           }
         }
-        else if (isView)
-        {
-          // Extract the ViewInfo from the NamedViews table or from the Views table
-          ViewInfo view = viewIndex != -1 ? Doc.NamedViews[viewIndex] : new ViewInfo(Doc.Views.Find(new Guid(guid)).ActiveViewport);
-          converter.Report.Log(reportObj); // Log object so converter can access
-          converted = converter.ConvertToSpeckle(view);
-          if (converted == null)
-          {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
-            progress.Report.Log(reportObj);
-            continue;
-          }
-          var containerName = viewIndex != -1 ? "Named Views" : "Standard Views";
 
+        // view conversion
+        else if (view != null)
+        {
+          converted = converter.ConvertToSpeckle(view);
+
+          var containerName = descriptor += "s";
           if (commitObject[$"@{containerName}"] == null)
             commitObject[$"@{containerName}"] = new List<Base>();
           ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
         }
         else
         {
-          progress.Report.LogOperationError(new Exception($"Failed to find doc object ${guid}."));
+          progress.Report.LogOperationError(new Exception($"Failed to find doc object ${selectedId}."));
+          continue;
+        }
+
+        if (converted == null)
+        {
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+          progress.Report.Log(reportObj);
           continue;
         }
 
@@ -1220,6 +1228,7 @@ namespace SpeckleRhino
           objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
           objs.AddRange(Doc.StandardViews());
           objs.AddRange(Doc.NamedViews());
+          objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()).ToList());
           break;
         case "layer":
           foreach (var layerPath in filter.Selection)
