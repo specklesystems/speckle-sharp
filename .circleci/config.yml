@@ -40,7 +40,7 @@ jobs:
                   (Core|Objects|ConnectorCSI|.*/ConverterCSI)/.* csi true
                   (Core|Objects|ConnectorBentley|.*/ConverterBentley)/.* bentley true
                   (Core|Objects|ConnectorTeklaStructures|.*/ConverterTeklaStructures)/.* teklastructures true
-                  .* archicad true
+                  (Core|Objects|ConnectorArchicad)/.* archicad true
                   (Core|Objects|ConnectorNavisworks|.*/ConverterNavisworks)/.* navisworks true
                 base-revision: main
                 output-path: .circleci/scripts/parameters.json
