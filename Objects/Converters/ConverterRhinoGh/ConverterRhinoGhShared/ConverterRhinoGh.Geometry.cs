@@ -50,19 +50,21 @@ namespace Objects.Converter.RhinoGh
       return new double[] { pt.X, pt.Y, pt.Z };
     }
 
-    // Mass point converter - deprecate once mesh implements pts method
-    public Point3d[] PointListToNative(IEnumerable<double> arr, string units)
+    /// Mass point converter
+    /// <remarks>This is faster than calling <see cref="Mesh.GetPoints"/> <see cref="Objects.Geometry.Polyline.GetPoints"/></remarks>
+    public List<Point3d> PointListToNative(IList<double> arr, string units)
     {
       var enumerable = arr.ToList();
       if (enumerable.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
 
-      Point3d[] points = new Point3d[enumerable.Count / 3];
-      var asArray = enumerable.ToArray();
-      for (int i = 2, k = 0; i < enumerable.Count; i += 3)
-        points[k++] = new Point3d(
-          ScaleToNative(asArray[i - 2], units),
-          ScaleToNative(asArray[i - 1], units),
-          ScaleToNative(asArray[i], units));
+      var points = new List<Point3d>(arr.Count / 3);
+      
+      var sf = Units.GetConversionFactor(units, ModelUnits);
+      for (int i = 2; i < arr.Count; i += 3)
+        points.Add(new Point3d(
+          arr[i - 2] * sf,
+          arr[i - 1] * sf,
+          arr[i] * sf));
 
       return points;
     }
@@ -395,11 +397,12 @@ namespace Objects.Converter.RhinoGh
 
       return null;
     }
-
+    
     // Deserialise
     public PolylineCurve PolylineToNative(Polyline poly)
     {
-      List<Point3d> points = poly.GetPoints().Select(o => PointToNative(o).Location).ToList();
+      List<Point3d> points = PointListToNative(poly.value, poly.units);
+
       if (poly.closed) points.Add(points[0]);
 
       var myPoly = new PolylineCurve(points);
