@@ -342,6 +342,14 @@ namespace ConnectorGrasshopper.Properties {
             }
         }
         
+        
+        internal static System.Drawing.Bitmap SpeckleGroup {
+          get {
+            object obj = ResourceManager.GetObject("SpeckleGroup", resourceCulture);
+            return ((System.Drawing.Bitmap)(obj));
+          }
+        }
+
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>

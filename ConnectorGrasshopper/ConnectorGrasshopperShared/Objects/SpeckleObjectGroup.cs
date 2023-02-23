@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
@@ -34,6 +35,7 @@ namespace ConnectorGrasshopper.Objects
     {
     }
 
+    protected override Bitmap Icon => Properties.Resources.SpeckleGroup;
     public override Guid ComponentGuid => new Guid("C9800EFB-F29E-4985-A13D-9C6F4CECDEDC");
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
