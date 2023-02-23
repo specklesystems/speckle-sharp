@@ -195,7 +195,7 @@ namespace Objects.Converter.Revit
         else
           continue;
 
-        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
 
         Base obj = null;
         bool connectorBasedCreation = false;
