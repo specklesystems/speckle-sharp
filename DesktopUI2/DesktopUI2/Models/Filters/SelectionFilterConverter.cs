@@ -2,6 +2,7 @@
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 using System;
+using Serilog;
 
 namespace DesktopUI2.Models.Filters
 {
@@ -50,8 +51,7 @@ namespace DesktopUI2.Models.Filters
       }
       else
       {
-        throw new SpeckleException(
-          $"Unknown filter type: {type}. Please add a case in DesktopUI2.Models.Filters.SelectionFilterConverter.cs");
+        throw new NotImplementedException($"Unknown filter type: {type}. No case matching that type defined in {GetType().FullName}");
       }
 
       serializer.Populate(jsonObject.CreateReader(), filter);

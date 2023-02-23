@@ -8,17 +8,18 @@ namespace Speckle.ConnectorNavisworks.Bindings
   public partial class ConnectorBindingsNavisworks
   {
     // CAUTION: these strings need to have the same values as in the converter
-    const string InternalOrigin = "Model Origin (default)";
-    const string ProxyOrigin = "Project Base Origin";
-    const string BBoxOrigin = "Boundingbox Origin";
+    private const string InternalOrigin = "Model Origin (default)";
+    private const string ProxyOrigin = "Project Base Origin";
+    private const string BBoxOrigin = "Boundingbox Origin";
 
     // used to store the Stream State settings when sending
     private List<ISetting> CurrentSettings { get; set; }
 
+
     public override List<ISetting> GetSettings()
     {
-      List<string> referencePoints = new List<string>() { InternalOrigin, ProxyOrigin, BBoxOrigin };
-      List<string> units = new List<string>(Enum.GetNames(typeof(Units)));
+      var referencePoints = new List<string> { InternalOrigin, ProxyOrigin, BBoxOrigin };
+      var units = new List<string>(Enum.GetNames(typeof(Units)));
 
       return new List<ISetting>
       {

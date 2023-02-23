@@ -13,6 +13,7 @@ using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -29,7 +30,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Stream = Speckle.Core.Api.Stream;
-using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -240,7 +240,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not initialize the Home Screen", ex, true, Sentry.SentryLevel.Error);
+        Log.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}",GetType(), ex.Message);
       }
     }
 
@@ -267,7 +267,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not Update Saved STreams", ex, true, Sentry.SentryLevel.Error);
+        Log.Error(ex, "Could not Update Saved Streams {exceptionMessage}", ex.Message);
       }
     }
 
@@ -290,7 +290,8 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        //FIXME: This branch can't ever get hit right?
+        Log.Error(ex, "Failed updating selected stream {exceptionMessage}",ex.Message);
       }
     }
 
@@ -321,7 +322,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Error(ex, "Failed to add saved stream {exceptionMessage}",ex.Message);
       }
     }
 
@@ -380,6 +381,7 @@ namespace DesktopUI2.ViewModels
               return;
 
             Log.Error(e, "Could not fetch streams");
+            
             Dispatcher.UIThread.Post(() =>
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
@@ -398,7 +400,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Fatal(ex, "Unexpected exception while getting streams {exceptionMessage}", ex.Message);
       }
       finally
       {
@@ -444,7 +446,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Error(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(GetNotifications),ex.Message);
       }
     }
 
@@ -501,7 +503,10 @@ namespace DesktopUI2.ViewModels
           await AccountManager.UpdateAccounts();
           Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
         }
-        catch { }
+        catch(Exception ex)
+        {
+          Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Refresh), ex.Message);
+        }
 
         foreach (var account in Accounts)
         {
@@ -519,7 +524,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Error(ex, "Failed to refresh {exceptionMessage}", ex.Message);
       }
     }
 
@@ -615,7 +620,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        new SpeckleException("Error generating menu items", ex, true, Sentry.SentryLevel.Error);
+        Log.Error(ex, "Error generating menu items {exceptionMessage}", ex.Message);
       }
     }
 
@@ -638,13 +643,15 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Error(ex, "Failed to remove saved stream {exceptionMessage}", ex.Message);
       }
     }
 
     public async void AddAccountCommand()
     {
+      InProgress = true;
       await Utils.AddAccountCommand();
+      InProgress = false;
     }
     public async void RemoveAccountCommand(Account account)
     {
@@ -656,7 +663,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Error(ex, "Failed to remove account {exceptionMessage}", ex.Message);
       }
     }
 
@@ -704,7 +711,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          Log.Error(ex, ex.Message);
+          Log.Fatal(ex, "Failed to create new stream {exceptionMessage}", ex.Message);
           Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
@@ -757,7 +764,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          Log.Error(ex, ex.Message);
+          Log.Fatal(ex, "Failed to add from url {dialogResult} {exceptionMessage}", result, ex.Message);
           Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
@@ -828,7 +835,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          Log.Error(ex, ex.Message);
+          Log.Error(ex, "Failed to open saved stream {exceptionMessage}",ex.Message);
         }
       }
     }

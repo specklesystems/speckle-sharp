@@ -17,6 +17,7 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace DesktopUI2
 {
@@ -109,21 +110,21 @@ namespace DesktopUI2
 
   public static class ApiUtils
   {
-    private static Dictionary<string, User> CachedUsers = new Dictionary<string, User>();
+    private static Dictionary<string, UserBase> CachedUsers = new Dictionary<string, UserBase>();
     private static Dictionary<string, AccountViewModel> CachedAccounts = new Dictionary<string, AccountViewModel>();
 
     public static void ClearCache()
     {
       CachedAccounts = new Dictionary<string, AccountViewModel>();
-      CachedUsers = new Dictionary<string, User>();
+      CachedUsers = new Dictionary<string, UserBase>();
     }
 
-    private static async Task<User> GetUser(string userId, Client client)
+    private static async Task<UserBase> GetUser(string userId, Client client)
     {
       if (CachedUsers.ContainsKey(userId))
         return CachedUsers[userId];
 
-      User user = await client.UserGet(userId);
+      var user = await client.OtherUserGet(userId);
 
       if (user != null)
         CachedUsers[userId] = user;
@@ -136,7 +137,7 @@ namespace DesktopUI2
       if (CachedAccounts.ContainsKey(userId))
         return CachedAccounts[userId];
 
-      User user = await GetUser(userId, client);
+      var user = await GetUser(userId, client);
 
       if (user == null)
         return null;
@@ -205,10 +206,9 @@ namespace DesktopUI2
 
     public static void LaunchManager()
     {
+      string path = "";
       try
       {
-        string path = "";
-
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -230,7 +230,8 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not Launch Manager", ex, true, Sentry.SentryLevel.Error);
+        Log.ForContext("path", path)
+          .Error(ex, "Failed to launch Manager");
       }
     }
 
@@ -251,23 +252,25 @@ namespace DesktopUI2
             Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
           else
           {
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
             try
             {
-              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
-
               await AccountManager.AddAccount(result);
               await Task.Delay(1000);
 
               MainViewModel.Instance.NavigateToDefaultScreen();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              new SpeckleException("Could not Add Account in AccountManager", e, true, Sentry.SentryLevel.Error);
+              Log.ForContext("dialogResult", result)
+                .Warning(ex, "Swallowing exception in {methodName} {exceptionMessage}", nameof(AddAccountCommand), nameof(AddAccountCommand), ex.Message);
+              
+              //errors already handled in AddAccount
 
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
                 Title = "Something went wrong...",
-                Message = e.Message,
+                Message = ex.Message,
                 Expiration = TimeSpan.Zero,
                 Type = Avalonia.Controls.Notifications.NotificationType.Error,
 
@@ -280,7 +283,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not Add Account", ex, true, Sentry.SentryLevel.Error);
+        Log.Fatal(ex, "Failed to add account {viewModel} {exceptionMessage}",ex.Message);
       }
     }
   }
