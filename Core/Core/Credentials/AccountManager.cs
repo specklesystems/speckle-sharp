@@ -532,6 +532,8 @@ namespace Speckle.Core.Credentials
 
       // locking for 1 minute
       var timeout = TimeSpan.FromMinutes(3);
+      // this is not part of the try finally block
+      // we do not want to clean up the existing locks
       var lockId = _tryLockAccountAddFlow(timeout);
       var challenge = GenerateChallenge();
 
