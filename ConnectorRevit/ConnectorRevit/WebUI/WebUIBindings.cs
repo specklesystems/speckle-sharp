@@ -3,7 +3,6 @@ using System.Text;
 using CefSharp;
 using CefSharp.Wpf;
 
-
 namespace WebUI
 {
   public abstract class WebUIBindings
