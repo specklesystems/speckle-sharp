@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
@@ -23,7 +24,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override Guid ComponentGuid => new Guid("A72EE68B-218D-41D5-8E23-61369A5A5B55");
     protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObjectByKeyValue;
-    public override GH_Exposure Exposure => GH_Exposure.tertiary | GH_Exposure.obscure;
+    public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -130,7 +131,10 @@ namespace ConnectorGrasshopper.Objects
           var value = values[i];
           try
           {
-            @base[key] = Converter != null ? Utilities.TryConvertItemToSpeckle(value, Converter) : value;
+            if(value is SpeckleObjectGroup group)
+              @base[key] = Converter != null ? group.Value.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList() : group.Value;
+            else
+              @base[key] = Converter != null ? Utilities.TryConvertItemToSpeckle(value, Converter) : value;
           }
           catch (Exception e)
           {

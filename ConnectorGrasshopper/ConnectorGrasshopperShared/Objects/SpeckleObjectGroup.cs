@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
+using ConnectorGrasshopper.Extras;
 using GH_IO.Serialization;
+using Grasshopper;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Speckle.Core.Kits;
 
 namespace ConnectorGrasshopper.Objects
 {
@@ -25,6 +29,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override string TypeDescription =>
       "Represents a list of speckle objects. This is only intended to be used with our 'CSO K/V' and 'ESO K/V' components";
+
   }
   
   public class SpeckleObjectGroupComponent : SelectKitComponentBase
@@ -37,6 +42,8 @@ namespace ConnectorGrasshopper.Objects
 
     protected override Bitmap Icon => Properties.Resources.SpeckleGroup;
     public override Guid ComponentGuid => new Guid("C9800EFB-F29E-4985-A13D-9C6F4CECDEDC");
+
+    public override GH_Exposure Exposure => GH_Exposure.quinary | GH_Exposure.obscure;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
@@ -53,9 +60,17 @@ namespace ConnectorGrasshopper.Objects
       var values = new List<object>();
       if (!DA.GetDataList(0, values)) return;
 
+      var hasGroups = values.Any(item => item is SpeckleObjectGroup);
+      if (hasGroups)
+      {
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Nesting groups (groups inside of groups) is not supported.");
+        return;
+      }
+      
       var group = new SpeckleObjectGroup(values);
 
       DA.SetData(0, group);
     }
+    
   }
 }
