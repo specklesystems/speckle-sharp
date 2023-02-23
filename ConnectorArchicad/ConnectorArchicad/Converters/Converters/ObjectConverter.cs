@@ -38,11 +38,16 @@ namespace Archicad.Converters
 
         // get the geometry
         List<Mesh> meshes = null;
-        var m = element["displayValue"] ?? element["@displayValue"];
-        if (m is List<Mesh>)
-          meshes = (List<Mesh>)m;
-        else if (m is List<object>)
-          meshes = ((List<object>)m).Cast<Mesh>().ToList();
+        if (element is Mesh mesh)
+          meshes = new List<Mesh>() { mesh };
+        else
+        {
+          var m = element["displayValue"] ?? element["@displayValue"];
+          if (m is List<Mesh>)
+            meshes = (List<Mesh>)m;
+          else if (m is List<object>)
+            meshes = ((List<object>)m).Cast<Mesh>().ToList();
+        }
 
         if (meshes == null)
           continue;
