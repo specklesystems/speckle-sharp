@@ -11,8 +11,8 @@ namespace Speckle.Core.Credentials
     { }
   }
 
-  public class SpeckleAccoundFlowLockedException : SpeckleAccountManagerException
+  public class SpeckleAccountFlowLockedException : SpeckleAccountManagerException
   {
-    public SpeckleAccoundFlowLockedException(string message) : base(message) { }
+    public SpeckleAccountFlowLockedException(string message) : base(message) { }
   }
 }

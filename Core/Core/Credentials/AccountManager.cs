@@ -481,7 +481,7 @@ namespace Speckle.Core.Credentials
       // prevent launching this flow multiple times
       if (_isAddingAccount)
         // this should probably throw with an error message
-        throw new SpeckleAccoundFlowLockedException("The account add flow is already launched.");
+        throw new SpeckleAccountFlowLockedException("The account add flow is already launched.");
 
       // this uses the SQLite transport to store locks
       var lockIds = AccountAddLockStorage.GetAllObjects().ToList();
@@ -495,9 +495,12 @@ namespace Speckle.Core.Credentials
       var _accountAddFlowIsLocked = locks.Any(lockValue => lockValue > now);
 
       if (_accountAddFlowIsLocked)
-        throw new SpeckleAccoundFlowLockedException(
-          $"The account add flow is locked, finish the account add procedure in that app or retry in {(locks.First() - now).TotalSeconds} seconds"
+      {
+        var lockString = String.Format("{0:mm} minutes {0:ss} seconds", locks.First() - now);
+        throw new SpeckleAccountFlowLockedException(
+          $"The account add flow is locked, finish the account add procedure in that app or retry in {lockString}"
         );
+      }
 
       // make sure all old locks are removed
       foreach (var id in lockIds)
@@ -510,7 +513,7 @@ namespace Speckle.Core.Credentials
       // for ease of deletion and retrieval
       AccountAddLockStorage.SaveObjectSync(lockId, lockId);
       _isAddingAccount = true;
-      return "lock id";
+      return lockId;
     }
 
     private static void _unlockAccountAddFlow(string lockId)
