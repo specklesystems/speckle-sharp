@@ -38,12 +38,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extras\TreeBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\Utilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Loader.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectByKeyValueV2TaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\CreateSpeckleObjectTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\DeconstructSpeckleObjectTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\Deprecated\CreateSpeckleObjectByKeyValueTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\Deprecated\ExpandSpeckleObjectTaskComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\Deprecated\ExtendSpeckleObjectByKeyValueTaskComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Objects\Deprecated\ObjectsV2Upgrader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectByKeyValueV2TaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\ExtendSpeckleObjectTaskComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Objects\GetObjectKeysComponent.cs" />
