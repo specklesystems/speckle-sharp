@@ -6,7 +6,7 @@
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
     <TargetFramework>net462</TargetFramework>
-    <LangVersion>9.0</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
     <StartArguments />
