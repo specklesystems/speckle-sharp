@@ -654,7 +654,7 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        var name = string.IsNullOrEmpty(element["category"].ToString()) ? typeof(T).Name : element["category"].ToString();
+        var name = string.IsNullOrEmpty(element["category"] as string) ? typeof(T).Name : element["category"].ToString();
         appObj.Log.Add($"Could not find any family to use for category {name}.");
         value = default(T);
         return false;

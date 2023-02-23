@@ -1,11 +1,11 @@
-﻿using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.Interop;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Autodesk.Navisworks.Api;
+using Autodesk.Navisworks.Api.Interop;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Navisworks
 {
@@ -13,21 +13,21 @@ namespace Objects.Converter.Navisworks
   {
     internal static Base GetPropertiesBase(ModelItem element, ref Base @base)
     {
-      Base propertiesBase = new Base();
+      var propertiesBase = new Base();
       // GUI visible properties varies by a Global Options setting.
-      PropertyCategoryCollection userVisiblePropertyCategories = element.GetUserFilteredPropertyCategories();
+      var userVisiblePropertyCategories = element.GetUserFilteredPropertyCategories();
 
-      foreach (PropertyCategory propertyCategory in userVisiblePropertyCategories)
+      foreach (var propertyCategory in userVisiblePropertyCategories)
       {
-        DataPropertyCollection properties = propertyCategory.Properties;
-        Base propertyCategoryBase = new Base();
+        var properties = propertyCategory.Properties;
+        var propertyCategoryBase = new Base();
 
         properties.ToList().ForEach(property =>
           BuildPropertyCategory(propertyCategory, property, ref propertyCategoryBase));
 
         if (propertyCategoryBase.GetMembers().Any() && propertyCategory.DisplayName != null)
         {
-          string propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
+          var propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
 
           switch (propertyCategory.DisplayName)
           {
@@ -35,10 +35,8 @@ namespace Objects.Converter.Navisworks
               continue;
             case "Item":
             {
-              foreach (string property in propertyCategoryBase.GetMembers().Keys)
-              {
+              foreach (var property in propertyCategoryBase.GetMembers().Keys)
                 @base[property] = propertyCategoryBase[property];
-              }
 
               break;
             }
@@ -86,7 +84,7 @@ namespace Objects.Converter.Navisworks
 
       dynamic propertyValue = null;
 
-      VariantDataType type = property.Value.DataType;
+      var type = property.Value.DataType;
 
       switch (type)
       {
@@ -133,7 +131,7 @@ namespace Objects.Converter.Navisworks
 
       if (propertyValue != null)
       {
-        object keyPropValue = propertyCategoryBase[propertyName];
+        var keyPropValue = propertyCategoryBase[propertyName];
 
         if (keyPropValue == null)
         {
@@ -141,12 +139,9 @@ namespace Objects.Converter.Navisworks
         }
         else if (keyPropValue is List<dynamic>)
         {
-          List<dynamic> arrayPropValue = (List<dynamic>)keyPropValue;
+          var arrayPropValue = (List<dynamic>)keyPropValue;
 
-          if (!arrayPropValue.Contains(propertyValue))
-          {
-            arrayPropValue.Add(propertyValue);
-          }
+          if (!arrayPropValue.Contains(propertyValue)) arrayPropValue.Add(propertyValue);
 
           propertyCategoryBase[propertyName] = arrayPropValue;
         }
@@ -156,11 +151,7 @@ namespace Objects.Converter.Navisworks
 
           if (existingValue != propertyValue)
           {
-            List<dynamic> arrayPropValue = new List<dynamic>
-            {
-              existingValue,
-              propertyValue
-            };
+            var arrayPropValue = new List<dynamic> { existingValue, propertyValue };
 
             propertyCategoryBase[propertyName] = arrayPropValue;
           }
@@ -170,22 +161,20 @@ namespace Objects.Converter.Navisworks
 
     public static List<Tuple<NamedConstant, NamedConstant>> LoadQuickProperties()
     {
-      List<Tuple<NamedConstant, NamedConstant>> quickPropertiesCategoryPropertyPairs =
+      var quickPropertiesCategoryPropertyPairs =
         new List<Tuple<NamedConstant, NamedConstant>>();
-      using (LcUOptionLock optionLock = new LcUOptionLock())
+      using (var optionLock = new LcUOptionLock())
       {
-        LcUOptionSet set = LcUOption.GetSet("interface.smart_tags.definitions", optionLock);
-        int numOptions = set.GetNumOptions();
+        var set = LcUOption.GetSet("interface.smart_tags.definitions", optionLock);
+        var numOptions = set.GetNumOptions();
         if (numOptions > 0)
-        {
-          for (int index = 0; index < numOptions; ++index)
+          for (var index = 0; index < numOptions; ++index)
           {
-            LcUOptionSet optionSet = set.GetValue(index, null);
-            NamedConstant cat = optionSet.GetName("category").GetPtr();
-            NamedConstant prop = optionSet.GetName("property").GetPtr();
+            var optionSet = set.GetValue(index, null);
+            var cat = optionSet.GetName("category").GetPtr();
+            var prop = optionSet.GetName("property").GetPtr();
             quickPropertiesCategoryPropertyPairs.Add(Tuple.Create(cat, prop));
           }
-        }
       }
 
       return quickPropertiesCategoryPropertyPairs;

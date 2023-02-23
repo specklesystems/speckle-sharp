@@ -9,20 +9,14 @@ using Objects.Primitive;
 using Speckle.Core.Models;
 using ComBridge = Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 using Plane = Objects.Geometry.Plane;
-using Vector = Objects.Geometry.Vector; //
+using Vector = Objects.Geometry.Vector;
+
+//
 
 namespace Objects.Converter.Navisworks
 {
   public class PrimitiveProcessor : InwSimplePrimitivesCB
   {
-    public List<double> Coords { get; set; }
-    public List<int> Faces { get; set; }
-    public List<TriangleD> Triangles { get; set; }
-    public List<LineD> Lines { get; set; }
-    public List<PointD> Points { get; set; }
-    public double[] LocalToWorldTransformation { get; set; }
-    public bool ElevationMode { get; set; }
-
     public PrimitiveProcessor()
     {
       Coords = new List<double>();
@@ -36,6 +30,28 @@ namespace Objects.Converter.Navisworks
     {
       ElevationMode = elevationMode;
     }
+
+
+    public List<double> Coords { get; set; }
+
+
+    public List<int> Faces { get; set; }
+
+
+    public List<TriangleD> Triangles { get; set; }
+
+
+    public List<LineD> Lines { get; set; }
+
+
+    public List<PointD> Points { get; set; }
+
+
+    public double[] LocalToWorldTransformation { get; set; }
+
+
+    public bool ElevationMode { get; set; }
+
 
     public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
     {
@@ -87,12 +103,16 @@ namespace Objects.Converter.Navisworks
       Triangles.Add(new TriangleD(vD1, vD2, vD3));
     }
 
-    private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode) =>
-      elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
+    private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode)
+    {
+      return elevationMode
+        ? v
+        : new Vector3D(v.X, -v.Z, v.Y);
+    }
 
     private static Vector3D ApplyTransformation(Vector3 vector3, IReadOnlyList<double> matrix)
     {
-      double t1 = matrix[3] * vector3.X + matrix[7] * vector3.Y + matrix[11] * vector3.Z + matrix[15];
+      var t1 = matrix[3] * vector3.X + matrix[7] * vector3.Y + matrix[11] * vector3.Z + matrix[15];
       var vectorDoubleX = (matrix[0] * vector3.X + matrix[4] * vector3.Y + matrix[8] * vector3.Z + matrix[12]) / t1;
       var vectorDoubleY = (matrix[1] * vector3.X + matrix[5] * vector3.Y + matrix[9] * vector3.Z + matrix[13]) / t1;
       var vectorDoubleZ = (matrix[2] * vector3.X + matrix[6] * vector3.Y + matrix[10] * vector3.Z + matrix[14]) / t1;
@@ -102,7 +122,7 @@ namespace Objects.Converter.Navisworks
 
     private static Vector3 VectorFromVertex(InwSimpleVertex v)
     {
-      Array arrayV = (Array)v.coord;
+      var arrayV = (Array)v.coord;
       return new Vector3(
         (float)arrayV.GetValue(1),
         (float)arrayV.GetValue(2),
@@ -114,24 +134,35 @@ namespace Objects.Converter.Navisworks
 
   public class NavisworksGeometry
   {
-    public InwOpSelection Selection { get; set; }
-    public ModelItem ModelItem { get; set; }
-    public Stack<InwOaFragment3> ModelFragments { get; set; }
-    public Base Geometry { get; internal set; }
-    public Base Base { get; internal set; }
-
-    public bool ElevationMode { get; set; } = false;
-
     public NavisworksGeometry(ModelItem modelItem)
     {
       ModelItem = modelItem;
 
       // Add conversion geometry to oModelColl Property
-      ModelItemCollection modelItemCollection = new ModelItemCollection { modelItem };
+      var modelItemCollection = new ModelItemCollection { modelItem };
 
       //convert to COM selection
       Selection = ComBridge.ToInwOpSelection(modelItemCollection);
     }
+
+
+    public InwOpSelection Selection { get; set; }
+
+
+    public ModelItem ModelItem { get; set; }
+
+
+    public Stack<InwOaFragment3> ModelFragments { get; set; }
+
+
+    public Base Geometry { get; internal set; }
+
+
+    public Base Base { get; internal set; }
+
+
+    public bool ElevationMode { get; set; } = false;
+
 
     public List<PrimitiveProcessor> GetUniqueGeometryFragments()
     {
@@ -157,52 +188,50 @@ namespace Objects.Converter.Navisworks
       return processors;
     }
 
-    private static bool IsSameFragmentPath(Array a1, Array a2) =>
-      a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
+    private static bool IsSameFragmentPath(Array a1, Array a2)
+    {
+      return a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
+    }
 
     public static double[] ConvertArrayToDouble(Array arr)
     {
-      if (arr.Rank != 1)
-      {
-        throw new ArgumentException();
-      }
+      if (arr.Rank != 1) throw new ArgumentException();
 
       var doubleArray = new double[arr.GetLength(0)];
       for (var ix = arr.GetLowerBound(0); ix <= arr.GetUpperBound(0); ++ix)
-      {
         doubleArray[ix - arr.GetLowerBound(0)] = (double)arr.GetValue(ix);
-      }
 
       return doubleArray;
     }
   }
 
   /// <summary>
-  /// A Triangle where all vertices are in turn stored with double values as opposed to floats
+  ///   A Triangle where all vertices are in turn stored with double values as opposed to floats
   /// </summary>
   public class TriangleD
   {
-    public Vector3D Vertex1 { get; set; }
-    public Vector3D Vertex2 { get; set; }
-    public Vector3D Vertex3 { get; set; }
-
     public TriangleD(Vector3D v1, Vector3D v2, Vector3D v3)
     {
       Vertex1 = v1;
       Vertex2 = v2;
       Vertex3 = v3;
     }
-  }
 
-  /// <summary>
-  /// A Line where each end point vertex is in turn stored with double values as opposed to floats
-  /// </summary>
-  public class LineD
-  {
+
     public Vector3D Vertex1 { get; set; }
+
+
     public Vector3D Vertex2 { get; set; }
 
 
+    public Vector3D Vertex3 { get; set; }
+  }
+
+  /// <summary>
+  ///   A Line where each end point vertex is in turn stored with double values as opposed to floats
+  /// </summary>
+  public class LineD
+  {
     public LineD()
     {
       Vertex1 = new Vector3D();
@@ -214,32 +243,58 @@ namespace Objects.Converter.Navisworks
       Vertex1 = v1;
       Vertex2 = v2;
     }
+
+
+    public Vector3D Vertex1 { get; set; }
+
+
+    public Vector3D Vertex2 { get; set; }
   }
 
   /// <summary>
-  /// A Line where each end point vertex is in turn stored with double values as opposed to floats
+  ///   A Line where each end point vertex is in turn stored with double values as opposed to floats
   /// </summary>
   public class PointD
   {
-    public Vector3D Vertex1 { get; set; }
-
     public PointD(Vector3D vertex1)
     {
       Vertex1 = vertex1;
     }
+
+
+    public Vector3D Vertex1 { get; set; }
   }
 
 
   public partial class ConverterNavisworks
   {
+    public static Vector3D TransformVector3D { get; set; }
+
+
+    public Vector SettingOutPoint { get; set; }
+
+
+    public Vector TransformVector { get; set; }
+
+
+    public BoundingBox3D ModelBoundingBox { get; set; }
+
+
+    /// <summary>
+    ///   ElevationMode is the indicator that the model is being handled as an XY ground plane
+    ///   with Z as elevation height.
+    ///   This is distinct from the typical "handedness" of 3D models.
+    /// </summary>
+    public static bool ElevationMode { get; set; }
+
     public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
     {
-      Units source = Application.ActiveDocument.Units;
-      Units target = Units.Meters;
-      double scale = UnitConversion.ScaleFactor(source, target);
+      var source = Application.ActiveDocument.Units;
+      var target = Units.Meters;
+      var scale = UnitConversion.ScaleFactor(source, target);
 
-      Point3D min = boundingBox3D.Min;
-      Point3D max = boundingBox3D.Max;
+      var min = boundingBox3D.Min;
+      var max = boundingBox3D.Max;
 
       var basePlane = new Plane
       {
@@ -250,7 +305,7 @@ namespace Objects.Converter.Navisworks
         normal = new Vector(0, 0, 1)
       };
 
-      Box boundingBox = new Box
+      var boundingBox = new Box
       {
         units = source.ToString(),
         basePlane = basePlane,
@@ -262,41 +317,31 @@ namespace Objects.Converter.Navisworks
       return boundingBox;
     }
 
-    public static Vector3D TransformVector3D { get; set; }
-    public Vector SettingOutPoint { get; set; }
-    public Vector TransformVector { get; set; }
-    public BoundingBox3D ModelBoundingBox { get; set; }
-
-    /// <summary>
-    /// ElevationMode is the indicator that the model is being handled as an XY ground plane
-    /// with Z as elevation height.
-    /// This is distinct from the typical "handedness" of 3D models.
-    /// </summary>
-    public static bool ElevationMode { get; set; }
-
     public void SetModelOrientationMode()
     {
-      Vector3D elevationModeUpVector = new Vector3D(0, 0, 1);
-      Vector3D elevationModeRightVector = new Vector3D(1, 0, 0);
+      var elevationModeUpVector = new Vector3D(0, 0, 1);
+      var elevationModeRightVector = new Vector3D(1, 0, 0);
 
-      bool upMatch = VectorMatch(Doc.UpVector, elevationModeUpVector);
-      bool rightMatch = VectorMatch(Doc.RightVector, elevationModeRightVector);
+      var upMatch = VectorMatch(Doc.UpVector, elevationModeUpVector);
+      var rightMatch = VectorMatch(Doc.RightVector, elevationModeRightVector);
 
       // TODO: do both need to match or would UP be enough?
       ElevationMode = upMatch && rightMatch;
     }
 
     /// <summary>
-    /// Compares two vectors as identical with an optional tolerance.
+    ///   Compares two vectors as identical with an optional tolerance.
     /// </summary>
     /// <param name="vectorA">The first comparison vector</param>
     /// <param name="vectorB">The second comparison vector</param>
     /// <param name="tolerance">Default value of 1e-9</param>
     /// <returns>Boolean value indicating match success</returns>
-    private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9) =>
-      Math.Abs(vectorA.X - vectorB.X) < tolerance &&
-      Math.Abs(vectorA.Y - vectorB.Y) < tolerance &&
-      Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
+    private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9)
+    {
+      return Math.Abs(vectorA.X - vectorB.X) < tolerance &&
+             Math.Abs(vectorA.Y - vectorB.Y) < tolerance &&
+             Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
+    }
 
 
     public static void PopulateModelFragments(NavisworksGeometry geometry)
@@ -310,14 +355,11 @@ namespace Objects.Converter.Navisworks
         var fragments = path.Fragments();
         foreach (InwOaFragment3 fragment in fragments)
         {
-          int[] a1 = ((Array)fragment.path.ArrayData).ToArray<int>();
-          int[] a2 = ((Array)path.ArrayData).ToArray<int>();
-          bool isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
+          var a1 = ((Array)fragment.path.ArrayData).ToArray<int>();
+          var a2 = ((Array)path.ArrayData).ToArray<int>();
+          var isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
 
-          if (isSame)
-          {
-            geometry.ModelFragments.Push(fragment);
-          }
+          if (isSame) geometry.ModelFragments.Push(fragment);
 
           GC.KeepAlive(fragments);
         }
@@ -414,11 +456,11 @@ namespace Objects.Converter.Navisworks
       switch (ModelTransform)
       {
         case Transforms.ProjectBasePoint:
-          Units source = Application.ActiveDocument.Units;
+          var source = Application.ActiveDocument.Units;
 
           // Coordinate Units are likely to be set to match the HUD readout which is
           // different to the internal units of constituent models.
-          double scale = UnitConversion.ScaleFactor(CoordinateUnits, source);
+          var scale = UnitConversion.ScaleFactor(CoordinateUnits, source);
 
           transform = new Vector3D(-ProjectBasePoint.X * scale, -ProjectBasePoint.Y * scale, 0);
           break;

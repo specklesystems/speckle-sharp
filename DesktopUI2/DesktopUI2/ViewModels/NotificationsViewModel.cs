@@ -37,7 +37,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        Log.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}",GetType(), ex.Message);
       }
     }
   }
