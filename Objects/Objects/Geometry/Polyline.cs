@@ -45,7 +45,7 @@ namespace Objects.Geometry
     [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]
     public List<Point> points => GetPoints();
     
-    
+    ///<remarks>This function may be suboptimal for performance for polylines with many points</remarks>
     /// <returns><see cref="value"/> as List of <see cref="Point"/>s</returns>
     /// <exception cref="SpeckleException">when list is malformed</exception>
     public List<Point> GetPoints()
