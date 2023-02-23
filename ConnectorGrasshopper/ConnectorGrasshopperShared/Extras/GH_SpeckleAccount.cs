@@ -90,22 +90,12 @@ namespace ConnectorGrasshopper.Extras
 
   public class SpeckleAccountParam : GH_Param<GH_SpeckleAccountGoo>
   {
-    public SpeckleAccountParam(IGH_InstanceDescription tag) : base(tag)
+    public SpeckleAccountParam() : base("Speckle Account", "A", "A speckle account", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.ACCOUNTS, GH_ParamAccess.item)
     {
     }
 
-    public SpeckleAccountParam(IGH_InstanceDescription tag, GH_ParamAccess access) : base(tag, access)
-    {
-    }
-
-    public SpeckleAccountParam(string name, string nickname, string description, string category, string subcategory, GH_ParamAccess access) : base(name, nickname, description, category, subcategory, access)
-    {
-    }
-
-    public SpeckleAccountParam() : this("Speckle Account", "SA", "A speckle account.", ComponentCategories.PRIMARY_RIBBON, ComponentCategories.ACCOUNTS, GH_ParamAccess.item)
-    {
-    }
-
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    
     public override Guid ComponentGuid => new Guid("2092EB37-5EA1-4779-BC4E-12074523228E");
 
     protected override Bitmap Icon => Properties.Resources.AccountParam;

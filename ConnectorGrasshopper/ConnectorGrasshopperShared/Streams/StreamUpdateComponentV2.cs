@@ -10,7 +10,7 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamUpdateComponentV2 : GH_SpeckleTaskCapableComponent<bool>
   {
-    public StreamUpdateComponentV2() : base("Stream Update V2", "sUp", "Updates a stream with new details",
+    public StreamUpdateComponentV2() : base("Stream Update", "sUp", "Updates a stream with new details",
       ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
     {

@@ -10,7 +10,7 @@ namespace ConnectorGrasshopper.Streams
 {
   public class StreamDetailsComponentV2 : GH_SpeckleTaskCapableComponent<Stream>
   {
-    public StreamDetailsComponentV2() : base("Stream Details V2", "sDet",
+    public StreamDetailsComponentV2() : base("Stream Details", "sDet",
       "Extracts the details of a given stream, use is limited to 20 streams.",
       ComponentCategories.PRIMARY_RIBBON, ComponentCategories.STREAMS)
     {

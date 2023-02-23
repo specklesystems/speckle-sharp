@@ -17,7 +17,7 @@ namespace ConnectorGrasshopper.Streams
   {
     public StreamWrapper stream { get; set; } = null;
 
-    public StreamCreateComponentV2() : base("Create Stream V2", "sCreate", "Create a new speckle stream.",
+    public StreamCreateComponentV2() : base("Create Stream", "sCreate", "Create a new speckle stream.",
       ComponentCategories.PRIMARY_RIBBON,
       ComponentCategories.STREAMS)
     {

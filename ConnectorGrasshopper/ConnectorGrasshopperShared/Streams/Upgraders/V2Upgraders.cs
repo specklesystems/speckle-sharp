@@ -1,7 +1,9 @@
 ﻿using System;
 using ConnectorGrasshopper.Extras;
+using ConnectorGrasshopper.UpgradeUtilities;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Parameters;
+#pragma warning disable CS0612
 
 namespace ConnectorGrasshopper.Streams.Upgrade
 {
@@ -10,6 +12,7 @@ namespace ConnectorGrasshopper.Streams.Upgrade
     public override void CustomUpgrade(StreamCreateComponent oldComponent, StreamCreateComponentV2 newComponent,
       GH_Document document)
     {
+      UpgradeUtils.SwapParameter(newComponent, 0, new SpeckleAccountParam());
       newComponent.stream = oldComponent.stream;
     }
 
@@ -33,6 +36,7 @@ namespace ConnectorGrasshopper.Streams.Upgrade
     public override void CustomUpgrade(StreamGetComponent oldComponent, StreamGetComponentV2 newComponent,
       GH_Document document)
     {
+      UpgradeUtils.SwapParameter(newComponent, 1, new SpeckleAccountParam());
     }
 
     public override DateTime Version => new DateTime(2023, 2, 14);
@@ -43,6 +47,7 @@ namespace ConnectorGrasshopper.Streams.Upgrade
     public override void CustomUpgrade(StreamListComponent oldComponent, StreamListComponentV2 newComponent,
       GH_Document document)
     {
+      UpgradeUtils.SwapParameter(newComponent, 0, new SpeckleAccountParam());
     }
 
     public override DateTime Version => new DateTime(2023, 2, 14);

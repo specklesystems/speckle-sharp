@@ -10,10 +10,11 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ServerAccount.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetails.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetailsV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.GetAccountToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ListAccounts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Obsolete\Accounts.AccountDetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Obsolete\AccountsV2Upgrader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\ComponentTracker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleAsyncComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleComponent.cs" />
