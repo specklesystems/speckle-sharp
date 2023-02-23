@@ -97,6 +97,7 @@ namespace ConnectorGrasshopper.Conversion
           DA.AbortComponentSolution();
           return null;
         }
+        Converter.SetConverterSettings(new Dictionary<string, object> { { "preprocessGeometry", preprocessGeometry } });
         var converted = Extras.Utilities.TryConvertItemToSpeckle(item, Converter, true);
 
         if (source.Token.IsCancellationRequested)
@@ -135,6 +136,7 @@ namespace ConnectorGrasshopper.Conversion
       {
         preprocessGeometry = !preprocessGeometry;
         Converter.SetConverterSettings(new Dictionary<string, object> { { "preprocessGeometry", preprocessGeometry } });
+        ExpireSolution(true);
       },null, true, preprocessGeometry);
       
     }

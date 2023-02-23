@@ -33,6 +33,7 @@ namespace Objects.Converter.RhinoGh
         brep.Faces.SplitKinkyFaces(RhinoDoc.ActiveDoc.ModelAngleToleranceRadians, true);
         brep.Faces.SplitClosedFaces(0);
         brep.Faces.ShrinkFaces();
+        
       }
 
       var options = AuditBrep(brep);
@@ -155,7 +156,14 @@ namespace Objects.Converter.RhinoGh
           brep = merge;
         }
       }
+      
+      var res = new List<Brep>();
+      for(int i = 0; i < brep.Faces.Count; i++){
+        res.Add(brep.Faces.ExtractFace(i));
+      }
 
+      brep = Brep.JoinBreps(res, 0.001)[0];
+      
       return brep.IsValid;
     }
     #endregion
