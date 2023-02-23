@@ -40,11 +40,10 @@ namespace Objects.Organization
     /// Constructor for a basic collection.
     /// </summary>
     /// <param name="name">The human-readable name of this collection</param>
-    /// <param name="elements">Any contained <see cref="Base"/> objects</param>
-    public Collection(string name, string collectionType, List<Base> elements = null)
+    public Collection(string name, string collectionType)
     {
       this.name = name;
-      this.elements = elements;
+      this.collectionType = collectionType;
     }
   }
 }

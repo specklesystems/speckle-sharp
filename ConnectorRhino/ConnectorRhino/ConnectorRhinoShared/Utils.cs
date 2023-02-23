@@ -4,13 +4,16 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
-using DesktopUI2.ViewModels;
+
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+
+using DesktopUI2.ViewModels;
 
 namespace SpeckleRhino
 {

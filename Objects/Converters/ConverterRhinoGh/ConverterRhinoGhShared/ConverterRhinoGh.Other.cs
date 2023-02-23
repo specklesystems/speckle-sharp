@@ -1,14 +1,19 @@
-﻿using Objects.Other;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
+using RH = Rhino.DocObjects;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using Utilities = Speckle.Core.Models.Utilities;
+
+using Objects.Other;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
@@ -21,10 +26,8 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
 using RenderMaterial = Objects.Other.RenderMaterial;
-using RH = Rhino.DocObjects;
 using Text = Objects.Other.Text;
 using Transform = Objects.Other.Transform;
-using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Objects.Converter.RhinoGh
 {

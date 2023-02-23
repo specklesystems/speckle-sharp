@@ -1,22 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
 
-using Rhino.Geometry;
-using Rhino.Geometry.Collections;
-using RH = Rhino.DocObjects;
+using Rhino.DocObjects;
 using Grasshopper.Kernel.Types;
 
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Models.Extensions;
-
-using Objects.Geometry;
-using Objects.Primitive;
-using Objects.Utils;
 using Collection = Objects.Organization.Collection;
-using Rhino.DocObjects;
 
 namespace Objects.Converter.RhinoGh
 {
