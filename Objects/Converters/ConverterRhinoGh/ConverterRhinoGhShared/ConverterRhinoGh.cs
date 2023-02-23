@@ -604,7 +604,7 @@ namespace Objects.Converter.RhinoGh
     {
       object rhinoObj = null;
       bool isFromRhino = @object[RhinoPropName] != null ? true : false;
-      var reportObj = Report.GetReportObject(@object.id, out int index) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
+      var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
       List<string> notes = new List<string>();
       try
       {

@@ -41,7 +41,7 @@ namespace ConnectorGrasshopper.Conversion
     internal static Guid internalGuid => new Guid("FB88150A-1885-4A77-92EA-9B1378310FDD");
     internal static GH_Exposure internalExposure => SpeckleGHSettings.ShowDevComponents ? GH_Exposure.primary : GH_Exposure.hidden;
     public override Guid ComponentGuid => internalGuid;
-    protected override Bitmap Icon => Properties.Resources.ToNative;
+    protected override Bitmap Icon => Properties.Resources.ToSpeckle;
 
     public override bool CanDisableConversion => false;
 

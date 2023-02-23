@@ -80,10 +80,22 @@ namespace ConnectorGrasshopper.Properties {
             }
         }
 
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap AccountToken
+    /// <summary>
+    ///   Looks up a localized resource of type System.Drawing.Bitmap.
+    /// </summary>
+    internal static System.Drawing.Bitmap AccountParam
+    {
+      get
+      {
+        object obj = ResourceManager.GetObject("AccountParam", resourceCulture);
+        return ((System.Drawing.Bitmap)(obj));
+      }
+    }
+    
+    /// <summary>
+    ///   Looks up a localized resource of type System.Drawing.Bitmap.
+    /// </summary>
+    internal static System.Drawing.Bitmap AccountToken
         {
           get
           {
@@ -311,11 +323,23 @@ namespace ConnectorGrasshopper.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap ServerTransport {
+
+    /// <summary>
+    ///   Looks up a localized resource of type System.Drawing.Bitmap.
+    /// </summary>
+    internal static System.Drawing.Bitmap ServerAccount
+    {
+      get
+      {
+        object obj = ResourceManager.GetObject("ServerAccount", resourceCulture);
+        return ((System.Drawing.Bitmap)(obj));
+      }
+    }
+    
+    /// <summary>
+    ///   Looks up a localized resource of type System.Drawing.Bitmap.
+    /// </summary>
+    internal static System.Drawing.Bitmap ServerTransport {
             get {
                 object obj = ResourceManager.GetObject("ServerTransport", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));

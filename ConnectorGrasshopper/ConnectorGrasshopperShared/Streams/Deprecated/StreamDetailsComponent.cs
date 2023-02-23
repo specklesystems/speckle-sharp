@@ -14,6 +14,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
+  [Obsolete]
   public class StreamDetailsComponent : GH_SpeckleComponent
   {
     public StreamDetailsComponent() : base("Stream Details", "sDet", "Extracts the details of a given stream, use is limited to 20 streams.",
@@ -31,7 +32,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override Bitmap Icon => Properties.Resources.StreamDetails;
 
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {

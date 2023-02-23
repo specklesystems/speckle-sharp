@@ -154,7 +154,7 @@ namespace DesktopUI2.ViewModels
 
         if (!string.IsNullOrEmpty(Id))
         {
-          var errorsCount = Progress.Report.ReportObjects.Count(x => x.Status == Speckle.Core.Models.ApplicationObject.State.Failed);
+          var errorsCount = Progress.Report.ReportObjects.Values.Count(x => x.Status == Speckle.Core.Models.ApplicationObject.State.Failed);
           if (errorsCount > 0)
           {
             var s = errorsCount == 1 ? "" : "s";
