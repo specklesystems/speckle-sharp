@@ -87,8 +87,20 @@ namespace Speckle.ConnectorRevit.Entry
       manager.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
       manager.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
 
+#if (REVIT2022 || REVIT2023)
+      //WebUI
+      var webUISpeckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2 (WebUI)", "Revit Connector (WebUI)", typeof(App).Assembly.Location, typeof(WebUISpeckleRevitCommand).FullName)) as PushButton;
 
-
+      if (webUISpeckleButton != null)
+      {
+        webUISpeckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
+        webUISpeckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        webUISpeckleButton.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        webUISpeckleButton.ToolTip = "Speckle Connector for Revit";
+        webUISpeckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        webUISpeckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
+#endif
 
       return Result.Succeeded;
     }
@@ -112,7 +124,9 @@ namespace Speckle.ConnectorRevit.Entry
         Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
         SpeckleRevitCommand.RegisterPane();
-
+#if (REVIT2022 || REVIT2023)
+        WebUISpeckleRevitCommand.RegisterPane();
+#endif
         //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
       }
       catch (Exception ex)

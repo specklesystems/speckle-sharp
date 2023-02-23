@@ -83,6 +83,9 @@
     <PackageReference Include="Avalonia.ReactiveUI">
       <Version>0.10.18</Version>
     </PackageReference>
+    <PackageReference Include="CefSharp.Wpf">
+      <Version>92.0.260</Version>
+    </PackageReference>
     <PackageReference Include="MSBuild.AssemblyVersion">
       <Version>1.3.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -96,6 +99,7 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
+  <Import Project="..\ConnectorRevit\ConnectorRevitWebUI.projitems" Label="SharedWebUI" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

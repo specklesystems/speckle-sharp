@@ -28,6 +28,7 @@
     <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
     <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
     <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+    <CefSharpAnyCpuSupport>true</CefSharpAnyCpuSupport>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -83,6 +84,9 @@
     <PackageReference Include="Avalonia.ReactiveUI">
       <Version>0.10.18</Version>
     </PackageReference>
+    <PackageReference Include="CefSharp.Wpf">
+      <Version>65.0.1</Version>
+    </PackageReference>
     <PackageReference Include="MSBuild.AssemblyVersion">
       <Version>1.3.0</Version>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -96,6 +100,7 @@
     </PackageReference>
   </ItemGroup>
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
+  <Import Project="..\ConnectorRevit\ConnectorRevitWebUI.projitems" Label="SharedWebUI" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
