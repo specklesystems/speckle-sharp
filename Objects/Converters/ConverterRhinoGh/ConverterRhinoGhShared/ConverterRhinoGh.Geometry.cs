@@ -54,8 +54,7 @@ namespace Objects.Converter.RhinoGh
     /// <remarks>This is faster than calling <see cref="Mesh.GetPoints"/> <see cref="Objects.Geometry.Polyline.GetPoints"/></remarks>
     public List<Point3d> PointListToNative(IList<double> arr, string units)
     {
-      var enumerable = arr.ToList();
-      if (enumerable.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
+      if (arr.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
 
       var points = new List<Point3d>(arr.Count / 3);
       
