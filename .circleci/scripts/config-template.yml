@@ -38,9 +38,8 @@ commands:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-core:
-    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
       - run:
@@ -86,54 +85,42 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-      - store_test_results:
-          path: TestResults
       - store_artifacts:
           path: TestResults
 
       #- codecov/upload
 
   build-objects:
-    macos:
-      xcode: 12.5.1
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
       - run:
-          name: Install mono
-          command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install mono mono-libgdiplus
-      - run:
-          name: Install dotnet
-          command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1
-      - run:
           name: Restore Objects
-          command: ~/.dotnet/dotnet restore Objects/Objects.sln
+          command: | # Restore only the projects we're about to build.
+            dotnet restore Objects/Objects/Objects.csproj
+            dotnet restore Objects/Tests/Tests.csproj
       - run:
           name: Build Objects
-          command: ~/.dotnet/dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run:
           name: Test Objects
-          command: ~/.dotnet/dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c
+            Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults
+            --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - store_test_results:
           path: TestResults
       - store_artifacts:
           path: TestResults
-      # Upload to codecov if necessary
-      # Currently disabled until we figure out a strategy to
-      # upload Core and Objects at once
-      # - codecov/upload
 
   build-desktopui:
-    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - checkout
       - run:
           name: Build DesktopUI2
-          command: dotnet build DesktopUI2/DesktopUI2.sln -c Release -v q
+          command: dotnet build DesktopUI2/DesktopUI2/DesktopUI2.csproj -c Release -v q
 
   build-connector: # Reusable job for basic connectors
     executor:
