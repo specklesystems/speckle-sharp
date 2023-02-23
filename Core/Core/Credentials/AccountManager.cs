@@ -28,6 +28,9 @@ namespace Speckle.Core.Credentials
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
     private static bool _isAddingAccount = false;
+    private static SQLiteTransport AccountAddLockStorage = new SQLiteTransport(
+      scope: "AccountAddFlow"
+    );
 
     /// <summary>
     /// Gets the basic information about a server.
@@ -328,50 +331,53 @@ namespace Speckle.Core.Credentials
       }
     }
 
-    /// <summary>
-    /// Adds an account by propting the user to log in via a web flow
-    /// </summary>
-    /// <param name="server">Server to use to add the account, if not provied the default Server will be used</param>
-    /// <returns></returns>
-    public static async Task AddAccount(string server = "")
+    private static string _ensureCorrectServerUrl(string server)
     {
-      Log.Debug("Starting to add account for {serverUrl}", server);
+      var localUrl = server;
+      if (string.IsNullOrEmpty(localUrl))
+      {
+        localUrl = GetDefaultServerUrl();
+        Log.Debug(
+          "The provided server url was null or empty. Changed to the default url {serverUrl}",
+          localUrl
+        );
+      }
+      return localUrl.TrimEnd(new[] { '/' });
+    }
 
+    private static void _ensureGetAccessCodeFlowIsSupported()
+    {
       if (!HttpListener.IsSupported)
       {
-        Log.Error(
-          "HttpListener not supported"
-        );
+        Log.Error("HttpListener not supported");
         throw new Exception("Your operating system is not supported");
       }
+    }
 
-      //prevent launching this flow multiple times
-      if (_isAddingAccount)
-        return;
+    private static async Task<string> _getAccessCode(
+      string server,
+      string challenge,
+      TimeSpan timeout
+    )
+    {
+      _ensureGetAccessCodeFlowIsSupported();
 
-      _isAddingAccount = true;
-      server = server.TrimEnd(new[] { '/' });
-
-      if (string.IsNullOrEmpty(server))
-      {
-        server = GetDefaultServerUrl();
-        Log.Debug("Changed server url to the default usl {serverUrl}", server);
-      }
+      Log.Debug(
+        "Starting auth process for {server}/authn/verify/sca/{challenge}",
+        server,
+        challenge
+      );
 
       var accessCode = "";
-      var challenge = GenerateChallenge();
-      Log.Debug("Starting auth process for {server}/authn/verify/sca/{challenge}", server, challenge);
+
       Process.Start(
         new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true }
       );
 
-      //timeout for the task
-      var timeout = TimeSpan.FromMinutes(1);
       var listener = new HttpListener();
 
       var task = Task.Run(() =>
       {
-
         var localUrl = "http://localhost:29363/";
         listener.Prefixes.Add(localUrl);
         listener.Start();
@@ -385,7 +391,8 @@ namespace Speckle.Core.Credentials
         Log.Debug("Got access code {accessCode}", accessCode);
         var message = "";
         if (accessCode != null)
-          message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
+          message =
+            "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
         else
           message = "Oups, something went wrong...!";
 
@@ -407,33 +414,40 @@ namespace Speckle.Core.Credentials
       if (listener.IsListening)
         listener.Abort();
 
-      //check if timed out or not
-      if (completedTask == task)
+      // this is means the task timed out
+      if (completedTask != task)
       {
-        if (task.IsFaulted)
-        {
-          Log.Error(task.Exception, "Getting access code flow failed with {exceptionMessage}", task.Exception.Message);
-          _isAddingAccount = false;
-          throw new Exception($"Auth flow failed: {task.Exception.Message}", task.Exception);
-        }
-
-        // task completed within timeout
-        Log.Information("Local auth flow completed successfully within the timeout window. Access code is {accessCode}", accessCode);
-      }
-      else
-      {
-        // task timed out
-        Log.Warning("Local auth flow failed to complete within the timeout window. Access code is {accessCode}", accessCode);
-        _isAddingAccount = false;
+        Log.Warning(
+          "Local auth flow failed to complete within the timeout window. Access code is {accessCode}",
+          accessCode
+        );
         throw new Exception("Local auth flow failed to complete within the timeout window");
       }
 
-      if (string.IsNullOrEmpty(accessCode))
+      if (task.IsFaulted)
       {
-        _isAddingAccount = false;
-        Log.Warning("Access code is invalid {accessCode}", accessCode);
-        throw new Exception("Access code is ivalid");
+        Log.Error(
+          task.Exception,
+          "Getting access code flow failed with {exceptionMessage}",
+          task.Exception.Message
+        );
+        throw new Exception($"Auth flow failed: {task.Exception.Message}", task.Exception);
       }
+
+      // task completed within timeout
+      Log.Information(
+        "Local auth flow completed successfully within the timeout window. Access code is {accessCode}",
+        accessCode
+      );
+      return accessCode;
+    }
+
+    private static async Task<Account> _createAccount(
+      string accessCode,
+      string challenge,
+      string server
+    )
+    {
       try
       {
         var tokenResponse = await GetToken(accessCode, challenge, server);
@@ -450,16 +464,106 @@ namespace Speckle.Core.Credentials
         Log.Information("Successfully created account for {serverUrl}", server);
         account.serverInfo.url = server;
 
-        //if the account already exists it will not be added again
-        AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+        return account;
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Error adding the account");
-        throw new Exception("Something went wrong adding the account, please try again");
+        throw new SpeckleAccountManagerException(
+          "Failed to create account from access code and challenge",
+          ex
+        );
       }
-      _isAddingAccount = false;
+    }
 
+    private static string _tryLockAccountAddFlow(TimeSpan timespan)
+    {
+      // use a static variable to quickly
+      // prevent launching this flow multiple times
+      if (_isAddingAccount)
+        // this should probably throw with an error message
+        throw new SpeckleAccoundFlowLockedException("The account add flow is already launched.");
+
+      // this uses the SQLite transport to store locks
+      var lockIds = AccountAddLockStorage.GetAllObjects().ToList();
+      // get the locks in a descending order
+      var locks = lockIds
+        .Select(lockValue => DateTime.ParseExact(lockValue, "o", null))
+        .OrderByDescending(d => d)
+        .ToList();
+
+      var now = DateTime.Now;
+      var _accountAddFlowIsLocked = locks.Any(lockValue => lockValue > now);
+
+      if (_accountAddFlowIsLocked)
+        throw new SpeckleAccoundFlowLockedException(
+          $"The account add flow is locked, finish the account add procedure in that app or retry in {(locks.First() - now).TotalSeconds} seconds"
+        );
+
+      // make sure all old locks are removed
+      foreach (var id in lockIds)
+      {
+        AccountAddLockStorage.DeleteObject(id);
+      }
+
+      var lockId = DateTime.Now.Add(timespan).ToString("o");
+      // using the lock release time as an id and value
+      // for ease of deletion and retrieval
+      AccountAddLockStorage.SaveObjectSync(lockId, lockId);
+      _isAddingAccount = true;
+      return "lock id";
+    }
+
+    private static void _unlockAccountAddFlow(string lockId)
+    {
+      _isAddingAccount = false;
+      AccountAddLockStorage.DeleteObject(lockId);
+    }
+
+    /// <summary>
+    /// Adds an account by propting the user to log in via a web flow
+    /// </summary>
+    /// <param name="server">Server to use to add the account, if not provied the default Server will be used</param>
+    /// <returns></returns>
+    public static async Task AddAccount(string server = "")
+    {
+      Log.Debug("Starting to add account for {serverUrl}", server);
+
+      server = _ensureCorrectServerUrl(server);
+
+      // locking for 1 minute
+      var timeout = TimeSpan.FromMinutes(3);
+      var lockId = _tryLockAccountAddFlow(timeout);
+      var challenge = GenerateChallenge();
+
+      var accessCode = "";
+
+      try
+      {
+        accessCode = await _getAccessCode(server, challenge, timeout);
+        if (string.IsNullOrEmpty(accessCode))
+          throw new SpeckleAccountManagerException("Access code is invalid");
+
+        var account = await _createAccount(accessCode, challenge, server);
+
+        //if the account already exists it will not be added again
+        AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
+        Log.Debug("Finished adding account {accountId} for {serverUrl}", account.id, server);
+      }
+      catch (SpeckleAccountManagerException ex)
+      {
+        Log.Fatal(ex, "Failed to add account {exceptionMessage}", ex.Message);
+        // rethrowing any known errors
+        throw;
+      }
+      catch (Exception ex)
+      {
+        Log.Fatal(ex, "Unexpectedly failed to add account {exceptionMessage}", ex.Message);
+        throw new SpeckleAccountManagerException("Unexpectedly failed to add account", ex);
+      }
+      finally
+      {
+        _unlockAccountAddFlow(lockId);
+      }
     }
 
     private static async Task<TokenExchangeResponse> GetToken(
