@@ -299,8 +299,7 @@ namespace Objects.Converter.Revit
       }
 
       // log 
-      var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
-      if (reportObj != null && notes.Count > 0)
+      if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
       return returnObject;

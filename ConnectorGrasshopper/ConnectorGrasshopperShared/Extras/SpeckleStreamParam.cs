@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using ConnectorGrasshopper.Streams;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Api;
@@ -9,11 +10,12 @@ namespace ConnectorGrasshopper.Extras
 {
   public class SpeckleStreamParam : GH_Param<GH_SpeckleStream>
   {
-    public SpeckleStreamParam() : base("Speckle Stream", "SS", "A speckle data stream object.", ComponentCategories.PRIMARY_RIBBON, "Params",
-        GH_ParamAccess.item)
+    public SpeckleStreamParam() : base("Speckle Stream", "SS", "A speckle data stream object.",
+      ComponentCategories.PRIMARY_RIBBON, "Params",
+      GH_ParamAccess.item)
     {
-
     }
+
     public SpeckleStreamParam(IGH_InstanceDescription tag) : base(tag)
     {
     }
@@ -22,18 +24,19 @@ namespace ConnectorGrasshopper.Extras
     {
     }
 
-    public SpeckleStreamParam(string name, string nickname, string description, string category, string subcategory, GH_ParamAccess access) : base(name, nickname, description, category, subcategory, access)
+    public SpeckleStreamParam(string name, string nickname, string description, string category, string subcategory,
+      GH_ParamAccess access) : base(name, nickname, description, category, subcategory, access)
     {
     }
 
-    public SpeckleStreamParam(string name, string nickname, string description, GH_ParamAccess access) : base(name, nickname, description, ComponentCategories.PRIMARY_RIBBON, "Params", access)
+    public SpeckleStreamParam(string name, string nickname, string description, GH_ParamAccess access) : base(name,
+      nickname, description, ComponentCategories.PRIMARY_RIBBON, "Params", access)
     {
     }
 
     protected override Bitmap Icon => Properties.Resources.StreamParam;
     public override GH_Exposure Exposure => GH_Exposure.hidden;
     public override Guid ComponentGuid => new Guid("FB436A31-1CE9-413C-B524-8A574C0F842D");
-
   }
 
   public sealed class GH_SpeckleStream : GH_Goo<StreamWrapper>
@@ -46,6 +49,7 @@ namespace ConnectorGrasshopper.Extras
     {
       Value = null;
     }
+
     public GH_SpeckleStream(GH_Goo<StreamWrapper> other) : base(other)
     {
       Value = other.Value;
@@ -68,7 +72,7 @@ namespace ConnectorGrasshopper.Extras
 
     public override bool CastFrom(object source)
     {
-      if(source is GH_String ghStr)
+      if (source is GH_String ghStr)
       {
         try
         {
@@ -77,7 +81,6 @@ namespace ConnectorGrasshopper.Extras
         }
         catch
         {
-          
           return false;
         }
       }
@@ -100,6 +103,7 @@ namespace ConnectorGrasshopper.Extras
         Value = strWrapper;
         return true;
       }
+
       var stream = (source as GH_SpeckleStream)?.Value;
       if (stream == null) return false;
       Value = stream;
@@ -108,11 +112,21 @@ namespace ConnectorGrasshopper.Extras
 
     public override bool CastTo<Q>(ref Q target)
     {
-      if (!(target is GH_SpeckleStream))
-        return false;
+      var type = typeof(Q);
 
-      target = (Q)(object)new GH_SpeckleStream { Value = Value };
-      return true;
+      if (type == typeof(GH_SpeckleStream))
+      {
+        target = (Q)(object)new GH_SpeckleStream { Value = this.Value };
+        return true;
+      }
+
+      if (type == typeof(StreamWrapper))
+      {
+        target = (Q)(object)Value;
+        return true;
+      }
+      
+      return false;
     }
 
     public override bool IsValid => Value != null;
