@@ -179,17 +179,19 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, A
 
 				bool smooth = false;
 				bool hidden = false;
-				switch (edges[edge]) {
-				case ModelInfo::HiddenEdge:
-					hidden = true;
-					break;
-				case ModelInfo::SmoothEdge:
-					smooth = true;
-					break;
-				case ModelInfo::VisibleEdge:
-					break;
-				default:
-					break;
+				if (edges.ContainsKey(edge)) {
+					switch (edges[edge]) {
+					case ModelInfo::HiddenEdge:
+						hidden = true;
+						break;
+					case ModelInfo::SmoothEdge:
+						smooth = true;
+						break;
+					case ModelInfo::VisibleEdge:
+						break;
+					default:
+						break;
+					}
 				}
 
 				sprintf (buffer, "EDGE %d, %d, -1, -1, %s\t!#%d%s", pointIds[start] + 1, pointIds[end] + 1, (smooth ? "smoothBodyEdge" : (hidden ? "hiddenBodyEdge" : "visibleBodyEdge")), edgeIndex + i, GS::EOL);
