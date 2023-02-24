@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="TestsUnit" />
+    <InternalsVisibleTo Include="TestsIntegration" />
   </ItemGroup>
 
   <!--Do not publish a Core nuget when publishing Objects-->

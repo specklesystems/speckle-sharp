@@ -9,9 +9,12 @@
     <Import_RootNamespace>ConnectorGrasshopperShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ServerAccount.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.AccountDetailsV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.GetAccountToken.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Accounts\Accounts.ListAccounts.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Obsolete\Accounts.AccountDetails.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Accounts\Obsolete\AccountsV2Upgrader.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\ComponentTracker.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleAsyncComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\GH_SpeckleComponent.cs" />
@@ -28,6 +31,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Conversion\ToSpeckleTaskCapableComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\DebounceDispatcher.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\GenericAccessParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleGoo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SendReceiveDataParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\Speckle.IGH_Goo.cs" />
@@ -35,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStatefulParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStateTag.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStreamParam.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleUpgradeObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\TreeBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\Utilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Loader.cs" />
@@ -65,12 +70,18 @@
     <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CSOViewModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleGHSettings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamCreateComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamDetailsComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\Deprecated\StreamCreateComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\Deprecated\StreamGetComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\Deprecated\StreamDetailsComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\Deprecated\StreamListComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\Deprecated\StreamUpdateComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamCreateComponentV2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamDetailsComponentV2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetComponentV2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamGetWithTokenComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamListComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamUpdateComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamListComponentV2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\StreamUpdateComponentV2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Streams\Upgraders\V2Upgraders.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transports\SendReceiveTransport.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transports\Transports.Disk.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Transports\Transports.Memory.cs" />
@@ -78,6 +89,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)UpgradeUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Resources\ServerAccount.png" />
+    <None Include="$(MSBuildThisFileDirectory)Resources\AccountParam.png" />
     <None Include="$(MSBuildThisFileDirectory)Resources\AccountToken.png" />
     <None Include="$(MSBuildThisFileDirectory)Resources\StreamGetWithToken.png" />
     <Content Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.tt" />

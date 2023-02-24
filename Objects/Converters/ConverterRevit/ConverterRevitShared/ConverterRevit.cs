@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Organization;
+using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -74,6 +75,8 @@ namespace Objects.Converter.Revit
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
     public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
+
+    public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
 
     public ReceiveMode ReceiveMode { get; set; }
 
@@ -296,8 +299,7 @@ namespace Objects.Converter.Revit
       }
 
       // log 
-      var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
-      if (reportObj != null && notes.Count > 0)
+      if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
       return returnObject;
