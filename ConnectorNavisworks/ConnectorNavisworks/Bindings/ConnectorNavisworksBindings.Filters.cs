@@ -92,12 +92,14 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     private static TreeNode GetViews(SavedItem savedItem)
     {
+
+      var reference = Doc.SavedViewpoints.CreateReference(savedItem);
       var treeNode = new TreeNode
       {
         DisplayName = savedItem.DisplayName,
         Guid = savedItem.Guid,
         IndexWith = nameof(TreeNode.Reference),
-        Reference = Doc.SavedViewpoints.CreateReference(savedItem).ToString()
+        Reference = reference.SavedItemId
       };
 
       if (!savedItem.IsGroup) return treeNode;
