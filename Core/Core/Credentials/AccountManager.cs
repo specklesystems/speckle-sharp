@@ -489,8 +489,8 @@ namespace Speckle.Core.Credentials
       foreach (var l in lockIds)
       {
         var lockArray = l.Split('@');
-        var lockName = lockArray[0];
-        var lockTime = DateTime.ParseExact(lockArray[1], "o", null);
+        var lockName = lockArray.Length == 2 ? lockArray[0] : "the other app";
+        var lockTime = lockArray.Length == 2 ? DateTime.ParseExact(lockArray[1], "o", null) : DateTime.ParseExact(lockArray[0], "o", null);
 
         if (lockTime > now)
         {
