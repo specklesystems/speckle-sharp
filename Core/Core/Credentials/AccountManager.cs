@@ -475,7 +475,7 @@ namespace Speckle.Core.Credentials
       }
     }
 
-    private static string _tryLockAccountAddFlow(TimeSpan timespan)
+    private static void _tryLockAccountAddFlow(TimeSpan timespan)
     {
       // use a static variable to quickly
       // prevent launching this flow multiple times
@@ -484,42 +484,41 @@ namespace Speckle.Core.Credentials
         throw new SpeckleAccountFlowLockedException("The account add flow is already launched.");
 
       // this uses the SQLite transport to store locks
-      var lockIds = AccountAddLockStorage.GetAllObjects().ToList();
-      // get the locks in a descending order
-      var locks = lockIds
-        .Select(lockValue => DateTime.ParseExact(lockValue, "o", null))
-        .OrderByDescending(d => d)
-        .ToList();
-
+      var lockIds = AccountAddLockStorage.GetAllObjects().OrderByDescending(d => d).ToList();
       var now = DateTime.Now;
-      var _accountAddFlowIsLocked = locks.Any(lockValue => lockValue > now);
-
-      if (_accountAddFlowIsLocked)
+      foreach (var l in lockIds)
       {
-        var lockString = String.Format("{0:mm} minutes {0:ss} seconds", locks.First() - now);
-        throw new SpeckleAccountFlowLockedException(
-          $"The account add flow is locked, finish the account add procedure in that app or retry in {lockString}"
-        );
+        var lockArray = l.Split('@');
+        var lockName = lockArray[0];
+        var lockTime = DateTime.ParseExact(lockArray[1], "o", null);
+
+        if (lockTime > now)
+        {
+          var lockString = String.Format("{0:mm} minutes {0:ss} seconds", lockTime - now);
+          throw new SpeckleAccountFlowLockedException(
+            $"The account add flow is locked, finish the account add flow in {lockName} or retry in {lockString}"
+          );
+        }
       }
 
-      // make sure all old locks are removed
-      foreach (var id in lockIds)
-      {
-        AccountAddLockStorage.DeleteObject(id);
-      }
 
-      var lockId = DateTime.Now.Add(timespan).ToString("o");
+      var lockId = Setup.HostApplication + "@" + DateTime.Now.Add(timespan).ToString("o");
+
       // using the lock release time as an id and value
       // for ease of deletion and retrieval
       AccountAddLockStorage.SaveObjectSync(lockId, lockId);
       _isAddingAccount = true;
-      return lockId;
+      return;
     }
 
-    private static void _unlockAccountAddFlow(string lockId)
+    private static void _unlockAccountAddFlow()
     {
       _isAddingAccount = false;
-      AccountAddLockStorage.DeleteObject(lockId);
+      // make sure all old locks are removed
+      foreach (var id in AccountAddLockStorage.GetAllObjects())
+      {
+        AccountAddLockStorage.DeleteObject(id);
+      }
     }
 
     /// <summary>
@@ -537,7 +536,7 @@ namespace Speckle.Core.Credentials
       var timeout = TimeSpan.FromMinutes(3);
       // this is not part of the try finally block
       // we do not want to clean up the existing locks
-      var lockId = _tryLockAccountAddFlow(timeout);
+      _tryLockAccountAddFlow(timeout);
       var challenge = GenerateChallenge();
 
       var accessCode = "";
@@ -567,7 +566,7 @@ namespace Speckle.Core.Credentials
       }
       finally
       {
-        _unlockAccountAddFlow(lockId);
+        _unlockAccountAddFlow();
       }
     }
 
