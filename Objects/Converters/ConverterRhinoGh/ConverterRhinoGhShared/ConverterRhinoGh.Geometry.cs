@@ -970,8 +970,16 @@ namespace Objects.Converter.RhinoGh
           mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
           break;
       }
-      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-      return joinedMesh;
+
+      try
+      {
+        joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
+        return joinedMesh;
+      }
+      catch(Exception e)
+      {
+        return null;
+      }
     }
 
     /// <summary>
