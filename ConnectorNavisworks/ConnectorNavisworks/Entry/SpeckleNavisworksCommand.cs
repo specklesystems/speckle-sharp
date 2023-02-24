@@ -79,7 +79,7 @@ namespace Speckle.ConnectorNavisworks.Entry
       app.UsePlatformDetect();
       app.With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 });
       app.With(new Win32PlatformOptions
-        { AllowEglInitialization = true, EnableMultitouch = false, UseWgl = false });
+        { AllowEglInitialization = true, EnableMultitouch = false, UseWgl = true });
       app.LogToTrace();
       app.UseReactiveUI();
 
