@@ -102,6 +102,7 @@ namespace Objects.Converter.RhinoGh
       var speckleName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {speckleMaterial.name}" : $"{speckleMaterial.name}";
 
       // check if the doc already has a material with speckle material name, or a previously created speckle material
+      //NOTE: Looking up renderMaterials this way is slow, maybe we can create a dictionary?
       var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
       if (existing != null)
         return existing;

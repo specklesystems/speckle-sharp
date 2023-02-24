@@ -77,7 +77,7 @@ public class ArchicadBeamSchemaComponent: CreateSchemaObjectBase {
             proxy.Exposure = internalExposure;
           };
     }
-    public ArchicadBeamSchemaComponent(): base("ArchicadBeam", "ArchicadBeam", "Creates an Archicad Structures beam by curve.", "Speckle 2 Archicad", "Structure") { }
+    public ArchicadBeamSchemaComponent(): base("ArchicadBeam", "ArchicadBeam", "Creates an Archicad beam by curve.", "Speckle 2 Archicad", "Structure") { }
     
     internal static string internalCategory { get; }  = "Speckle 2 Archicad";
 
@@ -92,6 +92,36 @@ public class ArchicadBeamSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Archicad.ArchicadBeam.ctor(Objects.Geometry.Point,Objects.Geometry.Point)","Objects.BuiltElements.Archicad.ArchicadBeam");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class ArchicadColumnSchemaComponent: CreateSchemaObjectBase {
+    static ArchicadColumnSchemaComponent() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
+    public ArchicadColumnSchemaComponent(): base("ArchicadColumn", "ArchicadColumn", "Creates an Archicad Column by curve.", "Speckle 2 Archicad", "Structure") { }
+    
+    internal static string internalCategory { get; }  = "Speckle 2 Archicad";
+
+    internal static Guid internalGuid => new Guid("c69190c1-3311-5407-4a00-e58ea275fa89");
+
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
+    public override GH_Exposure Exposure => internalExposure;
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Archicad.ArchicadColumn.ctor(Objects.Geometry.Point,System.Double)","Objects.BuiltElements.Archicad.ArchicadColumn");
         base.AddedToDocument(document);
     }
 }
@@ -3371,6 +3401,36 @@ public class PipeSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class PointcloudSchemaComponent: CreateSchemaObjectBase {
+    static PointcloudSchemaComponent() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
+    public PointcloudSchemaComponent(): base("Pointcloud", "Pointcloud", "Create a point cloud object", "Speckle 2 Objects", "Geometry") { }
+    
+    internal static string internalCategory { get; }  = "Speckle 2 Objects";
+
+    internal static Guid internalGuid => new Guid("2945c627-5f85-3119-d437-48a5426a12ae");
+
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
+    public override GH_Exposure Exposure => internalExposure;
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.Geometry.Pointcloud.ctor(System.Collections.Generic.List`1[System.Double],System.Collections.Generic.List`1[System.Int32],System.Collections.Generic.List`1[System.Double])","Objects.Geometry.Pointcloud");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class PropertySchemaComponent: CreateSchemaObjectBase {
     static PropertySchemaComponent() {
        SpeckleGHSettings.SettingsChanged += (_, args) =>
@@ -4472,10 +4532,41 @@ public class RevitCeilingSchemaComponent: CreateSchemaObjectBase {
       : GH_Exposure.hidden;
 
     public override Guid ComponentGuid => internalGuid;
-    public override GH_Exposure Exposure => internalExposure;
+    public override bool Obsolete => true;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitCeiling.ctor(Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,System.Double,Objects.Geometry.Line,System.Double,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base])","Objects.BuiltElements.Revit.RevitCeiling");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class RevitCeiling1SchemaComponent: CreateSchemaObjectBase {
+    static RevitCeiling1SchemaComponent() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
+    public RevitCeiling1SchemaComponent(): base("RevitCeiling", "RevitCeiling", "Creates a Revit ceiling", "Speckle 2 Revit", "Architecture") { }
+    
+    internal static string internalCategory { get; }  = "Speckle 2 Revit";
+
+    internal static Guid internalGuid => new Guid("6c7f6ee3-d520-3153-1ade-47ad953c9540");
+
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+
+    public override Guid ComponentGuid => internalGuid;
+    public override GH_Exposure Exposure => internalExposure;
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.Revit.RevitCeiling.ctor(Objects.ICurve,System.String,System.String,Objects.BuiltElements.Level,System.Double,Objects.Geometry.Line,System.Collections.Generic.List`1[Objects.ICurve],System.Collections.Generic.List`1[Speckle.Core.Models.Base])","Objects.BuiltElements.Revit.RevitCeiling");
         base.AddedToDocument(document);
     }
 }

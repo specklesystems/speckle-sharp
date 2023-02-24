@@ -41,6 +41,10 @@ GSErrCode GetOneCutData (const API_AssemblySegmentCutData&, GS::ObjectState&);
 GSErrCode GetAllCutData (API_AssemblySegmentCutData*, GS::ObjectState&);
 GSErrCode CreateOneCutData (GS::ObjectState&, API_AssemblySegmentCutData&, API_Element&);
 GSErrCode CreateAllCutData (const GS::ObjectState&, GS::UInt32&, API_Element&, API_Element&, API_ElementMemo*);
+
+GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::ObjectState& os);
+GSErrCode ImportVisibility (const GS::ObjectState& os, bool& isAutoOnStoryVisibility, API_StoryVisibility& visibility);
+
 }
 
 
