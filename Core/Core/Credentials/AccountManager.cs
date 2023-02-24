@@ -496,7 +496,7 @@ namespace Speckle.Core.Credentials
         {
           var lockString = String.Format("{0:mm} minutes {0:ss} seconds", lockTime - now);
           throw new SpeckleAccountFlowLockedException(
-            $"The account add flow is locked, finish the account add flow in {lockName} or retry in {lockString}"
+            $"The account add flow was already started in {lockName}, retry in {lockString}"
           );
         }
       }
@@ -533,7 +533,7 @@ namespace Speckle.Core.Credentials
       server = _ensureCorrectServerUrl(server);
 
       // locking for 1 minute
-      var timeout = TimeSpan.FromMinutes(3);
+      var timeout = TimeSpan.FromMinutes(1);
       // this is not part of the try finally block
       // we do not want to clean up the existing locks
       _tryLockAccountAddFlow(timeout);
@@ -555,14 +555,14 @@ namespace Speckle.Core.Credentials
       }
       catch (SpeckleAccountManagerException ex)
       {
-        Log.Fatal(ex, "Failed to add account {exceptionMessage}", ex.Message);
+        Log.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
         // rethrowing any known errors
         throw;
       }
       catch (Exception ex)
       {
-        Log.Fatal(ex, "Unexpectedly failed to add account {exceptionMessage}", ex.Message);
-        throw new SpeckleAccountManagerException("Unexpectedly failed to add account", ex);
+        Log.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
+        throw new SpeckleAccountManagerException($"Failed to add account: {ex.Message}", ex);
       }
       finally
       {
