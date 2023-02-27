@@ -132,7 +132,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
       projname:
         type: string
-        default: ''
+        default: ""
       dllname:
         type: string
       slug:
@@ -154,16 +154,16 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - when:
           condition: << parameters.build-with-msbuild >>
           steps:
-          - run:
-              name: Build << parameters.slnname >>
-              command: |
-                $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
-                $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
-                $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
-                $version = "$($ver).$($env:WORKFLOW_NUM)"
-                msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
-              environment:
-                WORKFLOW_NUM: << pipeline.number >>
+            - run:
+                name: Build << parameters.slnname >>
+                command: |
+                  $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
+                  $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
+                  $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
+                  $version = "$($ver).$($env:WORKFLOW_NUM)"
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+                environment:
+                  WORKFLOW_NUM: << pipeline.number >>
       - unless:
           condition: << parameters.build-with-msbuild >>
           steps:
@@ -176,7 +176,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
                   dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
                 environment:
-                  WORKFLOW_NUM: << pipeline.number >> 
+                  WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Create Innosetup signing cert
           command: |
@@ -506,9 +506,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Proceed to deploy
           command: echo "This step is just here to wait for all build jobs before proceeding to deploy each of them individually. If a job fails, no connector will be deployed."
+  notify-deploy:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
       - discord/status:
           mentions: "1067457311980933140"
-          success_message: ":tada: a new version of Speckle-Sharp connectors was build successfully!"
+          success_message:
+            ":tada: a new version of Speckle-Sharp connectors was build
+            successfully!"
           failure_message: ":red_circle: oh no! Speckle-Sharp connectors build has failed!"
 # The main workflows for our monorepo pipeline.
 # There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'.
@@ -527,6 +533,10 @@ workflows:
       - build-desktopui:
           requires:
             - build-core
+      - notify-deploy:
+          requires:
+            - get-ci-tools
+          context: discord
   nuget:
     jobs:
       # CORE Nuget Publish

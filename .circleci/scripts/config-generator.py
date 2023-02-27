@@ -34,7 +34,7 @@ def runCommand(argv: List[str]):
         elif opt in ("-o", "--output"):
             output_filepath = arg
 
-    createConfigFile(deploy, output_filepath)
+    createConfigFile(True, output_filepath)
 
 
 def setup():
@@ -169,8 +169,16 @@ def createConfigFile(deploy: bool, outputPath: str):
                 jobAttrs["filters"] = getTagFilter(slugs_to_match)
                 print(f"Added missing filter to job: {x[0]}")
 
+        jobsToWait = []
         for jobName in jobs_before_deploy:
-            main_workflow["jobs"] += [getNewDeployJob(jobName)]
+            job = getNewDeployJob(jobName)
+            if job["deploy-connector-new"]:
+                jobsToWait.append(job["deploy-connector-new"]["name"])
+            main_workflow["jobs"] += [job]
+        main_workflow["jobs"] += [
+            {"notify-deploy": {"requires": jobsToWait, "context": "discord"}}
+        ]
+
     # Output continuation file
     with open(outputPath, "w") as file:
         yaml.dump(config, file, sort_keys=False)
@@ -189,7 +197,7 @@ def getNewDeployJob(jobName: str):
         "extension": "zip" if isMac else "exe",
         "requires": ["deploy-connectors", jobName],
         "filters": getTagFilter([jobName]),
-        "context": ["do-spaces-speckle-releases", "discord"],
+        "context": ["do-spaces-speckle-releases"],
     }
     return {"deploy-connector-new": deployJob}
 
