@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Special;
 using ConnectorGrasshopper.UpgradeUtilities;
@@ -16,6 +17,14 @@ namespace ConnectorGrasshopper.UpgradeUtilities
         .Where(gr => gr.ObjectIDs.Contains(component.InstanceGuid))
         .ToList();
       groups.ForEach(g => g.AddObject(upgradedComponent.InstanceGuid));
+    }
+
+    public static void SwapParameter(IGH_Component component, int index, IGH_Param target)
+    {
+      var source = component.Params.Input[index];
+      GH_UpgradeUtil.MigrateSources(source, target);
+      component.Params.Input.Remove(source);
+      component.Params.Input.Insert(index, target);
     }
   }
 }

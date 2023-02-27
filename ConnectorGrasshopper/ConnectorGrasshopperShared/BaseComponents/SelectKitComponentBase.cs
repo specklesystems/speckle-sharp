@@ -15,13 +15,13 @@ using Speckle.Core.Models;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class SelectKitComponentBase : GH_SpeckleComponent
+  public abstract class SelectKitComponentBase : GH_SpeckleComponent
   {
-    public ISpeckleConverter Converter;
+    protected ISpeckleConverter Converter;
 
-    public ISpeckleKit Kit;
-    
-    public SelectKitComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
+    protected ISpeckleKit Kit;
+
+    protected SelectKitComponentBase(string name, string nickname, string description, string category, string subCategory) : base(name, nickname, description, category, subCategory)
     {
     }
 
@@ -69,27 +69,7 @@ namespace ConnectorGrasshopper.Objects
         Console.WriteLine(e);
       }
     }
-
-    public override Guid ComponentGuid => new Guid("18E665F6-29D2-4DCF-96E1-124960AD46A7");
-
-    protected override void RegisterInputParams(GH_InputParamManager pManager)
-    {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
-        level: SentryLevel.Warning);
-    }
-
-    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-    {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
-        level: SentryLevel.Warning);
-    }
-
-    protected override void SolveInstance(IGH_DataAccess DA)
-    {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
-        level: SentryLevel.Warning);
-    }
-
+    
     public override void AddedToDocument(GH_Document document)
     {
       base.AddedToDocument(document);

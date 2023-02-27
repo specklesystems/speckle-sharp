@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Serilog;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Newtonsoft.Json;
@@ -191,9 +192,11 @@ namespace Speckle.Core.Logging
           query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
           client.PostAsync(MixpanelServer + "/track?ip=1", query);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          // POKEMON: Gotta catch 'em all!
+          Log.ForContext("eventName", eventName.ToString())
+            .ForContext("isAction", isAction)
+            .Warning(ex, "Analytics event failed {exceptionMessage}", ex.Message);
         }
 
       });

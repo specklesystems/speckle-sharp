@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Organization;
+using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -79,6 +80,8 @@ namespace Objects.Converter.Revit
     /// Used to cache already converted family instance FamilyType deifnitions
     /// </summary>
     public Dictionary<string, Objects.BuiltElements.Revit.FamilyType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.FamilyType>();
+    
+    public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
 
     public ReceiveMode ReceiveMode { get; set; }
 
@@ -301,8 +304,7 @@ namespace Objects.Converter.Revit
       }
 
       // log 
-      var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
-      if (reportObj != null && notes.Count > 0)
+      if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
       return returnObject;

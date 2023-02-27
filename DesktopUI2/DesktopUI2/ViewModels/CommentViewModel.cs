@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -85,7 +86,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        Log.Error(ex, "Failed to open comment view {exceptionMessage}", ex.Message);
       }
 
       //something went wrong

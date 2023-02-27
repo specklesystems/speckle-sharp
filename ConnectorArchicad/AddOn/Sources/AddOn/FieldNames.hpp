@@ -25,6 +25,16 @@ static const char* ZonesFieldName = "zones";
 static const char* RoofsFieldName = "roofs";
 static const char* ModelsFieldName = "models";
 
+static const char* ShowOnStoriesFieldName = "showOnStories";
+static const char* HomeStoryOnlyValueName = "homeStoryOnly";
+static const char* HomeAndOneStoryUpValueName = "homeAndOneStoryUp";
+static const char* HomeAndOneStoryDownValueName = "homeAndOneStoryDown";
+static const char* HomeAndOneStoryUpAndDownValueName = "homeAndOneStoryUpAndDown";
+static const char* OneStoryUpValueName = "oneStoryUp";
+static const char* OneStoryDownValueName = "oneStoryDown";
+static const char* AllStoriesValueName = "allStories";
+static const char* AllRelevantStoriesValueName = "allRelevantStories";
+
 namespace PartialObjects {
 static const char* HoleData = "Holes";
 static const char* SegmentData = "Segments";
@@ -34,27 +44,68 @@ static const char* CutData = "Cuts";
 
 namespace Wall
 {
+// Wall geometry
+static const char* BaseOffsetFieldName = "baseOffset";
 static const char* StartPointFieldName = "startPoint";
 static const char* EndPointFieldName = "endPoint";
-static const char* HeightFieldName = "height";
+static const char* WallComplexityFieldName = "wallComplexity";
+static const char* StructureFieldName = "structure";
+static const char* GeometryMethodFieldName = "geometryMethod";
+static const char* BuildingMaterialNameFieldName = "buildingMaterialName";
+static const char* CompositeNameFieldName = "compositeName";
+static const char* ProfileNameFieldName = "profileName";
+static const char* ArcAngleFieldName = "arcAngle";
 static const char* ThicknessFieldName = "thickness";
 static const char* FirstThicknessFieldName = "firstThickness";
 static const char* SecondThicknessFieldName = "secondThickness";
-static const char* ArcAngleFieldName = "arcAngle";
-static const char* StructureFieldName = "structure";
-static const char* GeometryMethodFieldName = "geometryMethod";
-static const char* WallComplexityFieldName = "wallComplexity";
 static const char* OutsideSlantAngleFieldName = "outsideSlantAngle";
 static const char* InsideSlantAngleFieldName = "insideSlantAngle";
-static const char* CompositeIndexFieldName = "compositeIndex";
-static const char* BuildingMaterialIndexFieldName = "buildingMaterialIndex";
-static const char* ProfileIndexFieldName = "profileIndex";
-static const char* BaseOffsetFieldName = "baseOffset";
+static const char* HeightFieldName = "height";
+static const char* PolyCanChangeFieldName = "polyWalllCornersCanChange";
+// Wall and stories relation
 static const char* TopOffsetFieldName = "topOffset";
+static const char* RelativeTopStoryIndexFieldName = "relativeTopStory";
+static const char* ReferenceLineLocationFieldName = "referenceLineLocation";
+static const char* ReferenceLineOffsetFieldName = "referenceLineOffset";
+static const char* OffsetFromOutsideFieldName = "offsetFromOutside";
+static const char* ReferenceLineStartIndexFieldName = "referenceLineStartIndex";
+static const char* ReferenceLineEndIndexFieldName = "referenceLineEndIndex";
 static const char* FlippedFieldName = "flipped";
+// Floor Plan and Section - Floor Plan Display
+static const char* DisplayOptionNameFieldName = "displayOptionName";
+static const char* ViewDepthLimitationNameFieldName = "showProjectionName";
+// Floor Plan and Section - Cut Surfaces parameters
+static const char* CutLinePenIndexFieldName = "cutLinePen";
+static const char* CutLinetypeNameFieldName = "cutLinetype";
+static const char* OverrideCutFillPenIndexFieldName = "overrideCutFillPen";
+static const char* OverrideCutFillBackgroundPenIndexFieldName = "overrideCutFillBackgroundPen";
+// Floor Plan and Section - Outlines parameters
+static const char* UncutLinePenIndexFieldName = "uncutLinePen";
+static const char* UncutLinetypeNameFieldName = "uncutLinetype";
+static const char* OverheadLinePenIndexFieldName = "overheadLinePen";
+static const char* OverheadLinetypeNameFieldName = "overheadLinetype";
+// Model - Override Surfaces
+static const char* ReferenceMaterialNameFieldName = "referenceMaterialName";
+static const char* ReferenceMaterialStartIndexFieldName = "referenceMaterialStartIndex";
+static const char* ReferenceMaterialEndIndexFieldName = "referenceMaterialEndIndex";
+static const char* OppositeMaterialNameFieldName = "oppositeMaterialName";
+static const char* OppositeMaterialStartIndexFieldName = "oppositeMaterialStartIndex";
+static const char* OppositeMaterialEndIndexFieldName = "oppositeMaterialEndIndex";
+static const char* SideMaterialNameFieldName = "sideMaterialName";
+static const char* MaterialsChainedFieldName = "materialsChained";
+static const char* InheritEndSurfaceFieldName = "inheritEndSurface";
+static const char* AlignTextureFieldName = "alignTexture";
+static const char* SequenceFieldName = "sequence";
+// Model - Log Details (log height, start with half log, surface of horizontal edges, log shape)
+static const char* LogHeightFieldName = "logHeight";
+static const char* StartWithHalfLogFieldName = "startWithHalfLog";
+static const char* SurfaceOfHorizontalEdgesFieldName = "surfaceOfHorizontalEdges";
+static const char* LogShapeFieldName = "logShape";
+// Model - Defines the relation of wall to zones (Zone Boundary, Reduce Zone Area Only, No Effect on Zones)
+static const char* WallRelationToZoneNameFieldName = "wallRelationToZoneName";
+// Does it have any embedded object?
 static const char* HasDoorFieldName = "hasDoor";
 static const char* HasWindowFieldName = "hasWindow";
-
 }
 
 

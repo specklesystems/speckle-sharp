@@ -32,7 +32,7 @@
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
     <Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
     <Exec Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\&quot;" />
   </Target>

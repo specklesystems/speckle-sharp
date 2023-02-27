@@ -154,10 +154,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
         var pseudoId = nextToConvert.Key;
         var descriptor = ObjectDescriptor(pseudoId);
 
-        var alreadyConverted = NavisworksConverter.Report.GetReportObject(pseudoId, out var index);
+        var alreadyConverted = NavisworksConverter.Report.ReportObjects.TryGetValue(pseudoId, out var applicationObject);
 
         var reportObject = alreadyConverted
-          ? NavisworksConverter.Report.ReportObjects[index]
+          ? applicationObject
           : new ApplicationObject(pseudoId, descriptor)
           {
             applicationId = pseudoId
