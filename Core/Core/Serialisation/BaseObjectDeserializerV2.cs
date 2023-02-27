@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -164,7 +165,14 @@ namespace Speckle.Core.Serialisation
         case JTokenType.Boolean:
           return (bool)doc;
         case JTokenType.Integer:
-          return (long)doc;
+          try
+          {
+            return (long)doc;
+          }
+          catch
+          {
+            return doc.ToObject<BigInteger>();
+          }
         case JTokenType.Float:
           return (double)doc;
         case JTokenType.String:
