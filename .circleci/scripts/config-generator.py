@@ -176,7 +176,9 @@ def createConfigFile(deploy: bool, outputPath: str):
                 jobsToWait.append(job["deploy-connector-new"]["name"])
             main_workflow["jobs"] += [job]
         main_workflow["jobs"] += [
-            {"notify-deploy": {"requires": jobsToWait, "context": "discord"}}
+            {"notify-deploy": {
+            "requires": jobsToWait, 
+            "context": "discord", "filters": getTagFilter(slugs_to_match)}}
         ]
 
     # Output continuation file

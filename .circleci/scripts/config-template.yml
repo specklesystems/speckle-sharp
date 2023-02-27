@@ -533,10 +533,6 @@ workflows:
       - build-desktopui:
           requires:
             - build-core
-      - notify-deploy:
-          requires:
-            - get-ci-tools
-          context: discord
   nuget:
     jobs:
       # CORE Nuget Publish
