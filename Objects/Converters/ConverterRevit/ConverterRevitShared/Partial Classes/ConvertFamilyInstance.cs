@@ -231,9 +231,9 @@ namespace Objects.Converter.Revit
       if (@base == null && basePoint == null)
         @base = RevitElementToSpeckle(revitFi, out notes);
 
-      // point based, convert these as revit isntances
+      // point based, convert these as revit instances
       if (@base == null)
-        @base = RevitInstanceToSpeckle(revitFi, out notes);
+        @base = RevitInstanceToSpeckle(revitFi, out notes, null);
         //@base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
 
       // add additional props to base object
@@ -627,17 +627,22 @@ namespace Objects.Converter.Revit
       appObj = SetHostedElements(instance, familyInstance, appObj);
       return appObj;
     }
-    public RevitInstance RevitInstanceToSpeckle(DB.FamilyInstance instance, out List<string> notes)
+    public RevitInstance RevitInstanceToSpeckle(DB.FamilyInstance instance, out List<string> notes, Transform parentTransform, bool useParentTransform = false)
     {
       notes = new List<string>();
 
-      // get the definition base of this instance
-      FamilyType definition = ConvertAndCacheRevitInstanceDefinition(instance, Doc, out List<string> definitionNotes);
-      notes.AddRange(definitionNotes);
-
       // get the transform
-      var totalTransform = instance.GetTotalTransform();
-      var transform = TransformToSpeckle(totalTransform, out bool isMirrored);
+      var instanceTransform = instance.GetTotalTransform();
+      var localTransform = instanceTransform;
+      if (useParentTransform)
+      {
+        localTransform = instanceTransform.Multiply(parentTransform.Inverse);
+      }
+      var transform = TransformToSpeckle(localTransform, out bool isMirrored);
+
+      // get the definition base of this instance
+      FamilyType definition = ConvertAndCacheRevitInstanceDefinition(instance, Doc, out List<string> definitionNotes, instanceTransform);
+      notes.AddRange(definitionNotes);
 
       var _instance = new RevitInstance();
       _instance.transform = transform;
@@ -658,19 +663,19 @@ namespace Objects.Converter.Revit
       return _instance;
     }
 
-    private FamilyType ConvertAndCacheRevitInstanceDefinition(DB.FamilyInstance instance, Document doc, out List<string> notes)
+    private FamilyType ConvertAndCacheRevitInstanceDefinition(DB.FamilyInstance instance, Document doc, out List<string> notes, Transform parentTransform)
     {
       notes = new List<string>();
       var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
 
       if (_symbol == null) return null;
       if (!Symbols.ContainsKey(_symbol.UniqueId))
-        Symbols[_symbol.UniqueId] = GetRevitInstanceDefinition(instance, out notes);
+        Symbols[_symbol.UniqueId] = GetRevitInstanceDefinition(instance, out notes, parentTransform);
 
       return Symbols[_symbol.UniqueId] as FamilyType;
     }
 
-    private FamilyType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes)
+    private FamilyType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes, Transform parentTransform)
     {
       notes = new List<string>();
       var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
@@ -701,15 +706,21 @@ namespace Objects.Converter.Revit
       foreach (var elemId in subElementIds)
       {
         var subElem = instance.Document.GetElement(elemId);
-        if (CanConvertToSpeckle(subElem))
+        Base converted = null;
+        switch (subElem)
         {
-          var obj = ConvertToSpeckle(subElem);
-
-          if (obj != null)
-          {
-            convertedSubElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
-          }
+          case DB.FamilyInstance o:
+            converted = RevitInstanceToSpeckle(o, out notes, parentTransform, true);
+            if (converted == null) goto default;
+            break;
+          default:
+            converted = ConvertToSpeckle(subElem);
+            break;
+        }
+        if (converted != null)
+        {
+          convertedSubElements.Add(converted);
+          ConvertedObjectsList.Add(converted.applicationId);
         }
       }
 
