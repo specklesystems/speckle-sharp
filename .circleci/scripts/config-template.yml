@@ -22,6 +22,18 @@ commands:
             dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n --skip-duplicate
           environment:
             WORKFLOW_NUM: << pipeline.number >>
+  cached-checkout:
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - ".git"
   packandpublish-bash:
     parameters:
       projectfilepath:
@@ -42,16 +54,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - run:
           name: Build Core
           command: dotnet build Core/Core.sln -c Release -v q
@@ -88,16 +91,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           S3_CREATE_BUCKET: "true"
           WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - run:
           name: Unit Test
           command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
@@ -113,16 +107,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - run:
           name: Restore Objects
           command: | # Restore only the projects we're about to build.
@@ -145,16 +130,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - run:
           name: Build DesktopUI2
           command: dotnet build DesktopUI2/DesktopUI2/DesktopUI2.csproj -c Release -v q
@@ -181,16 +157,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: boolean
         default: false
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
@@ -309,16 +276,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
@@ -465,16 +423,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       name: << parameters.e >>
       shell: bash.exe
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
@@ -519,16 +468,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
-      - restore_cache:
-          keys:
-            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
-            - source-v1-{{ .Branch }}-
-            - source-v1-
-      - checkout
-      - save_cache:
-          key: *source-cache
-          paths:
-            - ".git"
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
