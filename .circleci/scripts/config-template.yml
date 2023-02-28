@@ -219,7 +219,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: Any
     steps:
-      - checkout
       - attach_workspace:
           at: ./
       - run:
