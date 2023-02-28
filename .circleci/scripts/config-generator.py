@@ -200,7 +200,7 @@ def createConfigFile(deploy: bool, outputPath: str, external_build: bool):
 
 def removeStepsThatUseSecrets(config):
     jobs: dict[str, dict[str, dict]] = config["workflows"]["build"]["jobs"]
-    filteredJobs: dict[str, Any] = {}
+    filteredJobs = []
 
     for jobItem in jobs:
         key = next(iter(jobItem.keys()))
@@ -211,7 +211,7 @@ def removeStepsThatUseSecrets(config):
         if requires:
             if "get-ci-tools" in requires:
                 requires.pop(requires.index("get-ci-tools"))
-        filteredJobs[key] = jobDict
+        filteredJobs.append({f"{key}": jobDict})
 
     config["workflows"]["build"]["jobs"] = filteredJobs
     print("Cleaned up config for external build")
