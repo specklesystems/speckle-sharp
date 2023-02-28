@@ -34,7 +34,7 @@ def runCommand(argv: List[str]):
         elif opt in ("-o", "--output"):
             output_filepath = arg
 
-    createConfigFile(False, output_filepath)
+    createConfigFile(deploy, output_filepath)
 
 
 def setup():
