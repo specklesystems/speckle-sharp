@@ -191,6 +191,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Exit if External PR
+          shell: bash.exe
           command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
       - run:
           name: Create Innosetup signing cert
