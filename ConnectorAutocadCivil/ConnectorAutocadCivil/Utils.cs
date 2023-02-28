@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Reflection;
 
-using Speckle.Core.Kits;
-
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Colors;
+
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
