@@ -517,7 +517,7 @@ namespace Objects.Converter.Revit
           return ProfileWallToNative(o);
 
         case BER.RevitFaceWall o:
-          return FaceWallToNative(o);
+          return FaceWallToNativeV2(o);
 
         case BE.Wall o:
           return WallToNative(o);
