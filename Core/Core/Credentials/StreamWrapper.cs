@@ -181,6 +181,10 @@ namespace Speckle.Core.Credentials
           default:
             throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
         }
+        
+      var queryDictionary = System.Web.HttpUtility.ParseQueryString(uri.Query);
+      UserId = queryDictionary["u"];
+
     }
 
     private Account _Account;
@@ -276,7 +280,7 @@ namespace Speckle.Core.Credentials
              (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
     }
 
-    private async Task ValidateWithAccount(Account acc)
+    public async Task ValidateWithAccount(Account acc)
     {
       if (ServerUrl != acc.serverInfo.url)
         throw new SpeckleException($"Account is not from server {ServerUrl}", false);
@@ -291,7 +295,7 @@ namespace Speckle.Core.Credentials
       // First check if the stream exists
       try
       {
-        await client.StreamGet(StreamId);
+        await client.StreamGet(StreamId).ConfigureAwait(false);
       }
       catch
       {
@@ -300,9 +304,13 @@ namespace Speckle.Core.Credentials
       }
 
       // Check if the branch exists
-      if (Type == StreamWrapperType.Branch && await client.BranchGet(StreamId, BranchName, 1) == null)
-        throw new SpeckleException(
-          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", false);
+      if (Type == StreamWrapperType.Branch)
+      {
+        var branch = await client.BranchGet(StreamId, BranchName, 1).ConfigureAwait(false);
+        if(branch == null)
+          throw new SpeckleException(
+            $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", false);
+      }
     }
 
     public override string ToString()
