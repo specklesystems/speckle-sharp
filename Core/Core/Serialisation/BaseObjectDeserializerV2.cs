@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -169,9 +169,11 @@ namespace Speckle.Core.Serialisation
           {
             return (long)doc;
           }
-          catch
+          catch(OverflowException ex)
           {
-            return doc.ToObject<BigInteger>();
+            var v = (object)(double)doc;
+            Log.Debug(ex, "Json property {tokenType} failed to deserialize {value} to {targetType}, will be deserialized as {fallbackType}", doc.Type, v, typeof(long), typeof(double));
+            return v;
           }
         case JTokenType.Float:
           return (double)doc;
