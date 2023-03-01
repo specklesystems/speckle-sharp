@@ -1,4 +1,4 @@
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -67,6 +67,8 @@ namespace Objects.Converter.Revit
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
+    public Transaction T { get; private set; }
+
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
@@ -89,9 +91,14 @@ namespace Objects.Converter.Revit
 
     public void SetContextDocument(object doc)
     {
-      Doc = (Document)doc;
-      Report.Log($"Using document: {Doc.PathName}");
-      Report.Log($"Using units: {ModelUnits}");
+      if (doc is Transaction t)
+        T = t;
+      else
+      {
+        Doc = (Document)doc;
+        Report.Log($"Using document: {Doc.PathName}");
+        Report.Log($"Using units: {ModelUnits}");
+      }
     }
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
@@ -125,6 +132,9 @@ namespace Objects.Converter.Revit
           break;
         case DB.FabricationPart o:
           returnObject = FabricationPartToSpeckle(o, out notes);
+          break;
+        case DB.Group o:
+          returnObject = GroupToSpeckle(o);
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
@@ -237,18 +247,21 @@ namespace Objects.Converter.Revit
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
           break;
-#if REVIT2023
-        case DB.Structure.AnalyticalMember o:
-          returnObject = AnalyticalStickToSpeckle(o);
+        case DB.Structure.StructuralConnectionHandler o:
+          returnObject = StructuralConnectionHandlerToSpeckle(o);
           break;
-        case DB.Structure.AnalyticalPanel o:
-          returnObject = AnalyticalSurfaceToSpeckle(o);
-          break;
-#else
+#if REVIT2020 || REVIT2021 || REVIT2022
         case DB.Structure.AnalyticalModelStick o:
           returnObject = AnalyticalStickToSpeckle(o);
           break;
         case DB.Structure.AnalyticalModelSurface o:
+          returnObject = AnalyticalSurfaceToSpeckle(o);
+          break;
+#else
+         case DB.Structure.AnalyticalMember o:
+          returnObject = AnalyticalStickToSpeckle(o);
+          break;
+        case DB.Structure.AnalyticalPanel o:
           returnObject = AnalyticalSurfaceToSpeckle(o);
           break;
 #endif
@@ -279,25 +292,6 @@ namespace Objects.Converter.Revit
         catch (Exception e)
         {
           // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
-        }
-      }
-
-      //NOTE: adds the quantities of all materials to an element
-      if (returnObject != null && !(returnObject is Model))
-      {
-        try
-        {
-          var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
-          if (qs != null)
-          {
-            returnObject["materialQuantities"] = new List<Base>();
-            (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
-          }
-          else returnObject["materialQuantities"] = null;
-        }
-        catch (System.Exception e)
-        {
-          notes.Add(e.Message);
         }
       }
 
@@ -453,7 +447,8 @@ namespace Objects.Converter.Revit
         case BE.Column o:
           return ColumnToNative(o);
 
-#if REVIT2022
+#if REVIT2020  || REVIT2021
+#else
         case BE.Ceiling o:
           return CeilingToNative(o);
 #endif
@@ -636,7 +631,7 @@ namespace Objects.Converter.Revit
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
         DB.FabricationPart _ => true,
-#if !REVIT2023
+#if REVIT2020 || REVIT2021 || REVIT2022
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
 #else
@@ -683,7 +678,7 @@ namespace Objects.Converter.Revit
         BE.Beam _ => true,
         BE.Brace _ => true,
         BE.Column _ => true,
-#if REVIT2022
+#if !REVIT2020 && !REVIT2021
         BE.Ceiling _ => true,
 #endif
         BERC.DetailCurve _ => true,
@@ -716,8 +711,6 @@ namespace Objects.Converter.Revit
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
-        STR.Geometry.Node _ => true,
-        STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
         _ => false,
       };

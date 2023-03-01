@@ -98,7 +98,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
         //    .Where(pair => pair.Key == applicationId)
         //    .Select(pair => pair.Value).FirstOrDefault();
 
-        converted = converter.ConvertToSpeckle(obj);
+        try
+        {
+          converted = converter.ConvertToSpeckle(obj);
+        }
+        catch (Exception ex) 
+        { }
 
         if (converted == null)
         {

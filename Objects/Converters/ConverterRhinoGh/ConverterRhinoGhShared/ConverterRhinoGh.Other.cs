@@ -30,6 +30,7 @@ namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    // display and render
     public ObjectAttributes DisplayStyleToNative(DisplayStyle display)
     {
       var attributes = new ObjectAttributes();
@@ -98,14 +99,10 @@ namespace Objects.Converter.RhinoGh
     public Rhino.Render.RenderMaterial RenderMaterialToNative(RenderMaterial speckleMaterial)
     {
       var commitInfo = GetCommitInfo();
-      var speckleName = $"{commitInfo} - {speckleMaterial.name}";
+      var speckleName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {speckleMaterial.name}" : $"{speckleMaterial.name}";
 
       // check if the doc already has a material with speckle material name, or a previously created speckle material
-      var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleMaterial.name);
-      if (existing != null)
-        return existing;
-      else
-        existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
+      var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
       if (existing != null)
         return existing;
 
@@ -139,6 +136,7 @@ namespace Objects.Converter.RhinoGh
 
       return rm;
     }
+
     public RenderMaterial RenderMaterialToSpeckle(RH.Material material)
     {
       var renderMaterial = new RenderMaterial();
@@ -176,6 +174,7 @@ namespace Objects.Converter.RhinoGh
       return renderMaterial;
     }
 
+    // hatch
     public Rhino.Geometry.Hatch[] HatchToNative(Hatch hatch)
     {
 
@@ -195,6 +194,7 @@ namespace Objects.Converter.RhinoGh
 
       return hatches;
     }
+
     public Hatch HatchToSpeckle(Rhino.Geometry.Hatch hatch)
     {
       var _hatch = new Hatch();
@@ -213,6 +213,7 @@ namespace Objects.Converter.RhinoGh
 
       return _hatch;
     }
+
     private HatchPattern FindDefaultPattern(string patternName)
     {
       var defaultPattern = typeof(HatchPattern.Defaults).GetProperties()?.Where(o => o.Name.Equals(patternName, StringComparison.OrdinalIgnoreCase))?.ToList().FirstOrDefault();
@@ -222,6 +223,7 @@ namespace Objects.Converter.RhinoGh
         return HatchPattern.Defaults.Solid;
     }
 
+    // blocks
     public BlockDefinition BlockDefinitionToSpeckle(InstanceDefinition definition)
     {
       var geometry = new List<Base>();
@@ -255,19 +257,30 @@ namespace Objects.Converter.RhinoGh
 
       // get modified definition name with commit info
       var commitInfo = GetCommitInfo();
-      var blockName = $"{commitInfo} - {definition.name}";
+      var blockName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {definition.name}" : $"{definition.name}";
 
       // see if block name already exists and return if so
       if (Doc.InstanceDefinitions.Find(blockName) is InstanceDefinition def)
         return def;
 
       // base point
+      if (definition.basePoint == null)
+      {
+        notes.Add("definition had no basepoint");
+        return null;
+      }
       Point3d basePoint = PointToNative(definition.basePoint).Location;
 
       // geometry and attributes
       var geometry = new List<GeometryBase>();
       var attributes = new List<ObjectAttributes>();
-      foreach (var geo in definition.geometry)
+      var definitionGeo = definition.geometry ?? (definition["@geometry"] as List<object>).Cast<Base>().ToList();
+      if (definitionGeo == null)
+      {
+        notes.Add("Definition had no geometry");
+        return null;
+      }
+      foreach (var geo in definitionGeo)
       {
         if (CanConvertToNative(geo))
         {
@@ -276,7 +289,8 @@ namespace Objects.Converter.RhinoGh
           {
             case BlockInstance o:
               var instanceNotes = new List<string>();
-              var instance = BlockInstanceToNative(o, out instanceNotes);
+              var instanceAppObj = BlockInstanceToNative(o, false);
+              var instance = instanceAppObj.Converted.FirstOrDefault() as InstanceObject;
               if (instance != null)
               {
                 converted.Add(instance.DuplicateGeometry());
@@ -304,7 +318,8 @@ namespace Objects.Converter.RhinoGh
           }
           if (converted.Count == 0)
             continue;
-          var layerName = (geo["Layer"] != null) ? $"{commitInfo}{Layer.PathSeparator}{geo["Layer"] as string}" : $"{commitInfo}";
+          var geoLayer = ((string)geo["Layer"])?? $"block definition geometry";
+          var layerName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
           int index = 1;
           if (layerName != null)
             GetLayer(Doc, layerName, out index, true);
@@ -363,14 +378,23 @@ namespace Objects.Converter.RhinoGh
       return _instance;
     }
 
-    public InstanceObject BlockInstanceToNative(BlockInstance instance, out List<string> notes)
+    public ApplicationObject BlockInstanceToNative(BlockInstance instance, bool AppendToModelSpace = true)
     {
+      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+
       // get the block definition
-      InstanceDefinition definition = BlockDefinitionToNative(instance.blockDefinition, out notes);
+      var def = instance.blockDefinition ?? instance["@blockDefinition"] as BlockDefinition; // some applications need to dynamically attach block defs (eg sketchup)
+      if (def == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a block definition");
+        return appObj;
+      }
+      InstanceDefinition definition = BlockDefinitionToNative(def, out List<string> notes);
+      notes.ForEach(o => appObj.Update(logItem: o));
       if (definition == null)
       {
-        notes.Add("Could not create block definition");
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
+        return appObj;
       }
 
       // get the transform
@@ -384,19 +408,27 @@ namespace Objects.Converter.RhinoGh
 
       if (instanceId == Guid.Empty)
       {
-        notes.Add("Could not add instance to doc");
-        return null;
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not add instance to doc");
+        return appObj;
       }
 
       var _instance = Doc.Objects.FindId(instanceId) as InstanceObject;
+
       // add application id
       try
       {
         _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId);
       }
-      catch { }
+      catch (Exception e)
+      {
+        appObj.Update(logItem: $"Could not set application id user string: {e.Message}");
+      }
 
-      return _instance;
+      // update appobj
+      appObj.Update(convertedItem: _instance);
+      if (AppendToModelSpace)
+        appObj.CreatedIds.Add(instanceId.ToString());
+      return appObj;
     }
 
     public DisplayMaterial RenderMaterialToDisplayMaterial(RenderMaterial material)
@@ -411,7 +443,6 @@ namespace Objects.Converter.RhinoGh
       var displayMaterial = new DisplayMaterial(rhinoMaterial);
       return displayMaterial;
     }
-
 
     public RenderMaterial DisplayMaterialToSpeckle(DisplayMaterial material)
     {

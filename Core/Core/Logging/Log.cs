@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Net.Http;
 using System.Reflection;
+using System.Threading.Tasks;
 using Sentry;
 using Speckle.Core.Credentials;
 
@@ -11,10 +12,13 @@ namespace Speckle.Core.Logging
   ///  Anonymous telemetry to help us understand how to make a better Speckle.
   ///  This really helps us to deliver a better open source project and product!
   /// </summary>
-  public static class Log
+  public static class OldLog
   {
     private static bool _initialized = false;
 
+    /// <summary>
+    /// Initializes Sentry
+    /// </summary>
     public static void Initialize()
     {
       try
@@ -23,7 +27,6 @@ namespace Speckle.Core.Logging
           return;
 
         var dsn = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
-
         var env = "production";
         var debug = false;
 #if DEBUG
@@ -40,11 +43,23 @@ namespace Speckle.Core.Logging
           o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
           o.StackTraceMode = StackTraceMode.Enhanced;
           o.AttachStacktrace = true;
+          o.AddExceptionFilterForType<HttpRequestException>();
+          o.AddExceptionFilterForType<TaskCanceledException>();
         });
 
+        var id = "unknown";
 
-        var da = AccountManager.GetDefaultAccount();
-        var id = da != null ? da.GetHashedEmail() : "unknown";
+        try
+        {
+          var da = AccountManager.GetDefaultAccount();
+          if (da != null)
+          {
+            id = da.GetHashedEmail();
+          }
+        }
+        catch (Exception ex)
+        {
+        }
 
 
         SentrySdk.ConfigureScope(scope =>
@@ -62,47 +77,36 @@ namespace Speckle.Core.Logging
     }
 
 
-    //capture and make sure Sentry is initialized
+    /// <summary>
+    /// Captures an Exception and makes sure Sentry is initialized
+    /// </summary>
+    /// <param name="e"></param>
+    /// <param name="level"></param>
+    /// <param name="extra"></param>
     public static void CaptureException(Exception e, SentryLevel level = SentryLevel.Info, List<KeyValuePair<string, object>> extra = null)
     {
-      try
+      Initialize();
+
+      //ignore infos as they're hogging us
+      if (level == SentryLevel.Info)
+        return;
+
+      SentrySdk.CaptureException(e, scope =>
       {
-        Initialize();
-
-        //ignore infos as they're hogging us
-        if (level == SentryLevel.Info)
-          return;
-
-        SentrySdk.WithScope(s =>
-        {
-          s.Level = level;
-
-          if (extra != null)
-            s.SetExtras(extra);
-          if (e is AggregateException aggregate)
-            aggregate.InnerExceptions.ToList().ForEach(ex => SentrySdk.CaptureException(e));
-          else
-            SentrySdk.CaptureException(e);
-        });
-
-      }
-      catch (Exception ex)
-      {
-        //swallow
-      }
+        scope.Level = level;
+        if (extra != null)
+          scope.SetExtras(extra);
+      });
     }
 
+    /// <summary>
+    /// Adds a Breadcrumb and makes sure Sentry is initialized
+    /// </summary>
+    /// <param name="message"></param>
     public static void AddBreadcrumb(string message)
     {
-      try
-      {
-        Initialize();
-        SentrySdk.AddBreadcrumb(message);
-      }
-      catch (Exception ex)
-      {
-        //swallow
-      }
+      Initialize();
+      SentrySdk.AddBreadcrumb(message);
     }
   }
 }

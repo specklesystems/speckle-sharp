@@ -1,6 +1,8 @@
-﻿using DesktopUI2;
+﻿using ConnectorCSI.Storage;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using Speckle.ConnectorCSI.Util;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -16,6 +18,8 @@ namespace Speckle.ConnectorCSI.UI
 {
   public partial class ConnectorBindingsCSI : ConnectorBindings
   {
+    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
     public override bool CanPreviewReceive => false;
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
@@ -30,9 +34,18 @@ namespace Speckle.ConnectorCSI.UI
       //var converter = new ConverterCSI();
       var appName = GetHostAppVersion(Model);
       var converter = kit.LoadConverter(appName);
+
+      // set converter settings as tuples (setting slug, setting selection)
+      // for csi, these must go before the SetContextDocument method.
+      var settings = new Dictionary<string, string>();
+      foreach (var setting in state.Settings)
+        settings.Add(setting.Slug, setting.Selection);
+      settings.Add("operation", "receive");
+      converter.SetConverterSettings(settings);
+
       converter.SetContextDocument(Model);
       Exceptions.Clear();
-      //var previouslyRecieveObjects = state.ReceivedObjects;
+      var previouslyReceivedObjects = state.ReceivedObjects;
 
       if (converter == null)
       {
@@ -97,12 +110,11 @@ namespace Speckle.ConnectorCSI.UI
         // Do nothing!
       }
 
-
       if (progress.Report.OperationErrorsCount != 0)
         return state;
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      Preview.Clear();
+      StoredObjects.Clear();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
@@ -114,48 +126,88 @@ namespace Speckle.ConnectorCSI.UI
         progress.Update(conversionProgressDict);
       };
 
-      var commitObjs = FlattenCommitObject(commitObject, converter);
-      foreach (var commitObj in commitObjs)
+      Preview = FlattenCommitObject(commitObject, converter);
+      foreach (var previewObj in Preview)
+        progress.Report.Log(previewObj);
+
+      converter.ReceiveMode = state.ReceiveMode;
+      // needs to be set for editing to work 
+      converter.SetPreviousContextObjects(previouslyReceivedObjects);
+
+      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        return null;
+      StreamStateManager.SaveBackupFile(Model);
+
+      var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+
+      // receive was cancelled by user
+      if (newPlaceholderObjects == null)
       {
-        BakeObject(commitObj, state, converter);
-        updateProgressAction?.Invoke();
+        progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
+        return null;
       }
 
-      try
-      {
-        //await state.RefreshStream();
-        WriteStateToFile();
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
-        WriteStateToFile();
-        //state.Errors.Add(e);
-        //Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
-      }
-      progress.Report.Merge(converter.Report);
+      DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects, progress);
+
+      // The following block of code is a hack to properly refresh the view
+      // I've only experienced this bug in ETABS so far
+#if ETABS
+      if (newPlaceholderObjects.Any(o => o.Status == ApplicationObject.State.Updated))
+        RefreshDatabaseTable("Beam Object Connectivity");
+#endif
+
+      Model.View.RefreshWindow();
+      Model.View.RefreshView();
+
+      state.ReceivedObjects = newPlaceholderObjects;
+
       return state;
     }
 
-    /// <summary>
-    /// conversion to native
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="state"></param>
-    /// <param name="converter"></param>
-    private void BakeObject(Base obj, StreamState state, ISpeckleConverter converter)
+    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
-      try
+      var placeholders = new List<ApplicationObject>();
+      var conversionProgressDict = new ConcurrentDictionary<string, int>();
+      conversionProgressDict["Conversion"] = 1;
+
+      foreach (var obj in Preview)
       {
-        converter.ReceiveMode = state.ReceiveMode;
-        converter.ConvertToNative(obj);
+        if (!StoredObjects.ContainsKey(obj.OriginalId))
+          continue;
+
+        var @base = StoredObjects[obj.OriginalId];
+        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        {
+          placeholders = null;
+          break;
+        }
+
+        try
+        {
+          var convRes = converter.ConvertToNative(@base);
+
+          switch (convRes)
+          {
+            case ApplicationObject o:
+              placeholders.Add(o);
+              obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
+              progress.Report.UpdateReportObject(obj);
+              break;
+            default:
+              break;
+          }
+        }
+        catch (Exception e)
+        {
+          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          progress.Report.UpdateReportObject(obj);
+        }
+
+        conversionProgressDict["Conversion"]++;
+        progress.Update(conversionProgressDict);
       }
-      catch (Exception e)
-      {
-        var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}");
-        converter.Report.LogOperationError(exception);
-        return;
-      }
+
+      return placeholders;
     }
 
     /// <summary>
@@ -164,26 +216,33 @@ namespace Speckle.ConnectorCSI.UI
     /// <param name="obj"></param>
     /// <param name="converter"></param>
     /// <returns></returns>
-    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject(object obj, ISpeckleConverter converter)
     {
-      List<Base> objects = new List<Base>();
+      var objects = new List<ApplicationObject>();
 
       if (obj is Base @base)
       {
+        var appObj = new ApplicationObject(@base.id, ConnectorCSIUtils.SimplifySpeckleType(@base.speckle_type)) { applicationId = @base.applicationId, Status = ApplicationObject.State.Unknown };
+
         if (converter.CanConvertToNative(@base))
         {
-          objects.Add(@base);
+          if (StoredObjects.ContainsKey(@base.id))
+            return objects;
+
+          appObj.Convertible = true;
+          objects.Add(appObj);
+          StoredObjects.Add(@base.id, @base);
           return objects;
         }
         else
         {
-          foreach (var prop in @base.GetDynamicMembers())
+          foreach (var prop in @base.GetMembers().Keys)
             objects.AddRange(FlattenCommitObject(@base[prop], converter));
           return objects;
         }
       }
 
-      if (obj is List<object> list)
+      if (obj is IList list && list != null)
       {
         foreach (var listObj in list)
           objects.AddRange(FlattenCommitObject(listObj, converter));
@@ -197,8 +256,75 @@ namespace Speckle.ConnectorCSI.UI
         return objects;
       }
 
+      else
+      {
+        if (obj != null && !obj.GetType().IsPrimitive && !(obj is string))
+        {
+          var appObj = new ApplicationObject(obj.GetHashCode().ToString(), obj.GetType().ToString());
+          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in CSI");
+          objects.Add(appObj);
+        }
+      }
+
       return objects;
     }
 
+    private void RefreshDatabaseTable(string floorTableKey)
+    {
+      int tableVersion = 0;
+      int numberRecords = 0;
+      string[] fieldsKeysIncluded = null;
+      string[] tableData = null;
+      int numFatalErrors = 0;
+      int numWarnMsgs = 0;
+      int numInfoMsgs = 0;
+      int numErrorMsgs = 0;
+      string importLog = "";
+      Model.DatabaseTables.GetTableForEditingArray(floorTableKey, "ThisParamIsNotActiveYet", ref tableVersion, ref fieldsKeysIncluded, ref numberRecords, ref tableData);
+
+      double version = 0;
+      string versionString = null;
+      Model.GetVersion(ref versionString, ref version);
+      var programVersion = versionString;
+
+      // this is a workaround for a CSI bug. The applyEditedTables is looking for "Unique Name", not "UniqueName"
+      // this bug is patched in version 20.0.0
+      if (programVersion.CompareTo("20.0.0") < 0 && fieldsKeysIncluded[0] == "UniqueName")
+        fieldsKeysIncluded[0] = "Unique Name";
+
+      Model.DatabaseTables.SetTableForEditingArray(floorTableKey, ref tableVersion, ref fieldsKeysIncluded, numberRecords, ref tableData);
+      Model.DatabaseTables.ApplyEditedTables(false, ref numFatalErrors, ref numErrorMsgs, ref numWarnMsgs, ref numInfoMsgs, ref importLog);
+    }
+
+    // delete previously sent objects that are no longer in this stream
+    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects, ProgressViewModel progress)
+    {
+      foreach (var obj in previouslyReceiveObjects)
+      {
+        if (obj.Converted.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+          continue;
+
+        for (int i = 0; i < obj.Converted.Count; i++)
+        {
+          if (!(obj.Converted[i] is string s && s.Split(new[] { ConnectorCSIUtils.delimiter }, StringSplitOptions.None) is string[] typeAndName && typeAndName.Length == 2))
+            continue;
+
+          switch (typeAndName[0])
+          {
+            case "Frame":
+              Model.FrameObj.Delete(typeAndName[1]);
+              break;
+            case "Area":
+              Model.AreaObj.Delete(typeAndName[1]);
+              break;
+            default:
+              continue;
+          }
+
+          obj.Update(status: ApplicationObject.State.Removed);
+          progress.Report.Log(obj);
+        }
+      }
+    }
   }
 }

@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--EXTERNAL_PROPERTIES: AppData-->
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+	<!-- Project Config -->
+	<PropertyGroup>
+		<Title>SpeckleConnectorNavisworks</Title>
+		<AssemblyName>SpeckleConnectorNavisworks</AssemblyName>
+		<RootNamespace>Speckle.ConnectorNavisworks</RootNamespace>
+		<ProjectGuid>{9A7D7F9A-4FE1-4053-950B-50B43BC81087}</ProjectGuid>
+		<Version>2.11.0-alpha3</Version>
+		
+		<TargetFramework>net48</TargetFramework>
+		<PlatformTarget>x64</PlatformTarget>
+		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
+		<FileAlignment>512</FileAlignment>
+		<Deterministic>true</Deterministic>
+
+		<Description>Speckle writer for Autodesk Navisworks Manage</Description>
+		<Authors>jonathon@speckle.systems</Authors>
+		<Company>Speckle</Company>
+		
+		<RepositoryUrl>https://github.com/jsdbroughton/speckle-navis</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>speckle connector nwd nwc nwf navisworks manage</PackageTags>
+		
+		<UseWindowsForms>true</UseWindowsForms>
+		<OutputType>Library</OutputType>
+		<AppDesignerFolder>Properties</AppDesignerFolder>
+		<Configurations>Debug;Release</Configurations>
+
+		<NavisworksBuildNumber>v17</NavisworksBuildNumber>
+		<NavisworksVersion>2020</NavisworksVersion>
+		<PluginBundleTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle</PluginBundleTarget>
+		<PluginVersionContentTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle\Contents\$(NavisworksBuildNumber)</PluginVersionContentTarget>
+		<Platforms>AnyCPU;x64</Platforms>
+	</PropertyGroup>
+
+	<!-- Avalonia -->
+
+	<!-- Speckle Specific -->
+
+	<!-- Configurations -->
+	<PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+		<OutputPath>bin\x64\Debug\</OutputPath>
+		<DefineConstants>$(DefineConstants);NAVMAN17</DefineConstants>
+		<DebugSymbols>true</DebugSymbols>
+		<DebugType>full</DebugType>
+		<Optimize>false</Optimize>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+		<OutputPath>bin\x64\Release\</OutputPath>
+		<DefineConstants>$(DefineConstants);NAVMAN17</DefineConstants>
+		<DebugType>pdbonly</DebugType>
+		<Optimize>true</Optimize>
+		<ErrorReport>prompt</ErrorReport>
+		<WarningLevel>4</WarningLevel>
+	</PropertyGroup>
+
+	<!-- Includes -->
+	<Import Project="..\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems" Label="Shared" />
+
+	<!-- NUGETS -->
+	<ItemGroup>
+	  <PackageReference Include="Speckle.Navisworks.API" Version="2020.0.0" />
+	</ItemGroup>
+
+	<!--- Local Project Dependencies -->
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+	  <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+	  <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
+	</ItemGroup>
+
+	<!-- References -->
+	<ItemGroup>
+		<Reference Include="System.ComponentModel.Composition">
+		  <Private>False</Private>
+		</Reference>
+		<Reference Include="System.ComponentModel.Composition.Registration">
+		  <Private>False</Private>
+		</Reference>
+		<Reference Include="System.Data.DataSetExtensions">
+		  <Private>False</Private>
+		</Reference>
+		<Reference Include="System.Windows.Controls.Ribbon">
+		  <Private>False</Private>
+		</Reference>
+		<Reference Include="System.Xaml">
+		  <Private>False</Private>
+		</Reference>
+		<Reference Include="System.Xml.Serialization">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="PresentationCore">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="PresentationFramework">
+			<Private>False</Private>
+		</Reference>
+		<Reference Include="UIAutomationProvider">
+		  <Private>False</Private>
+		</Reference>
+		<Reference Include="WindowsFormsIntegration">
+		  <Private>False</Private>
+		</Reference>
+		<Reference Update="System">
+			<Private>False</Private>
+			<EmbedInteropTypes>False</EmbedInteropTypes>
+			<Aliases>global</Aliases>
+		</Reference>
+		<Reference Update="System.Core">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.Data">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.Drawing">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.IO.Compression.FileSystem">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.Numerics">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.Runtime.Serialization">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.Windows.Forms">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.Xml">
+			<Private>False</Private>
+		</Reference>
+		<Reference Update="System.Xml.Linq">
+			<Private>False</Private>
+		</Reference>
+	</ItemGroup>
+	<PropertyGroup>
+		<IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+	</PropertyGroup>
+	<!-- Post Builds -->
+	<PropertyGroup>
+		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true">
+			if exist "$(PluginVersionContentTarget)" ( rmdir /S /Q "$(PluginVersionContentTarget)" )
+			xcopy /y "$(TargetDir)Entry\PackageContents.xml" "$(PluginBundleTarget)\"
+			xcopy /y "$(TargetDir)Entry\Ribbon.*" "$(PluginVersionContentTarget)\en-US\"
+			xcopy /e /i /y "$(TargetDir)*.*" "$(PluginVersionContentTarget)\"
+		</PostBuildEvent>
+
+		<PostBuildEvent Condition=" '$(Configuration)' == 'Release' ">
+			echo RELEASE copy from $(TargetDir) to $(SolutionDir)Release\Release\$(NavisworksVersion)\"
+			xcopy /e /i /y "$(TargetDir)*.*" "$(SolutionDir)Release\Release$(NavisworksVersion)\"
+		</PostBuildEvent>
+	</PropertyGroup>
+</Project>

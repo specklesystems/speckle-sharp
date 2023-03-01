@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Speckle.Core.Helpers;
+using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using ElementType = Autodesk.Revit.DB.ElementType;
 using Duct = Objects.BuiltElements.Duct;
@@ -49,8 +51,8 @@ namespace Objects.Converter.Revit
 
     private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
     {
-      //doesn't have a host, go ahead and convert
-      if (host == null)
+      // doesn't have a host that will convert the element, go ahead and do it now
+      if (host == null || host is DB.Level)
         return true;
 
       // has been converted before (from a parent host), skip it
@@ -78,11 +80,10 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="host"></param>
     /// <param name="base"></param>
-    public void GetHostedElements(Base @base, HostObject host, out List<string> notes)
+    public void GetHostedElements(Base @base, Element host, out List<string> notes)
     {
       notes = new List<string>();
       var hostedElementIds = GetDependentElementIds(host);
-      var convertedHostedElements = new List<Base>();
 
       if (!hostedElementIds.Any())
         return;
@@ -92,6 +93,13 @@ namespace Objects.Converter.Revit
       {
         ContextObjects.RemoveAt(elementIndex);
       }
+      GetHostedElementsFromIds(@base, host, hostedElementIds, out notes);
+    }
+
+    public void GetHostedElementsFromIds(Base @base, Element host, IList<ElementId> hostedElementIds, out List<string> notes)
+    {
+      notes = new List<string>();
+      var convertedHostedElements = new List<Base>();
 
       foreach (var elemId in hostedElementIds)
       {
@@ -138,51 +146,55 @@ namespace Objects.Converter.Revit
 
     public IList<ElementId> GetDependentElementIds(Element host)
     {
+      IList<ElementId> ids = null;
       if (host is HostObject hostObject)
-        return hostObject.FindInserts(true, false, false, false);
+        ids = hostObject.FindInserts(true, false, false, false);
+      else
+      {
+        var typeFilter = new ElementIsElementTypeFilter(true);
+        var categoryFilter = new ElementMulticategoryFilter(
+          new List<BuiltInCategory>()
+          {
+            BuiltInCategory.OST_CLines,
+            BuiltInCategory.OST_SketchLines,
+            BuiltInCategory.OST_WeakDims
+          }, true);
+        ids = host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+      }
 
-      var typeFilter = new ElementIsElementTypeFilter(true);
-      var categoryFilter = new ElementMulticategoryFilter(
-        new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_SketchLines,
-          BuiltInCategory.OST_WeakDims
-        }, true);
-      return host.GetDependentElements(new LogicalAndFilter(typeFilter, categoryFilter));
+      // dont include host elementId
+      ids.Remove(host.Id);
+
+      return ids;
     }
 
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
-      if (@base != null && @base["elements"] != null && @base["elements"] is IList elements)
+      if (@base == null) return appObj;
+      
+      CurrentHostElement = host;
+      foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
       {
-        CurrentHostElement = host;
-
-        foreach (var el in elements)
+        if (!CanConvertToNative(obj))
         {
-          if (el == null) continue;
-          if (!(el is Base obj)) continue;
-
-          if (!CanConvertToNative(obj))
-          {
-            appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
-            continue;
-          }
-
-          try
-          {
-            var res = ConvertToNative(obj);
-            if (res is ApplicationObject apl)
-              appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
-          }
-          catch (Exception e)
-          {
-            appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
-            continue;
-          }
+          appObj.Update(logItem: $"Hosted element of type {obj.speckle_type} is not supported in Revit");
+          continue;
         }
 
-        CurrentHostElement = null; // unset the current host element.
+        try
+        {
+          var res = ConvertToNative(obj);
+          if (res is ApplicationObject apl)
+            appObj.Update(createdIds: apl.CreatedIds, converted: apl.Converted);
+        }
+        catch (Exception e)
+        {
+          appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
+          continue;
+        }
       }
+
+      CurrentHostElement = null; // unset the current host element.
       return appObj;
     }
 
@@ -252,6 +264,10 @@ namespace Objects.Converter.Revit
         }
       }
 
+      //NOTE: adds the quantities of all materials to an element
+      var qs = MaterialQuantitiesToSpeckle(revitElement, speckleElement["units"] as string);
+      if (qs != null)
+        speckleElement["materialQuantities"] = qs;
     }
 
     //private List<string> alltimeExclusions = new List<string> { 
@@ -987,7 +1003,7 @@ namespace Objects.Converter.Revit
 
     public string GetTemplatePath(string templateName)
     {
-      var directoryPath = Path.Combine(Speckle.Core.Api.Helpers.UserSpeckleFolderPath, "Kits", "Objects", "Templates", "Revit", RevitVersionHelper.Version);
+      var directoryPath = Path.Combine(SpecklePathProvider.ObjectsFolderPath, "Templates", "Revit", RevitVersionHelper.Version);
       string templatePath = "";
       switch (Doc.DisplayUnitSystem)
       {
@@ -1278,6 +1294,51 @@ namespace Objects.Converter.Revit
       if (string.IsNullOrEmpty(s))
         return s;
       return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
+    }
+
+    // MEGA HACK to get the slope arrow of a roof which is technically not accessable by the api
+    // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
+    private void GetSlopeArrowHack(ElementId elementId, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
+    {
+      List<ElementId> deleted = null;
+      tail = null;
+      head = null;
+      tailOffset = 0;
+      headOffset = 0;
+      slope = 0;
+      using (var t = new Transaction(Doc, "TTT"))
+      {
+        t.Start();
+        deleted = Doc.Delete(elementId).ToList();
+        t.RollBack();
+      }
+      foreach (ElementId id in deleted)
+      {
+        ModelLine l = Doc.GetElement(id) as ModelLine;
+        if (l == null) continue;
+        if (!l.Name.Equals("Slope Arrow")) continue; // TODO: does this work with other languages of Revit?
+
+        tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0));
+        head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1));
+        tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
+
+        var specifyOffset = GetParamValue<int>(l, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
+        var lineLength = GetParamValue<double>(l, BuiltInParameter.CURVE_ELEM_LENGTH);
+
+        // 1 corrosponds to the "slope" option
+        if (specifyOffset == 1)
+        {
+          // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
+          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100; 
+          headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
+        }
+        else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
+        {
+          headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
+          slope = (headOffset - tailOffset) / lineLength;
+        }
+        break;
+      }
     }
   }
 }

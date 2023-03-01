@@ -1,5 +1,5 @@
-# speckle-archicad
-Private collaboration repository between the Graphisoft and Speckle teams for Archicad Speckle connector development
+# Speckle Connector for Archicad
+Thanks to Graphisoft for their help in setting up this Connector.
 
 
 ## Dev

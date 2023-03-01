@@ -230,7 +230,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not Launch Manager", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -251,10 +251,9 @@ namespace DesktopUI2
             Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
           else
           {
+            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
             try
             {
-              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
-
               await AccountManager.AddAccount(result);
               await Task.Delay(1000);
 
@@ -262,7 +261,7 @@ namespace DesktopUI2
             }
             catch (Exception e)
             {
-              Log.CaptureException(e, Sentry.SentryLevel.Error);
+              //errors already handled in AddAccount
 
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
@@ -280,7 +279,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not Add Account", ex, true, Sentry.SentryLevel.Error);
       }
     }
   }

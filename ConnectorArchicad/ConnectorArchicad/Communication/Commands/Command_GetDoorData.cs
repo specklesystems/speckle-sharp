@@ -43,7 +43,7 @@ namespace Archicad.Communication.Commands
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetDoorData", new Parameters(ApplicationIds));
       //foreach (var subelement in result.Datas)
-        //subelement.units = Units.Meters;
+      //subelement.units = Units.Meters;
 
       return result.Datas;
     }

@@ -18,11 +18,11 @@ using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Archicad.Launcher
 {
-  public class ArchicadBinding : ConnectorBindings
+  public partial class ArchicadBinding : ConnectorBindings
   {
     public uint archicadVersion { get; }
 
-    public ArchicadBinding (uint archicadVersion)
+    public ArchicadBinding(uint archicadVersion)
     {
       this.archicadVersion = archicadVersion;
     }
@@ -35,11 +35,6 @@ namespace Archicad.Launcher
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
       return new List<MenuItem>();
-    }
-
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
     }
 
     public ProjectInfoData? GetProjectInfo()
@@ -122,7 +117,9 @@ namespace Archicad.Launcher
       if (commitObject is null)
         return null;
 
-      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, progress.CancellationTokenSource.Token);
+      ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+
+      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, conversionOptions, progress.CancellationTokenSource.Token);
 
       return state;
     }

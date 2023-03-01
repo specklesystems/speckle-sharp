@@ -28,15 +28,14 @@
       Orientation="Horizontal"
       Spacing="10">
       <Button
-        Width="150"
         Background="{DynamicResource PrimaryHueMidBrush}"
         Classes="Outline"
         Command="{Binding SetObjectSelection}"
         Foreground="White"
         ToolTip.Tip="Sets the currently selected objects.">
         <StackPanel Orientation="Horizontal">
-          <icons:MaterialIcon Kind="Plus" />
-          <TextBlock Classes="ButtonText" Text="SELECT" />
+          <icons:MaterialIcon Kind="CursorDefaultClick" />
+          <TextBlock Classes="ButtonText" Text="SET CURRENT SELECTION" />
         </StackPanel>
       </Button>
 
@@ -62,7 +61,7 @@
       </StackPanel>
     </Button>-->
 
-      <Button
+      <!--<Button
         Width="150"
         BorderBrush="OrangeRed"
         Classes="Outline"
@@ -73,7 +72,7 @@
           <icons:MaterialIcon Kind="Delete" />
           <TextBlock Classes="ButtonText" Text="CLEAR" />
         </StackPanel>
-      </Button>
+      </Button>-->
     </StackPanel>
     <!--<TextBlock
       Margin="0,12,0,8"

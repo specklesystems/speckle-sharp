@@ -1,18 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using Newtonsoft.Json;
-using Speckle.Core.Api;
+﻿using Newtonsoft.Json;
+using NUnit.Framework;
+using Serilog;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using Speckle.Core.Transports;
 
-namespace TestsUnit
+namespace Tests
 {
+  [SetUpFixture]
+  public class SetUp
+  {
+    [OneTimeSetUp]
+    public void BeforeAll()
+    {
+      SpeckleLog.Initialize(
+        "Core",
+        "Testing",
+        new SpeckleLogConfiguration(
+          Serilog.Events.LogEventLevel.Debug,
+          logToConsole: true,
+          logToFile: false,
+          logToSeq: false
+        )
+      );
+      Log.Information("Initialized logger for testing");
+    }
+  }
+
   public class Fixtures
   {
     private static SQLiteTransport AccountStorage = new SQLiteTransport(scope: "Accounts");
-    private static string accountPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Accounts", "TestAccount.json");
+    private static string accountPath = Path.Combine(
+      SpecklePathProvider.AccountsFolderPath,
+      "TestAccount.json"
+    );
 
     public static void UpdateOrSaveAccount(Account account)
     {
@@ -22,7 +44,6 @@ namespace TestsUnit
 
     public static void SaveLocalAccount(Account account)
     {
-      Directory.CreateDirectory(Path.GetDirectoryName(accountPath));
       var json = JsonConvert.SerializeObject(account);
       File.WriteAllText(accountPath, json);
     }

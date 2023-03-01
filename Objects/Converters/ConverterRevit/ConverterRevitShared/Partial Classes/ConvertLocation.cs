@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
   {
     public Base LocationToSpeckle(DB.Element revitElement)
     {
-      if (revitElement is DB.FamilyInstance familyInstance)
+      if (revitElement is DB.FamilyInstance familyInstance && familyInstance.Location is LocationPoint)
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location
         if (Categories.columnCategories.Contains(familyInstance.Category) ||
@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     private Base TryGetLocationAsCurve(DB.FamilyInstance familyInstance)
     {
-#if !REVIT2023
+#if REVIT2020 || REVIT2021 || REVIT2022
       if (familyInstance.CanHaveAnalyticalModel())
       {
         //no need to apply offset transform
@@ -71,7 +71,6 @@ namespace Objects.Converter.Revit
         if (analyticalModel != null && analyticalModel.GetCurve() != null)
           return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
       }
-
 #else
       var manager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
 

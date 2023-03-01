@@ -7,6 +7,7 @@ using ConverterRevitShared.Revit;
 using Objects.Converters.DxfConverter;
 using Objects.Geometry;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -136,7 +137,7 @@ namespace Objects.Converter.Revit
       dxfConverter.Doc.Entities.Add(collection.Where(x => x != null));
 
       var folderPath = Path.Combine(
-        Helpers.UserSpeckleFolderPath,
+        SpecklePathProvider.UserSpeckleFolderPath,
         "Temp",
         "Dxf");
 

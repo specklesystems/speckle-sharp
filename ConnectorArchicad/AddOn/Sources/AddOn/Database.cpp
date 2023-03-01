@@ -4,11 +4,11 @@
 
 using namespace Utility;
 
-Database::Database() :
+Database::Database () :
 	currentDatabaseType (API_ZombieWindowID)
 {
 	originalDatabaseInfo = Utility::Database::GetCurrent ();
-	currentDatabaseType= originalDatabaseInfo.typeID;
+	currentDatabaseType = originalDatabaseInfo.typeID;
 }
 
 
@@ -18,24 +18,24 @@ Database::~Database ()
 }
 
 
-bool Database::IsInFloorPlan(void) const
+bool Database::IsInFloorPlan (void) const
 {
 	return currentDatabaseType == APIWind_FloorPlanID;
 }
 
 
-bool Database::IsIn3DWindow(void) const
+bool Database::IsIn3DWindow (void) const
 {
 	return currentDatabaseType == APIWind_3DModelID;
 }
 
 
-void Database::SwitchToFloorPlan(void)
+void Database::SwitchToFloorPlan (void)
 {
 	API_DatabaseInfo databaseInfo;
 	BNZeroMemory (&databaseInfo, sizeof (API_DatabaseInfo));
-	databaseInfo.typeID =  APIWind_FloorPlanID;
-	
+	databaseInfo.typeID = APIWind_FloorPlanID;
+
 	ChangeCurrent (databaseInfo);
 	currentDatabaseType = databaseInfo.typeID;
 }

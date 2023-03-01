@@ -3,6 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Windows.Forms;
+using System.Xml.Linq;
 using Autodesk.DesignScript.Runtime;
 using Sentry;
 using Speckle.Core.Api;
@@ -11,6 +13,7 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using static System.Resources.ResXFileRef;
 
 namespace Speckle.ConnectorDynamo.Functions
 {
@@ -34,6 +37,23 @@ namespace Speckle.ConnectorDynamo.Functions
     {
       var commitWrappers = new List<string>();
       var responses = new List<string>();
+
+      long totalCount = 0;
+      try
+      {
+        totalCount = data?.GetTotalChildrenCount() ?? 0;
+      }
+      catch (Exception e) { }
+
+      if (totalCount == 0)
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
+
+      if (string.IsNullOrEmpty(message))
+      {
+        var plural = (totalCount == 1) ? "" : "s";
+        message = $"Sent {totalCount} object{plural} from Dynamo";
+      }
+
 
       var objectId = Operations.Send(data, cancellationToken, new List<ITransport>(transports), true,
         onProgressAction, onErrorAction).Result;
@@ -189,9 +209,9 @@ namespace Speckle.ConnectorDynamo.Functions
 
       var converter = new BatchConverter();
       converter.OnError += (sender, args) => onErrorAction?.Invoke("C", args.Error);
-      
+
       var data = converter.ConvertRecursivelyToNative(@base);
-      
+
       Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
       {
         { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },

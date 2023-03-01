@@ -48,7 +48,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper6", "..
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterGrasshopper7", "..\Objects\Converters\ConverterRhinoGh\ConverterGrasshopper7\ConverterGrasshopper7.csproj", "{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper7", "..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj", "{109B3382-634B-408A-8A5C-4CD09CB92641}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorGrasshopper7", "..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj", "{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}"
 	ProjectSection(ProjectDependencies) = postProject
 		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E} = {CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}
 		{EAA8D25F-A118-4B16-BC6C-A71463B3C53D} = {EAA8D25F-A118-4B16-BC6C-A71463B3C53D}
@@ -68,19 +68,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorGrasshopperUtils", "..\ConnectorGrasshopper\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj", "{E2A8E961-6DB6-4474-9E31-0C00FEB4A067}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{0f1fd0c3-875f-4689-9c4a-c56e9ab31102}*SharedItemsImports = 13
-		..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{109b3382-634b-408a-8a5c-4cd09cb92641}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{6c851417-514b-4e45-9553-408377535b68}*SharedItemsImports = 5
-		..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{86920221-416e-4a66-a601-3418207e2401}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{9454d346-a629-40e0-9ee2-7c6933ed1530}*SharedItemsImports = 5
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 5
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{cae61ac4-e81a-4e69-8dd0-07b7cdf77e2e}*SharedItemsImports = 5
-		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{f1703d03-3edb-4389-add9-39c52c6aea19}*SharedItemsImports = 5
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
 		Debug|Any CPU = Debug|Any CPU
@@ -160,14 +147,14 @@ Global
 		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release Mac|Any CPU.Build.0 = Release|Any CPU
 		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug Mac|Any CPU.ActiveCfg = Debug Mac|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug Mac|Any CPU.Build.0 = Debug Mac|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release Mac|Any CPU.ActiveCfg = Release Mac|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release Mac|Any CPU.Build.0 = Release Mac|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{109B3382-634B-408A-8A5C-4CD09CB92641}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Debug Mac|Any CPU.ActiveCfg = Debug Mac|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Debug Mac|Any CPU.Build.0 = Debug Mac|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Release Mac|Any CPU.ActiveCfg = Release Mac|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Release Mac|Any CPU.Build.0 = Release Mac|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -212,11 +199,24 @@ Global
 		{D484DB4F-FB51-478F-B8F9-8FE3370AB392} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{9454D346-A629-40E0-9EE2-7C6933ED1530} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
 		{CAE61AC4-E81A-4E69-8DD0-07B7CDF77E2E} = {F415936B-1E0C-4218-B8A8-E54F15549BBB}
-		{109B3382-634B-408A-8A5C-4CD09CB92641} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
+		{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 		{E20D7D1E-0FF7-49A5-9AA9-9430901F92BB} = {1E404CB8-22F1-439D-B58E-C23B14A45158}
 		{86920221-416E-4A66-A601-3418207E2401} = {E591AEAC-C9ED-4DB3-9188-0B74FFAF7F39}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1BFED19F-741B-4E11-95C0-753E2058B3D2}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{0f1fd0c3-875f-4689-9c4a-c56e9ab31102}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{6c851417-514b-4e45-9553-408377535b68}*SharedItemsImports = 5
+		..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{86920221-416e-4a66-a601-3418207e2401}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{9454d346-a629-40e0-9ee2-7c6933ed1530}*SharedItemsImports = 5
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 5
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{b7376ec8-5d3e-47d2-96a7-748552f14c39}*SharedItemsImports = 13
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{b74cb8c1-187b-46a6-b20b-92b8c129f3ee}*SharedItemsImports = 13
+		..\ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{b81e0f77-1abd-4941-9d76-c0dc6b1b6b82}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{cae61ac4-e81a-4e69-8dd0-07b7cdf77e2e}*SharedItemsImports = 5
+		ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{f1703d03-3edb-4389-add9-39c52c6aea19}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

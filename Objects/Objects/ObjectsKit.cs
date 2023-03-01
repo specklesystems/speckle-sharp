@@ -8,6 +8,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Speckle.Core.Helpers;
+using Serilog;
 
 namespace Objects
 {
@@ -39,10 +41,11 @@ namespace Objects
       get
       {
         if (_objectsFolder == null)
-          _objectsFolder = Path.Combine(Helpers.InstallSpeckleFolderPath, "Kits", "Objects");
+          _objectsFolder = SpecklePathProvider.ObjectsFolderPath;
 
         return _objectsFolder;
       }
+      [Obsolete("Use " + nameof(SpecklePathProvider.OverrideObjectsFolderName), true)]
       set
       {
         _objectsFolder = value;
@@ -131,7 +134,7 @@ namespace Objects
       }
       catch (Exception e)
       {
-        Log.CaptureException(e, Sentry.SentryLevel.Error);
+        Log.Error(e, e.Message);
         return null;
       }
     }

@@ -1,17 +1,16 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using Microsoft.Data.Sqlite;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using Microsoft.Data.Sqlite;
-using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 
 namespace Speckle.Core.Transports
 {
-  public class SQLiteTransport : IDisposable, ICloneable, ITransport
+  public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
   {
     public string TransportName { get; set; } = "SQLite";
 
@@ -19,9 +18,9 @@ namespace Speckle.Core.Transports
 
     public string RootPath { get; set; }
 
-    private string _BasePath { get; set; }
-    private string _ApplicationName { get; set; }
-    private string _Scope { get; set; }
+    private string _basePath { get; set; }
+    private string _applicationName { get; set; }
+    private string _scope { get; set; }
 
     public string ConnectionString { get; set; }
 
@@ -34,6 +33,7 @@ namespace Speckle.Core.Transports
 
     public Action<string, Exception> OnErrorAction { get; set; }
     public int SavedObjectCount { get; private set; }
+    public string BlobStorageFolder => SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -44,26 +44,33 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    public SQLiteTransport(string basePath = null, string applicationName = "Speckle", string scope = "Data")
+    public SQLiteTransport(string basePath = null, string applicationName = null, string scope = "Data")
     {
       if (basePath == null)
-        basePath = Helpers.UserApplicationDataPath;
-      _BasePath = basePath;
+        basePath = SpecklePathProvider.UserApplicationDataPath();
+      _basePath = basePath;
 
       if (applicationName == null)
         applicationName = "Speckle";
-      _ApplicationName = applicationName;
+      _applicationName = applicationName;
 
       if (scope == null)
         scope = "Data";
-      _Scope = scope;
+      _scope = scope;
 
-      Directory.CreateDirectory(Path.Combine(basePath, applicationName)); //ensure dir is there
+      var dir = Path.Combine(basePath, applicationName);
+      try
+      {
+        Directory.CreateDirectory(dir); //ensure dir is there
+      }
+      catch (Exception ex)
+      {
+        throw new Exception($"Cound not create {dir}", ex);
+      }
+
 
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
-      //fix for network drives: https://stackoverflow.com/a/18506097/826060
-      var prefix = RootPath.StartsWith(@"\\") ? @"\\" : "";
-      ConnectionString = string.Format("Data Source={0};", prefix + RootPath);
+      ConnectionString = string.Format("Data Source={0};", RootPath);
 
       try
       {
@@ -419,7 +426,14 @@ namespace Speckle.Core.Transports
 
     public object Clone()
     {
-      return new SQLiteTransport(_BasePath, _ApplicationName, _Scope) { OnProgressAction = OnProgressAction, OnErrorAction = OnErrorAction, CancellationToken = CancellationToken };
+      return new SQLiteTransport(_basePath, _applicationName, _scope) { OnProgressAction = OnProgressAction, OnErrorAction = OnErrorAction, CancellationToken = CancellationToken };
+    }
+
+    public void SaveBlob(Models.Blob obj)
+    {
+      var blobPath = obj.originalPath;
+      var targetPath = obj.getLocalDestinationPath(BlobStorageFolder);
+      File.Copy(blobPath, targetPath, true);
     }
   }
 }
