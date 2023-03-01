@@ -477,7 +477,7 @@ namespace Speckle.ConnectorAutocadCivil
       public static List<ObjectId> GetObjectsByApplicationId(Document doc, Transaction tr, string appId, string fileNameHash)
       {
         var foundObjects = new List<ObjectId>();
-
+        if (appId == null) return foundObjects;
         // first check for custom xdata application ids, because object handles tend to be duplicated
 
         // Create a TypedValue array to define the filter criteria

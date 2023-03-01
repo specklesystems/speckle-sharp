@@ -33,21 +33,39 @@ namespace Speckle.ConnectorNavisworks.Bindings
         filters.Add(selectionSetsFilter);
       }
 
-      //var clashPlugin = Doc.GetClash();
-      //var clashTests = clashPlugin.TestsData;
-      //var groupedClashResults = clashTests.Tests.Select(GetClashTestResults).OfType<TreeNode>().ToList();
+      var savedViewsRootItem = Doc.SavedViewpoints.RootItem;
 
-      //if (groupedClashResults.Count >= 0)
-      //{
-      //  var clashReportFilter = new TreeSelectionFilter
-      //  {
-      //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
-      //    Description = "Select group clash test results.",
-      //    Values = groupedClashResults
-      //  };
-      //  filters.Add(clashReportFilter);
-      //}
+      var savedViews = savedViewsRootItem.Children.Select(GetViews).ToList();
 
+      if (savedViews.Count > 0)
+      {
+        var savedViewsFilter = new TreeSelectionFilter
+        {
+          Slug = "views", Name = "Saved Viewpoints", Icon = "FileTree",
+          Description = "Select a saved viewpoint and send its visible items in the commit.",
+          Values = savedViews,
+          SelectionMode = "Toggle"
+        };
+        filters.Add(savedViewsFilter);
+      }
+
+      var clashPlugin = Doc.GetClash();
+      var clashTests = clashPlugin.TestsData;
+
+      var groupedClashResults = clashTests?.Tests.Select(GetClashTestResults)
+        .Where(x => x != null)
+        .ToList();
+
+      if (groupedClashResults?.Count >= 0)
+      {
+        //  var clashReportFilter = new TreeSelectionFilter
+        //  {
+        //    Slug = "clashes", Name = "Clash Detective Results", Icon = "MessageAlert",
+        //    Description = "Select group clash test results.",
+        //    Values = groupedClashResults
+        //  };
+        //  filters.Add(clashReportFilter);
+      }
 
       return filters;
     }
@@ -67,7 +85,32 @@ namespace Speckle.ConnectorNavisworks.Bindings
       //iterate the children and output
       foreach (var childItem in ((GroupItem)savedItem).Children) treeNode.Elements.Add(GetSets(childItem));
 
-      return treeNode.Elements.Count > 0 ? treeNode : null;
+      return treeNode.Elements.Count > 0
+        ? treeNode
+        : null;
+    }
+
+    private static TreeNode GetViews(SavedItem savedItem)
+    {
+      var treeNode = new TreeNode
+      {
+        DisplayName = savedItem.DisplayName,
+        Guid = savedItem.Guid,
+        IndexWith = nameof(TreeNode.Reference),
+        Reference = Doc.SavedViewpoints.CreateReference(savedItem).ToString()
+      };
+
+      if (!savedItem.IsGroup) return treeNode;
+
+      foreach (var childItem in ((GroupItem)savedItem).Children)
+      {
+        treeNode.IsEnabled = false;
+        treeNode.Elements.Add(GetViews(childItem));
+      }
+
+      return treeNode.Elements.Count > 0
+        ? treeNode
+        : null;
     }
 
     private static TreeNode GetClashTestResults(SavedItem savedItem)
@@ -91,7 +134,9 @@ namespace Speckle.ConnectorNavisworks.Bindings
             IndexWith = nameof(TreeNode.Guid)
           });
 
-      return treeNode.Elements.Count > 0 ? treeNode : null;
+      return treeNode.Elements.Count > 0
+        ? treeNode
+        : null;
     }
   }
 }

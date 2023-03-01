@@ -13,6 +13,7 @@ using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -289,7 +290,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -320,7 +321,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -377,7 +378,8 @@ namespace DesktopUI2.ViewModels
           {
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
               return;
-            Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
+
+            Log.Error(e, "Could not fetch streams");
             Dispatcher.UIThread.Post(() =>
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
@@ -396,7 +398,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
       finally
       {
@@ -431,7 +433,8 @@ namespace DesktopUI2.ViewModels
           {
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
               return;
-            Log.CaptureException(new Exception("Could not fetch invites", e), Sentry.SentryLevel.Error);
+
+            Log.Error(e, "Could not fetch invites");
           }
         }
 
@@ -441,7 +444,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -516,7 +519,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -635,13 +638,15 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
     public async void AddAccountCommand()
     {
+      InProgress = true;
       await Utils.AddAccountCommand();
+      InProgress = false;
     }
     public async void RemoveAccountCommand(Account account)
     {
@@ -653,7 +658,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -699,10 +704,10 @@ namespace DesktopUI2.ViewModels
 
           GetStreams().ConfigureAwait(false); //update streams
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          Log.CaptureException(e, Sentry.SentryLevel.Error);
-          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          Log.Error(ex, ex.Message);
+          Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
     }
@@ -752,10 +757,10 @@ namespace DesktopUI2.ViewModels
 
           Analytics.TrackEvent(account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Add From URL" } });
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          Log.CaptureException(e, Sentry.SentryLevel.Error);
-          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          Log.Error(ex, ex.Message);
+          Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
     }
@@ -825,7 +830,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          Log.CaptureException(ex, Sentry.SentryLevel.Error);
+          Log.Error(ex, ex.Message);
         }
       }
     }

@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Application = Autodesk.Navisworks.Api.Application;
+using MenuItem = DesktopUI2.Models.MenuItem;
 
 namespace Speckle.ConnectorNavisworks.Bindings
 {
@@ -12,7 +13,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
   {
     // Much of the interaction in Navisworks is through the ActiveDocument API
     public static Document Doc;
-    public System.Windows.Forms.Control Control;
+    public Control Control;
     public ISpeckleKit DefaultKit;
     public ISpeckleConverter NavisworksConverter;
 
@@ -22,7 +23,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       SavedSets = Doc.SelectionSets.ToSavedItemCollection();
 
       // Sets the Main Thread Control to Invoke commands on.
-      Control = new System.Windows.Forms.Control();
+      Control = new Control();
       Control.CreateControl();
 
       DefaultKit = KitManager.GetDefaultKit();
@@ -59,16 +60,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return Application.ActiveDocument != null
         ? Application.ActiveDocument.CurrentFileName
         : string.Empty;
-    }
-
-    /*
-    private List<ISetting>
-        CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
-*/
-
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
     }
 
     private static string GetDocPath()

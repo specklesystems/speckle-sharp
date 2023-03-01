@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Serilog;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Logging = Speckle.Core.Logging;
@@ -46,16 +47,18 @@ namespace ConnectorGrasshopper.Objects
         IGH_Goo inputObj = null;
         DA.GetData(0, ref inputObj);
         Base @base;
-        if(inputObj is GH_SpeckleBase speckleBase)
+        if (inputObj is GH_SpeckleBase speckleBase)
         {
           @base = speckleBase.Value.ShallowCopy();
-        } else if(inputObj is IGH_Goo goo)
+        }
+        else if (inputObj is IGH_Goo goo)
         {
           var value = goo.GetType().GetProperty("Value")?.GetValue(goo);
-          if (value is Base baseObj) {
+          if (value is Base baseObj)
+          {
             @base = baseObj;
           }
-          else if(Converter.CanConvertToSpeckle(value))
+          else if (Converter.CanConvertToSpeckle(value))
           {
             @base = Converter.ConvertToSpeckle(value);
             AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "Input object was not a Speckle object, but has been converted to one.");
@@ -71,7 +74,7 @@ namespace ConnectorGrasshopper.Objects
           AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Input object is not a Speckle object, nor can it be converted to one.");
           return;
         }
-        
+
         if (Params.Input.Count == 1)
         {
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Please create extra inputs to extend the object with.");
@@ -113,13 +116,13 @@ namespace ConnectorGrasshopper.Objects
           }
           var targetIndex = DA.ParameterTargetIndex(0);
           var path = DA.ParameterTargetPath(0);
-          
+
           if (willChangeDetach)
-            AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,$"Key {key} already exists in object at {path}[{targetIndex}] with different detach flag. The detach flag of this input will be ignored");
+            AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, $"Key {key} already exists in object at {path}[{targetIndex}] with different detach flag. The detach flag of this input will be ignored");
           if (willOverwrite)
             AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
               $"Key {key} already exists in object at {path}[{targetIndex}], its value will be overwritten");
-          
+
           switch (param.Access)
           {
             case GH_ParamAccess.item:
@@ -242,10 +245,10 @@ namespace ConnectorGrasshopper.Objects
                 return Converter != null ? Utilities.TryConvertItemToSpeckle(item, Converter) : item;
               }).ToList();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{e.ToFormattedString()}");
+              Log.Error(ex, ex.Message);
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
 
@@ -253,10 +256,10 @@ namespace ConnectorGrasshopper.Objects
             {
               @base[key] = converted;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
+              Log.Error(ex, ex.Message);
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
           }
@@ -271,10 +274,10 @@ namespace ConnectorGrasshopper.Objects
               else
                 @base[key] = value;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              Logging.Log.CaptureException(e);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
+              Log.Error(ex, ex.Message);
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
           }
@@ -285,11 +288,11 @@ namespace ConnectorGrasshopper.Objects
           @base = null;
         }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Logging.Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
+        Log.Error(ex, ex.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
       }
 
       return @base;

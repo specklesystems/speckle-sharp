@@ -1,5 +1,6 @@
-﻿using Autodesk.Navisworks.Api;
-using System;
+﻿using System;
+using Autodesk.Navisworks.Api;
+using Objects.Other;
 using Color = System.Drawing.Color;
 
 namespace Objects.Converter.Navisworks
@@ -15,13 +16,13 @@ namespace Objects.Converter.Navisworks
     }
 
 
-    public static Other.RenderMaterial TranslateMaterial(ModelItem geom)
+    public static RenderMaterial TranslateMaterial(ModelItem geom)
     {
-      var settings = new { Mode = "original" };
+      var materialSettings = new { Mode = "original" };
 
       Color renderColor;
 
-      switch (settings.Mode)
+      switch (materialSettings.Mode)
       {
         case "original":
           renderColor = NavisworksColorToColor(geom.Geometry.OriginalColor);
@@ -39,35 +40,26 @@ namespace Objects.Converter.Navisworks
 
       var materialName = $"NavisworksMaterial_{Math.Abs(renderColor.ToArgb())}";
 
-      Color black = Color.FromArgb(Convert.ToInt32(0), Convert.ToInt32(0), Convert.ToInt32(0));
+      var black = Color.FromArgb(Convert.ToInt32(0), Convert.ToInt32(0), Convert.ToInt32(0));
 
-      PropertyCategory itemCategory = geom.PropertyCategories.FindCategoryByDisplayName("Item");
+      var itemCategory = geom.PropertyCategories.FindCategoryByDisplayName("Item");
       if (itemCategory != null)
       {
-        DataPropertyCollection itemProperties = itemCategory.Properties;
-        DataProperty itemMaterial = itemProperties.FindPropertyByDisplayName("Material");
-        if (itemMaterial != null && itemMaterial.DisplayName != "")
-        {
-          materialName = itemMaterial.Value.ToDisplayString();
-        }
+        var itemProperties = itemCategory.Properties;
+        var itemMaterial = itemProperties.FindPropertyByDisplayName("Material");
+        if (itemMaterial != null && itemMaterial.DisplayName != "") materialName = itemMaterial.Value.ToDisplayString();
       }
 
-      PropertyCategory materialPropertyCategory = geom.PropertyCategories.FindCategoryByDisplayName("Material");
+      var materialPropertyCategory = geom.PropertyCategories.FindCategoryByDisplayName("Material");
       if (materialPropertyCategory != null)
       {
-        DataPropertyCollection material = materialPropertyCategory.Properties;
-        DataProperty name = material.FindPropertyByDisplayName("Name");
-        if (name != null && name.DisplayName != "")
-        {
-          materialName = name.Value.ToDisplayString();
-        }
+        var material = materialPropertyCategory.Properties;
+        var name = material.FindPropertyByDisplayName("Name");
+        if (name != null && name.DisplayName != "") materialName = name.Value.ToDisplayString();
       }
 
-      Other.RenderMaterial r =
-        new Other.RenderMaterial(1 - geom.Geometry.OriginalTransparency, 0, 1, renderColor, black)
-        {
-          name = materialName
-        };
+      var r =
+        new RenderMaterial(1 - geom.Geometry.OriginalTransparency, 0, 1, renderColor, black) { name = materialName };
 
       return r;
     }
@@ -88,7 +80,10 @@ namespace Objects.Converter.Navisworks
       throw err;
     }
 
-    public static void ErrorLog(string errorMessage) => ConsoleLog(errorMessage, ConsoleColor.DarkRed);
+    public static void ErrorLog(string errorMessage)
+    {
+      ConsoleLog(errorMessage, ConsoleColor.DarkRed);
+    }
 
 
     public static string GetUnits(Document doc)

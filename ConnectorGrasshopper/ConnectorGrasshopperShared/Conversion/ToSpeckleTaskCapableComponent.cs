@@ -7,6 +7,7 @@ using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Serilog;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -20,7 +21,7 @@ namespace ConnectorGrasshopper.Conversion
       SpeckleGHSettings.SettingsChanged += (_, args) =>
       {
         if (args.Key != SpeckleGHSettings.SHOW_DEV_COMPONENTS) return;
-        
+
         var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
         if (proxy == null) return;
         proxy.Exposure = internalExposure;
@@ -68,7 +69,7 @@ namespace ConnectorGrasshopper.Conversion
 
         object item = null;
         DA.GetData(0, ref item);
-        if(DA.Iteration == 0) Tracker.TrackNodeRun();
+        if (DA.Iteration == 0) Tracker.TrackNodeRun();
         var task = Task.Run(() => DoWork(item, DA), source.Token);
         TaskList.Add(task);
         return;
@@ -113,11 +114,11 @@ namespace ConnectorGrasshopper.Conversion
 
         return new GH_SpeckleBase { Value = converted as Base };
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.CaptureException(e);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+        Log.Error(ex, ex.Message);
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
         return new GH_SpeckleBase();
       }
     }

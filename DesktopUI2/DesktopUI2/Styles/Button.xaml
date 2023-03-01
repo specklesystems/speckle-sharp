@@ -17,7 +17,7 @@
       <Button
         HorizontalAlignment="Center"
         VerticalAlignment="Center"
-        Classes="Flat"
+        Classes="Hyperlink"
         Content="Hello!" />
 
       <Button Classes="Send" />
@@ -33,6 +33,10 @@
   <Style Selector="Button.Mini">
     <Setter Property="TextBlock.FontWeight" Value="Light" />
     <Setter Property="Padding" Value="7,2" />
+  </Style>
+  <Style Selector="Button.Hyperlink &gt; TextBlock">
+    <Setter Property="FontSize" Value="10" />
+
   </Style>
   <Style Selector="Button.Invisible">
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />

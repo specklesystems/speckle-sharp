@@ -38,6 +38,14 @@ ModelInfo::Material::Material (const UMAT& aumat) :
 {
 }
 
+ModelInfo::Material::Material (GS::UniString& name, short transparency, GS_RGBColor& ambientColor, GS_RGBColor& emissionColor) :
+	name (name),
+	transparency (transparency),
+	ambientColor (ambientColor),
+	emissionColor (emissionColor)
+{
+}
+
 
 GSErrCode ModelInfo::Material::Store (GS::ObjectState& os) const
 {
@@ -45,6 +53,17 @@ GSErrCode ModelInfo::Material::Store (GS::ObjectState& os) const
 	os.Add (Model::AmbientColorFieldName, ambientColor);
 	os.Add (Model::EmissionColorFieldName, emissionColor);
 	os.Add (Model::TransparencyFieldName, transparency);
+
+	return NoError;
+}
+
+
+GSErrCode ModelInfo::Material::Restore (const GS::ObjectState& os)
+{
+	os.Get (Model::MaterialNameFieldName, name);
+	os.Get (Model::AmbientColorFieldName, ambientColor);
+	os.Get (Model::EmissionColorFieldName, emissionColor);
+	os.Get (Model::TransparencyFieldName, transparency);
 
 	return NoError;
 }
@@ -69,6 +88,7 @@ GSErrCode ModelInfo::Polygon::Store (GS::ObjectState& os) const
 GSErrCode ModelInfo::Polygon::Restore (const GS::ObjectState& os)
 {
 	os.Get (Model::PointIdsFieldName, pointIds);
+	os.Get (Model::MaterialFieldName, material);
 
 	return NoError;
 }
@@ -98,6 +118,18 @@ void ModelInfo::AddPolygon (Polygon&& polygon)
 }
 
 
+void ModelInfo::AddId (const GS::UniString& id)
+{
+	ids.Push (id);
+}
+
+
+void ModelInfo::AddId (GS::UniString&& id)
+{
+	ids.Push (std::move (id));
+}
+
+
 UInt32 ModelInfo::AddMaterial (const UMAT& material)
 {
 	UIndex idx = materials.FindFirst ([&material] (const ModelInfo::Material& cachedMaterial) { return material.GetName () == cachedMaterial.GetName (); });
@@ -110,11 +142,33 @@ UInt32 ModelInfo::AddMaterial (const UMAT& material)
 }
 
 
+GSErrCode ModelInfo::GetMaterial (const UInt32 materialIndex, ModelInfo::Material& material) const
+{
+	if (materialIndex >= materials.GetSize ())
+		return Error;
+
+	material = materials[materialIndex];
+	return NoError;
+}
+
+
 GSErrCode ModelInfo::Store (GS::ObjectState& os) const
 {
 	os.Add (Model::VerticesFieldName, vertices);
 	os.Add (Model::PolygonsFieldName, polygons);
 	os.Add (Model::MaterialsFieldName, materials);
+
+	return NoError;
+}
+
+
+GSErrCode ModelInfo::Restore (const GS::ObjectState& os)
+{
+	os.Get (Model::IdsFieldName, ids);
+	os.Get (Model::VerticesFieldName, vertices);
+	os.Get (Model::PolygonsFieldName, polygons);
+	os.Get (Model::MaterialsFieldName, materials);
+	os.Get (Model::EdgesFieldName, edges);
 
 	return NoError;
 }

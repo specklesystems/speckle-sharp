@@ -79,7 +79,19 @@ namespace ConnectorGrasshopper.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap AccountToken
+        {
+          get
+          {
+            object obj = ResourceManager.GetObject("AccountToken", resourceCulture);
+            return ((System.Drawing.Bitmap)(obj));
+          }
+        }
+    
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
@@ -419,7 +431,19 @@ namespace ConnectorGrasshopper.Properties {
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
-        
+
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap StreamGetWithToken
+        {
+          get
+          {
+            object obj = ResourceManager.GetObject("StreamGetWithToken", resourceCulture);
+            return ((System.Drawing.Bitmap)(obj));
+          }
+        }
+    
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
