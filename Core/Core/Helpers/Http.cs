@@ -21,10 +21,11 @@ namespace Speckle.Core.Helpers
 {
   public static class Http
   {
-    private static IEnumerable<TimeSpan> delay = Backoff.DecorrelatedJitterBackoffV2(
-      medianFirstRetryDelay: TimeSpan.FromMilliseconds(100),
-      retryCount: 5
-    );
+    public static IEnumerable<TimeSpan> DefaultDelay() =>
+      Backoff.DecorrelatedJitterBackoffV2(
+        medianFirstRetryDelay: TimeSpan.FromMilliseconds(100),
+        retryCount: 5
+      );
 
     /// <summary>
     /// Policy for retrying failing Http requests
@@ -37,7 +38,7 @@ namespace Speckle.Core.Helpers
       .Handle<Exception>()
       .OrResult<bool>(r => r.Equals(false))
       .WaitAndRetry(
-        delay,
+        DefaultDelay(),
         (exception, timeSpan, retryAttempt, context) =>
         {
           Log.Information("Retrying #{retryAttempt}...", retryAttempt);
@@ -55,30 +56,33 @@ namespace Speckle.Core.Helpers
       .Handle<Exception>()
       .OrResult<bool>(r => r.Equals(false))
       .WaitAndRetryAsync(
-        delay,
+        DefaultDelay(),
         (exception, timeSpan, retryAttempt, context) =>
         {
           Log.Information("Retrying #{retryAttempt}...", retryAttempt);
         }
       );
 
-    public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy = HttpPolicyExtensions
-      .HandleTransientHttpError()
-      .WaitAndRetryAsync(
-        delay,
-        onRetry: (ex, timeSpan, retryAttempt, context) =>
-        {
-          context.Remove("retryCount");
-          context.Add("retryCount", retryAttempt);
-          Log.Information(
-            ex.Exception,
-            "The http request failed with {exceptionType} exception retrying after {cooldown} miliseconds. This is retry attempt {retryAttempt}",
-            ex.GetType().Name,
-            timeSpan.TotalSeconds * 1000,
-            retryAttempt
-          );
-        }
-      );
+    public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy(
+      IEnumerable<TimeSpan>? delay = null
+    ) =>
+      HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .WaitAndRetryAsync(
+          delay ?? DefaultDelay(),
+          onRetry: (ex, timeSpan, retryAttempt, context) =>
+          {
+            context.Remove("retryCount");
+            context.Add("retryCount", retryAttempt);
+            Log.Information(
+              ex.Exception,
+              "The http request failed with {exceptionType} exception retrying after {cooldown} miliseconds. This is retry attempt {retryAttempt}",
+              ex.GetType().Name,
+              timeSpan.TotalSeconds * 1000,
+              retryAttempt
+            );
+          }
+        );
 
     /// <summary>
     /// Checks if the user has a valid internet connection by first pinging cloudfare (fast)
@@ -115,7 +119,7 @@ namespace Speckle.Core.Helpers
         .Handle<PingException>()
         .Or<SocketException>()
         .WaitAndRetryAsync(
-          delay,
+          DefaultDelay(),
           (ex, timeSpan, retryAttempt, context) =>
           {
             Log.Information(
@@ -182,7 +186,12 @@ namespace Speckle.Core.Helpers
 
   public class SpeckleHttpClientHandler : HttpClientHandler
   {
-    public SpeckleHttpClientHandler() : base() { }
+    private IEnumerable<TimeSpan> _delay;
+
+    public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null) : base()
+    {
+      _delay = delay ?? Http.DefaultDelay();
+    }
 
     protected override async Task<HttpResponseMessage> SendAsync(
       HttpRequestMessage request,
@@ -200,14 +209,15 @@ namespace Speckle.Core.Helpers
         var timer = new Stopwatch();
         timer.Start();
         context.Add("retryCount", 0);
-        var policyResult = await Http.HttpAsyncPolicy.ExecuteAndCaptureAsync(
-          ctx =>
-          {
-            request.Headers.Add("x-request-id", ctx.CorrelationId.ToString());
-            return base.SendAsync(request, cancellationToken);
-          },
-          context
-        );
+        var policyResult = await Http.HttpAsyncPolicy(_delay)
+          .ExecuteAndCaptureAsync(
+            ctx =>
+            {
+              request.Headers.Add("x-request-id", ctx.CorrelationId.ToString());
+              return base.SendAsync(request, cancellationToken);
+            },
+            context
+          );
         timer.Stop();
         var status = policyResult.Outcome == OutcomeType.Successful ? "succeeded" : "failed";
         context.TryGetValue("retryCount", out var retryCount);
