@@ -494,7 +494,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             cd ConnectorArchicad/AddOn
             mkdir Build.macOS.x64.<<parameters.archicadversion>>
-            cmake -B "./Build.macOS.x64.<<parameters.archicadversion>>/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKitMac" -DAC_MDID_DEV=${GRAPHISOFT_DEV_ID:-0} -DAC_MDID_LOC=${GRAPHISOFT_ADDON_ID:-0}
+            cmake -B "./Build.macOS.x64.<<parameters.archicadversion>>/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKitMac" -DAC_MDID_DEV=${GRAPHISOFT_DEV_ID:-987654321} -DAC_MDID_LOC=${GRAPHISOFT_ADDON_ID:-1234567890}
       - run:
           name: Build add-on
           command: |
