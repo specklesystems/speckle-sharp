@@ -154,10 +154,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
         var pseudoId = nextToConvert.Key;
         var descriptor = ObjectDescriptor(pseudoId);
 
-        var alreadyConverted = NavisworksConverter.Report.GetReportObject(pseudoId, out var index);
+        var alreadyConverted = NavisworksConverter.Report.ReportObjects.TryGetValue(pseudoId, out var applicationObject);
 
         var reportObject = alreadyConverted
-          ? NavisworksConverter.Report.ReportObjects[index]
+          ? applicationObject
           : new ApplicationObject(pseudoId, descriptor)
           {
             applicationId = pseudoId
@@ -281,14 +281,24 @@ namespace Speckle.ConnectorNavisworks.Bindings
         progress.CancellationTokenSource.Cancel();
       }
 
-      var objectId = await Operations.Send(
-        commitObject,
-        progress.CancellationTokenSource.Token,
-        transports,
-        onProgressAction: progress.Update,
-        onErrorAction: ErrorAction,
-        disposeTransports: true
-      );
+      string objectId = null;
+
+      try
+      {
+        objectId = await Operations.Send(
+          commitObject,
+          progress.CancellationTokenSource.Token,
+          transports,
+          onProgressAction: progress.Update,
+          onErrorAction: ErrorAction,
+          disposeTransports: true
+        );
+      }
+      catch (Exception exception)
+      {
+        Console.WriteLine( exception.ToString() );
+        progress.Report.LogOperationError(exception);
+      }
 
       if (progress.Report.OperationErrorsCount != 0)
       {
@@ -304,29 +314,32 @@ namespace Speckle.ConnectorNavisworks.Bindings
         return null;
       }
 
-      var commit = new CommitCreateInput
+      if (objectId != null)
       {
-        streamId = streamId,
-        objectId = objectId,
-        branchName = state.BranchName,
-        message = state.CommitMessage ?? $"Sent {convertedCount} elements from {HostApplications.Navisworks.Name}.",
-        sourceApplication = HostApplications.Navisworks.Slug
-      };
+        var commit = new CommitCreateInput
+        {
+          streamId = streamId,
+          objectId = objectId,
+          branchName = state.BranchName,
+          message = state.CommitMessage ?? $"Sent {convertedCount} elements from {HostApplications.Navisworks.Name}.",
+          sourceApplication = HostApplications.Navisworks.Slug
+        };
 
-      try
-      {
-        progressBar.Update(0.5);
-        var commitId = await client.CommitCreate(commit);
+        try
+        {
+          progressBar.Update(0.5);
+          var commitId = await client.CommitCreate(commit);
 
-        progressBar.Update(1.0);
-        Application.EndProgress();
-        progressBar.Dispose();
+          progressBar.Update(1.0);
+          Application.EndProgress();
+          progressBar.Dispose();
 
-        return commitId;
-      }
-      catch (Exception ex)
-      {
-        progress.Report.LogOperationError(ex);
+          return commitId;
+        }
+        catch (Exception ex)
+        {
+          progress.Report.LogOperationError(ex);
+        }
       }
 
       progressBar.Update(1.0);
