@@ -734,50 +734,9 @@ namespace Objects.Converter.Bentley
       return _lineString;
     }
 
-    // Complex string element (complex chain)
     public Polycurve PolycurveToSpeckle(ComplexStringElement complexString, string units = null)
     {
-      var segments = new List<ICurve>();
-
-      Processor processor = new Processor();
-      ElementGraphicsOutput.Process(complexString, processor);
-      var curves = processor.curveVectors;
-
-      if (curves.Any())
-      {
-        foreach (var curve in curves)
-        {
-          foreach (var primitive in curve)
-          {
-            var curvePrimitiveType = primitive.GetCurvePrimitiveType();
-
-            switch (curvePrimitiveType)
-            {
-              case CurvePrimitive.CurvePrimitiveType.Line:
-                primitive.TryGetLine(out DSegment3d segment);
-                segments.Add(LineToSpeckle(segment));
-                break;
-              case CurvePrimitive.CurvePrimitiveType.Arc:
-                primitive.TryGetArc(out DEllipse3d arc);
-                segments.Add(ArcToSpeckle(arc));
-                break;
-              case CurvePrimitive.CurvePrimitiveType.LineString:
-                var pointList = new List<DPoint3d>();
-                primitive.TryGetLineString(pointList);
-                segments.Add(PolylineToSpeckle(pointList));
-                break;
-              case CurvePrimitive.CurvePrimitiveType.BsplineCurve:
-                var spline = primitive.GetBsplineCurve();
-                segments.Add(BSplineCurveToSpeckle(spline));
-                break;
-              case CurvePrimitive.CurvePrimitiveType.Spiral:
-                var spiralSpline = primitive.GetProxyBsplineCurve();
-                segments.Add(SpiralCurveElementToCurve(spiralSpline));
-                break;
-            }
-          }
-        }
-      }
+      var segments = PolycurveToSpeckleList(complexString, units);
 
       DRange3d range = new DRange3d();
       double length = 0;
@@ -805,6 +764,62 @@ namespace Objects.Converter.Bentley
       _polycurve.bbox = BoxToSpeckle(range, worldXY);
 
       return _polycurve;
+    }
+
+    // Complex string element (complex chain)
+    public List<ICurve> PolycurveToSpeckleList(ComplexStringElement complexString, string units = null)
+    {
+      var segments = new List<ICurve>();
+
+      Processor processor = new Processor();
+      ElementGraphicsOutput.Process(complexString, processor);
+      var curves = processor.curveVectors;
+
+      if (curves.Any())
+      {
+        foreach (var curve in curves)
+        {
+
+          foreach (var primitive in curve)
+          {
+
+            var curvePrimitiveType = primitive.GetCurvePrimitiveType();
+
+            switch (curvePrimitiveType)
+            {
+              case CurvePrimitive.CurvePrimitiveType.Line:
+                if(primitive.TryGetLine(out DSegment3d segment))
+                {
+                  segments.Add(LineToSpeckle(segment));
+                }                
+                break;
+              case CurvePrimitive.CurvePrimitiveType.Arc:
+                if (primitive.TryGetArc(out DEllipse3d arc))
+                {
+                  segments.Add(ArcToSpeckle(arc));
+                }
+                break;
+              case CurvePrimitive.CurvePrimitiveType.LineString:
+                var pointList = new List<DPoint3d>();
+                if (primitive.TryGetLineString(pointList))
+                {
+                  segments.Add(PolylineToSpeckle(pointList));
+                }                
+                break;
+              case CurvePrimitive.CurvePrimitiveType.BsplineCurve:
+                  var spline = primitive.GetBsplineCurve();
+                  segments.Add(BSplineCurveToSpeckle(spline));
+                break;
+              case CurvePrimitive.CurvePrimitiveType.Spiral:
+                var spiralSpline = primitive.GetProxyBsplineCurve();
+                segments.Add(SpiralCurveElementToCurve(spiralSpline));
+                break;
+            }
+          }
+        }
+      }
+
+      return segments;
     }
 
 
@@ -913,32 +928,35 @@ namespace Objects.Converter.Bentley
         foreach (var v in stroked)
           v.TryGetLineString(polyPoints);
 
-        // get control points
-        var controlPoints = GetElementProperty(curve, "ControlPointData.ControlPoints").ContainedValues;
-
-        // get weights
-        var controlPointWeights = GetElementProperty(curve, "ControlPointData.ControlPointsWeights").ContainedValues;
-
-        // get knots
-        var knotData = GetElementProperty(curve, "KnotData.Knots").ContainedValues;
-
         var _points = new List<DPoint3d>();
-        if (controlPoints.Count() > 0)
-        {
-          foreach (var controlPoint in controlPoints)
+
+          // get control points
+          var controlPoints = GetElementProperty(curve, "ControlPointData.ControlPoints").ContainedValues;
+
+          // get weights
+          var controlPointWeights = GetElementProperty(curve, "ControlPointData.ControlPointsWeights").ContainedValues;
+
+          // get knots
+          var knotData = GetElementProperty(curve, "KnotData.Knots").ContainedValues;
+
+          if (controlPoints.Count() > 0)
           {
-            var point = (DPoint3d)controlPoint.NativeValue;
-            _points.Add(point);
+            foreach (var controlPoint in controlPoints)
+            {
+              var point = (DPoint3d)controlPoint.NativeValue;
+              _points.Add(point);
+            }
           }
-        }
-        else
-        {
-          foreach (var controlPoint in controlPointWeights)
+          else
           {
-            var point = (DPoint3d)controlPoint.ContainedValues["Point"].NativeValue;
-            _points.Add(point);
+            foreach (var controlPoint in controlPointWeights)
+            {
+              var point = (DPoint3d)controlPoint.ContainedValues["Point"].NativeValue;
+              _points.Add(point);
+            }
           }
-        }
+
+        
 
         // set nurbs curve info
         _curve.points = PointsToFlatList(_points).ToList();
@@ -1196,31 +1214,34 @@ namespace Objects.Converter.Bentley
       }
     }
 
-    public ICurve CurveToSpeckle(DisplayableElement curve, string units = null)
+    public List<ICurve> TryCurveToSpeckleCurveList(DisplayableElement curve, string units = null)
     {
+      var outCurves = new List<ICurve>();
+
       switch (curve)
       {
         case ComplexStringElement polyCurve:
-          return PolycurveToSpeckle(polyCurve, units);
+          outCurves.AddRange(PolycurveToSpeckleList(polyCurve, units)); break;
 
         case ArcElement arc:
-          return CircularArcToSpeckle(arc, units);
+          outCurves.Add(CircularArcToSpeckle(arc, units)); break;
 
         case EllipseElement ellipse:
-          return EllipseToSpeckle(ellipse, units);
+          outCurves.Add(EllipseToSpeckle(ellipse, units)); break;
 
         case BSplineCurveElement crv:
-          return BSplineCurveToSpeckle(crv, units);
+          outCurves.Add(BSplineCurveToSpeckle(crv, units)); break;
 
         case LineElement line:
-          return (Line)LineToSpeckle(line, units);
+          outCurves.Add((Line)LineToSpeckle(line, units)); break;
 
         case LineStringElement polyLine:
-          return PolylineToSpeckle(polyLine, units);
+          outCurves.Add(PolylineToSpeckle(polyLine, units)); break;
 
-        default:
-          return null;
+        default: break;
       }
+
+      return outCurves;
     }
 
 

@@ -41,46 +41,72 @@ namespace Objects.Converter.Bentley
     // alignments
     public Alignment AlignmentToSpeckle(CifGM.Alignment alignment)
     {
+      if(alignment.FeatureDefinition is null)
+      {
+        // An alignment without a feature definition is likely a partial peice of geometry being picked up erroneously upstream.
+        //
+        // This is an assumption and hasn't been tested with larger OpenRoads models so may need to be revisted.
+        //
+        throw new Exception("Skipped undefined alignment");
+      }
+
       var _alignment = new Alignment();
+
 
       CifGM.StationFormatSettings settings = CifGM.StationFormatSettings.GetStationFormatSettingsForModel(Model);
       var stationFormatter = new CifGM.StationingFormatter(alignment);
 
-      _alignment.baseCurve = CurveToSpeckle(alignment.Element as DisplayableElement, ModelUnits);
+      _alignment.curves = TryCurveToSpeckleCurveList(alignment.Element as DisplayableElement, ModelUnits);
+
+      _alignment.profiles = new List<BuiltElements.Profile> { };
+
+      // To match LandXML export behaviour we only export the Active profile
+      // As I understand it other profiles are likely reference and work in progress and are generally not shared
+      // If designer wants to share multiple profiles they can swap active profile and export to a different branch
+      // This behaviour would be best exposed in the editor rather than in the converter.
+      //
+      // This also avoids another issue where other profiles are likely to be a partial piece of the active profile anyway.
+      // Haven't tracked down how to differentiate between partial and complete profiles
+      //
+      if (alignment.ActiveProfile is CifGM.Profile p)
+      {
+        var activeProfile = ProfileToSpeckle(p, ModelUnits) as BuiltElements.Profile;
+        _alignment.profiles.Add(activeProfile);
+      }
 
       if (alignment.Name != null)
         _alignment.name = alignment.Name;
 
-      if (alignment.FeatureName != null)
-        _alignment["featureName"] = alignment.FeatureName;
+      if (alignment.FeatureName is string featureName)
+        _alignment[nameof(featureName)] = alignment.FeatureName;
 
-      if (alignment.FeatureDefinition != null)
-        _alignment["featureDefinitionName"] = alignment.FeatureDefinition.Name;
+      if (alignment.FeatureDefinition?.Name is string featureDefinitionName)
+        _alignment[nameof(featureDefinitionName)] = featureDefinitionName;
 
       var stationing = alignment.Stationing;
       if (stationing != null)
       {
         _alignment.startStation = stationing.StartStation;
-        _alignment.endStation = alignment.LinearGeometry.Length;  // swap for end station
+        _alignment.endStation = alignment.LinearGeometry.Length + stationing.StartStation;  // swap for end station
 
         var region = stationing.GetStationRegionFromDistanceAlong(stationing.StartStation);
 
         // handle station equations
         var equations = new List<double>();
-        var formattedEquation = new List<string>();
+        var formattedStationEquations = new List<string>();
         //var directions = new List<bool>();
         foreach (var stationEquation in stationing.StationEquations)
         {
-          string stnVal = "";
+          var stnVal = "";
           stationFormatter.FormatStation(ref stnVal, stationEquation.DistanceAlong, settings);
-          formattedEquation.Add(stnVal);
+          formattedStationEquations.Add(stnVal);
 
           // DistanceAlong represents Back Station/BackLocation, EquivalentStation represents Ahead Station
           equations.AddRange(new List<double> { stationEquation.DistanceAlong, stationEquation.DistanceAlong, stationEquation.EquivalentStation });
 
         }
         _alignment.stationEquations = equations;
-        _alignment["formattedStationEquations"] = formattedEquation;
+        _alignment[nameof(formattedStationEquations)] = formattedStationEquations;
         //_alignment.stationEquationDirections = directions;
       }
       else
@@ -95,8 +121,30 @@ namespace Objects.Converter.Bentley
 
     public CifGM.Alignment AlignmentToNative(Alignment alignment)
     {
-      var baseCurve = alignment.baseCurve;
-      var nativeCurve = CurveToNative(baseCurve);
+      ICurve singleBaseCurve;
+
+      if (alignment.baseCurve is ICurve basecurve)
+      {
+        singleBaseCurve = basecurve;
+      }
+      else if (alignment?.curves?.Any() is null)
+      {
+        return null;
+      }
+      else if (alignment.curves?.Count == 1)
+      {
+        singleBaseCurve = alignment.curves.Single();
+      }
+      else
+      {
+        //Not 100% clear on how best to handle the conversion between multiple curves and single element
+        singleBaseCurve = new Polycurve()
+        {
+          segments = alignment.curves
+        };
+      }
+
+      var nativeCurve = CurveToNative(singleBaseCurve);
 
       ConsensusConnectionEdit con = ConsensusConnectionEdit.GetActive();
       con.StartTransientMode();
@@ -123,9 +171,53 @@ namespace Objects.Converter.Bentley
     }
 
     // profiles
-    public Base ProfileToSpeckle(CifGM.Profile profile)
+    public Base ProfileToSpeckle(CifGM.Profile profile, string modelUnits = "m")
     {
-      return null;
+      var curves = new List<ICurve>();
+
+
+
+      switch (profile.ProfileGeometry)
+      {
+        case ProfileParabola profileParabola:
+
+          /// This has thrown exceptions in the past, but should be resolved now that only
+          /// the active profile is being exported, as it was throwing on isolated curve
+          /// elements with no assigned feature properties.
+          /// 
+          /// Pulled out as its own case so it's a bit clearer why the failure is happening
+          /// if it reoccurs.
+
+          try
+          {
+            curves.AddRange(TryCurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
+            break;
+          }
+          catch (Exception ex)
+          {
+            throw new Exception("Failed to import isolated profile Parabola", ex);
+          }
+
+        default:
+          curves.AddRange(TryCurveToSpeckleCurveList(profile.Element as DisplayableElement, modelUnits));
+          break;
+      }
+
+      var outProfile = new BuiltElements.Profile
+      {
+        curves = curves,
+        name = profile.Name,
+        startStation = profile.ProfileGeometry.StartPoint.Coordinates.X,
+        endStation = profile.ProfileGeometry.EndPoint.Coordinates.X,
+      };
+
+      if (profile.FeatureName is string featureName)
+        outProfile[nameof(featureName)] = featureName;
+
+      if (profile.FeatureDefinition?.Name is string featureDefinitionName)
+        outProfile[nameof(featureDefinitionName)] = featureDefinitionName;
+
+      return outProfile;
     }
 
     // corridors
@@ -152,6 +244,14 @@ namespace Objects.Converter.Bentley
 
       return _corridor;
     }
+
+    public Point LinearPointToSpeckle(LinearPoint pt, string units = null)
+    {
+      var u = units ?? ModelUnits;
+      return new Point(ScaleToSpeckle(pt.DistanceAlong, UoR), ScaleToSpeckle(pt.Offset, UoR), 0, u);
+    }
   }
+
+
 }
 #endif

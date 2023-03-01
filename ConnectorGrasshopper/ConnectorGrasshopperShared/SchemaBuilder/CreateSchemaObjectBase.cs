@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -168,6 +168,9 @@ namespace ConnectorGrasshopper
       if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
+        // We purposefully override the preprocess geometry setting since schema objects are mostly going to go to lesser powerful target apps regarding geometry processing.
+        Converter.SetConverterSettings(new Dictionary<string, object> { { "preprocessGeometry", true } });
+
         if (Grasshopper.Instances.ActiveCanvas?.Document != null)
         {
           var otherSchemaBuilders =
@@ -195,6 +198,7 @@ namespace ConnectorGrasshopper
             }
           }
         }
+        return;
       }
 
       if (Params.Input.Count == 0) SetupComponent(SelectedConstructor);
