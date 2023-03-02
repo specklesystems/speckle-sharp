@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -95,16 +93,16 @@ namespace Speckle.Core.Serialisation
       if (type.IsPrimitive || obj is string)
         return obj;
 
-      if (obj is Base)
+      if (obj is Base b)
       {
         // Complex enough to deserve its own function
-        return PreserializeBase((Base)obj, computeClosures, inheritedDetachInfo);
+        return PreserializeBase(b, computeClosures, inheritedDetachInfo);
       }
 
-      if (obj is IDictionary)
+      if (obj is IDictionary d)
       {
-        Dictionary<string, object> ret = new Dictionary<string, object>(((IDictionary)obj).Count);
-        foreach (DictionaryEntry kvp in (IDictionary)obj)
+        Dictionary<string, object> ret = new Dictionary<string, object>(d.Count);
+        foreach (DictionaryEntry kvp in d)
         {
           object converted = PreserializeObject(kvp.Value, inheritedDetachInfo: inheritedDetachInfo);
           if (converted != null)
@@ -113,25 +111,23 @@ namespace Speckle.Core.Serialisation
         return ret;
       }
 
-      if (obj is IEnumerable)
+      if (obj is IEnumerable e)
       {
         List<object> ret;
-        if (obj is IList)
-          ret = new List<object>(((IList)obj).Count);
-        else if (obj is Array)
-          ret = new List<object>(((Array)obj).Length);
+        if (e is IList list)
+          ret = new List<object>(list.Count);
         else
           ret = new List<object>();
-        foreach (object element in ((IEnumerable)obj))
+        foreach (object element in e)
           ret.Add(PreserializeObject(element, inheritedDetachInfo: inheritedDetachInfo));
         return ret;
       }
 
-      if (obj is ObjectReference)
+      if (obj is ObjectReference r)
       {
         Dictionary<string, object> ret = new Dictionary<string, object>();
-        ret["speckle_type"] = ((ObjectReference)obj).speckle_type;
-        ret["referencedId"] = ((ObjectReference)obj).referencedId;
+        ret["speckle_type"] = r.speckle_type;
+        ret["referencedId"] = r.referencedId;
         return ret;
       }
 
@@ -141,17 +137,17 @@ namespace Speckle.Core.Serialisation
       }
 
       // Support for simple types
-      if (obj is Guid)
+      if (obj is Guid g)
       {
-        return ((Guid)obj).ToString();
+        return g.ToString();
       }
-      if (obj is System.Drawing.Color)
+      if (obj is System.Drawing.Color c)
       {
-        return ((System.Drawing.Color)obj).ToArgb();
+        return c.ToArgb();
       }
-      if (obj is DateTime)
+      if (obj is DateTime t)
       {
-        return ((DateTime)obj).ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+        return t.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
       }
       if (obj is Matrix4x4 m)
       {
