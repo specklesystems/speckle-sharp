@@ -1449,7 +1449,7 @@ namespace DesktopUI2.ViewModels
 
     public void Dispose()
     {
-      Client.Dispose();
+      Client?.Dispose();
     }
     #endregion
 
