@@ -281,7 +281,7 @@ namespace Objects.Converter.Navisworks
       // Only Geometry no children
       if (!item.HasGeometry || item.Children.Any()) return true;
 
-      const PrimitiveTypes allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles;
+      const PrimitiveTypes allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints;
 
       var primitives = item.Geometry.PrimitiveTypes;
       var primitiveTypeSupported = (primitives & allowedTypes) == primitives;
