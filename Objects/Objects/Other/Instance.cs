@@ -36,6 +36,8 @@ namespace Objects.Other
     {
       this.transform = transform ?? new Transform();
     }
+
+    public Instance() { }
   }
   
   /// <summary>
