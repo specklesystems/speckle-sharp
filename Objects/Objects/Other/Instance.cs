@@ -51,7 +51,7 @@ namespace Objects.Other
       _definition = definition;
     }
     
-    protected Instance(): base(new Transform()) {}
+    public Instance(): base(new Transform()) {}
 
     [DetachProperty]
     public override Base definition
@@ -107,6 +107,11 @@ namespace Objects.Other
       }).Where(b => b != null).ToList();
     }
 
+    /// <summary>
+    /// Returns a plane representing the insertion point and orientation of this Block instance.
+    /// </summary>
+    /// <remarks>This method will skip scaling. If you need scaling, we recommend using the transform instead.</remarks>
+    /// <returns>A Plane on the insertion point of this Block Instance, with the correct 3-axis rotations.</returns>
     public Plane GetInsertionPlane()
     {
       // TODO: UPDATE!
@@ -180,6 +185,11 @@ namespace Objects.Other.Revit
       return transformed;
     }
 
+    /// <summary>
+    /// Returns a plane representing the insertion point and orientation of this revit instance.
+    /// </summary>
+    /// <remarks>This method will skip scaling. If you need scaling, we recommend using the transform instead.</remarks>
+    /// <returns>A Plane on the insertion point of this Block Instance, with the correct 3-axis rotations.</returns>
     public Plane GetInsertionPlane()
     {
       // TODO: Check for Revit in GH/DYN
