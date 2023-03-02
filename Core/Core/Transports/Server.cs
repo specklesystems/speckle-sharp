@@ -72,7 +72,7 @@ namespace Speckle.Core.Transports
       BaseUri = baseUri;
       StreamId = streamId;
 
-      Client = Http.GetHttpProxyClient(new HttpClientHandler()
+      Client = Http.GetHttpProxyClient(new SpeckleHttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
       });
