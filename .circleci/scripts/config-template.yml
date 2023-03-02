@@ -190,6 +190,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
       - run:
+          name: Exit if External PR
+          shell: bash.exe
+          command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
+      - run:
           name: Create Innosetup signing cert
           command: |
             echo $env:PFX_B64 > "speckle-sharp-ci-tools\SignTool\AEC Systems Ltd.txt"
@@ -366,6 +370,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       # Create installer
       - run:
+          name: Exit if External PR
+          command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
+      - run:
           name: Build Mac installer
           command: ~/.dotnet/dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release
       - run:
@@ -443,7 +450,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             cd ConnectorArchicad/AddOn
             mkdir Build.Win.x64.<<parameters.archicadversion>>
             export PATH=$PATH:"C:\Program Files\CMake\bin"
-            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=${GRAPHISOFT_DEV_ID:-1} -DAC_MDID_LOC=${GRAPHISOFT_ADDON_ID:-1}
       - run:
           name: Build add-on
           command: |
@@ -487,7 +494,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             cd ConnectorArchicad/AddOn
             mkdir Build.macOS.x64.<<parameters.archicadversion>>
-            cmake -B "./Build.macOS.x64.<<parameters.archicadversion>>/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKitMac" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            cmake -B "./Build.macOS.x64.<<parameters.archicadversion>>/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKitMac" -DAC_MDID_DEV=${GRAPHISOFT_DEV_ID:-1} -DAC_MDID_LOC=${GRAPHISOFT_ADDON_ID:-1}
       - run:
           name: Build add-on
           command: |
