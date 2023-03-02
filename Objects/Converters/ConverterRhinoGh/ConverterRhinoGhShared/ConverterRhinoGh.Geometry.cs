@@ -829,7 +829,7 @@ namespace Objects.Converter.RhinoGh
       brep.Repair(tol);
       
       if(PreprocessGeometry)
-        brep = BrepEncoder.ToRawBrep(brep);
+        brep = BrepEncoder.ToRawBrep(brep, 1.0, Doc.ModelAngleToleranceRadians, Doc.ModelRelativeTolerance);
 
       // get display mesh and attach render material to it if it exists
       var displayMesh = previewMesh ?? GetBrepDisplayMesh(brep);
