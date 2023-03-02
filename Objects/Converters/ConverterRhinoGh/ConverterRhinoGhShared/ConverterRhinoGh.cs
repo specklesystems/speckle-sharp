@@ -2,20 +2,26 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Numerics;
+
+using Rhino;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Rhino.Display;
+using RH = Rhino.Geometry;
 using Grasshopper.Kernel.Types;
+
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
+
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
-using Rhino;
-using Rhino.Display;
-using Rhino.DocObjects;
-using Rhino.Geometry;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
+
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -33,7 +39,6 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
-using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Text = Objects.Other.Text;
@@ -246,8 +251,7 @@ namespace Objects.Converter.RhinoGh
 
 #if GRASSHOPPER
         case RH.Transform o:
-          @base = TransformToSpeckle(o);
-          Report.Log("Converter Transform");
+          @base = new Transform(o.ToFloatArray(true), ModelUnits);
           break;
         case DisplayMaterial o:
           @base = DisplayMaterialToSpeckle(o);
@@ -403,8 +407,9 @@ namespace Objects.Converter.RhinoGh
             else if (@object is InstanceObject)
             {
               var block = BlockInstanceToSpeckle(@object as InstanceObject);
-              o.basePoint = block.GetInsertionPoint();
-              o.rotation = block.transform.rotationZ;
+              o.basePoint = block.GetInsertionPlane().origin;
+              block.transform.Decompose(out Vector3 scale, out System.Numerics.Quaternion rotation, out Vector4 translation);
+              o.rotation = Math.Acos(rotation.W) * 2;
             }
             break;
 
@@ -732,11 +737,11 @@ namespace Objects.Converter.RhinoGh
             break;
 
           case BlockDefinition o:
-            rhinoObj = BlockDefinitionToNative(o, out notes);
+            rhinoObj = DefinitionToNative(o, out notes);
             break;
 
-          case BlockInstance o:
-            rhinoObj = BlockInstanceToNative(o);
+          case Instance o:
+            rhinoObj = InstanceToNative(o);
             break;
 
           case Text o:
@@ -944,7 +949,7 @@ namespace Objects.Converter.RhinoGh
         case ModelCurve _:
         case DirectShape _:
         case View3D _:
-        case BlockInstance _:
+        case Instance _:
         case Alignment _:
         case Text _:
         case Dimension _:

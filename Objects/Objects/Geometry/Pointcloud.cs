@@ -1,9 +1,11 @@
-﻿using Speckle.Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using System.Linq;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using Objects.Other;
 using Speckle.Core.Logging;
+
+using Objects.Other;
 
 namespace Objects.Geometry
 {
@@ -58,10 +60,18 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out Pointcloud pointcloud)
     {
+      // transform points
+      var transformedPoints = new List<Point>();
+      foreach (var point in GetPoints())
+      {
+        point.TransformTo(transform, out Point transformedPoint);
+        transformedPoints.Add(transformedPoint);
+      }
+
       pointcloud = new Pointcloud
       {
         units = units,
-        points = transform.ApplyToPoints(points),
+        points = transformedPoints.SelectMany(o => o.ToList()).ToList(),
         colors = colors,
         sizes = sizes,
         applicationId = applicationId

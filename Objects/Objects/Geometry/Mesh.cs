@@ -171,9 +171,17 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out Mesh mesh)
     {
+      // transform vertices
+      var transformedVertices = new List<Point>();
+      foreach (var vertex in GetPoints())
+      {
+        vertex.TransformTo(transform, out Point transformedVertex);
+        transformedVertices.Add(transformedVertex);
+      }
+
       mesh = new Mesh
       {
-        vertices = transform.ApplyToPoints(vertices),
+        vertices = transformedVertices.SelectMany(o => o.ToList()).ToList(),
         textureCoordinates = textureCoordinates,
         applicationId = applicationId ?? id,
         faces = faces,

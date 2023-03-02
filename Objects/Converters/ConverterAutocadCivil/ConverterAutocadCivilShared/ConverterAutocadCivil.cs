@@ -330,12 +330,12 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadDimensionToNative(o) : DimensionToNative(o);
           break;
 
-        case BlockInstance o:
-          acadObj = BlockInstanceToNativeDB(o);
+        case Instance o:
+          acadObj = InstanceToNativeDB(o);
           break;
 
         case BlockDefinition o:
-          acadObj = BlockDefinitionToNativeDB(o);
+          acadObj = DefinitionToNativeDB(o, out notes);
           break;
 
         case Text o:
