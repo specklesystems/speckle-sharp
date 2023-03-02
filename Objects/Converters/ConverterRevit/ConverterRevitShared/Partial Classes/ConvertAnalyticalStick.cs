@@ -1,4 +1,6 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.DB.Structure.StructuralSections;
 using Objects.BuiltElements.Revit;
@@ -7,8 +9,6 @@ using Objects.Structural.Materials;
 using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Models;
-using System;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance physicalMember = null;
 
       if (docObj != null && docObj is AnalyticalMember analyticalMember)
-      {      
+      {
         // update location
         analyticalMember.SetCurve(baseLine);
 
@@ -198,16 +198,16 @@ namespace Objects.Converter.Revit
       if (curves.Count > 1)
         speckleElement1D.baseLine = null;
       else
-        speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(curves[0]);
+        speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(curves[0], revitStick.Document);
 
       var coordinateSystem = revitStick.GetLocalCoordinateSystem();
       if (coordinateSystem != null)
-        speckleElement1D.localAxis = new Geometry.Plane(PointToSpeckle(coordinateSystem.Origin), VectorToSpeckle(coordinateSystem.BasisZ), VectorToSpeckle(coordinateSystem.BasisX), VectorToSpeckle(coordinateSystem.BasisY));
+        speckleElement1D.localAxis = new Geometry.Plane(PointToSpeckle(coordinateSystem.Origin, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisZ, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisX, revitStick.Document), VectorToSpeckle(coordinateSystem.BasisY, revitStick.Document));
 
       var startOffset = revitStick.GetOffset(AnalyticalElementSelector.StartOrBase);
       var endOffset = revitStick.GetOffset(AnalyticalElementSelector.EndOrTop);
-      speckleElement1D.end1Offset = VectorToSpeckle(startOffset);
-      speckleElement1D.end2Offset = VectorToSpeckle(endOffset);
+      speckleElement1D.end1Offset = VectorToSpeckle(startOffset, revitStick.Document);
+      speckleElement1D.end2Offset = VectorToSpeckle(endOffset, revitStick.Document);
 
       SetEndReleases(revitStick, ref speckleElement1D);
 
@@ -258,7 +258,7 @@ namespace Objects.Converter.Revit
       var speckleElement1D = new Element1D();
       switch (revitStick.StructuralRole)
       {
-        case AnalyticalStructuralRole.StructuralRoleColumn :
+        case AnalyticalStructuralRole.StructuralRoleColumn:
           speckleElement1D.type = ElementType1D.Column;
           break;
         case AnalyticalStructuralRole.StructuralRoleBeam:
@@ -272,12 +272,12 @@ namespace Objects.Converter.Revit
           break;
       }
 
-      speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(revitStick.GetCurve());
+      speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(revitStick.GetCurve(), revitStick.Document);
 
       SetEndReleases(revitStick, ref speckleElement1D);
 
       var prop = new Property1D();
-  
+
       var stickFamily = (Autodesk.Revit.DB.FamilySymbol)revitStick.Document.GetElement(revitStick.SectionTypeId);
 
       var speckleSection = GetSectionProfile(stickFamily);
@@ -321,7 +321,7 @@ namespace Objects.Converter.Revit
         var physicalElement = Doc.GetElement(physicalElementId);
         speckleElement1D.displayValue = GetElementDisplayMesh(physicalElement);
       }
-      
+
       return speckleElement1D;
     }
 #endif
@@ -378,7 +378,7 @@ namespace Objects.Converter.Revit
           ISection.width = o.Width;
           ISection.webThickness = o.WebThickness;
           ISection.flangeThickness = o.FlangeThickness;
-         
+
           speckleSection = ISection;
           break;
         case StructuralSectionGeneralT o: // General Tee shape
