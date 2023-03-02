@@ -889,10 +889,8 @@ namespace Objects.Converter.Revit
             var point = projectPoint.Position;
             if (doc.IsLinked)
             {
-              point = -projectPoint.SharedPosition;
               var mainProjectPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == false);
-              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
-              point = point - mainSurveyPoint.Position + mainProjectPoint.Position;
+              point = point + mainProjectPoint.SharedPosition + surveyPoint.Position;
             }
             referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
           }
@@ -904,17 +902,15 @@ namespace Objects.Converter.Revit
             var point = surveyPoint.Position;
             if (doc.IsLinked)
             {
-              point = surveyPoint.Position;
-              var mainProjectPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == false);
               var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
-              point = mainSurveyPoint.Position + point;
+              point = point + mainSurveyPoint.SharedPosition;
             }
 
             var angle = 0;
             try
             {
               //this throws in some cases
-              projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
+              projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble(); // !! retrieve survey point angle from project base point
             }
             catch { }
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
