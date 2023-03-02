@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -84,17 +84,6 @@ namespace Objects.Other
       // whereas the instance transform assumes it contains the basePoint translation already.
       //this.transform = transform * blockDefinition.GetBasePointTransform();
     }
-    
-    [Obsolete("Use GetInsertionPlane().origin")]
-    public Point GetInsertionPoint()
-    {
-      var newMatrix = transform.matrix;
-      newMatrix.M14 -= Convert.ToSingle(_definition.basePoint.x);
-      newMatrix.M24 -= Convert.ToSingle(_definition.basePoint.y);
-      newMatrix.M34 -= Convert.ToSingle(_definition.basePoint.z);
-      _definition.basePoint.TransformTo(new Transform(newMatrix, units), out Point transformed);
-      return transformed;
-    }
 
     public List<ITransformable> GetTransformedGeometry()
     {
@@ -121,7 +110,7 @@ namespace Objects.Other
     public Plane GetInsertionPlane()
     {
       // TODO: UPDATE!
-      var plane = new Plane(_definition.basePoint ?? new Point(0,0), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
+      var plane = new Plane(_definition.basePoint ?? new Point(0,0,0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
@@ -155,7 +144,7 @@ namespace Objects.Other.Revit
     public Plane GetInsertionPlane()
     {
       // TODO: Check for Revit in GH/DYN
-      var plane = new Plane(new Point(0,0), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
+      var plane = new Plane(new Point(0, 0, 0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }

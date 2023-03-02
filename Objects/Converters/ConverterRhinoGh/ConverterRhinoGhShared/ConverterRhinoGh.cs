@@ -407,7 +407,7 @@ namespace Objects.Converter.RhinoGh
             else if (@object is InstanceObject)
             {
               var block = BlockInstanceToSpeckle(@object as InstanceObject);
-              o.basePoint = block.GetInsertionPoint();
+              o.basePoint = block.GetInsertionPlane().origin;
               block.transform.Decompose(out Vector3 scale, out System.Numerics.Quaternion rotation, out Vector4 translation);
               o.rotation = Math.Acos(rotation.W) * 2;
             }

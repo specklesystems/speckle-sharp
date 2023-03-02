@@ -14,7 +14,6 @@ namespace Objects.BuiltElements.Revit
 
     public string category { get; set; }
 
-
     public RevitElementType() { }
   }
 
