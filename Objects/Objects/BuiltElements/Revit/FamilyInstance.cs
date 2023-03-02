@@ -6,17 +6,6 @@ using System.Collections.Generic;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class FamilyType : Base, IDisplayValue<List<Mesh>>
-  {
-    public string family { get; set; }
-    public string type { get; set; }
-    public string category { get; set; }
-    [DetachProperty] public List<Base> elements { get; set; }
-    [DetachProperty] public List<Mesh> displayValue { get; set; }
-
-    public FamilyType() { }
-  }
-
   public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
   {
     public Point basePoint { get; set; }

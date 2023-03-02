@@ -167,6 +167,24 @@ namespace Objects.Other.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
     
+
+    public override Base definition { 
+      get 
+      {
+        return elementDefinition;
+      }
+      set 
+      {
+        if (value is RevitSymbolElementType)
+        {
+          elementDefinition = (RevitSymbolElementType)value;
+        }
+      }
+    }
+
+    [JsonIgnore]
+    private RevitSymbolElementType elementDefinition { get; set; }
+
     public RevitInstance() { }
 
     public override List<ITransformable> GetTransformedGeometry()

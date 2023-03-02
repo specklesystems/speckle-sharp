@@ -52,7 +52,7 @@ namespace Objects.Converter.Navisworks
       }
     }
 
-    public Units CoordinateUnits
+    static Units CoordinateUnits
     {
       get
       {

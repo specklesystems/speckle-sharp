@@ -79,7 +79,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Used to cache already converted family instance FamilyType deifnitions
     /// </summary>
-    public Dictionary<string, Objects.BuiltElements.Revit.FamilyType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.FamilyType>();
+    public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType>();
     
     public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
 
