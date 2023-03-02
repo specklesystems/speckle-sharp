@@ -15,7 +15,7 @@ using Speckle.Core.Models;
 using Point = Objects.Geometry.Point;
 using Vector = Objects.Geometry.Vector;
 using RevitInstance = Objects.Other.Revit.RevitInstance;
-using FamilyType = Objects.BuiltElements.Revit.FamilyType;
+using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 
 namespace Objects.Converter.Revit
 {
@@ -539,7 +539,7 @@ namespace Objects.Converter.Revit
         return appObj;
 
       // get the definition
-      var definition = instance.definition as FamilyType;
+      var definition = instance.definition as RevitSymbolElementType;
       if (!GetElementType<FamilySymbol>(definition, appObj, out FamilySymbol familySymbol))
       {
         appObj.Update(status: ApplicationObject.State.Failed);
@@ -641,7 +641,7 @@ namespace Objects.Converter.Revit
       var transform = TransformToSpeckle(localTransform, out bool isMirrored);
 
       // get the definition base of this instance
-      FamilyType definition = ConvertAndCacheRevitInstanceDefinition(instance, Doc, out List<string> definitionNotes, instanceTransform);
+      RevitSymbolElementType definition = ConvertAndCacheRevitInstanceDefinition(instance, Doc, out List<string> definitionNotes, instanceTransform);
       notes.AddRange(definitionNotes);
 
       var _instance = new RevitInstance();
@@ -663,7 +663,7 @@ namespace Objects.Converter.Revit
       return _instance;
     }
 
-    private FamilyType ConvertAndCacheRevitInstanceDefinition(DB.FamilyInstance instance, Document doc, out List<string> notes, Transform parentTransform)
+    private RevitSymbolElementType ConvertAndCacheRevitInstanceDefinition(DB.FamilyInstance instance, Document doc, out List<string> notes, Transform parentTransform)
     {
       notes = new List<string>();
       var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
@@ -672,18 +672,18 @@ namespace Objects.Converter.Revit
       if (!Symbols.ContainsKey(_symbol.UniqueId))
         Symbols[_symbol.UniqueId] = GetRevitInstanceDefinition(instance, out notes, parentTransform);
 
-      return Symbols[_symbol.UniqueId] as FamilyType;
+      return Symbols[_symbol.UniqueId] as RevitSymbolElementType;
     }
 
-    private FamilyType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes, Transform parentTransform)
+    private RevitSymbolElementType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes, Transform parentTransform)
     {
       notes = new List<string>();
-      var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
-
-      var symbol = new FamilyType();
-      symbol.family = _symbol.FamilyName;
-      symbol.type = _symbol.Name;
-      symbol.category = instance.Category.Name;
+      var symbol = ElementTypeToSpeckle(instance.Document.GetElement(instance.GetTypeId()) as ElementType) as RevitSymbolElementType;
+      if (symbol == null)
+      {
+        notes.Add($"Could not convert element type as FamilySymbol");
+        return null;
+      }
 
       // get the displayvalue of the family symbol
       try

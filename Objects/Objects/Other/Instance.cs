@@ -154,20 +154,21 @@ namespace Objects.Other.Revit
     public string elementId { get; set; }
 
     public override Base definition { 
-      get {
-        return familyDefinition;
+      get 
+      {
+        return elementDefinition;
       }
       set 
       {
-        if (value is FamilyType)
+        if (value is RevitSymbolElementType)
         {
-          familyDefinition = (FamilyType)value;
+          elementDefinition = (RevitSymbolElementType)value;
         }
       }
     }
 
     [JsonIgnore]
-    private FamilyType familyDefinition { get; set; }
+    private RevitSymbolElementType elementDefinition { get; set; }
 
     public RevitInstance() { }
 
