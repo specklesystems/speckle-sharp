@@ -137,8 +137,47 @@ namespace Objects.Other.Revit
     
     public List<ITransformable> GetTransformedGeometry()
     {
-      // TODO: Figure out transform of revit instances for GH/DYN
-      return new List<ITransformable>();
+      var allChildren = _definition.elements ?? new List<Base>();
+      if (_definition.displayValue.Any())
+      {
+        allChildren.AddRange(_definition.displayValue);
+      }
+
+      // get transformed definition objs
+      var transformed = allChildren.SelectMany(b =>
+      {
+        switch (b)
+        {
+          case RevitInstance ri:
+            return ri.GetTransformedGeometry()?.Select(b =>
+            {
+              ITransformable childTransformed = null;
+              b?.TransformTo(transform, out childTransformed);
+              return childTransformed;
+            });
+          case ITransformable bt:
+            var res = bt.TransformTo(transform, out var transformed);
+            return new List<ITransformable> { res ? transformed : null };
+          default:
+            return new List<ITransformable>();
+        }
+      }).Where(b => b != null).ToList();
+
+      // add any dynamically attached elements on this instance
+      var elements = this["elements"] as List<object>;
+      if (elements != null)
+      {
+        foreach (var element in elements)
+        {
+          var display = ((Base)element)["displayValue"] as List<object>;
+          if (display != null)
+          {
+            transformed.AddRange(display.Cast<ITransformable>());
+          }
+        }
+      }
+
+      return transformed;
     }
 
     public Plane GetInsertionPlane()
