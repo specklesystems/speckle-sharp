@@ -62,21 +62,22 @@ namespace Objects.Converter.Revit
       var type = revitType.Name;
       var family = revitType.FamilyName;
       var category = revitType.Category.Name;
-      var speckleType = new RevitElementType() { type = type, family = family, category = category };
+      RevitElementType speckleType = null;
 
       switch (revitType)
       {
         case FamilySymbol o:
-          var symbolType = speckleType as RevitSymbolElementType;
+          var symbolType = new RevitSymbolElementType() { type = type, family = family, category = category };
           symbolType.placementType = o.Family?.FamilyPlacementType.ToString();
           speckleType = symbolType;
           break;
         case MEPCurveType o:
-          var mepType = speckleType as RevitMepElementType;
+          var mepType = new RevitMepElementType() { type = type, family = family, category = category };
           mepType.shape = o.Shape.ToString();
           speckleType = mepType;
           break;
         default:
+          speckleType = new RevitElementType() { type = type, family = family, category = category };
           break;
       }
 
