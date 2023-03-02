@@ -69,6 +69,8 @@ namespace Objects.Converter.RhinoGh
 
     public MeshSettings SelectedMeshSettings = MeshSettings.Default;
 
+    public bool PreprocessGeometry = false;
+
     public ConverterRhinoGh()
     {
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
@@ -97,10 +99,22 @@ namespace Objects.Converter.RhinoGh
 
     public void SetConverterSettings(object settings)
     {
+      if (settings is Dictionary<string, object> dict)
+      {
+        if (dict.ContainsKey("meshSettings"))
+        {
+          SelectedMeshSettings = (MeshSettings)dict["meshSettings"];
+        }
+
+        if (dict.ContainsKey("preprocessGeometry"))
+          PreprocessGeometry = (bool)dict["preprocessGeometry"];
+        return;
+      }
+      // Keep this for backwards compatibility.
       var s = (MeshSettings)settings;
       SelectedMeshSettings = s;
     }
-
+    
     public void SetContextDocument(object doc)
     {
       Doc = (RhinoDoc)doc;
@@ -337,6 +351,7 @@ namespace Objects.Converter.RhinoGh
 
     private Base MappingToSpeckle(string mapping, RhinoObject @object, List<string> notes)
     {
+      PreprocessGeometry = true;
       Base schemaObject = Operations.Deserialize(mapping);
       try
       {
@@ -423,11 +438,14 @@ namespace Objects.Converter.RhinoGh
       {
         notes.Add($"Could not attach {schemaObject.speckle_type} schema: {ex.Message}");
       }
+
+      PreprocessGeometry = false;
       return schemaObject;
     }
 
     public Base ConvertToSpeckleBE(object @object, ApplicationObject reportObj, RH.Mesh displayMesh)
     {
+      PreprocessGeometry = true;
       // get schema if it exists
       RhinoObject obj = @object as RhinoObject;
       string schema = GetSchema(obj, out string[] args);
@@ -568,6 +586,7 @@ namespace Objects.Converter.RhinoGh
       reportObj.Log.AddRange(notes);
       if (schemaBase == null)
         reportObj.Update(logItem: $"{schema} schema creation failed");
+      PreprocessGeometry = false;
       return schemaBase;
     }
 
@@ -622,7 +641,7 @@ namespace Objects.Converter.RhinoGh
     {
       object rhinoObj = null;
       bool isFromRhino = @object[RhinoPropName] != null ? true : false;
-      var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
+      var reportObj = @object.id != null && Report.ReportObjects.ContainsKey(@object.id) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
       List<string> notes = new List<string>();
       try
       {

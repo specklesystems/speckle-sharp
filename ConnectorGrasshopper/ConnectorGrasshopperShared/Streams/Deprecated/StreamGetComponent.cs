@@ -11,6 +11,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
+  [Obsolete]
   public class StreamGetComponent : GH_SpeckleComponent
   {
     public StreamGetComponent() : base("Stream Get", "sGet", "Gets a specific stream from your account",
@@ -23,7 +24,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override Bitmap Icon => Properties.Resources.StreamGet;
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {

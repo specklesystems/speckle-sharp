@@ -6,7 +6,7 @@
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
     <TargetFramework>net48</TargetFramework>
-    <LangVersion>8</LangVersion>
+    <LangVersion>8.0</LangVersion>
     <StartAction>Program</StartAction>
     <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
     <StartArguments />
@@ -51,6 +51,9 @@
       <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
     </Compile>
     <Compile Remove="InternalTestFiles\**" />
+    <Compile Update="..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs">
+      <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -69,6 +72,13 @@
 
   <ItemGroup>
     <EmbeddedResource Remove="InternalTestFiles\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
+    </Content>
   </ItemGroup>
   
   <Target Name="GenerateT4" BeforeTargets="BeforeRebuild">

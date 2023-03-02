@@ -143,6 +143,9 @@ namespace ConnectorGrasshopper
       if (dialog.HasResult)
       {
         base.AddedToDocument(document);
+        // We purposefully override the preprocess geometry setting since schema objects are mostly going to go to lesser powerful target apps regarding geometry processing.
+        Converter.SetConverterSettings(new Dictionary<string, object> { { "preprocessGeometry", true } });
+        
         SwitchConstructor(dialog.model.SelectedItem.Tag as ConstructorInfo);
         Params.ParameterChanged += (sender, args) =>
         {
