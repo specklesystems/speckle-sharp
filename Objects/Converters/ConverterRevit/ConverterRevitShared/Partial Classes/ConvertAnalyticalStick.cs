@@ -281,11 +281,7 @@ namespace Objects.Converter.Revit
           break;
       }
 
-<<<<<<< HEAD
-      speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(revitStick.GetCurve(), revitStick.Document);
-=======
-      speckleElement1D.baseLine = CurveToSpeckle(revitStick.GetCurve()) as Objects.Geometry.Line;
->>>>>>> origin/dev
+      speckleElement1D.baseLine = CurveToSpeckle(revitStick.GetCurve(), revitStick.Document) as Objects.Geometry.Line;
 
       SetEndReleases(revitStick, ref speckleElement1D);
 
