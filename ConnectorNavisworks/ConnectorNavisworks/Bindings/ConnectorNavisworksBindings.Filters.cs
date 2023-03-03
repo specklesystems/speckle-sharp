@@ -104,7 +104,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
         // Rather than version check Navisworks host application we feature check
         // to see if Guid is set correctly on viewpoints.
-        Reference = savedItem.Guid.ToString() == new Guid().ToString()
+        Reference = savedItem.Guid.ToString() == new System.Guid().ToString()
           ? reference.SavedItemId
           : savedItem.Guid.ToString()
       };
