@@ -257,7 +257,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         var selectedViews = state.Filter.Selection.Select(Convert).Where(c => c != null).ToList();
         views.AddRange(selectedViews);
       }
-      else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting checkBox && checkBox.IsChecked)
+
+      if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting checkBox && checkBox.IsChecked)
       {
         views.Add(Convert(Doc.CurrentViewpoint.ToViewpoint()));
       }
