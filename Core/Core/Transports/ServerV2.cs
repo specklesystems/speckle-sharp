@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -54,6 +55,9 @@ namespace Speckle.Core.Transports
     public ParallelServerApi Api { get; private set; }
 
     public string BlobStorageFolder { get; set; }
+
+    private object ElapsedLock = new object();
+    public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
     private bool ShouldSendThreadRun = false;
     private bool IsWriteComplete = false;
@@ -327,6 +331,7 @@ namespace Speckle.Core.Transports
     {
       while (true)
       {
+        var stopwatch = Stopwatch.StartNew();
         if (!ShouldSendThreadRun || CancellationToken.IsCancellationRequested)
         {
           return;
@@ -405,6 +410,12 @@ namespace Speckle.Core.Transports
             ErrorState = true;
           }
           return;
+        }
+        finally
+        {
+          stopwatch.Stop();
+          lock (ElapsedLock)
+            Elapsed += stopwatch.Elapsed;
         }
       }
     }

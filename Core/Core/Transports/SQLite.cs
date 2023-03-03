@@ -47,6 +47,8 @@ namespace Speckle.Core.Transports
     public string BlobStorageFolder =>
       SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
 
+    public TimeSpan Elapsed => throw new NotImplementedException();
+
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
     /// </summary>

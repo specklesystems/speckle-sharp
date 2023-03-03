@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
@@ -26,6 +27,8 @@ namespace Speckle.Core.Transports
     public Dictionary<string, object> TransportContext =>
       new Dictionary<string, object> { { "name", TransportName }, { "type", this.GetType().Name } };
 
+    public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
+
     public MemoryTransport()
     {
       Log.Debug("Creating a new Memory Transport");
@@ -42,6 +45,7 @@ namespace Speckle.Core.Transports
 
     public void SaveObject(string hash, string serializedObject)
     {
+      var stopwatch = Stopwatch.StartNew();
       if (CancellationToken.IsCancellationRequested)
         return; // Check for cancellation
 
@@ -49,6 +53,8 @@ namespace Speckle.Core.Transports
 
       SavedObjectCount++;
       OnProgressAction?.Invoke(TransportName, 1);
+      stopwatch.Stop();
+      Elapsed += stopwatch.Elapsed;
     }
 
     public void SaveObject(string id, ITransport sourceTransport)

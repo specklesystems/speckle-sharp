@@ -69,6 +69,9 @@ namespace Speckle.Core.Transports
 
     public Account Account { get; set; }
 
+    // not implementing this for V1, just a dummy 0 value
+    public TimeSpan Elapsed => TimeSpan.Zero;
+
     public ServerTransportV1(Account account, string streamId, int timeoutSeconds = 60)
     {
       Account = account;

@@ -83,10 +83,7 @@ namespace Speckle.Core.Api
       if (useDefaultCache)
         transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
 
-      var transportContext = transports.ToDictionary(
-        t => t.TransportName,
-        t => t.TransportContext
-      );
+      var transportContext = transports.ToDictionary(t => t.TransportName, t => t.TransportContext);
 
       // make sure all logs in the operation have the proper context
       using (LogContext.PushProperty("transportContext", transportContext))
@@ -181,12 +178,18 @@ namespace Speckle.Core.Api
         }
 
         var hash = JObject.Parse(obj).GetValue("id").ToString();
+
         sendTimer.Stop();
-        Log.Information(
-          "Finished send after {elapsed}, result {objectId}",
-          sendTimer.Elapsed.TotalSeconds,
-          hash
-        );
+        Log.ForContext(
+            "transportElapsedBreakdown",
+            transports.ToDictionary(t => t.TransportName, t => t.Elapsed)
+          )
+          .ForContext("serializerElapsed", serializerV2.Elapsed)
+          .Information(
+            "Finished send after {elapsed}, result {objectId}",
+            sendTimer.Elapsed.TotalSeconds,
+            hash
+          );
         return hash;
       }
     }

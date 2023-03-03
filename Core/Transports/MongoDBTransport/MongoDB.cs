@@ -46,6 +46,9 @@ namespace Speckle.Core.Transports
     public Action<string, Exception> OnErrorAction { get; set; }
     public int SavedObjectCount { get; private set; }
 
+    // not implementing this properly
+    public TimeSpan Elapsed => TimeSpan.Zero;
+
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
     /// </summary>

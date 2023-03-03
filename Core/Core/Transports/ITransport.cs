@@ -22,6 +22,11 @@ namespace Speckle.Core.Transports
     public Dictionary<string, object> TransportContext { get; }
 
     /// <summary>
+    ///  Show how much time the transport was busy for.
+    /// </summary>
+    public TimeSpan Elapsed { get; }
+
+    /// <summary>
     /// Should be checked often and gracefully stop all in progress sending if requested.
     /// </summary>
     public CancellationToken CancellationToken { get; set; }
