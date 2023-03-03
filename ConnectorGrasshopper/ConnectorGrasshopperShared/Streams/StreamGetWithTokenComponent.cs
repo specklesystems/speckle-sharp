@@ -72,7 +72,7 @@ namespace ConnectorGrasshopper.Accounts
       }
 
       var solveResults = GetSolveResults(DA, out var streamWrapper);
-      if (solveResults == false)
+      if (!solveResults)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $@"Could not fetch account");
         return;

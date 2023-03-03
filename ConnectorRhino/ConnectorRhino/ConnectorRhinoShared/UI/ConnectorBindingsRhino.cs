@@ -241,7 +241,7 @@ namespace SpeckleRhino
     #region receiving 
     public override bool CanPreviewReceive => true;
 
-    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View");
+    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Instance") || @object.speckle_type.Contains("View");
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
@@ -255,6 +255,7 @@ namespace SpeckleRhino
         var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
         if (converter == null)
         {
+          //TODO: Log warning (or throw)
           progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
           return null;
         }
@@ -263,6 +264,7 @@ namespace SpeckleRhino
         var commitObject = await GetCommit(commit, state, progress);
         if (commitObject == null)
         {
+          //TODO: Log warning (or throw)
           progress.Report.LogOperationError(new Exception($"Could not retrieve commit {commit.id} from server"));
           progress.CancellationTokenSource.Cancel();
         }
@@ -353,6 +355,7 @@ namespace SpeckleRhino
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       if (converter == null)
       {
+        //TODO: Log warning (or throw)
         progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
         return null;
       }
@@ -563,6 +566,7 @@ namespace SpeckleRhino
         onProgressAction: dict => progress.Update(dict),
         onErrorAction: (s, e) =>
         {
+          //TODO: Log?
           progress.Report.LogOperationError(e);
           progress.CancellationTokenSource.Cancel();
         },
@@ -853,6 +857,7 @@ namespace SpeckleRhino
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       if (converter == null)
       {
+        //TODO: Log warning (or throw)
         progress.Report.LogOperationError(new Exception("Could not load converter"));
         return;
       }
@@ -914,6 +919,7 @@ namespace SpeckleRhino
 
       if (existingIds.Count == 0)
       {
+        //TODO: Log warning (or throw)
         progress.Report.LogOperationError(new Exception("No valid objects selected, nothing will be sent!"));
         return;
       }
@@ -930,6 +936,7 @@ namespace SpeckleRhino
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
       if (converter == null)
       {
+        //TODO: Log warning (or throw)
         progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
         return null;
       }

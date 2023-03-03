@@ -13,8 +13,21 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public ApplicationObject Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
+    public string Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
     {
+      if (property1D == null)
+        return null;
+
+      string[] properties = new string[] { };
+      int number = 0;
+      Model.PropFrame.GetNameList(ref number, ref properties);
+      if (properties.Contains(property1D.name))
+      {
+        // I don't think we want to update properties
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: property1D.name);
+        return property1D.name;
+      }
+
       var materialName = MaterialToNative(property1D.material);
 
       var catalogue = new Catalogue();
@@ -38,7 +51,7 @@ namespace Objects.Converter.CSI
         else
           appObj.Update(status: ApplicationObject.State.Failed);
 
-        return appObj;
+        return property1D.name;
       }
 
       switch (property1D.profile)
@@ -118,7 +131,8 @@ namespace Objects.Converter.CSI
         appObj.Update(status: ApplicationObject.State.Created, createdId: property1D.name);
       else
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unable to create section with profile named {property1D.name}");
-      return appObj;
+
+      return property1D.name;
     }
     public Property1D Property1DToSpeckle(string name)
     {

@@ -110,7 +110,7 @@ namespace ConnectorGrasshopper.Objects
 
     protected override System.Drawing.Bitmap Icon => Properties.Resources.SpeckleObjectKeysLogo;
     
-    public override GH_Exposure Exposure => GH_Exposure.primary;
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
 
     public override Guid ComponentGuid => new Guid("16E28D2D-EA9F-4F59-96CA-045A32EA130C");
   }
