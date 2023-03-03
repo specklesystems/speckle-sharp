@@ -880,14 +880,14 @@ namespace Objects.Converter.Revit
       var points = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
       var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
       var surveyPoint = points.FirstOrDefault(o => o.IsShared == true);
-
+      var point = new XYZ();
       switch (type)
       {
         case ProjectBase:
           if (projectPoint != null)
           {
-            var point = projectPoint.Position;
-            if (doc.IsLinked)
+            point = projectPoint.Position;
+            if (doc.IsLinked && surveyPoint != null)
             {
               var mainProjectPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == false);
               point = point + mainProjectPoint.SharedPosition + surveyPoint.Position;
@@ -899,7 +899,7 @@ namespace Objects.Converter.Revit
           if (surveyPoint != null)
           {
 
-            var point = surveyPoint.Position;
+            point = surveyPoint.Position;
             if (doc.IsLinked)
             {
               var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
@@ -914,6 +914,18 @@ namespace Objects.Converter.Revit
             }
             catch { }
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+          }
+          break;
+        case InternalOrigin:
+          if (surveyPoint != null)
+          {
+            if (doc.IsLinked)
+            {
+              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
+              point = surveyPoint.Position - mainSurveyPoint.Position + mainSurveyPoint.SharedPosition;
+            }
+
+            referencePointTransform = DB.Transform.CreateTranslation(point);
           }
           break;
         default:
