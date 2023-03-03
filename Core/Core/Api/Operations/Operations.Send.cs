@@ -184,9 +184,14 @@ namespace Speckle.Core.Api
             "transportElapsedBreakdown",
             transports.ToDictionary(t => t.TransportName, t => t.Elapsed)
           )
+          .ForContext(
+            "note",
+            "the elapsed summary doesn't need to add up to the total elapsed... Threading magic..."
+          )
           .ForContext("serializerElapsed", serializerV2.Elapsed)
           .Information(
-            "Finished send after {elapsed}, result {objectId}",
+            "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
+            transports.Max(t => t.SavedObjectCount),
             sendTimer.Elapsed.TotalSeconds,
             hash
           );
