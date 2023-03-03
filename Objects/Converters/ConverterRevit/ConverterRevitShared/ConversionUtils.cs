@@ -881,6 +881,9 @@ namespace Objects.Converter.Revit
       var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
       var surveyPoint = points.FirstOrDefault(o => o.IsShared == true);
       var point = new XYZ();
+
+      //in the case of linked models, it seems they get aligned base off their surey point
+      //the translations below for linked models were retrieved a bit empirically
       switch (type)
       {
         case ProjectBase:
@@ -892,7 +895,8 @@ namespace Objects.Converter.Revit
               var mainProjectPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == false);
               point = point + mainProjectPoint.SharedPosition + surveyPoint.Position;
             }
-            referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
+            // rotation to base point is registered by survey point
+            referencePointTransform = DB.Transform.CreateTranslation(point);
           }
           break;
         case Survey:
@@ -906,13 +910,8 @@ namespace Objects.Converter.Revit
               point = point + mainSurveyPoint.SharedPosition;
             }
 
-            var angle = 0;
-            try
-            {
-              //this throws in some cases
-              projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble(); // !! retrieve survey point angle from project base point
-            }
-            catch { }
+            // !! retrieve survey point angle from project base point, null in some cases
+            var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
           }
           break;
