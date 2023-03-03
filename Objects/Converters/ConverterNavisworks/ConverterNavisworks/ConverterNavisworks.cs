@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Autodesk.Navisworks.Api;
@@ -47,7 +47,7 @@ namespace Objects.Converter.Navisworks
     public ReceiveMode ReceiveMode { get; set; }
 
 
-    public Document Doc { get; private set; }
+    public static Document Doc { get; private set; }
 
 
     IEnumerable<string> ISpeckleConverter.GetServicedApplications()
