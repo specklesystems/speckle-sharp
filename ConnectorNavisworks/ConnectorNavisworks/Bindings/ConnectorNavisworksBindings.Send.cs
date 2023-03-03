@@ -239,8 +239,11 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         progressBar.Cancel();
         Application.EndProgress();
+
+
         progress.Report.LogOperationError(
           new SpeckleException("Zero objects converted successfully. Send stopped.", false));
+
         return null;
       }
 
@@ -251,7 +254,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "views" } });
       if (state.Filter?.Slug == "views")
       {
-        var selectedViews = state.Filter.Selection.Select(Convert).Where(c => c != null);
+        var selectedViews = state.Filter.Selection.Select(Convert).Where(c => c != null).ToList();
         views.AddRange(selectedViews);
       }
       else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting checkBox && checkBox.IsChecked)

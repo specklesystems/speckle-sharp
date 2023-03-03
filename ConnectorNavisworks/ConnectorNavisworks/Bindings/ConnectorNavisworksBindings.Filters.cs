@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Clash;
@@ -20,7 +20,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       var selectSetsRootItem = Doc.SelectionSets.RootItem;
 
-      var savedSelectionSets = selectSetsRootItem.Children.Select(GetSets)?.OfType<TreeNode>().ToList();
+      var savedSelectionSets = selectSetsRootItem.Children.Select(GetSets).ToList();
 
       if (savedSelectionSets.Count > 0)
       {
@@ -35,14 +35,16 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       var savedViewsRootItem = Doc.SavedViewpoints.RootItem;
 
-      var savedViews = savedViewsRootItem.Children.Select(GetViews).ToList();
+      var savedViews = savedViewsRootItem.Children.Select(GetViews).Select(RemoveNullNodes).Where(x => x != null)
+        .ToList();
 
       if (savedViews.Count > 0)
       {
         var savedViewsFilter = new TreeSelectionFilter
         {
           Slug = "views", Name = "Saved Viewpoints", Icon = "FileTree",
-          Description = "Select a saved viewpoint and send its visible items in the commit.",
+          Description =
+            "Select a saved viewpoint and send its visible items in the commit. Only views with Hide/Require attribute checked are listed.",
           Values = savedViews,
           SelectionMode = "Toggle"
         };
@@ -92,17 +94,31 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     private static TreeNode GetViews(SavedItem savedItem)
     {
-
       var reference = Doc.SavedViewpoints.CreateReference(savedItem);
+
       var treeNode = new TreeNode
       {
         DisplayName = savedItem.DisplayName,
         Guid = savedItem.Guid,
         IndexWith = nameof(TreeNode.Reference),
-        Reference = reference.SavedItemId
+
+        // Rather than version check Navisworks host application we feature check
+        // to see if Guid is set correctly on viewpoints.
+        Reference = savedItem.Guid.ToString() == new Guid().ToString()
+          ? reference.SavedItemId
+          : savedItem.Guid.ToString()
       };
 
-      if (!savedItem.IsGroup) return treeNode;
+      switch (savedItem.IsGroup)
+      {
+        // TODO: This is a defensive measure to prevent sending millions of objects that are hidden in the
+        // current view but not hidden explicitly in the saved view. Optionally if this is not the case we could send visible items in the
+        // current view with the viewpoint as it is saved.
+        case false when !((SavedViewpoint)savedItem).ContainsVisibilityOverrides:
+          return null;
+        case false:
+          return treeNode;
+      }
 
       foreach (var childItem in ((GroupItem)savedItem).Children)
       {
@@ -113,6 +129,23 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return treeNode.Elements.Count > 0
         ? treeNode
         : null;
+    }
+
+    public static TreeNode RemoveNullNodes(TreeNode node)
+    {
+      if (node == null) return null;
+
+      if (!node.Elements.Any()) return node;
+
+      var elements = node.Elements
+        .Select(RemoveNullNodes)
+        .Where(childNode => childNode != null)
+        .ToList();
+
+      if (!elements.Any()) return null;
+      
+      node.Elements = elements;
+      return node;
     }
 
     private static TreeNode GetClashTestResults(SavedItem savedItem)
