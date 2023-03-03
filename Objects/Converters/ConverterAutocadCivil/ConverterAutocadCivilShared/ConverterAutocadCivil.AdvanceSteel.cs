@@ -31,6 +31,8 @@ using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
 using Objects.Other;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
+using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
+using ASBoltPattern = Autodesk.AdvanceSteel.Modelling.BoltPattern;
 using Autodesk.AdvanceSteel.CADAccess;
 using Autodesk.AdvanceSteel.CADLink.Database;
 using CADObjectId = Autodesk.AutoCAD.DatabaseServices.ObjectId;
@@ -49,6 +51,11 @@ using TriangleNet.Geometry;
 using TriangleVertex = TriangleNet.Geometry.Vertex;
 using TriangleMesh = TriangleNet.Mesh;
 using TriangleNet.Topology;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Autodesk.AdvanceSteel.ConstructionTypes;
+using Autodesk.AdvanceSteel.Modelling;
+using Objects.BuiltElements;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -59,6 +66,11 @@ namespace Objects.Converter.AutocadCivil
       switch (@object.ObjectId.ObjectClass.DxfName)
       {
         case DxfNames.BEAM:
+        case DxfNames.PLATE:
+        case DxfNames.BOLT2POINTS:
+        case DxfNames.BOLTCIRCULAR:
+        case DxfNames.BOLTCORNER:
+        case DxfNames.BOLTMID:
           return true;
       }
 
@@ -69,12 +81,28 @@ namespace Objects.Converter.AutocadCivil
     {
       Base @base = null;
 
+      void updateDescriptor(FilerObject filerObject)
+      {
+        reportObj.Update(descriptor: filerObject.GetType().ToString());
+      }
+
       switch (@object.ObjectId.ObjectClass.DxfName)
       {
         case DxfNames.BEAM:
           ASBeam beam = GetFilerObjectByEntity<ASBeam>(@object);
-          reportObj.Update(descriptor: beam.GetType().ToString());
+          updateDescriptor(beam);
           return BeamToSpeckle(beam, notes);
+        case DxfNames.PLATE:
+          ASPlate plate = GetFilerObjectByEntity<ASPlate>(@object);
+          updateDescriptor(plate);
+          return PlateToSpeckle(plate, notes);
+        case DxfNames.BOLT2POINTS:
+        case DxfNames.BOLTCIRCULAR:
+        case DxfNames.BOLTCORNER:
+        case DxfNames.BOLTMID:
+          ASBoltPattern bolt = GetFilerObjectByEntity<ASBoltPattern>(@object);
+          updateDescriptor(bolt);
+          return BoltToSpeckle(bolt, notes);
       }
 
       return @base;
@@ -93,19 +121,56 @@ namespace Objects.Converter.AutocadCivil
       advanceSteelBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
       advanceSteelBeam.baseLine.length = speckleStartPoint.DistanceTo(speckleEndPoint);
 
-      var modelerBody = beam.GetModeler(Autodesk.AdvanceSteel.Modeler.BodyContext.eBodyContext.kMaxDetailed);
-
       advanceSteelBeam.area = beam.GetPaintArea();
-      advanceSteelBeam.volume = modelerBody.Volume;
 
-      advanceSteelBeam.displayValue = new List<Mesh> { GetMeshFromModelerBody(modelerBody, beam.GeomExtents) };
+      SetDisplayValue(advanceSteelBeam, beam);
 
       SetUnits(advanceSteelBeam);
 
       return advanceSteelBeam;
     }
 
-    public Mesh GetMeshFromModelerBody(ModelerBody modelerBody, Extents extents)
+    private AdvanceSteelPlate PlateToSpeckle(ASPlate plate, List<string> notes)
+    {
+      AdvanceSteelPlate advanceSteelPlate = new AdvanceSteelPlate();
+
+      var units = ModelUnits;
+
+      plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
+
+      advanceSteelPlate.outline = ToSpecklePolycurve(ptsContour);
+
+      advanceSteelPlate.area = plate.GetPaintArea();
+
+      SetDisplayValue(advanceSteelPlate, plate);
+
+      SetUnits(advanceSteelPlate);
+
+      return advanceSteelPlate;
+    }
+
+    private AdvanceSteelBolt BoltToSpeckle(ASBoltPattern bolt, List<string> notes)
+    {
+      AdvanceSteelBolt advanceSteelBolt = bolt is CircleScrewBoltPattern ? (AdvanceSteelBolt)new AdvanceSteelCircularBolt() : (AdvanceSteelBolt)new AdvanceSteelRectangularBolt();
+
+      var units = ModelUnits;
+
+      SetDisplayValue(advanceSteelBolt, bolt);
+
+      SetUnits(advanceSteelBolt);
+
+      return advanceSteelBolt;
+    }
+
+    private void SetDisplayValue(Base @base, AtomicElement atomicElement)
+    {
+      var modelerBody = atomicElement.GetModeler(Autodesk.AdvanceSteel.Modeler.BodyContext.eBodyContext.kMaxDetailed);
+
+      @base["volume"] = modelerBody.Volume;
+      @base["displayValue"] = new List<Mesh> { GetMeshFromModelerBody(modelerBody, atomicElement.GeomExtents) };
+    }
+
+    private Mesh GetMeshFromModelerBody(ModelerBody modelerBody, Extents extents)
     {
       modelerBody.getBrepInfo(out var verticesAS, out var facesInfo);
 
@@ -173,6 +238,26 @@ namespace Objects.Converter.AutocadCivil
         yield return triangle.GetVertex(1).ID + faceIndexOffset;
         yield return triangle.GetVertex(2).ID + faceIndexOffset;
       }
+    }
+
+    private Polycurve ToSpecklePolycurve(ASPoint3d[] pointsContour)
+    {
+      var units = ModelUnits;
+      var specklePolycurve = new Polycurve(units);
+
+      for (int i = 1; i < pointsContour.Length; i++)
+      {
+        specklePolycurve.segments.Add(ToSpeckleLine(pointsContour[i - 1], pointsContour[i]));
+      }
+
+      specklePolycurve.segments.Add(ToSpeckleLine(pointsContour.Last(), pointsContour.First()));
+
+      return specklePolycurve;
+    }
+
+    private Line ToSpeckleLine(ASPoint3d point1, ASPoint3d point2)
+    {
+      return new Line(PointToSpeckle(point1), PointToSpeckle(point2), ModelUnits);
     }
 
     private CoordinateSystem CreateCoordinateSystemAligned(IEnumerable<Point3D> points)
