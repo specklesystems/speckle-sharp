@@ -89,7 +89,7 @@ namespace Speckle.ConnectorRevit.UI
               if (revitElement is RevitLinkInstance)
                 reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Enable linked model support from the settings to send this object");
               else
-                reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
+                reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported yet");
 
               progress.Report.Log(reportObj);
               continue;
