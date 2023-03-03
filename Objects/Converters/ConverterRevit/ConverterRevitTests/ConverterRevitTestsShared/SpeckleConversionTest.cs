@@ -1,10 +1,13 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
+using Revit.Async;
 using Speckle.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using xUnitRevitUtils;
 
@@ -53,7 +56,7 @@ namespace ConverterRevitTests
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="assert"></param>
-    internal List<object> SpeckleToNative<T>(Action<T, T> assert, UpdateData ud = null)
+    internal async Task<List<object>> SpeckleToNative<T>(Action<T, T> assert, UpdateData ud = null)
     {
       Document doc = null;
       IList<Element> elements = null;
@@ -76,7 +79,13 @@ namespace ConverterRevitTests
       converter.SetContextDocument(doc);
       //setting context objects for nested routine
       converter.SetContextObjects(elements.Select(obj => new ApplicationObject (obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId }).ToList());
-      var spkElems = elements.Select(x => converter.ConvertToSpeckle(x)).Where(x => x != null).ToList();
+
+
+      var spkElems = new List<Base>();
+      await RevitTask.RunAsync(() =>
+      {
+        spkElems = elements.Select(x => converter.ConvertToSpeckle(x)).Where(x => x != null).ToList();
+      });
 
       converter = new ConverterRevit();
       converter.ReceiveMode = Speckle.Core.Kits.ReceiveMode.Update;
@@ -93,8 +102,10 @@ namespace ConverterRevitTests
       //used to associate th nested Base objects with eh flat revit ones
       var flatSpkElems = new List<Base>();
 
-      xru.RunInTransaction(() =>
+      await RunInTransaction(() =>
       {
+        //xru.RunInTransaction(() =>
+        //{
         foreach (var el in spkElems)
         {
           object res = null;
@@ -120,7 +131,8 @@ namespace ConverterRevitTests
             flatSpkElems.Add(el);
           }
         }
-      }, fixture.NewDoc).Wait();
+        //}, fixture.NewDoc).Wait();
+      }, fixture.NewDoc, converter);
 
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
 
@@ -130,7 +142,7 @@ namespace ConverterRevitTests
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
         assert(sourceElem, destElement);
         if (!fixture.UpdateTestRunning)
-          DeleteElements(destElement);
+          DeleteElement(destElement);
       }
 
       return resEls;
@@ -141,21 +153,24 @@ namespace ConverterRevitTests
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="assert"></param>
-    internal void SpeckleToNativeUpdates<T>(Action<T, T> assert)
+    internal async Task SpeckleToNativeUpdates<T>(Action<T, T> assert)
     {
-      this.fixture.UpdateTestRunning = true;
-      var result = SpeckleToNative(assert);
-
-      SpeckleToNative(assert, new UpdateData
+      fixture.UpdateTestRunning = true;
+      var initialObjs = await SpeckleToNative(assert);
+      var updatedObjs = await SpeckleToNative(assert, new UpdateData
       {
-        AppPlaceholders = result.Cast<ApplicationObject>().ToList(),
+        AppPlaceholders = initialObjs.Cast<ApplicationObject>().ToList(),
         Doc = fixture.UpdatedDoc,
         Elements = fixture.UpdatedRevitElements
       });
-      this.fixture.UpdateTestRunning = false;
+      fixture.UpdateTestRunning = false;
+
+      // delete the elements that were not being deleted during the update test
+      DeleteElement(initialObjs);
+      //DeleteElement(updatedObjs);
     }
 
-    internal void SelectionToNative<T>(Action<T, T> assert)
+    internal async Task SelectionToNative<T>(Action<T, T> assert)
     {
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(fixture.SourceDoc);
@@ -166,18 +181,20 @@ namespace ConverterRevitTests
       var revitEls = new List<object>();
       var resEls = new List<object>();
 
-      xru.RunInTransaction(() =>
+      await RunInTransaction(() =>
       {
-        //revitEls = spkElems.Select(x => kit.ConvertToNative(x)).ToList();
+        //xru.RunInTransaction(() =>
+        //{
         foreach (var el in spkElems)
         {
           var res = converter.ConvertToNative(el);
           if (res is List<ApplicationObject> apls)
             resEls.AddRange(apls);
-          else 
+          else
             resEls.Add(el);
         }
-      }, fixture.NewDoc).Wait();
+        //}, fixture.NewDoc).Wait();
+      }, fixture.NewDoc, converter);
 
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
 
@@ -187,25 +204,87 @@ namespace ConverterRevitTests
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
         assert(sourceElem, (T)destElement);
         if (!fixture.UpdateTestRunning)
-          DeleteElements(destElement);
+          DeleteElement(destElement);
       }
     }
 
-    internal void DeleteElements(params object[] objs)
+    internal class IgnoreAllWarnings : Autodesk.Revit.DB.IFailuresPreprocessor
     {
-      foreach (var obj in objs)
+      public FailureProcessingResult PreprocessFailures(Autodesk.Revit.DB.FailuresAccessor failuresAccessor)
       {
-        switch (obj)
+        IList<Autodesk.Revit.DB.FailureMessageAccessor> failureMessages = failuresAccessor.GetFailureMessages();
+        foreach (Autodesk.Revit.DB.FailureMessageAccessor item in failureMessages)
         {
-          case DB.Element o:
+          failuresAccessor.DeleteWarning(item);
+        }
+
+        return FailureProcessingResult.Continue;
+      }
+    }
+
+    internal async static Task<string> RunInTransaction(Action action, Document doc, ConverterRevit converter, string transactionName = "transaction", bool ignoreWarnings = false)
+    {
+      var tcs = new TaskCompletionSource<string>();
+
+      await RevitTask.RunAsync(() =>
+      {
+        using var g = new TransactionGroup(doc, transactionName);
+        using var transaction = new Transaction(doc, transactionName);
+
+        g.Start();
+        transaction.Start();
+
+        converter.SetContextDocument(transaction);
+
+        if (ignoreWarnings)
+        {
+          var options = transaction.GetFailureHandlingOptions();
+          options.SetFailuresPreprocessor(new IgnoreAllWarnings());
+          transaction.SetFailureHandlingOptions(options);
+        }
+
+        try
+        {
+          action.Invoke();
+          transaction.Commit();
+          g.Assimilate();
+        }
+        catch (Exception exception)
+        {
+          tcs.TrySetException(exception);
+        }
+
+        tcs.TrySetResult("");
+      });
+
+      return await tcs.Task;
+    }
+
+    internal void DeleteElement(object obj)
+    {
+      switch (obj)
+      {
+        case IList list:
+          foreach (var item in list)
+            DeleteElement(item);
+          break;
+        case ApplicationObject o:
+          foreach (var item in o.Converted)
+            DeleteElement(item);
+          break;
+        case DB.Element o:
+          try
+          {
             xru.RunInTransaction(() =>
             {
               o.Document.Delete(o.Id);
             }, o.Document).Wait();
-            break;
-          default:
-            throw new Exception("It's not an element!?!?!");
-        }
+          }
+          // element already deleted, don't worry about it
+          catch { }
+          break;
+        default:
+          throw new Exception("It's not an element!?!?!");
       }
     }
 

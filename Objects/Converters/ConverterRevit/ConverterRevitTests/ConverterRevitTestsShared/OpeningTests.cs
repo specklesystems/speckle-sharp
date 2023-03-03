@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 using DB = Autodesk.Revit.DB;
@@ -48,16 +49,16 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Opening", "ToNative")]
-    public void OpeningToNative()
+    public async Task OpeningToNative()
     {
-      SpeckleToNative<DB.Element>(AssertOpeningEqual);
+      await SpeckleToNative<DB.Element>(AssertOpeningEqual);
     }
 
     [Fact]
     [Trait("Opening", "Selection")]
-    public void OpeningSelectionToNative()
+    public async Task OpeningSelectionToNative()
     {
-      SelectionToNative<DB.Element>(AssertOpeningEqual);
+      await SelectionToNative<DB.Element>(AssertOpeningEqual);
     }
 
     private void AssertOpeningEqual(DB.Element sourceElem, DB.Element destElem)

@@ -4,7 +4,7 @@ using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
 
 using Xunit;
-
+using System.Threading.Tasks;
 
 namespace ConverterRevitTests
 {
@@ -37,16 +37,16 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("DirectShape", "ToNative")]
-    public void DirectShapeToNative()
+    public async Task DirectShapeToNative()
     {
-      SpeckleToNative<DB.DirectShape>(DirectShapeEqual);
+      await SpeckleToNative<DB.DirectShape>(DirectShapeEqual);
     }
 
     [Fact]
     [Trait("DirectShape", "Selection")]
-    public void DirectShapeSelectionToNative()
+    public async Task DirectShapeSelectionToNative()
     {
-      SelectionToNative<DB.DirectShape>(DirectShapeEqual);
+      await SelectionToNative<DB.DirectShape>(DirectShapeEqual);
     }
 
     private void DirectShapeEqual(DB.DirectShape sourceElem, DB.DirectShape destElem)

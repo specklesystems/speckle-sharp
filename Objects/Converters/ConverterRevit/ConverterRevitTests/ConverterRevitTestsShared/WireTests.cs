@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB.Electrical;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace ConverterRevitTests
 {
@@ -31,9 +32,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Wire", "ToNative")]
-    public void WireToNative()
+    public async Task WireToNative()
     {
-      SpeckleToNative<DB.Wire>(AssertWireEqual);
+      await SpeckleToNative<DB.Wire>(AssertWireEqual);
     }
 
     private void AssertWireEqual(DB.Wire sourceElem, DB.Wire destElem)

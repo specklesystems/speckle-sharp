@@ -4,7 +4,7 @@ using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
 
 using Xunit;
-
+using System.Threading.Tasks;
 
 namespace ConverterRevitTests
 {
@@ -36,16 +36,16 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Curve", "ToNative")]
-    public void CurveToNative()
+    public async Task CurveToNative()
     {
-      SpeckleToNative<DB.CurveElement>(AssertCurveEqual);
+      await SpeckleToNative<DB.CurveElement>(AssertCurveEqual);
     }
 
     [Fact]
     [Trait("Curve", "Selection")]
-    public void CurveSelectionToNative()
+    public async Task CurveSelectionToNative()
     {
-      SelectionToNative<DB.CurveElement>(AssertCurveEqual);
+      await SelectionToNative<DB.CurveElement>(AssertCurveEqual);
     }
 
     internal void AssertCurveEqual(DB.CurveElement sourceElem, DB.CurveElement destElem)

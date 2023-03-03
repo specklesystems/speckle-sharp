@@ -38,24 +38,24 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Wall", "ToNative")]
-    public void WallToNative()
+    public async Task WallToNative()
     {
-      SpeckleToNative<DB.Wall>(AssertWallEqual);
+      await SpeckleToNative<DB.Wall>(AssertWallEqual);
     }
 
     [Fact]
     [Trait("Wall", "ToNativeUpdates")]
-    public void WallToNativeUpdates()
+    public async Task WallToNativeUpdates()
     {
-      SpeckleToNativeUpdates<DB.Wall>(AssertWallEqual);
+      await SpeckleToNativeUpdates<DB.Wall>(AssertWallEqual);
     }
 
 
     [Fact]
     [Trait("Wall", "Selection")]
-    public void WallSelectionToNative()
+    public async Task WallSelectionToNative()
     {
-      SelectionToNative<DB.Wall>(AssertWallEqual);
+      await SelectionToNative<DB.Wall>(AssertWallEqual);
     }
 
     private void AssertWallEqual(DB.Wall sourceElem, DB.Wall destElem)

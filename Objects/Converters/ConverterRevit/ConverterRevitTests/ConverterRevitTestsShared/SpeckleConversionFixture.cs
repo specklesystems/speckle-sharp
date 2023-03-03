@@ -3,6 +3,8 @@ using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
 using xUnitRevitUtils;
+using Xunit;
+using System.Diagnostics;
 
 namespace ConverterRevitTests
 {
@@ -23,6 +25,7 @@ namespace ConverterRevitTests
     public virtual string UpdatedTestFile { get; }
     public virtual string NewFile { get; }
     public virtual List<BuiltInCategory> Categories { get; }
+    public bool UpdateTestRunning { get; set; } = false;
 
     public SpeckleConversionFixture()
     {
@@ -36,9 +39,7 @@ namespace ConverterRevitTests
       {
         UpdatedDoc = xru.OpenDoc(UpdatedTestFile);
         UpdatedRevitElements = new FilteredElementCollector(UpdatedDoc).WhereElementIsNotElementType().WherePasses(filter).ToElements();
-
       }
-
 
       if (NewFile != null)
         NewDoc = xru.CreateNewDoc(TemplateFile, NewFile);
@@ -48,8 +49,21 @@ namespace ConverterRevitTests
 
     public void Dispose()
     {
-      //xru.CloseDoc(SourceDoc);
-      //xru.CloseDoc(NewDoc);
+      Debug.WriteLine(TestFile);
+      xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
+      CloseDoc(SourceDoc);
+      CloseDoc(UpdatedDoc);
+      CloseDoc(NewDoc);
+    }
+
+    public static bool CloseDoc(Document doc, bool saveChanges = false)
+    {
+      if (doc == null)
+        return false;
+
+      bool result = false;
+      xru.UiContext.Send(x => { result = doc.Close(saveChanges); }, null);
+      return result;
     }
   }
 }

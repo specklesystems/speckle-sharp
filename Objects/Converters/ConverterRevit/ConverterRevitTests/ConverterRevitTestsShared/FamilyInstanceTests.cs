@@ -8,6 +8,7 @@ using Objects.Converter.Revit;
 using System.Linq;
 using xUnitRevitUtils;
 using Speckle.Core.Models;
+using System.Threading.Tasks;
 
 namespace ConverterRevitTests
 {
@@ -55,18 +56,18 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("FamilyInstance", "ToNative")]
-    public void NestedToNative()
+    public async Task NestedToNative()
     {
 
-      SpeckleToNative<DB.Element>(AssertNestedEqual);
+      await SpeckleToNative<DB.Element>(AssertNestedEqual);
     }
 
 
     [Fact]
     [Trait("FamilyInstance", "ToNativeUpdates")]
-    public void NestedToNativeUpdates()
+    public async Task NestedToNativeUpdates()
     {
-      SpeckleToNativeUpdates<DB.Element>(AssertNestedEqual);
+      await SpeckleToNativeUpdates<DB.Element>(AssertNestedEqual);
     }
 
     internal void AssertNestedEqual(DB.Element sourceElem, DB.Element destElem)

@@ -34,9 +34,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Duct", "ToNative")]
-    public void DuctToNative()
+    public async Task DuctToNative()
     {
-      SpeckleToNative<DB.Duct>(AssertDuctEqual);
+      await SpeckleToNative<DB.Duct>(AssertDuctEqual);
     }
 
     private void AssertDuctEqual(DB.Duct sourceElem, DB.Duct destElem)

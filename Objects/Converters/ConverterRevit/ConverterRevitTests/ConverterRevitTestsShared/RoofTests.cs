@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 using DB = Autodesk.Revit.DB;
@@ -35,16 +36,16 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Roof", "ToNative")]
-    public void RoofToNative()
+    public async Task RoofToNative()
     {
-      SpeckleToNative<DB.RoofBase>(AssertRoofEqual);
+      await SpeckleToNative<DB.RoofBase>(AssertRoofEqual);
     }
 
     [Fact]
     [Trait("Roof", "Selection")]
-    public void RoofSelectionToNative()
+    public async Task RoofSelectionToNative()
     {
-      SelectionToNative<DB.RoofBase>(AssertRoofEqual);
+      await SelectionToNative<DB.RoofBase>(AssertRoofEqual);
     }
 
     private void AssertRoofEqual(DB.RoofBase sourceElem, DB.RoofBase destElem)

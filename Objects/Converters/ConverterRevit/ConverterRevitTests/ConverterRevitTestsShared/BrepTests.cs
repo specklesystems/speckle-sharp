@@ -5,6 +5,7 @@ using Speckle.Core.Api;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 using xUnitRevitUtils;
@@ -46,7 +47,7 @@ namespace ConverterRevitTests
     [InlineData(@"Brep-FaceWithTrimmedEdge.json")]
     [InlineData(@"Brep-Boat.json")]
     [InlineData(@"Brep-Plane.json")]
-    public void BrepToNative(string fileName)
+    public async Task BrepToNative(string fileName)
     {
 
       // Read and obtain `base` object.
@@ -58,11 +59,11 @@ namespace ConverterRevitTests
       if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
       DirectShape native = null;
 
-      xru.RunInTransaction(() =>
+      await RunInTransaction(() =>
       {
         converter.SetContextDocument(fixture.NewDoc);
         native = converter.BrepToDirectShape(brep, out List<string>notes);
-      }, fixture.NewDoc).Wait();
+      }, fixture.NewDoc, converter);
 
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
     }

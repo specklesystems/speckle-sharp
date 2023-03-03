@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Xunit;
 
 using DB = Autodesk.Revit.DB;
@@ -36,23 +37,23 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Column", "ToNative")]
-    public void ColumnToNative()
+    public async Task ColumnToNative()
     {
-      SpeckleToNative<DB.FamilyInstance>(AssertFamilyInstanceEqual);
+      await SpeckleToNative<DB.FamilyInstance>(AssertFamilyInstanceEqual);
     }
 
     [Fact]
     [Trait("Column", "ToNativeUpdates")]
-    public void ColumnToNativeUpdates()
+    public async Task ColumnToNativeUpdates()
     {
-      SpeckleToNativeUpdates<DB.FamilyInstance>(AssertFamilyInstanceEqual);
+      await SpeckleToNativeUpdates<DB.FamilyInstance>(AssertFamilyInstanceEqual);
     }
 
     [Fact]
     [Trait("Column", "Selection")]
-    public void ColumnSelectionToNative()
+    public async Task ColumnSelectionToNative()
     {
-      SelectionToNative<DB.FamilyInstance>(AssertFamilyInstanceEqual);
+      await SelectionToNative<DB.FamilyInstance>(AssertFamilyInstanceEqual);
     }
 
     #endregion ToNative

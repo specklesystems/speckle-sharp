@@ -2,6 +2,7 @@
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB.Plumbing;
 using Xunit;
+using System.Threading.Tasks;
 
 namespace ConverterRevitTests
 {
@@ -30,9 +31,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Pipe", "ToNative")]
-    public void PipeToNative()
+    public async Task PipeToNative()
     {
-      SpeckleToNative<DB.Pipe>(AssertPipeEqual);
+      await SpeckleToNative<DB.Pipe>(AssertPipeEqual);
     }
 
     private void AssertPipeEqual(DB.Pipe sourceElem, DB.Pipe destElem)
