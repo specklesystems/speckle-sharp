@@ -69,9 +69,10 @@ namespace Speckle.ConnectorRevit.UI
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
           // get the report object
           // for hosted elements, they may have already been converted and added to the converter report
-          bool alreadyConverted = converter.Report.GetReportObject(revitElement.UniqueId, out int index);
+          var alreadyConverted = converter.Report.ReportObjects.TryGetValue(revitElement.UniqueId, out var applicationObject);
+
           var reportObj = alreadyConverted ?
-            converter.Report.ReportObjects[index] :
+            applicationObject :
             new ApplicationObject(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
           if (alreadyConverted)
           {

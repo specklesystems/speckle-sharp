@@ -6,11 +6,12 @@ using System.Drawing;
 using Autodesk.AutoCAD.Geometry;
 using AcadGeo = Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.DatabaseServices;
-using Objects.Utils;
 using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+
 using Speckle.Core.Models;
 
+using Objects.Utils;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;

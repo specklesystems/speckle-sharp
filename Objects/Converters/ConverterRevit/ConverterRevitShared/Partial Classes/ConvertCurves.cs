@@ -152,7 +152,8 @@ namespace Objects.Converter.Revit
 
       try
       {
-        var revitCurve = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, Doc.ActiveView).get_Item(0);
+        View drawingView = GetCurvePlanView(speckleCurve);
+        var revitCurve = Doc.Create.NewRoomBoundaryLines(NewSketchPlaneFromCurve(baseCurve.get_Item(0), Doc), baseCurve, drawingView).get_Item(0);
         appObj.Update(status: ApplicationObject.State.Created, createdId: revitCurve.UniqueId, convertedItem: revitCurve);
       }
       catch (Exception)
@@ -252,6 +253,7 @@ namespace Objects.Converter.Revit
     {
       var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document));
       speckleCurve.elementId = revitCurve.Id.ToString();
+      speckleCurve.level = ConvertAndCacheLevel(revitCurve.LevelId, revitCurve.Document);
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
       return speckleCurve;
@@ -316,6 +318,25 @@ namespace Objects.Converter.Revit
       }
 
       return SketchPlane.Create(doc, plane);
+    }
+
+    /// <summary>
+    /// Get the first plan view associated to the curve level.
+    /// Will return the Doc.ActiveView If no appropriate view is found.
+    /// </summary>
+    /// <param name="speckleCurve">A Speckle curve</param>
+    /// <returns>A Revit View.</returns>
+    private View GetCurvePlanView(RoomBoundaryLine speckleCurve)
+    {
+      View drawingView = Doc.ActiveView;
+      Level level = ConvertLevelToRevit(speckleCurve.level, out var _);
+      ElementId viewId = level?.FindAssociatedPlanViewId();
+
+      // If there is a plan view associated to the curve level use it otherwise use the activeView
+      if (viewId != null && viewId != ElementId.InvalidElementId)
+        drawingView = Doc.GetElement(viewId) as View ?? drawingView;
+
+      return drawingView;
     }
   }
 }

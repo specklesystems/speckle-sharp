@@ -4,13 +4,12 @@ using DesktopUI2.ViewModels.MappingTool;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Serilog.Events;
 
 namespace DesktopUI2.ViewModels
 {
@@ -147,53 +146,51 @@ namespace DesktopUI2.ViewModels
         return;
 
       ShowProgress = true;
+      
+      //needed for the search feature
+      StreamGetCancelTokenSource?.Cancel();
+      StreamGetCancelTokenSource = new CancellationTokenSource();
 
-      try
+      var streams = new List<StreamAccountWrapper>();
+
+      foreach (var account in Accounts)
       {
-        //needed for the search feature
-        StreamGetCancelTokenSource?.Cancel();
-        StreamGetCancelTokenSource = new CancellationTokenSource();
-
-        var streams = new List<StreamAccountWrapper>();
-
-        foreach (var account in Accounts)
-        {
-          if (StreamGetCancelTokenSource.IsCancellationRequested)
-            return;
-
-          try
-          {
-            var result = new List<Stream>();
-
-            //NO SEARCH
-            if (SearchQuery == "")
-              result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
-            //SEARCH
-            else
-              result = await account.Client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
-
-            if (StreamGetCancelTokenSource.IsCancellationRequested)
-              return;
-
-            streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
-
-          }
-          catch (Exception e)
-          {
-            if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
-              return;
-            new SpeckleException("Could not fetch streams", e, true, Sentry.SentryLevel.Error);
-          }
-        }
         if (StreamGetCancelTokenSource.IsCancellationRequested)
           return;
 
-        Streams = streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+        try
+        {
+          var result = new List<Stream>();
 
+          //NO SEARCH
+          if (SearchQuery == "")
+            result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
+          //SEARCH
+          else
+            result = await account.Client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
+
+          if (StreamGetCancelTokenSource.IsCancellationRequested)
+            return;
+
+          streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
+        }
+        catch (Exception ex)
+        {
+          bool isError = !(ex is TaskCanceledException || ex.InnerException is TaskCanceledException);
+          var logLevel = isError ? LogEventLevel.Error : LogEventLevel.Debug;
+          Serilog.Log.Write(logLevel, ex , "Failed to fetch streams {exceptionMessage} for account", ex.Message);
+        }
       }
-      catch (Exception e)
+      if (StreamGetCancelTokenSource.IsCancellationRequested)
+        return;
+      
+      try
       {
-        new SpeckleException("Could not fetch streams", e, true, Sentry.SentryLevel.Error);
+        Streams = streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+      }
+      catch (Exception ex)
+      {
+        Serilog.Log.Fatal(ex, "Failed to fetch streams  {exceptionMessage}", ex.Message);
       }
       finally
       {

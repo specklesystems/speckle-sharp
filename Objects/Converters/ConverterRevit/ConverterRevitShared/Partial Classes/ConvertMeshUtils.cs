@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -13,13 +14,15 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetElementMesh(DB.Element element)
     {
       var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
-      if (!allSolids.Any()) //it's a mesh!
+      if (allSolids.Any())
+      {
+        return GetMeshesFromSolids(allSolids, element.Document);
+      }
+      else //it's a mesh!
       {
         var geom = element.get_Geometry(new Options());
         return GetMeshes(geom, element.Document);
       }
-
-      return GetMeshesFromSolids(allSolids, element.Document);
     }
 
     /// <summary>
@@ -29,7 +32,7 @@ namespace Objects.Converter.Revit
     /// <param name="opt">The view options to use</param>
     /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
     /// <returns></returns>
-    public List<Mesh> GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
+    public List<Mesh> GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false, DB.Transform adjustedTransform = null)
     {
       List<Solid> solids = new List<Solid>();
 

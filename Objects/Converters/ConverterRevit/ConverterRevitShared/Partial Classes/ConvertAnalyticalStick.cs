@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Autodesk.Revit.DB.Structure.StructuralSections;
@@ -60,7 +62,13 @@ namespace Objects.Converter.Revit
       if (docObj != null && docObj is AnalyticalMember analyticalMember)
       {
         // update location
-        analyticalMember.SetCurve(baseLine);
+        var currentCurve = analyticalMember.GetCurve();
+        var p0 = currentCurve.GetEndPoint(0);
+
+        if (p0.DistanceTo(baseLine.GetEndPoint(0)) > p0.DistanceTo(baseLine.GetEndPoint(1)))
+          analyticalMember.SetCurve(baseLine.CreateReversed());
+        else
+          analyticalMember.SetCurve(baseLine);
 
         //update type
         analyticalMember.SectionTypeId = familySymbol.Id;
@@ -198,7 +206,8 @@ namespace Objects.Converter.Revit
       if (curves.Count > 1)
         speckleElement1D.baseLine = null;
       else
-        speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(curves[0], revitStick.Document);
+        speckleElement1D.baseLine = CurveToSpeckle(curves[0], revitStick.Document) as Objects.Geometry.Line;
+
 
       var coordinateSystem = revitStick.GetLocalCoordinateSystem();
       if (coordinateSystem != null)
@@ -272,7 +281,11 @@ namespace Objects.Converter.Revit
           break;
       }
 
+<<<<<<< HEAD
       speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(revitStick.GetCurve(), revitStick.Document);
+=======
+      speckleElement1D.baseLine = CurveToSpeckle(revitStick.GetCurve()) as Objects.Geometry.Line;
+>>>>>>> origin/dev
 
       SetEndReleases(revitStick, ref speckleElement1D);
 
@@ -367,92 +380,90 @@ namespace Objects.Converter.Revit
       if (revitSection == null)
         return null;
 
+      // check section profile cache
+      if (SectionProfiles.Keys.Contains(familySymbol.Name))
+        return SectionProfiles[familySymbol.Name];
+
       var speckleSection = new SectionProfile();
 
+      // note to future self, the StructuralSectionGeneralShape prop is sometimes null so it isn't reliable to use
+      // therefore switch on the object itself instead
       switch (revitSection)
       {
-        case StructuralSectionGeneralI o: // General Double T shape
-          var ISection = new ISection();
-          ISection.shapeType = Structural.ShapeType.I;
-          ISection.depth = o.Height;
-          ISection.width = o.Width;
-          ISection.webThickness = o.WebThickness;
-          ISection.flangeThickness = o.FlangeThickness;
 
-          speckleSection = ISection;
+        case StructuralSectionIWelded _: // Built up wide flange
+        case StructuralSectionIWideFlange _: // I shaped wide flange
+        case StructuralSectionGeneralI _: // General Double T shape
+          speckleSection = new ISection();
           break;
-        case StructuralSectionGeneralT o: // General Tee shape
-          var teeSection = new Tee();
-          teeSection.shapeType = Structural.ShapeType.Tee;
-          teeSection.depth = o.Height;
-          teeSection.width = o.Width;
-          teeSection.webThickness = o.WebThickness;
-          teeSection.flangeThickness = o.FlangeThickness;
+        case StructuralSectionGeneralT _: // General Tee shape
+          speckleSection = new Tee();
+          break;
+        case StructuralSectionGeneralH _: // Rectangular Pipe structural sections
+        case StructuralSectionGeneralF _: // Flat Bar structural sections
+          speckleSection = new Rectangular();
+          break;
+        case StructuralSectionGeneralR _: // Pipe structural sections
+        case StructuralSectionGeneralS _: // Round Bar structural sections
+          speckleSection = new Circular();
+          break;
+        case StructuralSectionGeneralW _: // Angle structural sections
+          speckleSection = new Angle();
+          break;
+        case StructuralSectionGeneralU _: // Channel structural sections
+          speckleSection = new Channel();
+          break;
 
-          speckleSection = teeSection;
-          break;
-        case StructuralSectionGeneralH o: // Rectangular Pipe structural sections
-          var rectSection = new Rectangular();
-          rectSection.shapeType = Structural.ShapeType.I;
-          rectSection.depth = o.Height;
-          rectSection.width = o.Width;
-          rectSection.webThickness = o.WallNominalThickness;
-          rectSection.flangeThickness = o.WallNominalThickness;
+        //case StructuralSectionGeneralLA o:
+        //case StructuralSectionColdFormed o:
+        //case StructuralSectionUserDefined o:
+        //case StructuralSectionGeneralLZ o:
 
-          speckleSection = rectSection;
+        // keep these two last. They are last resorts
+        case StructuralSectionRectangular _:
+          speckleSection = new Rectangular();
           break;
-        case StructuralSectionGeneralR o: // Pipe structural sections
-          var circSection = new Circular();
-          circSection.shapeType = Structural.ShapeType.Circular;
-          circSection.radius = o.Diameter / 2;
-          circSection.wallThickness = o.WallNominalThickness;
+        case StructuralSectionRound _:
+          speckleSection = new Circular();
+          break;
+      }
 
-          speckleSection = circSection;
-          break;
-        case StructuralSectionGeneralF o: // Flat Bar structural sections
-          var flatRectSection = new Rectangular();
-          flatRectSection.shapeType = Structural.ShapeType.I;
-          flatRectSection.depth = o.Height;
-          flatRectSection.width = o.Width;
+      var propNamesMap = new Dictionary<string, string>()
+      {
+        { "Height", "depth" },
+        { "SectionalArea", "area" },
+        { "NominalWeight", "weight" },
+        { "MomentOfInertiaStrongAxis", "Iyy" }, //TODO change this prop, Iyy can mean different things
+        { "MomentOfInertiaWeakAxis", "Izz" },
+        { "TorsionalMomentOfInertia", "J" },
+      };
+      foreach (var prop in revitSection.GetType().GetProperties())
+      {
+        var value = prop.GetValue(revitSection, null);
+        var type = value?.GetType();
 
-          speckleSection = flatRectSection;
-          break;
-        case StructuralSectionGeneralS o: // Round Bar structural sections
-          var flatCircSection = new Circular();
-          flatCircSection.shapeType = Structural.ShapeType.Circular;
-          flatCircSection.radius = o.Diameter / 2;
+        if (type == null || type.IsClass || type.IsEnum)
+          continue;
 
-          speckleSection = flatCircSection;
-          break;
-        case StructuralSectionGeneralW o: // Angle structural sections
-          var angleSection = new Angle();
-          angleSection.shapeType = Structural.ShapeType.Angle;
-          angleSection.depth = o.Height;
-          angleSection.width = o.Width;
-          angleSection.webThickness = o.WebThickness;
-          angleSection.flangeThickness = o.FlangeThickness;
+        var key = prop.Name;
 
-          speckleSection = angleSection;
-          break;
-        case StructuralSectionGeneralU o: // Channel  structural sections
-          var channelSection = new Channel();
-          channelSection.shapeType = Structural.ShapeType.Channel;
-          channelSection.depth = o.Height;
-          channelSection.width = o.Width;
-          channelSection.webThickness = o.WebThickness;
-          channelSection.flangeThickness = o.FlangeThickness;
+        if (propNamesMap.Keys.Contains(key))
+        {
+          key = propNamesMap[key];
+        }
+        // Revit classes are named with first letter capitalized but ours are not (why speckle??)
+        else if (!char.IsLower(key, 0))
+        {
+          key = char.ToLowerInvariant(key[0]) + key.Substring(1);
+        }
 
-          speckleSection = channelSection;
-          break;
+        speckleSection[key] = value;
       }
 
       speckleSection.units = ModelUnits;
       speckleSection.name = familySymbol.Name;
-      speckleSection.area = revitSection.SectionArea;
-      speckleSection.weight = revitSection.NominalWeight;
-      speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis;
-      speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis;
-      speckleSection.J = revitSection.TorsionalMomentOfInertia;
+
+      SectionProfiles.Add(familySymbol.Name, speckleSection);
 
       return speckleSection;
     }

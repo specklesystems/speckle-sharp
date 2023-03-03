@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -147,6 +148,16 @@ namespace Speckle.Core.Serialisation
       if (obj is DateTime t)
       {
         return t.ToString("o", System.Globalization.CultureInfo.InvariantCulture);
+      }
+      if (obj is Matrix4x4 m)
+      {
+        return new List<float>()
+        {
+          m.M11, m.M12, m.M13, m.M14,
+          m.M21, m.M22, m.M23, m.M24,
+          m.M31, m.M32, m.M33, m.M34,
+          m.M41, m.M42, m.M43, m.M44
+        };
       }
 
       throw new Exception("Unsupported value in serialization: " + type.ToString());

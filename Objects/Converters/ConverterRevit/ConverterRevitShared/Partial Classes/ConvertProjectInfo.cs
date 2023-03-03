@@ -8,40 +8,11 @@ using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
 using ProjectInfo = Objects.BuiltElements.Revit.ProjectInfo;
-using RevitElementType = Objects.BuiltElements.Revit.RevitElementType;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    private RevitElementType ElementTypeToSpeckle(DB.ElementType revitType)
-    {
-      var fs = revitType as FamilySymbol;
-
-      var speckleType = new RevitElementType
-      {
-        type = revitType.Name,
-        family = revitType.FamilyName,
-        category = revitType.Category.Name
-      };
-
-      if (fs != null && fs.Family != null)
-      {
-        speckleType.placementType = fs.Family?.FamilyPlacementType.ToString();
-        speckleType.hasFamilySymbol = true;
-      }
-
-      if (revitType is MEPCurveType)
-      {
-        var mepType = revitType as MEPCurveType;
-        speckleType.shape = mepType.Shape.ToString();
-      }
-      GetAllRevitParamsAndIds(speckleType, revitType);
-
-
-      return speckleType;
-    }
-
     private ProjectInfo ProjectInfoToSpeckle(DB.ProjectInfo revitInfo)
     {
       var speckleInfo = new ProjectInfo

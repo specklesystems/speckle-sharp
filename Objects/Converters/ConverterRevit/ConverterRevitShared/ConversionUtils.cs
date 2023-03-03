@@ -111,7 +111,7 @@ namespace Objects.Converter.Revit
           continue;
         }
 
-        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
         if (CanConvertToSpeckle(element))
         {
           var obj = ConvertToSpeckle(element);
@@ -654,7 +654,7 @@ namespace Objects.Converter.Revit
 
       if (types.Count == 0)
       {
-        var name = string.IsNullOrEmpty(element["category"].ToString()) ? typeof(T).Name : element["category"].ToString();
+        var name = string.IsNullOrEmpty(element["category"] as string) ? typeof(T).Name : element["category"].ToString();
         appObj.Log.Add($"Could not find any family to use for category {name}.");
         value = default(T);
         return false;
