@@ -23,6 +23,9 @@ namespace Speckle.Core.Transports
 
     public int SavedObjectCount { get; set; } = 0;
 
+    public Dictionary<string, object> TransportContext =>
+      new Dictionary<string, object> { { "name", TransportName }, { "type", this.GetType().Name } };
+
     public MemoryTransport()
     {
       Log.Debug("Creating a new Memory Transport");

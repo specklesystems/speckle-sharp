@@ -16,6 +16,13 @@ namespace DiskTransport
   public class DiskTransport : ICloneable, ITransport
   {
     public string TransportName { get; set; } = "Disk";
+    public Dictionary<string, object> TransportContext =>
+      new Dictionary<string, object>
+      {
+        { "name", TransportName },
+        { "type", this.GetType().Name },
+        { "basePath", RootPath },
+      };
 
     public CancellationToken CancellationToken { get; set; }
 
