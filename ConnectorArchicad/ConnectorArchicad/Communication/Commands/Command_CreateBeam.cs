@@ -38,7 +38,7 @@ namespace Archicad.Communication.Commands
       foreach (var data in datas)
       {
         data.displayValue = null;
-        data.baseLine = null;
+        data.baseCurve = null;
       }
 
       Datas = datas;

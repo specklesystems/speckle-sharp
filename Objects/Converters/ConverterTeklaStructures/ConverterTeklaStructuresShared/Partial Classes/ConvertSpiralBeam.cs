@@ -33,7 +33,7 @@ namespace Objects.Converter.TeklaStructures
         pointList.Add(point.Z);
       }
 
-      speckleBeam.baseLine = new Polyline(pointList,units);
+      speckleBeam.baseCurve = new Polyline(pointList,units);
 
       speckleBeam.profile = GetBeamProfile(SpiralBeam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(SpiralBeam.Material.MaterialString);

@@ -97,10 +97,10 @@ namespace Objects.Converter.Revit
         var topOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
         var topLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
 
-        var baseLine = new Line(new[] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
-        baseLine.length = Math.Abs(baseLine.start.z - baseLine.end.z);
+        var baseCurve = new Line(new[] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
+        baseCurve.length = Math.Abs(baseCurve.start.z - baseCurve.end.z);
 
-        return baseLine;
+        return baseCurve;
       }
       catch { }
       //everything else failed, just return the base point without moving it
@@ -116,11 +116,11 @@ namespace Objects.Converter.Revit
       if (elem["basePoint"] as Point != null)
         return PointToNative(elem["basePoint"] as Point);
 
-      if (elem["baseLine"] == null)
+      if (elem["baseCurve"] == null)
         throw new Speckle.Core.Logging.SpeckleException("Location is null.");
 
       //must be a curve!?
-      var converted = GeometryToNative(elem["baseLine"] as Base);
+      var converted = GeometryToNative(elem["baseCurve"] as Base);
       var curve = (converted as CurveArray).get_Item(0);
       //reapply revit's offset
       var offset = elem["baseOffset"] as double?;
@@ -130,8 +130,8 @@ namespace Objects.Converter.Revit
         //revit vertical columns can only be POINT based
         if (!(bool)elem["isSlanted"] || IsVertical(curve))
         {
-          var baseLine = elem["baseLine"] as Line;
-          var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double)offset, ModelUnits);
+          var baseCurve = elem["baseCurve"] as Line;
+          var point = new Point(baseCurve.start.x, baseCurve.start.y, baseCurve.start.z - (double)offset, ModelUnits);
 
           return PointToNative(point);
         }
@@ -139,7 +139,7 @@ namespace Objects.Converter.Revit
       //undo offset transform
       else if (elem is Wall w)
       {
-        var revitOffset = ScaleToNative((double)offset, ((Base)w.baseLine)["units"] as string);
+        var revitOffset = ScaleToNative((double)offset, ((Base)w.baseCurve)["units"] as string);
         XYZ vector = new XYZ(0, 0, -revitOffset);
         Transform tf = Transform.CreateTranslation(vector);
         curve = curve.CreateTransformed(tf);

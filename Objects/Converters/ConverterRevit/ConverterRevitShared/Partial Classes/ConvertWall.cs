@@ -27,9 +27,9 @@ namespace Objects.Converter.Revit
       if (IsIgnore(revitWall, appObj, out appObj))
         return appObj;
 
-      if (speckleWall.baseLine == null)
+      if (speckleWall.baseCurve == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Baseline was null");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "BaseCurve was null");
         return appObj;
       }
 
@@ -42,7 +42,7 @@ namespace Objects.Converter.Revit
       Level level = null;
       var levelState = ApplicationObject.State.Unknown;
       var structural = false;
-      var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
+      var baseCurve = CurveToNative(speckleWall.baseCurve).get_Item(0);
 
       List<string> joinSettings = new List<string>();
       
@@ -166,7 +166,7 @@ namespace Objects.Converter.Revit
       RevitWall speckleWall = new RevitWall();
       speckleWall.family = revitWall.WallType.FamilyName.ToString();
       speckleWall.type = revitWall.WallType.Name;
-      speckleWall.baseLine = (ICurve)baseGeometry;
+      speckleWall.baseCurve = (ICurve)baseGeometry;
       speckleWall.level = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_BASE_CONSTRAINT);
       speckleWall.topLevel = ConvertAndCacheLevel(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE);
       speckleWall.height = GetParamValue<double>(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM);

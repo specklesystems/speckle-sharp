@@ -115,7 +115,7 @@ namespace Objects.Converter.Revit
           RevitBeam revitBeam = new RevitBeam();
           //This only works for CSIC sections now for sure. Need to test on other sections
           revitBeam.type = speckleStick.property.name.Replace('X', 'x');
-          revitBeam.baseLine = speckleStick.baseLine;
+          revitBeam.baseCurve = speckleStick.baseLine;
 #if REVIT2020 || REVIT2021 || REVIT2022
           revitBeam.applicationId = speckleStick.applicationId;
 #endif
@@ -137,7 +137,7 @@ namespace Objects.Converter.Revit
         case ElementType1D.Column:
           RevitColumn revitColumn = new RevitColumn();
           revitColumn.type = speckleStick.property.name.Replace('X', 'x');
-          revitColumn.baseLine = speckleStick.baseLine;
+          revitColumn.baseCurve = speckleStick.baseLine;
           revitColumn.units = speckleStick.units;
 #if REVIT2020 || REVIT2021 || REVIT2022
           revitColumn.applicationId = speckleStick.applicationId;

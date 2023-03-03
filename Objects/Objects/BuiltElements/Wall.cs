@@ -15,7 +15,7 @@ namespace Objects.BuiltElements
 
     [DetachProperty]
     public List<Base> elements { get; set; }
-    public ICurve baseLine { get; set; }
+    public ICurve baseCurve { get; set; }
     
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
@@ -32,11 +32,11 @@ namespace Objects.BuiltElements
     /// <param name="elements"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="height"/> param</remarks>
     [SchemaInfo("Wall", "Creates a Speckle wall", "BIM", "Architecture")]
-    public Wall(double height, [SchemaMainParam] ICurve baseLine,
+    public Wall(double height, [SchemaMainParam] ICurve baseCurve,
       [SchemaParamInfo("Any nested elements that this wall might have")] List<Base> elements = null)
     {
       this.height = height;
-      this.baseLine = baseLine;
+      this.baseCurve = baseCurve;
       this.elements = elements;
     }
   }
@@ -76,13 +76,13 @@ namespace Objects.BuiltElements.Revit
     /// <remarks>Assign units when using this constructor due to <paramref name="baseOffset"/> and <paramref name="topOffset"/> params</remarks>
     [SchemaInfo("RevitWall by curve and levels", "Creates a Revit wall with a top and base level.", "Revit", "Architecture")]
     public RevitWall(string family, string type,
-      [SchemaMainParam] ICurve baseLine, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
+      [SchemaMainParam] ICurve baseCurve, Level level, Level topLevel, double baseOffset = 0, double topOffset = 0, bool flipped = false, bool structural = false,
       [SchemaParamInfo("Set in here any nested elements that this level might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
-      this.baseLine = baseLine;
+      this.baseCurve = baseCurve;
       this.baseOffset = baseOffset;
       this.topOffset = topOffset;
       this.flipped = flipped;
@@ -116,7 +116,7 @@ namespace Objects.BuiltElements.Revit
     {
       this.family = family;
       this.type = type;
-      this.baseLine = baseLine;
+      this.baseCurve = baseCurve;
       this.height = height;
       this.baseOffset = baseOffset;
       this.topOffset = topOffset;

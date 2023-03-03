@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
       {
         var speckleBeam = new RevitBeam
         {
-          baseLine = rb.baseLine,
+          baseCurve = rb.baseLine,
           type = rb.type,
           level = rb.level,
           family = rb.family,
@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
       else
       {
         var speckleBeam = new Beam();
-        speckleBeam.baseLine = speckleBrace.baseLine;
+        speckleBeam.baseCurve = speckleBrace.baseLine;
         speckleBeam.applicationId = speckleBrace.applicationId;
         return BeamToNative(speckleBeam, StructuralType.Brace);
       }
@@ -44,7 +44,7 @@ namespace Objects.Converter.Revit
       {
         applicationId = myBeam.applicationId,
         type = myBeam.type,
-        baseLine = myBeam.baseLine,
+        baseLine = myBeam.baseCurve,
         level = myBeam.level,
         family = myBeam.family,
         parameters = myBeam.parameters,

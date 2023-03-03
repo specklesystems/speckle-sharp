@@ -14,7 +14,7 @@ namespace Objects.BuiltElements
 {
   public class Beam : Base, IDisplayValue<List<Mesh>>
   {
-    public ICurve baseLine { get; set; }
+    public ICurve baseCurve { get; set; }
 
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
@@ -26,7 +26,7 @@ namespace Objects.BuiltElements
     [SchemaInfo("Beam", "Creates a Speckle beam", "BIM", "Structure")]
     public Beam([SchemaMainParam] ICurve baseLine)
     {
-      this.baseLine = baseLine;
+      this.baseCurve = baseLine;
     }
   }
 }
@@ -48,7 +48,7 @@ namespace Objects.BuiltElements.Revit
     {
       this.family = family;
       this.type = type;
-      this.baseLine = baseLine;
+      this.baseCurve = baseLine;
       this.parameters = parameters.ToBase();
       this.level = level;
     }
@@ -85,7 +85,7 @@ namespace Objects.BuiltElements.TeklaStructures
     [SchemaInfo("TeklaBeam", "Creates a Tekla Structures beam by curve.", "Tekla", "Structure")]
     public TeklaBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, StructuralMaterial material)
     {
-      this.baseLine = baseLine;
+      this.baseCurve = baseLine;
       this.profile = profile;
       this.material = material;
     }

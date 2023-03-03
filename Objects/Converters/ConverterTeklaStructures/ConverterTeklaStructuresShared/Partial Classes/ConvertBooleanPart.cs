@@ -43,7 +43,7 @@ namespace Objects.Converter.TeklaStructures
                 case TeklaBeamOpening beamOpening:
                     {
                         var beam = new Beam();
-                        var baseLine = beamOpening.cuttingBeam.baseLine as Line;
+                        var baseLine = beamOpening.cuttingBeam.baseCurve as Line;
                         beam.StartPoint = new Tekla.Structures.Geometry3d.Point(baseLine.start.x, baseLine.start.y, baseLine.start.z);
                         beam.EndPoint = new Tekla.Structures.Geometry3d.Point(baseLine.start.x, baseLine.start.y, baseLine.start.z);
 
