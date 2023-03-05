@@ -369,78 +369,81 @@ namespace Objects.Converter.Revit
 
       var speckleSection = new SectionProfile();
 
+      var scaleFactor = ScaleToSpeckle(1);
+      var scaleFactor2 = scaleFactor * scaleFactor;
+
       switch (revitSection)
       {
         case StructuralSectionGeneralI o: // General Double T shape
           var ISection = new ISection();
           ISection.shapeType = Structural.ShapeType.I;
-          ISection.depth = o.Height;
-          ISection.width = o.Width;
-          ISection.webThickness = o.WebThickness;
-          ISection.flangeThickness = o.FlangeThickness;
+          ISection.depth = o.Height * scaleFactor;
+          ISection.width = o.Width * scaleFactor;
+          ISection.webThickness = o.WebThickness * scaleFactor;
+          ISection.flangeThickness = o.FlangeThickness * scaleFactor;
          
           speckleSection = ISection;
           break;
         case StructuralSectionGeneralT o: // General Tee shape
           var teeSection = new Tee();
           teeSection.shapeType = Structural.ShapeType.Tee;
-          teeSection.depth = o.Height;
-          teeSection.width = o.Width;
-          teeSection.webThickness = o.WebThickness;
-          teeSection.flangeThickness = o.FlangeThickness;
+          teeSection.depth = o.Height * scaleFactor;
+          teeSection.width = o.Width * scaleFactor;
+          teeSection.webThickness = o.WebThickness * scaleFactor;
+          teeSection.flangeThickness = o.FlangeThickness * scaleFactor;
 
           speckleSection = teeSection;
           break;
         case StructuralSectionGeneralH o: // Rectangular Pipe structural sections
           var rectSection = new Rectangular();
           rectSection.shapeType = Structural.ShapeType.I;
-          rectSection.depth = o.Height;
-          rectSection.width = o.Width;
-          rectSection.webThickness = o.WallNominalThickness;
-          rectSection.flangeThickness = o.WallNominalThickness;
+          rectSection.depth = o.Height * scaleFactor;
+          rectSection.width = o.Width * scaleFactor;
+          rectSection.webThickness = o.WallNominalThickness * scaleFactor;
+          rectSection.flangeThickness = o.WallNominalThickness * scaleFactor;
 
           speckleSection = rectSection;
           break;
         case StructuralSectionGeneralR o: // Pipe structural sections
           var circSection = new Circular();
           circSection.shapeType = Structural.ShapeType.Circular;
-          circSection.radius = o.Diameter / 2;
-          circSection.wallThickness = o.WallNominalThickness;
+          circSection.radius = o.Diameter / 2 * scaleFactor;
+          circSection.wallThickness = o.WallNominalThickness * scaleFactor;
 
           speckleSection = circSection;
           break;
         case StructuralSectionGeneralF o: // Flat Bar structural sections
           var flatRectSection = new Rectangular();
           flatRectSection.shapeType = Structural.ShapeType.I;
-          flatRectSection.depth = o.Height;
-          flatRectSection.width = o.Width;
+          flatRectSection.depth = o.Height * scaleFactor;
+          flatRectSection.width = o.Width * scaleFactor;
 
           speckleSection = flatRectSection;
           break;
         case StructuralSectionGeneralS o: // Round Bar structural sections
           var flatCircSection = new Circular();
           flatCircSection.shapeType = Structural.ShapeType.Circular;
-          flatCircSection.radius = o.Diameter / 2;
+          flatCircSection.radius = o.Diameter / 2 * scaleFactor;
 
           speckleSection = flatCircSection;
           break;
         case StructuralSectionGeneralW o: // Angle structural sections
           var angleSection = new Angle();
           angleSection.shapeType = Structural.ShapeType.Angle;
-          angleSection.depth = o.Height;
-          angleSection.width = o.Width;
-          angleSection.webThickness = o.WebThickness;
-          angleSection.flangeThickness = o.FlangeThickness;
+          angleSection.depth = o.Height * scaleFactor;
+          angleSection.width = o.Width * scaleFactor;
+          angleSection.webThickness = o.WebThickness * scaleFactor;
+          angleSection.flangeThickness = o.FlangeThickness * scaleFactor;
 
           speckleSection = angleSection;
           break;
         case StructuralSectionGeneralU o: // Channel  structural sections
           var channelSection = new Channel();
           channelSection.shapeType = Structural.ShapeType.Channel;
-          channelSection.depth = o.Height;
-          channelSection.width = o.Width;
-          channelSection.webThickness = o.WebThickness;
-          channelSection.flangeThickness = o.FlangeThickness;
+          channelSection.depth = o.Height * scaleFactor;
+          channelSection.width = o.Width * scaleFactor;
+          channelSection.webThickness = o.WebThickness * scaleFactor;
+          channelSection.flangeThickness = o.FlangeThickness * scaleFactor;
 
           speckleSection = channelSection;
           break;
@@ -448,11 +451,11 @@ namespace Objects.Converter.Revit
 
       speckleSection.units = ModelUnits;
       speckleSection.name = familySymbol.Name;
-      speckleSection.area = revitSection.SectionArea;
-      speckleSection.weight = revitSection.NominalWeight;
-      speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis;
-      speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis;
-      speckleSection.J = revitSection.TorsionalMomentOfInertia;
+      speckleSection.area = revitSection.SectionArea * scaleFactor2;
+      speckleSection.weight = revitSection.NominalWeight * scaleFactor;
+      speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis * scaleFactor2;
+      speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis * scaleFactor2;
+      speckleSection.J = revitSection.TorsionalMomentOfInertia * scaleFactor2 * scaleFactor2;
 
       return speckleSection;
     }
