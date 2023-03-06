@@ -67,10 +67,11 @@ namespace Speckle.Core.Transports
       if (CancellationToken.IsCancellationRequested)
         return null; // Check for cancellation
 
-      if (Objects.ContainsKey(hash))
-        return Objects[hash];
-      else
-        return null;
+      var stopwatch = Stopwatch.StartNew();
+      var ret = Objects.ContainsKey(hash) ? Objects[hash] : null;
+      stopwatch.Stop();
+      Elapsed += stopwatch.Elapsed;
+      return ret;
     }
 
     public Task<string> CopyObjectAndChildren(

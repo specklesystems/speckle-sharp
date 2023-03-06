@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ namespace Speckle.Core.Transports
     public string BlobStorageFolder =>
       SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
 
-    public TimeSpan Elapsed => throw new NotImplementedException();
+    public TimeSpan Elapsed { get; private set; }
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -214,6 +215,7 @@ namespace Speckle.Core.Transports
         return;
       }
 
+      var stopwatch = Stopwatch.StartNew();
       IS_WRITING = true;
       var i = 0;
       ValueTuple<string, string, int> result;
@@ -244,6 +246,8 @@ namespace Speckle.Core.Transports
           {
             Queue = new ConcurrentQueue<(string, string, int)>();
             IS_WRITING = false;
+            stopwatch.Stop();
+            Elapsed += stopwatch.Elapsed;
             return;
           }
         }
@@ -256,12 +260,16 @@ namespace Speckle.Core.Transports
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
         IS_WRITING = false;
+        stopwatch.Stop();
+        Elapsed += stopwatch.Elapsed;
         return;
       }
 
       if (Queue.Count > 0)
         ConsumeQueue();
 
+      stopwatch.Stop();
+      Elapsed += stopwatch.Elapsed;
       IS_WRITING = false;
     }
 
@@ -330,6 +338,7 @@ namespace Speckle.Core.Transports
         return null;
       lock (ConnectionLock)
       {
+        var stopwatch = Stopwatch.StartNew();
         using (
           var command = new SqliteCommand(
             "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ",
@@ -348,6 +357,8 @@ namespace Speckle.Core.Transports
             }
           }
         }
+        stopwatch.Stop();
+        Elapsed += stopwatch.Elapsed;
       }
       return null; // pass on the duty of null checks to consumers
     }

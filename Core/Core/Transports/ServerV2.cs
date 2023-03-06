@@ -131,6 +131,7 @@ namespace Speckle.Core.Transports
         )
       )
       {
+        var stopwatch = Stopwatch.StartNew();
         api.CancellationToken = CancellationToken;
         try
         {
@@ -164,15 +165,20 @@ namespace Speckle.Core.Transports
             newChildrenIds,
             (string id, string json) =>
             {
+              stopwatch.Stop();
               targetTransport.SaveObject(id, json);
               OnProgressAction?.Invoke(TransportName, 1);
+              stopwatch.Start();
             }
           );
 
+          // pausing until writing to the target transport
+          stopwatch.Stop();
           targetTransport.SaveObject(id, rootObjectJson);
 
           await targetTransport.WriteComplete();
           targetTransport.EndWrite();
+          stopwatch.Start();
 
           //
           // Blobs download
@@ -199,6 +205,8 @@ namespace Speckle.Core.Transports
             }
           );
 
+          stopwatch.Stop();
+          Elapsed += stopwatch.Elapsed;
           return rootObjectJson;
         }
         catch (Exception e)
@@ -215,7 +223,11 @@ namespace Speckle.Core.Transports
       {
         return null;
       }
-      return Api.DownloadSingleObject(StreamId, id).Result;
+      var stopwatch = Stopwatch.StartNew();
+      var result = Api.DownloadSingleObject(StreamId, id).Result;
+      stopwatch.Stop();
+      Elapsed += stopwatch.Elapsed;
+      return result;
     }
 
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
