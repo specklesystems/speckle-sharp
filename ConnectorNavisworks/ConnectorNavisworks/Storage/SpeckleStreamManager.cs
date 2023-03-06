@@ -34,6 +34,9 @@ namespace Speckle.ConnectorNavisworks.Storage
     {
       var streams = new List<StreamState>();
       if (doc == null) return streams;
+      if (doc.Database == null) return streams;
+      if (doc.ActiveSheet == null) return streams;
+
 
       var database = doc.Database;
       var dataAdapter =
@@ -117,6 +120,7 @@ namespace Speckle.ConnectorNavisworks.Storage
       var documentDatabase = doc?.Database;
 
       if (documentDatabase == null) return;
+      if (doc?.ActiveSheet == null) return;
 
       string streamStatesStore = JsonConvert.SerializeObject(streamStates);
 
