@@ -28,10 +28,10 @@ namespace Objects.Converter.TeklaStructures
         switch (teklaBeam.TeklaBeamType)
         {
           case TeklaBeamType.Beam:
-            if (!(beam.baseCurve is Line))
+            if (!(beam.baseLine is Line))
             {
             }
-            Line line = (Line)beam.baseCurve;
+            Line line = (Line)beam.baseLine;
             TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
             TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
             var myBeam = new Beam(startPoint, endPoint);
@@ -45,7 +45,7 @@ namespace Objects.Converter.TeklaStructures
             //Model.CommitChanges();
             break;
           case TeklaBeamType.PolyBeam:
-            Polyline polyline = (Polyline)beam.baseCurve;
+            Polyline polyline = (Polyline)beam.baseLine;
             var polyBeam = new PolyBeam();
             ToNativeContourPlate(polyline, polyBeam.Contour);
             SetPartProperties(polyBeam, teklaBeam);
@@ -58,7 +58,7 @@ namespace Objects.Converter.TeklaStructures
             //Model.CommitChanges();
             break;
           case TeklaBeamType.SpiralBeam:
-            Polyline polyline2 = (Polyline)beam.baseCurve;
+            Polyline polyline2 = (Polyline)beam.baseLine;
             var teklaSpiralBeam = (Objects.BuiltElements.TeklaStructures.SpiralBeam)teklaBeam;
             var startPt = new TSG.Point(teklaSpiralBeam.startPoint.x, teklaSpiralBeam.startPoint.y, teklaSpiralBeam.startPoint.z);
             var rotatAxisPt1 = new TSG.Point(teklaSpiralBeam.rotationAxisPt1.x, teklaSpiralBeam.rotationAxisPt1.y, teklaSpiralBeam.rotationAxisPt1.z);
@@ -81,10 +81,10 @@ namespace Objects.Converter.TeklaStructures
       }
       else
       {
-        if (!(beam.baseCurve is Line))
+        if (!(beam.baseLine is Line))
         {
         }
-        Line line = (Line)beam.baseCurve;
+        Line line = (Line)beam.baseLine;
         TSG.Point startPoint = new TSG.Point(line.start.x, line.start.y, line.start.z);
         TSG.Point endPoint = new TSG.Point(line.end.x, line.end.y, line.end.z);
         var myBeam = new Beam(startPoint, endPoint);
@@ -192,8 +192,8 @@ namespace Objects.Converter.TeklaStructures
 
       Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
       Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
-      speckleBeam.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
-      speckleBeam.baseCurve.length = Math.Sqrt(Math.Pow((startPoint.X - endPoint.X),2)+ Math.Pow((startPoint.Y - endPoint.Y), 2)+ Math.Pow((startPoint.Z - endPoint.Z), 2));
+      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
+      speckleBeam.baseLine.length = Math.Sqrt(Math.Pow((startPoint.X - endPoint.X),2)+ Math.Pow((startPoint.Y - endPoint.Y), 2)+ Math.Pow((startPoint.Z - endPoint.Z), 2));
       speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(beam.Material.MaterialString);
       var beamCS = beam.GetCoordinateSystem();
@@ -243,7 +243,7 @@ namespace Objects.Converter.TeklaStructures
 
       Point speckleStartPoint = new Point(startPoint.X, startPoint.Y, startPoint.Z, units);
       Point speckleEndPoint = new Point(endPoint.X, endPoint.Y, endPoint.Z, units);
-      speckleBeam.baseCurve = new Line(speckleStartPoint, speckleEndPoint, units);
+      speckleBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
 
       speckleBeam.profile = GetBeamProfile(beam.Profile.ProfileString);
       speckleBeam.material = GetMaterial(beam.Material.MaterialString);

@@ -343,7 +343,7 @@ namespace Objects.Converter.RhinoGh
             break;
 
           case Beam o:
-            o.baseCurve = CurveToSpeckle((RH.Curve)@object.Geometry);
+            o.baseLine = CurveToSpeckle((RH.Curve)@object.Geometry);
             break;
 
           case Brace o:

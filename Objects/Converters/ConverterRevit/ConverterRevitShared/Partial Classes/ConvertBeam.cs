@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
 
-      if (speckleBeam.baseCurve == null)
+      if (speckleBeam.baseLine == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Only line based Beams are currently supported.");
         return appObj;
@@ -36,7 +36,7 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var baseCurve = CurveToNative(speckleBeam.baseCurve).get_Item(0);
+      var baseLine = CurveToNative(speckleBeam.baseLine).get_Item(0);
       DB.Level level = null;
       DB.FamilyInstance revitBeam = null;
 
@@ -46,7 +46,7 @@ namespace Objects.Converter.Revit
         if (level != null)
           level = GetLevelByName(speckleRevitBeam.level.name);
 
-      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseCurve), out ApplicationObject.State levelState);
+      level ??= ConvertLevelToRevit(speckleRevitBeam?.level ?? LevelFromCurve(baseLine), out ApplicationObject.State levelState);
       var isUpdate = false;
 
       if (docObj != null)
@@ -62,7 +62,7 @@ namespace Objects.Converter.Revit
           else
           {
             revitBeam = (DB.FamilyInstance)docObj;
-            (revitBeam.Location as LocationCurve).Curve = baseCurve;
+            (revitBeam.Location as LocationCurve).Curve = baseLine;
 
             // check for a type change
             if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
@@ -79,7 +79,7 @@ namespace Objects.Converter.Revit
       //create family instance
       if (revitBeam == null)
       {
-        revitBeam = Doc.Create.NewFamilyInstance(baseCurve, familySymbol, level, structuralType);
+        revitBeam = Doc.Create.NewFamilyInstance(baseLine, familySymbol, level, structuralType);
         // check for disallow join for beams in user settings
         // currently, this setting only applies to beams being created
 
@@ -111,10 +111,10 @@ namespace Objects.Converter.Revit
     {
       notes = new List<string>();
       var baseGeometry = LocationToSpeckle(revitBeam);
-      var baseCurve = baseGeometry as ICurve;
-      if (baseCurve == null)
+      var baseLine = baseGeometry as ICurve;
+      if (baseLine == null)
       {
-        notes.Add($"Beam has no valid baseCurve, converting as generic element");
+        notes.Add($"Beam has no valid baseline, converting as generic element");
         return RevitElementToSpeckle(revitBeam, out notes);
       }
       var symbol = revitBeam.Document.GetElement(revitBeam.GetTypeId()) as FamilySymbol;
@@ -122,7 +122,7 @@ namespace Objects.Converter.Revit
       var speckleBeam = new RevitBeam();
       speckleBeam.family = symbol.FamilyName;
       speckleBeam.type = revitBeam.Document.GetElement(revitBeam.GetTypeId()).Name;
-      speckleBeam.baseCurve = baseCurve;
+      speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
       // structural connection modifiers alter family instance geometry, but the modifiers are view specific

@@ -28,7 +28,7 @@ namespace Archicad.Converters
 
             // upgrade (if not Archicad beam): Objects.BuiltElements.Beam --> Objects.BuiltElements.Archicad.ArchicadBeam
             {
-              var baseLine = (Line)beam.baseCurve;
+              var baseLine = (Line)beam.baseLine;
               var newBeam = new Objects.BuiltElements.Archicad.ArchicadBeam(
                 Utils.ScaleToNative(baseLine.start),
                 Utils.ScaleToNative(baseLine.end)
@@ -67,7 +67,7 @@ namespace Archicad.Converters
           beam.displayValue =
             Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == beam.applicationId)
               .model);
-          beam.baseCurve = new Line(beam.begC, beam.endC);
+          beam.baseLine = new Line(beam.begC, beam.endC);
           beams.Add(beam);
         }
       }

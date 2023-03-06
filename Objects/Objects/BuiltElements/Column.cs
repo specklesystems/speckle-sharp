@@ -11,7 +11,7 @@ namespace Objects.BuiltElements
 {
   public class Column : Base, IDisplayValue<List<Mesh>>
   {
-    public ICurve baseCurve { get; set; }
+    public ICurve baseLine { get; set; }
 
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
@@ -23,7 +23,7 @@ namespace Objects.BuiltElements
     [SchemaInfo("Column", "Creates a Speckle column", "BIM", "Structure")]
     public Column([SchemaMainParam] ICurve baseLine)
     {
-      this.baseCurve = baseCurve;
+      this.baseLine = baseLine;
     }
   }
 }
@@ -53,7 +53,7 @@ namespace Objects.BuiltElements.Revit
     /// </summary>
     /// <param name="family"></param>
     /// <param name="type"></param>
-    /// <param name="baseCurve"></param>
+    /// <param name="baseLine"></param>
     /// <param name="level"></param>
     /// <param name="topLevel"></param>
     /// <param name="baseOffset"></param>
@@ -64,14 +64,14 @@ namespace Objects.BuiltElements.Revit
     /// <remarks>Assign units when using this constructor due to <paramref name="baseOffset"/> and <paramref name="topOffset"/> params</remarks>
     [SchemaInfo("RevitColumn Vertical", "Creates a vertical Revit Column by point and levels.", "Revit", "Architecture")]
     public RevitColumn(string family, string type,
-      [SchemaParamInfo("Only the lower point of this line will be used as base point.")][SchemaMainParam] ICurve baseCurve,
+      [SchemaParamInfo("Only the lower point of this line will be used as base point.")][SchemaMainParam] ICurve baseLine,
       Level level, Level topLevel,
       double baseOffset = 0, double topOffset = 0, bool structural = false,
       [SchemaParamInfo("Rotation angle in radians")] double rotation = 0, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
-      this.baseCurve = baseCurve;
+      this.baseLine = baseLine;
       this.topLevel = topLevel;
       this.baseOffset = baseOffset;
       this.topOffset = topOffset;
@@ -83,11 +83,11 @@ namespace Objects.BuiltElements.Revit
 
     [SchemaDeprecated]
     [SchemaInfo("RevitColumn Slanted (old)", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
-    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseCurve, Level level, bool structural = false, List<Parameter> parameters = null)
+    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
-      this.baseCurve = baseCurve;
+      this.baseLine = baseLine;
       this.level = level;
       //this.structural = structural;
       this.isSlanted = true;
@@ -95,11 +95,11 @@ namespace Objects.BuiltElements.Revit
     }
 
     [SchemaInfo("RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
-    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseCurve, Level level, Level topLevel = null, bool structural = false, List<Parameter> parameters = null)
+    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, Level topLevel = null, bool structural = false, List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;
-      this.baseCurve = baseCurve;
+      this.baseLine = baseLine;
       this.level = level;
       this.topLevel = topLevel;
       //this.structural = structural;

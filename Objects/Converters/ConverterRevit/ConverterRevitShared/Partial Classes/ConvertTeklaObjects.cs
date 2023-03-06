@@ -23,7 +23,7 @@ namespace Objects.Converter.Revit
       RevitBeam revitBeam = new RevitBeam();
       //This only works for CSIC sections now for sure. Need to test on other sections
       revitBeam.type = teklaBeam.profile.name.Replace('X', 'x');
-      revitBeam.baseCurve = teklaBeam.baseCurve;
+      revitBeam.baseLine = teklaBeam.baseLine;
       //Beam beam = new Beam(teklaBeam.baseLine);
       appObj = BeamToNative(revitBeam);
       //DB.FamilyInstance nativeRevitBeam = (DB.FamilyInstance)placeholders[0].NativeObject;
