@@ -13,7 +13,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
   {
     // Much of the interaction in Navisworks is through the ActiveDocument API
     public static Document Doc;
-    public Control Control;
+    public static Control Control;
     public ISpeckleKit DefaultKit;
     public ISpeckleConverter NavisworksConverter;
 

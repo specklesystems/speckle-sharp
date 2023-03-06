@@ -42,8 +42,8 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out ControlPoint ctrlPt)
     {
-      var coords = transform.ApplyToPoint(new List<double> {x, y, z});
-      ctrlPt = new ControlPoint(coords[0], coords[1], coords[2], weight, units, applicationId);
+      this.TransformTo(transform, out Point transformedPoint);
+      ctrlPt = new ControlPoint(transformedPoint.x, transformedPoint.y, transformedPoint.z, weight, units, applicationId);
       return true;
     }
 

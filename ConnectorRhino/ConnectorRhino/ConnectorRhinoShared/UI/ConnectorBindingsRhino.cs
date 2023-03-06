@@ -241,7 +241,7 @@ namespace SpeckleRhino
     #region receiving 
     public override bool CanPreviewReceive => true;
 
-    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View");
+    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Instance") || @object.speckle_type.Contains("View");
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
