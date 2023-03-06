@@ -167,9 +167,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return objectPseudoIds.ToList();
     }
 
-    private static IEnumerable<string> GetObjectsFromClashResults(ISelectionFilter filter)
+    // ReSharper disable once UnusedParameter.Local
+    private static IEnumerable<string> GetObjectsFromClashResults(ISelectionFilter unused)
     {
-      // Clash Results filter stores Guids of the Clash Result groups per Test. This can be converted to ModelItem pseudoIds
+      // Clash Results filter stores Guid of the Clash Result groups per Test. This can be converted to ModelItem pseudoIds
       throw new NotImplementedException();
     }
   }

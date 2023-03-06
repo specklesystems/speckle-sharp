@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
@@ -11,6 +12,14 @@ namespace Speckle.ConnectorNavisworks.Bindings
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var filters = new List<ISelectionFilter>();
+
+      var allFilter = new AllSelectionFilter
+      {
+        Description =
+          "Sending Everything isn't advisable for larger models. Why not break your commits into Model Branches?",
+        Name = "Everything",
+        Slug = "all"
+      };
 
       var manualFilter = new ManualSelectionFilter();
 
@@ -68,6 +77,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         //  };
         //  filters.Add(clashReportFilter);
       }
+
+      filters.Add(allFilter);
 
       return filters;
     }
