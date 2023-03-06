@@ -3,6 +3,7 @@
 #include "ObjectState.hpp"
 #include "Utility.hpp"
 #include "FieldNames.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands {
@@ -57,7 +58,7 @@ namespace AddOnCommands {
   GS::ObjectState GetElementIds::Execute(const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
   {
     GS::UniString elementFilter;
-    parameters.Get(ElementFilterFieldName, elementFilter);
+    parameters.Get(ElementFilter, elementFilter);
 	
 	GS::ObjectState retVal;
 
@@ -67,7 +68,7 @@ namespace AddOnCommands {
 	else if (elementFilter == "All")
 		elementGuids = GetAllElementGuids();
 
-	const auto& listAdder = retVal.AddList<GS::UniString>(ApplicationIdsFieldName);
+	const auto& listAdder = retVal.AddList<GS::UniString>(ApplicationIds);
     for (const API_Guid& guid : elementGuids) {
 	  listAdder(APIGuidToString(guid));
     }

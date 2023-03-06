@@ -4,6 +4,7 @@
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
+using namespace FieldNames;
 
 namespace Utility {
 
@@ -250,7 +251,7 @@ GSErrCode GetAllSchemeData (API_AssemblySegmentSchemeData* schemeData, GS::Objec
 		for (GSSize idx = 0; idx < schemesCount; ++idx) {
 			GS::ObjectState currentScheme;
 			Utility::GetOneSchemeData (schemeData[idx], currentScheme);
-			out.Add (GS::String::SPrintf (AssemblySegmentSchemeData::SchemeName, idx + 1), currentScheme);
+			out.Add (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
 		}
 
 	return NoError;
@@ -275,7 +276,7 @@ GSErrCode GetAllCutData (API_AssemblySegmentCutData* cutData, GS::ObjectState& o
 		for (GSSize idx = 0; idx < cutsCount; ++idx) {
 			GS::ObjectState currentCut;
 			Utility::GetOneCutData (cutData[idx], currentCut);
-			out.Add (GS::String::SPrintf (AssemblySegmentCutData::CutName, idx + 1), currentCut);
+			out.Add (GS::String::SPrintf (AssemblySegment::CutName, idx + 1), currentCut);
 		}
 
 	return NoError;
@@ -449,12 +450,12 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 	}
 
 	GS::ObjectState allCuts;
-	if (os.Contains (PartialObjects::CutData))
-		os.Get (PartialObjects::CutData, allCuts);
+	if (os.Contains (AssemblySegment::CutData))
+		os.Get (AssemblySegment::CutData, allCuts);
 
 	for (GS::UInt32 idx = 0; idx < numberOfCuts; ++idx) {
 		GS::ObjectState currentCut;
-		allCuts.Get (GS::String::SPrintf (AssemblySegmentCutData::CutName, idx + 1), currentCut);
+		allCuts.Get (GS::String::SPrintf (AssemblySegment::CutName, idx + 1), currentCut);
 
 		memo->assemblySegmentCuts[idx] = defaultSegmentCut;
 		Utility::CreateOneCutData (currentCut, memo->assemblySegmentCuts[idx], mask);
@@ -489,13 +490,13 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os, GS::UInt32& numberOfCu
 	}
 
 	GS::ObjectState allSchemes;
-	if (os.Contains (PartialObjects::SchemeData))
-		os.Get (PartialObjects::SchemeData, allSchemes);
+	if (os.Contains (AssemblySegment::SchemeData))
+		os.Get (AssemblySegment::SchemeData, allSchemes);
 
 	for (UInt32 idx = 0; idx < numberOfCuts; ++idx) {
 		if (!allSchemes.IsEmpty ()) {
 			GS::ObjectState currentScheme;
-			allSchemes.Get (GS::String::SPrintf (AssemblySegmentSchemeData::SchemeName, idx + 1), currentScheme);
+			allSchemes.Get (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
 
 			memo->assemblySegmentSchemes[idx] = defaultSegmentScheme;
 			Utility::CreateOneSchemeData (currentScheme, memo->assemblySegmentSchemes[idx], mask);
@@ -505,31 +506,58 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os, GS::UInt32& numberOfCu
 }
 
 
-GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::ObjectState& os)
+GSErrCode GetVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::UniString& visibilityString)
 {
 	if (isAutoOnStoryVisibility) {
-		os.Add (ShowOnStoriesFieldName, AllRelevantStoriesValueName);
+		visibilityString = AllRelevantStoriesValueName;
 	} else if (visibility.showOnHome && visibility.showRelAbove == 1 && visibility.showRelBelow == 1) {
-		os.Add (ShowOnStoriesFieldName, HomeAndOneStoryUpAndDownValueName);
+		visibilityString = HomeAndOneStoryUpAndDownValueName;
 	} else if (visibility.showOnHome && visibility.showRelAbove == 1) {
-		os.Add (ShowOnStoriesFieldName, HomeAndOneStoryUpValueName);
+		visibilityString = HomeAndOneStoryUpValueName;
 	} else if (visibility.showOnHome && visibility.showRelBelow == 1) {
-		os.Add (ShowOnStoriesFieldName, HomeAndOneStoryDownValueName);
+		visibilityString = HomeAndOneStoryDownValueName;
 	} else if (visibility.showRelAbove == 1) {
-		os.Add (ShowOnStoriesFieldName, OneStoryUpValueName);
+		visibilityString = OneStoryUpValueName;
 	} else if (visibility.showRelBelow == 1) {
-		os.Add (ShowOnStoriesFieldName, OneStoryDownValueName);
+		visibilityString = OneStoryDownValueName;
 	} else if (visibility.showOnHome && visibility.showAllAbove && visibility.showAllBelow) {
-		os.Add (ShowOnStoriesFieldName, AllStoriesValueName);
-	} else if (visibility.showOnHome) {
-		os.Add (ShowOnStoriesFieldName, HomeStoryOnlyValueName);
+		visibilityString = AllStoriesValueName;
+	} else if (visibility.showOnHome && visibility.showRelAbove == 0 && visibility.showRelBelow == 0) {
+		visibilityString = HomeStoryOnlyValueName;
+	} else {
+		visibilityString = CustomStoriesValueName;
+	}
+	
+	return NoError;
+}
+
+
+GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::ObjectState& os, const char* fieldName, bool exportVisibilityValues /*= false*/)
+{
+	GS::UniString visibilityString;
+	if (NoError != GetVisibility (isAutoOnStoryVisibility, visibility, visibilityString))
+		return Error;
+
+	if (!exportVisibilityValues) {
+		os.Add (fieldName, visibilityString);
+	}
+	
+	if (visibilityString == CustomStoriesValueName || exportVisibilityValues) {
+		GS::ObjectState customVisibilityOs;
+
+		customVisibilityOs.Add (ShowOnHome, visibility.showOnHome);
+		customVisibilityOs.Add (ShowAllAbove, visibility.showAllAbove);
+		customVisibilityOs.Add (ShowAllBelow, visibility.showAllBelow);
+		customVisibilityOs.Add (ShowRelAbove, visibility.showRelAbove);
+		customVisibilityOs.Add (ShowRelBelow, visibility.showRelBelow);
+		os.Add (fieldName, customVisibilityOs);
 	}
 
 	return NoError;
 }
 
 
-GSErrCode ImportVisibility (const GS::ObjectState& os, bool& isAutoOnStoryVisibility, API_StoryVisibility& visibility)
+GSErrCode SetVisibility (const GS::UniString& visibilityString, bool& isAutoOnStoryVisibility, API_StoryVisibility& visibility)
 {
 	isAutoOnStoryVisibility = false;
 	visibility.showOnHome = true;
@@ -537,70 +565,160 @@ GSErrCode ImportVisibility (const GS::ObjectState& os, bool& isAutoOnStoryVisibi
 	visibility.showAllBelow = false;
 	visibility.showRelAbove = 0;
 	visibility.showRelBelow = 0;
-	
-	if (os.Contains (ShowOnStoriesFieldName)) {
-		GS::UniString showOnStoriesValueName;
-		os.Get (ShowOnStoriesFieldName, showOnStoriesValueName);
 
-		if (showOnStoriesValueName == AllRelevantStoriesValueName) {
-			isAutoOnStoryVisibility = true;
-			visibility.showOnHome = false;
-			visibility.showAllAbove = false;
-			visibility.showAllBelow = false;
+	if (visibilityString == AllRelevantStoriesValueName) {
+		isAutoOnStoryVisibility = true;
+		visibility.showOnHome = false;
+		visibility.showAllAbove = false;
+		visibility.showAllBelow = false;
+	} else if (visibilityString == HomeAndOneStoryUpAndDownValueName) {
+		isAutoOnStoryVisibility = false;
+		visibility.showOnHome = true;
+		visibility.showAllAbove = false;
+		visibility.showAllBelow = false;
+		visibility.showRelAbove = 1;
+		visibility.showRelBelow = 1;
+	} else if (visibilityString == HomeAndOneStoryUpValueName) {
+		isAutoOnStoryVisibility = false;
+		visibility.showOnHome = true;
+		visibility.showAllAbove = false;
+		visibility.showAllBelow = false;
+		visibility.showRelAbove = 1;
+		visibility.showRelBelow = 0;
+	} else if (visibilityString == HomeAndOneStoryDownValueName) {
+		isAutoOnStoryVisibility = false;
+		visibility.showOnHome = true;
+		visibility.showAllAbove = false;
+		visibility.showAllBelow = false;
+		visibility.showRelAbove = 0;
+		visibility.showRelBelow = 1;
+	} else if (visibilityString == OneStoryUpValueName) {
+		isAutoOnStoryVisibility = false;
+		visibility.showOnHome = false;
+		visibility.showAllAbove = false;
+		visibility.showAllBelow = false;
+		visibility.showRelAbove = 1;
+		visibility.showRelBelow = 0;
+	} else if (visibilityString == OneStoryDownValueName) {
+		isAutoOnStoryVisibility = false;
+		visibility.showOnHome = false;
+		visibility.showAllAbove = false;
+		visibility.showAllBelow = false;
+		visibility.showRelAbove = 0;
+		visibility.showRelBelow = 1;
+	} else if (visibilityString == AllStoriesValueName) {
+		isAutoOnStoryVisibility = false;
+		visibility.showOnHome = true;
+		visibility.showAllAbove = true;
+		visibility.showAllBelow = true;
+	} else if (visibilityString == HomeStoryOnlyValueName) {
+		isAutoOnStoryVisibility = false;
+		visibility.showOnHome = true;
+		visibility.showAllAbove = false;
+		visibility.showAllBelow = false;
+		visibility.showRelAbove = 0;
+		visibility.showRelBelow = 0;
+	}
+
+	return NoError;
+}
+
+
+GSErrCode ImportVisibility (const GS::ObjectState& os, const char* fieldName, bool& isAutoOnStoryVisibility, API_StoryVisibility& visibility)
+{
+	if (os.Contains (ShowOnStories)) {
+		GS::UniString visibilityString;
+		os.Get (ShowOnStories, visibilityString);
+
+		if (visibilityString != CustomStoriesValueName) {
+			Utility::SetVisibility (visibilityString, isAutoOnStoryVisibility, visibility);
+		} else {
+			GS::ObjectState customVisibilityOs;
+			os.Get (fieldName, customVisibilityOs);
+
+			customVisibilityOs.Get (ShowOnHome, visibility.showOnHome);
+			customVisibilityOs.Get (ShowAllAbove, visibility.showAllAbove);
+			customVisibilityOs.Get (ShowAllBelow, visibility.showAllBelow);
+			customVisibilityOs.Get (ShowRelAbove, visibility.showRelAbove);
+			customVisibilityOs.Get (ShowRelBelow, visibility.showRelBelow);
 		}
-		else if (showOnStoriesValueName == HomeAndOneStoryUpAndDownValueName) {
-			isAutoOnStoryVisibility = false;
-			visibility.showOnHome = true;
-			visibility.showAllAbove = false;
-			visibility.showAllBelow = false;
-			visibility.showRelAbove = 1;
-			visibility.showRelBelow = 1;
+	}
+
+	return NoError;
+}
+
+
+GSErrCode ExportCoverFillTransformation (bool coverFillOrientationComesFrom3D, API_CoverFillTransformationTypeID coverFillTransformationType, GS::ObjectState& os)
+{
+	if (coverFillOrientationComesFrom3D) {
+		os.Add (CoverFillTransformationType, ThreeDDistortionValueName);
+	} else if (coverFillTransformationType == API_CoverFillTransformationType_Global) {
+		os.Add (CoverFillTransformationType, LinkToProjectOriginValueName);
+	} else if (coverFillTransformationType == API_CoverFillTransformationType_Rotated) {
+		os.Add (CoverFillTransformationType, LinkToFillOriginValueName);
+	} else if (coverFillTransformationType == API_CoverFillTransformationType_Distorted) {
+		os.Add (CoverFillTransformationType, CustomDistortionValueName);
+	}
+
+	return NoError;
+}
+
+
+GSErrCode ImportCoverFillTransformation (const GS::ObjectState& os, bool& coverFillOrientationComesFrom3D, API_CoverFillTransformationTypeID& coverFillTransformationType)
+{
+	coverFillOrientationComesFrom3D = false;
+	coverFillTransformationType = API_CoverFillTransformationType_Global;
+
+	if (os.Contains (CoverFillTransformationType)) {
+		GS::UniString coverFillTransformationTypeValueName;
+		os.Get (CoverFillTransformationType, coverFillTransformationTypeValueName);
+
+		if (coverFillTransformationTypeValueName == ThreeDDistortionValueName) {
+			coverFillOrientationComesFrom3D = true;
+		} else if (coverFillTransformationTypeValueName == LinkToProjectOriginValueName) {
+			coverFillOrientationComesFrom3D = false;
+			coverFillTransformationType = API_CoverFillTransformationType_Global;
+		} else if (coverFillTransformationTypeValueName == LinkToFillOriginValueName) {
+			coverFillOrientationComesFrom3D = false;
+			coverFillTransformationType = API_CoverFillTransformationType_Rotated;
+		} else if (coverFillTransformationTypeValueName == CustomDistortionValueName) {
+			coverFillOrientationComesFrom3D = false;
+			coverFillTransformationType = API_CoverFillTransformationType_Distorted;
 		}
-		else if (showOnStoriesValueName == HomeAndOneStoryUpValueName) {
-			isAutoOnStoryVisibility = false;
-			visibility.showOnHome = true;
-			visibility.showAllAbove = false;
-			visibility.showAllBelow = false;
-			visibility.showRelAbove = 1;
-			visibility.showRelBelow = 0;
-		}
-		else if (showOnStoriesValueName == HomeAndOneStoryDownValueName) {
-			isAutoOnStoryVisibility = false;
-			visibility.showOnHome = true;
-			visibility.showAllAbove = false;
-			visibility.showAllBelow = false;
-			visibility.showRelAbove = 0;
-			visibility.showRelBelow = 1;
-		}
-		else if (showOnStoriesValueName == OneStoryUpValueName) {
-			isAutoOnStoryVisibility = false;
-			visibility.showOnHome = false;
-			visibility.showAllAbove = false;
-			visibility.showAllBelow = false;
-			visibility.showRelAbove = 1;
-			visibility.showRelBelow = 0;
-		}
-		else if (showOnStoriesValueName == OneStoryDownValueName) {
-			isAutoOnStoryVisibility = false;
-			visibility.showOnHome = false;
-			visibility.showAllAbove = false;
-			visibility.showAllBelow = false;
-			visibility.showRelAbove = 0;
-			visibility.showRelBelow = 1;
-		}
-		else if (showOnStoriesValueName == AllStoriesValueName) {
-			isAutoOnStoryVisibility = false;
-			visibility.showOnHome = true;
-			visibility.showAllAbove = true;
-			visibility.showAllBelow = true;
-		}
-		else if (showOnStoriesValueName == HomeStoryOnlyValueName) {
-			isAutoOnStoryVisibility = false;
-			visibility.showOnHome = true;
-			visibility.showAllAbove = false;
-			visibility.showAllBelow = false;
-			visibility.showRelAbove = 0;
-			visibility.showRelBelow = 0;
+	}
+
+	return NoError;
+}
+
+
+GSErrCode ExportHatchOrientation (API_HatchOrientationTypeID hatchOrientationType, GS::ObjectState& os)
+{
+	if (hatchOrientationType == API_HatchGlobal) {
+		os.Add (HatchOrientationType, LinkToProjectOriginValueName);
+	} else if (hatchOrientationType == API_HatchRotated) {
+		os.Add (HatchOrientationType, LinkToFillOriginValueName);
+	} else if (hatchOrientationType == API_HatchDistorted) {
+		os.Add (HatchOrientationType, CustomDistortionValueName);
+	}
+
+	return NoError;
+}
+
+
+GSErrCode ImportHatchOrientation (const GS::ObjectState& os, API_HatchOrientationTypeID& hatchOrientationType)
+{
+	hatchOrientationType = API_HatchGlobal;
+
+	if (os.Contains (HatchOrientationType)) {
+		GS::UniString hatchOrientationTypeValueName;
+		os.Get (HatchOrientationType, hatchOrientationTypeValueName);
+
+		if (hatchOrientationTypeValueName == LinkToProjectOriginValueName) {
+			hatchOrientationType = API_HatchGlobal;
+		} else if (hatchOrientationTypeValueName == LinkToFillOriginValueName) {
+			hatchOrientationType = API_HatchRotated;
+		} else if (hatchOrientationTypeValueName == CustomDistortionValueName) {
+			hatchOrientationType = API_HatchDistorted;
 		}
 	}
 
