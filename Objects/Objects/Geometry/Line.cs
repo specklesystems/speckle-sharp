@@ -105,10 +105,12 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out Line transformed)
     {
+      start.TransformTo(transform, out Point transformedStart);
+      end.TransformTo(transform, out Point transformedEnd);
       transformed = new Line
       {
-        start = transform.ApplyToPoint(start),
-        end = transform.ApplyToPoint(end),
+        start = transformedStart,
+        end = transformedEnd,
         applicationId = applicationId,
         units = units,
         domain = domain == null ? null : new Interval { start= domain.start, end= domain.end }
