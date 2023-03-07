@@ -74,23 +74,64 @@ namespace Objects.BuiltElements.Archicad
 {
   public sealed class ArchicadFloor : BuiltElements.Floor
   {
-    public ElementShape shape { get; set; }
+    public class Visibility : Base
+    {
+      public bool? showOnHome { get; set; }
+      public bool? showAllAbove { get; set; }
+      public bool? showAllBelow { get; set; }
+      public short? showRelAbove { get; set; }
+      public short? showRelBelow { get; set; }
+    }
 
+    // Geometry and positioning
     public int? floorIndex { get; set; }
-
-    public string structure { get; set; }
-
     public double? thickness { get; set; }
-
-    public string edgeAngleType { get; set; }
-
-    public double? edgeAngle { get; set; }
-
+    public ElementShape shape { get; set; }
+    public string structure { get; set; }
+    public string? compositeName { get; set; }
+    public string? buildingMaterialName { get; set; }
     public string referencePlaneLocation { get; set; }
 
-    public int? compositeIndex { get; set; }
+    // EdgeTrims
+    public string? edgeAngleType { get; set; }
+    public double? edgeAngle { get; set; }
 
-    public int? buildingMaterialIndex { get; set; }
+    // Floor Plan and Section - Floor Plan Display
+    public string showOnStories { get; set; }
+    public Visibility? visibilityCont { get; set; }
+    public Visibility? visibilityFill { get; set; }
+
+    // Floor Plan and Section - Cut Surfaces
+    public short? sectContPen { get; set; }
+    public string? sectContLtype { get; set; }
+    public short? cutFillPen { get; set; }
+    public short? cutFillBackgroundPen { get; set; }
+
+    // Floor Plan and Section - Outlines
+    public short? contourPen { get; set; }
+    public string? contourLineType { get; set; }
+    public short? hiddenContourLinePen { get; set; }
+    public string? hiddenContourLineType { get; set; }
+
+    // Floor Plan and Section - Cover Fills
+   public bool? useFloorFill { get; set; }
+    public short? floorFillPen { get; set; }
+    public short? floorFillBGPen { get; set; }
+    public string? floorFillName { get; set; }
+    public bool? use3DHatching { get; set; }
+    public string? hatchOrientation { get; set; }
+    public double? hatchOrientationOrigoX { get; set; }
+    public double? hatchOrientationOrigoY { get; set; }
+    public double? hatchOrientationXAxisX { get; set; }
+    public double? hatchOrientationXAxisY { get; set; }
+    public double? hatchOrientationYAxisX { get; set; }
+    public double? hatchOrientationYAxisY { get; set; }
+
+    // Model
+    public string? topMat { get; set; }
+    public string? sideMat { get; set; }
+    public string? botMat { get; set; }
+    public bool? materialsChained { get; set; }
 
     public ArchicadFloor() { }
   }

@@ -72,6 +72,14 @@ const GS::HashTable<API_ElemDisplayOptionsID, GS::UniString> displayOptionNames
 };
 
 
+const GS::HashTable<API_ElemProjectionModesID, GS::UniString> projectionModeNames
+{
+	{ API_Symbolic,		"Symbolic"},
+	{ API_Projected,	"Projected"},
+	{ API_Hybrid,		"Hybrid"}
+};
+
+
 const GS::HashTable<API_ElemViewDepthLimitationsID, GS::UniString> viewDepthLimitationNames
 {
 	{ API_ToFloorPlanRange,		"To Floor Plan Range"},
@@ -80,7 +88,7 @@ const GS::HashTable<API_ElemViewDepthLimitationsID, GS::UniString> viewDepthLimi
 };
 
 
-const GS::HashTable<API_ZoneRelID, GS::UniString> wallRelationToZoneNames
+const GS::HashTable<API_ZoneRelID, GS::UniString> relationToZoneNames
 {
 	{ APIZRel_Boundary,			"Zone Boundary"},
 	{ APIZRel_ReduceArea,		"Reduce Zone Area Only"},
@@ -138,6 +146,14 @@ const GS::HashTable<API_BHoleTypeID, GS::UniString> beamHoleTypeNames
 };
 
 
+const GS::HashTable<API_BeamVisibleLinesID, GS::UniString> beamVisibleLinesNames
+{
+	{APIBeamLineShowAlways, 	"Show Always" },
+	{APIBeamLineHideAlways, 	"Hide Always"},
+	{APIBeamLineByMVO,			"by MVO"}
+};
+
+
 const GS::HashTable<API_BeamShapeTypeID, GS::UniString> beamShapeTypeNames
 {
 	{ API_StraightBeam, 			"Straight" },
@@ -150,4 +166,21 @@ const GS::HashTable<API_WindowDoorDirectionTypes, GS::UniString> windowDoorDirec
 {
 	{ API_WDAssociativeToWall, 	"AssociativeToWall" },
 	{ API_WDVertical, 			"Vertical"},
+};
+
+
+const GS::HashTable<API_VeneerTypeID, GS::UniString> venTypeNames
+{
+	{ APIVeneer_Core,		"Core"},
+	{ APIVeneer_Finish,		"Finish"},
+	{ APIVeneer_Other,		"Other"}
+};
+
+
+const GS::HashTable<short, GS::UniString> coreSymbolTypeNames
+{
+	{ 1,		"Plain"},
+	{ 2,		"Slash"},
+	{ 3,		"X"},
+	{ 4,		"CrossHair"}
 };

@@ -5,12 +5,15 @@
 namespace AddOnCommands
 {
 
-static const char* ProjectNameFieldName = "name";
-static const char* ProjectLocationFieldName = "location";
-static const char* ProjectLengthUnitsFieldName = "lengthUnit";
-static const char* ProjectAreaUnitsFieldName = "areaUnit";
-static const char* ProjectVolumeUnitsFieldName = "volumeUnit";
-static const char* ProjectAngleUnitsFieldName = "angleUnit";
+namespace FieldNames
+{
+	static const char* ProjectName = "name";
+	static const char* ProjectLocation = "location";
+	static const char* ProjectLengthUnits = "lengthUnit";
+	static const char* ProjectAreaUnits = "areaUnit";
+	static const char* ProjectVolumeUnits = "volumeUnit";
+	static const char* ProjectAngleUnits = "angleUnit";
+}
 
 GS::String GetProjectInfo::GetName () const
 {
@@ -28,19 +31,19 @@ GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, 
 
 	//if (projectInfo.untitled)
 	//{
-	//  return GS::ObjectState{ProjectNameFieldName, Untitled};
+	//  return GS::ObjectState{ProjectName, Untitled};
 	//}
 
 	GS::ObjectState os;
-	os.Add (ProjectNameFieldName, *projectInfo.projectName);
-	os.Add (ProjectLocationFieldName, *projectInfo.projectPath);
+	os.Add (FieldNames::ProjectName, *projectInfo.projectName);
+	os.Add (FieldNames::ProjectLocation, *projectInfo.projectPath);
 
 	API_WorkingUnitPrefs unitPrefs;
 	ACAPI_Environment (APIEnv_GetPreferencesID, &unitPrefs, (void*) APIPrefs_WorkingUnitsID);
-	os.Add (ProjectLengthUnitsFieldName, unitPrefs.lengthUnit);
-	os.Add (ProjectAreaUnitsFieldName, unitPrefs.areaUnit);
-	os.Add (ProjectVolumeUnitsFieldName, unitPrefs.volumeUnit);
-	os.Add (ProjectAngleUnitsFieldName, unitPrefs.angleUnit);
+	os.Add (FieldNames::ProjectLengthUnits, unitPrefs.lengthUnit);
+	os.Add (FieldNames::ProjectAreaUnits, unitPrefs.areaUnit);
+	os.Add (FieldNames::ProjectVolumeUnits, unitPrefs.volumeUnit);
+	os.Add (FieldNames::ProjectAngleUnits, unitPrefs.angleUnit);
 
 	return os;
 }

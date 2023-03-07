@@ -7,6 +7,7 @@
 #include "RealNumber.h"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands {
@@ -22,8 +23,8 @@ static GS::ObjectState GetDoors (const API_Guid& guid)
 	err = ACAPI_Element_Get (&element);
 
 	if (err == NoError) {
-		currentDoor.Add (ApplicationIdFieldName, APIGuidToString (guid));
-		currentDoor.Add (ParentElementIdFieldName, APIGuidToString (element.door.owner));
+		currentDoor.Add (ApplicationId, APIGuidToString (guid));
+		currentDoor.Add (ParentElementId, APIGuidToString (element.door.owner));
 
 		AddOnCommands::GetOpeningBaseData<API_DoorType> (element.door, currentDoor);
 	}
@@ -41,13 +42,13 @@ GS::ObjectState GetDoorData::Execute (const GS::ObjectState& parameters, GS::Pro
 	GS::ObjectState result;
 
 	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIdsFieldName, ids);
+	parameters.Get (ApplicationIds, ids);
 	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
 
 	if (elementGuids.IsEmpty ())
 		return result;
 
-	const auto& listAdderDoors = result.AddList<GS::ObjectState> (DoorsFieldName);
+	const auto& listAdderDoors = result.AddList<GS::ObjectState> (Doors);
 
 	for (const API_Guid& guid : elementGuids) {
 		API_Element element{};
