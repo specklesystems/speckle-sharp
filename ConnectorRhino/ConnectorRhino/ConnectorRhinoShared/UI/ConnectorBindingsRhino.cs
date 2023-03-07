@@ -450,42 +450,77 @@ namespace SpeckleRhino
         if (progress.Report.OperationErrorsCount != 0)
           return;
 
-        // sort by depth and create all the containers as layers first
-        var collections = Preview.Select(o => o.Container).Distinct().ToList().OrderBy(path => path.Count(c => c == ':')).ToList();
+        #region layer creation
 
+        // sort by depth and create all the containers as layers first
+        var layers = new Dictionary<string, Layer>();
+        var containers = Preview.Select(o => o.Container).Distinct().ToList().OrderBy(path => path.Count(c => c == ':')).ToList();
+        foreach (var container in containers)
+        {
+          var path = state.ReceiveMode == ReceiveMode.Create ? $"{commitLayerName}{Layer.PathSeparator}{container}" : container;
+          Layer layer = null;
+
+          // try to see if there's a collection object first
+          var collection = Preview.Where(o => o.Container == container && o.Descriptor.Contains("Collection")).FirstOrDefault();
+          if (collection != null)
+          {
+            var storedCollection = StoredObjects[collection.OriginalId];
+            storedCollection["path"] = path; // needed by converter
+            var convertedCollection = converter.ConvertToNative(storedCollection) as ApplicationObject;
+            if (convertedCollection != null)
+            {
+              Preview[Preview.IndexOf(collection)] = convertedCollection;
+              layer = convertedCollection.Converted.First() as Layer;
+            }
+          }
+
+          // otherwise create the layer here (old commits before collections implementations)
+          else
+          {
+            layer = Doc.GetLayer(path, true);
+          }
+
+          if (layer == null)
+          {
+            progress.Report.OperationErrors.Add(new Exception($"Could not create layer [{path}]. Objects will be placed on default layer."));
+            continue;
+          }
+
+          layers.Add(layer.FullPath, layer);
+        }
+        #endregion
 
         foreach (var previewObj in Preview)
         {
+          if (previewObj.Status != ApplicationObject.State.Unknown) { continue; } // this has already been converted and baked
+          
           var isUpdate = false;
 
           // check receive mode & if objects need to be removed from the document after bake (or received objs need to be moved layers)
           var toRemove = new List<RhinoObject>();
-          var layer = previewObj.Container;
-          switch (state.ReceiveMode)
+          if (state.ReceiveMode == ReceiveMode.Update)
           {
-            case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-              toRemove = GetObjectsByApplicationId(previewObj.applicationId);
-              toRemove.ForEach(o => Doc.Objects.Delete(o));
+            toRemove = GetObjectsByApplicationId(previewObj.applicationId);
+            toRemove.ForEach(o => Doc.Objects.Delete(o));
 
-              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+            if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+            {
+              var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
+              if (viewId != -1)
               {
-                var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
-                if (viewId != -1)
-                {
-                  isUpdate = true;
-                  Doc.NamedViews.Delete(viewId);
-                }
+                isUpdate = true;
+                Doc.NamedViews.Delete(viewId);
               }
-              break;
-            default:
-              layer = $"{commitLayerName}{Layer.PathSeparator}{previewObj.Container}"; // use the commit as the top level layer in create mode
-              break;
+            }
           }
           if (toRemove.Count() > 0) isUpdate = true;
 
-          // bake
-
+          // find layer and bake
           previewObj.CreatedIds.Clear(); // clear created ids before bake because these may be speckle ids from the preview
+          var path = state.ReceiveMode == ReceiveMode.Create ? $"{commitLayerName}{Layer.PathSeparator}{previewObj.Container}" : previewObj.Container;
+          var layer = layers.ContainsKey(path) ?
+            layers[path] :
+            Doc.GetLayer("Default", true);
 
           if (previewObj.Convertible)
           {
@@ -595,7 +630,7 @@ namespace SpeckleRhino
     /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
     /// <param name="converter">The converter instance, used to define what objects are convertable</param>
     /// <returns>A flattened list of objects to be converted ToNative</returns>
-    private List<ApplicationObject> FlattenCommitObject_New(Base obj, ISpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
 
       void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
@@ -649,91 +684,7 @@ namespace SpeckleRhino
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
-        if (context.propName == null) return stringBuilder;
-
-        var objectLayerName = context.propName[0] == '@'
-          ? context.propName.Substring(1)
-          : context.propName;
-
-        LayerIdRecurse(context.parent, stringBuilder);
-        stringBuilder.Append(Layer.PathSeparator);
-        stringBuilder.Append(objectLayerName);
-
-        return stringBuilder;
-      }
-
-      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
-
-      var objectsToConvert = traverseFunction.Traverse(obj)
-        .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
-        .Where(appObject => appObject != null)
-        .Reverse() //just for the sake of matching the previous behaviour as close as possible
-        .ToList();
-
-      return objectsToConvert;
-    }
-
-    /// <summary>
-    /// Traverses the object graph, returning objects to be converted.
-    /// </summary>
-    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
-    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
-    /// <returns>A flattened list of objects to be converted ToNative</returns>
-    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
-    {
-
-      void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
-      {
-        if (StoredObjects.ContainsKey(@base.id))
-          appObj.Update(
-            logItem:
-            "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
-        else
-          StoredObjects.Add(@base.id, @base);
-
-        if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
-          StoredObjectParams.Add(@base.id, parameters);
-      }
-      
-      ApplicationObject CreateApplicationObject(Base current, string containerId)
-      {
-        ApplicationObject NewAppObj()
-        {
-          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
-            .LastOrDefault();
-          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
-        }
-        
-        //Handle convertable objects
-        if (converter.CanConvertToNative(current))
-        {
-          var appObj = NewAppObj();
-          appObj.Convertible = true;
-          StoreObject(current, appObj);
-          return appObj;
-        }
-
-        //Handle objects convertable using displayValues
-        var fallbackMember = current["displayValue"] ?? current["@displayValue"];
-        var parameters = current["parameters"] as Base;
-        if (fallbackMember != null)
-        {
-          var appObj = NewAppObj();
-          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember)
-            .Select(o => CreateApplicationObject(o, containerId));
-          appObj.Fallback.AddRange(fallbackObjects);
-
-          StoreObject(current, appObj, parameters);
-          return appObj;
-        }
-        
-        return null;
-      }
-      
-      string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
-      StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
-      {
-        if (context.propName == null) return stringBuilder;
+        if (context.propName == null || context.propName.ToLower() == "elements") return stringBuilder; // do not include elements prop in layer path
 
         var objectLayerName = context.propName[0] == '@'
           ? context.propName.Substring(1)
@@ -779,7 +730,7 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, string layer, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Layer layer, ApplicationObject parent = null)
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
@@ -802,16 +753,6 @@ namespace SpeckleRhino
                 appObj.Update(logItem: invalidMessage);
               continue;
             }
-            Layer bakeLayer = Doc.GetLayer(layer, true);
-            if (bakeLayer == null)
-            {
-              var layerMessage = $"Could not create layer {layer}.";
-              if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.applicationId}: {layerMessage}");
-              else
-                appObj.Update(logItem: layerMessage);
-              continue;
-            }
             var attributes = new ObjectAttributes();
 
             // handle display style
@@ -826,7 +767,7 @@ namespace SpeckleRhino
             }
 
             // assign layer
-            attributes.LayerIndex = bakeLayer.Index;
+            attributes.LayerIndex = layer.Index;
 
             // handle user info, including application id
             SetUserInfo(obj, attributes, parent);
