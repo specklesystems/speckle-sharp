@@ -138,7 +138,7 @@ namespace Objects.Converter.AutocadCivil
 
       plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
 
-      advanceSteelPlate.outline = ToSpecklePolycurve(ptsContour);
+      advanceSteelPlate.outline = PolycurveToSpeckle(ptsContour);
 
       advanceSteelPlate.area = plate.GetPaintArea();
 
@@ -240,22 +240,22 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    private Polycurve ToSpecklePolycurve(ASPoint3d[] pointsContour)
+    private Polycurve PolycurveToSpeckle(ASPoint3d[] pointsContour)
     {
       var units = ModelUnits;
       var specklePolycurve = new Polycurve(units);
 
       for (int i = 1; i < pointsContour.Length; i++)
       {
-        specklePolycurve.segments.Add(ToSpeckleLine(pointsContour[i - 1], pointsContour[i]));
+        specklePolycurve.segments.Add(LineToSpeckle(pointsContour[i - 1], pointsContour[i]));
       }
 
-      specklePolycurve.segments.Add(ToSpeckleLine(pointsContour.Last(), pointsContour.First()));
+      specklePolycurve.segments.Add(LineToSpeckle(pointsContour.Last(), pointsContour.First()));
 
       return specklePolycurve;
     }
 
-    private Line ToSpeckleLine(ASPoint3d point1, ASPoint3d point2)
+    private Line LineToSpeckle(ASPoint3d point1, ASPoint3d point2)
     {
       return new Line(PointToSpeckle(point1), PointToSpeckle(point2), ModelUnits);
     }
