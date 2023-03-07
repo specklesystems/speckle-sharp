@@ -82,16 +82,17 @@ namespace Speckle.Core.Api
       SerializerVersion serializerVersion = SerializerVersion.V2
     )
     {
-      localTransport = localTransport ?? new SQLiteTransport();
+      var hasUserProvidedLocalTransport = localTransport != null;
+      localTransport ??= new SQLiteTransport();
       using (LogContext.PushProperty("remoteTransportContext", remoteTransport?.TransportContext))
-      using (LogContext.PushProperty("localTransportContext", localTransport?.TransportContext))
+      using (LogContext.PushProperty("localTransportContext", localTransport.TransportContext))
       using (LogContext.PushProperty("objectId", objectId))
       {
         var timer = Stopwatch.StartNew();
         Log.Information(
           "Starting receive {objectId} from transports {localTransport} / {remoteTransport}",
           objectId,
-          localTransport?.TransportName,
+          localTransport.TransportName,
           remoteTransport?.TransportName
         );
 
@@ -106,7 +107,6 @@ namespace Speckle.Core.Api
         var localProgressDict = new ConcurrentDictionary<string, int>();
         var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
 
-        var hasUserProvidedLocalTransport = localTransport != null;
 
         localTransport.OnErrorAction = onErrorAction;
         localTransport.OnProgressAction = internalProgressAction;

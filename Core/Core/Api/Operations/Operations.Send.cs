@@ -72,8 +72,7 @@ namespace Speckle.Core.Api
       SerializerVersion serializerVersion = SerializerVersion.V2
     )
     {
-      if (transports == null)
-        transports = new List<ITransport>();
+      transports ??= new List<ITransport>();
 
       if (transports.Count == 0 && useDefaultCache == false)
         throw new SpeckleException(
@@ -87,7 +86,7 @@ namespace Speckle.Core.Api
 
       // make sure all logs in the operation have the proper context
       using (LogContext.PushProperty("transportContext", transportContext))
-      using (LogContext.PushProperty("correlationId", Guid.NewGuid()))
+      using (LogContext.PushProperty("correlationId", Guid.NewGuid().ToString()))
       {
         var sendTimer = Stopwatch.StartNew();
         Log.Information("Starting send operation");
