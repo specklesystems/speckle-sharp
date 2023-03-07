@@ -75,8 +75,6 @@ namespace DesktopUI2
 
     #endregion
 
-
-
     #region abstract methods
 
     /// <summary>

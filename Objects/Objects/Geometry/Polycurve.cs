@@ -89,9 +89,23 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out ITransformable polycurve)
     {
+      // transform segments
+      var success = true;
+      var transformed = new List<ICurve>();
+      foreach (var curve in segments)
+      {
+        if (curve is ITransformable c)
+        {
+          c.TransformTo(transform, out ITransformable tc);
+          transformed.Add((ICurve)tc);
+        }
+        else
+          success = false;
+      }
+
       polycurve = new Polycurve
       {
-        segments = transform.ApplyToCurves(segments, out var success),
+        segments = transformed,
         applicationId = applicationId,
         closed = closed,
         units = units

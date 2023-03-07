@@ -114,9 +114,9 @@ namespace ConnectorGrasshopper
       if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
-        if (Grasshopper.Instances.ActiveCanvas.Document == null) return;
+        if (Grasshopper.Instances.ActiveCanvas?.Document == null) return;
         var otherSchemaBuilders =
-          Grasshopper.Instances.ActiveCanvas.Document.FindObjects(new List<string>() { Name }, 10000);
+          Grasshopper.Instances.ActiveCanvas?.Document.FindObjects(new List<string>() { Name }, 10000);
         foreach (var comp in otherSchemaBuilders)
         {
           if (!(comp is CreateSchemaObject scb)) continue;
@@ -125,8 +125,12 @@ namespace ConnectorGrasshopper
           break;
         }
         (Params.Output[0] as SpeckleBaseParam).UseSchemaTag = UseSchemaTag;
+#if RHINO7
+        if(!Grasshopper.Instances.RunningHeadless)
+          (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
+#else
         (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
-
+#endif
         return;
       }
 

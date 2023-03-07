@@ -343,7 +343,7 @@ namespace DesktopUI2.ViewModels.MappingTool
                 break;
 
               case RevitPipeViewModel o:
-                var pipeFamilies = AvailableRevitTypes.Where(x => x.category == "Pipes").ToList();
+                var pipeFamilies = AvailableRevitTypes.Where(x => x is RevitMepElementType && x.category == "Pipes").Cast<RevitMepElementType>().ToList();
                 if (!pipeFamilies.Any() || !AvailableRevitLevels.Any())
                   break;
                 var pipeFamiliesViewModels = pipeFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
@@ -353,7 +353,7 @@ namespace DesktopUI2.ViewModels.MappingTool
                 break;
 
               case RevitDuctViewModel o:
-                var ductFamilies = AvailableRevitTypes.Where(x => x.category == "Ducts").ToList();
+                var ductFamilies = AvailableRevitTypes.Where(x => x is RevitMepElementType && x.category == "Ducts").Cast<RevitMepElementType>().ToList();
                 if (!ductFamilies.Any() || !AvailableRevitLevels.Any())
                   break;
                 var ductFamiliesViewModels = ductFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
@@ -363,7 +363,7 @@ namespace DesktopUI2.ViewModels.MappingTool
                 break;
 
               case RevitFamilyInstanceViewModel o:
-                var fiFamilies = AvailableRevitTypes.Where(x => x.placementType == "OneLevelBased").ToList();
+                var fiFamilies = AvailableRevitTypes.Where(x => x is RevitSymbolElementType symbol && symbol.placementType == "OneLevelBased").ToList();
                 if (!fiFamilies.Any() || !AvailableRevitLevels.Any())
                   break;
                 var fiFamiliesViewModels = fiFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();

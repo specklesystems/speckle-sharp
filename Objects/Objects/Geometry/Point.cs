@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
+
 using Objects.Other;
 
 namespace Objects.Geometry
@@ -123,14 +125,6 @@ namespace Objects.Geometry
       y = this.y;
       z = this.z;
     }
-
-    /// <inheritdoc/>
-    public bool TransformTo(Transform transform, out Point point)
-    {
-      point = transform.ApplyToPoint(this);
-      return true;
-    }
-
     
     public static Point operator +(Point point1, Point point2) => new Point(
       point1.x + point2.x,
@@ -201,7 +195,22 @@ namespace Objects.Geometry
                        Math.Pow((y - point.y), 2) +
                        Math.Pow((z - point.z), 2));
     }
-    
+
+    /// <inheritdoc/>
+    public bool TransformTo(Transform transform, out Point point)
+    {
+      var matrix = transform.matrix;
+
+      var unitFactor = this.units != null ? Units.GetConversionFactor(transform.units, this.units) : 1; // applied to translation vector
+      var divisor = matrix.M41 + matrix.M42 + matrix.M43 + unitFactor * matrix.M44;
+      var x = (this.x * matrix.M11 + this.y * matrix.M12 + this.z * matrix.M13 + unitFactor * matrix.M14) / divisor;
+      var y = (this.x * matrix.M21 + this.y * matrix.M22 + this.z * matrix.M23 + unitFactor * matrix.M24) / divisor;
+      var z = (this.x * matrix.M31 + this.y * matrix.M32 + this.z * matrix.M33 + unitFactor * matrix.M34) / divisor;
+
+      point = new Point(x, y, z) { units = this.units, applicationId = this.applicationId };
+      return true;
+    }
+
     /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {

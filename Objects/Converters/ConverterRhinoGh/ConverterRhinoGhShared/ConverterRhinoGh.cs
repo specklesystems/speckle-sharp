@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Collections.Specialized;
+using System.Numerics;
 
 using Rhino;
 using Rhino.Display;
@@ -22,6 +23,7 @@ using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
+
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -270,8 +272,7 @@ namespace Objects.Converter.RhinoGh
 
 #if GRASSHOPPER
         case RH.Transform o:
-          @base = TransformToSpeckle(o);
-          Report.Log("Converter Transform");
+          @base = new Transform(o.ToFloatArray(true), ModelUnits);
           break;
         case DisplayMaterial o:
           @base = DisplayMaterialToSpeckle(o);
@@ -425,8 +426,9 @@ namespace Objects.Converter.RhinoGh
             else if (@object is InstanceObject)
             {
               var block = BlockInstanceToSpeckle(@object as InstanceObject);
-              o.basePoint = block.GetInsertionPoint();
-              o.rotation = block.transform.rotationZ;
+              o.basePoint = block.GetInsertionPlane().origin;
+              block.transform.Decompose(out Vector3 scale, out System.Numerics.Quaternion rotation, out Vector4 translation);
+              o.rotation = Math.Acos(rotation.W) * 2;
             }
             break;
 
@@ -754,11 +756,11 @@ namespace Objects.Converter.RhinoGh
             break;
 
           case BlockDefinition o:
-            rhinoObj = BlockDefinitionToNative(o, out notes);
+            rhinoObj = DefinitionToNative(o, out notes);
             break;
 
-          case BlockInstance o:
-            rhinoObj = BlockInstanceToNative(o);
+          case Instance o:
+            rhinoObj = InstanceToNative(o);
             break;
 
           case Text o:
@@ -967,7 +969,7 @@ namespace Objects.Converter.RhinoGh
         case ModelCurve _:
         case DirectShape _:
         case View3D _:
-        case BlockInstance _:
+        case Instance _:
         case Alignment _:
         case Text _:
         case Dimension _:

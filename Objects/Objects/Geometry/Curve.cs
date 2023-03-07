@@ -128,13 +128,21 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out Curve transformed)
     {
+      // transform points
+      var transformedPoints = new List<Point>();
+      foreach (var point in GetPoints())
+      {
+        point.TransformTo(transform, out Point transformedPoint);
+        transformedPoints.Add(transformedPoint);
+      }
+
       var result = displayValue.TransformTo(transform, out ITransformable polyline);
       transformed = new Curve
       {
         degree = degree,
         periodic = periodic,
         rational = rational,
-        points = transform.ApplyToPoints(points),
+        points = transformedPoints.SelectMany(o => o.ToList()).ToList(),
         weights = weights,
         knots = knots,
         displayValue = ( Polyline ) polyline,
