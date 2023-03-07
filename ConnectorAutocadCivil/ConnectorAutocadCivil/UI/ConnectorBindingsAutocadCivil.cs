@@ -1086,7 +1086,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               continue;
             }
           }
-          Fazer o teste da linha e cantoneira aqui
+          
           tr.Commit();
         }
       }
