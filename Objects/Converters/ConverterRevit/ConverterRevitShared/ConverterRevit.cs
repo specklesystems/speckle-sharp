@@ -76,6 +76,11 @@ namespace Objects.Converter.Revit
 
     public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
 
+    /// <summary>
+    /// Used to cache already converted family instance FamilyType deifnitions
+    /// </summary>
+    public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType>();
+    
     public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
 
     public ReceiveMode ReceiveMode { get; set; }
@@ -547,6 +552,9 @@ namespace Objects.Converter.Revit
         case BE.View3D o:
           return ViewToNative(o);
 
+        case Other.Revit.RevitInstance o:
+          return RevitInstanceToNative(o);
+
         case BE.Room o:
           return RoomToNative(o);
 
@@ -704,6 +712,7 @@ namespace Objects.Converter.Revit
         BE.CableTray _ => true,
         BE.Conduit _ => true,
         BE.Revit.RevitRailing _ => true,
+        Other.Revit.RevitInstance _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
         BE.Room _ => true,

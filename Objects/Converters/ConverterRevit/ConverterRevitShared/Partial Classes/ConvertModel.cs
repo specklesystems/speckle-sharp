@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
 using Objects.Organization;
 using Objects.Other;
 using Speckle.Core.Models;
+using Transform = Objects.Other.Transform;
+using Objects.Geometry;
 
 namespace Objects.Converter.Revit
 {
@@ -51,12 +52,11 @@ namespace Objects.Converter.Revit
         var revitTransform = DB.Transform.CreateRotation(DB.XYZ.BasisZ, position.Angle);
 
         var spcklLoc = new Base() { applicationId = location.UniqueId };
-        spcklLoc[ "transform" ] = new Transform(
-          new[ ] { revitTransform.BasisX[ 0 ], revitTransform.BasisX[ 1 ], revitTransform.BasisX[ 2 ] },
-          new[ ] { revitTransform.BasisY[ 0 ], revitTransform.BasisY[ 1 ], revitTransform.BasisY[ 2 ] },
-          new[ ] { revitTransform.BasisZ[ 0 ], revitTransform.BasisZ[ 1 ], revitTransform.BasisZ[ 2 ] },
-          new[ ] { ScaleToSpeckle(position.EastWest), ScaleToSpeckle(position.NorthSouth), ScaleToSpeckle(position.Elevation) },
-          ModelUnits);
+        var basisX = VectorToSpeckle(revitTransform.BasisX);
+        var basisY = VectorToSpeckle(revitTransform.BasisY);
+        var basisZ = VectorToSpeckle(revitTransform.BasisZ);
+        var translation = new Vector(ScaleToSpeckle(position.EastWest), ScaleToSpeckle(position.NorthSouth), ScaleToSpeckle(position.Elevation), ModelUnits);
+        spcklLoc["transform"] = new Transform(basisX, basisY, basisZ, translation);
         spcklLoc[ "name" ] = location.Name;
         spcklLoc[ "trueNorth" ] = position.Angle;
         spcklLocations.Add(spcklLoc);

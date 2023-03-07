@@ -1,12 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
+using Autodesk.AutoCAD.Windows.Data;
+using Autodesk.AutoCAD.Colors;
 using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+
+using Speckle.Core.Models;
+using Speckle.Core.Kits;
+using Speckle.Core.Models.GraphTraversal;
 using Utilities = Speckle.Core.Models.Utilities;
 
+using Objects.Other;
 using Arc = Objects.Geometry.Arc;
 using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
@@ -17,11 +26,6 @@ using HatchLoopType = Objects.Other.HatchLoopType;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using Autodesk.AutoCAD.Windows.Data;
-using Objects.Other;
-using Autodesk.AutoCAD.Colors;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -324,7 +328,7 @@ namespace Objects.Converter.AutocadCivil
       var instance = new BlockInstance()
       {
         transform = new Transform( reference.BlockTransform.ToArray(), ModelUnits ),
-        blockDefinition = definition,
+        definition = definition,
         units = ModelUnits
       };
 
@@ -333,10 +337,18 @@ namespace Objects.Converter.AutocadCivil
 
       return instance;
     }
-    public ApplicationObject BlockInstanceToNativeDB(BlockInstance instance, bool AppendToModelSpace = true)
+    public ApplicationObject InstanceToNativeDB(Instance instance, bool AppendToModelSpace = true)
     {
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
-      
+
+      // get the definition
+      var definition = instance.definition ?? instance["@definition"] as Base ?? instance["@blockDefinition"] as Base; // some applications need to dynamically attach defs (eg sketchup)
+      if (definition == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a definition");
+        return appObj;
+      }
+
       // delete existing objs if any and this is an update
       if (ReceiveMode == ReceiveMode.Update)
       {
@@ -356,27 +368,25 @@ namespace Objects.Converter.AutocadCivil
         }
       }
 
-      // block definition
-      ObjectId definitionId = BlockDefinitionToNativeDB(instance.blockDefinition);
+      // convert the definition
+      ObjectId definitionId = DefinitionToNativeDB(definition, out List<string> notes);
+      if (notes.Count > 0) appObj.Update(log: notes);
       if (definitionId == ObjectId.Null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Couldn't create block definition");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
         return appObj;
       }
 
-      // insertion pt
-      Point3d insertionPoint = PointToNative(instance.GetInsertionPoint());
-
       // transform
-      double[] transform = instance.transform.value;
-      for (int i = 3; i < 12; i += 4)
-        transform[i] = ScaleToNative(transform[i], instance.units);
-      Matrix3d convertedTransform = new Matrix3d(transform);
+      var matrix = instance.transform.ConvertTo(ModelUnits).ToArray();
+      Matrix3d convertedTransform = new Matrix3d(matrix);
 
       // add block reference
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+      var insertionPoint = Point3d.Origin.TransformBy(convertedTransform);
       BlockReference br = new BlockReference(insertionPoint, definitionId);
       br.BlockTransform = convertedTransform;
+
       // add attributes if there are any
       var attributes = instance["attributes"] as Dictionary<string, object>;
       if (attributes != null)
@@ -413,7 +423,7 @@ namespace Objects.Converter.AutocadCivil
           Base converted = ConvertToSpeckle(obj);
           if (converted != null)
           {
-            converted["Layer"] = objEntity.Layer;
+            converted["layer"] = objEntity.Layer;
             geometry.Add(converted);
           }
         }
@@ -429,70 +439,111 @@ namespace Objects.Converter.AutocadCivil
 
       return definition;
     }
-    public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
+    public ObjectId DefinitionToNativeDB(Base definition, out List<string> notes)
     {
-      // get modified definition name with commit info
-      var blockName = ReceiveMode == ReceiveMode.Create ?
-        RemoveInvalidAutocadChars($"{Doc.UserData["commit"]} - {definition.name}") :
-        RemoveInvalidAutocadChars($"{definition.name}");
+      notes = new List<string>();
 
-      ObjectId blockId = ObjectId.Null;
-
-      // see if block record already exists and return if so
+      // get the definition name
+      var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
+      string definitionName = definition is BlockDefinition blockDef ? RemoveInvalidAutocadChars(blockDef.name) : definition.id;
+      if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
       BlockTable blckTbl = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-      if (blckTbl.Has(blockName))
-        return blckTbl[blockName];
+      if (blckTbl.Has(definitionName))
+        return blckTbl[definitionName];
+
+      // get definition geometry to traverse and base point
+      Point3d basePoint = Point3d.Origin;
+      var toTraverse = new List<Base>();
+      switch (definition)
+      {
+        case BlockDefinition o:
+          if (o.basePoint != null)
+            basePoint = PointToNative(o.basePoint);
+          toTraverse = o.geometry ?? (o["@geometry"] as List<object>).Cast<Base>().ToList();
+          break;
+        default:
+          toTraverse.Add(definition);
+          break;
+      }
+
+      // traverse definition geo to get convertible geo
+      var conversionDict = new Dictionary<Base, string>();
+      foreach (var obj in toTraverse)
+      {
+        var convertible = FlattenDefinitionObject(obj);
+        foreach (var key in convertible.Keys)
+        {
+          if (!conversionDict.ContainsKey(key))
+          {
+            conversionDict.Add(key, convertible[key]);
+          }
+        }
+      }
+
+      // convert definition geometry and attributes
+      var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
+
+      var converted = new List<Entity>();
+      foreach (var item in conversionDict)
+      {
+        var geo = item.Key;
+        var convertedGeo = new List<Entity>();
+        DisplayStyle style = geo["displayStyle"] as DisplayStyle;
+        RenderMaterial material = geo["renderMaterial"] as RenderMaterial;
+
+        switch (geo)
+        {
+          case Instance o:
+            var instanceNotes = new List<string>();
+            var instanceAppObj = InstanceToNativeDB(o, false);
+            var instance = instanceAppObj.Converted.FirstOrDefault() as BlockReference;
+            if (instance != null)
+            {
+              convertedGeo.Add(instance);
+            }
+            else
+            {
+              notes.AddRange(instanceNotes);
+              notes.Add($"Could not create nested Instance of definition {definitionName}");
+            }
+            break;
+          default:
+            ConvertWithDisplay(geo, style, material, ref convertedGeo);
+            break;
+        }
+        if (convertedGeo.Count == 0)
+        {
+          notes.Add($"Could not create definition geometry {geo.speckle_type} ({geo.id})");
+          continue;
+        }
+
+        foreach (var convertedItem in convertedGeo)
+        {
+          if (!convertedItem.IsNewObject && !(convertedItem is BlockReference))
+            bakedGeometry.Add(convertedItem.Id);
+          else
+            converted.Add(convertedItem);
+        }
+      }
+
+      if (converted.Count == 0 && bakedGeometry.Count == 0)
+      {
+        notes.Add("Could not convert any definition geometry");
+        return ObjectId.Null;
+      }
 
       // create btr
+      ObjectId blockId = ObjectId.Null;
       using (BlockTableRecord btr = new BlockTableRecord())
       {
-        btr.Name = blockName;
-
-        // base point
-        btr.Origin = PointToNative(definition.basePoint);
+        btr.Name = definitionName;
+        btr.Origin = basePoint;
 
         // add geometry
         blckTbl.UpgradeOpen();
-        var bakedGeometry = new ObjectIdCollection(); // this is to contain block def geometry that is already added to doc space during conversion
-        foreach (var geo in definition.geometry)
+        foreach (var convertedItem in converted)
         {
-          List<Entity> converted = new List<Entity>();
-          DisplayStyle style = geo["displayStyle"] as DisplayStyle;
-          RenderMaterial material = geo["renderMaterial"] as RenderMaterial;
-          if (CanConvertToNative(geo))
-          {
-            switch (geo)
-            {
-              case BlockInstance o:
-                var instanceAppObj = BlockInstanceToNativeDB(o, false);
-                var instance = instanceAppObj.Converted.FirstOrDefault() as BlockReference;
-                if (instance != null) converted.Add(instance);
-                break;
-              default:
-                ConvertWithDisplay(geo, style, material, ref converted);
-                break;
-            }
-          }
-          else if (geo["displayValue"] != null)
-          {
-            switch (geo["displayValue"])
-            {
-              case Base o:
-                ConvertWithDisplay(o, style, material, ref converted, true);
-                break;
-              case IReadOnlyList<Base> o:
-                foreach (Base displayValue in o)
-                  ConvertWithDisplay(displayValue, style, material, ref converted, true);
-                break;
-            }
-          }
-          foreach (var convertedItem in converted)
-          {
-            if (!convertedItem.IsNewObject && !(convertedItem is BlockReference))
-              bakedGeometry.Add(convertedItem.Id);
-            else
-              btr.AppendEntity(convertedItem);
-          }
+          btr.AppendEntity(convertedItem);
         }
         blockId = blckTbl.Add(btr);
         btr.AssumeOwnershipOf(bakedGeometry); // add in baked geo
@@ -502,6 +553,64 @@ namespace Objects.Converter.AutocadCivil
 
       return blockId;
     }
+
+    #region block def flattening
+    /// <summary>
+    /// Traverses the object graph, returning objects that can be converted.
+    /// </summary>
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private Dictionary<Base, string> FlattenDefinitionObject(Base obj)
+    {
+      var StoredObjects = new Dictionary<Base, string>();
+
+      void StoreObject(Base current, string containerId)
+      {
+        //Handle convertable objects
+        if (CanConvertToNative(current))
+        {
+          StoredObjects.Add(current, containerId);
+          return;
+        }
+
+        //Handle objects convertable using displayValues
+        var fallbackMember = current["displayValue"] ?? current["@displayValue"];
+        if (fallbackMember != null)
+        {
+          GraphTraversal.TraverseMember(fallbackMember).ToList()
+            .ForEach(o => StoreObject(o, containerId));
+          return;
+        }
+      }
+
+      string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
+      StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
+      {
+        if (context.propName == null) return stringBuilder;
+
+        // see if there's a layer property on this obj
+        var layer = context.current["layer"] as string ?? context.current["Layer"] as string;
+        if (!string.IsNullOrEmpty(layer)) return new StringBuilder(layer);
+
+        var objectLayerName = context.propName[0] == '@'
+          ? context.propName.Substring(1)
+          : context.propName;
+
+        LayerIdRecurse(context.parent, stringBuilder);
+        stringBuilder.Append("$");
+        stringBuilder.Append(objectLayerName);
+
+        return stringBuilder;
+      }
+
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(this);
+
+      traverseFunction.Traverse(obj).ToList()
+        .ForEach(tc => StoreObject(tc.current, LayerId(tc)));
+
+      return StoredObjects;
+    }
+    #endregion
 
     /// <summary>
     /// Get the name of the block definition from BlockTableRecord.

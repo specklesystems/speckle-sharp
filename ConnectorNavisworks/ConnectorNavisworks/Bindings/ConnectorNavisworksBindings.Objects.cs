@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
@@ -46,25 +46,60 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     private static IEnumerable<string> GetObjectsFromSavedViewpoint(ISelectionFilter filter)
     {
-      var reference = filter.Selection[0].Split(new[] { ":" }, StringSplitOptions.None);
-      var savedViewpoint = (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+      var selection = filter.Selection.FirstOrDefault();
+      if (string.IsNullOrEmpty(selection))
+      {
+        return Enumerable.Empty<string>();
+      }
 
-      // TODO: Handle an amended viewpoint hierarchy.
-      // Possibly by adding a GUID to the selected viewpoint if none is set at the
-      // point of selection comparison can then be made by the GUID if the name and
-      // path don't align. This would be better as both order and name could be
-      // changed after a stream state is saved.
-      if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides) return Enumerable.Empty<string>();
+      var savedViewpoint = ResolveSavedViewpoint(selection);
+      if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides)
+      {
+        return Enumerable.Empty<string>();
+      }
 
       var items = savedViewpoint.GetVisibilityOverrides().Hidden;
       items.Invert(Doc);
 
-      // TODO: Where the SavedViews Filter is amended to accept multiple views
-      // for conversion, the logic for returning Object ids will have to change
-      // for processing i.e. Handle lists or id lists instead of a singular list,
-      // and in turn handle only converting member objects once.
-      return items.DescendantsAndSelf.Select(GetPseudoId).ToList();
+      return items.DescendantsAndSelf.Select(GetPseudoId);
     }
+
+    private static SavedViewpoint ResolveSavedViewpoint(string savedViewReference)
+    {
+      var flattenedViewpointList = Doc.SavedViewpoints.RootItem.Children
+        .Select(GetViews)
+        .Where(x => x != null)
+        .SelectMany(node => node.Flatten())
+        .Select(node => new { Reference = node?.Reference?.Split(':'), node?.Guid })
+        .ToList();
+
+      var viewpointMatch = flattenedViewpointList
+        .FirstOrDefault(node =>
+          node.Guid.ToString() == savedViewReference ||
+          node.Reference?.Length == 2 && node.Reference[1] == savedViewReference);
+
+      return viewpointMatch == null
+        ? null
+        // Resolve the SavedViewpoint
+        : ResolveSavedViewpoint(viewpointMatch, savedViewReference);
+    }
+
+    private static SavedViewpoint ResolveSavedViewpoint(dynamic viewpointMatch, string savedViewReference)
+    {
+      if (Guid.TryParse(savedViewReference, out var guid))
+      {
+        // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
+        if (savedViewReference != new Guid().ToString()) return (SavedViewpoint)Doc.SavedViewpoints.ResolveGuid(guid);
+      }
+
+      if (!(viewpointMatch?.Reference is string[] reference) || reference.Length != 2)
+      {
+        return null;
+      }
+
+      return (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+    }
+
 
     private static IEnumerable<string> GetObjectsFromSelection(ISelectionFilter filter)
     {
@@ -132,9 +167,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return objectPseudoIds.ToList();
     }
 
-    private static IEnumerable<string> GetObjectsFromClashResults(ISelectionFilter filter)
+    // ReSharper disable once UnusedParameter.Local
+    private static IEnumerable<string> GetObjectsFromClashResults(ISelectionFilter unused)
     {
-      // Clash Results filter stores Guids of the Clash Result groups per Test. This can be converted to ModelItem pseudoIds
+      // Clash Results filter stores Guid of the Clash Result groups per Test. This can be converted to ModelItem pseudoIds
       throw new NotImplementedException();
     }
   }

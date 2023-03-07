@@ -151,5 +151,15 @@ namespace DesktopUI2.Models.Filters
 
       return value;
     }
+
+    public List<TreeNode> Flatten()
+    {
+      var result = new List<TreeNode> { this };
+      foreach (var child in Elements.Where(child => child != null))
+      {
+        result.AddRange(child.Flatten());
+      }
+      return result;
+    }
   }
 }
