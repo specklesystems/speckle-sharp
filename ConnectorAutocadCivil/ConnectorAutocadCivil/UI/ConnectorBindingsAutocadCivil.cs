@@ -85,7 +85,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D ").Replace("AdvanceSteel", "Advance Steel "); //hack for ADSK store;
 
     public override string GetHostAppName() => Utils.Slug;
 
@@ -991,6 +991,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // get the hash of the file name to create a more unique application id
           var fileNameHash = GetDocumentId();
 
+          string servicedApplication = converter.GetServicedApplications().First();
+
           foreach (var autocadObjectHandle in state.SelectedObjectIds)
           {
             // handle user cancellation
@@ -1020,7 +1022,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             if (!converter.CanConvertToSpeckle(obj))
             {
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in AutoCAD/Civil3D");
+              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in {Utils.AppName}");
               progress.Report.Log(reportObj);
               continue;
             }
@@ -1084,7 +1086,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               continue;
             }
           }
-
+          Fazer o teste da linha e cantoneira aqui
           tr.Commit();
         }
       }
