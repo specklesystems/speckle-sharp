@@ -451,11 +451,23 @@ namespace Objects.Converter.AutocadCivil
           // get the connection point to the next segment
           var connectionPoint = new Point3d();
           var nextSegment = GetSegmentByType(polyline, i + 1);
-          if (nextSegment == null) continue;
-          if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
-            connectionPoint = nextSegment.StartPoint;
+          if (nextSegment == null)
+          {
+            if (polyline.GetSegmentType(i + 1) == SegmentType.Point)
+            {
+              connectionPoint = polyline.GetPoint3dAt(i + 1);
+            }
+            else
+              continue;
+          }
           else
-            connectionPoint = nextSegment.EndPoint;
+          {
+            if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
+              connectionPoint = nextSegment.StartPoint;
+            else
+              connectionPoint = nextSegment.EndPoint;
+          }
+
           previousPoint = connectionPoint;
           segment = GetCorrectSegmentDirection(segment, connectionPoint, true, out Point3d otherPoint);
         }
