@@ -10,6 +10,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Streams
 {
+  [Obsolete]
   public class StreamUpdateComponent : GH_SpeckleComponent
   {
     public StreamUpdateComponent() : base("Stream Update", "sUp", "Updates a stream with new details", ComponentCategories.PRIMARY_RIBBON,
@@ -31,7 +32,7 @@ namespace ConnectorGrasshopper.Streams
 
     protected override Bitmap Icon => Properties.Resources.StreamUpdate;
 
-    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {

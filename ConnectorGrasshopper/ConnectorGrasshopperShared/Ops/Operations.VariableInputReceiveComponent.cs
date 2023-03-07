@@ -432,7 +432,7 @@ namespace ConnectorGrasshopper.Ops
       });
     }
 
-    private async Task ResetApiClient(StreamWrapper wrapper)
+    public async Task ResetApiClient(StreamWrapper wrapper)
     {
       try
       {
@@ -442,7 +442,7 @@ namespace ConnectorGrasshopper.Ops
           throw new Exception("You are not connected to the internet.");
         }
 
-        Account account = null;
+        Account account;
         try
         {
           account = wrapper?.GetAccount().Result;
@@ -453,11 +453,12 @@ namespace ConnectorGrasshopper.Ops
           account = new Account
           {
             id = wrapper?.StreamId,
-            serverInfo = new ServerInfo() { url = wrapper?.ServerUrl },
+            serverInfo = new ServerInfo { url = wrapper?.ServerUrl },
             token = "",
             refreshToken = ""
           };
         }
+        
         ApiClient?.Dispose();
         ApiClient = new Client(account);
         ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
@@ -577,7 +578,9 @@ namespace ConnectorGrasshopper.Ops
             }
           });
         };
-
+        
+        if (receiveComponent.ApiResetTask == null)
+          receiveComponent.ApiResetTask = receiveComponent.ResetApiClient(InputWrapper);
         receiveComponent.ApiResetTask.Wait();
 
         var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);

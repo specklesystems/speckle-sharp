@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Speckle.Core.Models.Extensions;
 using Speckle.Newtonsoft.Json;
@@ -180,33 +181,36 @@ namespace Speckle.Core.Models
 
   public class ProgressReport
   {
-    public List<ApplicationObject> ReportObjects { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ReportObjects { get; set; } = new Dictionary<string, ApplicationObject>();
     public List<string> SelectedReportObjects { get; set; } = new List<string>();
 
     public void Log(ApplicationObject obj)
     {
       var _reportObject = UpdateReportObject(obj);
       if (_reportObject == null)
-        ReportObjects.Add(obj);
+        ReportObjects.Add(obj.OriginalId, obj);
     }
 
     public ApplicationObject UpdateReportObject(ApplicationObject obj)
     {
-      if (GetReportObject(obj.OriginalId, out int index))
+      if (ReportObjects.TryGetValue(obj.OriginalId, out ApplicationObject reportObject))
       {
-        ReportObjects[index].Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log, descriptor: obj.Descriptor);
+        reportObject.Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log);
+
         if (obj.Status != ApplicationObject.State.Unknown)
-          ReportObjects[index].Update(status: obj.Status);
-        return ReportObjects[index];
+          reportObject.Update(status: obj.Status);
+        return reportObject;
       }
       else return null;
     }
 
+    [Obsolete("Use TryGetValue or Dictionary indexing", true)]
     public bool GetReportObject(string id, out int index)
     {
-      var _reportObject = ReportObjects.Where(o => o.OriginalId == id)?.FirstOrDefault();
-      index = _reportObject != null ? ReportObjects.IndexOf(_reportObject) : -1;
-      return index == -1 ? false : true;
+      throw new NotImplementedException();
+      // var _reportObject = ReportObjects.Where(o => o.OriginalId == id)?.FirstOrDefault();
+      // index = _reportObject != null ? ReportObjects.IndexOf(_reportObject) : -1;
+      // return index == -1 ? false : true;
     }
 
     #region Conversion
@@ -305,25 +309,26 @@ namespace Speckle.Core.Models
         ConversionLog.AddRange(report.ConversionLog);
 
       // update report object notes
-      foreach (var item in ReportObjects)
+      foreach (var item in ReportObjects.Values)
       {
         var ids = new List<string> { item.OriginalId };
         if (item.Fallback.Count > 0) ids.AddRange(item.Fallback.Select(o => o.OriginalId));
 
         if (item.Status == ApplicationObject.State.Unknown)
-          if (report.GetReportObject(item.OriginalId, out int originalIndex))
-            item.Status = report.ReportObjects[originalIndex].Status;
+          if (report.ReportObjects.TryGetValue(item.OriginalId, out var reportObject))
+            item.Status = reportObject.Status;
 
         foreach (var id in ids)
-          if (report.GetReportObject(id, out int index))
+          //if (report.GetReportObject(id, out int index))
+          if (report.ReportObjects.TryGetValue(id, out var reportObject))
           {
-            foreach (var logItem in report.ReportObjects[index].Log)
+            foreach (var logItem in reportObject.Log)
               if (!item.Log.Contains(logItem))
                 item.Log.Add(logItem);
-            foreach (var createdId in report.ReportObjects[index].CreatedIds)
+            foreach (var createdId in reportObject.CreatedIds)
               if (!item.CreatedIds.Contains(createdId))
                 item.CreatedIds.Add(createdId);
-            foreach (var convertedItem in report.ReportObjects[index].Converted)
+            foreach (var convertedItem in reportObject.Converted)
               if (!item.Converted.Contains(convertedItem))
                 item.Converted.Add(convertedItem);
           }

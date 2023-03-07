@@ -49,7 +49,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
       BlobStorageFolder = blobStorageFolder;
 
-      Client = Http.GetHttpProxyClient(new HttpClientHandler()
+      Client = Http.GetHttpProxyClient(new SpeckleHttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
       });

@@ -14,6 +14,7 @@ using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
 namespace ConnectorGrasshopper.Objects
 {
+  [Obsolete]
   public class CreateSpeckleObjectByKeyValueTaskComponent : SelectKitTaskCapableComponentBase<Base>
   {
     public CreateSpeckleObjectByKeyValueTaskComponent() : base("Create Speckle Object by Key/Value", "CSOKV",
@@ -23,7 +24,7 @@ namespace ConnectorGrasshopper.Objects
 
     public override Guid ComponentGuid => new Guid("B5232BF7-7014-4F10-8716-C3CEE6A54E2F");
     protected override Bitmap Icon => Properties.Resources.CreateSpeckleObjectByKeyValue;
-    public override GH_Exposure Exposure => GH_Exposure.primary | GH_Exposure.obscure;
+    public override GH_Exposure Exposure => GH_Exposure.hidden;
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
