@@ -38,14 +38,25 @@ namespace Objects.Converter.RhinoGh
     {
       var attributes = new ObjectAttributes();
 
-      attributes.ColorSource = ObjectColorSource.ColorFromObject;
+      // color
       attributes.ObjectColor = System.Drawing.Color.FromArgb(display.color);
-      attributes.PlotWeightSource = ObjectPlotWeightSource.PlotWeightFromObject;
-      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
-      attributes.PlotWeight = display.lineweight * conversionFactor;
-      attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+      var colorSource = ObjectColorSource.ColorFromObject;
+      if (display["colorSource"] != null) { Enum.TryParse(display["colorSource"] as string, out colorSource); }
+      attributes.ColorSource = colorSource;
+
+      // line type
       var lineStyle = Doc.Linetypes.FindName(display.linetype);
       attributes.LinetypeIndex = (lineStyle != null) ? lineStyle.Index : 0;
+      var lineSource = ObjectLinetypeSource.LinetypeFromObject;
+      if (display["lineSource"] != null) { Enum.TryParse(display["lineSource"] as string, out lineSource); }
+      attributes.LinetypeSource = lineSource;
+
+      // plot weight
+      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
+      attributes.PlotWeight = display.lineweight * conversionFactor;
+      var weightSource = ObjectPlotWeightSource.PlotWeightFromObject;
+      if (display["weightSource"] != null) { Enum.TryParse(display["weightSource"] as string, out weightSource); }
+      attributes.PlotWeightSource = weightSource;
 
       return attributes;
     }
@@ -56,6 +67,9 @@ namespace Objects.Converter.RhinoGh
       int color = Color.LightGray.ToArgb();
       Linetype lineType = null;
       double lineWeight = 0;
+      string colorSource = null;
+      string lineTypeSource = null;
+      string weightSource = null;
 
       // use layer attributes if a layer is provided
       if (layer != null)
@@ -67,6 +81,7 @@ namespace Objects.Converter.RhinoGh
       else
       {
         // color
+        colorSource = attributes.ColorSource.ToString();
         switch (attributes.ColorSource)
         {
           case ObjectColorSource.ColorFromObject:
@@ -81,6 +96,7 @@ namespace Objects.Converter.RhinoGh
         }
 
         // line type
+        lineTypeSource = attributes.LinetypeSource.ToString();
         switch (attributes.LinetypeSource)
         {
           case ObjectLinetypeSource.LinetypeFromObject:
@@ -92,6 +108,7 @@ namespace Objects.Converter.RhinoGh
         }
 
         // line weight
+        weightSource = attributes.PlotWeightSource.ToString();
         switch (attributes.PlotWeightSource)
         {
           case ObjectPlotWeightSource.PlotWeightFromObject:
@@ -106,6 +123,11 @@ namespace Objects.Converter.RhinoGh
       style.color = color;
       style.lineweight = lineWeight;
       style.linetype = lineType?.Name ?? "Default";
+
+      // attach rhino specific props
+      if (colorSource != null) style["colorSource"] = colorSource;
+      if (lineTypeSource != null) style["lineSource"] = lineTypeSource;
+      if (weightSource != null) style["weightSource"] = weightSource;
 
       return style;
     }

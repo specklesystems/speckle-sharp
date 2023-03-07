@@ -14,8 +14,23 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.RhinoGh
 {
+  
   public partial class ConverterRhinoGh
   {
+    public static string invalidRhinoChars = @"{}()";
+
+    /// <summary>
+    /// Removes invalid characters for Rhino layer and block names
+    /// </summary>
+    /// <param name="str"></param>
+    /// <returns></returns>
+    public static string RemoveInvalidRhinoChars(string str)
+    {
+      // using this to handle grasshopper branch syntax
+      string cleanStr = str.Replace("{", "").Replace("}", "");
+      return cleanStr;
+    }
+
     private string GetSchema(RhinoObject obj, out string[] args)
     {
       args = null;

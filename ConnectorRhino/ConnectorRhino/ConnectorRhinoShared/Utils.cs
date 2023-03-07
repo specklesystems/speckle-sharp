@@ -108,6 +108,25 @@ namespace SpeckleRhino
     /// <returns>Null on failure</returns>
     public static Layer GetLayer(this RhinoDoc doc, string path, bool MakeIfNull = false)
     {
+      Layer MakeLayer(string name, Layer parentLayer = null)
+      {
+        try
+        {
+          Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
+          if (parentLayer != null)
+            newLayer.ParentLayerId = parentLayer.Id;
+          int newIndex = doc.Layers.Add(newLayer);
+          if (newIndex < 0)
+            return null;
+          else
+            return doc.Layers.FindIndex(newIndex);
+        }
+        catch (Exception e)
+        {
+          return null;
+        }
+      }
+
       var cleanPath = RemoveInvalidRhinoChars(path);
       int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
       Layer layer = doc.Layers.FindIndex(index);
@@ -123,7 +142,7 @@ namespace SpeckleRhino
           currentLayerPath = (i == 0) ? layerNames[i] : $"{currentLayerPath}{Layer.PathSeparator}{layerNames[i]}";
           currentLayer = doc.GetLayer(currentLayerPath);
           if (currentLayer == null)
-            currentLayer = MakeLayer(doc, layerNames[i], parent);
+            currentLayer = MakeLayer(layerNames[i], parent);
           if (currentLayer == null)
             break;
           parent = currentLayer;
@@ -160,27 +179,6 @@ namespace SpeckleRhino
         .ToList();
 
       return views;
-    }
-    #endregion
-
-    #region internal methods
-    private static Layer MakeLayer(RhinoDoc doc, string name, Layer parentLayer = null)
-    {
-      try
-      {
-        Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
-        if (parentLayer != null)
-          newLayer.ParentLayerId = parentLayer.Id;
-        int newIndex = doc.Layers.Add(newLayer);
-        if (newIndex < 0)
-          return null;
-        else
-          return doc.Layers.FindIndex(newIndex);
-      }
-      catch (Exception e)
-      {
-        return null;
-      }
     }
     #endregion
   }

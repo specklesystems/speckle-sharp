@@ -197,6 +197,10 @@ namespace Objects.Converter.RhinoGh
 
         switch (@object)
         {
+          case RhinoDoc doc: // this is the base commit! Create a collection object to use
+            @base = CollectionToSpeckle(doc);
+            break;
+
           case Point3d o:
             @base = PointToSpeckle(o);
             break;

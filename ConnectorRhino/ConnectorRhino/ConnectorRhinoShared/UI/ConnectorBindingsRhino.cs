@@ -246,7 +246,7 @@ namespace SpeckleRhino
     #region receiving 
     public override bool CanPreviewReceive => true;
 
-    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View");
+    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View") || @object.speckle_type.Contains("Collection");
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
@@ -450,6 +450,10 @@ namespace SpeckleRhino
         if (progress.Report.OperationErrorsCount != 0)
           return;
 
+        // sort by depth and create all the containers as layers first
+        var collections = Preview.Select(o => o.Container).Distinct().ToList().OrderBy(path => path.Count(c => c == ':')).ToList();
+
+
         foreach (var previewObj in Preview)
         {
           var isUpdate = false;
@@ -584,7 +588,91 @@ namespace SpeckleRhino
 
       return commitObject;
     }
-    
+
+    /// <summary>
+    /// Traverses the object graph, returning objects to be converted.
+    /// </summary>
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private List<ApplicationObject> FlattenCommitObject_New(Base obj, ISpeckleConverter converter)
+    {
+
+      void StoreObject(Base @base, ApplicationObject appObj, Base parameters = null)
+      {
+        if (StoredObjects.ContainsKey(@base.id))
+          appObj.Update(
+            logItem:
+            "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
+        else
+          StoredObjects.Add(@base.id, @base);
+
+        if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
+          StoredObjectParams.Add(@base.id, parameters);
+      }
+
+      ApplicationObject CreateApplicationObject(Base current, string containerId)
+      {
+        ApplicationObject NewAppObj()
+        {
+          var speckleType = current.speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+            .LastOrDefault();
+          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
+        }
+
+        //Handle convertable objects
+        if (converter.CanConvertToNative(current))
+        {
+          var appObj = NewAppObj();
+          appObj.Convertible = true;
+          StoreObject(current, appObj);
+          return appObj;
+        }
+
+        //Handle objects convertable using displayValues
+        var fallbackMember = current["displayValue"] ?? current["@displayValue"];
+        var parameters = current["parameters"] as Base;
+        if (fallbackMember != null)
+        {
+          var appObj = NewAppObj();
+          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember)
+            .Select(o => CreateApplicationObject(o, containerId));
+          appObj.Fallback.AddRange(fallbackObjects);
+
+          StoreObject(current, appObj, parameters);
+          return appObj;
+        }
+
+        return null;
+      }
+
+      string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
+      StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
+      {
+        if (context.propName == null) return stringBuilder;
+
+        var objectLayerName = context.propName[0] == '@'
+          ? context.propName.Substring(1)
+          : context.propName;
+
+        LayerIdRecurse(context.parent, stringBuilder);
+        stringBuilder.Append(Layer.PathSeparator);
+        stringBuilder.Append(objectLayerName);
+
+        return stringBuilder;
+      }
+
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
+
+      var objectsToConvert = traverseFunction.Traverse(obj)
+        .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
+        .Where(appObject => appObject != null)
+        .Reverse() //just for the sake of matching the previous behaviour as close as possible
+        .ToList();
+
+      return objectsToConvert;
+    }
+
     /// <summary>
     /// Traverses the object graph, returning objects to be converted.
     /// </summary>
@@ -939,7 +1027,7 @@ namespace SpeckleRhino
       int objCount = 0;
 
       state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
-      var commitObject = new Base();
+      var commitObject = converter.ConvertToSpeckle(Doc); // create a collection base obj
 
       if (state.SelectedObjectIds.Count == 0)
       {
@@ -995,6 +1083,10 @@ namespace SpeckleRhino
                 else
                 {
                   commitLayerObjects.Add(objectLayer.FullPath, new List<Base>() { converted });
+                  
+                }
+                if (!commitLayers.ContainsKey(objectLayer.FullPath))
+                {
                   commitLayers.Add(objectLayer.FullPath, objectLayer);
                 }
               }
@@ -1002,7 +1094,7 @@ namespace SpeckleRhino
             case Layer o:
               applicationId = o.GetUserString(ApplicationIdKey) ?? selectedId;
               converted = converter.ConvertToSpeckle(o);
-              if (converted != null)
+              if (converted != null && !commitLayers.ContainsKey(o.FullPath))
               {
                 commitLayers.Add(o.FullPath, o);
                 commitCollections.Add(o.FullPath, converted);
@@ -1010,11 +1102,7 @@ namespace SpeckleRhino
               break;
             case ViewInfo o:
               converted = converter.ConvertToSpeckle(o);
-
-              var containerName = descriptor += "s";
-              if (commitObject[$"@{containerName}"] == null)
-                commitObject[$"@{containerName}"] = new List<Base>();
-              ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
+              ((List<Base>)commitObject[$"{ElementsString}"]).Add(converted);
               break;
           }
         }
@@ -1051,19 +1139,21 @@ namespace SpeckleRhino
       }
 
       #region layer handling
-      // add layers prop to commit base
-      if (commitObject[$"@{LayersString}"] == null)
-        commitObject[$"@{LayersString}"] = new List<Base>();
-
       // convert layers as collections and attach all layer objects
-      foreach (var layerPath in commitLayers.Keys)
+      foreach (var layerPath in commitLayerObjects.Keys)
       {
-        if (commitCollections.ContainsKey(layerPath)) { continue; } // this layer was already converted
-        var collection = converter.ConvertToSpeckle(commitLayers[layerPath]);
-        if (collection != null)
+        if (commitCollections.ContainsKey(layerPath))
         {
-          collection[$"{ElementsString}"] = commitLayerObjects[layerPath];
-          commitCollections.Add(layerPath, collection);
+          commitCollections[layerPath][$"{ElementsString}"] = commitLayerObjects[layerPath];
+        }
+        else
+        {
+          var collection = converter.ConvertToSpeckle(commitLayers[layerPath]);
+          if (collection != null)
+          {
+            collection[$"{ElementsString}"] = commitLayerObjects[layerPath];
+            commitCollections.Add(layerPath, collection);
+          }
         }
       }
 
@@ -1101,7 +1191,7 @@ namespace SpeckleRhino
         // if there is no parent, attach to base commit layer prop directly
         if (parentIndex == -1)
         {
-          ((List<Base>)commitObject[$"@{LayersString}"]).Add(collection);
+          ((List<Base>)commitObject[$"{ElementsString}"]).Add(collection);
           continue;
         }
 
@@ -1186,10 +1276,10 @@ namespace SpeckleRhino
         case "manual":
           return filter.Selection;
         case "all":
-          objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
+          objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()));
+          objs.AddRange(Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()));
           objs.AddRange(Doc.StandardViews());
           objs.AddRange(Doc.NamedViews());
-          objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()).ToList());
           break;
         case "layer":
           foreach (var layerPath in filter.Selection)
@@ -1209,7 +1299,7 @@ namespace SpeckleRhino
           if (filter.Selection.Contains("Named Views"))
             objs.AddRange(Doc.NamedViews());
           if (filter.Selection.Contains("Layers"))
-            objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()).ToList());
+            objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()));
           break;
         default:
           //RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
