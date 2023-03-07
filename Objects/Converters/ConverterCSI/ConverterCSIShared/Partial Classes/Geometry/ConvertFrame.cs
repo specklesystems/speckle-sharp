@@ -98,32 +98,15 @@ namespace Objects.Converter.CSI
         end2node = element1D.end2Node.basePoint;
       }
 
-      int? success = null;
-      if (properties.Contains(element1D.property.name))
-      {
-        success = Model.FrameObj.AddByCoord(
-          ScaleToNative(end1node.x, end1node.units),
-          ScaleToNative(end1node.y, end1node.units),
-          ScaleToNative(end1node.z, end1node.units),
-          ScaleToNative(end2node.x, end2node.units),
-          ScaleToNative(end2node.y, end2node.units),
-          ScaleToNative(end2node.z, end2node.units),
-          ref newFrame,
-          element1D.property.name
-        );
-      }
-      else
-      {
-        success = Model.FrameObj.AddByCoord(
-          ScaleToNative(end1node.x, end1node.units),
-          ScaleToNative(end1node.y, end1node.units),
-          ScaleToNative(end1node.z, end1node.units),
-          ScaleToNative(end2node.x, end2node.units),
-          ScaleToNative(end2node.y, end2node.units),
-          ScaleToNative(end2node.z, end2node.units),
-          ref newFrame
-        );
-      }
+      int success = Model.FrameObj.AddByCoord(
+        ScaleToNative(end1node.x, end1node.units),
+        ScaleToNative(end1node.y, end1node.units),
+        ScaleToNative(end1node.z, end1node.units),
+        ScaleToNative(end2node.x, end2node.units),
+        ScaleToNative(end2node.y, end2node.units),
+        ScaleToNative(end2node.z, end2node.units),
+        ref newFrame
+      );
       SetFrameElementProperties(element1D, newFrame);
 
       if (!string.IsNullOrEmpty(element1D.name))
@@ -316,6 +299,10 @@ namespace Objects.Converter.CSI
         endV = PartialRestraintToNative(element1D.end2Releases);
       }
 
+      var propAppObj = new ApplicationObject(element1D.applicationId, element1D.speckle_type);
+      var propertyName = Property1DToNative(element1D.property, ref propAppObj);
+      if (propertyName != null)
+        Model.FrameObj.SetSection(newFrame, propertyName);
 
       if (element1D.orientationAngle != null)
       {

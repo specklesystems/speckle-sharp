@@ -8,7 +8,9 @@ using Objects.Structural.Properties;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Models;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -58,9 +60,15 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance physicalMember = null;
 
       if (docObj != null && docObj is AnalyticalMember analyticalMember)
-      {      
+      {
         // update location
-        analyticalMember.SetCurve(baseLine);
+        var currentCurve = analyticalMember.GetCurve();
+        var p0 = currentCurve.GetEndPoint(0);
+
+        if (p0.DistanceTo(baseLine.GetEndPoint(0)) > p0.DistanceTo(baseLine.GetEndPoint(1)))
+          analyticalMember.SetCurve(baseLine.CreateReversed());
+        else
+          analyticalMember.SetCurve(baseLine);
 
         //update type
         analyticalMember.SectionTypeId = familySymbol.Id;
@@ -198,7 +206,7 @@ namespace Objects.Converter.Revit
       if (curves.Count > 1)
         speckleElement1D.baseLine = null;
       else
-        speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(curves[0]);
+        speckleElement1D.baseLine = CurveToSpeckle(curves[0]) as Objects.Geometry.Line;
 
       var coordinateSystem = revitStick.GetLocalCoordinateSystem();
       if (coordinateSystem != null)
@@ -272,7 +280,7 @@ namespace Objects.Converter.Revit
           break;
       }
 
-      speckleElement1D.baseLine = (Objects.Geometry.Line)CurveToSpeckle(revitStick.GetCurve());
+      speckleElement1D.baseLine = CurveToSpeckle(revitStick.GetCurve()) as Objects.Geometry.Line;
 
       SetEndReleases(revitStick, ref speckleElement1D);
 
@@ -367,94 +375,165 @@ namespace Objects.Converter.Revit
       if (revitSection == null)
         return null;
 
+      // check section profile cache
+      if (SectionProfiles.Keys.Contains(familySymbol.Name))
+        return SectionProfiles[familySymbol.Name];
+
       var speckleSection = new SectionProfile();
 
+      // note to future self, the StructuralSectionGeneralShape prop is sometimes null so it isn't reliable to use
+      // therefore switch on the object itself instead
       switch (revitSection)
       {
-        case StructuralSectionGeneralI o: // General Double T shape
-          var ISection = new ISection();
-          ISection.shapeType = Structural.ShapeType.I;
-          ISection.depth = o.Height;
-          ISection.width = o.Width;
-          ISection.webThickness = o.WebThickness;
-          ISection.flangeThickness = o.FlangeThickness;
-         
-          speckleSection = ISection;
+        case StructuralSectionIWelded _: // Built up wide flange
+        case StructuralSectionIWideFlange _: // I shaped wide flange
+        case StructuralSectionGeneralI _: // General Double T shape
+          speckleSection = new ISection();
           break;
-        case StructuralSectionGeneralT o: // General Tee shape
-          var teeSection = new Tee();
-          teeSection.shapeType = Structural.ShapeType.Tee;
-          teeSection.depth = o.Height;
-          teeSection.width = o.Width;
-          teeSection.webThickness = o.WebThickness;
-          teeSection.flangeThickness = o.FlangeThickness;
-
-          speckleSection = teeSection;
+        case StructuralSectionGeneralT _: // General Tee shape
+          speckleSection = new Tee();
           break;
-        case StructuralSectionGeneralH o: // Rectangular Pipe structural sections
-          var rectSection = new Rectangular();
-          rectSection.shapeType = Structural.ShapeType.I;
-          rectSection.depth = o.Height;
-          rectSection.width = o.Width;
-          rectSection.webThickness = o.WallNominalThickness;
-          rectSection.flangeThickness = o.WallNominalThickness;
-
-          speckleSection = rectSection;
+        case StructuralSectionGeneralH _: // Rectangular Pipe structural sections
+        case StructuralSectionGeneralF _: // Flat Bar structural sections
+          speckleSection = new Rectangular();
           break;
-        case StructuralSectionGeneralR o: // Pipe structural sections
-          var circSection = new Circular();
-          circSection.shapeType = Structural.ShapeType.Circular;
-          circSection.radius = o.Diameter / 2;
-          circSection.wallThickness = o.WallNominalThickness;
-
-          speckleSection = circSection;
+        case StructuralSectionGeneralR _: // Pipe structural sections
+        case StructuralSectionGeneralS _: // Round Bar structural sections
+          speckleSection = new Circular();
           break;
-        case StructuralSectionGeneralF o: // Flat Bar structural sections
-          var flatRectSection = new Rectangular();
-          flatRectSection.shapeType = Structural.ShapeType.I;
-          flatRectSection.depth = o.Height;
-          flatRectSection.width = o.Width;
-
-          speckleSection = flatRectSection;
+        case StructuralSectionGeneralW _: // Angle structural sections
+          speckleSection = new Angle();
           break;
-        case StructuralSectionGeneralS o: // Round Bar structural sections
-          var flatCircSection = new Circular();
-          flatCircSection.shapeType = Structural.ShapeType.Circular;
-          flatCircSection.radius = o.Diameter / 2;
-
-          speckleSection = flatCircSection;
+        case StructuralSectionGeneralU _: // Channel structural sections
+          speckleSection = new Channel();
           break;
-        case StructuralSectionGeneralW o: // Angle structural sections
-          var angleSection = new Angle();
-          angleSection.shapeType = Structural.ShapeType.Angle;
-          angleSection.depth = o.Height;
-          angleSection.width = o.Width;
-          angleSection.webThickness = o.WebThickness;
-          angleSection.flangeThickness = o.FlangeThickness;
 
-          speckleSection = angleSection;
+        //case StructuralSectionGeneralLA o:
+        //case StructuralSectionColdFormed o:
+        //case StructuralSectionUserDefined o:
+        //case StructuralSectionGeneralLZ o:
+
+        // keep these two last. They are last resorts
+        case StructuralSectionRectangular _:
+          speckleSection = new Rectangular();
           break;
-        case StructuralSectionGeneralU o: // Channel  structural sections
-          var channelSection = new Channel();
-          channelSection.shapeType = Structural.ShapeType.Channel;
-          channelSection.depth = o.Height;
-          channelSection.width = o.Width;
-          channelSection.webThickness = o.WebThickness;
-          channelSection.flangeThickness = o.FlangeThickness;
-
-          speckleSection = channelSection;
+        case StructuralSectionRound _:
+          speckleSection = new Circular();
           break;
       }
 
+      SetStructuralSectionProps(revitSection, speckleSection);
+
       speckleSection.units = ModelUnits;
       speckleSection.name = familySymbol.Name;
-      speckleSection.area = revitSection.SectionArea;
-      speckleSection.weight = revitSection.NominalWeight;
-      speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis;
-      speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis;
-      speckleSection.J = revitSection.TorsionalMomentOfInertia;
+
+      SectionProfiles.Add(familySymbol.Name, speckleSection);
 
       return speckleSection;
+    }
+
+    private void SetStructuralSectionProps(StructuralSection revitSection, SectionProfile speckleSection)
+    {
+      var scaleFactor = ScaleToSpeckle(1);
+      var scaleFactor2 = scaleFactor * scaleFactor;
+
+      //TODO we need to support setting other units than just length
+      if (revitSection is StructuralSection _)
+      {
+        // static props
+        //TODO change this prop, Iyy can mean different things
+        speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis * scaleFactor2; 
+        speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis * scaleFactor2;
+        speckleSection.weight = revitSection.NominalWeight / scaleFactor;
+        speckleSection.area = revitSection.SectionArea * scaleFactor2;
+        speckleSection.J = revitSection.TorsionalMomentOfInertia * scaleFactor2 * scaleFactor2;
+      }
+      if (revitSection is StructuralSectionRectangular rect)
+      {
+        // these should be a static props, not dynamic ones, but we don't know the exact type of speckleSection here
+        // this may not be the best way to do this
+        speckleSection["depth"] = rect.Height * scaleFactor;
+        speckleSection["width"] = rect.Width * scaleFactor;
+
+        // dynamic props
+        speckleSection["centroidHorizontal"] = rect.CentroidHorizontal * scaleFactor;
+        speckleSection["centroidVertical"] = rect.CentroidVertical * scaleFactor;
+      }
+      if (revitSection is StructuralSectionRound round)
+      {
+        // static props
+        speckleSection["radius"] = round.Diameter / 2 * scaleFactor;
+
+        // dynamic props
+        speckleSection["centroidHorizontal"] = round.CentroidHorizontal * scaleFactor;
+        speckleSection["centroidVertical"] = round.CentroidVertical * scaleFactor;
+      }
+      if (revitSection is StructuralSectionHotRolled hr)
+      {
+        // static props
+        speckleSection["flangeThickness"] = hr.FlangeThickness * scaleFactor;
+        speckleSection["webThickness"] = hr.WebThickness * scaleFactor;
+
+        // dynamic props
+        speckleSection["flangeThicknessLocation"] = hr.FlangeThicknessLocation * scaleFactor;
+        speckleSection["webThicknessLocation"] = hr.WebThicknessLocation * scaleFactor;
+        speckleSection["webFillet"] = hr.WebFillet;
+      }
+      if (revitSection is StructuralSectionColdFormed cf)
+      {
+        //dynamic props
+        speckleSection["innerFillet"] = cf.InnerFillet * scaleFactor;
+        speckleSection["wallThickness"] = cf.WallNominalThickness * scaleFactor;
+        speckleSection["wallDesignThickness"] = cf.WallDesignThickness * scaleFactor;
+      }
+      if (revitSection is StructuralSectionGeneralI i)
+      {
+        // dynamic props
+        speckleSection["flangeFillet"] = i.FlangeFillet;
+        speckleSection["slopedFlangeAngle"] = i.SlopedFlangeAngle;
+        //speckleSection["flangeToeOfFillet"] = i.FlangeToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+        //speckleSection["webToeOfFillet"] = i.WebToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+      }
+      if (revitSection is StructuralSectionGeneralT t)
+      {
+        speckleSection["flangeFillet"] = t.FlangeFillet;
+        speckleSection["slopedFlangeAngle"] = t.SlopedFlangeAngle;
+        speckleSection["slopedWebAngle"] = t.SlopedWebAngle;
+        //speckleSection["flangeToeOfFillet"] = i.FlangeToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+        //speckleSection["webToeOfFillet"] = i.WebToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+      }
+      if (revitSection is StructuralSectionGeneralH h)
+      {
+        // static props
+        speckleSection["webThickness"] = h.WallNominalThickness * scaleFactor;
+        speckleSection["flangeThickness"] = h.WallNominalThickness * scaleFactor;
+
+        //dynamic props
+        speckleSection["innerFillet"] = h.InnerFillet;
+        speckleSection["outerFillet"] = h.OuterFillet;
+      }
+      if (revitSection is StructuralSectionGeneralR r)
+      {
+        // static props 
+        speckleSection["wallThickness"] = r.WallNominalThickness * scaleFactor;
+
+        //dynamic props
+        speckleSection["wallDesignThickness"] = r.WallDesignThickness * scaleFactor;
+      }
+      if (revitSection is StructuralSectionGeneralW w)
+      {
+        // dynamic props
+        speckleSection["flangeFillet"] = w.FlangeFillet;
+        speckleSection["topWebFillet"] = w.TopWebFillet;
+      }
+      if (revitSection is StructuralSectionGeneralU u)
+      {
+        // dynamic props
+        speckleSection["flangeFillet"] = u.FlangeFillet;
+        speckleSection["slopedFlangeAngle"] = u.SlopedFlangeAngle;
+        //speckleSection["flangeToeOfFillet"] = u.FlangeToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+        //speckleSection["webToeOfFillet"] = u.WebToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+      }
     }
 
     private StructuralMaterial GetStructuralMaterial(Material material)

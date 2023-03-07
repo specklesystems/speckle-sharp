@@ -36,14 +36,6 @@ namespace TestsIntegration
 
 
     [Test]
-    public async Task UserGet()
-    {
-      var res = await myClient.UserGet();
-
-      Assert.NotNull(res);
-    }
-
-    [Test]
     public async Task ActiveUserGet()
     {
       var res = await myClient.ActiveUserGet();
@@ -128,23 +120,6 @@ namespace TestsIntegration
       Assert.IsTrue(res);
     }
 
-    [Test, Order(30)]
-    public void StreamGrantPermission()
-    {
-      var exception = Assert.ThrowsAsync<SpeckleException>(
-        async () => await myClient.StreamGrantPermission(
-          new StreamPermissionInput
-          {
-            streamId = streamId,
-            userId = secondUserAccount.userInfo.id,
-            role = "stream:owner"
-          }
-        )
-      );
-
-      StringAssert.Contains("no longer supported", exception.Message);
-    }
-
     [Test, Order(31)]
     public async Task StreamInviteCreate()
     {
@@ -154,7 +129,7 @@ namespace TestsIntegration
 
       Assert.IsTrue(res);
 
-      Assert.ThrowsAsync<SpeckleException>(async () =>
+      Assert.ThrowsAsync<ArgumentException>(async () =>
         await myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = streamId }));
     }
 

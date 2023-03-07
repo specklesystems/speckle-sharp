@@ -129,11 +129,35 @@ namespace Speckle.ConnectorCSI.UI
     public Base GetCommitObj(ISpeckleConverter converter, ProgressViewModel progress, ConcurrentDictionary<string, int> conversionProgressDict)
     {
       var commitObj = new Base();
+      var reportObj = new ApplicationObject("model", "ModelInfo");
       if (commitObj["@Model"] == null)
-        commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "CSI"));
+      {
+        try
+        {
+          commitObj["@Model"] = converter.ConvertToSpeckle(("Model", "CSI"));
+          reportObj.Update(status: ApplicationObject.State.Created);
+        }
+        catch (Exception ex)
+        {
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+        }
+        progress.Report.Log(reportObj);
+      }
 
+      reportObj = new ApplicationObject("results", "AnalysisResults");
       if (commitObj["AnalysisResults"] == null)
-        commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "CSI"));
+      {
+        try
+        {
+          commitObj["AnalysisResults"] = converter.ConvertToSpeckle(("AnalysisResults", "CSI"));
+          reportObj.Update(status: ApplicationObject.State.Created);
+        }
+        catch (Exception ex)
+        {
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+        }
+        progress.Report.Log(reportObj);
+      }
 
       progress.Report.Merge(converter.Report);
 

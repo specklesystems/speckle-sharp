@@ -159,7 +159,6 @@ namespace Speckle.Core.Transports
     /// <returns></returns>
     public bool GetWriteCompletionStatus()
     {
-      Console.WriteLine($"write completion {Queue.Count == 0 && !IS_WRITING}");
       return Queue.Count == 0 && !IS_WRITING;
     }
 

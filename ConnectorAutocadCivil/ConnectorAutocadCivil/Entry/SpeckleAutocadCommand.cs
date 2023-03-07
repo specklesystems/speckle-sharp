@@ -4,7 +4,13 @@ using System.Runtime.InteropServices;
 using System.Threading;
 
 using Autodesk.AutoCAD.ApplicationServices;
+
+#if ADVANCESTEEL2023
+using Autodesk.AdvanceSteel.Runtime;
+#else
 using Autodesk.AutoCAD.Runtime;
+#endif
+
 using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 
 using Avalonia;

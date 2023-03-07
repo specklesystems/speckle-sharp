@@ -1,4 +1,5 @@
 #include "Utility.hpp"
+#include "ObjectState.hpp"
 #include "RealNumber.h"
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
@@ -502,4 +503,108 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os, GS::UInt32& numberOfCu
 	}
 	return err;
 }
+
+
+GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::ObjectState& os)
+{
+	if (isAutoOnStoryVisibility) {
+		os.Add (ShowOnStoriesFieldName, AllRelevantStoriesValueName);
+	} else if (visibility.showOnHome && visibility.showRelAbove == 1 && visibility.showRelBelow == 1) {
+		os.Add (ShowOnStoriesFieldName, HomeAndOneStoryUpAndDownValueName);
+	} else if (visibility.showOnHome && visibility.showRelAbove == 1) {
+		os.Add (ShowOnStoriesFieldName, HomeAndOneStoryUpValueName);
+	} else if (visibility.showOnHome && visibility.showRelBelow == 1) {
+		os.Add (ShowOnStoriesFieldName, HomeAndOneStoryDownValueName);
+	} else if (visibility.showRelAbove == 1) {
+		os.Add (ShowOnStoriesFieldName, OneStoryUpValueName);
+	} else if (visibility.showRelBelow == 1) {
+		os.Add (ShowOnStoriesFieldName, OneStoryDownValueName);
+	} else if (visibility.showOnHome && visibility.showAllAbove && visibility.showAllBelow) {
+		os.Add (ShowOnStoriesFieldName, AllStoriesValueName);
+	} else if (visibility.showOnHome) {
+		os.Add (ShowOnStoriesFieldName, HomeStoryOnlyValueName);
+	}
+
+	return NoError;
+}
+
+
+GSErrCode ImportVisibility (const GS::ObjectState& os, bool& isAutoOnStoryVisibility, API_StoryVisibility& visibility)
+{
+	isAutoOnStoryVisibility = false;
+	visibility.showOnHome = true;
+	visibility.showAllAbove = false;
+	visibility.showAllBelow = false;
+	visibility.showRelAbove = 0;
+	visibility.showRelBelow = 0;
+	
+	if (os.Contains (ShowOnStoriesFieldName)) {
+		GS::UniString showOnStoriesValueName;
+		os.Get (ShowOnStoriesFieldName, showOnStoriesValueName);
+
+		if (showOnStoriesValueName == AllRelevantStoriesValueName) {
+			isAutoOnStoryVisibility = true;
+			visibility.showOnHome = false;
+			visibility.showAllAbove = false;
+			visibility.showAllBelow = false;
+		}
+		else if (showOnStoriesValueName == HomeAndOneStoryUpAndDownValueName) {
+			isAutoOnStoryVisibility = false;
+			visibility.showOnHome = true;
+			visibility.showAllAbove = false;
+			visibility.showAllBelow = false;
+			visibility.showRelAbove = 1;
+			visibility.showRelBelow = 1;
+		}
+		else if (showOnStoriesValueName == HomeAndOneStoryUpValueName) {
+			isAutoOnStoryVisibility = false;
+			visibility.showOnHome = true;
+			visibility.showAllAbove = false;
+			visibility.showAllBelow = false;
+			visibility.showRelAbove = 1;
+			visibility.showRelBelow = 0;
+		}
+		else if (showOnStoriesValueName == HomeAndOneStoryDownValueName) {
+			isAutoOnStoryVisibility = false;
+			visibility.showOnHome = true;
+			visibility.showAllAbove = false;
+			visibility.showAllBelow = false;
+			visibility.showRelAbove = 0;
+			visibility.showRelBelow = 1;
+		}
+		else if (showOnStoriesValueName == OneStoryUpValueName) {
+			isAutoOnStoryVisibility = false;
+			visibility.showOnHome = false;
+			visibility.showAllAbove = false;
+			visibility.showAllBelow = false;
+			visibility.showRelAbove = 1;
+			visibility.showRelBelow = 0;
+		}
+		else if (showOnStoriesValueName == OneStoryDownValueName) {
+			isAutoOnStoryVisibility = false;
+			visibility.showOnHome = false;
+			visibility.showAllAbove = false;
+			visibility.showAllBelow = false;
+			visibility.showRelAbove = 0;
+			visibility.showRelBelow = 1;
+		}
+		else if (showOnStoriesValueName == AllStoriesValueName) {
+			isAutoOnStoryVisibility = false;
+			visibility.showOnHome = true;
+			visibility.showAllAbove = true;
+			visibility.showAllBelow = true;
+		}
+		else if (showOnStoriesValueName == HomeStoryOnlyValueName) {
+			isAutoOnStoryVisibility = false;
+			visibility.showOnHome = true;
+			visibility.showAllAbove = false;
+			visibility.showAllBelow = false;
+			visibility.showRelAbove = 0;
+			visibility.showRelBelow = 0;
+		}
+	}
+
+	return NoError;
+}
+
 }
