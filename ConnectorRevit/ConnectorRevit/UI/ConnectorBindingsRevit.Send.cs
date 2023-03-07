@@ -118,6 +118,9 @@ namespace Speckle.ConnectorRevit.UI
             // but the host doesn't know that it is a host
             if (conversionResult["speckleHost"] is Base host && host["category"] is string catName)
             {
+              //ensure we use english names for hosted elements too!
+              var cat = ConnectorRevitUtils.GetCategories(CurrentDoc.Document)[catName];
+              catName = ConnectorRevitUtils.GetEnglishCategoryName(cat);
               commitObject[$"@{catName}"] ??= new List<Base>();
               if (commitObject[$"@{catName}"] is List<Base> objs)
               {
@@ -147,7 +150,7 @@ namespace Speckle.ConnectorRevit.UI
             //is an element type, nest it under Types instead
             else if (typeof(ElementType).IsAssignableFrom(revitElement.GetType()))
             {
-              var category = $"@{revitElement.Category.Name}";
+              var category = $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}";
 
               if (commitObject["Types"] == null)
                 commitObject["Types"] = new Base();
@@ -161,14 +164,14 @@ namespace Speckle.ConnectorRevit.UI
             {
               var category = conversionResult.GetType().Name == "Network" ?
                 "@Networks" :
-                $"@{revitElement.Category.Name}";
+                $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}";
 
               commitObject[category] ??= new List<Base>();
 
               if (commitObject[category] is List<Base> objs)
               {
                 var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
-              
+
                 // here we are checking to see if we're converting a host that doesn't know it is a host
                 // and if dependent elements of that host have already been converted
                 if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)

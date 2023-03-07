@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
@@ -54,6 +55,13 @@ namespace Speckle.ConnectorRevit
       }
 
       return _categories;
+    }
+
+    public static string GetEnglishCategoryName(Category category)
+    {
+      var builtInCategory = (BuiltInCategory)category.Id.IntegerValue;
+
+      return Regex.Replace(builtInCategory.ToString().Replace("OST_", ""), "([A-Z])", " $1", RegexOptions.Compiled).Trim();
     }
 
     #region extension methods
@@ -206,7 +214,7 @@ namespace Speckle.ConnectorRevit
       if (e.Category == null) return false;
       if (e.ViewSpecific) return false;
       // exclude specific unwanted categories
-      if (((BuiltInCategory) e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones) return false;
+      if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones) return false;
       return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
     }
 
@@ -215,7 +223,7 @@ namespace Speckle.ConnectorRevit
       if (e.Category == null) return false;
       if (e.ViewSpecific) return false;
 
-      if (SupportedBuiltInCategories.Contains((BuiltInCategory) e.Category.Id.IntegerValue))
+      if (SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
         return true;
       return false;
     }
@@ -227,12 +235,12 @@ namespace Speckle.ConnectorRevit
     /// <returns></returns>
     public static string SimplifySpeckleType(string type)
     {
-      return type.Split(new char[] {':'}, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+      return type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
     }
 
     public static string ObjectDescriptor(Element obj)
     {
-      var simpleType = obj.GetType().ToString().Split(new string[] {"DB."}, StringSplitOptions.RemoveEmptyEntries)
+      var simpleType = obj.GetType().ToString().Split(new string[] { "DB." }, StringSplitOptions.RemoveEmptyEntries)
         .LastOrDefault();
       return string.IsNullOrEmpty(obj.Name) ? $"{simpleType}" : $"{simpleType} {obj.Name}";
     }

@@ -1,21 +1,21 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Objects.Other;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
+using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Helpers;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
-using ElementType = Autodesk.Revit.DB.ElementType;
 using Duct = Objects.BuiltElements.Duct;
+using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -171,7 +171,7 @@ namespace Objects.Converter.Revit
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
       if (@base == null) return appObj;
-      
+
       CurrentHostElement = host;
       foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
       {
@@ -1336,7 +1336,7 @@ namespace Objects.Converter.Revit
         if (specifyOffset == 1)
         {
           // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
-          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100; 
+          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100;
           headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
         }
         else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
