@@ -422,37 +422,7 @@ namespace Objects.Converter.Revit
           break;
       }
 
-      var propNamesMap = new Dictionary<string, string>()
-      {
-        { "Height", "depth" },
-        { "SectionalArea", "area" },
-        { "NominalWeight", "weight" },
-        { "MomentOfInertiaStrongAxis", "Iyy" }, //TODO change this prop, Iyy can mean different things
-        { "MomentOfInertiaWeakAxis", "Izz" },
-        { "TorsionalMomentOfInertia", "J" },
-      };
-      foreach (var prop in revitSection.GetType().GetProperties())
-      {
-        var value = prop.GetValue(revitSection, null);
-        var type = value?.GetType();
-
-        if (type == null || type.IsClass || type.IsEnum)
-          continue;
-
-        var key = prop.Name;
-
-        if (propNamesMap.Keys.Contains(key))
-        {
-          key = propNamesMap[key];
-        }
-        // Revit classes are named with first letter capitalized but ours are not (why speckle??)
-        else if (!char.IsLower(key, 0))
-        {
-          key = char.ToLowerInvariant(key[0]) + key.Substring(1);
-        }
-
-        speckleSection[key] = value;
-      }
+      SetStructuralSectionProps(revitSection, speckleSection);
 
       speckleSection.units = ModelUnits;
       speckleSection.name = familySymbol.Name;
@@ -460,6 +430,110 @@ namespace Objects.Converter.Revit
       SectionProfiles.Add(familySymbol.Name, speckleSection);
 
       return speckleSection;
+    }
+
+    private void SetStructuralSectionProps(StructuralSection revitSection, SectionProfile speckleSection)
+    {
+      var scaleFactor = ScaleToSpeckle(1);
+      var scaleFactor2 = scaleFactor * scaleFactor;
+
+      //TODO we need to support setting other units than just length
+      if (revitSection is StructuralSection _)
+      {
+        // static props
+        //TODO change this prop, Iyy can mean different things
+        speckleSection.Iyy = revitSection.MomentOfInertiaStrongAxis * scaleFactor2; 
+        speckleSection.Izz = revitSection.MomentOfInertiaWeakAxis * scaleFactor2;
+        speckleSection.weight = revitSection.NominalWeight / scaleFactor;
+        speckleSection.area = revitSection.SectionArea * scaleFactor2;
+        speckleSection.J = revitSection.TorsionalMomentOfInertia * scaleFactor2 * scaleFactor2;
+      }
+      if (revitSection is StructuralSectionRectangular rect)
+      {
+        // these should be a static props, not dynamic ones, but we don't know the exact type of speckleSection here
+        // this may not be the best way to do this
+        speckleSection["depth"] = rect.Height * scaleFactor;
+        speckleSection["width"] = rect.Width * scaleFactor;
+
+        // dynamic props
+        speckleSection["centroidHorizontal"] = rect.CentroidHorizontal * scaleFactor;
+        speckleSection["centroidVertical"] = rect.CentroidVertical * scaleFactor;
+      }
+      if (revitSection is StructuralSectionRound round)
+      {
+        // static props
+        speckleSection["radius"] = round.Diameter / 2 * scaleFactor;
+
+        // dynamic props
+        speckleSection["centroidHorizontal"] = round.CentroidHorizontal * scaleFactor;
+        speckleSection["centroidVertical"] = round.CentroidVertical * scaleFactor;
+      }
+      if (revitSection is StructuralSectionHotRolled hr)
+      {
+        // static props
+        speckleSection["flangeThickness"] = hr.FlangeThickness * scaleFactor;
+        speckleSection["webThickness"] = hr.WebThickness * scaleFactor;
+
+        // dynamic props
+        speckleSection["flangeThicknessLocation"] = hr.FlangeThicknessLocation * scaleFactor;
+        speckleSection["webThicknessLocation"] = hr.WebThicknessLocation * scaleFactor;
+        speckleSection["webFillet"] = hr.WebFillet;
+      }
+      if (revitSection is StructuralSectionColdFormed cf)
+      {
+        //dynamic props
+        speckleSection["innerFillet"] = cf.InnerFillet * scaleFactor;
+        speckleSection["wallThickness"] = cf.WallNominalThickness * scaleFactor;
+        speckleSection["wallDesignThickness"] = cf.WallDesignThickness * scaleFactor;
+      }
+      if (revitSection is StructuralSectionGeneralI i)
+      {
+        // dynamic props
+        speckleSection["flangeFillet"] = i.FlangeFillet;
+        speckleSection["slopedFlangeAngle"] = i.SlopedFlangeAngle;
+        //speckleSection["flangeToeOfFillet"] = i.FlangeToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+        //speckleSection["webToeOfFillet"] = i.WebToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+      }
+      if (revitSection is StructuralSectionGeneralT t)
+      {
+        speckleSection["flangeFillet"] = t.FlangeFillet;
+        speckleSection["slopedFlangeAngle"] = t.SlopedFlangeAngle;
+        speckleSection["slopedWebAngle"] = t.SlopedWebAngle;
+        //speckleSection["flangeToeOfFillet"] = i.FlangeToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+        //speckleSection["webToeOfFillet"] = i.WebToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+      }
+      if (revitSection is StructuralSectionGeneralH h)
+      {
+        // static props
+        speckleSection["webThickness"] = h.WallNominalThickness * scaleFactor;
+        speckleSection["flangeThickness"] = h.WallNominalThickness * scaleFactor;
+
+        //dynamic props
+        speckleSection["innerFillet"] = h.InnerFillet;
+        speckleSection["outerFillet"] = h.OuterFillet;
+      }
+      if (revitSection is StructuralSectionGeneralR r)
+      {
+        // static props 
+        speckleSection["wallThickness"] = r.WallNominalThickness * scaleFactor;
+
+        //dynamic props
+        speckleSection["wallDesignThickness"] = r.WallDesignThickness * scaleFactor;
+      }
+      if (revitSection is StructuralSectionGeneralW w)
+      {
+        // dynamic props
+        speckleSection["flangeFillet"] = w.FlangeFillet;
+        speckleSection["topWebFillet"] = w.TopWebFillet;
+      }
+      if (revitSection is StructuralSectionGeneralU u)
+      {
+        // dynamic props
+        speckleSection["flangeFillet"] = u.FlangeFillet;
+        speckleSection["slopedFlangeAngle"] = u.SlopedFlangeAngle;
+        //speckleSection["flangeToeOfFillet"] = u.FlangeToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+        //speckleSection["webToeOfFillet"] = u.WebToeOfFillet * scaleFactor; // this is in inches (or mm?) so it needs a different scaleFactor
+      }
     }
 
     private StructuralMaterial GetStructuralMaterial(Material material)
