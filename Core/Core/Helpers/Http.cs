@@ -144,7 +144,7 @@ namespace Speckle.Core.Helpers
         PingReply reply = await myPing.SendPingAsync(hostname, timeout, buffer, pingOptions);
         return (reply.Status == IPStatus.Success);
       });
-      if (policyResult.Outcome == OutcomeType.Successful)
+      if (policyResult.Result == true)
         return true;
       Log.Warning(
         policyResult.FinalException,
