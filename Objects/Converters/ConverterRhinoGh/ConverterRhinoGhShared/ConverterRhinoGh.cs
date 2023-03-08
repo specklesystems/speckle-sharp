@@ -775,6 +775,10 @@ namespace Objects.Converter.RhinoGh
             rhinoObj = element1DToNative(o);
             break;
 
+          case Collection o:
+            rhinoObj = CollectionToNative(o);
+            break;
+
           case DisplayStyle o:
             rhinoObj = DisplayStyleToNative(o);
             break;
@@ -966,6 +970,7 @@ namespace Objects.Converter.RhinoGh
 #else
         // This types are not supported in GH!
         case Pointcloud _:
+        case Collection _:
         case ModelCurve _:
         case DirectShape _:
         case View3D _:

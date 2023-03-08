@@ -466,15 +466,15 @@ namespace SpeckleRhino
           {
             var storedCollection = StoredObjects[collection.OriginalId];
             storedCollection["path"] = path; // needed by converter
-            var convertedCollection = converter.ConvertToNative(storedCollection) as ApplicationObject;
-            if (convertedCollection != null)
+            var convertedCollection = converter.ConvertToNative(storedCollection) as List<object>;
+            if (convertedCollection != null && convertedCollection.Count > 0)
             {
-              Preview[Preview.IndexOf(collection)] = convertedCollection;
-              layer = convertedCollection.Converted.First() as Layer;
+              layer = convertedCollection.First() as Layer;
+              Preview[Preview.IndexOf(collection)] = converter.Report.ReportObjects[collection.OriginalId];
             }
           }
 
-          // otherwise create the layer here (old commits before collections implementations)
+          // otherwise create the layer here (old commits before collections implementations, or from apps not supporting collections)
           else
           {
             layer = Doc.GetLayer(path, true);
@@ -655,6 +655,10 @@ namespace SpeckleRhino
           return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
 
+        // skip if it is the base commit collection
+        if (current.speckle_type.Contains("Collection") && string.IsNullOrEmpty(containerId))
+          return null;
+
         //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
@@ -684,16 +688,23 @@ namespace SpeckleRhino
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
-        if (context.propName == null || context.propName.ToLower() == "elements") return stringBuilder; // do not include elements prop in layer path
+        if (context.propName == null) return stringBuilder; // this was probably the base commit collection
 
-        var objectLayerName = context.propName[0] == '@'
-          ? context.propName.Substring(1)
-          : context.propName;
-
+        string objectLayerName = string.Empty;
+        if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
+        {
+          objectLayerName = context.current["name"] as string;
+        }
+        else if (context.propName.ToLower() != "elements")// this is for any other property on the collection. skip elements props in layer structure.
+        {
+          objectLayerName = context.propName[0] == '@'
+            ? context.propName.Substring(1)
+            : context.propName;
+        }
         LayerIdRecurse(context.parent, stringBuilder);
-        stringBuilder.Append(Layer.PathSeparator);
+        if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName)) { stringBuilder.Append(Layer.PathSeparator); }
         stringBuilder.Append(objectLayerName);
-        
+
         return stringBuilder;
       }
 
@@ -1043,7 +1054,10 @@ namespace SpeckleRhino
               break;
             case ViewInfo o:
               converted = converter.ConvertToSpeckle(o);
-              ((List<Base>)commitObject[$"{ElementsString}"]).Add(converted);
+              if (converted != null)
+              {
+                ((List<Base>)commitObject[$"{ElementsString}"]).Add(converted); 
+              }
               break;
           }
         }
