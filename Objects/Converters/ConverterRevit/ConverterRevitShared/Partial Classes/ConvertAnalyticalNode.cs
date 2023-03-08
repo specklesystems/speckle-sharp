@@ -1,15 +1,15 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Structural.Geometry;
-using Vector = Objects.Geometry.Vector;
-using Plane = Objects.Geometry.Plane;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+using Plane = Objects.Geometry.Plane;
+using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Revit
 {
@@ -17,15 +17,15 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject AnalyticalNodeToNative(Node speckleNode)
     {
-      return new ApplicationObject(speckleNode.id, speckleNode.speckle_type) { applicationId = speckleNode.applicationId};
+      return new ApplicationObject(speckleNode.id, speckleNode.speckle_type) { applicationId = speckleNode.applicationId };
     }
 
     private Node AnalyticalNodeToSpeckle(ReferencePoint revitNode)
     {
       var cs = revitNode.GetCoordinateSystem();
-      var localAxis = new Plane(PointToSpeckle(cs.Origin), VectorToSpeckle(cs.BasisZ), VectorToSpeckle(cs.BasisX), VectorToSpeckle(cs.BasisY));
-      var basePoint = PointToSpeckle(cs.Origin); // alternative to revitNode.Position
-                                                 //var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
+      var localAxis = new Plane(PointToSpeckle(cs.Origin, revitNode.Document), VectorToSpeckle(cs.BasisZ, revitNode.Document), VectorToSpeckle(cs.BasisX, revitNode.Document), VectorToSpeckle(cs.BasisY, revitNode.Document));
+      var basePoint = PointToSpeckle(cs.Origin, revitNode.Document); // alternative to revitNode.Position
+                                                                     //var speckleNode = new Node(basePoint, revitNode.Name, null, localAxis);
       var speckleNode = new Node();
 
       GetAllRevitParamsAndIds(speckleNode, revitNode);
@@ -37,13 +37,13 @@ namespace Objects.Converter.Revit
     {
       var points = new List<XYZ> { };
       var nodes = new List<Node> { };
-     
+
       var cs = revitBoundary.GetDegreesOfFreedomCoordinateSystem();
-      var localAxis = new Plane(PointToSpeckle(cs.Origin), VectorToSpeckle(cs.BasisZ), VectorToSpeckle(cs.BasisX), VectorToSpeckle(cs.BasisY));
+      var localAxis = new Plane(PointToSpeckle(cs.Origin, revitBoundary.Document), VectorToSpeckle(cs.BasisZ, revitBoundary.Document), VectorToSpeckle(cs.BasisX, revitBoundary.Document), VectorToSpeckle(cs.BasisY, revitBoundary.Document));
 
       var restraintType = revitBoundary.GetBoundaryConditionsType();
       var state = 0;
-      switch (restraintType) 
+      switch (restraintType)
       {
         case BoundaryConditionsType.Point:
           var point = revitBoundary.Point;
@@ -96,7 +96,7 @@ namespace Objects.Converter.Revit
         return new Restraint(RestraintType.Fixed);
       else if (presetState == 1)
         return new Restraint(RestraintType.Pinned);
-      else if(presetState == 2)
+      else if (presetState == 2)
         return new Restraint(RestraintType.Roller);
 
       var boundaryParams = new BuiltInParameter[] {
@@ -146,7 +146,7 @@ namespace Objects.Converter.Revit
             break;
           case 2:
             code = code + "K"; //spring
-            if(type == BoundaryConditionsType.Line)
+            if (type == BoundaryConditionsType.Line)
             {
               switch (boundaryParams[i])
               {
@@ -166,7 +166,8 @@ namespace Objects.Converter.Revit
                   springStiffness[i] = 0;
                   break;
               }
-            } else if (type == BoundaryConditionsType.Area)
+            }
+            else if (type == BoundaryConditionsType.Area)
             {
               switch (boundaryParams[i])
               {

@@ -33,6 +33,7 @@ using Objects.Other;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
 using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
 using ASBoltPattern = Autodesk.AdvanceSteel.Modelling.BoltPattern;
+using ASSpecialPart = Autodesk.AdvanceSteel.Modelling.SpecialPart;
 using Autodesk.AdvanceSteel.CADAccess;
 using Autodesk.AdvanceSteel.CADLink.Database;
 using CADObjectId = Autodesk.AutoCAD.DatabaseServices.ObjectId;
@@ -56,6 +57,7 @@ using Speckle.Core.Kits;
 using Autodesk.AdvanceSteel.ConstructionTypes;
 using Autodesk.AdvanceSteel.Modelling;
 using Objects.BuiltElements;
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -71,44 +73,29 @@ namespace Objects.Converter.AutocadCivil
         case DxfNames.BOLTCIRCULAR:
         case DxfNames.BOLTCORNER:
         case DxfNames.BOLTMID:
+        case DxfNames.SPECIALPART:
           return true;
       }
 
       return false;
     }
 
-    public Base ObjectASToSpeckle(DBObject @object, ApplicationObject reportObj, List<string> notes)
+    public Base ConvertASToSpeckle(DBObject @object, ApplicationObject reportObj, List<string> notes)
     {
-      Base @base = null;
+      ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(@object);
 
-      void updateDescriptor(FilerObject filerObject)
+      if(filerObject == null)
       {
-        reportObj.Update(descriptor: filerObject.GetType().ToString());
+        throw new System.Exception($"Failed to find Advance Steel object ${@object.Handle.ToString()}.");
       }
 
-      switch (@object.ObjectId.ObjectClass.DxfName)
-      {
-        case DxfNames.BEAM:
-          ASBeam beam = GetFilerObjectByEntity<ASBeam>(@object);
-          updateDescriptor(beam);
-          return BeamToSpeckle(beam, notes);
-        case DxfNames.PLATE:
-          ASPlate plate = GetFilerObjectByEntity<ASPlate>(@object);
-          updateDescriptor(plate);
-          return PlateToSpeckle(plate, notes);
-        case DxfNames.BOLT2POINTS:
-        case DxfNames.BOLTCIRCULAR:
-        case DxfNames.BOLTCORNER:
-        case DxfNames.BOLTMID:
-          ASBoltPattern bolt = GetFilerObjectByEntity<ASBoltPattern>(@object);
-          updateDescriptor(bolt);
-          return BoltToSpeckle(bolt, notes);
-      }
+      reportObj.Update(descriptor: filerObject.GetType().ToString());
 
-      return @base;
+      dynamic dynamicObject = filerObject;
+      return FilerObjectToSpeckle(dynamicObject, notes);
     }
 
-    private AdvanceSteelBeam BeamToSpeckle(ASBeam beam, List<string> notes)
+    private Base FilerObjectToSpeckle(ASBeam beam, List<string> notes)
     {
       AdvanceSteelBeam advanceSteelBeam = new AdvanceSteelBeam();
 
@@ -130,11 +117,9 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelBeam;
     }
 
-    private AdvanceSteelPlate PlateToSpeckle(ASPlate plate, List<string> notes)
+    private Base FilerObjectToSpeckle(ASPlate plate, List<string> notes)
     {
       AdvanceSteelPlate advanceSteelPlate = new AdvanceSteelPlate();
-
-      var units = ModelUnits;
 
       plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
 
@@ -149,11 +134,9 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelPlate;
     }
 
-    private AdvanceSteelBolt BoltToSpeckle(ASBoltPattern bolt, List<string> notes)
+    private Base FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
     {
       AdvanceSteelBolt advanceSteelBolt = bolt is CircleScrewBoltPattern ? (AdvanceSteelBolt)new AdvanceSteelCircularBolt() : (AdvanceSteelBolt)new AdvanceSteelRectangularBolt();
-
-      var units = ModelUnits;
 
       SetDisplayValue(advanceSteelBolt, bolt);
 
@@ -162,6 +145,22 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelBolt;
     }
 
+    private Base FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
+    {
+      AdvanceSteelSpecialPart advanceSteelSpecialPart = new AdvanceSteelSpecialPart();
+
+      SetDisplayValue(advanceSteelSpecialPart, specialPart);
+
+      SetUnits(advanceSteelSpecialPart);
+
+      return advanceSteelSpecialPart;
+    }
+
+    private Base FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
+    {
+      throw new System.Exception("Advance Steel Object type conversion to Speckle not implemented");
+    }
+    
     private void SetDisplayValue(Base @base, AtomicElement atomicElement)
     {
       var modelerBody = atomicElement.GetModeler(Autodesk.AdvanceSteel.Modeler.BodyContext.eBodyContext.kMaxDetailed);

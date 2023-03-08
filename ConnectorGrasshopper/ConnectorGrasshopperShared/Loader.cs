@@ -331,7 +331,9 @@ namespace ConnectorGrasshopper
         "Structural",
         "GSA",
         "Tekla",
-        "CSI"
+        "CSI",
+        "Archicad",
+        "Advance Steel"
       }.ForEach(s =>
       {
         var category = $"Speckle 2 {s}";
