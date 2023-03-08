@@ -20,7 +20,7 @@ using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
-  
+
   public partial class ConnectorBindingsRevit
   {
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
@@ -65,7 +65,7 @@ namespace Speckle.ConnectorRevit.UI
         myCommit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
       }
 
-      state.LastSourceApp = myCommit.sourceApplication;
+      state.LastCommit = myCommit;
 
       string referencedObject = myCommit.referencedObject;
 
@@ -259,12 +259,13 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>A flattened list of objects to be converted ToNative</returns>
     private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-      
+
       ApplicationObject CreateApplicationObject(Base current)
       {
         if (!converter.CanConvertToNative(current)) return null;
-        
-        var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type)) {
+
+        var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type))
+        {
           applicationId = current.applicationId,
           Convertible = true
         };
@@ -274,7 +275,7 @@ namespace Speckle.ConnectorRevit.UI
         StoredObjects.Add(current.id, current);
         return appObj;
       }
-      
+
       var traverseFunction = DefaultTraversal.CreateRevitTraversalFunc(converter);
 
       var objectsToConvert = traverseFunction.Traverse(obj)
@@ -285,6 +286,6 @@ namespace Speckle.ConnectorRevit.UI
 
       return objectsToConvert;
     }
-    
+
   }
 }
