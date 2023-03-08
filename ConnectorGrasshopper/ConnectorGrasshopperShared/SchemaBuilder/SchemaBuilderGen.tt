@@ -75,20 +75,21 @@ public class <#= compName #>: CreateSchemaObjectBase {
 
     internal static Guid internalGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
 
-    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
-      ? GH_Exposure.tertiary
-      : GH_Exposure.hidden;
+
+    public override GH_Exposure Exposure => internalExposure;
 
     public override Guid ComponentGuid => internalGuid;
 <#
     if (depr != null){
 #>
     public override bool Obsolete => true;
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    internal static GH_Exposure internalExposure => GH_Exposure.hidden;
 <#
         } else {
 #>
-    public override GH_Exposure Exposure => internalExposure;
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
 <#
         }
 #>

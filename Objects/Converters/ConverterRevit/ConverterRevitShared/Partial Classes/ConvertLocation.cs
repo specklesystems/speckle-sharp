@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
-using Speckle.Core.Models;
-using System;
 using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
@@ -41,11 +41,11 @@ namespace Objects.Converter.Revit
               curve = curve.CreateTransformed(tf);
             }
 
-            return CurveToSpeckle(curve) as Base;
+            return CurveToSpeckle(curve, revitElement.Document) as Base;
           }
         case LocationPoint locationPoint:
           {
-            return PointToSpeckle(locationPoint.Point);
+            return PointToSpeckle(locationPoint.Point, revitElement.Document);
           }
         // TODO what is the correct way to handle this?
         case null:
@@ -69,7 +69,7 @@ namespace Objects.Converter.Revit
         //no need to apply offset transform
         var analyticalModel = familyInstance.GetAnalyticalModel();
         if (analyticalModel != null && analyticalModel.GetCurve() != null)
-          return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
+          return CurveToSpeckle(analyticalModel.GetCurve(), familyInstance.Document) as Base;
       }
 #else
       var manager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
@@ -79,13 +79,13 @@ namespace Objects.Converter.Revit
         var analyticalModel = Doc.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(familyInstance.Id)) as AnalyticalMember;
         //no need to apply offset transform
         if (analyticalModel != null && analyticalModel.GetCurve() != null)
-          return CurveToSpeckle(analyticalModel.GetCurve()) as Base;
+          return CurveToSpeckle(analyticalModel.GetCurve(), familyInstance.Document) as Base;
       }
 #endif
       Point point = familyInstance.Location switch
       {
-        LocationPoint p => PointToSpeckle(p.Point),
-        LocationCurve c => PointToSpeckle(c.Curve.GetEndPoint(0)),
+        LocationPoint p => PointToSpeckle(p.Point, familyInstance.Document),
+        LocationCurve c => PointToSpeckle(c.Curve.GetEndPoint(0), familyInstance.Document),
         _ => null,
       };
 

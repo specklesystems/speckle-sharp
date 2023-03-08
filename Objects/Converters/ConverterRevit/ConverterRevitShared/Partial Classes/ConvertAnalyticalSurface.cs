@@ -1,4 +1,6 @@
-﻿using Autodesk.Revit.DB;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -7,8 +9,6 @@ using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 
 
@@ -57,7 +57,8 @@ namespace Objects.Converter.Revit
     public ApplicationObject AnalyticalSurfaceToNative(Element2D speckleElement)
     {
       var appObj = new ApplicationObject(speckleElement.id, speckleElement.speckle_type) { applicationId = speckleElement.applicationId };
-      if (!(speckleElement.property is Property2D prop2D)) {
+      if (!(speckleElement.property is Property2D prop2D))
+      {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "\"Property\" cannot be null");
         return appObj;
       }
@@ -205,12 +206,12 @@ namespace Objects.Converter.Revit
 
           foreach (var p in points.Skip(1))
           {
-            var vertex = PointToSpeckle(p);
+            var vertex = PointToSpeckle(p, revitSurface.Document);
             var edgeNode = new Node(vertex, null, null, null);
             edgeNodes.Add(edgeNode);
           }
 
-          displayLine.segments.Add(CurveToSpeckle(curve));
+          displayLine.segments.Add(CurveToSpeckle(curve, revitSurface.Document));
         }
       }
 
@@ -228,7 +229,7 @@ namespace Objects.Converter.Revit
 
           foreach (var p in points.Skip(1))
           {
-            var vertex = PointToSpeckle(p);
+            var vertex = PointToSpeckle(p, revitSurface.Document);
             var voidNode = new Node(vertex, null, null, null);
             loopNodes.Add(voidNode);
           }
@@ -304,12 +305,12 @@ namespace Objects.Converter.Revit
 
         foreach (var p in points.Skip(1))
         {
-          var vertex = PointToSpeckle(p);
+          var vertex = PointToSpeckle(p, revitSurface.Document);
           var edgeNode = new Node(vertex, null, null, null);
           edgeNodes.Add(edgeNode);
         }
 
-        displayLine.segments.Add(CurveToSpeckle(loop));
+        displayLine.segments.Add(CurveToSpeckle(loop, revitSurface.Document));
       }
 
       speckleElement2D.topology = edgeNodes;

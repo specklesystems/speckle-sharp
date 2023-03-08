@@ -1,10 +1,10 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit.Curve;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit.Curve;
+using Speckle.Core.Models;
 using Alignment = Objects.BuiltElements.Alignment;
 using DB = Autodesk.Revit.DB;
 using DetailCurve = Objects.BuiltElements.Revit.Curve.DetailCurve;
@@ -238,7 +238,7 @@ namespace Objects.Converter.Revit
 
     public ModelCurve ModelCurveToSpeckle(DB.ModelCurve revitCurve)
     {
-      var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
+      var speckleCurve = new ModelCurve(CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document), revitCurve.LineStyle.Name);
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
@@ -247,7 +247,7 @@ namespace Objects.Converter.Revit
 
     public DetailCurve DetailCurveToSpeckle(DB.DetailCurve revitCurve)
     {
-      var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve), revitCurve.LineStyle.Name);
+      var speckleCurve = new DetailCurve(CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document), revitCurve.LineStyle.Name);
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
@@ -256,7 +256,7 @@ namespace Objects.Converter.Revit
 
     public RoomBoundaryLine RoomBoundaryLineToSpeckle(DB.ModelCurve revitCurve)
     {
-      var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve));
+      var speckleCurve = new RoomBoundaryLine(CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document));
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.level = ConvertAndCacheLevel(revitCurve.LevelId, revitCurve.Document);
       speckleCurve.applicationId = revitCurve.UniqueId;
@@ -266,7 +266,7 @@ namespace Objects.Converter.Revit
 
     public SpaceSeparationLine SpaceSeparationLineToSpeckle(DB.ModelCurve revitCurve)
     {
-      var speckleCurve = new SpaceSeparationLine(CurveToSpeckle(revitCurve.GeometryCurve));
+      var speckleCurve = new SpaceSeparationLine(CurveToSpeckle(revitCurve.GeometryCurve, revitCurve.Document));
       speckleCurve.elementId = revitCurve.Id.ToString();
       speckleCurve.applicationId = revitCurve.UniqueId;
       speckleCurve.units = ModelUnits;
