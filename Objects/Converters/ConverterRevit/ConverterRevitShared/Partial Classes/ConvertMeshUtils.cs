@@ -1,8 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Objects.Other;
+﻿
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.Other;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -104,7 +105,7 @@ namespace Objects.Converter.Revit
           var revitMaterial = d.GetElement(mesh.MaterialElementId) as DB.Material;
           Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, ModelUnits);
 
-          ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices);
+          ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices, d);
         }
       }
 
@@ -244,7 +245,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="solids"></param>
     /// <returns></returns>
-    public (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids)
+    public (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids, Document doc)
     {
       var faceArr = new List<int>();
       var vertexArr = new List<double>();
@@ -255,7 +256,7 @@ namespace Objects.Converter.Revit
       {
         foreach (Face face in solid.Faces)
         {
-          ConvertMeshData(face.Triangulate(), faceArr, vertexArr);
+          ConvertMeshData(face.Triangulate(), faceArr, vertexArr, doc);
         }
       }
 
@@ -270,7 +271,7 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids, Document d)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
-      
+
       var MeshMap = new Dictionary<Mesh, List<DB.Mesh>>();
       foreach (Solid solid in solids)
       {
@@ -301,10 +302,10 @@ namespace Objects.Converter.Revit
         meshData.Key.vertices.Capacity = numberOfVertices;
         foreach (DB.Mesh mesh in meshData.Value)
         {
-          ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices);
+          ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d);
         }
       }
-      
+
       return meshBuildHelper.GetAllValidMeshes();
     }
 
@@ -315,13 +316,13 @@ namespace Objects.Converter.Revit
     /// <param name="mesh">The revit mesh to convert</param>
     /// <param name="faces">The faces list to add to</param>
     /// <param name="vertices">The vertices list to add to</param>
-    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices)
+    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices, Document doc)
     {
       int faceIndexOffset = vertices.Count / 3;
 
       foreach (var vert in mesh.Vertices)
       {
-        var (x, y, z) = PointToSpeckle(vert);
+        var (x, y, z) = PointToSpeckle(vert, doc);
         vertices.Add(x);
         vertices.Add(y);
         vertices.Add(z);

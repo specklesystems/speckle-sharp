@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
 
@@ -119,7 +119,7 @@ namespace Objects.Converter.Revit
       for (int i = 0; i < pointIds.Count; i++)
       {
         var point = revitAc.Document.GetElement(pointIds[i]) as ReferencePoint;
-        points.Add(PointToSpeckle(point.Position));
+        points.Add(PointToSpeckle(point.Position, revitAc.Document));
       }
       return points;
     }
