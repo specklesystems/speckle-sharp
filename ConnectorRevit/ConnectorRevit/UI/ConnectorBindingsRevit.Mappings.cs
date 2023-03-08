@@ -10,10 +10,10 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
-using Newtonsoft.Json;
 using Revit.Async;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
