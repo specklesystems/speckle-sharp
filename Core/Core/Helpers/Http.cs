@@ -142,7 +142,9 @@ namespace Speckle.Core.Helpers
         int timeout = 1000;
         PingOptions pingOptions = new PingOptions();
         PingReply reply = await myPing.SendPingAsync(hostname, timeout, buffer, pingOptions);
-        return (reply.Status == IPStatus.Success);
+        if (reply.Status != IPStatus.Success)
+          throw new Exception($"The ping operation failed with status {reply.Status}");
+        return true;
       });
       if (policyResult.Outcome == OutcomeType.Successful)
         return true;

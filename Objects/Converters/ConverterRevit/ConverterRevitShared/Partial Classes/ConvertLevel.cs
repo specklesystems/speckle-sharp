@@ -110,7 +110,7 @@ namespace Objects.Converter.Revit
       return speckleLevel;
     }
 
-    private void CreateViewPlan(string name, ElementId levelId)
+    public ViewPlan CreateViewPlan(string name, ElementId levelId)
     {
       var vt = new FilteredElementCollector(Doc).OfClass(typeof(ViewFamilyType)).Where(el => ((ViewFamilyType)el).ViewFamily == ViewFamily.FloorPlan).First();
 
@@ -122,6 +122,8 @@ namespace Objects.Converter.Revit
       catch { }
 
       Report.Log($"Created ViewPlan {view.Id}");
+
+      return view;
     }
 
     private Level GetLevelByName(string name)

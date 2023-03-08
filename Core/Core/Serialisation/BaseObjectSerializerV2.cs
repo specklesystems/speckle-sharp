@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Reflection;
@@ -55,6 +56,10 @@ namespace Speckle.Core.Serialisation
 
     private HashSet<object> ParentObjects = new HashSet<object>();
 
+    // duration diagnostic stuff
+    public TimeSpan Elapsed => _stopwatch.Elapsed;
+    private Stopwatch _stopwatch = new Stopwatch();
+
     public BaseObjectSerializerV2()
     {
 
@@ -66,6 +71,7 @@ namespace Speckle.Core.Serialisation
         throw new Exception("A serializer instance can serialize only 1 object at a time. Consider creating multiple serializer instances");
       try
       {
+        _stopwatch.Start();
         Busy = true;
         Dictionary<string, object> converted = PreserializeObject(baseObj, true) as Dictionary<string, object>;
         String serialized = Dict2Json(converted);
@@ -77,6 +83,7 @@ namespace Speckle.Core.Serialisation
         ParentClosures = new List<Dictionary<string, int>>(); // cleanup in case of exceptions
         ParentObjects = new HashSet<object>();
         Busy = false;
+        _stopwatch.Stop();
       }
     }
 
@@ -313,10 +320,12 @@ namespace Speckle.Core.Serialisation
     {
       if (WriteTransports == null)
         return;
+      _stopwatch.Stop();
       foreach (var transport in WriteTransports)
       {
         transport.SaveObject(objectId, objectJson);
       }
+      _stopwatch.Start();
     }
 
     private void StoreBlob(Blob obj)
@@ -324,6 +333,8 @@ namespace Speckle.Core.Serialisation
       if (WriteTransports == null)
         return;
       bool hasBlobTransport = false;
+
+      _stopwatch.Stop();
 
       foreach (var transport in WriteTransports)
       {
@@ -334,6 +345,7 @@ namespace Speckle.Core.Serialisation
         }
       }
 
+      _stopwatch.Start();
       if (!hasBlobTransport)
         throw new Exception("Object tree contains a Blob (file), but the serialiser has no blob saving capable transports.");
     }

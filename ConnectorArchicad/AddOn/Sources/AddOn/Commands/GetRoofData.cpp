@@ -5,6 +5,7 @@
 #include "Utility.hpp"
 #include "RealNumber.h"
 #include "FieldNames.hpp"
+using namespace FieldNames;
 
 namespace AddOnCommands
 {
@@ -18,14 +19,14 @@ static GS::ObjectState SerializeRoofType (const API_RoofType& roof, const API_El
 	// memo.coords;
 	// quantity.roof.volume;
 	// The identifier of the room
-	os.Add (ApplicationIdFieldName, APIGuidToString (roof.head.guid));
+	os.Add (ApplicationId, APIGuidToString (roof.head.guid));
 	// GS::UniString roomName = roof.roomName;
 	// GS::UniString roomNum = roof.roomNoStr;
-	// os.Add(Room::NameFieldName, roomName);
-	// os.Add(Room::NumberFieldName, roomNum);
+	// os.Add(Room::Name, roomName);
+	// os.Add(Room::Number, roomNum);
 
 	// The index of the roof's floor
-	os.Add (FloorIndexFieldName, roof.head.floorInd);
+	os.Add (FloorIndex, roof.head.floorInd);
 
 
 
@@ -41,13 +42,13 @@ GS::ObjectState GetRoofData::Execute (const GS::ObjectState& parameters,
 									 GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIdsFieldName, ids);
+	parameters.Get (ApplicationIds, ids);
 	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) {
 		return APIGuidFromString (idStr.ToCStr ());
 	});
 
 	GS::ObjectState result;
-	const auto& listAdder = result.AddList<GS::ObjectState> (RoofsFieldName);
+	const auto& listAdder = result.AddList<GS::ObjectState> (Roofs);
 	for (const API_Guid& guid : elementGuids) {
 		// element and memo 
 		API_Element element{};

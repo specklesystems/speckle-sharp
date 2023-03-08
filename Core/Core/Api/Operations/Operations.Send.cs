@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sentry;
 using Serilog;
+using Serilog.Context;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
@@ -71,102 +72,130 @@ namespace Speckle.Core.Api
       SerializerVersion serializerVersion = SerializerVersion.V2
     )
     {
-      Log.Information("Starting send");
-
-      if (transports == null)
-      {
-        transports = new List<ITransport>();
-      }
+      transports ??= new List<ITransport>();
 
       if (transports.Count == 0 && useDefaultCache == false)
-      {
         throw new SpeckleException(
-          $"You need to provide at least one transport: cannot send with an empty transport list and no default cache.",
-          level: SentryLevel.Error
+          "You need to provide at least one transport: cannot send with an empty transport list and no default cache."
         );
-      }
 
       if (useDefaultCache)
-      {
         transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
-      }
 
-      BaseObjectSerializer serializer = null;
-      JsonSerializerSettings settings = null;
-      BaseObjectSerializerV2 serializerV2 = null;
-      if (serializerVersion == SerializerVersion.V1)
-        (serializer, settings) = GetSerializerInstance();
-      else
-        serializerV2 = new BaseObjectSerializerV2();
+      var transportContext = transports.ToDictionary(t => t.TransportName, t => t.TransportContext);
 
-      var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = Operations.GetInternalProgressAction(
-        localProgressDict,
-        onProgressAction
-      );
-
-      if (serializerVersion == SerializerVersion.V1)
+      // make sure all logs in the operation have the proper context
+      using (LogContext.PushProperty("transportContext", transportContext))
+      using (LogContext.PushProperty("correlationId", Guid.NewGuid().ToString()))
       {
-        serializer.OnProgressAction = internalProgressAction;
-        serializer.CancellationToken = cancellationToken;
-        serializer.OnErrorAction = onErrorAction;
-      }
-      else
-      {
-        serializerV2.OnProgressAction = internalProgressAction;
-        serializerV2.CancellationToken = cancellationToken;
-        serializerV2.OnErrorAction = onErrorAction;
-      }
+        var sendTimer = Stopwatch.StartNew();
+        Log.Information("Starting send operation");
 
-      foreach (var t in transports)
-      {
-        t.OnProgressAction = internalProgressAction;
-        t.CancellationToken = cancellationToken;
-        t.OnErrorAction = onErrorAction;
-        t.BeginWrite();
+        BaseObjectSerializer serializer = null;
+        JsonSerializerSettings settings = null;
+        BaseObjectSerializerV2 serializerV2 = null;
+        if (serializerVersion == SerializerVersion.V1)
+          (serializer, settings) = GetSerializerInstance();
+        else
+          serializerV2 = new BaseObjectSerializerV2();
+
+        var localProgressDict = new ConcurrentDictionary<string, int>();
+        var internalProgressAction = Operations.GetInternalProgressAction(
+          localProgressDict,
+          onProgressAction
+        );
 
         if (serializerVersion == SerializerVersion.V1)
-          serializer.WriteTransports.Add(t);
-        else
-          serializerV2.WriteTransports.Add(t);
-      }
-
-      string obj;
-      List<Task> transportAwaits;
-      if (serializerVersion == SerializerVersion.V1)
-      {
-        obj = JsonConvert.SerializeObject(@object, settings);
-        transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
-      }
-      else
-      {
-        obj = serializerV2.Serialize(@object);
-        transportAwaits = serializerV2.WriteTransports.Select(t => t.WriteComplete()).ToList();
-      }
-
-      if (cancellationToken.IsCancellationRequested)
-        return null;
-
-      await Task.WhenAll(transportAwaits).ConfigureAwait(false);
-
-      foreach (var t in transports)
-      {
-        t.EndWrite();
-        if (useDefaultCache && t is SQLiteTransport lc && lc.TransportName == "LC")
         {
-          lc.Dispose();
-          continue;
+          serializer.OnProgressAction = internalProgressAction;
+          serializer.CancellationToken = cancellationToken;
+          serializer.OnErrorAction = onErrorAction;
         }
-        if (disposeTransports && t is IDisposable disp)
-          disp.Dispose();
+        else
+        {
+          serializerV2.OnProgressAction = internalProgressAction;
+          serializerV2.CancellationToken = cancellationToken;
+          serializerV2.OnErrorAction = onErrorAction;
+        }
+
+        foreach (var t in transports)
+        {
+          t.OnProgressAction = internalProgressAction;
+          t.CancellationToken = cancellationToken;
+          t.OnErrorAction = onErrorAction;
+          t.BeginWrite();
+
+          if (serializerVersion == SerializerVersion.V1)
+            serializer.WriteTransports.Add(t);
+          else
+            serializerV2.WriteTransports.Add(t);
+        }
+
+        string obj;
+        List<Task> transportAwaits;
+        if (serializerVersion == SerializerVersion.V1)
+        {
+          obj = JsonConvert.SerializeObject(@object, settings);
+          transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
+        }
+        else
+        {
+          obj = serializerV2.Serialize(@object);
+          transportAwaits = serializerV2.WriteTransports.Select(t => t.WriteComplete()).ToList();
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+          Log.Information(
+            "Send operation cancelled after {elapsed} seconds. Returning null",
+            sendTimer.Elapsed.TotalSeconds
+          );
+          return null;
+        }
+
+        await Task.WhenAll(transportAwaits).ConfigureAwait(false);
+
+        foreach (var t in transports)
+        {
+          t.EndWrite();
+          if (useDefaultCache && t is SQLiteTransport lc && lc.TransportName == "LC")
+          {
+            lc.Dispose();
+            continue;
+          }
+          if (disposeTransports && t is IDisposable disp)
+            disp.Dispose();
+        }
+
+        if (cancellationToken.IsCancellationRequested)
+        {
+          Log.Information(
+            "Send operation cancelled after {elapsed}. Returning null",
+            sendTimer.Elapsed.TotalSeconds
+          );
+          return null;
+        }
+
+        var hash = JObject.Parse(obj).GetValue("id").ToString();
+
+        sendTimer.Stop();
+        Log.ForContext(
+            "transportElapsedBreakdown",
+            transports.ToDictionary(t => t.TransportName, t => t.Elapsed)
+          )
+          .ForContext(
+            "note",
+            "the elapsed summary doesn't need to add up to the total elapsed... Threading magic..."
+          )
+          .ForContext("serializerElapsed", serializerV2.Elapsed)
+          .Information(
+            "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
+            transports.Max(t => t.SavedObjectCount),
+            sendTimer.Elapsed.TotalSeconds,
+            hash
+          );
+        return hash;
       }
-
-      if (cancellationToken.IsCancellationRequested)
-        return null;
-
-      var hash = JObject.Parse(obj).GetValue("id").ToString();
-      Log.Information("Finished send, result {objectId}", hash);
-      return hash;
     }
 
     #endregion

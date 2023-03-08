@@ -251,6 +251,10 @@ namespace Objects.Converter.Revit
       if (phaseCreated != null)
         speckleElement["phaseCreated"] = phaseCreated.Name;
 
+      Phase phaseDemolished = Doc.GetElement(revitElement.DemolishedPhaseId) as Phase;
+      if (phaseDemolished != null)
+        speckleElement["phaseDemolished"] = phaseDemolished.Name;
+
       var category = revitElement.Category;
       if (category != null)
       {
@@ -411,6 +415,9 @@ namespace Objects.Converter.Revit
       // Set the phaseCreated parameter
       if (speckleElement["phaseCreated"] is string phaseCreated && !string.IsNullOrEmpty(phaseCreated))
         TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phaseCreated));
+      //Set the phaseDemolished parameter
+      if (speckleElement["phaseDemolished"] is string phaseDemolished && !string.IsNullOrEmpty(phaseDemolished))
+        TrySetParam(revitElement, BuiltInParameter.PHASE_DEMOLISHED, GetRevitPhase(revitElement.Document, phaseDemolished));
 
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways

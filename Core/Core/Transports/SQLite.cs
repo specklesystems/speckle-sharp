@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,6 +14,16 @@ namespace Speckle.Core.Transports
   public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
   {
     public string TransportName { get; set; } = "SQLite";
+    public Dictionary<string, object> TransportContext =>
+      new Dictionary<string, object>
+      {
+        { "name", TransportName },
+        { "type", this.GetType().Name },
+        { "basePath", _basePath },
+        { "applicationName", _applicationName },
+        { "scope", _scope },
+        { "blobStorageFolder", BlobStorageFolder }
+      };
 
     public CancellationToken CancellationToken { get; set; }
 
@@ -27,13 +38,17 @@ namespace Speckle.Core.Transports
     private SqliteConnection Connection { get; set; }
     private object ConnectionLock { get; set; }
 
-    private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
+    private ConcurrentQueue<(string, string, int)> Queue =
+      new ConcurrentQueue<(string, string, int)>();
 
     public Action<string, int> OnProgressAction { get; set; }
 
     public Action<string, Exception> OnErrorAction { get; set; }
     public int SavedObjectCount { get; private set; }
-    public string BlobStorageFolder => SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
+    public string BlobStorageFolder =>
+      SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
+
+    public TimeSpan Elapsed { get; private set; }
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -44,7 +59,11 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    public SQLiteTransport(string basePath = null, string applicationName = null, string scope = "Data")
+    public SQLiteTransport(
+      string basePath = null,
+      string applicationName = null,
+      string scope = "Data"
+    )
     {
       if (basePath == null)
         basePath = SpecklePathProvider.UserApplicationDataPath();
@@ -68,7 +87,6 @@ namespace Speckle.Core.Transports
         throw new Exception($"Cound not create {dir}", ex);
       }
 
-
       RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
       ConnectionString = string.Format("Data Source={0};", RootPath);
 
@@ -76,7 +94,12 @@ namespace Speckle.Core.Transports
       {
         Initialize();
 
-        WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
+        WriteTimer = new System.Timers.Timer()
+        {
+          AutoReset = true,
+          Enabled = false,
+          Interval = PollInterval
+        };
         WriteTimer.Elapsed += WriteTimerElapsed;
       }
       catch (Exception e)
@@ -87,19 +110,20 @@ namespace Speckle.Core.Transports
 
     private void Initialize()
     {
-
       // NOTE: used for creating partioned object tables.
       //string[] HexChars = new string[] { "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f" };
       //var cart = new List<string>();
       //foreach (var str in HexChars)
       //  foreach (var str2 in HexChars)
       //    cart.Add(str + str2);
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+        return;
 
       using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
-        var commandText = @"
+        var commandText =
+          @"
             CREATE TABLE IF NOT EXISTS objects(
               hash TEXT PRIMARY KEY,
               content TEXT
@@ -131,7 +155,8 @@ namespace Speckle.Core.Transports
       Connection.Open();
       ConnectionLock = new object();
 
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+        return;
     }
 
     public void BeginWrite()
@@ -150,7 +175,13 @@ namespace Speckle.Core.Transports
     /// <returns></returns>
     public async Task WriteComplete()
     {
-      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 500);
+      await Utilities.WaitUntil(
+        () =>
+        {
+          return GetWriteCompletionStatus();
+        },
+        500
+      );
     }
 
     /// <summary>
@@ -184,6 +215,7 @@ namespace Speckle.Core.Transports
         return;
       }
 
+      var stopwatch = Stopwatch.StartNew();
       IS_WRITING = true;
       var i = 0;
       ValueTuple<string, string, int> result;
@@ -201,7 +233,6 @@ namespace Speckle.Core.Transports
           {
             using (var command = new SqliteCommand(commandText, c, t))
             {
-
               Queue.TryDequeue(out result);
               command.Parameters.AddWithValue("@hash", result.Item1);
               command.Parameters.AddWithValue("@content", result.Item2);
@@ -215,9 +246,10 @@ namespace Speckle.Core.Transports
           {
             Queue = new ConcurrentQueue<(string, string, int)>();
             IS_WRITING = false;
+            stopwatch.Stop();
+            Elapsed += stopwatch.Elapsed;
             return;
           }
-
         }
       }
 
@@ -228,23 +260,29 @@ namespace Speckle.Core.Transports
       {
         Queue = new ConcurrentQueue<(string, string, int)>();
         IS_WRITING = false;
+        stopwatch.Stop();
+        Elapsed += stopwatch.Elapsed;
         return;
       }
 
       if (Queue.Count > 0)
         ConsumeQueue();
 
+      stopwatch.Stop();
+      Elapsed += stopwatch.Elapsed;
       IS_WRITING = false;
     }
 
     /// <summary>
-    /// Adds an object to the saving queue. 
+    /// Adds an object to the saving queue.
     /// </summary>
     /// <param name="hash"></param>
     /// <param name="serializedObject"></param>
     public void SaveObject(string hash, string serializedObject)
     {
-      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
+      Queue.Enqueue(
+        (hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject))
+      );
 
       WriteTimer.Enabled = true;
       WriteTimer.Start();
@@ -253,7 +291,9 @@ namespace Speckle.Core.Transports
     public void SaveObject(string hash, ITransport sourceTransport)
     {
       var serializedObject = sourceTransport.GetObject(hash);
-      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
+      Queue.Enqueue(
+        (hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject))
+      );
     }
 
     /// <summary>
@@ -271,7 +311,6 @@ namespace Speckle.Core.Transports
           var commandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
           using (var command = new SqliteCommand(commandText, c))
           {
-
             command.Parameters.AddWithValue("@hash", hash);
             command.Parameters.AddWithValue("@content", serializedObject);
             command.ExecuteNonQuery();
@@ -295,26 +334,40 @@ namespace Speckle.Core.Transports
     /// <returns></returns>
     public string GetObject(string hash)
     {
-      if (CancellationToken.IsCancellationRequested) return null;
+      if (CancellationToken.IsCancellationRequested)
+        return null;
       lock (ConnectionLock)
       {
-        using (var command = new SqliteCommand("SELECT * FROM objects WHERE hash = @hash LIMIT 1 ", Connection))
+        var stopwatch = Stopwatch.StartNew();
+        using (
+          var command = new SqliteCommand(
+            "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ",
+            Connection
+          )
+        )
         {
           command.Parameters.AddWithValue("@hash", hash);
           using (var reader = command.ExecuteReader())
           {
             while (reader.Read())
             {
-              if (CancellationToken.IsCancellationRequested) return null;
+              if (CancellationToken.IsCancellationRequested)
+                return null;
               return reader.GetString(1);
             }
           }
         }
+        stopwatch.Stop();
+        Elapsed += stopwatch.Elapsed;
       }
       return null; // pass on the duty of null checks to consumers
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
+    public async Task<string> CopyObjectAndChildren(
+      string hash,
+      ITransport targetTransport,
+      Action<int> onTotalChildrenCountKnown = null
+    )
     {
       throw new NotImplementedException();
     }
@@ -327,7 +380,8 @@ namespace Speckle.Core.Transports
     /// <returns></returns>
     internal IEnumerable<string> GetAllObjects()
     {
-      if (CancellationToken.IsCancellationRequested) yield break; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)
+        yield break; // Check for cancellation
 
       using var c = new SqliteConnection(ConnectionString);
       c.Open();
@@ -337,7 +391,8 @@ namespace Speckle.Core.Transports
       using var reader = command.ExecuteReader();
       while (reader.Read())
       {
-        if (CancellationToken.IsCancellationRequested) yield break; // Check for cancellation
+        if (CancellationToken.IsCancellationRequested)
+          yield break; // Check for cancellation
         yield return reader.GetString(1);
       }
     }
@@ -348,7 +403,8 @@ namespace Speckle.Core.Transports
     /// <param name="hash"></param>
     public void DeleteObject(string hash)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+        return;
 
       using (var c = new SqliteConnection(ConnectionString))
       {
@@ -368,7 +424,8 @@ namespace Speckle.Core.Transports
     /// <param name="serializedObject"></param>
     public void UpdateObject(string hash, string serializedObject)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      if (CancellationToken.IsCancellationRequested)
+        return;
 
       using (var c = new SqliteConnection(ConnectionString))
       {
@@ -392,14 +449,16 @@ namespace Speckle.Core.Transports
     {
       Dictionary<string, bool> ret = new Dictionary<string, bool>();
       // Initialize with false so that canceled queries still return a dictionary item for every object id
-      foreach (string objectId in objectIds) ret[objectId] = false;
+      foreach (string objectId in objectIds)
+        ret[objectId] = false;
 
       using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
         foreach (string objectId in objectIds)
         {
-          if (CancellationToken.IsCancellationRequested) return ret;
+          if (CancellationToken.IsCancellationRequested)
+            return ret;
           var commandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
           using (var command = new SqliteCommand(commandText, c))
           {
@@ -425,7 +484,12 @@ namespace Speckle.Core.Transports
 
     public object Clone()
     {
-      return new SQLiteTransport(_basePath, _applicationName, _scope) { OnProgressAction = OnProgressAction, OnErrorAction = OnErrorAction, CancellationToken = CancellationToken };
+      return new SQLiteTransport(_basePath, _applicationName, _scope)
+      {
+        OnProgressAction = OnProgressAction,
+        OnErrorAction = OnErrorAction,
+        CancellationToken = CancellationToken
+      };
     }
 
     public void SaveBlob(Models.Blob obj)

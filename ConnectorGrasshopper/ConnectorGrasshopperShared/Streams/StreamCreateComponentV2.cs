@@ -73,7 +73,7 @@ namespace ConnectorGrasshopper.Streams
             return;
           }
           
-          TaskList.Add(CreateStream(account));
+          TaskList.Add(Task.Run(() => CreateStream(account), CancelToken));
         }
         else
         {
@@ -90,27 +90,28 @@ namespace ConnectorGrasshopper.Streams
       }
     }
 
-    public async Task<StreamWrapper> CreateStream(Account account)
+    public Task<StreamWrapper> CreateStream(Account account)
     {
       if (stream != null)
       {
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
           "Using cached stream. If you want to create a new stream, create a new component.");
-        return stream;
+        return Task.FromResult(stream);
       }
 
       Tracker.TrackNodeRun("Stream Create");
 
       var client = new Client(account);
 
-      var streamId = client.StreamCreate(new StreamCreateInput { isPublic = false }).Result;
+      var streamId = client.StreamCreate(CancelToken, new StreamCreateInput { isPublic = false }).Result;
       var sw =  new StreamWrapper(
         streamId,
         account.userInfo.id,
         account.serverInfo.url
       );
       sw.SetAccount(account);
-      return sw;
+      
+      return Task.FromResult(sw);
     }
   }
 }
