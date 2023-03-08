@@ -14,6 +14,8 @@ namespace Objects.Converter.AutocadCivil
     public const string BOLTCORNER = "ASTBOLTCORNER";
     public const string BOLTMID = "ASTBOLTMID";
     public const string BOLTCIRCULAR = "ASTBOLTCIRCULAR";
+
+    public const string SPECIALPART = "ASTSPECIALPART";
   }
 
 }
