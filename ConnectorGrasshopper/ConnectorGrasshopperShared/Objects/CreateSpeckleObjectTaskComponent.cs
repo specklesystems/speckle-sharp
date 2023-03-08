@@ -36,7 +36,7 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    protected override void SolveInstancePrivate(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {

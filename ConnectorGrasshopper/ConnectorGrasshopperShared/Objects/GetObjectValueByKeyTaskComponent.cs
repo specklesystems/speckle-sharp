@@ -37,7 +37,7 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddGenericParameter("Value", "V", "Speckle object", GH_ParamAccess.list);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    protected override void SolveInstancePrivate(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {

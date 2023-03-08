@@ -32,7 +32,7 @@ namespace ConnectorGrasshopper.Streams
         GH_ParamAccess.item));
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    protected override void SolveInstancePrivate(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
       if (DA.Iteration != 0)

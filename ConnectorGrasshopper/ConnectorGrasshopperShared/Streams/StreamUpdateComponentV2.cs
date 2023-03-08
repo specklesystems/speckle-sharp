@@ -39,7 +39,7 @@ namespace ConnectorGrasshopper.Streams
     }
 
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    protected override void SolveInstancePrivate(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {

@@ -1,6 +1,7 @@
 ﻿using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
+using Serilog.Core;
 
 namespace ConnectorGrasshopper
 {
@@ -30,6 +31,11 @@ namespace ConnectorGrasshopper
         Tracker.TrackNodeCreation();
         IsNew = false; // Flag as false to prevent double reporting in some cases.
       }
+    }
+
+    protected override void BeforeSolveInstance()
+    {
+      base.BeforeSolveInstance();
     }
   }
 }

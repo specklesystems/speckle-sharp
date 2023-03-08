@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
+using Serilog.Context;
 
 namespace ConnectorGrasshopper
 {
@@ -31,5 +32,16 @@ namespace ConnectorGrasshopper
         IsNew = false;
       }
     }
+
+    protected override void SolveInstance(IGH_DataAccess DA)
+    {
+      // Host app fake!
+      using (LogContext.PushProperty("hostApplication", "grasshopperGrasshopper7"))
+      {
+        SolveInstancePrivate(DA);
+      }
+    }
+
+    protected abstract void SolveInstancePrivate(IGH_DataAccess DA);
   }
 }
