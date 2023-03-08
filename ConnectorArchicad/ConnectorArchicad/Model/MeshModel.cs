@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Primitives;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Model
 {
