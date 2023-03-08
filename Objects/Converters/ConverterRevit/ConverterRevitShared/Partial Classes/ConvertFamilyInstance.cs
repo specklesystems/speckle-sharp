@@ -1,21 +1,18 @@
-﻿using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Structure;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
-using DB = Autodesk.Revit.DB;
-
+using Autodesk.Revit.DB.Structure;
 using Speckle.Core.Models;
-
+using Speckle.Core.Models;
+using DB = Autodesk.Revit.DB;
 using Point = Objects.Geometry.Point;
-using Vector = Objects.Geometry.Vector;
 using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
+using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Revit
 {
@@ -234,13 +231,13 @@ namespace Objects.Converter.Revit
       // point based, convert these as revit instances
       if (@base == null)
         @base = RevitInstanceToSpeckle(revitFi, out notes, null);
-        //@base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
+      //@base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
 
       // add additional props to base object
       foreach (var prop in extraProps.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
         @base[prop] = extraProps[prop];
 
-      return @base; 
+      return @base;
     }
 
     /// <summary>
@@ -286,7 +283,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleFi, revitFi);
 
-#region sub elements capture
+      #region sub elements capture
 
       var subElementIds = revitFi.GetSubComponentIds();
       var convertedSubElements = new List<Base>();
@@ -311,7 +308,7 @@ namespace Objects.Converter.Revit
         speckleFi.elements = convertedSubElements;
       }
 
-#endregion
+      #endregion
 
       return speckleFi;
     }
@@ -451,14 +448,14 @@ namespace Objects.Converter.Revit
     #region new instancing
 
     // transforms
-    private Other.Transform TransformToSpeckle(Transform transform, out bool isMirrored)
+    private Other.Transform TransformToSpeckle(Transform transform, Document doc, out bool isMirrored)
     {
 
       // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
-      var point = PointToSpeckle(transform.Origin);
+      var point = PointToSpeckle(transform.Origin, doc);
       var t = new Vector(point.x, point.y, point.z, point.units);
       var rX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
-      var rY = new Vector(transform.BasisY.X, transform.BasisY.Y, transform.BasisY.Z); 
+      var rY = new Vector(transform.BasisY.X, transform.BasisY.Y, transform.BasisY.Z);
       var rZ = new Vector(transform.BasisZ.X, transform.BasisZ.Y, transform.BasisZ.Z);
 
       /*
@@ -512,7 +509,7 @@ namespace Objects.Converter.Revit
         1.0f - 2.0f * (x2 + z2),
         2.0f * (yz - wx));
 
-      XYZ zvec = new XYZ( 
+      XYZ zvec = new XYZ(
         2.0f * (xz - wy),
         2.0f * (yz + wx),
         1.0f - 2.0f * (x2 + y2));
@@ -533,7 +530,7 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
       var isUpdate = false;
-      
+
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
@@ -572,7 +569,7 @@ namespace Objects.Converter.Revit
               (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
-            
+
             if (definition.type != null && definition.type != revitType.Name)
               familyInstance.ChangeTypeId(familySymbol.Id);
 
@@ -638,7 +635,7 @@ namespace Objects.Converter.Revit
       {
         localTransform = instanceTransform.Multiply(parentTransform.Inverse);
       }
-      var transform = TransformToSpeckle(localTransform, out bool isMirrored);
+      var transform = TransformToSpeckle(localTransform, instance.Document, out bool isMirrored);
 
       // get the definition base of this instance
       RevitSymbolElementType definition = ConvertAndCacheRevitInstanceDefinition(instance, Doc, out List<string> definitionNotes, instanceTransform);
