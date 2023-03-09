@@ -110,7 +110,7 @@ namespace Objects
     {
       var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
       var availableConverters = Directory.EnumerateFiles(basePath!, "Objects.Converter.*")
-        .Select(dllPath => dllPath.Split('.')[^2])
+        .Select(dllPath => dllPath.Split('.').Reverse().ElementAt(1))
         .ToList();
       
 
@@ -118,7 +118,7 @@ namespace Objects
       if (!availableConverters.Any())
       {
         availableConverters = Directory.EnumerateFiles(ObjectsFolder, "Objects.Converter.*")
-          .Select(dllPath => dllPath.Split('.')[^2])
+          .Select(dllPath => dllPath.Split('.').Reverse().ElementAt(1))
           .ToList();
       }
 
