@@ -1162,7 +1162,7 @@ namespace DesktopUI2.ViewModels
         if (!await Http.UserHasInternet())
           throw new InvalidOperationException("Could not reach the internet, are you connected?");
 
-        Progress.CancellationTokenSource.Token.ThrowIfCancellationRequested();
+        Progress.CancellationToken.ThrowIfCancellationRequested();
 
         // We don't pass the progress cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
@@ -1277,7 +1277,7 @@ namespace DesktopUI2.ViewModels
         
         if (!await Http.UserHasInternet()) throw new InvalidOperationException("Could not reach the internet, are you connected?");
         
-        Progress.CancellationTokenSource.Token.ThrowIfCancellationRequested();
+        Progress.CancellationToken.ThrowIfCancellationRequested();
         
         // We don't pass the cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
         var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
@@ -1312,16 +1312,17 @@ namespace DesktopUI2.ViewModels
         
         //save the stream as well
         HomeViewModel.Instance.AddSavedStream(this);
-  
-        if (Progress.CancellationTokenSource.IsCancellationRequested)
+
+        if (Progress.CancellationToken.IsCancellationRequested)
         {
           //User requested a cancel, but it was too late!
-          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "Receive was successful", Message = "It was too late to cancel", Type = NotificationType.Warning});
+          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "Receive was successful", Message = "It was too late to cancel", Type = NotificationType.Success});
         }
         else
         {
           DisplayPopupNotification(new PopUpNotificationViewModel{Title = "Receive was successful", Message = "", Type = NotificationType.Success});
         }
+        
         Serilog.Log.Information(CommandSucceededLogTemplate, nameof(ReceiveCommand));
       }
       catch(Exception ex)
@@ -1337,18 +1338,18 @@ namespace DesktopUI2.ViewModels
 
     private static void HandleCommandException(Exception ex, [CallerMemberName] string commandName = "UnknownCommand")
     {
-      string commandPrettyName = commandName.EndsWith("Command") ? commandName.Substring(commandName.Length - "Command".Length) : commandName;
+      string commandPrettyName = commandName.EndsWith("Command") ? commandName.Substring(0, commandName.Length - "Command".Length) : commandName;
       
       LogEventLevel logLevel;
       INotification notificationViewModel;
       switch (ex)
       {
         case OperationCanceledException _:
-          logLevel = LogEventLevel.Warning; 
+          logLevel = LogEventLevel.Information; 
           notificationViewModel = new PopUpNotificationViewModel
           {
             Title = $"❌ {commandPrettyName} cancelled!",
-            Message = ex.Message, //"Operation canceled by user", //TODO: check if need to prettify warning
+            Message = "Operation canceled by user",
             Type = NotificationType.Success
           };
           break;
