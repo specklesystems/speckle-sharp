@@ -375,6 +375,10 @@ namespace DesktopUI2.ViewModels
             streams.AddRange(result.Select(x => new StreamAccountWrapper(x, account.Account)));
 
           }
+          catch (OperationCanceledException)
+          {
+            return;
+          }
           catch (Exception e)
           {
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)

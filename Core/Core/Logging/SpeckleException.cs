@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using GraphQL;
@@ -12,9 +13,10 @@ namespace Speckle.Core.Logging
 
     public SpeckleException() { }
 
-    public SpeckleException(string message, Exception inner) : base(message, inner) { }
+    public SpeckleException(string message, Exception? inner = null) : base(message, inner) { }
 
-    public SpeckleException(string message, bool log = true, SentryLevel level = SentryLevel.Info)
+    [Obsolete("Use any other constructor")]
+    public SpeckleException(string message, bool log, SentryLevel level = SentryLevel.Info)
       : base(message)
     {
       // if (log)
@@ -37,7 +39,7 @@ namespace Speckle.Core.Logging
 
     public SpeckleException(
       string message,
-      Exception inner,
+      Exception? inner,
       bool log = true,
       SentryLevel level = SentryLevel.Info
     ) : base(message, inner)

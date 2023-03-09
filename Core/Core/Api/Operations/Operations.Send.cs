@@ -81,8 +81,7 @@ namespace Speckle.Core.Api
       if (transports.Count == 0 && useDefaultCache == false)
       {
         throw new SpeckleException(
-          $"You need to provide at least one transport: cannot send with an empty transport list and no default cache.",
-          level: SentryLevel.Error
+          $"You need to provide at least one transport: cannot send with an empty transport list and no default cache."
         );
       }
 

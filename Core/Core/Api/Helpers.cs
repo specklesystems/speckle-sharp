@@ -87,8 +87,7 @@ namespace Speckle.Core.Api
         var branch = await client.BranchGet(sw.StreamId, branchName, 1);
         if (!branch.commits.items.Any())
           throw new SpeckleException(
-            $"The selected branch has no commits.",
-            level: SentryLevel.Info
+            $"The selected branch has no commits."
           );
 
         commit = branch.commits.items[0];
