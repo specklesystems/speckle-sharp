@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -10,8 +10,10 @@ using Objects.Geometry;
 using Objects.Organization;
 using Objects.Structural;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 using Application = Autodesk.Navisworks.Api.Application;
+// ReSharper disable RedundantExplicitArraySize
 
 namespace Objects.Converter.Navisworks
 {
@@ -64,8 +66,8 @@ namespace Objects.Converter.Navisworks
         {
           switch (@object)
           {
-            case string reference:
-              @base = ViewpointToBase(ReferenceToSavedViewpoint(reference));
+            case string referenceOrGuid:
+              @base = ViewpointToBase(ReferenceOrGuidToSavedViewpoint(referenceOrGuid));
               break;
             case Viewpoint item:
               @base = ViewpointToBase(item);
@@ -133,52 +135,128 @@ namespace Objects.Converter.Navisworks
       return CanConvertToSpeckle(item);
     }
 
-    private SavedViewpoint ReferenceToSavedViewpoint(string referenceId)
+    private static SavedViewpoint ReferenceOrGuidToSavedViewpoint(string referenceOrGuid)
     {
-      var reference = referenceId.Split(':');
+      SavedViewpoint savedViewpoint;
 
-      var savedItemReference = Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+      if (Guid.TryParse(referenceOrGuid, out var guid))
+      {
+        savedViewpoint = (SavedViewpoint)Doc.SavedViewpoints.ResolveGuid(guid);
+      }
+      else
+      {
+        var parts = referenceOrGuid.Split(':');
+        savedViewpoint = (parts.Length != 2)
+          ? null
+          : (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(parts[0], parts[1]));
+      }
 
-      if (savedItemReference != null) return (SavedViewpoint)savedItemReference;
-
-      return null;
+      return savedViewpoint;
     }
 
+    public static Point ToPoint(InwLPos3f v)
+    {
+      return new Point(v.data1, v.data2, v.data3);
+    }
+
+    public static Vector ToVector(InwLVec3f v)
+    {
+      return new Vector(v.data1, v.data2, v.data3);
+    }
 
     private static Base ViewpointToBase(Viewpoint viewpoint, string name = "Commit View")
     {
-      var position = viewpoint.Position;
-      var forward = GetViewDir(viewpoint);
-      var up = viewpoint.HasWorldUpVector
-        ? viewpoint.WorldUpVector
-        : new UnitVector3D(0, 0, 1);
-      var focalDistance = viewpoint.HasFocalDistance
-        ? viewpoint.FocalDistance
-        : 1;
-      var isOrtho = viewpoint.Projection == ViewpointProjection.Orthographic;
-      var target = new Point3D(position.X + forward.X * focalDistance, position.Y + forward.Y * focalDistance,
-        position.Z + forward.Z * focalDistance);
-
       var scaleFactor = UnitConversion.ScaleFactor(Application.ActiveDocument.Units, Units.Meters);
+
+      var vp = viewpoint.CreateCopy();
+      var anonView = ToInwOpAnonView(vp);
+      var viewPoint = anonView.ViewPoint;
+
+      var camera = viewPoint.Camera;
+
+      var viewDirection = ToVector(camera.GetViewDir());
+      var viewUp = ToVector(camera.GetUpVector());
+
+      var focalDistance = viewPoint.FocalDistance;
+
+      var position = ToPoint(camera.Position);
+
+      var origin = ScalePoint(position, scaleFactor);
+      var target = ScalePoint(GetViewTarget(position, viewDirection, focalDistance), scaleFactor);
+
+      string cameraType;
+      string zoom;
+      double zoomValue = 1;
+
+      switch (vp.Projection)
+      {
+        case ViewpointProjection.Orthographic:
+
+          cameraType = "Orthogonal Camera";
+          zoom = "ViewToWorldScale";
+
+          var dist = vp.VerticalExtentAtFocalDistance / 2 * scaleFactor;
+          zoomValue = 3.125 * dist / viewUp.Length;
+
+          break;
+        case ViewpointProjection.Perspective:
+
+          cameraType = "PerspectiveCamera";
+          zoom = "FieldOfView";
+
+          try
+          {
+            zoomValue = vp.FocalDistance * scaleFactor;
+          }
+          catch (Exception err)
+          {
+            Console.WriteLine($"No Focal Distance, Are you looking at anything?\n{err.Message}");
+          }
+
+          break;
+        default:
+          Console.WriteLine("No View");
+          return null;
+      }
 
       var view = new View3D
       {
         applicationId = name,
         name = name,
-        origin = ScaleViewpointPosition(new Point(position.X, position.Y, position.Z), scaleFactor),
-        target = ScaleViewpointPosition(new Point(target.X, target.Y, target.Z), scaleFactor),
-        upDirection = ToSpeckleVector(up),
-        forwardDirection = ToSpeckleVector(forward),
-        isOrthogonal = isOrtho
+        origin = origin,
+        target = target,
+        upDirection = viewUp,
+        forwardDirection = viewDirection,
+        isOrthogonal = cameraType == "Orthogonal Camera",
+        ["Camera Type"] = cameraType,
+        ["Zoom Strategy"] = zoom,
+        ["Zoom Value"] = zoomValue,
+        ["Field of View"] = camera.HeightField,
+        ["Aspect Ratio"] = camera.AspectRatio,
+        ["Focal Distance"] = focalDistance,
+        // TODO: Handle Clipping planes when the Speckle Viewer supports it or if some smart BCF interop comes into scope.
+        ["Clipping Planes"] = JsonConvert.SerializeObject(anonView.ClippingPlanes())
       };
+
       return view;
     }
 
-    private static Point ScaleViewpointPosition(Point point, double scaleFactor = 1)
+    private static Point ScalePoint(Point cameraPosition, double scaleFactor)
     {
-      var newPoint = new Point(point.x * scaleFactor, point.y * scaleFactor, point.z * scaleFactor);
+      return new Point(
+        cameraPosition.x * scaleFactor,
+        cameraPosition.y * scaleFactor,
+        cameraPosition.z * scaleFactor
+      );
+    }
 
-      return newPoint;
+    private static Point GetViewTarget(Point cameraPosition, Vector viewDirection, double focalDistance)
+    {
+      return new Point(
+        cameraPosition.x + viewDirection.x * focalDistance,
+        cameraPosition.y + viewDirection.y * focalDistance,
+        cameraPosition.z + viewDirection.z * focalDistance
+      );
     }
 
     private static Base ViewpointToBase(SavedViewpoint savedViewpoint)
@@ -305,7 +383,7 @@ namespace Objects.Converter.Navisworks
       // Only Geometry no children
       if (!item.HasGeometry || item.Children.Any()) return true;
 
-      const PrimitiveTypes allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles;
+      const PrimitiveTypes allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints;
 
       var primitives = item.Geometry.PrimitiveTypes;
       var primitiveTypeSupported = (primitives & allowedTypes) == primitives;

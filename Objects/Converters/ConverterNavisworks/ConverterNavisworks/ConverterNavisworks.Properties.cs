@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop;
+using Objects.Geometry;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.Navisworks
@@ -109,7 +110,9 @@ namespace Objects.Converter.Navisworks
           propertyValue = property.Value.ToNamedConstant().DisplayName;
           break;
         case VariantDataType.Point3D:
-          propertyValue = property.Value.ToPoint3D();
+          var point = property.Value.ToPoint3D();
+          var pointProperty = new Point(point.X, point.Y, point.Z);
+          propertyValue = pointProperty.ToString();
           break;
         case VariantDataType.None: break;
         case VariantDataType.Point2D:
