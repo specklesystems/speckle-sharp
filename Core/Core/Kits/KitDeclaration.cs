@@ -59,5 +59,10 @@ namespace Speckle.Core.Kits
     {
       return null;
     }
+
+    public bool TryLoadConverter(string app, out ISpeckleConverter speckleConverter)
+    {
+      throw new NotImplementedException();
+    }
   }
 }

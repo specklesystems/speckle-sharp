@@ -33,7 +33,7 @@ namespace TestsIntegration
   {
     public static readonly ServerInfo Server = new ServerInfo
     {
-      url = "http://localhost:3000",
+      url = "https://latest.speckle.dev",
       name = "Docker Server"
     };
 

@@ -223,7 +223,8 @@ namespace Speckle.Core.Api
       // Note: if properly implemented, there is no hard distinction between what is a local or remote transport; it's still just a transport. So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a Server/S3 transport as a local transport.
       // This is not reccommended, but shows what you can do. Another tidbit: the local transport does not need to be disk-bound; it can easily be an in memory transport. In memory transports are the fastest ones, but they're of limited use for more
     }
-
+    
+    
     internal class Placeholder
     {
       public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
