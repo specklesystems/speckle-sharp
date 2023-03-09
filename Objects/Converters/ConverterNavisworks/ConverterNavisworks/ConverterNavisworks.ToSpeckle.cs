@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
@@ -57,8 +57,8 @@ namespace Objects.Converter.Navisworks
         {
           switch (@object)
           {
-            case string reference:
-              @base = ViewpointToBase(ReferenceToSavedViewpoint(reference));
+            case string referenceOrGuid:
+              @base = ViewpointToBase(ReferenceOrGuidToSavedViewpoint(referenceOrGuid));
               break;
             case Viewpoint item:
               @base = ViewpointToBase(item);
@@ -94,15 +94,23 @@ namespace Objects.Converter.Navisworks
       return CanConvertToSpeckle(item);
     }
 
-    private SavedViewpoint ReferenceToSavedViewpoint(string referenceId)
+    private static SavedViewpoint ReferenceOrGuidToSavedViewpoint(string referenceOrGuid)
     {
-      var reference = referenceId.Split(':');
+      SavedViewpoint savedViewpoint;
 
-      var savedItemReference = Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+      if (Guid.TryParse(referenceOrGuid, out var guid))
+      {
+        savedViewpoint = (SavedViewpoint)Doc.SavedViewpoints.ResolveGuid(guid);
+      }
+      else
+      {
+        var parts = referenceOrGuid.Split(':');
+        savedViewpoint = (parts.Length != 2)
+          ? null
+          : (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(parts[0], parts[1]));
+      }
 
-      if (savedItemReference != null) return (SavedViewpoint)savedItemReference;
-
-      return null;
+      return savedViewpoint;
     }
 
     public static Point ToPoint(InwLPos3f v)

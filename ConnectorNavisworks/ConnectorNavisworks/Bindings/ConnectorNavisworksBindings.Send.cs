@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop;
@@ -39,9 +40,19 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       DefaultKit = KitManager.GetDefaultKit();
 
+      if (Doc.ActiveSheet == null)
+      {
+        progress.Report.LogOperationError(new SpeckleException("Your Document is empty. Nothing to Send."));
+        progressBar.Cancel();
+        Application.EndProgress();
+        return null;
+      }
+
       if (DefaultKit == null)
       {
         progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
+        progressBar.Cancel();
+        Application.EndProgress();
         return null;
       }
 
@@ -49,6 +60,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
       if (NavisworksConverter == null)
       {
         progress.Report.LogOperationError(new SpeckleException($"Could not find Converter{VersionedAppName}!"));
+        progressBar.Cancel();
+        Application.EndProgress();
         return null;
       }
 
@@ -68,7 +81,21 @@ namespace Speckle.ConnectorNavisworks.Bindings
       if (state.Filter != null)
       {
         progressBar.BeginSubOperation(0, $"Building object-tree from {state.Filter.Selection.Count} selections.");
-        var objects = GetObjectsFromFilter(state.Filter);
+
+        IEnumerable<string> objects;
+
+        try
+        {
+          objects = GetObjectsFromFilter(state.Filter);
+        }
+        catch
+        {
+          progress.Report.LogOperationError(
+            new SpeckleException("An error occurred retrieving objects from your saved selection source.", false));
+          progressBar.Cancel();
+          Application.EndProgress();
+          return null;
+        }
 
         if (objects != null) filteredObjects.AddRange(objects);
 
@@ -77,8 +104,17 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       if (filteredObjects.Count == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException(
-          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        if (state.Filter != null && state.Filter.Slug == "all")
+        {
+          progress.Report.LogOperationError(
+            new SpeckleException("Everything Mode is not yet implemented. Send stopped.", false));
+        }
+        else
+        {
+          progress.Report.LogOperationError(new SpeckleException(
+            "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
+        }
+
         progressBar.Cancel();
         Application.EndProgress();
         return null;
@@ -154,7 +190,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         var pseudoId = nextToConvert.Key;
         var descriptor = ObjectDescriptor(pseudoId);
 
-        var alreadyConverted = NavisworksConverter.Report.ReportObjects.TryGetValue(pseudoId, out var applicationObject);
+        var alreadyConverted =
+          NavisworksConverter.Report.ReportObjects.TryGetValue(pseudoId, out var applicationObject);
 
         var reportObject = alreadyConverted
           ? applicationObject
@@ -239,8 +276,11 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         progressBar.Cancel();
         Application.EndProgress();
+
+
         progress.Report.LogOperationError(
           new SpeckleException("Zero objects converted successfully. Send stopped.", false));
+
         return null;
       }
 
@@ -251,10 +291,11 @@ namespace Speckle.ConnectorNavisworks.Bindings
       NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "views" } });
       if (state.Filter?.Slug == "views")
       {
-        var selectedViews = state.Filter.Selection.Select(Convert).Where(c => c != null);
+        var selectedViews = state.Filter.Selection.Select(Convert).Where(c => c != null).ToList();
         views.AddRange(selectedViews);
       }
-      else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting checkBox && checkBox.IsChecked)
+
+      if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting checkBox && checkBox.IsChecked)
       {
         views.Add(Convert(Doc.CurrentViewpoint.ToViewpoint()));
       }
@@ -296,7 +337,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       }
       catch (Exception exception)
       {
-        Console.WriteLine( exception.ToString() );
+        Console.WriteLine(exception.ToString());
         progress.Report.LogOperationError(exception);
       }
 
@@ -349,21 +390,41 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return null;
     }
 
-    private Base Convert(object @object)
+    private Base Convert(object inputObject)
     {
       try
       {
-        Base converted = null;
-        if (!Control.InvokeRequired) return NavisworksConverter.ConvertToSpeckle(@object);
-        Control.Invoke(new Action(() => converted = NavisworksConverter.ConvertToSpeckle(@object)));
-        return converted;
+        Func<object, Base> convertToSpeckle = NavisworksConverter.ConvertToSpeckle;
+        return (Base)InvokeOnUIThreadWithException(Control, convertToSpeckle, inputObject);
       }
-      catch (Exception)
+      catch (TargetInvocationException ex)
       {
-        var unused = new SpeckleException("Could not find any Kit!");
+        // log the exception or re-throw it
+        throw ex.InnerException ?? ex;
       }
+    }
 
-      return null;
+    public static object InvokeOnUIThreadWithException(System.Windows.Forms.Control control, Delegate method,
+      params object[] args)
+    {
+      if (control == null) return null;
+
+      object result = null;
+
+      control.Invoke(new Action(() =>
+      {
+        try
+        {
+          result = method?.DynamicInvoke(args);
+        }
+        catch (TargetInvocationException ex)
+        {
+          // log the exception or re-throw it
+          throw ex.InnerException ?? ex;
+        }
+      }));
+
+      return result;
     }
 
     private enum ConversionState

@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -167,7 +167,7 @@ namespace Objects.Converter.Revit
     {
       // create polyline from revitpipe points
       var polyline = new Polyline();
-      polyline.value = PointsToFlatList(revitPipe.Points.Select(o => PointToSpeckle(o)));
+      polyline.value = PointsToFlatList(revitPipe.Points.Select(o => PointToSpeckle(o, revitPipe.Document)));
       polyline.units = ModelUnits;
       polyline.closed = false;
 
@@ -181,8 +181,8 @@ namespace Objects.Converter.Revit
         systemType = GetParamValue<string>(revitPipe, BuiltInParameter.RBS_SYSTEM_CLASSIFICATION_PARAM),
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
-        startTangent = VectorToSpeckle(revitPipe.StartTangent),
-        endTangent = VectorToSpeckle(revitPipe.EndTangent),
+        startTangent = VectorToSpeckle(revitPipe.StartTangent, revitPipe.Document),
+        endTangent = VectorToSpeckle(revitPipe.EndTangent, revitPipe.Document),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayValue = GetElementMesh(revitPipe)
       };

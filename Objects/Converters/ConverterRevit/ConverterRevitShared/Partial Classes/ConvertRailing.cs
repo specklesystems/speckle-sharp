@@ -1,9 +1,9 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
 
 namespace Objects.Converter.Revit
 {
@@ -104,7 +104,7 @@ namespace Objects.Converter.Revit
       //speckleRailing.family = railingType.FamilyName;
       speckleRailing.type = railingType.Name;
       speckleRailing.level = ConvertAndCacheLevel(revitRailing, BuiltInParameter.STAIRS_RAILING_BASE_LEVEL_PARAM);
-      speckleRailing.path = CurveListToSpeckle(revitRailing.GetPath());
+      speckleRailing.path = CurveListToSpeckle(revitRailing.GetPath(), revitRailing.Document);
 
       GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 

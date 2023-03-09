@@ -16,14 +16,19 @@ namespace Speckle.Core.Models.GraphTraversal
     /// <returns></returns>
     public static GraphTraversal CreateTraverseFunc(ISpeckleConverter converter)
     {
+
       var convertableRule = TraversalRule.NewTraversalRule()
         .When(converter.CanConvertToNative)
         .When(HasDisplayValue)
-        .ContinueTraversing(Except(
-          Concat(DynamicMembers(), ElementsAliases), 
-          displayValueAliases)
-        );
-
+        .ContinueTraversing(b =>
+        {
+          var membersToTraverse = b.GetDynamicMembers()
+            .Concat(displayValueAliases)
+            .Concat(elementsAliases)
+            .Except(ignoreProps);
+          return membersToTraverse;
+        });
+      
       var ignoreResultsRule = TraversalRule.NewTraversalRule()
         .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
         .ContinueTraversing(None);
@@ -48,11 +53,13 @@ namespace Speckle.Core.Models.GraphTraversal
       
       var displayValueRule = TraversalRule.NewTraversalRule()
         .When(HasDisplayValue)
-        .ContinueTraversing(Except(
-          Concat(DynamicMembers(), ElementsAliases), 
-          displayValueAliases)
+        .ContinueTraversing(b => b.GetDynamicMembers()
+          .Concat(displayValueAliases)
+          .Except(elementsAliases)
+          .Except(ignoreProps)
         );
 
+      //WORKAROUND: ideally, traversal rules would not have Objects specific rules.  
       var ignoreResultsRule = TraversalRule.NewTraversalRule()
         .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
         .ContinueTraversing(None);
@@ -73,6 +80,7 @@ namespace Speckle.Core.Models.GraphTraversal
     internal static IEnumerable<string> ElementsAliases(Base _) => elementsAliases;
 
     internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+    internal static readonly string[] ignoreProps = new[]{"@blockDefinition"}.Concat(displayValueAliases).ToArray();
     internal static IEnumerable<string> DisplayValueAliases(Base _) => displayValueAliases;
     internal static IEnumerable<string> None(Base _) => Enumerable.Empty<string>();
     internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers) => x => x.GetMembers(includeMembers).Keys;

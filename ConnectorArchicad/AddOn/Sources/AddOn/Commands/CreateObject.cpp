@@ -10,6 +10,7 @@
 #include "FieldNames.hpp"
 
 #include "ModelInfo.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands
@@ -33,7 +34,7 @@ static GSErrCode GetObjectFromObjectState (const GS::ObjectState& os, API_Elemen
 	GSErrCode err = NoError;
 
 	GS::UniString guidString;
-	os.Get (ApplicationIdFieldName, guidString);
+	os.Get (ApplicationId, guidString);
 	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_ObjectID;
@@ -47,7 +48,7 @@ static GSErrCode GetObjectFromObjectState (const GS::ObjectState& os, API_Elemen
 
 	// get the mesh
 	ModelInfo modelInfo;
-	os.Get (Model::ModelFieldName, modelInfo);
+	os.Get (Model::Model, modelInfo);
 	
 	API_LibPart libPart;
 	err = libpartImportManager.GetLibpart (modelInfo, attributeManager, libPart);
@@ -78,9 +79,9 @@ GS::ObjectState CreateObject::Execute (const GS::ObjectState& parameters, GS::Pr
 	GS::ObjectState result;
 
 	GS::Array<GS::ObjectState> objects;
-	parameters.Get (ObjectsFieldName, objects);
+	parameters.Get (FieldNames::Objects, objects);
 
-	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIdsFieldName);
+	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIds);
 
 	ACAPI_CallUndoableCommand ("CreateSpeckleObject", [&] () -> GSErrCode {
 

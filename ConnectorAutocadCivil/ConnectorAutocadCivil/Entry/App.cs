@@ -1,5 +1,4 @@
 ﻿using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.Runtime;
 using Autodesk.Windows;
 using Speckle.ConnectorAutocadCivil.UI;
 using System;
@@ -10,6 +9,12 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Forms = System.Windows.Forms;
+
+#if ADVANCESTEEL2023
+using Autodesk.AdvanceSteel.Runtime;
+#else
+using Autodesk.AutoCAD.Runtime;
+#endif
 
 namespace Speckle.ConnectorAutocadCivil.Entry
 {
@@ -22,8 +27,14 @@ namespace Speckle.ConnectorAutocadCivil.Entry
     {
       try
       {
+        //Advance Steel addon is initialized after ribbon creation
+        bool advanceSteel = false;
+#if ADVANCESTEEL2023
+        advanceSteel = true;
+#endif
+
         ribbon = ComponentManager.Ribbon;
-        if (ribbon != null) //the assembly was loaded using netload
+        if (ribbon != null && !advanceSteel) //the assembly was loaded using netload
         {
           Create();
         }
@@ -133,7 +144,9 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         ribbon.Tabs.Add(tab);
       }
 
+#if !ADVANCESTEEL2023
       tab.IsActive = true; // optional debug: set ribbon tab active
+#endif
       return tab;
     }
 
@@ -205,7 +218,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
       return null;
     }
 
-    #endregion 
+    #endregion
 
     public class ButtonCommandHandler : System.Windows.Input.ICommand
     {

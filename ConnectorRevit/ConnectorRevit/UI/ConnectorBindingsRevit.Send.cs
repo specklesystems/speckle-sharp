@@ -86,7 +86,11 @@ namespace Speckle.ConnectorRevit.UI
 
             if (!converter.CanConvertToSpeckle(revitElement))
             {
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
+              if (revitElement is RevitLinkInstance)
+                reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Enable linked model support from the settings to send this object");
+              else
+                reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported yet");
+
               progress.Report.Log(reportObj);
               continue;
             }
@@ -168,7 +172,7 @@ namespace Speckle.ConnectorRevit.UI
               if (commitObject[category] is List<Base> objs)
               {
                 var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
-              
+
                 // here we are checking to see if we're converting a host that doesn't know it is a host
                 // and if dependent elements of that host have already been converted
                 if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)

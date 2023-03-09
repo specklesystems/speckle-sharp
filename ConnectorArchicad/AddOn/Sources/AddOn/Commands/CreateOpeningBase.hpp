@@ -12,6 +12,8 @@
 // GSRoot
 #include "ObjectState.hpp"
 
+using namespace FieldNames;
+
 
 namespace AddOnCommands {
 

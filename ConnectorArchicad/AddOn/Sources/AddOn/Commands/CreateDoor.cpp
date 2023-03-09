@@ -9,6 +9,7 @@
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
 #include "Database.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands
@@ -83,7 +84,7 @@ static GSErrCode GetDoorFromObjectState (const GS::ObjectState& currentDoor, API
 #pragma endregion
 
 	GS::UniString guidString;
-	currentDoor.Get (ApplicationIdFieldName, guidString);
+	currentDoor.Get (ApplicationId, guidString);
 	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 
 	err = GetOpeningBaseFromObjectState<API_DoorType> (currentDoor, element.door, wallMask);
@@ -102,9 +103,9 @@ GS::ObjectState CreateDoor::Execute (const GS::ObjectState& parameters, GS::Proc
 	GSErrCode err = NoError;
 
 	GS::Array<GS::ObjectState> subElements;
-	parameters.Get (SubElementsFieldName, subElements);
+	parameters.Get (SubElements, subElements);
 
-	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIdsFieldName);
+	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIds);
 
 	ACAPI_CallUndoableCommand ("CreateSpeckleDoor", [&] () -> GSErrCode {
 		Utility::Database db;
@@ -115,7 +116,7 @@ GS::ObjectState CreateDoor::Execute (const GS::ObjectState& parameters, GS::Proc
 
 			// Check if parent exist
 			GS::UniString parentGuidString;
-			subElement.Get (ParentElementIdFieldName, parentGuidString);
+			subElement.Get (ParentElementId, parentGuidString);
 			API_Guid parentGuid = APIGuidFromString (parentGuidString.ToCStr ());
 
 #ifdef ServerMainVers_2600
