@@ -17,8 +17,12 @@ namespace Objects.Converter.Navisworks
     }
   }
 
+
   public partial class ConverterNavisworks
   {
+    public static string
+      RootNodePseudoId = "___";
+
     private static string PseudoIdFromModelItem(ModelItem element)
     {
       // The path for ModelItems is their node position at each level of the Models tree.

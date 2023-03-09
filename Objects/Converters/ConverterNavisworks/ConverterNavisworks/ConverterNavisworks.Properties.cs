@@ -19,32 +19,19 @@ namespace Objects.Converter.Navisworks
 
       foreach (var propertyCategory in userVisiblePropertyCategories)
       {
+        if (propertyCategory.DisplayName == "Geometry") continue;
+
         var properties = propertyCategory.Properties;
         var propertyCategoryBase = new Base();
 
         properties.ToList().ForEach(property =>
           BuildPropertyCategory(propertyCategory, property, propertyCategoryBase));
 
-        if (propertyCategoryBase.GetMembers().Any() && propertyCategory.DisplayName != null)
-        {
-          var propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
+        if (!propertyCategoryBase.GetMembers().Any() || propertyCategory.DisplayName == null) continue;
 
-          switch (propertyCategory.DisplayName)
-          {
-            case "Geometry":
-              continue;
-            case "Item":
-            {
-              foreach (var property in propertyCategoryBase.GetMembers().Keys)
-                @base[property] = propertyCategoryBase[property];
+        var propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
 
-              break;
-            }
-            default:
-              propertiesBase[propertyCategoryDisplayName] = propertyCategoryBase;
-              break;
-          }
-        }
+        propertiesBase[propertyCategoryDisplayName] = propertyCategoryBase;
       }
 
       return propertiesBase;
@@ -54,7 +41,7 @@ namespace Objects.Converter.Navisworks
     {
       // Regex pattern from speckle-sharp/Core/Core/Models/DynamicBase.cs IsPropNameValid
       return name == "Item"
-        ? "$Item"
+        ? "Item"
         : Regex.Replace(name, @"[\.\/]", "_");
     }
 
@@ -156,7 +143,64 @@ namespace Objects.Converter.Navisworks
             propertyCategoryBase[propertyName] = arrayPropValue;
           }
         }
+
+        propertyCategoryBase.applicationId = propertyCategory.CombinedName.ToString();
       }
+    }
+
+    private static void AddItemProperties(ModelItem element, Base @base)
+    {
+      @base["class"] = element.ClassName;
+
+      var properties =
+        !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out var result) || result;
+
+      // Cascade through the Property Sets
+      @base["properties"] = properties
+        ? GetPropertiesBase(element, @base)
+        : new Base();
+
+      // If the node is a Model
+      if (element.HasModel) ((Base)@base["properties"])["Model"] = GetModelProperties(element.Model);
+
+      // Internal Properties - some are matched dynamically already, some can be added from the core API
+      var internals = (Base)((Base)@base["properties"])?["Internal"] ?? new Base();
+
+      internals["ClassDisplayName"] = element.ClassDisplayName ?? internals["ClassDisplayName"];
+      internals["ClassName"] = element.ClassName ?? internals["ClassName"];
+      internals["DisplayName"] = element.DisplayName ?? internals["DisplayName"];
+      internals["InstanceGuid"] = element.InstanceGuid.ToByteArray()
+        .Select(x => (int)x).Sum() > 0
+        ? element.InstanceGuid
+        : (Guid?)null;
+      internals["Source"] = element.Model?.SourceFileName ?? internals["Source"];
+      internals["Source Guid"] = element.Model?.SourceGuid ?? internals["Source Guid"];
+      internals["NodeType"] = element.IsCollection ? "Collection" :
+        element.IsComposite ? "Composite Object" :
+        element.IsInsert ? "Geometry Insert" :
+        element.IsLayer ? "Layer" : null;
+
+      ((Base)@base["properties"])["Internal"] = internals;
+    }
+
+    private static Base GetModelProperties(Autodesk.Navisworks.Api.Model elementModel)
+    {
+      var model = new Base
+      {
+        ["Creator"] = elementModel.Creator,
+        ["Filename"] = elementModel.FileName,
+        ["Source Filename"] = elementModel.SourceFileName,
+        ["Units"] = elementModel.Units.ToString(),
+        ["Transform"] = elementModel.Transform.ToString(),
+        ["Guid"] = elementModel.Guid.ToString()
+      };
+
+      if (elementModel.HasFrontVector) model["Front Vector"] = elementModel.FrontVector.ToString();
+      if (elementModel.HasNorthVector) model["North Vector"] = elementModel.NorthVector.ToString();
+      if (elementModel.HasRightVector) model["Right Vector"] = elementModel.RightVector.ToString();
+      if (elementModel.HasUpVector) model["Up Vector"] = elementModel.UpVector.ToString();
+
+      return model;
     }
 
     public static List<Tuple<NamedConstant, NamedConstant>> LoadQuickProperties()

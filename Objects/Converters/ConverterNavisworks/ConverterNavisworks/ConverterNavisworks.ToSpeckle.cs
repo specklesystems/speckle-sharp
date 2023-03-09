@@ -7,6 +7,8 @@ using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
 using Objects.Converter.Navisworks.Objects;
 using Objects.Geometry;
+using Objects.Organization;
+using Objects.Structural;
 using Speckle.Core.Models;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 using Application = Autodesk.Navisworks.Api.Application;
@@ -31,7 +33,9 @@ namespace Objects.Converter.Navisworks
           switch (@object)
           {
             case string pseudoId:
-              element = PointerToModelItem(pseudoId);
+              element = pseudoId == RootNodePseudoId
+                ? Application.ActiveDocument.Models.RootItems.First
+                : PointerToModelItem(pseudoId);
               break;
             case ModelItem item:
               element = item;
@@ -41,11 +45,6 @@ namespace Objects.Converter.Navisworks
           }
 
           @base = ModelItemToSpeckle(element);
-
-
-          var dands = DescendantsAndSelf(@base);
-
-
 
           if (@base == null) return null;
 
@@ -91,15 +90,15 @@ namespace Objects.Converter.Navisworks
         case Objects.Geometry geometry:
           descendants.Add(geometry);
           break;
-        case Objects.ElementCollection collection:
+        case Collection collection:
         {
           var collectionProperties = collection.GetType().GetProperties()
-            .Where(p => p.PropertyType == typeof(Objects.ElementCollection));
+            .Where(p => p.PropertyType == typeof(Collection));
 
           foreach (var property in collectionProperties)
           {
-            var childCollection = (Objects.ElementCollection)property.GetValue(collection);
-          
+            var childCollection = (Collection)property.GetValue(collection);
+
             descendants.UnionWith(DescendantsAndSelf(childCollection));
           }
 
@@ -126,7 +125,10 @@ namespace Objects.Converter.Navisworks
       // is expecting @object to be a pseudoId string
       if (!(@object is string pseudoId)) return false;
 
+      if (pseudoId == RootNodePseudoId) return CanConvertToSpeckle(Application.ActiveDocument.Models.RootItems.First);
+
       var item = PointerToModelItem(pseudoId);
+
 
       return CanConvertToSpeckle(item);
     }
@@ -216,7 +218,7 @@ namespace Objects.Converter.Navisworks
     private static Base CategoryToSpeckle(ModelItem element)
     {
       var applicationId = PseudoIdFromModelItem(element);
-      
+
       var elementCategory = element.PropertyCategories
         .FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon);
       var elementCategoryType = elementCategory.Value.ToNamedConstant().DisplayName;
@@ -225,22 +227,8 @@ namespace Objects.Converter.Navisworks
       {
         case "Geometry":
           return new Objects.Geometry { applicationId = applicationId };
-        case "Layer":
-          return new Objects.Layer { applicationId = applicationId };
-        case "Group":
-          return new Objects.Group { applicationId = applicationId };
-        case "Insert Group":
-          return new Objects.InsertGroup { applicationId = applicationId };
-        case "Insert Geometry":
-          return new Objects.InsertGeometry { applicationId = applicationId };
-        case "Composite Object":
-          return new Objects.CompositeObject { applicationId = applicationId };
-        case "Collection":
-          return new Objects.Collection { applicationId = applicationId };
-        case "File":
-          return new Objects.File { applicationId = applicationId };
         default:
-          return new Objects.ElementCollection { applicationId = applicationId, _grouping = "ModelItems" };
+          return new Collection { applicationId = applicationId, collectionType = elementCategoryType };
       }
     }
 
@@ -250,6 +238,8 @@ namespace Objects.Converter.Navisworks
 
 
       var @base = CategoryToSpeckle(element);
+
+
       var properties =
         !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out var result) || result;
 
@@ -268,12 +258,15 @@ namespace Objects.Converter.Navisworks
         return null;
       }
 
+
       // Lookup ahead of time for wasted effort, collection is
       // invalid if it has no children, or no children through hiding
       if (element.Descendants.All(x => x.IsHidden))
       {
         return null;
       }
+
+      ((Collection)@base).name = element.DisplayName ?? null;
 
       var elements = element.Children.Select(ModelItemToSpeckle).Where(childBase => childBase != null).ToList();
 
@@ -284,130 +277,7 @@ namespace Objects.Converter.Navisworks
         return null;
       }
 
-      var objectModel = Settings.FirstOrDefault(x => x.Key == "object-model").Value ?? "Classic";
-
-      switch (objectModel)
-      {
-        case "Categorized":
-          // Categorized Elements
-          var categorizedElements = new Base();
-
-          foreach (var baseElement in elements)
-          {
-            var category = baseElement is Objects.Geometry
-              ? "@Geometry"
-              : ((ElementCollection)baseElement)._grouping;
-
-            var values = (List<Base>)categorizedElements[category] ?? new List<Base>();
-
-            values.Add(baseElement);
-            categorizedElements[category] = values;
-          }
-
-          @base["@Elements"] = categorizedElements;
-          break;
-
-        case "Dictionary":
-          // Elements as a Dict
-          var categorizedElementsDict = new Base();
-
-          foreach (var baseElement in elements)
-          {
-            var category = baseElement is Objects.Geometry
-              ? "@Geometry"
-              : ((ElementCollection)baseElement)._grouping;
-
-            var collectionName = baseElement["DisplayName"].ToString();
-
-            List<Base> values;
-
-            if (baseElement is Objects.Geometry)
-            {
-              values = (List<Base>)categorizedElementsDict[category] ?? new List<Base>();
-
-              values.Add(baseElement);
-              categorizedElementsDict[category] = values;
-            }
-            else
-            {
-              var dict = (Base)categorizedElementsDict[category] ?? new Base();
-              categorizedElementsDict[category] = dict;
-
-              values = (List<Base>)dict[collectionName] ?? new List<Base>();
-              values.Add(baseElement);
-              ((Base)categorizedElementsDict[category])[collectionName] = values;
-            }
-          }
-
-          @base["@Elements"] = categorizedElementsDict;
-          break;
-
-        case "Dissolved Categories":
-          // dissolved Elements Categories
-          foreach (var baseElement in elements)
-          {
-            var category = baseElement is Objects.Geometry
-              ? "@Geometry"
-              : ((ElementCollection)baseElement)._grouping;
-
-            var collectionName = baseElement["DisplayName"].ToString();
-
-            List<Base> values;
-
-            if (baseElement is Objects.Geometry)
-            {
-              values = (List<Base>)@base[category] ?? new List<Base>();
-
-              values.Add(baseElement);
-              @base[category] = values;
-            }
-            else
-            {
-              var dict = (Base)@base[category] ?? new Base();
-              @base[category] = dict;
-
-              values = (List<Base>)dict[collectionName] ?? new List<Base>();
-              values.Add(baseElement);
-              ((Base)@base[category])[collectionName] = values;
-            }
-          }
-
-          break;
-        case "Dissolved Elements":
-          // dissolved Elements to Base
-          foreach (var baseElement in elements)
-          {
-            var category = baseElement is Objects.Geometry
-              ? "@Geometry"
-              : ((ElementCollection)baseElement)._grouping;
-
-            var collectionName = baseElement["DisplayName"].ToString();
-
-            List<Base> values;
-
-            if (baseElement is Objects.Geometry)
-            {
-              values = (List<Base>)@base[category] ?? new List<Base>();
-
-              values.Add(baseElement);
-              @base[category] = values;
-            }
-            else
-            {
-              values = (List<Base>)@base[collectionName] ?? new List<Base>();
-              values.Add(baseElement);
-
-              @base[collectionName] = values;
-            }
-          }
-
-          break;
-        default:
-
-          // Classic Elements
-          @base["@Elements"] = elements;
-          break;
-      }
+      ((Collection)@base).elements = elements;
 
       AddItemProperties(element, @base);
 
@@ -424,30 +294,6 @@ namespace Objects.Converter.Navisworks
       if (fragmentGeometry != null && fragmentGeometry.Any()) @base["displayValue"] = fragmentGeometry;
     }
 
-    private static void AddItemProperties(ModelItem element, Base @base)
-    {
-
-      var properties =
-        !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out var result) || result;
-
-      // Cascade through the Property Sets
-      // "Item" properties are added to @base in GetPropertiesBase
-      if (properties) @base["Properties"] = GetPropertiesBase(element, @base);
-
-      @base["ClassDisplayName"] = element.ClassDisplayName ?? null;
-      @base["ClassName"] = element.ClassName ?? null;
-      @base["Creator"] = element.Model?.Creator ?? null;
-      @base["DisplayName"] = element.DisplayName ?? null;
-      @base["Filename"] = element.Model?.FileName ?? null;
-      @base["InstanceGuid"] = element.InstanceGuid.ToByteArray()
-          .Select(x => (int)x).Sum() > 0 ? element.InstanceGuid : (Guid?)null;
-      @base["Source"] = element.Model?.SourceFileName ?? null;
-      @base["Source Guid"] = element.Model?.SourceGuid ?? null;
-      @base["NodeType"] = element.IsCollection ? "Collection" :
-          element.IsComposite ? "Composite Object" :
-          element.IsInsert ? "Geometry Insert" :
-          element.IsLayer ? "Layer" : null;
-    }
 
     public List<Base> ConvertToSpeckle(List<ModelItem> modelItems)
     {

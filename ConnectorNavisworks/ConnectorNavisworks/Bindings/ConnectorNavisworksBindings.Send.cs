@@ -102,7 +102,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
         new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
       state.SelectedObjectIds.ForEach(pseudoId =>
       {
-        if (pseudoId != RootNodePseudoId) toConvertDictionary.Add(pseudoId, ConversionState.ToConvert);
+        //if (pseudoId != RootNodePseudoId)
+        {
+          toConvertDictionary.Add(pseudoId, ConversionState.ToConvert);
+        }
       });
 
       progressBar.EndSubOperation();
@@ -192,9 +195,9 @@ namespace Speckle.ConnectorNavisworks.Bindings
           continue;
         }
 
-        if (commitObject["@Elements"] == null) commitObject["@Elements"] = new List<Base>();
+        if (commitObject["@elements"] == null) commitObject["@elements"] = new List<Base>();
 
-        ((List<Base>)commitObject["@Elements"]).Add(converted);
+        ((List<Base>)commitObject["@elements"]).Add(converted);
 
         // read back the pseudoIds of nested children already converted
         if (!(converted["__convertedIds"] is List<string> convertedChildrenAndSelf)) continue;
@@ -219,7 +222,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       }
 
 
-      var convertedCount = toConvertDictionary.Count(x => x.Value==ConversionState.Converted);
+      var convertedCount = toConvertDictionary.Count(x => x.Value == ConversionState.Converted);
 
       progressBar.Update(1.0);
 
