@@ -69,6 +69,37 @@ public class AdvanceSteelBeamSchemaComponent: CreateSchemaObjectBase {
 }
 
 // This is generated code:
+public class AdvanceSteelCircularBoltSchemaComponent: CreateSchemaObjectBase {
+    static AdvanceSteelCircularBoltSchemaComponent() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
+    public AdvanceSteelCircularBoltSchemaComponent(): base("AdvanceSteelCircularBolt", "AdvanceSteelCircularBolt", "Creates a Advance Steel circular bolt.", "Speckle 2 Advance Steel", "Structure") { }
+    
+    internal static string internalCategory { get; }  = "Speckle 2 Advance Steel";
+
+    internal static Guid internalGuid => new Guid("2882d168-7e7c-5090-be24-e70091521c1f");
+
+
+    public override GH_Exposure Exposure => internalExposure;
+
+    public override Guid ComponentGuid => internalGuid;
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.AdvanceSteel.AdvanceSteelCircularBolt.ctor","Objects.BuiltElements.AdvanceSteel.AdvanceSteelCircularBolt");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
 public class AdvanceSteelPlateSchemaComponent: CreateSchemaObjectBase {
     static AdvanceSteelPlateSchemaComponent() {
        SpeckleGHSettings.SettingsChanged += (_, args) =>
@@ -95,6 +126,68 @@ public class AdvanceSteelPlateSchemaComponent: CreateSchemaObjectBase {
     
     public override void AddedToDocument(GH_Document document){
         SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.AdvanceSteel.AdvanceSteelPlate.ctor(Objects.Structural.Properties.Profiles.SectionProfile,Objects.Geometry.Polyline,System.String,Objects.Structural.Materials.StructuralMaterial)","Objects.BuiltElements.AdvanceSteel.AdvanceSteelPlate");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class AdvanceSteelRectangularBoltSchemaComponent: CreateSchemaObjectBase {
+    static AdvanceSteelRectangularBoltSchemaComponent() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
+    public AdvanceSteelRectangularBoltSchemaComponent(): base("AdvanceSteelRectangularBolt", "AdvanceSteelRectangularBolt", "Creates a Advance Steel rectangular bolt.", "Speckle 2 Advance Steel", "Structure") { }
+    
+    internal static string internalCategory { get; }  = "Speckle 2 Advance Steel";
+
+    internal static Guid internalGuid => new Guid("f6791563-253b-9232-f611-bf6249626a34");
+
+
+    public override GH_Exposure Exposure => internalExposure;
+
+    public override Guid ComponentGuid => internalGuid;
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.AdvanceSteel.AdvanceSteelRectangularBolt.ctor","Objects.BuiltElements.AdvanceSteel.AdvanceSteelRectangularBolt");
+        base.AddedToDocument(document);
+    }
+}
+
+// This is generated code:
+public class AdvanceSteelSpecialPartSchemaComponent: CreateSchemaObjectBase {
+    static AdvanceSteelSpecialPartSchemaComponent() {
+       SpeckleGHSettings.SettingsChanged += (_, args) =>
+          {
+            if (!args.Key.StartsWith("Speckle2:tabs.")) return;
+            var proxy = Grasshopper.Instances.ComponentServer.ObjectProxies.FirstOrDefault(p => p.Guid == internalGuid);
+            if (proxy == null) return;
+            proxy.Exposure = internalExposure;
+          };
+    }
+    public AdvanceSteelSpecialPartSchemaComponent(): base("AdvanceSteelSpecialPart", "AdvanceSteelSpecialPart", "Creates a Advance Steel special part.", "Speckle 2 Advance Steel", "Structure") { }
+    
+    internal static string internalCategory { get; }  = "Speckle 2 Advance Steel";
+
+    internal static Guid internalGuid => new Guid("c93ed779-6784-00a3-d834-951108a361af");
+
+
+    public override GH_Exposure Exposure => internalExposure;
+
+    public override Guid ComponentGuid => internalGuid;
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
+    
+    public override void AddedToDocument(GH_Document document){
+        SelectedConstructor = CSOUtils.FindConstructor("Objects.BuiltElements.AdvanceSteel.AdvanceSteelSpecialPart.ctor","Objects.BuiltElements.AdvanceSteel.AdvanceSteelSpecialPart");
         base.AddedToDocument(document);
     }
 }
