@@ -53,7 +53,18 @@ namespace Speckle.ConnectorNavisworks.Bindings
         {
           Slug = "current-view", Name = "Include View", IsChecked = false,
           Description = "Include the current display view in the commit."
-        }
+        },
+        new CheckBoxSetting
+        {
+          Slug = "include-properties", Name = "Include Properties", IsChecked = true,
+          Description = "Include the object properties in the commit"
+        },
+        new ListBoxSetting
+        {
+        Slug = "object-model", Name = "Object Model", Values = new List<string>{"Classic", "Categorized", "Dictionary", "Dissolved Categories", "Dissolved Elements"},
+        Selection = "Classic",
+        Description = "Object Model variant to send."
+      },
       };
     }
   }

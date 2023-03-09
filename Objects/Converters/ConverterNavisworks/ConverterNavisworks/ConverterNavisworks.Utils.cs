@@ -33,5 +33,30 @@ namespace Objects.Converter.Navisworks
 
       return pointer;
     }
+
+
+    /// <summary>
+    ///   Checks is the Element is hidden or if any of its ancestors is hidden
+    /// </summary>
+    /// <param name="element"></param>
+    /// <returns></returns>
+    private static bool IsElementVisible(ModelItem element)
+    {
+      // Hidden status is stored at the earliest node in the hierarchy
+      // All of the the tree path nodes need to not be Hidden
+      return element.AncestorsAndSelf.All(x => x.IsHidden != true);
+    }
+
+    /// <summary>
+    ///   Checks is the Element is hidden or if any of its ancestors is hidden
+    /// </summary>
+    /// <param name="element"></param>
+    /// <returns></returns>
+    private static bool IsElementHidden(ModelItem element)
+    {
+      // Hidden status is stored at the earliest node in the hierarchy
+      // Any of the the tree path nodes Hidden then the element is hidden
+      return element.AncestorsAndSelf.Any(x => x.IsHidden == true);
+    }
   }
 }

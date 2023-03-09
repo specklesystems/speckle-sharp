@@ -11,7 +11,7 @@ namespace Objects.Converter.Navisworks
 {
   public partial class ConverterNavisworks
   {
-    internal static Base GetPropertiesBase(ModelItem element, ref Base @base)
+    internal static Base GetPropertiesBase(ModelItem element, Base @base)
     {
       var propertiesBase = new Base();
       // GUI visible properties varies by a Global Options setting.
@@ -23,7 +23,7 @@ namespace Objects.Converter.Navisworks
         var propertyCategoryBase = new Base();
 
         properties.ToList().ForEach(property =>
-          BuildPropertyCategory(propertyCategory, property, ref propertyCategoryBase));
+          BuildPropertyCategory(propertyCategory, property, propertyCategoryBase));
 
         if (propertyCategoryBase.GetMembers().Any() && propertyCategory.DisplayName != null)
         {
@@ -59,7 +59,7 @@ namespace Objects.Converter.Navisworks
     }
 
     public static void BuildPropertyCategory(PropertyCategory propertyCategory, DataProperty property,
-      ref Base propertyCategoryBase)
+      Base propertyCategoryBase)
     {
       string propertyName;
       try

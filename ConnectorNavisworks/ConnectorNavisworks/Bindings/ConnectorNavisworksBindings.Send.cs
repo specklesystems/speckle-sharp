@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop;
@@ -96,8 +97,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
       {
         ["units"] = GetUnits(Doc)
       };
-
-      var convertedCount = 0;
 
       var toConvertDictionary =
         new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
@@ -200,6 +199,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
         // read back the pseudoIds of nested children already converted
         if (!(converted["__convertedIds"] is List<string> convertedChildrenAndSelf)) continue;
 
+        var cChildren = toConvertDictionary.Keys.Where(x => x.StartsWith(pseudoId)).ToList();
+
         convertedChildrenAndSelf.ForEach(x => toConvertDictionary[x] = ConversionState.Converted);
         conversionProgressDict["Conversion"] += convertedChildrenAndSelf.Count;
 
@@ -215,9 +216,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
         reportObject.Update(status: ApplicationObject.State.Created,
           logItem: $"Sent as {converted.speckle_type}");
         progress.Report.Log(reportObject);
-
-        convertedCount += convertedChildrenAndSelf.Count;
       }
+
+
+      var convertedCount = toConvertDictionary.Count(x => x.Value==ConversionState.Converted);
 
       progressBar.Update(1.0);
 
