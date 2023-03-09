@@ -116,7 +116,7 @@ namespace DesktopUI2.ViewModels
     //https://github.com/AvaloniaUI/Avalonia/issues/5290
     private void CatchReactiveException(Exception ex)
     {
-      Log.Error(ex, ex.Message);
+      Log.Error(ex, "Reactive exception handler observed an exception {exceptionMessage}", ex.Message);
     }
 
 

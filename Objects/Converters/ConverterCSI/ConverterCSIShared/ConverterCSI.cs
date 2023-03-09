@@ -193,7 +193,7 @@ namespace Objects.Converter.CSI
       }
 
       // log 
-      var reportObj = Report.GetReportObject(@object.id, out int index) ? Report.ReportObjects[index] : null;
+      var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? Report.ReportObjects[@object.id] : null;
       if (reportObj != null && notes.Count > 0)
         reportObj.Update(log: notes);
 

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -157,7 +157,7 @@ namespace ConnectorGrasshopper.Objects
         inputData?.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
-
+          if (value is SpeckleObjectGroup group) value = group.Value;
           if (value is List<object> list)
           {
 

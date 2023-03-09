@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Drawing;
@@ -168,10 +168,13 @@ namespace ConnectorGrasshopper
       if (SelectedConstructor != null)
       {
         base.AddedToDocument(document);
-        if (Grasshopper.Instances.ActiveCanvas.Document != null)
+        // We purposefully override the preprocess geometry setting since schema objects are mostly going to go to lesser powerful target apps regarding geometry processing.
+
+        if (Grasshopper.Instances.ActiveCanvas?.Document != null)
         {
           var otherSchemaBuilders =
-            Grasshopper.Instances.ActiveCanvas.Document.FindObjects(new List<string>() { Name }, 10000);
+            Grasshopper.Instances.ActiveCanvas?.Document?.FindObjects(new List<string>() { Name }, 10000);
+          
           foreach (var comp in otherSchemaBuilders)
           {
             if (comp is CreateSchemaObject scb)
@@ -198,7 +201,12 @@ namespace ConnectorGrasshopper
 
       if (Params.Input.Count == 0) SetupComponent(SelectedConstructor);
       ((SpeckleBaseParam)Params.Output[0]).UseSchemaTag = UseSchemaTag;
+#if RHINO7
+      if(!Grasshopper.Instances.RunningHeadless)
+        (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
+#else
       (Params.Output[0] as SpeckleBaseParam).ExpirePreview(true);
+#endif
 
       Params.ParameterChanged += (sender, args) =>
       {
@@ -219,6 +227,7 @@ namespace ConnectorGrasshopper
       };
 
       base.AddedToDocument(document);
+      Converter?.SetConverterSettings(new Dictionary<string, object> { { "preprocessGeometry", true } });
     }
 
     public void SetupComponent(ConstructorInfo constructor)

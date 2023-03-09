@@ -62,9 +62,10 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out Plane plane)
     {
+      origin.TransformTo(transform, out Point transformedOrigin);
       plane = new Plane
       {
-        origin = transform.ApplyToPoint(origin),
+        origin = transformedOrigin,
         normal = transform.ApplyToVector(normal),
         xdir = transform.ApplyToVector(xdir),
         ydir = transform.ApplyToVector(ydir),

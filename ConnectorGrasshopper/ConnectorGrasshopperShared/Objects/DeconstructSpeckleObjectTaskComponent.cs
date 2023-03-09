@@ -20,7 +20,7 @@ namespace ConnectorGrasshopper.Objects
     IGH_VariableParameterComponent
   {
     public override Guid ComponentGuid => new Guid("1913AB7A-50D6-4B6C-8353-D3366F73FC84");
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
     protected override Bitmap Icon => Properties.Resources.ExpandSpeckleObject;
 
     public DeconstructSpeckleObjectTaskComponent() : base("Deconstruct Speckle Object", "DSO",
