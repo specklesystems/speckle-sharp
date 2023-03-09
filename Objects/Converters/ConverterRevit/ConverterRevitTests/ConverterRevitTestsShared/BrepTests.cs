@@ -59,7 +59,7 @@ namespace ConverterRevitTests
       if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
       DirectShape native = null;
 
-      await RunInTransaction(() =>
+      await SpeckleUtils.RunInTransaction(() =>
       {
         converter.SetContextDocument(fixture.NewDoc);
         native = converter.BrepToDirectShape(brep, out List<string>notes);

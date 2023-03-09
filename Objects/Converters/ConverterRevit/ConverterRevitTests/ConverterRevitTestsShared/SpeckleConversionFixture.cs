@@ -32,7 +32,7 @@ namespace ConverterRevitTests
       ElementMulticategoryFilter filter = new ElementMulticategoryFilter(Categories);
 
       //get selection before opening docs, if any
-      Selection = xru.GetActiveSelection();
+      //Selection = xru.GetActiveSelection();
       SourceDoc = xru.OpenDoc(TestFile);
 
       if (UpdatedTestFile != null)
@@ -51,19 +51,9 @@ namespace ConverterRevitTests
     {
       Debug.WriteLine(TestFile);
       xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
-      CloseDoc(SourceDoc);
-      CloseDoc(UpdatedDoc);
-      CloseDoc(NewDoc);
-    }
-
-    public static bool CloseDoc(Document doc, bool saveChanges = false)
-    {
-      if (doc == null)
-        return false;
-
-      bool result = false;
-      xru.UiContext.Send(x => { result = doc.Close(saveChanges); }, null);
-      return result;
+      SpeckleUtils.CloseDoc(SourceDoc);
+      SpeckleUtils.CloseDoc(UpdatedDoc);
+      SpeckleUtils.CloseDoc(NewDoc);
     }
   }
 }

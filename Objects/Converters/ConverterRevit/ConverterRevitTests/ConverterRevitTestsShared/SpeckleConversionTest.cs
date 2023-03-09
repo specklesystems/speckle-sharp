@@ -102,7 +102,7 @@ namespace ConverterRevitTests
       //used to associate th nested Base objects with eh flat revit ones
       var flatSpkElems = new List<Base>();
 
-      await RunInTransaction(() =>
+      await SpeckleUtils.RunInTransaction(() =>
       {
         //xru.RunInTransaction(() =>
         //{
@@ -142,7 +142,7 @@ namespace ConverterRevitTests
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
         assert(sourceElem, destElement);
         if (!fixture.UpdateTestRunning)
-          DeleteElement(destElement);
+          SpeckleUtils.DeleteElement(destElement);
       }
 
       return resEls;
@@ -166,7 +166,7 @@ namespace ConverterRevitTests
       fixture.UpdateTestRunning = false;
 
       // delete the elements that were not being deleted during the update test
-      DeleteElement(initialObjs);
+      SpeckleUtils.DeleteElement(initialObjs);
       //DeleteElement(updatedObjs);
     }
 
@@ -181,7 +181,7 @@ namespace ConverterRevitTests
       var revitEls = new List<object>();
       var resEls = new List<object>();
 
-      await RunInTransaction(() =>
+      await SpeckleUtils.RunInTransaction(() =>
       {
         //xru.RunInTransaction(() =>
         //{
@@ -204,87 +204,7 @@ namespace ConverterRevitTests
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
         assert(sourceElem, (T)destElement);
         if (!fixture.UpdateTestRunning)
-          DeleteElement(destElement);
-      }
-    }
-
-    internal class IgnoreAllWarnings : Autodesk.Revit.DB.IFailuresPreprocessor
-    {
-      public FailureProcessingResult PreprocessFailures(Autodesk.Revit.DB.FailuresAccessor failuresAccessor)
-      {
-        IList<Autodesk.Revit.DB.FailureMessageAccessor> failureMessages = failuresAccessor.GetFailureMessages();
-        foreach (Autodesk.Revit.DB.FailureMessageAccessor item in failureMessages)
-        {
-          failuresAccessor.DeleteWarning(item);
-        }
-
-        return FailureProcessingResult.Continue;
-      }
-    }
-
-    internal async static Task<string> RunInTransaction(Action action, Document doc, ConverterRevit converter, string transactionName = "transaction", bool ignoreWarnings = false)
-    {
-      var tcs = new TaskCompletionSource<string>();
-
-      await RevitTask.RunAsync(() =>
-      {
-        using var g = new TransactionGroup(doc, transactionName);
-        using var transaction = new Transaction(doc, transactionName);
-
-        g.Start();
-        transaction.Start();
-
-        converter.SetContextDocument(transaction);
-
-        if (ignoreWarnings)
-        {
-          var options = transaction.GetFailureHandlingOptions();
-          options.SetFailuresPreprocessor(new IgnoreAllWarnings());
-          transaction.SetFailureHandlingOptions(options);
-        }
-
-        try
-        {
-          action.Invoke();
-          transaction.Commit();
-          g.Assimilate();
-        }
-        catch (Exception exception)
-        {
-          tcs.TrySetException(exception);
-        }
-
-        tcs.TrySetResult("");
-      });
-
-      return await tcs.Task;
-    }
-
-    internal void DeleteElement(object obj)
-    {
-      switch (obj)
-      {
-        case IList list:
-          foreach (var item in list)
-            DeleteElement(item);
-          break;
-        case ApplicationObject o:
-          foreach (var item in o.Converted)
-            DeleteElement(item);
-          break;
-        case DB.Element o:
-          try
-          {
-            xru.RunInTransaction(() =>
-            {
-              o.Document.Delete(o.Id);
-            }, o.Document).Wait();
-          }
-          // element already deleted, don't worry about it
-          catch { }
-          break;
-        default:
-          throw new Exception("It's not an element!?!?!");
+          SpeckleUtils.DeleteElement(destElement);
       }
     }
 
