@@ -20,9 +20,8 @@ namespace ConverterRevitTests
 
   public class CurveTests : SpeckleConversionTest, IClassFixture<CurveFixture>
   {
-    public CurveTests(CurveFixture fixture)
+    public CurveTests(CurveFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

@@ -33,9 +33,8 @@ namespace ConverterRevitTests
 
   public class OpeningTests : SpeckleConversionTest, IClassFixture<OpeningFixture>
   {
-    public OpeningTests(OpeningFixture fixture)
+    public OpeningTests(OpeningFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

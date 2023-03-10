@@ -20,9 +20,8 @@ namespace ConverterRevitTests
 
   public class FloorTests : SpeckleConversionTest, IClassFixture<FloorFixture>
   {
-    public FloorTests(FloorFixture fixture)
+    public FloorTests(FloorFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

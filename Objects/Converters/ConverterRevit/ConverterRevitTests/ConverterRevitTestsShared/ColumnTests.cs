@@ -21,9 +21,8 @@ namespace ConverterRevitTests
 
   public class ColumnTests : SpeckleConversionTest, IClassFixture<ColumnFixture>
   {
-    public ColumnTests(ColumnFixture fixture)
+    public ColumnTests(ColumnFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

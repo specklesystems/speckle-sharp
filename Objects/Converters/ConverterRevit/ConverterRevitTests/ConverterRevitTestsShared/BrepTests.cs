@@ -25,10 +25,9 @@ namespace ConverterRevitTests
   {
     private readonly ITestOutputHelper _testOutputHelper;
 
-    public BrepTests(BrepFixture fixture, ITestOutputHelper testOutputHelper)
+    public BrepTests(BrepFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture)
     {
       _testOutputHelper = testOutputHelper;
-      this.fixture = fixture;
     }
 
     [Theory]

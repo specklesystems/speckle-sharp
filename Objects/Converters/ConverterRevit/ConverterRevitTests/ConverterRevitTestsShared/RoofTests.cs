@@ -20,9 +20,8 @@ namespace ConverterRevitTests
 
   public class RoofTests : SpeckleConversionTest, IClassFixture<RoofFixture>
   {
-    public RoofTests(RoofFixture fixture)
+    public RoofTests(RoofFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

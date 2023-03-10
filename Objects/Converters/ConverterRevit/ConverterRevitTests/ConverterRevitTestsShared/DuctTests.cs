@@ -18,9 +18,8 @@ namespace ConverterRevitTests
   }
   public class DuctTests : SpeckleConversionTest, IClassFixture<DuctFixture>
   {
-    public DuctTests(DuctFixture fixture)
+    public DuctTests(DuctFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

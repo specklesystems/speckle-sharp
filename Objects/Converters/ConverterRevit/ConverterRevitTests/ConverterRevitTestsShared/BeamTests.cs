@@ -22,9 +22,8 @@ namespace ConverterRevitTests
 
   public class BeamTests : SpeckleConversionTest, IClassFixture<BeamFixture>
   {
-    public BeamTests(BeamFixture fixture)
+    public BeamTests(BeamFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

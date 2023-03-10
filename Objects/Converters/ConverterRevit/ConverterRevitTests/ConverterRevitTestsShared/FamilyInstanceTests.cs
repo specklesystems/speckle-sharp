@@ -40,9 +40,8 @@ namespace ConverterRevitTests
 
   public class FamilyInstanceTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFixture>
   {
-    public FamilyInstanceTests(FamilyInstanceFixture fixture)
+    public FamilyInstanceTests(FamilyInstanceFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     //[Fact]

@@ -15,9 +15,8 @@ namespace ConverterRevitTests
 
   public class PipeTests : SpeckleConversionTest, IClassFixture<PipeFixture>
   {
-    public PipeTests(PipeFixture fixture)
+    public PipeTests(PipeFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

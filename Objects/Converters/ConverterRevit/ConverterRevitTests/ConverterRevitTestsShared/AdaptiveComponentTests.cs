@@ -21,9 +21,8 @@ namespace ConverterRevitTests
 
   public class AdaptiveComponentTests : SpeckleConversionTest, IClassFixture<AdaptiveComponentFixture>
   {
-    public AdaptiveComponentTests(AdaptiveComponentFixture fixture)
-    {
-      this.fixture = fixture;
+    public AdaptiveComponentTests(AdaptiveComponentFixture fixture) : base (fixture)
+    { 
     }
 
     [Fact]

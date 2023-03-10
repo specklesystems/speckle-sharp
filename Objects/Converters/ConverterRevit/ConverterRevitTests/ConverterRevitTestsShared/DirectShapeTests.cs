@@ -21,9 +21,8 @@ namespace ConverterRevitTests
 
   public class DirectShapeTests : SpeckleConversionTest, IClassFixture<DirectShapeFixture>
   {
-    public DirectShapeTests(DirectShapeFixture fixture)
+    public DirectShapeTests(DirectShapeFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

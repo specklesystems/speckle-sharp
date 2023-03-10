@@ -15,9 +15,8 @@ namespace ConverterRevitTests
 
   public class WireTests : SpeckleConversionTest, IClassFixture<WireFixture>
   {
-    public WireTests(WireFixture fixture)
+    public WireTests(WireFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

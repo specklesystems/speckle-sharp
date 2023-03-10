@@ -23,9 +23,8 @@ namespace ConverterRevitTests
   public class WallTests : SpeckleConversionTest, IClassFixture<WallFixture>
   {
 
-    public WallTests(WallFixture fixture)
+    public WallTests(WallFixture fixture) : base(fixture)
     {
-      this.fixture = fixture;
     }
 
     [Fact]

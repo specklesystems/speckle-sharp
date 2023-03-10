@@ -20,6 +20,11 @@ namespace ConverterRevitTests
   {
     internal SpeckleConversionFixture fixture;
 
+    public SpeckleConversionTest(SpeckleConversionFixture fixture)
+    {
+      this.fixture = fixture;
+      this.fixture.TestClassName = GetType().Name;
+    }
     internal void NativeToSpeckle()
     {
       ConverterRevit converter = new ConverterRevit();
