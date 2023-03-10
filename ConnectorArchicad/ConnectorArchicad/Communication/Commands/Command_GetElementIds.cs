@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
+using Speckle.Newtonsoft.Json;
+using Speckle.Newtonsoft.Json.Converters;
 
 namespace Archicad.Communication.Commands
 {

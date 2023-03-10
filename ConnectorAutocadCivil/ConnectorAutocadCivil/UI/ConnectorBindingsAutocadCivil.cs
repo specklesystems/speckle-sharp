@@ -25,6 +25,10 @@ using Speckle.Core.Models.GraphTraversal;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using static Speckle.ConnectorAutocadCivil.Utils;
 
+#if ADVANCESTEEL2023
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+#endif
+
 namespace Speckle.ConnectorAutocadCivil.UI
 {
   public partial class ConnectorBindingsAutocad : ConnectorBindings
@@ -841,9 +845,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var appObj = new ApplicationObject(id, type) { Status = ApplicationObject.State.Unknown };
 
           if (converter.CanConvertToSpeckle(obj))
+          {
             appObj.Update(status: ApplicationObject.State.Created);
+          }
           else
+          {
+#if ADVANCESTEEL2023
+            UpdateASObject(appObj, obj);
+#endif
             appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
+          }
+
           progress.Report.Log(appObj);
           existingIds.Add(id);
         }
@@ -1022,6 +1034,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             if (!converter.CanConvertToSpeckle(obj))
             {
+#if ADVANCESTEEL2023
+              UpdateASObject(reportObj, obj);
+#endif
               reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in {Utils.AppName}");
               progress.Report.Log(reportObj);
               continue;
@@ -1092,7 +1107,21 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
     }
 
-    private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
+#if ADVANCESTEEL2023
+    private void UpdateASObject(ApplicationObject applicationObject, DBObject obj)
+    {
+      if (obj.ObjectId.ObjectClass.DxfName.IndexOf("AST") != 0)
+        return;
+
+      ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
+      if (filerObject != null)
+      {
+        applicationObject.Update(descriptor: filerObject.GetType().ToString());
+      }
+    }
+#endif
+
+private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
     {
       var selection = new List<string>();
       switch (filter.Slug)
@@ -1114,7 +1143,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return selection;
     }
 
-    #endregion
+#endregion
 
     #region events
     public void RegisterAppEvents()
