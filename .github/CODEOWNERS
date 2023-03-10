@@ -2,7 +2,7 @@
 
 # Global owner is the connectors team. This ensures everyone get's pinged if no owner is found
 
-* @specklesystems/connectors
+# * @specklesystems/connectors
 
 # Core
 # Not needed, falls back on team approval
@@ -10,28 +10,27 @@
 # Objects
 #   Converters require product owner approval, anything else falls back to team approval
 
-Objects/ConverterAutocadCivil/* @clairekuang @reynold-chan
-Objects/ConverterCSI/* @reynold-chan
+Objects/ConverterAutocadCivil/* @clairekuang @connorivy
+Objects/ConverterCSI/* @connorivy
 Objects/ConverterDynamo/* @teocomi @alanrynne
-Objects/ConverterMicrostation/* @reynold-chan
+Objects/ConverterMicrostation/* @connorivy
 Objects/ConverterRevit/* @connorivy @teocomi
 Objects/ConverterRhinoGh/* @alanrynne @clairekuang
-Objects/ConverterTeklaStructures/* @reynold-chan
-Objects/StructuralUtilities/PolygonMesher/* @reynold-chan
+Objects/ConverterTeklaStructures/* @connorivy
+Objects/StructuralUtilities/PolygonMesher/* @connorivy
 
 # Connectors
 
-ConnectorAutocadCivil/* @clairekuang @reynold-chan
-ConnectorArchicad/* @izzylys
-ConnectorCSI/* @reynold-chan
+ConnectorAutocadCivil/* @clairekuang
+ConnectorArchicad/* @jozseflkiss
+ConnectorCSI/* @connorivy
 ConnectorDynamo/* @teocomi @alanrynne
 ConnectorGrasshopper/* @alanrynne @clairekuang
-ConnectorMicrostation/* @reynold-chan
+ConnectorMicrostation/* @clairekuang
 ConnectorRevit/* @teocomi @connorivy
 ConnectorRhino/* @clairekuang @alanrynne
-ConnectorTeklaStructures/* @reynold-chan
+ConnectorTeklaStructures/* @connorivy
 
 # DesktopUI
 
-DesktopUI/* @teocomi @clairekuang
 DesktopUI2/* @teocomi @clairekuang

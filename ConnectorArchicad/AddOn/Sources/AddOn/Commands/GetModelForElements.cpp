@@ -3,6 +3,7 @@
 #include "Sight.hpp"
 #include "ModelInfo.hpp"
 #include "FieldNames.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands {
@@ -223,9 +224,9 @@ static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>&applicati
 	const Modeler::Model3DViewer modelViewer (model);
 
 	GS::ObjectState result;
-	const auto modelInserter = result.AddList<GS::ObjectState> (ModelsFieldName);
+	const auto modelInserter = result.AddList<GS::ObjectState> (Models);
 	for (const auto& applicationId : applicationIds) {
-		modelInserter (GS::ObjectState{ApplicationIdFieldName, APIGuidToString (applicationId), Model::ModelFieldName, CalculateModelOfElement (modelViewer, applicationId)});
+		modelInserter (GS::ObjectState{ApplicationId, APIGuidToString (applicationId), Model::Model, CalculateModelOfElement (modelViewer, applicationId)});
 	}
 
 	return result;
@@ -241,7 +242,7 @@ GS::String GetModelForElements::GetName () const
 GS::ObjectState GetModelForElements::Execute (const GS::ObjectState & parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIdsFieldName, ids);
+	parameters.Get (ApplicationIds, ids);
 
 	return StoreModelOfElements (ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }));
 }

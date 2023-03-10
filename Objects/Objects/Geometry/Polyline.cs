@@ -45,7 +45,7 @@ namespace Objects.Geometry
     [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]
     public List<Point> points => GetPoints();
     
-    
+    ///<remarks>This function may be suboptimal for performance for polylines with many points</remarks>
     /// <returns><see cref="value"/> as List of <see cref="Point"/>s</returns>
     /// <exception cref="SpeckleException">when list is malformed</exception>
     public List<Point> GetPoints()
@@ -95,9 +95,17 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out ITransformable polyline)
     {
+      // transform points
+      var transformedPoints = new List<Point>();
+      foreach (var point in GetPoints())
+      {
+        point.TransformTo(transform, out Point transformedPoint);
+        transformedPoints.Add(transformedPoint);
+      }
+
       polyline = new Polyline
       {
-        value = transform.ApplyToPoints(value),
+        value = transformedPoints.SelectMany(o => o.ToList()).ToList(),
         closed = closed,
         applicationId = applicationId,
         units = units

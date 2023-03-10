@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.AdvanceSteel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.DxfNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Other.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Civil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.cs" />

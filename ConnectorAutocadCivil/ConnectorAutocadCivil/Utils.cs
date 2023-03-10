@@ -4,17 +4,22 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Reflection;
 
-using Speckle.Core.Kits;
-
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Colors;
+
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
+#endif
+
+#if ADVANCESTEEL2023
+using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
 #endif
 
 namespace Speckle.ConnectorAutocadCivil
@@ -46,6 +51,10 @@ namespace Speckle.ConnectorAutocadCivil
     public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
+#elif ADVANCESTEEL2023
+    public static string VersionedAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
+    public static string AppName = HostApplications.AdvanceSteel.Name;
+    public static string Slug = HostApplications.AdvanceSteel.Slug;
 #endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
 
@@ -58,8 +67,10 @@ namespace Speckle.ConnectorAutocadCivil
     /// <returns></returns>
     /// <remarks>
     /// This is used because for some unfathomable reason, ObjectId.ToString() returns "(id)" instead of "id".
+    /// The Handle is a persisitent indentifier which is unique per drawing.
+    /// The ObjectId is a non - persitent identifier(reassigned each time the drawing is opened) which is unique per session.
     /// </remarks>
-    public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.ToString().Trim(new char[] { '(', ')' })).ToList();
+    public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.Handle.ToString().Trim(new char[] { '(', ')' })).ToList();
 
     /// <summary>
     /// Retrieve handles of visible objects in a selection
@@ -404,7 +415,7 @@ namespace Speckle.ConnectorAutocadCivil
               tr.AddNewlyCreatedDBObject(regAppRecord, true);
             }
           }
-          catch(Exception e)
+          catch (Exception e)
           {
             return false;
           }
@@ -522,7 +533,7 @@ namespace Speckle.ConnectorAutocadCivil
       }
     }
     #endregion
-    
+
 
     /// <summary>
     /// Returns a descriptive string for reporting
@@ -636,6 +647,20 @@ namespace Speckle.ConnectorAutocadCivil
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
     }
+
+#if ADVANCESTEEL2023
+
+    public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
+    {
+      ASObjectId idCadEntity = new ASObjectId(@object.ObjectId.OldIdPtr);
+      ASObjectId idFilerObject = Autodesk.AdvanceSteel.CADAccess.DatabaseManager.GetFilerObjectId(idCadEntity, false);
+      if (idFilerObject.IsNull())
+        return null;
+
+      return Autodesk.AdvanceSteel.CADAccess.DatabaseManager.Open(idFilerObject) as T;
+    }
+
+#endif
 
   }
 

@@ -113,102 +113,93 @@ namespace Objects.BuiltElements.Archicad
 {
   public class ArchicadBeam : Objects.BuiltElements.Beam
   {
-    public int? floorIndex { get; set; }
+    public class BeamSegment : Base
+    {
+      // Segment override materials
+      public string? leftMaterial { get; set; }
+      public string? topMaterial { get; set; }
+      public string? rightMaterial { get; set; }
+      public string? bottomMaterial { get; set; }
+      public string? endsMaterial { get; set; }
+	  // Segment - The overridden materials are chained
+      public bool? materialChained { get; set; }
+      public AssemblySegment assemblySegmentData { get; set; }
+    }
+
+    // Positioning
+    public int floorIndex { get; set; }
     public Point begC { get; set; }
     public Point endC { get; set; }
+    public double level { get; set; }
+    public bool isSlanted { get; set; }
+    public double slantAngle { get; set; }
+    public string beamShape { get; set; }
+    public Int32 sequence { get; set; }
+    public double curveAngle { get; set; }
+    public double verticalCurveHeight { get; set; }
+    public bool isFlipped { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? aboveViewLinePen { get; set; }
+    // End Cuts
+    public UInt32 nCuts { get; set; }
+    public Dictionary<string, AssemblySegmentCut>? Cuts { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? refPen { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? cutContourLinePen { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public System.Int32? sequence { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public bool? isAutoOnStoryVisibility { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    // Reference Axis
+    public short anchorPoint { get; set; }
     public double? offset { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public double? level { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public double? curveAngle { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public double? verticalCurveHeight { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public string? beamShape { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? hiddenLinePen { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? anchorPoint { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? belowViewLinePen { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public bool? isFlipped { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public bool? isSlanted { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public double? slantAngle { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
     public double? profileAngle { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public System.Int32? nSegments { get; set; }
+    // Segment
+    public UInt32 nSegments { get; set; }
+    public UInt32 nProfiles { get; set; }
+    public Dictionary<string, BeamSegment> segments { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public System.Int32? nCuts { get; set; }
+    // Scheme
+    public UInt32? nSchemes { get; set; }
+    public Dictionary<string, AssemblySegmentScheme>? Schemes { get; set; }
 
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public System.Int32? nSchemes { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public System.Int32? nProfiles { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public bool? useCoverFill { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public bool? useCoverFillFromSurface { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? coverFillOrientationComesFrom3D { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? coverFillForegroundPen { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public short? coverFillBackgroundPen { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public string? modelElemStructureType { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public Dictionary<string, Segment>? Segments { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public Dictionary<string, Scheme>? Schemes { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
-    public Dictionary<string, Cut>? Cuts { get; set; }
-
-    [JsonProperty(NullValueHandling = NullValueHandling.Ignore)]
+    // Hole
     public Dictionary<string, Hole>? Holes { get; set; }
+
+    // Floor Plan and Section - Floor Plan Display
+    public string showOnStories { get; set; }
+    public string displayOptionName { get; set; }
+    public string uncutProjectionMode { get; set; }
+    public string overheadProjectionMode { get; set; }
+    public string showProjectionName { get; set; }
+
+    // Floor Plan and Section - Cut Surfaces
+    public short? cutContourLinePen { get; set; }
+    public string? cutContourLineType { get; set; }
+    public short? overrideCutFillPen { get; set; }
+    public short? overrideCutFillBackgroundPen { get; set; }
+
+    // Floor Plan and Section - Outlines
+    public string showOutline { get; set; }
+    public short uncutLinePen { get; set; }
+    public string uncutLinetype { get; set; }
+    public short overheadLinePen { get; set; }
+    public string overheadLinetype { get; set; }
+    public short hiddenLinePen { get; set; }
+    public string hiddenLinetype { get; set; }
+
+    // Floor Plan and Section - Symbol
+    public string showReferenceAxis { get; set; }
+    public short referencePen { get; set; }
+    public string referenceLinetype { get; set; }
+
+    // Floor Plan and Section - Cover Fills
+    public bool useCoverFill { get; set; }
+    public bool? useCoverFillFromSurface { get; set; }
+    public short? coverFillForegroundPen { get; set; }
+    public short? coverFillBackgroundPen { get; set; }
+    public string? coverFillType { get; set; }
+    public string? coverFillTransformationType { get; set; }
+    public double? coverFillTransformationOrigoX { get; set; }
+    public double? coverFillTransformationOrigoY { get; set; }
+    public double? coverFillTransformationXAxisX { get; set; }
+    public double? coverFillTransformationXAxisY { get; set; }
+    public double? coverFillTransformationYAxisX { get; set; }
+    public double? coverFillTransformationYAxisY { get; set; }
 
     public ArchicadBeam() { }
 

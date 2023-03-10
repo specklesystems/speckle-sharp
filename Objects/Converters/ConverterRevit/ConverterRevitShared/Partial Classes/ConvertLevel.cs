@@ -1,10 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -92,7 +91,7 @@ namespace Objects.Converter.Revit
     public ApplicationObject LevelToNative(BuiltElements.Level speckleLevel)
     {
       var revitLevel = ConvertLevelToRevit(speckleLevel, out ApplicationObject.State state);
-      var appObj = new ApplicationObject(speckleLevel.id, speckleLevel.speckle_type) { applicationId = speckleLevel.applicationId};
+      var appObj = new ApplicationObject(speckleLevel.id, speckleLevel.speckle_type) { applicationId = speckleLevel.applicationId };
       appObj.Update(status: state, createdId: revitLevel.UniqueId, convertedItem: revitLevel);
       return appObj;
     }
@@ -110,7 +109,7 @@ namespace Objects.Converter.Revit
       return speckleLevel;
     }
 
-    private void CreateViewPlan(string name, ElementId levelId)
+    public ViewPlan CreateViewPlan(string name, ElementId levelId)
     {
       var vt = new FilteredElementCollector(Doc).OfClass(typeof(ViewFamilyType)).Where(el => ((ViewFamilyType)el).ViewFamily == ViewFamily.FloorPlan).First();
 
@@ -122,6 +121,8 @@ namespace Objects.Converter.Revit
       catch { }
 
       Report.Log($"Created ViewPlan {view.Id}");
+
+      return view;
     }
 
     private Level GetLevelByName(string name)
@@ -166,7 +167,7 @@ namespace Objects.Converter.Revit
 
     private RevitLevel LevelFromPoint(XYZ point)
     {
-      var p = PointToSpeckle(point);
+      var p = PointToSpeckle(point, Doc);
       return new RevitLevel() { elevation = p.z, name = "Generated Level " + p.z, units = ModelUnits };
     }
 

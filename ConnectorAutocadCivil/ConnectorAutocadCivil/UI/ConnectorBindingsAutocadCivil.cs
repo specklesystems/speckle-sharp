@@ -1,4 +1,11 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -13,17 +20,14 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Core.Transports;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using static Speckle.ConnectorAutocadCivil.Utils;
+
+#if ADVANCESTEEL2023
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+#endif
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -85,7 +89,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D ").Replace("AdvanceSteel", "Advance Steel "); //hack for ADSK store;
 
     public override string GetHostAppName() => Utils.Slug;
 
@@ -279,7 +283,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       string referencedObject = commit.referencedObject;
       Base commitObject = null;
 
-      state.LastSourceApp = commit.sourceApplication;
+      state.LastCommit = commit;
 
       try
       {
@@ -501,7 +505,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
     }
-    
+
     private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
       //TODO: this implementation is almost identical to Rhino, we should try and extract as much of it as we can into Core
@@ -514,16 +518,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
         else
           StoredObjects.Add(@base.id, @base);
       }
-      
+
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
         ApplicationObject NewAppObj()
         {
-          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          var speckleType = current.speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
             .LastOrDefault();
           return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
-        
+
         //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
@@ -545,10 +549,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           StoreObject(current, appObj);
           return appObj;
         }
-        
+
         return null;
       }
-      
+
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
@@ -561,7 +565,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         LayerIdRecurse(context.parent, stringBuilder);
         stringBuilder.Append('$');
         stringBuilder.Append(objectLayerName);
-        
+
         return stringBuilder;
       }
 
@@ -841,9 +845,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var appObj = new ApplicationObject(id, type) { Status = ApplicationObject.State.Unknown };
 
           if (converter.CanConvertToSpeckle(obj))
+          {
             appObj.Update(status: ApplicationObject.State.Created);
+          }
           else
+          {
+#if ADVANCESTEEL2023
+            UpdateASObject(appObj, obj);
+#endif
             appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
+          }
+
           progress.Report.Log(appObj);
           existingIds.Add(id);
         }
@@ -991,6 +1003,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // get the hash of the file name to create a more unique application id
           var fileNameHash = GetDocumentId();
 
+          string servicedApplication = converter.GetServicedApplications().First();
+
           foreach (var autocadObjectHandle in state.SelectedObjectIds)
           {
             // handle user cancellation
@@ -1020,7 +1034,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             if (!converter.CanConvertToSpeckle(obj))
             {
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in AutoCAD/Civil3D");
+#if ADVANCESTEEL2023
+              UpdateASObject(reportObj, obj);
+#endif
+              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in {Utils.AppName}");
               progress.Report.Log(reportObj);
               continue;
             }
@@ -1089,6 +1106,20 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
     }
+
+#if ADVANCESTEEL2023
+    private void UpdateASObject(ApplicationObject applicationObject, DBObject obj)
+    {
+      if (obj.ObjectId.ObjectClass.DxfName.IndexOf("AST") != 0)
+        return;
+
+      ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
+      if (filerObject != null)
+      {
+        applicationObject.Update(descriptor: filerObject.GetType().ToString());
+      }
+    }
+#endif
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
     {

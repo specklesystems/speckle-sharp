@@ -1,11 +1,12 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 
@@ -17,7 +18,7 @@ namespace Objects.Converter.Revit
     {
       var docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
       var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type) { applicationId = speckleRoof.applicationId };
-      
+
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
@@ -78,7 +79,7 @@ namespace Objects.Converter.Revit
               if (type == null)
               {
                 // assuming first mullion is the desired mullion for the whole roof...
-                GetElementType<MullionType>(elements.Where(b=>b is BuiltElements.Revit.FamilyInstance f).First(), new ApplicationObject("", ""), out MullionType mullionType);
+                GetElementType<MullionType>(elements.Where(b => b is BuiltElements.Revit.FamilyInstance f).First(), new ApplicationObject("", ""), out MullionType mullionType);
                 TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
                 TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
                 TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
@@ -176,7 +177,7 @@ namespace Objects.Converter.Revit
               slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
             };
 
-            GetSlopeArrowHack(footPrintRoof.Id, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
+            GetSlopeArrowHack(footPrintRoof.Id, revitRoof.Document, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
 
             // these two values are not null then the slope arrow exists and we need to capture that
             if (tail != null && head != null)
@@ -198,7 +199,7 @@ namespace Objects.Converter.Revit
             };
             var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
             speckleExtrusionRoof.referenceLine =
-            new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate())), PointToSpeckle(plane.Origin), ModelUnits); //TODO: test!
+            new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate()), revitRoof.Document), PointToSpeckle(plane.Origin, revitRoof.Document), ModelUnits); //TODO: test!
             speckleExtrusionRoof.level = ConvertAndCacheLevel(revitExtrusionRoof, BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
             speckleRoof = speckleExtrusionRoof;
             break;
@@ -267,8 +268,8 @@ namespace Objects.Converter.Revit
                   if (!(c.Curve is DB.Line line))
                     continue;
 
-                  var start = PointToSpeckle(line.GetEndPoint(0));
-                  var end = PointToSpeckle(line.GetEndPoint(1));
+                  var start = PointToSpeckle(line.GetEndPoint(0), roof.Document);
+                  var end = PointToSpeckle(line.GetEndPoint(1), roof.Document);
 
                   if (!IsBetween(start, end, tailPoint))
                     continue;
@@ -293,7 +294,7 @@ namespace Objects.Converter.Revit
                 if (curve == null)
                   continue;
 
-                var segment = CurveToSpeckle(curve.GeometryCurve) as Base; //it's a safe casting
+                var segment = CurveToSpeckle(curve.GeometryCurve, roof.Document) as Base; //it's a safe casting
                 if (definesRoofSlope != null && curve == definesRoofSlope)
                 {
                   segment["slopeAngle"] = roofSlope;
@@ -326,7 +327,7 @@ namespace Objects.Converter.Revit
               if (curve == null)
                 continue;
 
-              poly.segments.Add(CurveToSpeckle(curve.GeometryCurve));
+              poly.segments.Add(CurveToSpeckle(curve.GeometryCurve, roof.Document));
             }
             profiles.Add(poly);
             break;
@@ -342,7 +343,7 @@ namespace Objects.Converter.Revit
 
       // compare versus epsilon for floating point values, or != 0 if using integers
       if (Math.Abs(crossproduct) > TOLERANCE)
-          return false;
+        return false;
 
       var dotProduct = (c.x - a.x) * (b.x - a.x) + (c.y - a.y) * (b.y - a.y);
       if (dotProduct < 0)

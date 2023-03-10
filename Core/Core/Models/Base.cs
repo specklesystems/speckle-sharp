@@ -283,7 +283,10 @@ namespace Speckle.Core.Models
 
           while (myType.Name != nameof(Base))
           {
-            bases.Add(myType.FullName);
+            if (!myType.IsAbstract)
+            {
+              bases.Add(myType.FullName);
+            }
             myType = myType.BaseType;
           }
 

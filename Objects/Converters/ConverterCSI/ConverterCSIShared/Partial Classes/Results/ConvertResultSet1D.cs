@@ -22,19 +22,28 @@ namespace Objects.Converter.CSI
       foreach (var frameName in frameNames)
       {
         frameResults = FrameResultSet1dToSpeckle(frameName);
-        combinedResults.AddRange(frameResults.results1D);
+        if (frameResults != null)
+        {
+          combinedResults.AddRange(frameResults.results1D);
+        }
       }
 
       foreach (var pierName in pierNames)
       {
         pierResults = PierResultSet1dToSpeckle(pierName);
-        combinedResults.AddRange(pierResults.results1D);
+        if (pierResults != null)
+        {
+          combinedResults.AddRange(pierResults.results1D);
+        }
       }
 
       foreach (var spandrelName in spandrelNames)
       {
         spandrelResults = SpandrelResultSet1dToSpeckle(spandrelName);
-        combinedResults.AddRange(spandrelResults.results1D);
+        if (spandrelResults != null)
+        {
+          combinedResults.AddRange(spandrelResults.results1D);
+        }
       }
 
       return new ResultSet1D() { results1D = combinedResults };
