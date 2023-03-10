@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using xUnitRevitUtils;
 using Xunit;
 using System.Diagnostics;
+using System.Linq;
 
 namespace ConverterRevitTests
 {
@@ -32,7 +33,7 @@ namespace ConverterRevitTests
       ElementMulticategoryFilter filter = new ElementMulticategoryFilter(Categories);
 
       //get selection before opening docs, if any
-      //Selection = xru.GetActiveSelection();
+      Selection = xru.GetActiveSelection().ToList();
       SourceDoc = xru.OpenDoc(TestFile);
 
       if (UpdatedTestFile != null)
@@ -51,9 +52,9 @@ namespace ConverterRevitTests
     {
       Debug.WriteLine(TestFile);
       xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
-      SpeckleUtils.CloseDoc(SourceDoc);
-      SpeckleUtils.CloseDoc(UpdatedDoc);
-      SpeckleUtils.CloseDoc(NewDoc);
+      xru.CloseDoc(SourceDoc);
+      xru.CloseDoc(UpdatedDoc);
+      xru.CloseDoc(NewDoc);
     }
   }
 }
