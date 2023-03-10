@@ -42,7 +42,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
         // Handle Root Node Selection
       }
 
-
       return selectedObjects.ToList();
     }
 
