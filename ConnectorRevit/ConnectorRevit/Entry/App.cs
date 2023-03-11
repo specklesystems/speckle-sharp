@@ -100,18 +100,18 @@ namespace Speckle.ConnectorRevit.Entry
         AppInstance = new UIApplication(sender as Application);
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
-        //DUI2 - pre build app, so that it's faster to open up
-        SpeckleRevitCommand.InitAvalonia();
-        var bindings = new ConnectorBindingsRevit(AppInstance);
-        bindings.RegisterAppEvents();
-        SpeckleRevitCommand.Bindings = bindings;
-        SchedulerCommand.Bindings = bindings;
+        ////DUI2 - pre build app, so that it's faster to open up
+        //SpeckleRevitCommand.InitAvalonia();
+        //var bindings = new ConnectorBindingsRevit(AppInstance);
+        //bindings.RegisterAppEvents();
+        //SpeckleRevitCommand.Bindings = bindings;
+        //SchedulerCommand.Bindings = bindings;
 
-        //This is also called in DUI, adding it here to know how often the connector is loaded and used
-        Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
-        Analytics.TrackEvent(Analytics.Events.Registered, null, false);
+        ////This is also called in DUI, adding it here to know how often the connector is loaded and used
+        //Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
+        //Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
-        SpeckleRevitCommand.RegisterPane();
+        //SpeckleRevitCommand.RegisterPane();
 
         //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
       }
