@@ -1,13 +1,14 @@
-﻿using System;
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
-using xUnitRevitUtils;
 using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
+using xUnitRevitUtils;
 
 namespace ConverterRevitTests
 {
-  public class SpeckleConversionFixture : IDisposable
+  public class SpeckleConversionFixture : IAsyncLifetime
   {
     public Document SourceDoc { get; set; }
     public Document UpdatedDoc { get; set; }
@@ -25,6 +26,10 @@ namespace ConverterRevitTests
     public virtual List<BuiltInCategory> Categories { get; }
 
     public SpeckleConversionFixture()
+    {
+    }
+
+    public void Initialize()
     {
       ElementMulticategoryFilter filter = new ElementMulticategoryFilter(Categories);
 
@@ -44,20 +49,35 @@ namespace ConverterRevitTests
       RevitElements = new FilteredElementCollector(SourceDoc).WhereElementIsNotElementType().WherePasses(filter).ToElements();
     }
 
-    public void Dispose()
+    public async Task InitializeAsync()
     {
-      var testsFailed = xru.MainViewModel.FilteredTestCases
-        .Where(testCase => testCase.DisplayName.Contains(TestClassName))
-        .Any(testCase => testCase.State == Xunit.Runner.Wpf.TestState.Failed);
+      await SpeckleUtils.Throttler.WaitAsync();
+      Initialize();
+    }
 
-      // if tests failed, leave the document open to compare the objects
-      if (testsFailed)
-        return;
+    public Task DisposeAsync()
+    {
+      try
+      {
+        var testsFailed = xru.MainViewModel.FilteredTestCases
+          .Where(testCase => testCase.DisplayName.Contains(TestClassName))
+          .Any(testCase => testCase.State == Xunit.Runner.Wpf.TestState.Failed);
 
-      xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
-      xru.CloseDoc(SourceDoc);
-      xru.CloseDoc(UpdatedDoc);
-      xru.CloseDoc(NewDoc);
+        // if none of the tests failed, close the documents
+        if (!testsFailed)
+        {
+          xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
+          xru.CloseDoc(SourceDoc);
+          xru.CloseDoc(UpdatedDoc);
+          xru.CloseDoc(NewDoc);
+        }
+
+        return Task.CompletedTask;
+      }
+      finally
+      {
+        SpeckleUtils.Throttler.Release();
+      }
     }
   }
 }

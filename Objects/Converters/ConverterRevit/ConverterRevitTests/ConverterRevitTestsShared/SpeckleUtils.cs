@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Objects.Converter.Revit;
@@ -13,15 +14,7 @@ namespace ConverterRevitTests
 {
   internal static class SpeckleUtils
   {
-    public static bool CloseDoc(DB.Document doc, bool saveChanges = false)
-    {
-      if (doc == null)
-        return false;
-
-      bool result = false;
-      xru.UiContext.Send(x => { result = doc.Close(saveChanges); }, null);
-      return result;
-    }
+    public static SemaphoreSlim Throttler = new SemaphoreSlim(1,1);
     internal async static Task<string> RunInTransaction(Action action, DB.Document doc, ConverterRevit converter, string transactionName = "transaction", bool ignoreWarnings = false)
     {
       var tcs = new TaskCompletionSource<string>();
