@@ -31,6 +31,7 @@ using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
 using Objects.Other;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
+using ASBeamPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
 using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
 using ASBoltPattern = Autodesk.AdvanceSteel.Modelling.BoltPattern;
 using ASSpecialPart = Autodesk.AdvanceSteel.Modelling.SpecialPart;
@@ -39,8 +40,6 @@ using Autodesk.AdvanceSteel.CADLink.Database;
 using CADObjectId = Autodesk.AutoCAD.DatabaseServices.ObjectId;
 using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 using Autodesk.AdvanceSteel.DocumentManagement;
-using Autodesk.AdvanceSteel.Geometry;
-using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
 using System.Security.Cryptography;
 using System.Collections;
 using Autodesk.AdvanceSteel.Modeler;
@@ -58,6 +57,15 @@ using Autodesk.AdvanceSteel.ConstructionTypes;
 using Autodesk.AdvanceSteel.Modelling;
 using Objects.BuiltElements;
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+
+using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
+using ASCurve3d = Autodesk.AdvanceSteel.Geometry.Curve3d;
+using ASLineSeg3d = Autodesk.AdvanceSteel.Geometry.LineSeg3d;
+using ASCircArc3d = Autodesk.AdvanceSteel.Geometry.CircArc3d;
+using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
+using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
+using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
+using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -95,6 +103,25 @@ namespace Objects.Converter.AutocadCivil
       return FilerObjectToSpeckle(dynamicObject, notes);
     }
 
+    private Base FilerObjectToSpeckle(ASBeamPolyBeam polyBeam, List<string> notes)
+    {
+      AdvanceSteelPolyBeam advanceSteelPolyBeam = new AdvanceSteelPolyBeam();
+
+      ASPolyline3d polyline3d = polyBeam.GetPolyline(true);
+
+      var units = ModelUnits;
+
+      advanceSteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
+
+      var profile = polyBeam.GetProfType();
+
+      advanceSteelPolyBeam.area = polyBeam.GetPaintArea();
+
+      SetDisplayValue(advanceSteelPolyBeam, polyBeam);
+
+      return advanceSteelPolyBeam;
+    }
+
     private Base FilerObjectToSpeckle(ASBeam beam, List<string> notes)
     {
       AdvanceSteelBeam advanceSteelBeam = new AdvanceSteelBeam();
@@ -106,13 +133,10 @@ namespace Objects.Converter.AutocadCivil
       Point speckleStartPoint = PointToSpeckle(startPoint, units);
       Point speckleEndPoint = PointToSpeckle(endPoint, units);
       advanceSteelBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
-      advanceSteelBeam.baseLine.length = speckleStartPoint.DistanceTo(speckleEndPoint);
 
       advanceSteelBeam.area = beam.GetPaintArea();
 
       SetDisplayValue(advanceSteelBeam, beam);
-
-      SetUnits(advanceSteelBeam);
 
       return advanceSteelBeam;
     }
@@ -129,8 +153,6 @@ namespace Objects.Converter.AutocadCivil
 
       SetDisplayValue(advanceSteelPlate, plate);
 
-      SetUnits(advanceSteelPlate);
-
       return advanceSteelPlate;
     }
 
@@ -140,8 +162,6 @@ namespace Objects.Converter.AutocadCivil
 
       SetDisplayValue(advanceSteelBolt, bolt);
 
-      SetUnits(advanceSteelBolt);
-
       return advanceSteelBolt;
     }
 
@@ -150,8 +170,6 @@ namespace Objects.Converter.AutocadCivil
       AdvanceSteelSpecialPart advanceSteelSpecialPart = new AdvanceSteelSpecialPart();
 
       SetDisplayValue(advanceSteelSpecialPart, specialPart);
-
-      SetUnits(advanceSteelSpecialPart);
 
       return advanceSteelSpecialPart;
     }
@@ -167,13 +185,15 @@ namespace Objects.Converter.AutocadCivil
 
       @base["volume"] = modelerBody.Volume;
       @base["displayValue"] = new List<Mesh> { GetMeshFromModelerBody(modelerBody, atomicElement.GeomExtents) };
+
+      SetUnits(@base);
     }
 
-    private Mesh GetMeshFromModelerBody(ModelerBody modelerBody, Extents extents)
+    private Mesh GetMeshFromModelerBody(ModelerBody modelerBody, ASExtents extents)
     {
       modelerBody.getBrepInfo(out var verticesAS, out var facesInfo);
 
-      IEnumerable<Point3D> vertices = verticesAS.Select(x => PointASToMath(x));
+      IEnumerable<Point3D> vertices = verticesAS.Select(x => PointToMath(x));
 
       List<double> vertexList = new List<double> { };
       List<int> facesList = new List<int> { };
@@ -185,6 +205,12 @@ namespace Objects.Converter.AutocadCivil
 
         //Create coordinateSystemAligned with OuterContour
         var outerList = faceInfo.OuterContour.Select(x => vertices.ElementAt(x));
+
+        if(outerList.Count() < 3)
+        {
+          continue;
+        }
+
         CoordinateSystem coordinateSystemAligned = CreateCoordinateSystemAligned(outerList);
 
         input.Add(CreateContour(outerList, coordinateSystemAligned));
@@ -239,26 +265,6 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    private Polycurve PolycurveToSpeckle(ASPoint3d[] pointsContour)
-    {
-      var units = ModelUnits;
-      var specklePolycurve = new Polycurve(units);
-
-      for (int i = 1; i < pointsContour.Length; i++)
-      {
-        specklePolycurve.segments.Add(LineToSpeckle(pointsContour[i - 1], pointsContour[i]));
-      }
-
-      specklePolycurve.segments.Add(LineToSpeckle(pointsContour.Last(), pointsContour.First()));
-
-      return specklePolycurve;
-    }
-
-    private Line LineToSpeckle(ASPoint3d point1, ASPoint3d point2)
-    {
-      return new Line(PointToSpeckle(point1), PointToSpeckle(point2), ModelUnits);
-    }
-
     private CoordinateSystem CreateCoordinateSystemAligned(IEnumerable<Point3D> points)
     {
       var point1 = points.ElementAt(0);
@@ -275,7 +281,6 @@ namespace Objects.Converter.AutocadCivil
       CoordinateSystem fromCs = new CoordinateSystem(point1, vectorX, vectorY, vectorZ);
       CoordinateSystem toCs = new CoordinateSystem(Point3D.Origin, UnitVector3D.XAxis, UnitVector3D.YAxis, UnitVector3D.ZAxis);
       return CoordinateSystem.CreateMappingCoordinateSystem(fromCs, toCs);
-
     }
 
     public static T GetFilerObjectByEntity<T>(DBObject @object) where T : FilerObject

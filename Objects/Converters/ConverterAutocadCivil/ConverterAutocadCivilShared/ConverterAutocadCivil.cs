@@ -213,7 +213,17 @@ namespace Objects.Converter.AutocadCivil
 #elif ADVANCESTEEL2023
 
             default:
-              @base = ConvertASToSpeckle(obj, reportObj, notes);
+              try
+              {
+                @base = ConvertASToSpeckle(obj, reportObj, notes);
+              }
+              catch (Exception ex)
+              {
+                //Update report because AS object type
+                Report.UpdateReportObject(reportObj);
+                throw ex;
+              }
+
               break;
 #endif
           }
