@@ -142,6 +142,7 @@ namespace Objects.Converter.Revit
         var faceReference = solid.Faces.get_Item(0);
         var faceref = faceReference.Reference;
         var freeform = CreateFreeformElementFamily(new List<Solid>{solid}, speckleWall.id, "Mass");
+        Doc.Regenerate();
         faceref = GetFaceRef(freeform);
         var revitWall = FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceref);
         //Doc.Delete(freeform.Id);
