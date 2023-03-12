@@ -77,6 +77,37 @@ namespace ConverterRevitTests
         doc = ud.Doc;
         elements = ud.Elements;
         appPlaceholders = ud.AppPlaceholders;
+
+        var updateElementTestNumberMap = new Dictionary<int, string>();
+        foreach (var element in elements)
+        {
+          var testNumber = SpeckleUtils.GetSpeckleObjectTestNumber(element);
+          if (testNumber > 0)
+          {
+            try
+            {
+              updateElementTestNumberMap.Add(testNumber, element.UniqueId);
+            }
+            catch (ArgumentException e)
+            {
+              // there are duplicate SpeckleObjectTestNumber values in the update document
+              throw e;
+            }
+          }
+        }
+
+        foreach (var appObj in appPlaceholders)
+        {
+          if (!(appObj.Converted.FirstOrDefault() is DB.Element element))
+            continue;
+
+          var testNumber = SpeckleUtils.GetSpeckleObjectTestNumber(element);
+          if (testNumber == 0)
+            continue;
+
+          if (updateElementTestNumberMap.TryGetValue(testNumber, out var toNativeElementId))
+            appObj.applicationId = toNativeElementId;
+        }
       }
 
 

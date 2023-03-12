@@ -10,10 +10,10 @@ namespace ConverterRevitTests
 {
   public class BeamFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("BeamsCols.rvt");
+    public override string TestFile => Globals.GetTestModel("Beam.rvt");
 
-    public override string UpdatedTestFile => Globals.GetTestModel("BeamsColsUpdated.rvt");
-    public override string NewFile => Globals.GetTestModel("BeamsCols_ToNative.rvt");
+    public override string UpdatedTestFile => Globals.GetTestModel("BeamUpdated.rvt");
+    public override string NewFile => Globals.GetTestModel("Beam_ToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming };
     public BeamFixture() : base()
     {

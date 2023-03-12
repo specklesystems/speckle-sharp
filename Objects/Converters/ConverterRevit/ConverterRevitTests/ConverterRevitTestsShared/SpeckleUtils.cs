@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -93,6 +94,18 @@ namespace ConverterRevitTests
         default:
           throw new Exception("It's not an element!?!?!");
       }
+    }
+
+    internal static int GetSpeckleObjectTestNumber(DB.Element element)
+    {
+      var param = element.Parameters.Cast<DB.Parameter>()
+        .Where(el => el.Definition.Name == "SpeckleObjectTestNumber")
+        .FirstOrDefault();
+
+      if (param == null)
+        throw new Exception($"Element of type {element.GetType()} with Id {element.Id.IntegerValue} does not have the parameter \"SpeckleObjectTestNumber\". If you are trying to create a new test document, then start from the \"blank.rvt\" file.");
+
+      return param.AsInteger();
     }
   }
 }
