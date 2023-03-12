@@ -103,7 +103,7 @@ namespace Speckle.ConnectorAutocadCivil
           {
 #if ADVANCESTEEL2023
 
-            if (obj.ObjectId.ObjectClass.DxfName.IndexOf("AST") == 0)
+            if (CheckAdvanceSteelObject(obj))
             {
               ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
               if (filerObject is FeatureObject || filerObject is PlateFoldRelation) //Don't select features objects, they are going with Advance Steel objects
@@ -675,6 +675,11 @@ namespace Speckle.ConnectorAutocadCivil
         return null;
 
       return Autodesk.AdvanceSteel.CADAccess.DatabaseManager.Open(idFilerObject) as T;
+    }
+
+    public static bool CheckAdvanceSteelObject(DBObject @object)
+    {
+      return @object.ObjectId.ObjectClass.DxfName.IndexOf("AST") == 0;
     }
 
 #endif

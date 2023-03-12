@@ -1110,7 +1110,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 #if ADVANCESTEEL2023
     private void UpdateASObject(ApplicationObject applicationObject, DBObject obj)
     {
-      if (obj.ObjectId.ObjectClass.DxfName.IndexOf("AST") != 0)
+      if (!CheckAdvanceSteelObject(obj))
         return;
 
       ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
