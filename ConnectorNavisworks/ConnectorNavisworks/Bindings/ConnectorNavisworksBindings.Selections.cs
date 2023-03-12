@@ -54,7 +54,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
     private static bool IsElementVisible(ModelItem element)
     {
       // Hidden status is stored at the earliest node in the hierarchy
-      return element.AncestorsAndSelf.All(x => x.IsHidden != true);
+      return element.AncestorsAndSelf.Any(x => x.IsHidden != true);
     }
   }
 }

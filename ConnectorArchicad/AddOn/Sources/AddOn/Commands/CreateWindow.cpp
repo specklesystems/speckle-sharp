@@ -9,6 +9,7 @@
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
 #include "Database.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands
@@ -79,7 +80,7 @@ static GSErrCode GetWindowFromObjectState (const GS::ObjectState& currentWindow,
 #pragma endregion
 
 	GS::UniString guidString;
-	currentWindow.Get (ApplicationIdFieldName, guidString);
+	currentWindow.Get (ApplicationId, guidString);
 	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 
 	err = GetOpeningBaseFromObjectState<API_WindowType> (currentWindow, element.window, wallMask);
@@ -98,9 +99,9 @@ GS::ObjectState CreateWindow::Execute (const GS::ObjectState& parameters, GS::Pr
 	GSErrCode err = NoError;
 
 	GS::Array<GS::ObjectState> subElements;
-	parameters.Get (SubElementsFieldName, subElements);
+	parameters.Get (SubElements, subElements);
 
-	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIdsFieldName);
+	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIds);
 
 	ACAPI_CallUndoableCommand ("CreateSpeckleWindow", [&] () -> GSErrCode {
 		Utility::Database db;
@@ -111,7 +112,7 @@ GS::ObjectState CreateWindow::Execute (const GS::ObjectState& parameters, GS::Pr
 
 			// Check if parent exist
 			GS::UniString parentGuidString;
-			subElement.Get (ParentElementIdFieldName, parentGuidString);
+			subElement.Get (ParentElementId, parentGuidString);
 			API_Guid parentGuid = APIGuidFromString (parentGuidString.ToCStr ());
 
 #ifdef ServerMainVers_2600

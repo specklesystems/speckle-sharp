@@ -112,7 +112,7 @@ namespace Speckle.Core.Models
       }
       set
       {
-        if (!IsPropNameValid(key, out string reason)) throw new SpeckleException("Invalid prop name: " + reason);
+        if (!IsPropNameValid(key, out string reason)) throw new InvalidPropNameException(key, reason);
 
         if (properties.ContainsKey(key))
         {

@@ -7,6 +7,7 @@
 #include "RealNumber.h"
 #include "FieldNames.hpp"
 #include "Polyline.hpp"
+using namespace FieldNames;
 
 namespace AddOnCommands
 {
@@ -15,19 +16,19 @@ static GS::ObjectState SerializeRoomType (const API_ZoneType& zone, const API_El
 	GS::ObjectState os;
 
 	// The identifier of the room
-	os.Add (ApplicationIdFieldName, APIGuidToString (zone.head.guid));
+	os.Add (ApplicationId, APIGuidToString (zone.head.guid));
 	GS::UniString roomName = zone.roomName;
 	GS::UniString roomNum = zone.roomNoStr;
-	os.Add (Room::NameFieldName, roomName);
-	os.Add (Room::NumberFieldName, roomNum);
+	os.Add (Room::Name, roomName);
+	os.Add (Room::Number, roomNum);
 
 	// The index of the room's floor
-	os.Add (FloorIndexFieldName, zone.head.floorInd);
+	os.Add (FloorIndex, zone.head.floorInd);
 
 	// The base point of the room
 	double level = Utility::GetStoryLevel (zone.head.floorInd) + zone.roomBaseLev;
-	os.Add (Room::BasePointFieldName, Objects::Point3D (0, 0, level));
-	os.Add (ShapeFieldName, Objects::ElementShape (zone.poly, memo, level));
+	os.Add (Room::BasePoint, Objects::Point3D (0, 0, level));
+	os.Add (Shape, Objects::ElementShape (zone.poly, memo, level));
 
 	// double polyCoords [zone.poly.nCoords*3];
 	//
@@ -40,9 +41,9 @@ static GS::ObjectState SerializeRoomType (const API_ZoneType& zone, const API_El
 	// }
 
 	// Room Props
-	os.Add (Room::HeightFieldName, zone.roomHeight);
-	os.Add (Room::AreaFieldName, quantity.zone.area);
-	os.Add (Room::VolumeFieldName, quantity.zone.volume);
+	os.Add (Room::Height, zone.roomHeight);
+	os.Add (Room::Area, quantity.zone.area);
+	os.Add (Room::Volume, quantity.zone.volume);
 
 
 	return os;
@@ -54,16 +55,16 @@ GS::String GetRoomData::GetName () const
 }
 
 GS::ObjectState GetRoomData::Execute (const GS::ObjectState& parameters,
-									 GS::ProcessControl& /*processControl*/) const
+									  GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIdsFieldName, ids);
+	parameters.Get (ApplicationIds, ids);
 	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) {
 		return APIGuidFromString (idStr.ToCStr ());
 	});
 
 	GS::ObjectState result;
-	const auto& listAdder = result.AddList<GS::ObjectState> (ZonesFieldName);
+	const auto& listAdder = result.AddList<GS::ObjectState> (Zones);
 	for (const API_Guid& guid : elementGuids) {
 		// element and memo 
 		API_Element element{};

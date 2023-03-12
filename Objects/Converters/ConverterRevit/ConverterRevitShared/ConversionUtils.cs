@@ -1,21 +1,21 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Objects.Other;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
+using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Helpers;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
-using ElementType = Autodesk.Revit.DB.ElementType;
 using Duct = Objects.BuiltElements.Duct;
+using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -171,7 +171,7 @@ namespace Objects.Converter.Revit
     public ApplicationObject SetHostedElements(Base @base, Element host, ApplicationObject appObj)
     {
       if (@base == null) return appObj;
-      
+
       CurrentHostElement = host;
       foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
       {
@@ -250,6 +250,10 @@ namespace Objects.Converter.Revit
       Phase phaseCreated = Doc.GetElement(revitElement.CreatedPhaseId) as Phase;
       if (phaseCreated != null)
         speckleElement["phaseCreated"] = phaseCreated.Name;
+
+      Phase phaseDemolished = Doc.GetElement(revitElement.DemolishedPhaseId) as Phase;
+      if (phaseDemolished != null)
+        speckleElement["phaseDemolished"] = phaseDemolished.Name;
 
       var category = revitElement.Category;
       if (category != null)
@@ -411,6 +415,9 @@ namespace Objects.Converter.Revit
       // Set the phaseCreated parameter
       if (speckleElement["phaseCreated"] is string phaseCreated && !string.IsNullOrEmpty(phaseCreated))
         TrySetParam(revitElement, BuiltInParameter.PHASE_CREATED, GetRevitPhase(revitElement.Document, phaseCreated));
+      //Set the phaseDemolished parameter
+      if (speckleElement["phaseDemolished"] is string phaseDemolished && !string.IsNullOrEmpty(phaseDemolished))
+        TrySetParam(revitElement, BuiltInParameter.PHASE_DEMOLISHED, GetRevitPhase(revitElement.Document, phaseDemolished));
 
       // NOTE: we are using the ParametersMap here and not Parameters, as it's a much smaller list of stuff and 
       // Parameters most likely contains extra (garbage) stuff that we don't need to set anyways
@@ -847,19 +854,21 @@ namespace Objects.Converter.Revit
     const string ProjectBase = "Project Base";
     const string Survey = "Survey";
 
-    private DB.Transform _transform;
-    private DB.Transform ReferencePointTransform
+    private Dictionary<string, DB.Transform> _docTransforms = new Dictionary<string, DB.Transform>();
+    private DB.Transform GetDocReferencePointTransform(Document doc)
     {
-      get
+      //linked files are always saved to disc and will have a path name
+      //if the durrent doc is unsaved it will not, but then it'll be the only one :)
+      var id = doc.PathName;
+
+      if (!_docTransforms.ContainsKey(id))
       {
-        if (_transform == null)
-        {
-          // get from settings
-          var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
-          _transform = GetReferencePointTransform(referencePointSetting);
-        }
-        return _transform;
+        // get from settings
+        var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
+        _docTransforms[id] = GetReferencePointTransform(referencePointSetting, doc);
       }
+
+      return _docTransforms[id];
     }
 
     ////////////////////////////////////////////////
@@ -869,32 +878,60 @@ namespace Objects.Converter.Revit
     /// The BasePoint non-shared properties are based off of the internal origin.
     /// Also, survey point does NOT have an rotation parameter.
     ////////////////////////////////////////////////
-    private DB.Transform GetReferencePointTransform(string type)
+    private DB.Transform GetReferencePointTransform(string type, Document doc)
     {
       // get the correct base point from
       // settings
       var referencePointTransform = DB.Transform.Identity;
 
-      var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
-      var projectPoint = points.Where(o => o.IsShared == false).FirstOrDefault();
-      var surveyPoint = points.Where(o => o.IsShared == true).FirstOrDefault();
+      var points = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
+      var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
+      var surveyPoint = points.FirstOrDefault(o => o.IsShared == true);
+      var point = new XYZ();
 
+      //in the case of linked models, it seems they get aligned base off their surey point
+      //the translations below for linked models were retrieved a bit empirically
       switch (type)
       {
         case ProjectBase:
           if (projectPoint != null)
           {
-
-            var point = projectPoint.Position;
-            referencePointTransform = DB.Transform.CreateTranslation(point); // rotation to base point is registered by survey point
+            point = projectPoint.Position;
+            if (doc.IsLinked && surveyPoint != null)
+            {
+              var mainProjectPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == false);
+              point = point + mainProjectPoint.SharedPosition + surveyPoint.Position;
+            }
+            // rotation to base point is registered by survey point
+            referencePointTransform = DB.Transform.CreateTranslation(point);
           }
           break;
         case Survey:
           if (surveyPoint != null)
           {
-            var point = surveyPoint.Position;
-            var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble(); // !! retrieve survey point angle from project base point
+
+            point = surveyPoint.Position;
+            if (doc.IsLinked)
+            {
+              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
+              point = point + mainSurveyPoint.SharedPosition;
+            }
+
+            // !! retrieve survey point angle from project base point, null in some cases
+            var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
             referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+          }
+          break;
+        case InternalOrigin:
+          if (surveyPoint != null)
+          {
+            if (doc.IsLinked)
+            {
+              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
+              point = surveyPoint.Position - mainSurveyPoint.Position + mainSurveyPoint.SharedPosition;
+            }
+
+            referencePointTransform = DB.Transform.CreateTranslation(point);
           }
           break;
         default:
@@ -909,9 +946,10 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="p"></param>
     /// <returns></returns>
-    public XYZ ToExternalCoordinates(XYZ p, bool isPoint)
+    public XYZ ToExternalCoordinates(XYZ p, bool isPoint, Document doc)
     {
-      return (isPoint) ? ReferencePointTransform.Inverse.OfPoint(p) : ReferencePointTransform.Inverse.OfVector(p);
+      var rpt = GetDocReferencePointTransform(doc);
+      return (isPoint) ? rpt.Inverse.OfPoint(p) : rpt.Inverse.OfVector(p);
     }
 
     /// <summary>
@@ -921,7 +959,8 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public XYZ ToInternalCoordinates(XYZ p, bool isPoint)
     {
-      return (isPoint) ? ReferencePointTransform.OfPoint(p) : ReferencePointTransform.OfVector(p);
+      var rpt = GetDocReferencePointTransform(Doc);
+      return (isPoint) ? rpt.OfPoint(p) : rpt.OfVector(p);
     }
     #endregion
 
@@ -1033,7 +1072,7 @@ namespace Objects.Converter.Revit
           if (c == null)
             continue;
 
-          var curve = CurveToSpeckle(c);
+          var curve = CurveToSpeckle(c, room.Document);
 
           ((Base)curve)["elementId"] = segment.ElementId.ToString();
 
@@ -1298,7 +1337,7 @@ namespace Objects.Converter.Revit
 
     // MEGA HACK to get the slope arrow of a roof which is technically not accessable by the api
     // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
-    private void GetSlopeArrowHack(ElementId elementId, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
+    private void GetSlopeArrowHack(ElementId elementId, Document doc, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
     {
       List<ElementId> deleted = null;
       tail = null;
@@ -1306,20 +1345,20 @@ namespace Objects.Converter.Revit
       tailOffset = 0;
       headOffset = 0;
       slope = 0;
-      using (var t = new Transaction(Doc, "TTT"))
+      using (var t = new Transaction(doc, "TTT"))
       {
         t.Start();
-        deleted = Doc.Delete(elementId).ToList();
+        deleted = doc.Delete(elementId).ToList();
         t.RollBack();
       }
       foreach (ElementId id in deleted)
       {
-        ModelLine l = Doc.GetElement(id) as ModelLine;
+        ModelLine l = doc.GetElement(id) as ModelLine;
         if (l == null) continue;
         if (!l.Name.Equals("Slope Arrow")) continue; // TODO: does this work with other languages of Revit?
 
-        tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0));
-        head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1));
+        tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0), doc);
+        head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1), doc);
         tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
 
         var specifyOffset = GetParamValue<int>(l, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
@@ -1329,7 +1368,7 @@ namespace Objects.Converter.Revit
         if (specifyOffset == 1)
         {
           // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
-          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100; 
+          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100;
           headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
         }
         else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option

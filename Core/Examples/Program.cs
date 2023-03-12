@@ -9,6 +9,7 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Core.Helpers;
 using Serilog;
 using Tests;
 using Serilog.Context;

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -16,6 +17,13 @@ namespace DiskTransport
   public class DiskTransport : ICloneable, ITransport
   {
     public string TransportName { get; set; } = "Disk";
+    public Dictionary<string, object> TransportContext =>
+      new Dictionary<string, object>
+      {
+        { "name", TransportName },
+        { "type", this.GetType().Name },
+        { "basePath", RootPath },
+      };
 
     public CancellationToken CancellationToken { get; set; }
 
@@ -26,6 +34,8 @@ namespace DiskTransport
     public string RootPath { get; set; }
 
     public int SavedObjectCount { get; private set; } = 0;
+
+    public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
     public DiskTransport(string basePath = null)
     {
@@ -59,6 +69,7 @@ namespace DiskTransport
 
     public void SaveObject(string id, string serializedObject)
     {
+      var stopwatch = Stopwatch.StartNew();
       if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
 
       var filePath = Path.Combine(RootPath, id);
@@ -67,6 +78,8 @@ namespace DiskTransport
       File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
       SavedObjectCount++;
       OnProgressAction?.Invoke(TransportName, SavedObjectCount);
+      stopwatch.Stop();
+      Elapsed += stopwatch.Elapsed;
     }
 
     public void SaveObject(string id, ITransport sourceTransport)

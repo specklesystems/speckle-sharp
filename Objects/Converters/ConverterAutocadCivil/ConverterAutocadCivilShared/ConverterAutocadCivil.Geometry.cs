@@ -6,11 +6,12 @@ using System.Drawing;
 using Autodesk.AutoCAD.Geometry;
 using AcadGeo = Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.DatabaseServices;
-using Objects.Utils;
 using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+
 using Speckle.Core.Models;
 
+using Objects.Utils;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -33,6 +34,14 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
+using Speckle.Core.Kits;
+using Objects.Geometry;
+
+#if ADVANCESTEEL2023
+using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
+using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
+using MathNet.Spatial.Euclidean;
+#endif
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -40,6 +49,25 @@ namespace Objects.Converter.AutocadCivil
   {
     // tolerance for geometry:
     public double tolerance = 0.000;
+
+#if ADVANCESTEEL2023
+    public Point PointToSpeckle(ASPoint3d point, string units = null)
+    {
+      //TODO: handle units.none?
+      var u = units ?? ModelUnits;
+      var extPt = ToExternalCoordinates(PointASToAcad(point));
+      return new Point(extPt.X, extPt.Y, extPt.Z, u);
+    }
+
+    public Point3d PointASToAcad(ASPoint3d point)
+    {
+      return new Point3d(point.x * Factor, point.y * Factor, point.z * Factor);
+    }
+    public Point3D PointASToMath(ASPoint3d point)
+    {
+      return new Point3D(point.x * Factor, point.y * Factor, point.z * Factor);
+    }
+#endif
 
     // Points
     public Point PointToSpeckle(Point3d point, string units = null)
@@ -427,6 +455,10 @@ namespace Objects.Converter.AutocadCivil
         }
         segments.Add(CurveToSpeckle(segment));
       }
+
+      if (segments.Count() == 0)
+        throw new Exception("Failed to convert Autocad Polyline2d to Speckle Polycurve");
+
       polycurve.segments = segments;
 
       polycurve.length = polyline.Length;
@@ -451,11 +483,23 @@ namespace Objects.Converter.AutocadCivil
           // get the connection point to the next segment
           var connectionPoint = new Point3d();
           var nextSegment = GetSegmentByType(polyline, i + 1);
-          if (nextSegment == null) continue;
-          if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
-            connectionPoint = nextSegment.StartPoint;
+          if (nextSegment == null)
+          {
+            if (polyline.GetSegmentType(i + 1) == SegmentType.Point)
+            {
+              connectionPoint = polyline.GetPoint3dAt(i + 1);
+            }
+            else
+              continue;
+          }
           else
-            connectionPoint = nextSegment.EndPoint;
+          {
+            if (nextSegment.StartPoint.IsEqualTo(segment.StartPoint) || nextSegment.StartPoint.IsEqualTo(segment.EndPoint))
+              connectionPoint = nextSegment.StartPoint;
+            else
+              connectionPoint = nextSegment.EndPoint;
+          }
+
           previousPoint = connectionPoint;
           segment = GetCorrectSegmentDirection(segment, connectionPoint, true, out Point3d otherPoint);
         }
@@ -465,6 +509,10 @@ namespace Objects.Converter.AutocadCivil
         }
         segments.Add(CurveToSpeckle(segment));
       }
+
+      if (segments.Count() == 0)
+        throw new Exception("Failed to convert Autocad Polyline to Speckle Polycurve");
+
       polycurve.segments = segments;
 
       polycurve.length = polyline.Length;
@@ -565,7 +613,7 @@ namespace Objects.Converter.AutocadCivil
 
       // add all vertices
       int count = 0;
-      foreach(var segment in polycurve.segments)
+      foreach (var segment in polycurve.segments)
       {
         switch (segment)
         {
@@ -586,7 +634,7 @@ namespace Objects.Converter.AutocadCivil
             break;
           case Spiral o:
             var vertices = o.displayValue.GetPoints().Select(p => PointToNative(p)).ToList();
-            foreach(var vertex in vertices)
+            foreach (var vertex in vertices)
             {
               polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);
               count++;
@@ -960,7 +1008,7 @@ namespace Objects.Converter.AutocadCivil
           {
             converted = PolycurveToNativeDB(polycurve);
           }
-          break;  
+          break;
         case Curve curve:
           converted = NurbsToNativeDB(curve);
           break;
@@ -1071,6 +1119,43 @@ namespace Objects.Converter.AutocadCivil
         // get the base plane of the bounding box from extents and current UCS
         var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
         var plane = new AcadGeo.Plane(extents.MinPoint, ucs.Xaxis, ucs.Yaxis);
+
+        var box = new Box()
+        {
+          xSize = xSize,
+          ySize = ySize,
+          zSize = zSize,
+          basePlane = PlaneToSpeckle(plane),
+          volume = xSize.Length * ySize.Length * zSize.Length,
+          units = ModelUnits
+        };
+
+        return box;
+      }
+      catch
+      {
+        return null;
+      }
+    }
+
+#if ADVANCESTEEL2023
+
+ public Box BoxToSpeckle(ASExtents extents)
+    {
+      try
+      {
+        // convert min and max pts to speckle first
+        var min = PointToSpeckle(extents.MinPoint);
+        var max = PointToSpeckle(extents.MaxPoint);
+
+        // get dimension intervals
+        var xSize = new Interval(min.x, max.x);
+        var ySize = new Interval(min.y, max.y);
+        var zSize = new Interval(min.z, max.z);
+
+        // get the base plane of the bounding box from extents and current UCS
+        var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
+        var plane = new AcadGeo.Plane(PointASToAcad(extents.MinPoint), ucs.Xaxis, ucs.Yaxis);
        
         var box = new Box()
         {
@@ -1089,6 +1174,8 @@ namespace Objects.Converter.AutocadCivil
         return null;
       }
     }
+
+#endif
 
     // Brep
     public Mesh SolidToSpeckle(Solid3d solid, out List<string> notes, string units = null)
@@ -1143,7 +1230,7 @@ namespace Objects.Converter.AutocadCivil
               var indices = new List<int>();
               for (short i = 0; i < 4; i++)
               {
-                short index = o.GetVertexAt(i); 
+                short index = o.GetVertexAt(i);
                 if (index == 0) continue;
                 var adjustedIndex = index > 0 ? index - 1 : Math.Abs(index) - 1; // vertices are 1 indexed, and can be negative (hidden)
                 indices.Add(adjustedIndex);
@@ -1203,7 +1290,7 @@ namespace Objects.Converter.AutocadCivil
     public PolyFaceMesh MeshToNativeDB(Mesh mesh)
     {
       mesh.TriangulateMesh(true);
-      
+
       // get vertex points
       var vertices = new Point3dCollection();
       var points = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
@@ -1257,7 +1344,7 @@ namespace Objects.Converter.AutocadCivil
             face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), (short)(mesh.faces[j + 4] + 1));
             j += 5;
           }
-          
+
           if (face.IsNewObject)
           {
             _mesh.AppendFaceRecord(face);
@@ -1291,7 +1378,7 @@ namespace Objects.Converter.AutocadCivil
         }
         catch (Exception e)
         { };
-        
+
         bbox = BoxToSpeckle(solid.GeometricExtents);
       }
       else if (surface != null)
@@ -1357,7 +1444,7 @@ namespace Objects.Converter.AutocadCivil
             mesh.volume = volume;
           }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
           notes.Add(e.Message);
         }

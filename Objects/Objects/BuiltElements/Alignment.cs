@@ -21,6 +21,8 @@ namespace Objects.BuiltElements
 
     public double endStation { get; set; }
 
+    public List<Profile> profiles { get; set; }
+
     /// <summary>
     /// Station equation list contains doubles indicating raw station back, station back, and station ahead for each station equation
     /// </summary>

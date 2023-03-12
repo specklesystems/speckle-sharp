@@ -19,11 +19,19 @@ using Speckle.Newtonsoft.Json;
 namespace Speckle.Core.Transports
 {
   /// <summary>
-  /// Sends data to a speckle server. 
+  /// Sends data to a speckle server.
   /// </summary>
   public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
     public string TransportName { get; set; } = "RemoteTransport";
+    public Dictionary<string, object> TransportContext =>
+      new Dictionary<string, object>
+      {
+        { "name", TransportName },
+        { "type", this.GetType().Name },
+        { "streamId", StreamId },
+        { "serverUrl", BaseUri }
+      };
 
     public CancellationToken CancellationToken { get; set; }
 
@@ -33,11 +41,13 @@ namespace Speckle.Core.Transports
 
     private HttpClient Client { get; set; }
 
-    private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
+    private ConcurrentQueue<(string, string, int)> Queue =
+      new ConcurrentQueue<(string, string, int)>();
 
     private System.Timers.Timer WriteTimer;
 
-    private int TotalElapsed = 0, PollInterval = 100;
+    private int TotalElapsed = 0,
+      PollInterval = 100;
 
     private bool IS_WRITING = false;
 
@@ -59,23 +69,33 @@ namespace Speckle.Core.Transports
 
     public Account Account { get; set; }
 
+    // not implementing this for V1, just a dummy 0 value
+    public TimeSpan Elapsed => TimeSpan.Zero;
+
     public ServerTransportV1(Account account, string streamId, int timeoutSeconds = 60)
     {
       Account = account;
       Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
     }
 
-    private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
+    private void Initialize(
+      string baseUri,
+      string streamId,
+      string authorizationToken,
+      int timeoutSeconds = 60
+    )
     {
       Log.Information("Initializing New Remote V1 Transport for {baseUri}", baseUri);
 
       BaseUri = baseUri;
       StreamId = streamId;
 
-      Client = Http.GetHttpProxyClient(new HttpClientHandler()
-      {
-        AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-      });
+      Client = Http.GetHttpProxyClient(
+        new SpeckleHttpClientHandler()
+        {
+          AutomaticDecompression = System.Net.DecompressionMethods.GZip,
+        }
+      );
 
       Client.BaseAddress = new Uri(baseUri);
       Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
@@ -88,7 +108,12 @@ namespace Speckle.Core.Transports
       {
         Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
       }
-      WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
+      WriteTimer = new System.Timers.Timer()
+      {
+        AutoReset = true,
+        Enabled = false,
+        Interval = PollInterval
+      };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
 
@@ -108,7 +133,13 @@ namespace Speckle.Core.Transports
 
     public async Task WriteComplete()
     {
-      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 50);
+      await Utilities.WaitUntil(
+        () =>
+        {
+          return GetWriteCompletionStatus();
+        },
+        50
+      );
     }
 
     public bool GetWriteCompletionStatus()
@@ -131,7 +162,7 @@ namespace Speckle.Core.Transports
       {
         TotalElapsed = 0;
         WriteTimer.Enabled = false;
-#pragma warning disable CS4014 
+#pragma warning disable CS4014
         ConsumeQueue();
 #pragma warning restore CS4014
       }
@@ -259,12 +290,18 @@ namespace Speckle.Core.Transports
         if (CompressPayloads)
         {
           var content = new GzipContent(new StringContent(_ct, Encoding.UTF8));
-          content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/gzip");
+          content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
+            "application/gzip"
+          );
           multipart.Add(content, $"batch-{addedMpCount}", $"batch-{addedMpCount}");
         }
         else
         {
-          multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{addedMpCount}", $"batch-{addedMpCount}");
+          multipart.Add(
+            new StringContent(_ct, Encoding.UTF8),
+            $"batch-{addedMpCount}",
+            $"batch-{addedMpCount}"
+          );
         }
 
         addedMpCount++;
@@ -290,7 +327,13 @@ namespace Speckle.Core.Transports
         catch (Exception e)
         {
           IS_WRITING = false;
-          OnErrorAction?.Invoke(TransportName, new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e));
+          OnErrorAction?.Invoke(
+            TransportName,
+            new Exception(
+              $"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}",
+              e
+            )
+          );
 
           Queue = new ConcurrentQueue<(string, string, int)>();
           return;
@@ -364,11 +407,17 @@ namespace Speckle.Core.Transports
         Method = HttpMethod.Get,
       };
 
-      var response = Client.SendAsync(message, HttpCompletionOption.ResponseContentRead, CancellationToken).Result.Content;
+      var response = Client
+        .SendAsync(message, HttpCompletionOption.ResponseContentRead, CancellationToken)
+        .Result.Content;
       return response.ReadAsStringAsync().Result;
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown)
+    public async Task<string> CopyObjectAndChildren(
+      string hash,
+      ITransport targetTransport,
+      Action<int> onTotalChildrenCountKnown
+    )
     {
       if (CancellationToken.IsCancellationRequested)
       {
@@ -386,7 +435,11 @@ namespace Speckle.Core.Transports
       HttpResponseMessage rootHttpResponse = null;
       try
       {
-        rootHttpResponse = await Client.SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
+        rootHttpResponse = await Client.SendAsync(
+          rootHttpMessage,
+          HttpCompletionOption.ResponseContentRead,
+          CancellationToken
+        );
         rootHttpResponse.EnsureSuccessStatusCode();
       }
       catch (Exception e)
@@ -405,7 +458,11 @@ namespace Speckle.Core.Transports
       onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
 
       var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
-      List<string> newChildrenIds = new List<string>(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
+      List<string> newChildrenIds = new List<string>(
+        from objId in childrenFoundMap.Keys
+        where !childrenFoundMap[objId]
+        select objId
+      );
 
       targetTransport.BeginWrite();
 
@@ -437,7 +494,6 @@ namespace Speckle.Core.Transports
 
     private async Task<bool> CopyObjects(List<string> hashes, ITransport targetTransport)
     {
-
       Stream childrenStream = null;
 
       if (hashes.Count > 0)
@@ -456,7 +512,11 @@ namespace Speckle.Core.Transports
         HttpResponseMessage childrenHttpResponse = null;
         try
         {
-          childrenHttpResponse = await Client.SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+          childrenHttpResponse = await Client.SendAsync(
+            childrenHttpMessage,
+            HttpCompletionOption.ResponseHeadersRead,
+            CancellationToken
+          );
           childrenHttpResponse.EnsureSuccessStatusCode();
         }
         catch (Exception e)
@@ -505,9 +565,16 @@ namespace Speckle.Core.Transports
 
     public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
     {
-      var payload = new Dictionary<string, string>() { { "objects", JsonConvert.SerializeObject(objectIds) } };
+      var payload = new Dictionary<string, string>()
+      {
+        { "objects", JsonConvert.SerializeObject(objectIds) }
+      };
       var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
-      var response = await Client.PostAsync(uri, new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"), CancellationToken);
+      var response = await Client.PostAsync(
+        uri,
+        new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"),
+        CancellationToken
+      );
       response.EnsureSuccessStatusCode();
 
       var hasObjectsJson = await response.Content.ReadAsStringAsync();
@@ -517,7 +584,7 @@ namespace Speckle.Core.Transports
 
     public void Dispose()
     {
-      // TODO: check if it's writing first? 
+      // TODO: check if it's writing first?
       Client?.Dispose();
       WriteTimer.Dispose();
     }

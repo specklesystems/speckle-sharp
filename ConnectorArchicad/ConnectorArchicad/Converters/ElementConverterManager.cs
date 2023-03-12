@@ -74,7 +74,8 @@ namespace Archicad
 
           // itermediate solution for the OneClick Send report
           for (int i = 0; i < objects.Count(); i++)
-            progress.Report.ReportObjects.Add("", new ApplicationObject("", ""));
+            if (!progress.Report.ReportObjects.ContainsKey(objects[i].applicationId))
+              progress.Report.ReportObjects.Add(objects[i].applicationId, new ApplicationObject("", ""));
         }
       }
 

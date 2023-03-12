@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConverterAutocad2023": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\AutoCAD 2023\\acad.exe"
+    }
+  }
+}

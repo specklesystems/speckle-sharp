@@ -13,32 +13,31 @@ namespace Objects.Converter.RhinoGh
   static class BrepEncoder
   {
     #region Encode
-    public static Brep ToRawBrep(/*const*/ Brep brep, double scaleFactor = 1.0)
+    public static Brep ToRawBrep(Brep brep, double scaleFactor = 1.0, double modelAngleToleranceRadians = 0.0001, double modelRelativeTolerance = 0.001)
     {
       var duplicate = brep.DuplicateShallow() as Brep;
-      return EncodeRaw(ref duplicate, scaleFactor) ? duplicate : brep;
+      return EncodeRaw(ref duplicate, scaleFactor, modelAngleToleranceRadians, modelRelativeTolerance) ? duplicate : brep;
     }
 
-    internal static bool EncodeRaw(ref Brep brep, double scaleFactor)
+    internal static bool EncodeRaw(ref Brep brep, double scaleFactor, double modelAngleToleranceRadians, double modelRelativeTolerance)
     {
       if (scaleFactor != 1.0 && !brep.Scale(scaleFactor))
         return default;
 
       var bbox = brep.GetBoundingBox(false);
-      if (!bbox.IsValid || bbox.Diagonal.Length < RhinoDoc.ActiveDoc.ModelAngleToleranceRadians)
+      if (!bbox.IsValid || bbox.Diagonal.Length < modelAngleToleranceRadians)
         return default;
 
       // Split and Shrink faces
       {
-        brep.Faces.SplitKinkyFaces(RhinoDoc.ActiveDoc.ModelAngleToleranceRadians, true);
+        brep.Faces.SplitKinkyFaces(modelAngleToleranceRadians, true);
         brep.Faces.SplitClosedFaces(0);
         brep.Faces.ShrinkFaces();
-        
       }
 
-      var options = AuditBrep(brep);
+      var options = AuditBrep(brep, modelRelativeTolerance);
 
-      return RebuildBrep(ref brep, options);
+      return RebuildBrep(ref brep, options, modelAngleToleranceRadians, modelRelativeTolerance);
     }
 
     [Flags]
@@ -49,7 +48,7 @@ namespace Objects.Converter.RhinoGh
       OutOfToleranceSurfaceKnots  = 2,
     }
 
-    static BrepIssues AuditBrep(Brep brep)
+    static BrepIssues AuditBrep(Brep brep, double modelRelativeTolerance)
     {
       var options = default(BrepIssues);
 
@@ -57,7 +56,7 @@ namespace Objects.Converter.RhinoGh
       {
         foreach (var edge in brep.Edges)
         {
-          if (edge.Tolerance > RhinoDoc.ActiveDoc.ModelRelativeTolerance)
+          if (edge.Tolerance > modelRelativeTolerance)
           {
             options |= BrepIssues.OutOfToleranceEdges;
             //GeometryEncoder.Context.Peek.RuntimeMessage(10, $"Geometry contains out of tolerance edges, it will be rebuilt.", edge);
@@ -88,7 +87,7 @@ namespace Objects.Converter.RhinoGh
       return options;
     }
 
-    static bool RebuildBrep(ref Brep brep, BrepIssues options)
+    static bool RebuildBrep(ref Brep brep, BrepIssues options, double modelAngleToleranceRadians, double modelRelativeTolerance)
     {
       if(options != BrepIssues.Nothing)
       {
@@ -109,13 +108,13 @@ namespace Objects.Converter.RhinoGh
 
             int edgeCount = edges.Count;
             for (int ei = 0; ei < edgeCount; ++ei)
-              edges.SplitKinkyEdge(ei, RhinoDoc.ActiveDoc.ModelAngleToleranceRadians);
+              edges.SplitKinkyEdge(ei, modelAngleToleranceRadians);
 
             kinkyEdges += edges.Count - edgeCount;
             #if RHINO7
-            microEdges += edges.RemoveNakedMicroEdges(RhinoDoc.ActiveDoc.ModelRelativeTolerance, cleanUp: true);
+            microEdges += edges.RemoveNakedMicroEdges(modelRelativeTolerance, cleanUp: true);
             #endif
-            mergedEdges += edges.MergeAllEdges(RhinoDoc.ActiveDoc.ModelAngleToleranceRadians) - edgeCount;
+            mergedEdges += edges.MergeAllEdges(modelAngleToleranceRadians) - edgeCount;
           }
 
           // Faces
@@ -145,7 +144,7 @@ namespace Objects.Converter.RhinoGh
           shell.SetTrimIsoFlags();
         }
         
-        var join = Brep.JoinBreps(shells, RhinoDoc.ActiveDoc.ModelRelativeTolerance);
+        var join = Brep.JoinBreps(shells, modelRelativeTolerance);
         if (join.Length == 1) brep = join[0];
         else
         {

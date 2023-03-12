@@ -1,10 +1,10 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
 using Polyline = Objects.Geometry.Polyline;
@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
         TrySetParam(duct, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM, speckleRevitDuct.diameter, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.CURVE_ELEM_LENGTH, speckleRevitDuct.length, speckleRevitDuct.units);
         TrySetParam(duct, BuiltInParameter.RBS_VELOCITY, speckleRevitDuct.velocity, speckleRevitDuct.units);
-        
+
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
@@ -141,7 +141,7 @@ namespace Objects.Converter.Revit
     {
       // create polyline from revitduct points
       var polyline = new Polyline();
-      polyline.value = PointsToFlatList(revitDuct.Points.Select(o => PointToSpeckle(o)));
+      polyline.value = PointsToFlatList(revitDuct.Points.Select(o => PointToSpeckle(o, revitDuct.Document)));
       polyline.units = ModelUnits;
       polyline.closed = false;
 
@@ -155,8 +155,8 @@ namespace Objects.Converter.Revit
         height = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_HEIGHT_PARAM, unitsOverride: ModelUnits),
         width = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_CURVE_WIDTH_PARAM, unitsOverride: ModelUnits),
         length = GetParamValue<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH),
-        startTangent = VectorToSpeckle(revitDuct.StartTangent),
-        endTangent = VectorToSpeckle(revitDuct.EndTangent),
+        startTangent = VectorToSpeckle(revitDuct.StartTangent, revitDuct.Document),
+        endTangent = VectorToSpeckle(revitDuct.EndTangent, revitDuct.Document),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
         displayValue = GetElementMesh(revitDuct)
