@@ -31,7 +31,7 @@ using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
 using Objects.Other;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
-using ASBeamPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
+using ASPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
 using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
 using ASBoltPattern = Autodesk.AdvanceSteel.Modelling.BoltPattern;
 using ASSpecialPart = Autodesk.AdvanceSteel.Modelling.SpecialPart;
@@ -97,13 +97,32 @@ namespace Objects.Converter.AutocadCivil
         throw new System.Exception($"Failed to find Advance Steel object ${@object.Handle.ToString()}.");
       }
 
-      reportObj.Update(descriptor: filerObject.GetType().ToString());
+      reportObj.Update(descriptor: filerObject.GetType().Name);
 
       dynamic dynamicObject = filerObject;
-      return FilerObjectToSpeckle(dynamicObject, notes);
+      AdvanceSteelObject advanceSteelObject = FilerObjectToSpeckle(dynamicObject, notes);
+
+      SetUnits(advanceSteelObject);
+      SetUserAttributes(filerObject as AtomicElement, advanceSteelObject);
+
+      return advanceSteelObject;
     }
 
-    private Base FilerObjectToSpeckle(ASBeamPolyBeam polyBeam, List<string> notes)
+    private void SetUserAttributes(AtomicElement atomicElement, AdvanceSteelObject advanceSteelObject)
+    {
+      advanceSteelObject.UserAttributes = new Dictionary<int, string>();
+      for (int i = 0; i < 10; i++)
+      {
+        string attribute = atomicElement.GetUserAttribute(i);
+
+        if (!string.IsNullOrEmpty(attribute))
+        {
+          advanceSteelObject.UserAttributes.Add(i + 1, attribute);
+        }
+      }
+    }
+
+    private AdvanceSteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
     {
       AdvanceSteelPolyBeam advanceSteelPolyBeam = new AdvanceSteelPolyBeam();
 
@@ -117,12 +136,14 @@ namespace Objects.Converter.AutocadCivil
 
       advanceSteelPolyBeam.area = polyBeam.GetPaintArea();
 
+      //There is a bug in some polybeams that some faces don't appears in ModelerBody (Bug_Polybeam_Speckle.dwg)
+      //https://speckle.xyz/streams/1a0090e6fc
       SetDisplayValue(advanceSteelPolyBeam, polyBeam);
 
       return advanceSteelPolyBeam;
     }
 
-    private Base FilerObjectToSpeckle(ASBeam beam, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
     {
       AdvanceSteelBeam advanceSteelBeam = new AdvanceSteelBeam();
 
@@ -141,7 +162,7 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelBeam;
     }
 
-    private Base FilerObjectToSpeckle(ASPlate plate, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
     {
       AdvanceSteelPlate advanceSteelPlate = new AdvanceSteelPlate();
 
@@ -156,7 +177,7 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelPlate;
     }
 
-    private Base FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
     {
       AdvanceSteelBolt advanceSteelBolt = bolt is CircleScrewBoltPattern ? (AdvanceSteelBolt)new AdvanceSteelCircularBolt() : (AdvanceSteelBolt)new AdvanceSteelRectangularBolt();
 
@@ -165,7 +186,7 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelBolt;
     }
 
-    private Base FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
     {
       AdvanceSteelSpecialPart advanceSteelSpecialPart = new AdvanceSteelSpecialPart();
 
@@ -174,7 +195,7 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelSpecialPart;
     }
 
-    private Base FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
     {
       throw new System.Exception("Advance Steel Object type conversion to Speckle not implemented");
     }
@@ -185,8 +206,6 @@ namespace Objects.Converter.AutocadCivil
 
       @base["volume"] = modelerBody.Volume;
       @base["displayValue"] = new List<Mesh> { GetMeshFromModelerBody(modelerBody, atomicElement.GeomExtents) };
-
-      SetUnits(@base);
     }
 
     private Mesh GetMeshFromModelerBody(ModelerBody modelerBody, ASExtents extents)
@@ -207,10 +226,8 @@ namespace Objects.Converter.AutocadCivil
         var outerList = faceInfo.OuterContour.Select(x => vertices.ElementAt(x));
 
         if(outerList.Count() < 3)
-        {
           continue;
-        }
-
+        
         CoordinateSystem coordinateSystemAligned = CreateCoordinateSystemAligned(outerList);
 
         input.Add(CreateContour(outerList, coordinateSystemAligned));
@@ -219,7 +236,11 @@ namespace Objects.Converter.AutocadCivil
         {
           foreach (var listInnerContours in faceInfo.InnerContours)
           {
-            input.Add(CreateContour(listInnerContours.Select(x => vertices.ElementAt(x)), coordinateSystemAligned), true);
+            var innerList = listInnerContours.Select(x => vertices.ElementAt(x));
+            if (innerList.Count() < 3)
+              continue;
+
+            input.Add(CreateContour(innerList, coordinateSystemAligned), true);
           }
         }
 
@@ -272,9 +293,9 @@ namespace Objects.Converter.AutocadCivil
 
       //Centroid calculated to avoid non-collinear points
       var centroid = Point3D.Centroid(points);
-      var plane = MathPlane.FromPoints(point1, point2, centroid);
+      var plane = MathPlane.FromPoints(centroid, point1, point2);
 
-      UnitVector3D vectorX = (point2 - point1).Normalize();
+      UnitVector3D vectorX = (centroid - point1).Normalize();
       UnitVector3D vectorZ = plane.Normal;
       UnitVector3D vectorY = vectorZ.CrossProduct(vectorX);
 

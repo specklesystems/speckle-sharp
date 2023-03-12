@@ -1116,7 +1116,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
       if (filerObject != null)
       {
-        applicationObject.Update(descriptor: filerObject.GetType().ToString());
+        applicationObject.Update(descriptor: filerObject.GetType().Name);
       }
     }
 #endif

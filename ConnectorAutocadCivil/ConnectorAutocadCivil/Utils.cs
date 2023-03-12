@@ -11,6 +11,7 @@ using Autodesk.AutoCAD.Colors;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.ConnectorAutocadCivil.DocumentUtils;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
@@ -20,6 +21,9 @@ using Autodesk.Aec.PropertyData.DatabaseServices;
 #if ADVANCESTEEL2023
 using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+using Autodesk.AdvanceSteel.Connection;
+using Autodesk.AdvanceSteel.ConstructionTypes;
+using Autodesk.AdvanceSteel.Modelling;
 #endif
 
 namespace Speckle.ConnectorAutocadCivil
@@ -89,13 +93,26 @@ namespace Speckle.ConnectorAutocadCivil
         return handles;
 
       Document Doc = Application.DocumentManager.MdiActiveDocument;
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      using (TransactionContext.StartTransaction(Doc))
       {
+        Transaction tr = Doc.TransactionManager.TopTransaction;
         foreach (SelectedObject selObj in selection)
         {
           DBObject obj = tr.GetObject(selObj.ObjectId, OpenMode.ForRead);
           if (obj != null && obj.Visible())
+          {
+#if ADVANCESTEEL2023
+
+            if (obj.ObjectId.ObjectClass.DxfName.IndexOf("AST") == 0)
+            {
+              ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
+              if (filerObject is FeatureObject || filerObject is PlateFoldRelation) //Don't select features objects, they are going with Advance Steel objects
+                continue;
+            }
+#endif
+
             handles.Add(obj.Handle.ToString());
+          }
         }
         tr.Commit();
       }
@@ -543,7 +560,7 @@ namespace Speckle.ConnectorAutocadCivil
     public static string ObjectDescriptor(DBObject obj)
     {
       if (obj == null) return String.Empty;
-      var simpleType = obj.GetType().ToString();
+      var simpleType = obj.GetType().Name;
       return $"{simpleType}";
     }
 

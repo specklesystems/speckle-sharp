@@ -12,7 +12,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdvanceSteelSpecialPart : Base
+  public class AdvanceSteelSpecialPart : AdvanceSteelObject
   {
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }

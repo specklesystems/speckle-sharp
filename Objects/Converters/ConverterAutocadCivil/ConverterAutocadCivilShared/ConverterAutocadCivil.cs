@@ -110,7 +110,7 @@ namespace Objects.Converter.AutocadCivil
 
           //Use the Handle object to update progressReport object.
           //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
-          reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().ToString()) { applicationId = appId };
+          reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().Name) { applicationId = appId };
           style = DisplayStyleToSpeckle(obj as Entity);
 
           switch (obj)
