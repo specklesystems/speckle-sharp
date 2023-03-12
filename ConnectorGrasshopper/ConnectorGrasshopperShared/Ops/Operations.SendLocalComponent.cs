@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddGenericParameter("localDataId", "id", "ID of the local data sent.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       base.SolveInstance(DA);
       if(DA.Iteration == 0) Tracker.TrackNodeRun();

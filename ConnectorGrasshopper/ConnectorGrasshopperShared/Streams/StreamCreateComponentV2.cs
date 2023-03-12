@@ -58,7 +58,7 @@ namespace ConnectorGrasshopper.Streams
       return base.Write(writer);
     }
 
-    protected override void SolveInstancePrivate(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {

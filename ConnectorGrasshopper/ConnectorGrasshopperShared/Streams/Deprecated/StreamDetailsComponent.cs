@@ -51,7 +51,7 @@ namespace ConnectorGrasshopper.Streams
     private Exception error;
     private Dictionary<GH_Path, Stream> streams;
     private bool tooManyItems;
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (error != null)
       {

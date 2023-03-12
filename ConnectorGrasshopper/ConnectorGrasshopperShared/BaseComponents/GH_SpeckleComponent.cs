@@ -2,6 +2,7 @@
 using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Types;
+using Serilog.Context;
 
 namespace ConnectorGrasshopper
 {
@@ -36,5 +37,13 @@ namespace ConnectorGrasshopper
         IsNew = false;
       }
     }
+    
+    protected sealed override void SolveInstance(IGH_DataAccess DA)
+    {
+      using (LogContext.PushProperty("hostApplication", "grasshopperGrasshopper7"))
+        SolveInstanceWithLogContext(DA);
+    }
+
+    public abstract void SolveInstanceWithLogContext(IGH_DataAccess DA);
   }
 }

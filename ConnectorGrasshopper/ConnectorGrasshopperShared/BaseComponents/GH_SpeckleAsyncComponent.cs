@@ -1,6 +1,7 @@
 ﻿using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using GrasshopperAsyncComponent;
+using Serilog.Context;
 using Serilog.Core;
 
 namespace ConnectorGrasshopper
@@ -33,9 +34,12 @@ namespace ConnectorGrasshopper
       }
     }
 
-    protected override void BeforeSolveInstance()
+    protected sealed override void SolveInstance(IGH_DataAccess DA)
     {
-      base.BeforeSolveInstance();
+      using (LogContext.PushProperty("hostApplication", "grasshopperGrasshopper7"))
+        SolveInstanceWithLogContext(DA);
     }
+
+    public abstract void SolveInstanceWithLogContext(IGH_DataAccess DA);
   }
 }

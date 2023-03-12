@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using GH_IO.Serialization;
+﻿using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Serilog.Context;
 
@@ -33,15 +32,12 @@ namespace ConnectorGrasshopper
       }
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    protected sealed override void SolveInstance(IGH_DataAccess DA)
     {
-      // Host app fake!
       using (LogContext.PushProperty("hostApplication", "grasshopperGrasshopper7"))
-      {
-        SolveInstancePrivate(DA);
-      }
+        SolveInstanceWithLogContext(DA);
     }
 
-    protected abstract void SolveInstancePrivate(IGH_DataAccess DA);
+    public abstract void SolveInstanceWithLogContext(IGH_DataAccess DA);
   }
 }

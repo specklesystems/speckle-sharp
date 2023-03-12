@@ -60,7 +60,7 @@ namespace ConnectorGrasshopper.Conversion
       pManager.AddGenericParameter("Data", "D", "Converted data in GH native format.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstancePrivate(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {

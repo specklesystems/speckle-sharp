@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Streams
       pManager.AddGenericParameter("Branches", "B", "List of branches for this stream", GH_ParamAccess.list);
     }
     
-    protected override void SolveInstancePrivate(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {

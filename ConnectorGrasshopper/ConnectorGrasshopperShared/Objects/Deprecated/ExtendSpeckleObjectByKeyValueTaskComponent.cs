@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Objects
         "The resulting extended Speckle object.", GH_ParamAccess.item));
     }
 
-    protected override void SolveInstancePrivate(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {
