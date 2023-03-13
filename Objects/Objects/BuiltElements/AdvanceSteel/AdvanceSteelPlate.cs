@@ -1,4 +1,5 @@
-﻿using Objects.Geometry;
+﻿using System.Collections.Generic;
+using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
