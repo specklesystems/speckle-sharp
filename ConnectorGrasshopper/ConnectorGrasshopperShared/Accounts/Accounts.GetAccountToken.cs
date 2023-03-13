@@ -44,7 +44,7 @@ namespace ConnectorGrasshopper.Accounts
       pManager.AddTextParameter("Auth Token", "T", "The auth token for this user that is stored in Manager", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       var userId = "";
       if (!DA.GetData(0, ref userId)) return;

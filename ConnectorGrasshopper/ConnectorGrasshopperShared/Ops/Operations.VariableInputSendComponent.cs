@@ -165,7 +165,7 @@ namespace ConnectorGrasshopper.Ops
       .Select(p => p.NickName)
       .GroupBy(x => x).Count(group => group.Count() > 1) > 0;
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
 
       // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
