@@ -7,7 +7,7 @@ namespace Objects.BuiltElements.AdvanceSteel
 {
   public class AdvanceSteelPolyBeam : AdvanceSteelBeam
   {
-    [SchemaInfo("AdvanceSteelPolyBeam", "Creates a Advance Steel polybeam.", "Advance Steel", "Structure")]
+    //[SchemaInfo("AdvanceSteelPolyBeam", "Creates a Advance Steel polybeam.", "Advance Steel", "Structure")]
     public AdvanceSteelPolyBeam()
     {
         

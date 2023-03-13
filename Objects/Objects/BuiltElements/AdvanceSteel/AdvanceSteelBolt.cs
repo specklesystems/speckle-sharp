@@ -26,7 +26,7 @@ namespace Objects.BuiltElements.AdvanceSteel
 
   public class AdvanceSteelCircularBolt : AdvanceSteelBolt
   {
-    [SchemaInfo("AdvanceSteelCircularBolt", "Creates a Advance Steel circular bolt.", "Advance Steel", "Structure")]
+    //[SchemaInfo("AdvanceSteelCircularBolt", "Creates a Advance Steel circular bolt.", "Advance Steel", "Structure")]
     public AdvanceSteelCircularBolt()
     {
 
@@ -35,7 +35,7 @@ namespace Objects.BuiltElements.AdvanceSteel
 
   public class AdvanceSteelRectangularBolt : AdvanceSteelBolt
   {
-    [SchemaInfo("AdvanceSteelRectangularBolt", "Creates a Advance Steel rectangular bolt.", "Advance Steel", "Structure")]
+    //[SchemaInfo("AdvanceSteelRectangularBolt", "Creates a Advance Steel rectangular bolt.", "Advance Steel", "Structure")]
     public AdvanceSteelRectangularBolt()
     {
 

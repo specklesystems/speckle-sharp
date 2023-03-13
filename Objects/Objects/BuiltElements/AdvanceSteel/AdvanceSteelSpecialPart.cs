@@ -17,7 +17,7 @@ namespace Objects.BuiltElements.AdvanceSteel
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
-    [SchemaInfo("AdvanceSteelSpecialPart", "Creates a Advance Steel special part.", "Advance Steel", "Structure")]
+    //[SchemaInfo("AdvanceSteelSpecialPart", "Creates a Advance Steel special part.", "Advance Steel", "Structure")]
     public AdvanceSteelSpecialPart()
     {
 

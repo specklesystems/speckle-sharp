@@ -14,7 +14,7 @@ namespace Objects.BuiltElements.AdvanceSteel
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
-    [SchemaInfo("AdvanceSteelGrating", "Creates a Advance Steel grating.", "Advance Steel", "Structure")]
+    //[SchemaInfo("AdvanceSteelGrating", "Creates a Advance Steel grating.", "Advance Steel", "Structure")]
     public AdvanceSteelGrating()
     {
 
