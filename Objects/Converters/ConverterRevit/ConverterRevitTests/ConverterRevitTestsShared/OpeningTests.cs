@@ -39,9 +39,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Opening", "ToSpeckle")]
-    public void OpeningToSpeckle()
+    public async Task OpeningToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
     #region ToNative

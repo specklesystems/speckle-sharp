@@ -26,9 +26,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Roof", "ToSpeckle")]
-    public void RoofToSpeckle()
+    public async Task RoofToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
     #region ToNative

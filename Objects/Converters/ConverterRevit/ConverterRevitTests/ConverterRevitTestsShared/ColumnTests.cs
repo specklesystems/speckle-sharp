@@ -27,9 +27,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Column", "ToSpeckle")]
-    public void ColumnToSpeckle()
+    public async Task ColumnToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
     #region ToNative

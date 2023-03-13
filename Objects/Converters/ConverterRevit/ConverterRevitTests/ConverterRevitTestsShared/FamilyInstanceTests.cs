@@ -57,7 +57,6 @@ namespace ConverterRevitTests
     [Trait("FamilyInstance", "ToNative")]
     public async Task NestedToNative()
     {
-
       await SpeckleToNative<DB.Element>(AssertNestedEqual);
     }
 

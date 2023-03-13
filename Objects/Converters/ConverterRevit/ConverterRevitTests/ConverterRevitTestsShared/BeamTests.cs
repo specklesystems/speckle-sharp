@@ -28,9 +28,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Beam", "ToSpeckle")]
-    public void BeamToSpeckle()
+    public async Task BeamToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
     #region ToNative

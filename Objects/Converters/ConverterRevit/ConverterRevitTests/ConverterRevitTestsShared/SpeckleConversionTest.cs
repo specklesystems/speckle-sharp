@@ -25,16 +25,19 @@ namespace ConverterRevitTests
       this.fixture = fixture;
       this.fixture.TestClassName = GetType().Name;
     }
-    internal void NativeToSpeckle()
+    internal async Task NativeToSpeckle()
     {
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(fixture.SourceDoc);
 
       foreach (var elem in fixture.RevitElements)
       {
-        var spkElem = converter.ConvertToSpeckle(elem);
-        if (spkElem is Base re)
-          AssertValidSpeckleElement(elem, re);
+        await RevitTask.RunAsync(() =>
+        {
+          var spkElem = converter.ConvertToSpeckle(elem);
+          if (spkElem is Base re)
+            AssertValidSpeckleElement(elem, re);
+        });
       }
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
     }

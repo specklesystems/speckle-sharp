@@ -27,9 +27,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("AdaptiveComponent", "ToSpeckle")]
-    public void AdaptiveComponentToSpeckle()
+    public async Task AdaptiveComponentToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
     #region ToNative

@@ -21,9 +21,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Wire", "ToSpeckle")]
-    public void WireToSpeckle()
+    public async Task WireToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
 

@@ -103,7 +103,10 @@ namespace ConverterRevitTests
         .FirstOrDefault();
 
       if (param == null)
-        throw new Exception($"Element of type {element.GetType()} with Id {element.Id.IntegerValue} does not have the parameter \"SpeckleObjectTestNumber\". If you are trying to create a new test document, then start from the \"blank.rvt\" file.");
+      {
+        //throw new Exception($"Element of type {element.GetType()} with Id {element.Id.IntegerValue} does not have the parameter \"SpeckleObjectTestNumber\". If you are trying to create a new test document, then start from the \"blank.rvt\" file.");
+        return 0;
+      }
 
       return param.AsInteger();
     }

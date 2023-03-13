@@ -26,9 +26,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Floor", "ToSpeckle")]
-    public void FloorToSpeckle()
+    public async Task FloorToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
     #region ToNative

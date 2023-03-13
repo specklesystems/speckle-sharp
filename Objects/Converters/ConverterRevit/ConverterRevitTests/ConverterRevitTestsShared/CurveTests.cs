@@ -26,9 +26,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Curve", "ToSpeckle")]
-    public void CurveToSpeckle()
+    public async Task CurveToSpeckle()
     {
-      NativeToSpeckleBase();
+      await NativeToSpeckle();
     }
 
     #region ToNative

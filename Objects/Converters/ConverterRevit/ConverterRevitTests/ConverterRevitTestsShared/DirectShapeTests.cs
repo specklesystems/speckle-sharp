@@ -27,9 +27,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("DirectShape", "ToSpeckle")]
-    public void DirectShapeToSpeckle()
+    public async Task DirectShapeToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
     #region ToNative

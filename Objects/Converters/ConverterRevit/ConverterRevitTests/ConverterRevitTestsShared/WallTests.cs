@@ -29,9 +29,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Wall", "ToSpeckle")]
-    public void WallToSpeckle()
+    public async Task WallToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
 

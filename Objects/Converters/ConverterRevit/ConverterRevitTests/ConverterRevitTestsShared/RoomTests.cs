@@ -4,7 +4,7 @@ using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
 
 using Xunit;
-
+using System.Threading.Tasks;
 
 namespace ConverterRevitTests
 {
@@ -26,9 +26,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Room", "ToSpeckle")]
-    public void RoomToSpeckle()
+    public async Task RoomToSpeckle()
     {
-      NativeToSpeckle();
+      await NativeToSpeckle();
     }
 
 
