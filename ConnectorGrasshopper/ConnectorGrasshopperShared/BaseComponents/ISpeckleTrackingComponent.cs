@@ -13,7 +13,6 @@ namespace ConnectorGrasshopper
     /// Upon Adding to a document, we should track node creation only if IsNew = true.
     /// </summary>
     bool IsNew { get; set; }
-
   }
 
   public interface ISpeckleTrackingComponent
