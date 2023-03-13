@@ -1,9 +1,6 @@
 ﻿using System;
-using System;
-using System.Collections.Generic;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text;
 using Objects.Geometry;
 using Speckle.Core.Kits;
@@ -12,7 +9,7 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdvanceSteelGrating : Base
+  public class AdvanceSteelGrating : AdvanceSteelObject
   {
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
