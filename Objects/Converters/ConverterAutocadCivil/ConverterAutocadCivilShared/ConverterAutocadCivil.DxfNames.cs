@@ -16,6 +16,8 @@ namespace Objects.Converter.AutocadCivil
     public const string BOLTCIRCULAR = "ASTBOLTCIRCULAR";
 
     public const string SPECIALPART = "ASTSPECIALPART";
+
+    public const string GRATING = "ASTGRATING";
   }
 
 }

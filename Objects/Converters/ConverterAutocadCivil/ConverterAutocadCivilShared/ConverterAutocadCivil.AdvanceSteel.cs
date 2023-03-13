@@ -35,6 +35,7 @@ using ASPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
 using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
 using ASBoltPattern = Autodesk.AdvanceSteel.Modelling.BoltPattern;
 using ASSpecialPart = Autodesk.AdvanceSteel.Modelling.SpecialPart;
+using ASGrating = Autodesk.AdvanceSteel.Modelling.Grating;
 using Autodesk.AdvanceSteel.CADAccess;
 using Autodesk.AdvanceSteel.CADLink.Database;
 using CADObjectId = Autodesk.AutoCAD.DatabaseServices.ObjectId;
@@ -82,6 +83,7 @@ namespace Objects.Converter.AutocadCivil
         case DxfNames.BOLTCORNER:
         case DxfNames.BOLTMID:
         case DxfNames.SPECIALPART:
+        case DxfNames.GRATING:
           return true;
       }
 
@@ -193,6 +195,17 @@ namespace Objects.Converter.AutocadCivil
       SetDisplayValue(advanceSteelSpecialPart, specialPart);
 
       return advanceSteelSpecialPart;
+    }
+
+    private AdvanceSteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
+    {
+      AdvanceSteelGrating advanceSteelGrating = new AdvanceSteelGrating();
+
+      SetDisplayValue(advanceSteelGrating, grating);
+
+      SetUnits(advanceSteelGrating);
+
+      return advanceSteelGrating;
     }
 
     private AdvanceSteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
