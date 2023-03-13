@@ -264,7 +264,7 @@ namespace DesktopUI2.ViewModels
         PreviewImage360Loaded = false;
         if (_selectedCommit != null)
         {
-          if (_selectedCommit.id == "latest")
+          if (_selectedCommit.id == ConnectorHelpers.LatestCommitString)
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
           else
             PreviewImageUrl = Client.Account.serverInfo.url + $"/preview/{Stream.id}/commits/{_selectedCommit.id}";
@@ -501,7 +501,7 @@ namespace DesktopUI2.ViewModels
         //receiver
         else
         {
-          if (SelectedCommit != null && SelectedCommit.id != "latest")
+          if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
           if (SelectedBranch != null)
             return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
@@ -835,7 +835,7 @@ namespace DesktopUI2.ViewModels
         var branch = await Client.BranchGet(Stream.id, SelectedBranch.Branch.name, 100);
         if (branch != null && branch.commits.items.Any())
         {
-          branch.commits.items.Insert(0, new Commit { id = "latest", message = "Always receive the latest commit sent to this branch." });
+          branch.commits.items.Insert(0, new Commit { id = ConnectorHelpers.LatestCommitString, message = "Always receive the latest commit sent to this branch." });
           Commits = branch.commits.items;
 
           var commit = Commits.FirstOrDefault(x => x.id == prevCommitId);
@@ -1166,42 +1166,39 @@ namespace DesktopUI2.ViewModels
 
         // We don't pass the progress cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
-
+        
         if (commitId == null)
         {
-          //TODO: figure out if this was a fatal error, if so, make it an exception
-          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
-          {
-            Title = "😖 Send Error",
-            Message = Progress.Report?.OperationErrorsString ?? $"Something went wrong",
-            Type = Avalonia.Controls.Notifications.NotificationType.Error
-          });
+          // Ideally, commitId shouldn't return null, as we have no context WHY, or if the application is left in an invalid state.
+          // This is a last ditch effort to display a semi-useful error to the user.
+          string message = Progress?.Report?.OperationErrorsString;
+          if(string.IsNullOrEmpty(message))
+            message = "Something went very wrong";
+          throw new Exception(message);
         }
-        else
+        
+        LastUsed = DateTime.Now.ToString();
+        var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
+
+        Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object>
         {
-          LastUsed = DateTime.Now.ToString();
-          var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
+          { "filter", StreamState.Filter.Name },
+          { "view", view },
+          { "collaborators", Stream.collaborators.Count },
+          { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
+          { "branches", Stream.branches?.totalCount },
+          { "commits", Stream.commits?.totalCount },
+          { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
+        });
 
-          Analytics.TrackEvent(Client.Account, Analytics.Events.Send, new Dictionary<string, object>
-          {
-            { "filter", StreamState.Filter.Name },
-            { "view", view },
-            { "collaborators", Stream.collaborators.Count },
-            { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
-            { "branches", Stream.branches?.totalCount },
-            { "commits", Stream.commits?.totalCount },
-            { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
-          });
-
-          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
-          {
-            Title = "👌 Data sent",
-            Message = $"Sent to '{Stream.name}', view it online",
-            OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}"),
-            Type = Avalonia.Controls.Notifications.NotificationType.Success,
-            Expiration = TimeSpan.FromSeconds(10)
-          });
-        }
+        DisplayPopupNotification(new PopUpNotificationViewModel()
+        {
+          Title = "👌 Data sent",
+          Message = $"Sent to '{Stream.name}', view it online",
+          OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}"),
+          Type = NotificationType.Success,
+          Expiration = TimeSpan.FromSeconds(10)
+        });
 
         GetActivity();
         GetReport();
@@ -1211,7 +1208,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        HandleCommandException(ex);
+        HandleCommandException(ex, Progress);
       }
       finally
       {
@@ -1257,7 +1254,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        HandleCommandException(ex);
+        HandleCommandException(ex, Progress);
       }
       finally
       {
@@ -1286,7 +1283,9 @@ namespace DesktopUI2.ViewModels
         {
           // Ideally, ReceiveStream shouldn't return null, as we have no context WHY, or if the application is left in an invalid state.
           // This is a last ditch effort to display a semi-useful error to the user.
-          string message = Progress?.Report?.OperationErrorsString ?? "Something went very wrong";
+          string message = Progress?.Report?.OperationErrorsString;
+          if(string.IsNullOrEmpty(message))
+            message = "Something went very wrong";
           throw new Exception(message);
         }
          
@@ -1327,7 +1326,7 @@ namespace DesktopUI2.ViewModels
       }
       catch(Exception ex)
       {
-        HandleCommandException(ex);
+        HandleCommandException(ex, Progress);
       }
       finally
       {
@@ -1336,7 +1335,7 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private static void HandleCommandException(Exception ex, [CallerMemberName] string commandName = "UnknownCommand")
+    private static void HandleCommandException(Exception ex, ProgressViewModel progress, [CallerMemberName] string commandName = "UnknownCommand")
     {
       string commandPrettyName = commandName.EndsWith("Command") ? commandName.Substring(0, commandName.Length - "Command".Length) : commandName;
       
@@ -1345,24 +1344,31 @@ namespace DesktopUI2.ViewModels
       switch (ex)
       {
         case OperationCanceledException _:
-          logLevel = LogEventLevel.Information; 
+          // NOTE: We expect an OperationCanceledException to occur when our CancellationToken is cancelled.
+          // If our token wasn't cancelled, then this is highly unexpected, and treated with HIGH SEVERITY!
+          // Likely, another deeper token was cancelled, and the exception wasn't handled correctly somewhere deeper.
+          bool isUserCancel = progress.CancellationToken.IsCancellationRequested;
+          
+          logLevel = isUserCancel ? LogEventLevel.Information : LogEventLevel.Error ; 
           notificationViewModel = new PopUpNotificationViewModel
           {
-            Title = $"❌ {commandPrettyName} cancelled!",
-            Message = "Operation canceled by user",
-            Type = NotificationType.Success
+            Title = $"✋ {commandPrettyName} cancelled!",
+            Message = isUserCancel ? "Operation canceled by user" : ex.Message,
+            Type = isUserCancel ? NotificationType.Success : NotificationType.Error
           };
           break;
         case InvalidOperationException _:
+          // NOTE: Hopefully, this means that the Receive/Send/Preview/etc. command could not START because of invalid state
           logLevel = LogEventLevel.Warning;
           notificationViewModel = new PopUpNotificationViewModel
           {
-            Title = $"❌ {commandPrettyName} cancelled!", 
+            Title = $"❌ {commandPrettyName} cancelled!", // InvalidOperation implies we didn't even try to complete the command, therefore "cancelled" rather than "failed"
             Message = ex.Message, 
             Type = NotificationType.Warning
           };
           break;
         case SpeckleGraphQLException<StreamData> _:
+          // NOTE: GraphQL requests for StreamData are expected to fail for a variety of reasons
           logLevel = LogEventLevel.Warning;
           notificationViewModel = new PopUpNotificationViewModel
           {
@@ -1371,12 +1377,22 @@ namespace DesktopUI2.ViewModels
             Type = NotificationType.Error
           };
           break;
+        case SpeckleException _:
+          logLevel = LogEventLevel.Error;
+          notificationViewModel = new PopUpNotificationViewModel
+          {
+            Title = $"😖 {commandPrettyName} Failed!", 
+            Message = ex.Message,
+            Type = NotificationType.Error
+          };
+          break;
         default:
           // Unexpected exceptions are treated with highest severity, as we don't know if the application was left in an invalid state
+          // All fatal exceptions should be investigated, and either FIXED or REPORTED differently.
           logLevel = LogEventLevel.Fatal;
           notificationViewModel = new PopUpNotificationViewModel
           {
-            Title = $"😖 {commandPrettyName} Error!", 
+            Title = $"💥 {commandPrettyName} Error!", 
             Message = $"{ex.GetType()} - {ex.Message}",
             Type = NotificationType.Error
           };
@@ -1402,17 +1418,11 @@ namespace DesktopUI2.ViewModels
     public void CancelSendOrReceiveCommand()
     {
       Progress.CancellationTokenSource.Cancel();
-      Reset();
+      
       string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
 
-      //NOTE: We don't want to show a notification yet. just because cancellation is requested, doesn't mean the receive operation has been cancelled yet.  
-      // MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
-      // {
-      //   Title = "❌ Operation cancelled",
-      //   Message = IsReceiver ? "Nothing was received" : "Nothing was sent",
-      //   Type = Avalonia.Controls.Notifications.NotificationType.Success
-      // });
+      //NOTE: We don't want to show a notification yet! Just because cancellation is requested, doesn't mean the receive operation has been cancelled yet.  
     }
 
     public void CancelPreviewCommand()

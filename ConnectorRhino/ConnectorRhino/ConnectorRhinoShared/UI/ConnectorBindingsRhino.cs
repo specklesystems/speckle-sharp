@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2;
 using DesktopUI2.Models;
@@ -18,7 +17,6 @@ using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
-using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -249,7 +247,7 @@ namespace SpeckleRhino
     {
 
       // first check if commit is the same and preview objects have already been generated
-      Commit commit = await GetCommitFromState(progress.CancellationToken, state);
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       progress.Report = new ProgressReport();
 
       if (commit.id != SelectedReceiveCommit)
@@ -258,7 +256,7 @@ namespace SpeckleRhino
         var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
         converter.SetContextDocument(Doc);
 
-        var commitObject = await GetCommit(commit, state, progress);
+        var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
         SelectedReceiveCommit = commit.id;
         ClearStorage();
@@ -354,8 +352,7 @@ namespace SpeckleRhino
       converter.SetContextDocument(Doc);
       converter.ReceiveMode = state.ReceiveMode;
 
-      Commit commit = await GetCommitFromState(progress.CancellationToken, state);
-
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastSourceApp = commit.sourceApplication;
 
       if (SelectedReceiveCommit != commit.id)
@@ -368,17 +365,16 @@ namespace SpeckleRhino
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
       
-      
-      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
-
-      // get commit layer name
-      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
-
       Base commitObject = null;
       if (Preview.Count == 0)
-        commitObject = await GetCommit(commit, state, progress);
-
-      progress.CancellationToken.ThrowIfCancellationRequested();
+      {
+        commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
+        await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.RhinoAppName);
+      }
+      
+      // get commit layer name
+      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
+      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
       RhinoApp.InvokeOnUiThread((Action)(() =>
       {
         RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
@@ -396,7 +392,7 @@ namespace SpeckleRhino
             if (previewObj.Convertible)
             {
               converter.Report.Log(previewObj); // Log object so converter can access
-              var storedObj = StoredObjects[ previewObj.OriginalId ];
+              var storedObj = StoredObjects[previewObj.OriginalId];
               if (storedObj == null)
               {
                 previewObj.Update(status: ApplicationObject.State.Failed,
@@ -414,7 +410,7 @@ namespace SpeckleRhino
             {
               foreach (var fallback in previewObj.Fallback)
               {
-                var storedFallback = StoredObjects[ fallback.OriginalId ];
+                var storedFallback = StoredObjects[fallback.OriginalId];
                 fallback.Converted = ConvertObject(storedFallback, converter);
               }
             }
@@ -509,7 +505,7 @@ namespace SpeckleRhino
 
       return state;
     }
-    //#nullable disable
+
     // gets objects by id directly or by application id user string
     private List<RhinoObject> GetObjectsByApplicationId(string applicationId)
     {
@@ -533,67 +529,8 @@ namespace SpeckleRhino
       return match;
     }
 
-    // gets the state commit
-    private static async Task<Commit> GetCommitFromState(CancellationToken cancellationToken, StreamState state)
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-      
-      Commit commit;
-      try
-      {
-        if (state.CommitId == "latest") //if "latest", always make sure we get the latest commit
-        {
-          var res = await state.Client.BranchGet(cancellationToken, state.StreamId, state.BranchName, 1);
-          commit = res.commits.items.First();
-        }
-        else
-        {
-          var res = await state.Client.CommitGet(cancellationToken, state.StreamId, state.CommitId);
-          commit = res;
-        }
-      }
-      catch (OperationCanceledException)
-      {
-        throw;
-      }
-      catch (Exception ex)
-      {
-        throw new Exception($"Failed to fetch requested commit id: {state.CommitId} from branch: \"{state.BranchName}\" from stream: {state.StreamId}", ex);
-      }
 
-      return commit;
-    }
-
-
-    /// <exception cref="Exception">Thrown when any receive operation errors</exception>
-    private static async Task<Base> GetCommit(Commit commit, StreamState state, ProgressViewModel progress)
-    {
-      progress.CancellationToken.ThrowIfCancellationRequested();
-
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
-      
-      var commitObject = await Operations.Receive(
-        commit.referencedObject,
-        progress.CancellationToken,
-        transport,
-        onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (s, ex) =>
-        {
-          //Treat all operation errors as fatal
-          
-          //Don't wrap cancellation exceptions!      
-          progress.CancellationToken.ThrowIfCancellationRequested();
-          if (ex is OperationCanceledException) throw ex;
-
-          throw new Exception($"Failed to receive commit: {commit.id} objects from server", ex);
-        },
-        onTotalChildrenCountKnown: (c) => progress.Max = c,
-        disposeTransports: true
-      );
-      
-      return commitObject;
-    }
-
+    
     /// <summary>
     /// Traverses the object graph, returning objects to be converted.
     /// </summary>
@@ -869,12 +806,7 @@ namespace SpeckleRhino
       // report and converter
       progress.Report = new ProgressReport();
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        //TODO: Log warning (or throw)
-        progress.Report.LogOperationError(new Exception("Could not load converter"));
-        return;
-      }
+
       converter.SetContextDocument(Doc);
 
       // remove any invalid objs
@@ -931,12 +863,9 @@ namespace SpeckleRhino
         }
       }
 
-      if (existingIds.Count == 0)
-      {
-        //TODO: Log warning (or throw)
-        progress.Report.LogOperationError(new Exception("No valid objects selected, nothing will be sent!"));
-        return;
-      }
+      if (existingIds.Count == 0) 
+        throw new InvalidOperationException("No valid objects selected, nothing will be sent!");
+      
 
       // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
       Doc.Objects.UnselectAll(false);
@@ -1105,14 +1034,9 @@ namespace SpeckleRhino
         },
         onErrorAction: (s, ex) =>
         {
-          //TODO: work out if this exception is thrown as expected
-          //TODO: Need to ensure transports are disposed properly
-          //TODO: Is this the correct type for this exception?
-          Log.Warning(ex, "Connector failed during operation {operationName} {errorString}", nameof(Operations.Send), s);
-          throw new SpeckleException($"Failed to send objects {s}", ex);
+          if (ex is OperationCanceledException) throw ex;
           
-          //progress.Report.LogOperationError(e);
-          //progress.CancellationTokenSource.Cancel();
+          throw new SpeckleException($"Failed to send objects {s}", ex);
         },
         disposeTransports: true
         );
