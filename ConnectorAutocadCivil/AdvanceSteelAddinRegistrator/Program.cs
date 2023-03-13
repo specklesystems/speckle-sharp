@@ -98,7 +98,7 @@ namespace AdvanceSteelAddinRegistrator
       }
       catch (Exception ex)
       {
-        throw new Exception($"Error updating manifest: {ex.Message}");
+        throw new Exception($"Error updating manifest: {ex.Message}", ex);
       }
       return addonsData;
     }
@@ -119,7 +119,7 @@ namespace AdvanceSteelAddinRegistrator
       }
       catch (Exception ex)
       {
-        throw new Exception($"Error parsing manifest: {ex.Message}");
+        throw new Exception($"Error parsing manifest: {ex.Message}", ex);
       }
 
       return addonsData;
@@ -139,7 +139,7 @@ namespace AdvanceSteelAddinRegistrator
       }
       catch (Exception ex)
       {
-        throw new Exception($"Error writing manifest: {ex.Message}");
+        throw new Exception($"Error writing manifest: {ex.Message}", ex);
       }
     }
   }
