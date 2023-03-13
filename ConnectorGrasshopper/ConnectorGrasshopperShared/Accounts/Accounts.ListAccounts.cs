@@ -12,7 +12,7 @@ using Logging = Speckle.Core.Logging;
 
 namespace ConnectorGrasshopper.Accounts
 {
-  public class AccountListComponent : GH_ValueList, ISpeckleTrackingComponent
+  public class AccountListComponent : GH_ValueList, ISpeckleTrackingDocumentObject
   {
     public ComponentTracker Tracker { get; set; }
     public bool IsNew { get; set; } = true;

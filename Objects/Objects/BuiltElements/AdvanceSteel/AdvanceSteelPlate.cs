@@ -1,13 +1,8 @@
 ﻿using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System.Collections.Generic;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
-using System;
-using System.Linq;
-using System.Text;
-using Speckle.Newtonsoft.Json;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {

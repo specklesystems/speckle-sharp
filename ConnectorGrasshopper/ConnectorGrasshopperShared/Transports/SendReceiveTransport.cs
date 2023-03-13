@@ -52,7 +52,7 @@ namespace ConnectorGrasshopper.Transports
       pManager.AddTextParameter("id", "ID", "The sent object's id.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (DA.Iteration != 0)
       {
@@ -126,7 +126,7 @@ namespace ConnectorGrasshopper.Transports
       pManager.AddGenericParameter("objects", "O", "The objects you requested.", GH_ParamAccess.list);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (DA.Iteration != 0)
       {

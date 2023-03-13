@@ -344,7 +344,7 @@ namespace ConnectorGrasshopper
         true));
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (readFailed)
       {

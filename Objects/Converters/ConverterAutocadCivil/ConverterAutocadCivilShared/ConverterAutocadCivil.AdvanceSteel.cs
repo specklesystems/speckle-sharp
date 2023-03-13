@@ -94,7 +94,7 @@ namespace Objects.Converter.AutocadCivil
     {
       ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(@object);
 
-      if(filerObject == null)
+      if (filerObject == null)
       {
         throw new System.Exception($"Failed to find Advance Steel object ${@object.Handle.ToString()}.");
       }
@@ -212,7 +212,7 @@ namespace Objects.Converter.AutocadCivil
     {
       throw new System.Exception("Advance Steel Object type conversion to Speckle not implemented");
     }
-    
+
     private void SetDisplayValue(Base @base, AtomicElement atomicElement)
     {
       var modelerBody = atomicElement.GetModeler(Autodesk.AdvanceSteel.Modeler.BodyContext.eBodyContext.kMaxDetailed);

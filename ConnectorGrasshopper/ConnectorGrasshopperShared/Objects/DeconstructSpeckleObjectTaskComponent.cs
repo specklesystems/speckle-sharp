@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Objects
       // INFO -> All output params are dynamically generated!
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       //DA.DisableGapLogic();
       if (InPreSolve)

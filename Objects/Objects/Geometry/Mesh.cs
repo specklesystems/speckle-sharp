@@ -11,36 +11,48 @@ namespace Objects.Geometry
 {
   public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<Mesh>
   {
-    [DetachProperty]
-    [Chunkable(31250)]
+    [DetachProperty, Chunkable(31250)]
     public List<double> vertices { get; set; } = new List<double>();
     
-    [DetachProperty]
-    [Chunkable(62500)]
+    [DetachProperty, Chunkable(62500)]
     public List<int> faces { get; set; } = new List<int>();
 
     /// <summary> Vertex colors as ARGB <see cref="int"/>s</summary>
-    [DetachProperty]
-    [Chunkable(62500)]
+    [DetachProperty, Chunkable(62500)]
     public List<int> colors { get; set; } = new List<int>();
 
-    [DetachProperty]
-    [Chunkable(31250)]
+    [DetachProperty, Chunkable(31250)]
     public List<double> textureCoordinates { get; set; } = new List<double>();
 
+    /// <inheritdoc/>
     public Box bbox { get; set; }
 
+    /// <inheritdoc/>
     public double area { get; set; }
 
+    /// <inheritdoc/>
     public double volume { get; set; }
 
+    /// <summary>
+    /// The unit's this <see cref="Mesh"/> is in.
+    /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
+    /// </summary>
     public string units { get; set; }
 
     public Mesh()
     {
 
     }
-
+    
+    /// <summary>
+    /// Constructs a new mesh from it's raw values.
+    /// </summary>
+    /// <param name="vertices"></param>
+    /// <param name="faces"></param>
+    /// <param name="colors"></param>
+    /// <param name="texture_coords"></param>
+    /// <param name="units"></param>
+    /// <param name="applicationId"></param>
     public Mesh(List<double> vertices, List<int> faces, List<int> colors = null, List<double> texture_coords = null, string units = Units.Meters, string applicationId = null)
     {
       this.vertices = vertices;
@@ -169,6 +181,7 @@ namespace Objects.Geometry
     
     #endregion
 
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out Mesh mesh)
     {
       // transform vertices
@@ -192,6 +205,7 @@ namespace Objects.Geometry
       return true;
     }
 
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Mesh brep);
