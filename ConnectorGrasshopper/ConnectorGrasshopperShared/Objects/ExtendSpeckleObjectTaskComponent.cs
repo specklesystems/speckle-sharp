@@ -18,7 +18,7 @@ namespace ConnectorGrasshopper.Objects
     IGH_VariableParameterComponent
   {
     protected override Bitmap Icon => Properties.Resources.ExtendSpeckleObject;
-    public override GH_Exposure Exposure => GH_Exposure.tertiary;
+    public override GH_Exposure Exposure => GH_Exposure.secondary;
     public override Guid ComponentGuid => new Guid("2D455B11-F372-47E5-98BE-515EA758A669");
 
     public ExtendSpeckleObjectTaskComponent() : base("Extend Speckle Object", "ESO",
@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddParameter(new SpeckleBaseParam("Extended Speckle Object", "EO", "Extended speckle object.", GH_ParamAccess.item));
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {
@@ -135,6 +135,9 @@ namespace ConnectorGrasshopper.Objects
                 hasErrors = true;
               }
 
+              if (value is SpeckleObjectGroup group)
+                value = group.Value;
+              
               inputData[key] = value;
               break;
             case GH_ParamAccess.list:
@@ -232,7 +235,7 @@ namespace ConnectorGrasshopper.Objects
         inputData?.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
-
+          
 
           if (value is List<object> list)
           {

@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
 using Objects.Other;
@@ -218,5 +218,35 @@ namespace Objects.Converter.Revit
       notes.Add($"Created temp family {tempFamilyPath}");
       return tempFamilyPath;
     }
+    
+    private DB.FamilyInstance CreateFreeformElementFamily(List<Solid> solids, string name, string templateName)
+    {
+      var templatePath = GetTemplatePath(templateName);
+      if (!File.Exists(templatePath))
+        throw new FileNotFoundException($"Could not find Generic Model rft file - {templatePath}");
+      
+      var famDoc = Doc.Application.NewFamilyDocument(templatePath);
+
+      using (var t = new Transaction(famDoc, "Create Freeform Elements"))
+      {
+        t.Start();
+        foreach (var s in solids)
+          FreeFormElement.Create(famDoc, s);
+        t.Commit();
+      }
+      
+      var famName = "SpeckleFreeform_" + name;
+      var tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
+      var so = new SaveAsOptions { OverwriteExistingFile = true};
+      famDoc.SaveAs(tempFamilyPath, so);
+      famDoc.Close();
+      
+      Doc.LoadFamily(tempFamilyPath, new FamilyLoadOption(), out var fam);
+        
+      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
+      symbol.Activate();
+      return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+    }
+
   }
 }

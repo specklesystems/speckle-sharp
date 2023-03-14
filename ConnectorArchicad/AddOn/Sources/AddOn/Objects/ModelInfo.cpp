@@ -1,5 +1,6 @@
 #include "ModelInfo.hpp"
 #include "FieldNames.hpp"
+using namespace FieldNames;
 
 
 ModelInfo::Vertex::Vertex (double x, double y, double z) :
@@ -12,9 +13,9 @@ ModelInfo::Vertex::Vertex (double x, double y, double z) :
 
 GSErrCode ModelInfo::Vertex::Store (GS::ObjectState& os) const
 {
-	os.Add (Model::VertexXFieldName, x);
-	os.Add (Model::VertexYFieldName, y);
-	os.Add (Model::VertexZFieldName, z);
+	os.Add (Model::VertexX, x);
+	os.Add (Model::VertexY, y);
+	os.Add (Model::VertexZ, z);
 
 	return NoError;
 }
@@ -22,9 +23,9 @@ GSErrCode ModelInfo::Vertex::Store (GS::ObjectState& os) const
 
 GSErrCode ModelInfo::Vertex::Restore (const GS::ObjectState& os)
 {
-	os.Get (Model::VertexXFieldName, x);
-	os.Get (Model::VertexYFieldName, y);
-	os.Get (Model::VertexZFieldName, z);
+	os.Get (Model::VertexX, x);
+	os.Get (Model::VertexY, y);
+	os.Get (Model::VertexZ, z);
 
 	return NoError;
 }
@@ -49,10 +50,10 @@ ModelInfo::Material::Material (GS::UniString& name, short transparency, GS_RGBCo
 
 GSErrCode ModelInfo::Material::Store (GS::ObjectState& os) const
 {
-	os.Add (Model::MaterialNameFieldName, name);
-	os.Add (Model::AmbientColorFieldName, ambientColor);
-	os.Add (Model::EmissionColorFieldName, emissionColor);
-	os.Add (Model::TransparencyFieldName, transparency);
+	os.Add (Model::MaterialName, name);
+	os.Add (Model::AmbientColor, ambientColor);
+	os.Add (Model::EmissionColor, emissionColor);
+	os.Add (Model::Transparency, transparency);
 
 	return NoError;
 }
@@ -60,10 +61,10 @@ GSErrCode ModelInfo::Material::Store (GS::ObjectState& os) const
 
 GSErrCode ModelInfo::Material::Restore (const GS::ObjectState& os)
 {
-	os.Get (Model::MaterialNameFieldName, name);
-	os.Get (Model::AmbientColorFieldName, ambientColor);
-	os.Get (Model::EmissionColorFieldName, emissionColor);
-	os.Get (Model::TransparencyFieldName, transparency);
+	os.Get (Model::MaterialName, name);
+	os.Get (Model::AmbientColor, ambientColor);
+	os.Get (Model::EmissionColor, emissionColor);
+	os.Get (Model::Transparency, transparency);
 
 	return NoError;
 }
@@ -78,8 +79,8 @@ ModelInfo::Polygon::Polygon (const GS::Array<Int32>& pointIds, UInt32 material) 
 
 GSErrCode ModelInfo::Polygon::Store (GS::ObjectState& os) const
 {
-	os.Add (Model::PointIdsFieldName, pointIds);
-	os.Add (Model::MaterialFieldName, material);
+	os.Add (Model::PointIds, pointIds);
+	os.Add (Model::Material, material);
 
 	return NoError;
 }
@@ -87,8 +88,8 @@ GSErrCode ModelInfo::Polygon::Store (GS::ObjectState& os) const
 
 GSErrCode ModelInfo::Polygon::Restore (const GS::ObjectState& os)
 {
-	os.Get (Model::PointIdsFieldName, pointIds);
-	os.Get (Model::MaterialFieldName, material);
+	os.Get (Model::PointIds, pointIds);
+	os.Get (Model::Material, material);
 
 	return NoError;
 }
@@ -154,9 +155,9 @@ GSErrCode ModelInfo::GetMaterial (const UInt32 materialIndex, ModelInfo::Materia
 
 GSErrCode ModelInfo::Store (GS::ObjectState& os) const
 {
-	os.Add (Model::VerticesFieldName, vertices);
-	os.Add (Model::PolygonsFieldName, polygons);
-	os.Add (Model::MaterialsFieldName, materials);
+	os.Add (Model::Vertices, vertices);
+	os.Add (Model::Polygons, polygons);
+	os.Add (Model::Materials, materials);
 
 	return NoError;
 }
@@ -164,11 +165,11 @@ GSErrCode ModelInfo::Store (GS::ObjectState& os) const
 
 GSErrCode ModelInfo::Restore (const GS::ObjectState& os)
 {
-	os.Get (Model::IdsFieldName, ids);
-	os.Get (Model::VerticesFieldName, vertices);
-	os.Get (Model::PolygonsFieldName, polygons);
-	os.Get (Model::MaterialsFieldName, materials);
-	os.Get (Model::EdgesFieldName, edges);
+	os.Get (Model::Ids, ids);
+	os.Get (Model::Vertices, vertices);
+	os.Get (Model::Polygons, polygons);
+	os.Get (Model::Materials, materials);
+	os.Get (Model::Edges, edges);
 
 	return NoError;
 }

@@ -1,12 +1,11 @@
 <#@ template debug="false" hostspecific="false" language="C#" #>
 <#@ output extension=".cs" #>
 <#@ assembly name="System.Core" #>
+<#@ assembly name="System.Security.Cryptography" #>
 <#@ assembly name="..\ConnectorGrasshopperUtils\bin\ConnectorGrasshopperUtils.dll" #>
 <#@ import namespace="System.Text" #>
+<#@ import namespace="System" #>
 <#@ import namespace="System.Linq" #>
-<#@ import namespace="System.Collections.Generic" #>
-<#@ import namespace="System.Collections" #>
-<#@ import namespace="System.Reflection" #>
 <#@ import namespace="ConnectorGrasshopperUtils" #>
 
 <#
@@ -35,7 +34,15 @@ namespace ConnectorGrasshopper {
     var i = 0;
     foreach (var constructor in constructorInfos)
     {
-        var compName = sType.Name + (i == 0 ? null : i) + "SchemaComponent";
+        string compName = "";
+        if(i==0)
+        {
+            compName = sType.Name + "SchemaComponent";
+        }
+        else
+        {
+            compName = sType.Name + i + "SchemaComponent";
+        }
         i++;
         var attr = constructor.CustomAttributes.First(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaInfo");
         var depr = constructor.CustomAttributes.FirstOrDefault(e => e.AttributeType.FullName == "Speckle.Core.Kits.SchemaDeprecated");
@@ -68,20 +75,21 @@ public class <#= compName #>: CreateSchemaObjectBase {
 
     internal static Guid internalGuid => new Guid("<#= ToGuid("secretPhraseToKeepItRandom..." + compName) #>");
 
-    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
-      ? GH_Exposure.tertiary
-      : GH_Exposure.hidden;
+
+    public override GH_Exposure Exposure => internalExposure;
 
     public override Guid ComponentGuid => internalGuid;
 <#
     if (depr != null){
 #>
     public override bool Obsolete => true;
-    public override GH_Exposure Exposure => GH_Exposure.hidden;
+    internal static GH_Exposure internalExposure => GH_Exposure.hidden;
 <#
         } else {
 #>
-    public override GH_Exposure Exposure => internalExposure;
+    internal static GH_Exposure internalExposure => SpeckleGHSettings.GetTabVisibility(internalCategory)
+      ? GH_Exposure.tertiary
+      : GH_Exposure.hidden;
 <#
         }
 #>

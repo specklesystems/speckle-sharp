@@ -216,11 +216,11 @@ namespace ConnectorGrasshopper.Extras
         {
           ghParam.NewInstanceGuid();
           ghParam.Attributes.Selected = false;
-          ghParam.Attributes.Pivot = new PointF(Attributes.Parent.Bounds.Right + ghParam.Attributes.Bounds.Width/2 + 15f, Attributes.Pivot.Y);
-          ghParam.Attributes.ExpireLayout();
+          ghParam.Attributes.PerformLayout();
+          ghParam.Attributes.Pivot = new PointF(Attributes.Parent.Bounds.Right + ghParam.Attributes.Bounds.Width * 0.5f + Global_Proc.UiAdjust(15), Attributes.Pivot.Y);
           ghParam.MutableNickName = true;
-          if (ghParam.Attributes is GH_FloatingParamAttributes)
-            ((GH_Attributes<IGH_Param>) ghParam.Attributes).PerformLayout();
+          if (ghParam.Attributes is GH_FloatingParamAttributes floating)
+            floating.PerformLayout();
           var ghDocument = OnPingDocument();
           if (ghDocument == null)
           {

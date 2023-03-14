@@ -7,6 +7,7 @@
 #include "RealNumber.h"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands {
@@ -23,8 +24,8 @@ static GS::ObjectState GetWindows (const API_Guid& guid)
 
 	if (err == NoError) {
 		if (err == NoError) {
-			currentWindow.Add (ApplicationIdFieldName, APIGuidToString (guid));
-			currentWindow.Add (ParentElementIdFieldName, APIGuidToString (element.door.owner));
+			currentWindow.Add (ApplicationId, APIGuidToString (guid));
+			currentWindow.Add (ParentElementId, APIGuidToString (element.door.owner));
 
 			AddOnCommands::GetOpeningBaseData<API_WindowType> (element.window, currentWindow);
 		}
@@ -43,13 +44,13 @@ GS::ObjectState GetWindowData::Execute (const GS::ObjectState& parameters, GS::P
 	GS::ObjectState result;
 
 	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIdsFieldName, ids);
+	parameters.Get (ApplicationIds, ids);
 	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
 
 	if (elementGuids.IsEmpty ())
 		return result;
 
-	const auto& listAdderWindows = result.AddList<GS::ObjectState> (WindowsFieldName);
+	const auto& listAdderWindows = result.AddList<GS::ObjectState> (Windows);
 
 	for (const API_Guid& guid : elementGuids) {
 		API_Element element{};

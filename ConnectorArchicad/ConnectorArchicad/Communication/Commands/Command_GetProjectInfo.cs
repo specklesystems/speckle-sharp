@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {

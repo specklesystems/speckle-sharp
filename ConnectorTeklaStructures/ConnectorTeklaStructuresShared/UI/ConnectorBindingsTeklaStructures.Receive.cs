@@ -73,7 +73,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
       string referencedObject = commit.referencedObject;
 
-      state.LastSourceApp = commit.sourceApplication;
+      state.LastCommit = commit;
 
       var commitObject = await Operations.Receive(
                 referencedObject,

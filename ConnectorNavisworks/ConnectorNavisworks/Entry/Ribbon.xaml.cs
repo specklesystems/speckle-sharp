@@ -139,7 +139,7 @@ namespace Speckle.ConnectorNavisworks.Entry
         {
           try
           {
-            Process.Start("https://speckle.community/");
+            Process.Start("https://speckle.community/tag/navisworks");
           }
           catch
           {

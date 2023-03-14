@@ -69,9 +69,10 @@ namespace Speckle.ConnectorRevit.UI
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
           // get the report object
           // for hosted elements, they may have already been converted and added to the converter report
-          bool alreadyConverted = converter.Report.GetReportObject(revitElement.UniqueId, out int index);
+          var alreadyConverted = converter.Report.ReportObjects.TryGetValue(revitElement.UniqueId, out var applicationObject);
+
           var reportObj = alreadyConverted ?
-            converter.Report.ReportObjects[index] :
+            applicationObject :
             new ApplicationObject(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
           if (alreadyConverted)
           {
@@ -85,7 +86,11 @@ namespace Speckle.ConnectorRevit.UI
 
             if (!converter.CanConvertToSpeckle(revitElement))
             {
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Revit");
+              if (revitElement is RevitLinkInstance)
+                reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Enable linked model support from the settings to send this object");
+              else
+                reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported yet");
+
               progress.Report.Log(reportObj);
               continue;
             }
@@ -117,6 +122,9 @@ namespace Speckle.ConnectorRevit.UI
             // but the host doesn't know that it is a host
             if (conversionResult["speckleHost"] is Base host && host["category"] is string catName)
             {
+              //ensure we use english names for hosted elements too!
+              var cat = ConnectorRevitUtils.GetCategories(CurrentDoc.Document)[catName];
+              catName = ConnectorRevitUtils.GetEnglishCategoryName(cat);
               commitObject[$"@{catName}"] ??= new List<Base>();
               if (commitObject[$"@{catName}"] is List<Base> objs)
               {
@@ -146,7 +154,7 @@ namespace Speckle.ConnectorRevit.UI
             //is an element type, nest it under Types instead
             else if (typeof(ElementType).IsAssignableFrom(revitElement.GetType()))
             {
-              var category = $"@{revitElement.Category.Name}";
+              var category = $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}";
 
               if (commitObject["Types"] == null)
                 commitObject["Types"] = new Base();
@@ -162,7 +170,7 @@ namespace Speckle.ConnectorRevit.UI
               {
                 "Network" => "@Networks",
                 "FreeformElement" => "@FreeformElement",
-                _ => $"@{revitElement.Category.Name}"
+                _ => $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}"
               };
 
               commitObject[category] ??= new List<Base>();

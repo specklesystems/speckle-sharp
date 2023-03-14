@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Organization;
+using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -74,6 +75,13 @@ namespace Objects.Converter.Revit
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
     public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
+
+    /// <summary>
+    /// Used to cache already converted family instance FamilyType deifnitions
+    /// </summary>
+    public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType>();
+    
+    public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
 
     public ReceiveMode ReceiveMode { get; set; }
 
@@ -299,8 +307,7 @@ namespace Objects.Converter.Revit
       }
 
       // log 
-      var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
-      if (reportObj != null && notes.Count > 0)
+      if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
       return returnObject;
@@ -520,7 +527,7 @@ namespace Objects.Converter.Revit
           return ProfileWallToNative(o);
 
         case BER.RevitFaceWall o:
-          return FaceWallToNative(o);
+          return FaceWallToNativeV2(o);
 
         case BE.Wall o:
           return WallToNative(o);
@@ -549,6 +556,9 @@ namespace Objects.Converter.Revit
 
         case BE.View3D o:
           return ViewToNative(o);
+
+        case Other.Revit.RevitInstance o:
+          return RevitInstanceToNative(o);
 
         case BE.Room o:
           return RoomToNative(o);
@@ -708,6 +718,7 @@ namespace Objects.Converter.Revit
         BE.CableTray _ => true,
         BE.Conduit _ => true,
         BE.Revit.RevitRailing _ => true,
+        Other.Revit.RevitInstance _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
         BE.Room _ => true,

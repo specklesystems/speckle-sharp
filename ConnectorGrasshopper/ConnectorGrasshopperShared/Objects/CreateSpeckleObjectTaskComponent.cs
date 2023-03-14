@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -36,7 +36,7 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddParameter(new SpeckleBaseParam("Speckle Object", "O", "Created speckle object", GH_ParamAccess.item));
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {
@@ -157,7 +157,7 @@ namespace ConnectorGrasshopper.Objects
         inputData?.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
-
+          if (value is SpeckleObjectGroup group) value = group.Value;
           if (value is List<object> list)
           {
 
