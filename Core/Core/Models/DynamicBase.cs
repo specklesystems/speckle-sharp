@@ -152,8 +152,7 @@ namespace Speckle.Core.Models
 
     /// <summary>
     /// Gets all of the property names on this class, dynamic or not.
-    /// </summary>
-    /// <returns></returns>
+    /// </summary> <returns></returns>
     [Obsolete("Use `GetMembers(DynamicBaseMemberType.All).Keys` instead")]
     public override IEnumerable<string> GetDynamicMemberNames()
     {
