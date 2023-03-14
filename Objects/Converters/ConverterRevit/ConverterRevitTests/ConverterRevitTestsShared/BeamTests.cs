@@ -13,7 +13,7 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModel("Beam.rvt");
 
     public override string UpdatedTestFile => Globals.GetTestModel("BeamUpdated.rvt");
-    public override string NewFile => Globals.GetTestModel("Beam_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("BeamToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming };
     public BeamFixture() : base()
     {

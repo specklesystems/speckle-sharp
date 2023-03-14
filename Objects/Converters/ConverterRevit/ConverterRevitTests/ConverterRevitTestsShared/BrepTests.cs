@@ -18,7 +18,7 @@ namespace ConverterRevitTests
 
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Mass, BuiltInCategory.OST_Mass };
 
-    public override string NewFile => Globals.GetTestModel("Brep_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("BrepToNative.rvt");
   }
 
   public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>

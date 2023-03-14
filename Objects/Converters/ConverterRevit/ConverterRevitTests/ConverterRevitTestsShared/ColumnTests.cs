@@ -9,9 +9,9 @@ namespace ConverterRevitTests
 {
   public class ColumnFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("BeamsCols.rvt");
-    public override string UpdatedTestFile => Globals.GetTestModel("BeamsColsUpdated.rvt");
-    public override string NewFile => Globals.GetTestModel("BeamsCols_ToNative.rvt");
+    public override string TestFile => Globals.GetTestModel("Column.rvt");
+    public override string UpdatedTestFile => Globals.GetTestModel("ColumnUpdated.rvt");
+    public override string NewFile => Globals.GetTestModel("ColumnToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns };
 
     public ColumnFixture() : base()
