@@ -256,7 +256,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
       var stream = await state.Client.StreamGet(state.StreamId);
       
       Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
-      state.LastSourceApp = commit.sourceApplication;
       state.LastCommit = commit;
 
       Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
