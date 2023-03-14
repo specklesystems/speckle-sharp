@@ -100,19 +100,22 @@ namespace Objects.Converter.CSI
     {
       switch (@object)
       {
-        case CSIDiaphragm csiDiaphragm:
-        case CSIStories csiStories:
-        case Element1D element1D:
-        case Element2D element2D:
-        case Load load:
+        case CSIDiaphragm _:
+        case CSIStories _:
+        case Element1D _:
+        case Element2D _:
+        case Load _:
         //case Geometry.Line line:
-        case Node node:
+        case Node _:
         //case Model o:
         //case Property property:
 
         // for the moment we need to have this in here so the flatten traversal skips over this object
         // otherwise it would add result.element to the list twice and the stored objects dictionary would throw
-        case Result result:
+        case Result _:
+        case BuiltElements.Beam _:
+        case BuiltElements.Brace _:
+        case BuiltElements.Column _:
           return true;
       };
       return false;
@@ -187,6 +190,17 @@ namespace Objects.Converter.CSI
         case Property1D o:
           Property1DToNative(o, ref appObj);
           break;
+        #region BuiltElements
+        case BuiltElements.Beam o:
+          CurveBasedElementToNative(o, o.baseLine, ref appObj);
+          break;
+        case BuiltElements.Brace o:
+          CurveBasedElementToNative(o, o.baseLine, ref appObj);
+          break;
+        case BuiltElements.Column o:
+          CurveBasedElementToNative(o, o.baseLine, ref appObj);
+          break;
+        #endregion
         default:
           appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Skipped not supported type: {@object.GetType()}");
           break;
