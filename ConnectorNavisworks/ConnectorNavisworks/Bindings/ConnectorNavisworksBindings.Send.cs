@@ -70,9 +70,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       var settings =
         state.Settings.ToDictionary(setting => setting.Slug, setting => setting.Selection);
-      NavisworksConverter.SetConverterSettings(settings);
-
       NavisworksConverter.SetContextDocument(Doc);
+      NavisworksConverter.SetConverterSettings(settings);
 
       NavisworksConverter.Report.ReportObjects.Clear();
 
@@ -166,8 +165,6 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
 
-      // pass the active progress bar to the converter
-      NavisworksConverter.SetConverterSettings(new Dictionary<string, Progress> { { "_Progress", progressBar } });
 
       while (toConvertDictionary.Any(kv => kv.Value == ConversionState.ToConvert))
       {
@@ -306,8 +303,9 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       #endregion
 
-      progressBar.BeginSubOperation(1, $"Sending {convertedCount} objects and {conversionProgressDict["Conversion"]} children to Speckle.");
-     
+      progressBar.BeginSubOperation(1,
+        $"Sending {convertedCount} objects and {conversionProgressDict["Conversion"]} children to Speckle.");
+
       NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", null } });
 
       if (progress.CancellationTokenSource.Token.IsCancellationRequested) return null;
@@ -365,7 +363,8 @@ namespace Speckle.ConnectorNavisworks.Bindings
           streamId = streamId,
           objectId = objectId,
           branchName = state.BranchName,
-          message = state.CommitMessage ?? $"Sent {convertedCount + conversionProgressDict["Conversion"]} elements from {HostApplications.Navisworks.Name}.",
+          message = state.CommitMessage ??
+                    $"Sent {convertedCount + conversionProgressDict["Conversion"]} elements from {HostApplications.Navisworks.Name}.",
           sourceApplication = HostApplications.Navisworks.Slug
         };
 
