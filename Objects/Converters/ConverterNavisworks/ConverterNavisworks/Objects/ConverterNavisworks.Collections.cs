@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
 
 namespace Objects.Organization
 {

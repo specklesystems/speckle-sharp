@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
-using Objects.Converter.Navisworks.Objects;
 using Objects.Geometry;
 using Objects.Organization;
-using Objects.Structural;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
