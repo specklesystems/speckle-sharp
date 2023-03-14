@@ -110,6 +110,9 @@ namespace Objects.Converter.CSI
         //case Model o:
         //case Property property:
 
+        // for the moment we need to have this in here so the flatten traversal skips over this object
+        // otherwise it would add result.element to the list twice and the stored objects dictionary would throw
+        case Result _:
         case BuiltElements.Beam _:
         case BuiltElements.Brace _:
         case BuiltElements.Column _:
