@@ -98,7 +98,7 @@ namespace ConnectorGrasshopper.Ops
       }
     }
 
-    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
+    protected override void SolveInstance(IGH_DataAccess DA)
     {
       if (!foundKit)
       {
