@@ -1199,12 +1199,15 @@ namespace DesktopUI2.ViewModels
           Type = NotificationType.Success,
           Expiration = TimeSpan.FromSeconds(10)
         });
+        
 
         GetActivity();
         GetReport();
 
         //save the stream as well
         HomeViewModel.Instance.AddSavedStream(this);
+        
+        Serilog.Log.Information(CommandSucceededLogTemplate, nameof(SendCommand));
       }
       catch (Exception ex)
       {
@@ -1315,11 +1318,11 @@ namespace DesktopUI2.ViewModels
         if (Progress.CancellationToken.IsCancellationRequested)
         {
           //User requested a cancel, but it was too late!
-          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "Receive was successful", Message = "It was too late to cancel", Type = NotificationType.Success});
+          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "👌 Receive completed!", Message = "It was too late to cancel", Type = NotificationType.Success});
         }
         else
         {
-          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "Receive was successful", Message = "", Type = NotificationType.Success});
+          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "👌 Receive completed!", Message = "", Type = NotificationType.Success});
         }
         
         Serilog.Log.Information(CommandSucceededLogTemplate, nameof(ReceiveCommand));

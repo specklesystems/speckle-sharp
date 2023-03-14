@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -221,14 +222,7 @@ namespace Speckle.ConnectorRevit.UI
         cancellationToken: progress.CancellationToken,
         transports: transports,
         onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (s, ex) =>
-        {
-          //Don't wrap cancellation exceptions!      
-          if (ex is OperationCanceledException) throw ex;
-
-          //Treat all operation errors as fatal
-          throw new Exception("Failed to send objects to server", ex);
-        },
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
       
@@ -244,22 +238,8 @@ namespace Speckle.ConnectorRevit.UI
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
-      string commitId = null;
-      try
-      {
-        commitId = await client.CommitCreate(progress.CancellationToken, actualCommit);
-
-        //await state.RefreshStream();
-        state.PreviousCommitId = commitId;
-      }
-      catch (OperationCanceledException) { throw; }
-      catch (Exception ex)
-      {
-        Log.ForContext("commitInput", actualCommit)
-          .Warning(ex, "Client operation {operationName} failed", nameof(Client.CommitCreate));
-        progress.Report.LogOperationError(ex);
-      }
-
+      
+      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
       return commitId;
     }
 

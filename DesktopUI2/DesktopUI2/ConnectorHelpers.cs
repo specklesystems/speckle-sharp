@@ -1,5 +1,6 @@
 ﻿#nullable enable
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,9 +67,6 @@ namespace DesktopUI2
             
             return commitObject;
         }
-        
-        
-#nullable disable
         
         /// <param name="cancellationToken">Progress cancellation token</param>
         /// <param name="state">Current Stream card state</param>
@@ -145,5 +143,37 @@ namespace DesktopUI2
             };
             await TryCommitReceived(cancellationToken, state.Client, commitReceivedInput, logLevel);
         }
+
+        //TODO: should this just be how `CommitCreate` id implemented?
+        public static async Task<string> CreateCommit(CancellationToken cancellationToken, Client client, CommitCreateInput commitInput)
+        {
+            string commitId;
+            try
+            {
+                commitId = await client.CommitCreate(cancellationToken, commitInput);
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex)
+            {
+                Log.ForContext("commitInput", commitInput)
+                    .Warning(ex, "Client operation {operationName} failed", nameof(Client.CommitCreate));
+                throw new SpeckleException("Failed to create commit object", ex);
+            }
+
+            return commitId;
+        }
+        
+        /// <exception cref="OperationCanceledException"></exception>
+        /// <exception cref="SpeckleException"></exception>
+        public static void DefaultSendErrorHandler(string error, Exception ex)
+        {
+            //Don't wrap cancellation exceptions!      
+            if (ex is OperationCanceledException cex) throw cex;
+
+            //Treat all operation errors as fatal
+            throw new SpeckleException($"Failed to send objects to server - {error}", ex);
+        }
+       
+        
     }
 }

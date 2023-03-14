@@ -1014,8 +1014,7 @@ namespace SpeckleRhino
 
       if (objCount == 0)
       {
-        throw new InvalidOperationException(
-          "Zero objects converted successfully. Send stopped.");
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
       progress.CancellationToken.ThrowIfCancellationRequested();
@@ -1028,16 +1027,8 @@ namespace SpeckleRhino
         @object: commitObject,
         cancellationToken: progress.CancellationToken,
         transports: transports,
-        onProgressAction: dict =>
-        {
-          progress.Update(dict);
-        },
-        onErrorAction: (s, ex) =>
-        {
-          if (ex is OperationCanceledException) throw ex;
-          
-          throw new SpeckleException($"Failed to send objects {s}", ex);
-        },
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
       
@@ -1054,16 +1045,8 @@ namespace SpeckleRhino
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-        return commitId;
-      }
-      catch (Exception ex)
-      {
-        throw new SpeckleException($"Failed to create commit. reason: {ex.Message}", ex);
-      }
+      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      return commitId;
     }
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
