@@ -910,12 +910,7 @@ namespace Objects.Converter.Dynamo
 
     public Dictionary<string, object> GetDynamicMembersFromBase(Base obj)
     {
-      var dict = new Dictionary<string, object>();
-      foreach (var prop in obj.GetDynamicMembers())
-      {
-        dict.Add(prop, obj[prop]);
-      }
-      return dict;
+      return obj.GetMembers(DynamicBaseMemberType.Dynamic);
     }
 
   }
