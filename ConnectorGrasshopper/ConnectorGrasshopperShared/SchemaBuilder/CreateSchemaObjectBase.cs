@@ -333,7 +333,7 @@ namespace ConnectorGrasshopper
       return valueList;
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (readFailed)
       {

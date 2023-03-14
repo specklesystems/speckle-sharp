@@ -56,10 +56,6 @@
       <Project>{eab21473-7013-431c-b526-fb5ba657ae2f}</Project>
       <Name>DesktopUI2</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\Triangle\Triangle.csproj">
-      <Project>{55b47f9a-3407-4b2b-8c62-e0332045f1b1}</Project>
-      <Name>Triangle</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Avalonia">

@@ -136,7 +136,7 @@ namespace ConnectorGrasshopper.Objects
       base.BeforeSolveInstance();
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       //Ensure converter document is up to date
       if (Converter == null)

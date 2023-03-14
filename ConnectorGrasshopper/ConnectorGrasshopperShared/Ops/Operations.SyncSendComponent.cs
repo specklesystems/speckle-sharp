@@ -98,7 +98,7 @@ namespace ConnectorGrasshopper.Ops
       return base.Read(reader);
     }
     
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
       if (RunCount == 1)

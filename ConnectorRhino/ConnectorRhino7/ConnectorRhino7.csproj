@@ -62,7 +62,7 @@
 
     <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.2/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">

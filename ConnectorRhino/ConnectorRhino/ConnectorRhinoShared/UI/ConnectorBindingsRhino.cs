@@ -354,6 +354,7 @@ namespace SpeckleRhino
 
       Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastSourceApp = commit.sourceApplication;
+      state.LastCommit = commit;
 
       if (SelectedReceiveCommit != commit.id)
       {
@@ -552,16 +553,16 @@ namespace SpeckleRhino
         if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
           StoredObjectParams.Add(@base.id, parameters);
       }
-      
+
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
         ApplicationObject NewAppObj()
         {
-          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          var speckleType = current.speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
             .LastOrDefault();
           return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
-        
+
         //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
@@ -584,10 +585,10 @@ namespace SpeckleRhino
           StoreObject(current, appObj, parameters);
           return appObj;
         }
-        
+
         return null;
       }
-      
+
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
@@ -600,7 +601,7 @@ namespace SpeckleRhino
         LayerIdRecurse(context.parent, stringBuilder);
         stringBuilder.Append(Layer.PathSeparator);
         stringBuilder.Append(objectLayerName);
-        
+
         return stringBuilder;
       }
 
@@ -832,8 +833,8 @@ namespace SpeckleRhino
         catch
         {
           viewId = Doc.NamedViews.FindByName(id);
-          if(viewId != -1)
-            isView= true;
+          if (viewId != -1)
+            isView = true;
         }
 
         if (obj != null)
@@ -930,9 +931,9 @@ namespace SpeckleRhino
         string descriptor = string.Empty;
         if (isView)
         {
-          descriptor = viewIndex != -1 ? "Named View" : "Standard View"; 
+          descriptor = viewIndex != -1 ? "Named View" : "Standard View";
         }
-        else if(obj != null)
+        else if (obj != null)
         {
           descriptor = Formatting.ObjectDescriptor(obj);
         }

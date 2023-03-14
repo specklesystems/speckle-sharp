@@ -581,7 +581,7 @@ namespace DesktopUI2.ViewModels
         GetActivity();
         GetReport();
         GetComments();
-      
+
       }
       catch (Exception ex)
       {
@@ -986,7 +986,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Client_OnCommitCreated),ex.Message);
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Client_OnCommitCreated), ex.Message);
       }
     }
 
@@ -1017,7 +1017,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage),ex.Message);
+        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage), ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         _previewImage = null; // Could not download...
       }
@@ -1290,23 +1290,25 @@ namespace DesktopUI2.ViewModels
           if(string.IsNullOrEmpty(message))
             message = "Something went very wrong";
           throw new Exception(message);
+
+
         }
          
         var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
         LastUsed = DateTime.Now.ToString();
         Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive,
-          new Dictionary<string, object>()
-          {
+          new Dictionary<string, object>() {
             { "mode", StreamState.ReceiveMode },
             { "auto", StreamState.AutoReceive },
-            { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastSourceApp).Slug },
-            { "sourceHostAppVersion", state.LastSourceApp },
+            { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastCommit.sourceApplication).Slug },
+            { "sourceHostAppVersion", state.LastCommit.sourceApplication },
             { "view", view },
             { "collaborators", Stream.collaborators.Count },
             { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
             { "branches", Stream.branches?.totalCount },
             { "commits", Stream.commits?.totalCount },
-            { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count }
+            { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
+            { "isMultiplayer", state.LastCommit.authorId != state.UserId }
           });
         
         GetActivity();
@@ -1459,7 +1461,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(SaveCommand),ex.Message);
+        Serilog.Log.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(SaveCommand), ex.Message);
       }
     }
 
@@ -1473,7 +1475,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(OpenSettingsCommand),ex.Message);
+        Serilog.Log.Error(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(OpenSettingsCommand), ex.Message);
       }
     }
 

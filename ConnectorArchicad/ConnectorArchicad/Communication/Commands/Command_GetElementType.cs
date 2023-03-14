@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
+using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
 {

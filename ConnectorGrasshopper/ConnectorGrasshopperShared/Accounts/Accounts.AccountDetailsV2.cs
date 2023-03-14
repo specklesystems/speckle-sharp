@@ -42,7 +42,7 @@ namespace ConnectorGrasshopper.Streams
       pManager.AddTextParameter("User Email", "UE", "Email of this account's user", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       Account account = null;
       DA.GetData(0, ref account);

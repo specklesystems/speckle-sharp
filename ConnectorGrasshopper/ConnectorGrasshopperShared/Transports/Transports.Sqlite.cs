@@ -46,7 +46,7 @@ namespace ConnectorGrasshopper.Transports
       pManager.AddGenericParameter("sqlite transport", "T", "The Sqlite transport you have created.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (DA.Iteration != 0)
       {
