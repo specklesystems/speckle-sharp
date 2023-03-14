@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using Serilog;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
@@ -248,6 +249,29 @@ namespace Speckle.Core.Models
           if(!dic.ContainsKey(pi.Name)) //todo This is a TEMP FIX FOR #1969, and should be reverted after a proper fix is made!
             dic.Add(pi.Name, pi.GetValue(this));
         }
+      }
+
+      if (includeMembers.HasFlag(DynamicBaseMemberType.SchemaComputed))
+      {
+        GetType()
+         .GetMethods()
+         .Where(e => e.IsDefined(typeof(SchemaComputedAttribute)) && !e.IsDefined(typeof(ObsoleteAttribute)))
+         .ToList()
+         .ForEach(
+          e =>
+          {
+            var attr = e.GetCustomAttribute<SchemaComputedAttribute>();
+            try
+            {
+              dic[attr.Name] = e.Invoke(this, null);
+            }
+            catch (Exception ex)
+            {
+              Log.Warning(ex, "Failed to get computed member: {name}", attr.Name);
+              dic[attr.Name] = null;
+            }
+          }
+          );
       }
 
       return dic;

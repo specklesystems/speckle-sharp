@@ -86,7 +86,8 @@ namespace Objects.Other
       // whereas the instance transform assumes it contains the basePoint translation already.
       //this.transform = transform * blockDefinition.GetBasePointTransform();
     }
-
+    
+    [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
     {
       return _definition.geometry.SelectMany(b =>
@@ -114,6 +115,7 @@ namespace Objects.Other
     /// </summary>
     /// <remarks>This method will skip scaling. If you need scaling, we recommend using the transform instead.</remarks>
     /// <returns>A Plane on the insertion point of this Block Instance, with the correct 3-axis rotations.</returns>
+    [SchemaComputed("insertionPlane")]
     public Plane GetInsertionPlane()
     {
       // TODO: UPDATE!
@@ -121,14 +123,6 @@ namespace Objects.Other
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
-    
-    /// <inheritdoc cref="GetInsertionPlane"/>
-    [JsonIgnore]
-    public Plane insertionPlane => GetInsertionPlane();
-    
-    /// <inheritdoc cref="GetTransformedGeometry"/>
-    [JsonIgnore]
-    public List<ITransformable> transformedGeometry => GetTransformedGeometry();
   }
 }
 
@@ -200,14 +194,6 @@ namespace Objects.Other.Revit
       return tPlane;
     }
 
-    /// <inheritdoc cref="GetInsertionPlane"/>
-    [JsonIgnore]
-    public Plane insertionPlane => GetInsertionPlane();
-    
-    /// <inheritdoc cref="GetTransformedGeometry"/>
-    [JsonIgnore]
-    public List<ITransformable> transformedGeometry => GetTransformedGeometry();
-    
     public RevitInstance() { }
   }
 }
