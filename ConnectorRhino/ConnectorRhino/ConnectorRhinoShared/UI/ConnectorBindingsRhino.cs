@@ -353,7 +353,6 @@ namespace SpeckleRhino
       converter.ReceiveMode = state.ReceiveMode;
 
       Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
-      state.LastSourceApp = commit.sourceApplication;
       state.LastCommit = commit;
 
       if (SelectedReceiveCommit != commit.id)

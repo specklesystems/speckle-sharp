@@ -50,7 +50,7 @@ namespace Speckle.ConnectorRevit.UI
       converter.SetConverterSettings(settings);
       
       Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
-      state.LastSourceApp = myCommit.sourceApplication;
+      state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
       await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);
       
@@ -186,6 +186,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception e)
         {
+          Log.Warning("Failed to convert ");
           obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
           progress.Report.UpdateReportObject(obj);
         }
