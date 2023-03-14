@@ -75,7 +75,6 @@ namespace Objects.Converter.CSI
         return;
       }
 
-      string newFrame = "";
       Line baseline = element1D.baseLine;
       string[] properties = new string[] { };
       int number = 0;
@@ -98,32 +97,40 @@ namespace Objects.Converter.CSI
         end2node = element1D.end2Node.basePoint;
       }
 
-      int success = Model.FrameObj.AddByCoord(
-        ScaleToNative(end1node.x, end1node.units),
-        ScaleToNative(end1node.y, end1node.units),
-        ScaleToNative(end1node.z, end1node.units),
-        ScaleToNative(end2node.x, end2node.units),
-        ScaleToNative(end2node.y, end2node.units),
-        ScaleToNative(end2node.z, end2node.units),
-        ref newFrame
-      );
+      CreateFrame(end1node, end2node, out var newFrame, out var _, ref appObj);
       SetFrameElementProperties(element1D, newFrame);
+    }
 
-      if (!string.IsNullOrEmpty(element1D.name))
-      {
-        if (GetAllFrameNames(Model).Contains(element1D.name))
-          element1D.name = element1D.id;
-        Model.FrameObj.ChangeName(newFrame, element1D.name);
-        newFrame = element1D.name;
-      }
+    public int CreateFrame(Point p0, Point p1, out string newFrame, out string guid, ref ApplicationObject appObj, string type = "Default", string nameOverride = null)
+    {
+      newFrame = string.Empty;
+      guid = string.Empty;
 
-      var guid = "";
+      int success = Model.FrameObj.AddByCoord(
+        ScaleToNative(p0.x, p0.units),
+        ScaleToNative(p0.y, p0.units),
+        ScaleToNative(p0.z, p0.units),
+        ScaleToNative(p1.x, p1.units),
+        ScaleToNative(p1.y, p1.units),
+        ScaleToNative(p1.z, p1.units),
+        ref newFrame,
+        type
+      );
+
       Model.FrameObj.GetGUID(newFrame, ref guid);
+
+      if (!string.IsNullOrEmpty(nameOverride) && !GetAllFrameNames(Model).Contains(nameOverride))
+      {
+        Model.FrameObj.ChangeName(newFrame, nameOverride);
+        newFrame = nameOverride;
+      }
 
       if (success == 0)
         appObj.Update(status: ApplicationObject.State.Created, createdId: guid, convertedItem: $"Frame{delimiter}{newFrame}");
       else
         appObj.Update(status: ApplicationObject.State.Failed);
+
+      return success;
     }
 
     public CSIElement1D FrameToSpeckle(string name)

@@ -8,20 +8,31 @@ using Objects.Structural.Properties.Profiles;
 using System.Linq;
 using Speckle.Core.Models;
 using Objects.Structural.Geometry;
+using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
+    public bool Property1DExists(string name)
+    {
+      string[] properties = new string[] { };
+      int number = 0;
+
+      // TODO: we don't need to call this every time...
+      Model.PropFrame.GetNameList(ref number, ref properties);
+      if (properties.Contains(name))
+      {
+        return true;
+      }
+      return false;
+    }
     public string Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
     {
       if (property1D == null)
         return null;
 
-      string[] properties = new string[] { };
-      int number = 0;
-      Model.PropFrame.GetNameList(ref number, ref properties);
-      if (properties.Contains(property1D.name))
+      if (Property1DExists(property1D.name))
       {
         // I don't think we want to update properties
         appObj.Update(status: ApplicationObject.State.Skipped, createdId: property1D.name);
