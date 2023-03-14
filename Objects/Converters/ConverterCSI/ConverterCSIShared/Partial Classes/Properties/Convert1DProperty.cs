@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CSiAPIv1;
 using Objects.Structural.Properties;
-using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
 using Speckle.Core.Models;
-using Objects.Structural.Geometry;
-using System.Xml.Linq;
 
 namespace Objects.Converter.CSI
 {
