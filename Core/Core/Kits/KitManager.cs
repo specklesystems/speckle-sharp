@@ -90,7 +90,7 @@ namespace Speckle.Core.Kits
     public static ISpeckleKit GetDefaultKit()
     {
       Initialize();
-      return _SpeckleKits.FirstOrDefault(kvp => kvp.Value.Name == "Objects").Value;
+      return _SpeckleKits.First(kvp => kvp.Value.Name == "Objects").Value;
     }
 
     /// <summary>
