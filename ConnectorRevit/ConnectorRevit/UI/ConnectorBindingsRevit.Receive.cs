@@ -114,6 +114,7 @@ namespace Speckle.ConnectorRevit.UI
           progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
 
           t.RollBack();
+          g.RollBack();
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
       });
