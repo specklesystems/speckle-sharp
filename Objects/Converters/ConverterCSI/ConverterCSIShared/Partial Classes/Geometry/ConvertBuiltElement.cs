@@ -18,23 +18,40 @@ namespace Objects.Converter.CSI
         return;
       }
 
-      var frameObjectType = "Default";
+      if (ElementExistsWithApplicationId(@base.applicationId, out string name))
+      {
+        UpdateFrameLocation(name, baseLine.start, baseLine.end, appObj);
+        SetProfileSection(name, @base, appObj, true);
+      }
+      else
+      {
+        CreateFrame(baseLine.start, baseLine.end, out var frameName, out var _, ref appObj);
+        SetProfileSection(frameName, @base, appObj);
+      }
+    }
+
+    public void SetProfileSection(string frameName, Base @base, ApplicationObject appObj, bool isUpdate = false)
+    {
+      string endMessage;
+      if (isUpdate)
+        endMessage = "Section was not updated.";
+      else
+        endMessage = "Default section was assigned.";
+
       var speckleObjectType = @base["type"] as string;
 
       if (string.IsNullOrWhiteSpace(speckleObjectType))
       {
-        appObj.Update("Object has no type property. Default section profile was assigned");
+        appObj.Update(logItem: $"Object has no type property. {endMessage}");
       }
       else if (!Property1DExists(speckleObjectType))
       {
-        appObj.Update(logItem: $"Element type, {speckleObjectType}, is not present in ETABS model. Default section profile was assigned");
+        appObj.Update(logItem: $"Element type, {speckleObjectType}, is not present in ETABS model. {endMessage}");
       }
       else
       {
-        frameObjectType = speckleObjectType;
+        Model.FrameObj.SetSection(frameName, speckleObjectType);
       }
-
-      CreateFrame(baseLine.start, baseLine.end, out var _, out var _, ref appObj, frameObjectType);   
     }
   }
 }
