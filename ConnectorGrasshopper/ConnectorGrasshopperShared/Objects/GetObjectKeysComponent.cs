@@ -34,7 +34,7 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddTextParameter("Keys", "K", "The keys available on this speckle object", GH_ParamAccess.list);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (perObject)
       {

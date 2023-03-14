@@ -9,14 +9,31 @@ using Grasshopper.Kernel.Types;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Objects.Geometry;
-using Objects.Primitive;
-using Objects.Other;
 
 namespace Objects.Converter.RhinoGh
 {
   public partial class ConverterRhinoGh
   {
+    /// <summary>
+    /// Retrieves the index of a render material in the document rendermaterialtable by name
+    /// </summary>
+    /// <param name="name"></param>
+    /// <returns>Index of the rendermaterial, or -1 if no matches are found</returns>
+    public int GetMaterialIndex(string name)
+    {
+      var index = -1;
+      if (string.IsNullOrEmpty(name)) return index;
+      for (int i = 0; i < Doc.Materials.Count; i++)
+      {
+        if (Doc.Materials[i].Name == name)
+        {
+          index = i;
+          break;
+        }
+      }
+      return index;
+    }
+
     private string GetSchema(RhinoObject obj, out string[] args)
     {
       args = null;

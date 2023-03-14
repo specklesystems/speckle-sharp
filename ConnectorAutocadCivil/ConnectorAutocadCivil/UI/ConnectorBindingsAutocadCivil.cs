@@ -1,4 +1,11 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -13,15 +20,8 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Core.Transports;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using static Speckle.ConnectorAutocadCivil.Utils;
 
@@ -283,7 +283,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       string referencedObject = commit.referencedObject;
       Base commitObject = null;
 
-      state.LastSourceApp = commit.sourceApplication;
+      state.LastCommit = commit;
 
       try
       {
@@ -505,7 +505,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
     }
-    
+
     private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
       //TODO: this implementation is almost identical to Rhino, we should try and extract as much of it as we can into Core
@@ -518,16 +518,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
         else
           StoredObjects.Add(@base.id, @base);
       }
-      
+
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
         ApplicationObject NewAppObj()
         {
-          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          var speckleType = current.speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
             .LastOrDefault();
           return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
-        
+
         //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
@@ -549,10 +549,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           StoreObject(current, appObj);
           return appObj;
         }
-        
+
         return null;
       }
-      
+
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
@@ -565,7 +565,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         LayerIdRecurse(context.parent, stringBuilder);
         stringBuilder.Append('$');
         stringBuilder.Append(objectLayerName);
-        
+
         return stringBuilder;
       }
 
@@ -1101,7 +1101,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               continue;
             }
           }
-          
+
           tr.Commit();
         }
       }
@@ -1121,7 +1121,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     }
 #endif
 
-private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
+    private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
     {
       var selection = new List<string>();
       switch (filter.Slug)
@@ -1143,7 +1143,7 @@ private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConve
       return selection;
     }
 
-#endregion
+    #endregion
 
     #region events
     public void RegisterAppEvents()

@@ -55,7 +55,7 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddGenericParameter("Group", "G", "The group containing the input objects", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       var values = new List<object>();
       if (!DA.GetDataList(0, values)) return;

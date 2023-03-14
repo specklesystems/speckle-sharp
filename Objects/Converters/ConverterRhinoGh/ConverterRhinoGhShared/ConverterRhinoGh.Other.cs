@@ -29,6 +29,7 @@ using Polyline = Objects.Geometry.Polyline;
 using RenderMaterial = Objects.Other.RenderMaterial;
 using Text = Objects.Other.Text;
 using Transform = Objects.Other.Transform;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -110,6 +111,7 @@ namespace Objects.Converter.RhinoGh
       var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
       if (existing != null)
         return existing;
+        
 
       Rhino.Render.RenderMaterial rm;
       //#if RHINO6
@@ -120,6 +122,7 @@ namespace Objects.Converter.RhinoGh
         EmissionColor = Color.FromArgb(speckleMaterial.emissive),
         Transparency = 1 - speckleMaterial.opacity
       };
+      Doc.Materials.Add(rhinoMaterial);
       rm = Rhino.Render.RenderMaterial.CreateBasicMaterial(rhinoMaterial, Doc);
       //#else
       //TODO Convert materials as PhysicallyBasedMaterial 
@@ -275,7 +278,10 @@ namespace Objects.Converter.RhinoGh
 
       // get the definition name
       var commitInfo = GetCommitInfo();
-      string definitionName = definition is BlockDefinition blockDef ? blockDef.name : definition.id;
+      string definitionName = 
+        definition is BlockDefinition blockDef ? blockDef.name : 
+        definition is RevitSymbolElementType revitDef ? $"{revitDef.category} - {revitDef.family} - {revitDef.type}" : 
+        definition.id;
       if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
       if (Doc.InstanceDefinitions.Find(definitionName) is InstanceDefinition def)
         return def;
@@ -324,7 +330,8 @@ namespace Objects.Converter.RhinoGh
             var instance = instanceAppObj.Converted.FirstOrDefault() as InstanceObject;
             if (instance != null)
             {
-              convertedGeo.Add(instance.DuplicateGeometry());
+              converted.Add(instance.DuplicateGeometry());
+              attributes.Add(instance.Attributes);
               Doc.Objects.Delete(instance);
             }
             else
@@ -340,6 +347,7 @@ namespace Objects.Converter.RhinoGh
               notes.Add($"Could not create definition geometry {geo.speckle_type} ({geo.id})");
               continue;
             }
+
             if (convertedObj.GetType().IsArray)
               foreach (object o in (Array)convertedObj)
                 convertedGeo.Add((GeometryBase)o);
@@ -349,30 +357,41 @@ namespace Objects.Converter.RhinoGh
         }
         if (convertedGeo.Count == 0)
           continue;
+
+        // get attributes
+        var attribute = new ObjectAttributes();
+
+        // layer
         var geoLayer = item.Value;
         var layerName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
         int index = 1;
         if (layerName != null)
           GetLayer(Doc, layerName, out index, true);
-
-        var attribute = new ObjectAttributes();
-        if (geo[@"displayStyle"] is Base display)
-        {
-          if (ConvertToNative(display) is ObjectAttributes displayAttribute)
-            attribute = displayAttribute;
-        }
-        else if (geo[@"renderMaterial"] is Base renderMaterial)
-        {
-          if (renderMaterial["diffuse"] is int color)
-          {
-            attribute.ColorSource = ObjectColorSource.ColorFromObject;
-            attribute.ObjectColor = Color.FromArgb(color);
-          }
-        }
         attribute.LayerIndex = index;
 
+        // display
+        var renderMaterial = geo[@"renderMaterial"] as RenderMaterial;
+        if (geo[@"displayStyle"] is DisplayStyle display)
+        {
+          attribute = DisplayStyleToNative(display);
+        }
+        else if (renderMaterial != null)
+        {
+          attribute.ObjectColor = Color.FromArgb(renderMaterial.diffuse);
+          attribute.ColorSource = ObjectColorSource.ColorFromObject;
+        }
+
+        // render material
+        if (renderMaterial != null)
+        {
+          var material = RenderMaterialToNative(renderMaterial);
+          attribute.MaterialIndex = GetMaterialIndex(material?.Name);
+          attribute.MaterialSource = ObjectMaterialSource.MaterialFromObject;
+        }
+
         converted.AddRange(convertedGeo);
-        attributes.Add(attribute);
+        for(int i = 0; i < convertedGeo.Count; i++)
+          attributes.Add(attribute);
       }
 
       if (converted.Count == 0)
@@ -393,7 +412,7 @@ namespace Objects.Converter.RhinoGh
       return blockDefinition;
     }
 
-    #region block def flattening
+#region block def flattening
     /// <summary>
     /// Traverses the object graph, returning objects that can be converted.
     /// </summary>
@@ -449,7 +468,7 @@ namespace Objects.Converter.RhinoGh
 
       return StoredObjects;
     }
-    #endregion
+#endregion
 
     // Rhino convention seems to order the origin of the vector space last instead of first
     // This results in a transposed transformation matrix - may need to be addressed later
