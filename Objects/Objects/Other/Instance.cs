@@ -136,6 +136,7 @@ namespace Objects.Other.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
     
+    [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
     {
       var allChildren = _definition.elements ?? new List<Base>();
@@ -186,6 +187,7 @@ namespace Objects.Other.Revit
     /// </summary>
     /// <remarks>This method will skip scaling. If you need scaling, we recommend using the transform instead.</remarks>
     /// <returns>A Plane on the insertion point of this Block Instance, with the correct 3-axis rotations.</returns>
+    [SchemaComputed("insertionPlane")]
     public Plane GetInsertionPlane()
     {
       // TODO: Check for Revit in GH/DYN
