@@ -52,7 +52,7 @@ namespace ConnectorGrasshopper.Conversion
       pManager.AddTextParameter("Json", "J", "Serialized objects in JSON format.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {

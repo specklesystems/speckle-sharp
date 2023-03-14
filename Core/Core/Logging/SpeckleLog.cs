@@ -113,6 +113,8 @@ namespace Speckle.Core.Logging
         .Information(
           "Initialized logger inside {hostApplication}/{productVersion}/{version} for user {id}. Path info {userApplicationDataPath} {installApplicationDataPath}."
         );
+      
+      _initialized = true;
     }
 
     /// <summary>

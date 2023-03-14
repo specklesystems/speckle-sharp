@@ -43,7 +43,7 @@ namespace ConnectorGrasshopper.Streams
     private List<StreamWrapper> streams;
     private Exception error;
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (error != null)
       {

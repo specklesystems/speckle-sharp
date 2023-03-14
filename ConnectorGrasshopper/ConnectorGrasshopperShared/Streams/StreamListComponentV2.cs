@@ -36,13 +36,12 @@ namespace ConnectorGrasshopper.Streams
         GH_ParamAccess.list));
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {
         if (DA.Iteration == 0)
         {
-          hasInternetTask = Http.UserHasInternet();
           Tracker.TrackNodeRun();
         }
         
@@ -72,7 +71,7 @@ namespace ConnectorGrasshopper.Streams
           AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Max number of streams retrieved is 50. Limit has been capped.");
         }
         
-        TaskList.Add(ListStreams(account, limit));
+        TaskList.Add(Task.Run(()=> ListStreams(account, limit), CancelToken));
         return;
       }
 
@@ -82,20 +81,14 @@ namespace ConnectorGrasshopper.Streams
       DA.SetDataList(0, data.Select(item => new GH_SpeckleStream(item)));
     }
 
-    private Task<bool> hasInternetTask;
-    private async Task<List<StreamWrapper>> ListStreams(Account account, int limit)
+    private Task<List<StreamWrapper>> ListStreams(Account account, int limit)
     {
-      if (!hasInternetTask.Result)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "You are not connected to the internet");
-        return null;
-      }
-      
       var client = new Client(account);
-      return Task.Run(() => client.StreamsGet(limit)
+      var res = client.StreamsGet(CancelToken ,limit)
         .Result
         .Select(stream => new StreamWrapper(stream.id, account.userInfo.id, account.serverInfo.url))
-        .ToList()).Result;
+        .ToList();
+      return Task.FromResult(res);
     }
   }
 }

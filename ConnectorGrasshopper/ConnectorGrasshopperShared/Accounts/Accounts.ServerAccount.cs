@@ -47,7 +47,7 @@ namespace ConnectorGrasshopper.Accounts
       pManager.AddParameter(new SpeckleAccountParam());    
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
       if (DA.Iteration != 0)
