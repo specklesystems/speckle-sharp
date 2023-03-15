@@ -17,6 +17,11 @@ using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
 #endif
 
+#if ADVANCESTEEL2023
+using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+#endif
+
 namespace Speckle.ConnectorAutocadCivil
 {
   public static class Utils
@@ -642,6 +647,20 @@ namespace Speckle.ConnectorAutocadCivil
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
     }
+
+#if ADVANCESTEEL2023
+
+    public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
+    {
+      ASObjectId idCadEntity = new ASObjectId(@object.ObjectId.OldIdPtr);
+      ASObjectId idFilerObject = Autodesk.AdvanceSteel.CADAccess.DatabaseManager.GetFilerObjectId(idCadEntity, false);
+      if (idFilerObject.IsNull())
+        return null;
+
+      return Autodesk.AdvanceSteel.CADAccess.DatabaseManager.Open(idFilerObject) as T;
+    }
+
+#endif
 
   }
 

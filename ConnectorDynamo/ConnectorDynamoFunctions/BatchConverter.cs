@@ -185,7 +185,7 @@ namespace Speckle.ConnectorDynamo.Functions
     public static bool IsDataTree(Base @base)
     {
       var regex = dataTreePathRegex;
-      var members = @base.GetDynamicMembers().ToList();
+      var members = @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys.ToList();
       if (members.Count == 0) return false;
       var isDataTree = members.All(el => regex.Match(el).Success);
       return members.Count > 0 && isDataTree;
@@ -193,7 +193,7 @@ namespace Speckle.ConnectorDynamo.Functions
 
     public object ConvertDataTreeToNative(Base @base)
     {
-      var names = @base.GetDynamicMembers();
+      var names = @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys.ToList();
       var list = new List<object>();
       foreach (var name in names)
       {
@@ -246,7 +246,7 @@ namespace Speckle.ConnectorDynamo.Functions
       // case 2: it's a wrapper Base
       //       2a: if there's only one member unpack it
       //       2b: otherwise return dictionary of unpacked members
-      var members = @base.GetMemberNames().ToList();
+      var members = @base.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaComputed).Keys.ToList();
 
       if (members.Count == 1)
       {
@@ -290,15 +290,10 @@ namespace Speckle.ConnectorDynamo.Functions
       //it's an unsupported Base, return a dictionary
       if (!_converter.CanConvertToNative(@base))
       {
-        //get both dynamic and instance members
-        var instanceMembers = @base.GetInstanceMembersNames();
-        var dynamicMembers = @base.GetDynamicMembers();
-        var dicI = instanceMembers.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
-        var dicD = dynamicMembers.ToDictionary(x => x, x => RecurseTreeToNative(@base[x]));
-
-        var dic = dicI.Concat(dicD).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-        
-        return dic;
+        return @base.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaComputed)
+          .ToList()
+          .ToDictionary(pair => pair.Key, pair => RecurseTreeToNative(pair.Value)
+        );
       }
 
       try

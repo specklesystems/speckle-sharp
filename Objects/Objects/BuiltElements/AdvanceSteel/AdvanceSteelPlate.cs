@@ -1,13 +1,8 @@
 ﻿using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System.Collections.Generic;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
-using System;
-using System.Linq;
-using System.Text;
-using Speckle.Newtonsoft.Json;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
@@ -15,7 +10,7 @@ namespace Objects.BuiltElements.AdvanceSteel
   {
     [DetachProperty]
     public StructuralMaterial material { get; set; }
-  
+
     [SchemaInfo("AdvanceSteelPlate", "Creates a Advance Steel plate.", "Advance Steel", "Structure")]
     public AdvanceSteelPlate(SectionProfile profile, Polyline outline, string units, StructuralMaterial material = null)
     {

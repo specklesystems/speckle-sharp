@@ -113,10 +113,9 @@ namespace DesktopUI2.Models
     public string LastUsed { get; set; }
 
     /// <summary>
-    /// If a receiver, the sourceApplication of the last commit it received from
+    /// If a receiver, the last commit it received from
     /// </summary>
-    [JsonProperty]
-    public string LastSourceApp { get; set; }
+    public Commit LastCommit { get; set; }
 
 
     /// <summary>

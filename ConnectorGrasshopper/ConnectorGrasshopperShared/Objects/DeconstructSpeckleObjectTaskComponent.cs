@@ -40,7 +40,7 @@ namespace ConnectorGrasshopper.Objects
       // INFO -> All output params are dynamically generated!
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       //DA.DisableGapLogic();
       if (InPreSolve)
@@ -301,7 +301,7 @@ namespace ConnectorGrasshopper.Objects
         }
         if (converted is Base b)
         {
-          b.GetMemberNames().ToList().ForEach(prop =>
+          b.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaComputed ).Keys.ToList().ForEach(prop =>
           {
             if (!fullProps.Contains(prop))
               fullProps.Add(prop);
@@ -336,7 +336,7 @@ namespace ConnectorGrasshopper.Objects
       // Assign all values to it's corresponding dictionary entry and branch path.
       var obj = @base;
       if (obj == null) return new Dictionary<string, object>();
-      foreach (var prop in obj.GetMembers())
+      foreach (var prop in obj.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaComputed))
       {
         // Convert and add to corresponding output structure
         var value = prop.Value;
@@ -381,14 +381,13 @@ namespace ConnectorGrasshopper.Objects
 
             break;
           default:
-            var temp = obj[prop.Key];
-            if (temp is Base tempB && Utilities.CanConvertToDataTree(tempB))
+            if (prop.Value is Base temp && Utilities.CanConvertToDataTree(temp))
             {
-              outputDict[prop.Key] = Utilities.DataTreeToNative(tempB, Converter);
+              outputDict[prop.Key] = Utilities.DataTreeToNative(temp, Converter);
             }
             else
             {
-              outputDict[prop.Key] = Utilities.TryConvertItemToNative(temp, Converter);
+              outputDict[prop.Key] = Utilities.TryConvertItemToNative(prop.Value, Converter);
             }
             break;
         }

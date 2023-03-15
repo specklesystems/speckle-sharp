@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
 
@@ -143,13 +143,13 @@ namespace Objects.Converter.Revit
 
       speckleFloor.level = ConvertAndCacheLevel(revitFloor, BuiltInParameter.LEVEL_PARAM);
       speckleFloor.structural = GetParamValue<bool>(revitFloor, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
-      
+
       // Divide by 100 to convert from percentage to unitless ratio (rise over run)
       var slopeParam = GetParamValue<double?>(revitFloor, BuiltInParameter.ROOF_SLOPE) / 100;
 
       GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL", "ROOF_SLOPE" });
 
-      GetSlopeArrowHack(revitFloor.Id, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
+      GetSlopeArrowHack(revitFloor.Id, revitFloor.Document, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
 
       slopeParam ??= slope;
       speckleFloor.slope = (double)slopeParam;
@@ -188,7 +188,7 @@ namespace Objects.Converter.Revit
           if (c == null)
             continue;
 
-          poly.segments.Add(CurveToSpeckle(c));
+          poly.segments.Add(CurveToSpeckle(c, floor.Document));
         }
         profiles.Add(poly);
       }
@@ -214,7 +214,7 @@ namespace Objects.Converter.Revit
         //case OG.Spiral spiral:
 
         case OG.Curve nurbs:
-          for (int i = 2; i < nurbs.points.Count; i +=3 )
+          for (int i = 2; i < nurbs.points.Count; i += 3)
             nurbs.points[i] = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, nurbs.units);
           return;
 

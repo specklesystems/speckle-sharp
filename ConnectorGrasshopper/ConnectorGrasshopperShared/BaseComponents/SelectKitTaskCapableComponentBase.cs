@@ -17,7 +17,7 @@ using Speckle.Core.Models.Extensions;
 
 namespace ConnectorGrasshopper.Objects
 {
-  public class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapableComponent<T>
+  public abstract class SelectKitTaskCapableComponentBase<T> : GH_SpeckleTaskCapableComponent<T>
   {
     public ISpeckleConverter Converter;
 
@@ -136,11 +136,6 @@ namespace ConnectorGrasshopper.Objects
     {
       throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
         level: SentryLevel.Warning);
-    }
-
-    protected override void SolveInstance(IGH_DataAccess DA)
-    {
-      throw new NotImplementedException();
     }
 
     protected override void BeforeSolveInstance()

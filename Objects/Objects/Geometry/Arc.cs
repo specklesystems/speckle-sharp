@@ -1,4 +1,4 @@
-﻿using Objects.Primitive;
+using Objects.Primitive;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;

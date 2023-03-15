@@ -163,7 +163,7 @@ namespace ConnectorGrasshopper.Ops
       pManager.AddTextParameter("Info", "I", "Commit information.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (RunCount == 1)
       {

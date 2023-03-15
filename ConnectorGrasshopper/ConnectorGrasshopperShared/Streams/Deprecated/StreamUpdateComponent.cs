@@ -42,7 +42,7 @@ namespace ConnectorGrasshopper.Streams
     private Stream stream;
     Exception error = null;
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
       GH_SpeckleStream ghSpeckleStream = null;

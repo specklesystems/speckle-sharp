@@ -370,7 +370,7 @@ namespace SpeckleRhino
       Commit commit = await GetCommitFromState(state, progress);
       if (commit == null) return null;
 
-      state.LastSourceApp = commit.sourceApplication;
+      state.LastCommit = commit;
 
       if (SelectedReceiveCommit != commit.id)
       {

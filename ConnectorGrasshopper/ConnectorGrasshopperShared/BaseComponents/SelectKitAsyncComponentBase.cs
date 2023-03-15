@@ -146,7 +146,6 @@ namespace ConnectorGrasshopper.Objects
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
 
       }
-
       base.SolveInstance(DA);
     }
   }

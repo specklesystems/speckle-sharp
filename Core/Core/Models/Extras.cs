@@ -195,7 +195,7 @@ namespace Speckle.Core.Models
     {
       if (ReportObjects.TryGetValue(obj.OriginalId, out ApplicationObject reportObject))
       {
-        reportObject.Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log);
+        reportObject.Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log, descriptor: obj.Descriptor);
 
         if (obj.Status != ApplicationObject.State.Unknown)
           reportObject.Update(status: obj.Status);
