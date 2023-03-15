@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace Objects.BuiltElements.Revit
 {
-  public class FreeformElement : Base, IDisplayValue<List<Mesh>>
+  public class FreeformElement : Base, IDisplayValue<List<Base>>
   {
     public Base parameters { get; set; }
 
@@ -41,7 +41,7 @@ namespace Objects.BuiltElements.Revit
     public List<Base> baseGeometries { get; set; }
 
     [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
+    public List<Base> displayValue { get; set; }
 
     public string units { get; set; }
 

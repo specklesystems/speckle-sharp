@@ -257,7 +257,7 @@ namespace ConnectorGrasshopper.Ops
           (s, e) => System.Diagnostics.Process.Start($"{StreamWrapper.ServerUrl}/streams/{StreamWrapper.StreamId}/commits/{ReceivedCommitId}"));
     }
 
-    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
+    protected override void SolveInstance(IGH_DataAccess DA)
     {
       DA.DisableGapLogic();
 

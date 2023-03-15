@@ -166,9 +166,12 @@ namespace Speckle.ConnectorRevit.UI
             }
             else
             {
-              var category = conversionResult.GetType().Name == "Network" ?
-                "@Networks" :
-                $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}";
+              var category = conversionResult.GetType().Name switch
+              {
+                "Network" => "@Networks",
+                "FreeformElement" => "@FreeformElement",
+                _ => $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}"
+              };
 
               commitObject[category] ??= new List<Base>();
 

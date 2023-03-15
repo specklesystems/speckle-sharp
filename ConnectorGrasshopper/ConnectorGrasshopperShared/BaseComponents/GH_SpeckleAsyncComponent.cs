@@ -10,7 +10,7 @@ using Speckle.Core.Helpers;
 
 namespace ConnectorGrasshopper
 {
-  public abstract class GH_SpeckleAsyncComponent : GH_AsyncComponent, ISpeckleTrackingComponent
+  public abstract class GH_SpeckleAsyncComponent : GH_AsyncComponent, ISpeckleTrackingDocumentObject
   {
     public ComponentTracker Tracker { get; set; }
     public bool IsNew { get; set; } = true;
@@ -38,7 +38,7 @@ namespace ConnectorGrasshopper
       }
     }
     
-    protected sealed override void SolveInstance(IGH_DataAccess DA)
+    protected override void SolveInstance(IGH_DataAccess DA)
     {
       var guid = Guid.NewGuid();
       
@@ -53,9 +53,8 @@ namespace ConnectorGrasshopper
       using (LogContext.PushProperty("hostApplication", Utilities.GetVersionedAppName()))
       using (LogContext.PushProperty("grasshopperComponent", GetType().Name))
       using(LogContext.PushProperty("traceId", guid))
-        SolveInstanceWithLogContext(DA);
+        base.SolveInstance(DA);
     }
-
-    public abstract void SolveInstanceWithLogContext(IGH_DataAccess DA);
+    
   }
 }

@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Speckle.Core.Models.Extensions;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -102,15 +103,69 @@ namespace Objects.Converter.Revit
       appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }
+    public ApplicationObject FaceWallToNativeV2(RevitFaceWall speckleWall)
+    {
+      var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
+      try
+      {
+        var existing = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
+
+        // skip if element already exists in doc & receive mode is set to ignore
+        if (IsIgnore(existing, appObj, out appObj))
+          return appObj;
+
+        if (speckleWall.brep == null)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: "FaceWall geometry was null");
+          return appObj;
+        }
+
+        if (existing != null)
+        {
+          Doc.Delete(existing.Id);
+        }
+
+        if (!GetElementType<WallType>(speckleWall, appObj, out var wallType)) 
+        {
+          appObj.Update(status: ApplicationObject.State.Failed);
+          return appObj;
+        }
+        
+        if (!FaceWall.IsWallTypeValidForFaceWall(Doc, wallType.Id))
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Wall type {wallType.Name} not valid for FaceWall");
+          return appObj;
+        }
+
+        List<string> notes = null;
+        var solid = BrepToNative(speckleWall.brep, out notes);
+        var faceReference = solid.Faces.get_Item(0);
+        var faceref = faceReference.Reference;
+        var freeform = CreateFreeformElementFamily(new List<Solid>{solid}, speckleWall.id, "Mass");
+        Doc.Regenerate();
+        faceref = GetFaceRef(freeform);
+        var revitWall = FaceWall.Create(Doc, wallType.Id, GetWallLocationLine(speckleWall.locationLine), faceref);
+        //Doc.Delete(freeform.Id);
+        SetInstanceParameters(revitWall, speckleWall);
+        appObj.Update(status: ApplicationObject.State.Created, createdId: revitWall.UniqueId, convertedItem: revitWall);
+        appObj = SetHostedElements(speckleWall, revitWall, appObj);
+        return appObj;
+      }
+      catch (Exception e)
+      {  
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Revit wall creation failed: {e.Message}", log: new List<string>{e.ToFormattedString()});
+        return appObj; 
+      }
+    }
 
     private Reference GetFaceRef(Element e)
     {
-      Options geomOption = e.Document.Application.Create.NewGeometryOptions();
+      var geomOption = e.Document.Application.Create.NewGeometryOptions();
       geomOption.ComputeReferences = true;
       geomOption.IncludeNonVisibleObjects = true;
       geomOption.DetailLevel = ViewDetailLevel.Fine;
 
-      GeometryElement ge = e.get_Geometry(geomOption);
+      var ge = e.get_Geometry(geomOption);
 
       foreach (GeometryObject geomObj in ge)
       {
