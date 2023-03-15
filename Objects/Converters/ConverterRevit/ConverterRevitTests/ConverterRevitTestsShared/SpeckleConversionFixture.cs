@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using xUnitRevitUtils;
+using System.IO;
 
 namespace ConverterRevitTests
 {
@@ -44,7 +45,12 @@ namespace ConverterRevitTests
       }
 
       if (NewFile != null)
-        NewDoc = xru.CreateNewDoc(TemplateFile, NewFile);
+      {
+        if (File.Exists(NewFile))
+          NewDoc = xru.OpenDoc(NewFile);
+        else
+          NewDoc = xru.CreateNewDoc(TemplateFile, NewFile);
+      }
 
       RevitElements = new FilteredElementCollector(SourceDoc).WhereElementIsNotElementType().WherePasses(filter).ToElements();
     }

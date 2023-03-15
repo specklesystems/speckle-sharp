@@ -64,7 +64,7 @@ namespace ConverterRevitTests
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="assert"></param>
-    internal async Task<List<object>> SpeckleToNative<T>(Action<T, T> assert, UpdateData ud = null)
+    internal async Task<List<ApplicationObject>> SpeckleToNative<T>(Action<T, T> assert, UpdateData ud = null)
     {
       Document doc = null;
       IList<Element> elements = null;
@@ -137,7 +137,7 @@ namespace ConverterRevitTests
       converter.SetContextObjects(spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId}).ToList());
 
 
-      var resEls = new List<object>();
+      var resEls = new List<ApplicationObject>();
       //used to associate th nested Base objects with eh flat revit ones
       var flatSpkElems = new List<Base>();
 
@@ -164,10 +164,18 @@ namespace ConverterRevitTests
             if (el["elements"] == null) continue;
             flatSpkElems.AddRange((el["elements"] as List<Base>).Where(b => converter.CanConvertToNative(b)));
           }
+          else if (res is ApplicationObject appObj)
+          {
+            resEls.Add(appObj);
+            flatSpkElems.Add(el);
+          }
+          else if (res == null)
+          {
+            throw new Exception("Conversion returned null");
+          }
           else
           {
-            resEls.Add(res);
-            flatSpkElems.Add(el);
+            throw new Exception($"Conversion of Speckle object, of type {el.speckle_type}, to Revit returned unexpected type, {res.GetType().FullName}");
           }
         }
         //}, fixture.NewDoc).Wait();
