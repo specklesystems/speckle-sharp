@@ -15,9 +15,8 @@ namespace ConverterRevitTests
   public class FamilyInstanceFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("FamilyInstance.rvt");
-
     public override string UpdatedTestFile => Globals.GetTestModel("FamilyInstanceUpdated.rvt");
-    public override string NewFile => Globals.GetTestModel("FamilyInstance_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("FamilyInstanceToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
       BuiltInCategory.OST_Furniture,
       BuiltInCategory.OST_Doors,
