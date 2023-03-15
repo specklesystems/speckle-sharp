@@ -9,7 +9,7 @@ namespace ConverterRevitTests
   public class PipeFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("Pipe.rvt");
-    public override string NewFile => Globals.GetTestModel("Pipe_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("PipeToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {BuiltInCategory.OST_PipeCurves};
   }
 
