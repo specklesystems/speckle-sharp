@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1013,7 +1013,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               progress.Update(conversionProgressDict);
 
               // log report object
-              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.simple_Type}");
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.GetType().Name}");
               progress.Report.Log(reportObj);
 
               convertedCount++;
