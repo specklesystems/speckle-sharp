@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1013,7 +1013,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               progress.Update(conversionProgressDict);
 
               // log report object
-              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.GetType().Name}");
               progress.Report.Log(reportObj);
 
               convertedCount++;
@@ -1035,13 +1035,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
 #if ADVANCESTEEL2023
     private void UpdateASObject(ApplicationObject applicationObject, DBObject obj)
     {
-      if (obj.ObjectId.ObjectClass.DxfName.IndexOf("AST") != 0)
+      if (!CheckAdvanceSteelObject(obj))
         return;
 
       ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
       if (filerObject != null)
       {
-        applicationObject.Update(descriptor: filerObject.GetType().ToString());
+        applicationObject.Update(descriptor: filerObject.GetType().Name);
       }
     }
 #endif
