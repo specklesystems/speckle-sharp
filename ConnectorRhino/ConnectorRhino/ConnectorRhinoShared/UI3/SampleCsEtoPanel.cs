@@ -12,6 +12,7 @@ namespace SampleCsEto.Views
   public class SampleCsEtoPanel : Panel, IPanel
   {
     readonly uint m_document_sn = 0;
+    WebView webView;
 
     /// <summary>
     /// Provide easy access to the SampleCsEtoPanel.GUID
@@ -35,10 +36,29 @@ namespace SampleCsEto.Views
 
       var document_sn_label = new Label() { Text = $"Document serial number: {documentSerialNumber}" };
 
+      webView = new WebView();
+      webView.DocumentLoading += (sender, e) =>
+      {
+        
+        
+        if (e.Uri.Scheme == "myscheme")
+        {
+          e.Cancel = true; // prevent navigation
+          
+          var path = e.Uri.PathAndQuery;
+          if (path == "dosomething")
+          {
+            // do something..
+          
+          }
+        }
+      };
+
       var layout = new DynamicLayout { DefaultSpacing = new Size(5, 5), Padding = new Padding(10) };
       layout.AddSeparateRow(hello_button, null);
       layout.AddSeparateRow(child_button, null);
       layout.AddSeparateRow(document_sn_label, null);
+      layout.AddSeparateRow(webView, null);
       layout.Add(null);
       Content = layout;
     }
@@ -57,6 +77,8 @@ namespace SampleCsEto.Views
       // Since this panel is a child of some Rhino container it does not
       // have a top level Eto Window.
       Dialogs.ShowMessage("Hello Rhino!", Title);
+
+      webView.Url = new System.Uri("http://nas/dui3/button.html");
     }
 
     /// <summary>
