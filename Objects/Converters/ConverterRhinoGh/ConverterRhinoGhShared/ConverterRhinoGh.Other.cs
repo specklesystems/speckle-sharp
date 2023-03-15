@@ -12,10 +12,11 @@ using RH = Rhino.DocObjects;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 using Utilities = Speckle.Core.Models.Utilities;
+using Speckle.Core.Models.GraphTraversal;
 
 using Objects.Other;
+using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Dimension = Objects.Other.Dimension;
@@ -29,6 +30,7 @@ using Polyline = Objects.Geometry.Polyline;
 using RenderMaterial = Objects.Other.RenderMaterial;
 using Text = Objects.Other.Text;
 using Transform = Objects.Other.Transform;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -39,63 +41,96 @@ namespace Objects.Converter.RhinoGh
     {
       var attributes = new ObjectAttributes();
 
-      attributes.ColorSource = ObjectColorSource.ColorFromObject;
+      // color
       attributes.ObjectColor = System.Drawing.Color.FromArgb(display.color);
-      attributes.PlotWeightSource = ObjectPlotWeightSource.PlotWeightFromObject;
-      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
-      attributes.PlotWeight = display.lineweight * conversionFactor;
-      attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+      var colorSource = ObjectColorSource.ColorFromObject;
+      if (display["colorSource"] != null) { Enum.TryParse(display["colorSource"] as string, out colorSource); }
+      attributes.ColorSource = colorSource;
+
+      // line type
       var lineStyle = Doc.Linetypes.FindName(display.linetype);
       attributes.LinetypeIndex = (lineStyle != null) ? lineStyle.Index : 0;
+      var lineSource = ObjectLinetypeSource.LinetypeFromObject;
+      if (display["lineSource"] != null) { Enum.TryParse(display["lineSource"] as string, out lineSource); }
+      attributes.LinetypeSource = lineSource;
+
+      // plot weight
+      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
+      attributes.PlotWeight = display.lineweight * conversionFactor;
+      var weightSource = ObjectPlotWeightSource.PlotWeightFromObject;
+      if (display["weightSource"] != null) { Enum.TryParse(display["weightSource"] as string, out weightSource); }
+      attributes.PlotWeightSource = weightSource;
 
       return attributes;
     }
 
-    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes)
+    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes, Layer layer = null)
     {
-      var style = new DisplayStyle();
-
-      // color
-      switch (attributes.ColorSource)
-      {
-        case ObjectColorSource.ColorFromObject:
-          style.color = attributes.ObjectColor.ToArgb();
-          break;
-        case ObjectColorSource.ColorFromMaterial:
-          style.color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
-          break;
-        default: // use layer color as default
-          style.color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
-          break;
-      }
-
-      // line type
+      var style = new DisplayStyle() { units = Units.Millimeters};
+      int color = Color.LightGray.ToArgb();
       Linetype lineType = null;
-      switch (attributes.LinetypeSource)
-      {
-        case ObjectLinetypeSource.LinetypeFromObject:
-          lineType = Doc.Linetypes[attributes.LinetypeIndex];
-          break;
-        default: // use layer linetype as default
-          lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
-          break;
-      }
-      if (lineType.HasName)
-        style.linetype = lineType.Name;
+      double lineWeight = 0;
+      string colorSource = null;
+      string lineTypeSource = null;
+      string weightSource = null;
 
-      // line weight
-      switch (attributes.PlotWeightSource)
+      // use layer attributes if a layer is provided
+      if (layer != null)
       {
-        case ObjectPlotWeightSource.PlotWeightFromObject:
-          style.lineweight = attributes.PlotWeight;
-          break;
-        default: // use layer lineweight as default
-          style.lineweight = Doc.Layers[attributes.LayerIndex].PlotWeight;
-          break;
+        color = layer.Color.ToArgb();
+        lineType = Doc.Linetypes[layer.LinetypeIndex];
+        lineWeight = layer.PlotWeight;
       }
-      if (style.lineweight == 0) style.lineweight = 0.25;
+      else
+      {
+        // color
+        colorSource = attributes.ColorSource.ToString();
+        switch (attributes.ColorSource)
+        {
+          case ObjectColorSource.ColorFromObject:
+            color = attributes.ObjectColor.ToArgb();
+            break;
+          case ObjectColorSource.ColorFromMaterial:
+            color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
+            break;
+          default: // use layer color as default
+            color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
+            break;
+        }
 
-      style.units = Units.Millimeters;
+        // line type
+        lineTypeSource = attributes.LinetypeSource.ToString();
+        switch (attributes.LinetypeSource)
+        {
+          case ObjectLinetypeSource.LinetypeFromObject:
+            lineType = Doc.Linetypes[attributes.LinetypeIndex];
+            break;
+          default: // use layer linetype as default
+            lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
+            break;
+        }
+
+        // line weight
+        weightSource = attributes.PlotWeightSource.ToString();
+        switch (attributes.PlotWeightSource)
+        {
+          case ObjectPlotWeightSource.PlotWeightFromObject:
+            lineWeight = attributes.PlotWeight;
+            break;
+          default: // use layer lineweight as default
+            lineWeight = Doc.Layers[attributes.LayerIndex].PlotWeight;
+            break;
+        }
+      }
+
+      style.color = color;
+      style.lineweight = lineWeight;
+      style.linetype = lineType?.Name ?? "Default";
+
+      // attach rhino specific props
+      if (colorSource != null) style["colorSource"] = colorSource;
+      if (lineTypeSource != null) style["lineSource"] = lineTypeSource;
+      if (weightSource != null) style["weightSource"] = weightSource;
 
       return style;
     }
@@ -110,6 +145,7 @@ namespace Objects.Converter.RhinoGh
       var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
       if (existing != null)
         return existing;
+        
 
       Rhino.Render.RenderMaterial rm;
       //#if RHINO6
@@ -120,6 +156,7 @@ namespace Objects.Converter.RhinoGh
         EmissionColor = Color.FromArgb(speckleMaterial.emissive),
         Transparency = 1 - speckleMaterial.opacity
       };
+      Doc.Materials.Add(rhinoMaterial);
       rm = Rhino.Render.RenderMaterial.CreateBasicMaterial(rhinoMaterial, Doc);
       //#else
       //TODO Convert materials as PhysicallyBasedMaterial 
@@ -275,7 +312,10 @@ namespace Objects.Converter.RhinoGh
 
       // get the definition name
       var commitInfo = GetCommitInfo();
-      string definitionName = definition is BlockDefinition blockDef ? blockDef.name : definition.id;
+      string definitionName = 
+        definition is BlockDefinition blockDef ? blockDef.name : 
+        definition is RevitSymbolElementType revitDef ? $"{revitDef.category} - {revitDef.family} - {revitDef.type}" : 
+        definition.id;
       if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
       if (Doc.InstanceDefinitions.Find(definitionName) is InstanceDefinition def)
         return def;
@@ -324,7 +364,8 @@ namespace Objects.Converter.RhinoGh
             var instance = instanceAppObj.Converted.FirstOrDefault() as InstanceObject;
             if (instance != null)
             {
-              convertedGeo.Add(instance.DuplicateGeometry());
+              converted.Add(instance.DuplicateGeometry());
+              attributes.Add(instance.Attributes);
               Doc.Objects.Delete(instance);
             }
             else
@@ -340,6 +381,7 @@ namespace Objects.Converter.RhinoGh
               notes.Add($"Could not create definition geometry {geo.speckle_type} ({geo.id})");
               continue;
             }
+
             if (convertedObj.GetType().IsArray)
               foreach (object o in (Array)convertedObj)
                 convertedGeo.Add((GeometryBase)o);
@@ -349,30 +391,41 @@ namespace Objects.Converter.RhinoGh
         }
         if (convertedGeo.Count == 0)
           continue;
+
+        // get attributes
+        var attribute = new ObjectAttributes();
+
+        // layer
         var geoLayer = item.Value;
         var layerName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
         int index = 1;
         if (layerName != null)
           GetLayer(Doc, layerName, out index, true);
-
-        var attribute = new ObjectAttributes();
-        if (geo[@"displayStyle"] is Base display)
-        {
-          if (ConvertToNative(display) is ObjectAttributes displayAttribute)
-            attribute = displayAttribute;
-        }
-        else if (geo[@"renderMaterial"] is Base renderMaterial)
-        {
-          if (renderMaterial["diffuse"] is int color)
-          {
-            attribute.ColorSource = ObjectColorSource.ColorFromObject;
-            attribute.ObjectColor = Color.FromArgb(color);
-          }
-        }
         attribute.LayerIndex = index;
 
+        // display
+        var renderMaterial = geo[@"renderMaterial"] as RenderMaterial;
+        if (geo[@"displayStyle"] is DisplayStyle display)
+        {
+          attribute = DisplayStyleToNative(display);
+        }
+        else if (renderMaterial != null)
+        {
+          attribute.ObjectColor = Color.FromArgb(renderMaterial.diffuse);
+          attribute.ColorSource = ObjectColorSource.ColorFromObject;
+        }
+
+        // render material
+        if (renderMaterial != null)
+        {
+          var material = RenderMaterialToNative(renderMaterial);
+          attribute.MaterialIndex = GetMaterialIndex(material?.Name);
+          attribute.MaterialSource = ObjectMaterialSource.MaterialFromObject;
+        }
+
         converted.AddRange(convertedGeo);
-        attributes.Add(attribute);
+        for(int i = 0; i < convertedGeo.Count; i++)
+          attributes.Add(attribute);
       }
 
       if (converted.Count == 0)
@@ -393,7 +446,7 @@ namespace Objects.Converter.RhinoGh
       return blockDefinition;
     }
 
-    #region block def flattening
+#region block def flattening
     /// <summary>
     /// Traverses the object graph, returning objects that can be converted.
     /// </summary>
@@ -449,7 +502,7 @@ namespace Objects.Converter.RhinoGh
 
       return StoredObjects;
     }
-    #endregion
+#endregion
 
     // Rhino convention seems to order the origin of the vector space last instead of first
     // This results in a transposed transformation matrix - may need to be addressed later

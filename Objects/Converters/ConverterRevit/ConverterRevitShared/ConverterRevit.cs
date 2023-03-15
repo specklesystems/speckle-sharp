@@ -124,7 +124,7 @@ namespace Objects.Converter.Revit
       switch (@object)
       {
         case DB.Document o:
-          returnObject = ModelToSpeckle(o);
+          returnObject = ModelToSpeckle(o, !o.IsFamilyDocument);
           break;
         case DB.DetailCurve o:
           returnObject = DetailCurveToSpeckle(o);
@@ -181,25 +181,25 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Electrical.Conduit o:
           returnObject = NetworkToSpeckle(o, out notes);
@@ -257,6 +257,9 @@ namespace Objects.Converter.Revit
           break;
         case DB.Structure.StructuralConnectionHandler o:
           returnObject = StructuralConnectionHandlerToSpeckle(o);
+          break;
+        case DB.CombinableElement o:
+          returnObject = CombinableElementToSpeckle(o);
           break;
 #if REVIT2020 || REVIT2021 || REVIT2022
         case DB.Structure.AnalyticalModelStick o:
@@ -390,6 +393,8 @@ namespace Objects.Converter.Revit
             return FreeformElementToNativeFamily(o);
           case Geometry.Mesh o:
             return FreeformElementToNativeFamily(o);
+          case BER.FreeformElement o:
+            return FreeformElementToNative(o);
           default:
             return null;
         }
@@ -603,7 +608,6 @@ namespace Objects.Converter.Revit
       return @object
       switch
       {
-
         DB.DetailCurve _ => true,
         DB.Material _ => true,
         DB.DirectShape _ => true,
@@ -641,6 +645,7 @@ namespace Objects.Converter.Revit
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
         DB.FabricationPart _ => true,
+        DB.CombinableElement _ => true,
 #if REVIT2020 || REVIT2021 || REVIT2022
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
@@ -664,6 +669,7 @@ namespace Objects.Converter.Revit
           ICurve _ => true,
           Geometry.Brep _ => true,
           Geometry.Mesh _ => true,
+          BER.FreeformElement _ => true,
           _ => false
         };
       }

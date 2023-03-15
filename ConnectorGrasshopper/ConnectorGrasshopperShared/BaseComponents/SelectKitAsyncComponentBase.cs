@@ -136,7 +136,7 @@ namespace ConnectorGrasshopper.Objects
       base.BeforeSolveInstance();
     }
 
-    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
+    protected override void SolveInstance(IGH_DataAccess DA)
     {
       //Ensure converter document is up to date
       if (Converter == null)
@@ -144,7 +144,6 @@ namespace ConnectorGrasshopper.Objects
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
 
       }
-
       base.SolveInstance(DA);
     }
   }
