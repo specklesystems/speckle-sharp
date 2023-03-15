@@ -13,6 +13,7 @@ using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
@@ -108,18 +109,17 @@ namespace Archicad.Launcher
     public override bool CanPreviewReceive => false;
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      return null;
+      throw new NotImplementedException("Preview receiving not supported");
     }
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
-      if (commitObject is null)
-        return null;
+      if (commitObject == null) throw new SpeckleException("Failed to receive specified");
 
       ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
 
-      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, conversionOptions, progress.CancellationTokenSource.Token);
+      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, conversionOptions, progress.CancellationToken);
 
       return state;
     }
@@ -132,23 +132,19 @@ namespace Archicad.Launcher
     public override bool CanPreviewSend => false;
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
-      return;
+      throw new NotImplementedException("Preview send not supported");
     }
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      if (state.Filter is null)
-        return null;
+      if (state.Filter == null) throw new InvalidOperationException("Expected selection filter to be non-null");
 
       var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(
         state.Filter,
         progress);
 
-      if (commitObject is not null)
-      {
-        return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, HostApplications.Archicad.Name);
-      }
-
-      return null;
+      if (commitObject == null) throw new SpeckleException("Failed to convert objects to speckle: conversion returned null");
+      
+      return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, HostApplications.Archicad.Name);
     }
 
     public override void WriteStreamsToFile(List<StreamState> streams) { }

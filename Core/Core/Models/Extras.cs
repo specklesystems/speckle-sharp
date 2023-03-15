@@ -278,8 +278,12 @@ namespace Speckle.Core.Models
 
     #region Operation
     /// <summary>
-    /// Keeps track of errors in the operations of send/receive.
+    /// Keeps track of HANDLED errors that occur during send/recieve commands.
     /// </summary>
+    /// <remarks>
+    /// Handled errors specific to the conversion, should be added to ConversionErrors
+    /// Unhandleable errors (i.e. that lead to the entire send/receive failing) should be Thrown instead.
+    /// </remarks>
     public List<Exception> OperationErrors { get; } = new List<Exception>();
     private readonly object OperationErrorsLock = new object();
     public string OperationErrorsString

@@ -51,8 +51,7 @@ namespace Speckle.ConnectorCSI.UI
 
       if (totalObjectCount == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
-        return null;
+        throw new InvalidOperationException( "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -60,24 +59,18 @@ namespace Speckle.ConnectorCSI.UI
       conversionProgressDict["Conversion"] = 0;
       progress.Update(conversionProgressDict);
 
-      var sendCancelled = BuildSendCommitObj(converter, state.SelectedObjectIds, ref progress, ref conversionProgressDict);
-      if (sendCancelled)
-        return null;
+      BuildSendCommitObj(converter, state.SelectedObjectIds, ref progress, ref conversionProgressDict);
 
       var commitObj = GetCommitObj(converter, progress, conversionProgressDict);
-      if (commitObj == null)
-        return null;
 
       return await SendCommitObj(state, progress, commitObj, conversionProgressDict);
-  
     }
 
-    public bool BuildSendCommitObj(ISpeckleConverter converter, List<string> selectedObjIds, ref ProgressViewModel progress, ref ConcurrentDictionary<string, int> conversionProgressDict)
+    public void BuildSendCommitObj(ISpeckleConverter converter, List<string> selectedObjIds, ref ProgressViewModel progress, ref ConcurrentDictionary<string, int> conversionProgressDict)
     {
       foreach (var applicationId in selectedObjIds)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return true;
+        progress.CancellationToken.ThrowIfCancellationRequested();
 
         Base converted = null;
         string containerName = string.Empty;
@@ -123,7 +116,6 @@ namespace Speckle.ConnectorCSI.UI
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
       }
-      return false;
     }
 
     public Base GetCommitObj(ISpeckleConverter converter, ProgressViewModel progress, ConcurrentDictionary<string, int> conversionProgressDict)
@@ -163,12 +155,10 @@ namespace Speckle.ConnectorCSI.UI
 
       if (conversionProgressDict["Conversion"] == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return null;
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       return commitObj;
     }
@@ -183,23 +173,17 @@ namespace Speckle.ConnectorCSI.UI
 
       var objectId = await Operations.Send(
           @object: commitObj,
-          cancellationToken: progress.CancellationTokenSource.Token,
+          cancellationToken: progress.CancellationToken,
           transports: transports,
           onProgressAction: dict =>
           {
             progress.Update(dict);
           },
-          onErrorAction: (Action<string, Exception>)((s, e) =>
-          {
-            progress.Report.LogOperationError(e);
-            progress.CancellationTokenSource.Cancel();
-          }),
+          onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
           disposeTransports: true
           );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
+      
+      
       if (branchName != null)
       {
         var branchesSplit = state.BranchName.Split('/');
@@ -225,19 +209,8 @@ namespace Speckle.ConnectorCSI.UI
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-        return commitId;
-      }
-      catch (Exception e)
-      {
-        //Globals.Notify($"Failed to create commit.\n{e.Message}");
-        progress.Report.LogOperationError(e);
-      }
-      return null;
-      //return state;
+      return await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      
     }
   }
 }

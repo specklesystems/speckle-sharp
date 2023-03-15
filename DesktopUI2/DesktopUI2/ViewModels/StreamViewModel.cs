@@ -1279,21 +1279,20 @@ namespace DesktopUI2.ViewModels
         
         Progress.CancellationToken.ThrowIfCancellationRequested();
         
-        // We don't pass the cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
+        //NOTE: We don't pass the cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
         var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
         
         if (state == null)
         {
-          // Ideally, ReceiveStream shouldn't return null, as we have no context WHY, or if the application is left in an invalid state.
+          //NOTE: Ideally, ReceiveStream shouldn't return null, as we have no context WHY, or if the application is left in an invalid state.
           // This is a last ditch effort to display a semi-useful error to the user.
           string message = Progress?.Report?.OperationErrorsString;
           if(string.IsNullOrEmpty(message))
             message = "Something went very wrong";
           throw new Exception(message);
-
-
         }
          
+        // Track receive operation
         var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
         LastUsed = DateTime.Now.ToString();
         Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.Receive,
@@ -1311,21 +1310,28 @@ namespace DesktopUI2.ViewModels
             { "isMultiplayer", state.LastCommit.authorId != state.UserId }
           });
         
+        // Show report
         GetActivity();
         GetReport();
         
-        //save the stream as well
+        // Save the stream
         HomeViewModel.Instance.AddSavedStream(this);
 
-        if (Progress.CancellationToken.IsCancellationRequested)
+        // Display success message
+        string successMessage = "";
+        
+        var warningsCount = Progress.Report.OperationErrors.Count + Progress.Report.ConversionErrors.Count;
+        if (warningsCount > 0)
         {
-          //User requested a cancel, but it was too late!
-          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "👌 Receive completed!", Message = "It was too late to cancel", Type = NotificationType.Success});
+          successMessage = $"There were {warningsCount} warning(s)";
         }
-        else
+        else if (Progress.CancellationToken.IsCancellationRequested)
         {
-          DisplayPopupNotification(new PopUpNotificationViewModel{Title = "👌 Receive completed!", Message = "", Type = NotificationType.Success});
+          // User requested a cancel, but it was too late!
+          successMessage = "It was too late to cancel";
         }
+
+        DisplayPopupNotification(new PopUpNotificationViewModel{Title = "👌 Receive completed!", Message = successMessage, Type = NotificationType.Success});
         
         Serilog.Log.Information(CommandSucceededLogTemplate, nameof(ReceiveCommand));
       }

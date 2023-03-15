@@ -102,59 +102,61 @@ namespace DesktopUI2.ViewModels
       Progress.ProgressTitle = "Sending to Speckle 🚀...";
       Progress.IsProgressing = true;
 
-
-      string fileName = null;
       try
       {
-        fileName = Bindings.GetFileName();
-      }
-      catch(Exception ex)
-      {
-        //todo: handle properly in each connector bindings
-        Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Send), ex.Message);
-      }
+        string fileName = null;
+        try
+        {
+          fileName = Bindings.GetFileName();
+        }
+        catch(Exception ex)
+        {
+          //todo: handle properly in each connector bindings
+          Log.Error(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Send), ex.Message);
+        }
 
-      //filename is different, might have been renamed or be a different document
-      if (_fileName != fileName)
-        _fileStream = null;
+        //filename is different, might have been renamed or be a different document
+        if (_fileName != fileName)
+          _fileStream = null;
 
-      _fileName = fileName;
+        _fileName = fileName;
 
-      if (_fileStream == null)
-        _fileStream = await GetOrCreateStreamState();
-      // check if objs are selected and set streamstate filter
-      var filters = Bindings.GetSelectionFilters();
-      var selection = Bindings.GetSelectedObjects();
-      //TODO: check if these filters exist
-      if (selection.Count > 0)
-      {
-        _fileStream.Filter = filters.First(o => o.Slug == "manual");
-        _fileStream.Filter.Selection = selection;
-        _fileStream.CommitMessage = "Sent selection";
-      }
-      else
-      {
-        _fileStream.Filter = filters.First(o => o.Slug == "all");
-        _fileStream.CommitMessage = "Sent everything";
-      }
-      _fileStream.BranchName = "main";
+        if (_fileStream == null)
+          _fileStream = await GetOrCreateStreamState();
+        // check if objs are selected and set streamstate filter
+        var filters = Bindings.GetSelectionFilters();
+        var selection = Bindings.GetSelectedObjects();
+        //TODO: check if these filters exist
+        if (selection.Count > 0)
+        {
+          _fileStream.Filter = filters.First(o => o.Slug == "manual");
+          _fileStream.Filter.Selection = selection;
+          _fileStream.CommitMessage = "Sent selection";
+        }
+        else
+        {
+          _fileStream.Filter = filters.First(o => o.Slug == "all");
+          _fileStream.CommitMessage = "Sent everything";
+        }
+        _fileStream.BranchName = "main";
 
-      // set settings
-      if (_fileStream.Settings == null || _fileStream.Settings.Count == 0)
-      {
-        var settings = Bindings.GetSettings();
-        _fileStream.Settings = settings;
-      }
+        // set settings
+        if (_fileStream.Settings == null || _fileStream.Settings.Count == 0)
+        {
+          var settings = Bindings.GetSettings();
+          _fileStream.Settings = settings;
+        }
 
-      // send to stream
-      // TODO: report conversions errors, empty commit etc
-      try
-      {
+        // send to stream
+        // TODO: report conversions errors, empty commit etc
+
         Id = await Task.Run(() => Bindings.SendStream(_fileStream, Progress));
 
         if (!string.IsNullOrEmpty(Id))
         {
-          var errorsCount = Progress.Report.ReportObjects.Values.Count(x => x.Status == Speckle.Core.Models.ApplicationObject.State.Failed);
+          var errorsCount =
+            Progress.Report.ReportObjects.Values.Count(x =>
+              x.Status == Speckle.Core.Models.ApplicationObject.State.Failed);
           if (errorsCount > 0)
           {
             var s = errorsCount == 1 ? "" : "s";
@@ -178,17 +180,22 @@ namespace DesktopUI2.ViewModels
           SuccessfulSend = false;
         }
 
-        Progress.IsProgressing = false;
-
         if (!Progress.CancellationToken.IsCancellationRequested)
         {
-          Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "method", "OneClick" } });
+          Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send,
+            new Dictionary<string, object> { { "method", "OneClick" } });
           _fileStream.LastUsed = DateTime.Now.ToString();
         }
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Could not send with one click {exceptionMessage}",ex.Message);
+        Log.Error(ex, "Could not send with one click {exceptionMessage}", ex.Message);
+        SentText = "Something went wrong!\nPlease try again or switch to advanced mode.";
+        SuccessfulSend = false;
+      }
+      finally
+      {
+        Progress.IsProgressing = false;
       }
 
       if (HomeViewModel.Instance != null)

@@ -207,75 +207,28 @@ namespace Speckle.ConnectorBentley.UI
     {
       var kit = KitManager.GetDefaultKit();
       var converter = kit.LoadConverter(Utils.VersionedAppName);
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
-      var stream = await state.Client.StreamGet(state.StreamId);
       var previouslyReceivedObjects = state.ReceivedObjects;
-
-      if (converter == null)
-        throw new Exception("Could not find any Kit!");
 
       if (Control.InvokeRequired)
         Control.Invoke(new SetContextDelegate(converter.SetContextDocument), new object[] { Session.Instance });
       else
         converter.SetContextDocument(Session.Instance);
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       /*
       if (Doc == null)
       {
-        progress.Report.LogOperationError(new Exception($"No Document is open."));
-        progress.CancellationTokenSource.Cancel();
+        throw new OperationInvalidException($"No Document is open."));
       }
       */
 
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      Commit commit = null;
-      if (state.CommitId == "latest")
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        commit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-      }
-      string referencedObject = commit.referencedObject;
-
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = commit;
-
-      var commitObject = await Operations.Receive(
-        referencedObject,
-        progress.CancellationTokenSource.Token,
-        transport,
-        onProgressAction: dict => progress.Update(dict),
-        onTotalChildrenCountKnown: num => progress.Max = num,
-        onErrorAction: (message, exception) =>
-        {
-          progress.Report.LogOperationError(exception);
-          progress.CancellationTokenSource.Cancel();
-        },
-        disposeTransports: true
-        );
-
-      try
-      {
-        await state.Client.CommitReceived(new CommitReceivedInput
-        {
-          streamId = stream?.id,
-          commitId = commit?.id,
-          message = commit?.message,
-          sourceApplication = Utils.VersionedAppName
-        });
-      }
-      catch
-      {
-        // Do nothing!
-      }
-      if (progress.Report.OperationErrorsCount != 0)
-        return state;
-
+      Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
+      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.VersionedAppName);
+      
       // invoke conversions on the main thread via control
       int count = 0;
       var flattenedObjects = FlattenCommitObject(commitObject, converter, ref count);
@@ -284,13 +237,7 @@ namespace Speckle.ConnectorBentley.UI
         newPlaceholderObjects = (List<ApplicationObject>)Control.Invoke(new NativeConversionAndBakeDelegate(ConvertAndBakeReceivedObjects), new object[] { flattenedObjects, converter, state, progress });
       else
         newPlaceholderObjects = ConvertAndBakeReceivedObjects(flattenedObjects, converter, state, progress);
-
-      if (newPlaceholderObjects == null)
-      {
-        converter.Report.ConversionErrors.Add(new Exception("fatal error: receive cancelled by user"));
-        return null;
-      }
-
+      
       DeleteObjects(previouslyReceivedObjects, newPlaceholderObjects);
 
       state.ReceivedObjects = newPlaceholderObjects;
@@ -328,11 +275,7 @@ namespace Speckle.ConnectorBentley.UI
 
       foreach (var @base in objects)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        {
-          placeholders = null;
-          break;
-        }
+        progress.CancellationToken.ThrowIfCancellationRequested();
 
         try
         {
@@ -479,8 +422,7 @@ namespace Speckle.ConnectorBentley.UI
 
       if (state.SelectedObjectIds.Count == 0 && !ExportGridLines)
       {
-        progress.Report.LogOperationError(new Exception("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
-        return null;
+        throw new InvalidOperationException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
       }
 
       var commitObj = new Base();
@@ -545,8 +487,7 @@ namespace Speckle.ConnectorBentley.UI
 
       foreach (var obj in objs)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return null;
+        progress.CancellationToken.ThrowIfCancellationRequested();
 
         if (obj == null)
         {
@@ -637,18 +578,13 @@ namespace Speckle.ConnectorBentley.UI
       }
 
       progress.Report.Merge(converter.Report);
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
+      
       if (convertedCount == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return null;
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       progress.Max = convertedCount;
 
@@ -656,17 +592,12 @@ namespace Speckle.ConnectorBentley.UI
 
       var commitObjId = await Operations.Send(
         commitObj,
-        progress.CancellationTokenSource.Token,
+        progress.CancellationToken,
         transports,
         onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (err, exception) =>
-        {
-          progress.Report.LogOperationError(exception);
-          progress.CancellationTokenSource.Cancel();
-        },
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
-
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
@@ -678,17 +609,8 @@ namespace Speckle.ConnectorBentley.UI
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-        return commitId;
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
-      }
-      return null;
+      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      return commitId;
     }
 
 #if (OPENROADS || OPENRAIL)
