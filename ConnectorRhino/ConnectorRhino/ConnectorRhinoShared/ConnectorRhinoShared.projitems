@@ -21,6 +21,8 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)UI\MappingBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI3\SampleCsEtoPanelCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI3\SampleCsEtoPanel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MacOSHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandMac.cs" />
