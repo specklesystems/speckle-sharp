@@ -16,7 +16,12 @@ namespace Objects.Other
     public string name { get; set; }
     public int color { get; set; } = Color.LightGray.ToArgb(); // opacity assumed from a value
     public string linetype { get; set; }
-    public double lineweight { get; set; } // assumed in mm
+
+    /// <summary>
+    /// The plot weight in the style units
+    /// </summary>
+    /// <remarks>A value of 0 indicates a default weight, and -1 indicates an invisible line</remarks>
+    public double lineweight { get; set; }
     public string units { get; set; }
 
     public DisplayStyle() { }

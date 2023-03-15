@@ -223,20 +223,20 @@ namespace Speckle.Core.Helpers
         timer.Stop();
         var status = policyResult.Outcome == OutcomeType.Successful ? "succeeded" : "failed";
         context.TryGetValue("retryCount", out var retryCount);
-        Log.Information(
+        Log.ForContext("ExceptionType", policyResult.FinalException?.GetType())
+          .Information(
           "Execution of http request to {targetUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
           request.RequestUri,
           status,
-          policyResult.Result.StatusCode,
+          policyResult.Result?.StatusCode,
           timer.Elapsed.TotalSeconds,
           retryCount ?? 0
         );
         if (policyResult.Outcome == OutcomeType.Successful)
-          return policyResult.Result;
-
-        var statusCode = policyResult.Result.StatusCode;
+          return policyResult.Result!;
+        
         // should we wrap this exception into something Speckle specific?
-        throw policyResult.FinalException;
+        throw policyResult.FinalException!;
       }
     }
   }

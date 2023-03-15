@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections.Specialized;
 using System.Numerics;
 
 using Rhino;
+using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
-using Rhino.Display;
+using Rhino.Collections;
 using RH = Rhino.Geometry;
 using Grasshopper.Kernel.Types;
 
@@ -27,6 +29,7 @@ using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
+using Collection = Objects.Organization.Collection;
 using Curve = Objects.Geometry.Curve;
 using Dimension = Objects.Other.Dimension;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
@@ -142,46 +145,64 @@ namespace Objects.Converter.RhinoGh
     }
     public Base ConvertToSpeckle(object @object)
     {
+      ApplicationObject reportObj = null;
       RenderMaterial material = null;
-      RH.Mesh displayMesh = null;
       DisplayStyle style = null;
+      RH.Mesh displayMesh = null;
       ObjectAttributes attributes = null;
+      ArchivableDictionary userDictionary = null;
+      NameValueCollection userStrings = null;
+      string objName = null;
+
       Base @base = null;
       Base schema = null;
-      ApplicationObject reportObj = null;
       var notes = new List<string>();
       try
       {
-
-        if (@object is RhinoObject ro)
+        switch (@object)
         {
-          var applicationId = ro.Attributes.GetUserString(ApplicationIdKey) ?? ro.Id.ToString();
-          reportObj = new ApplicationObject(ro.Id.ToString(), ro.ObjectType.ToString()) { applicationId = applicationId };
-          material = RenderMaterialToSpeckle(ro.GetMaterial(true));
-          style = DisplayStyleToSpeckle(ro.Attributes);
+          case RhinoObject ro:
+            var roId = ro.Attributes.GetUserString(ApplicationIdKey) ?? ro.Id.ToString();
+            reportObj = new ApplicationObject(ro.Id.ToString(), ro.ObjectType.ToString()) { applicationId = roId };
+            material = RenderMaterialToSpeckle(ro.GetMaterial(true));
+            style = DisplayStyleToSpeckle(ro.Attributes);
+            userDictionary = ro.UserDictionary;
+            userStrings = ro.Attributes.GetUserStrings();
+            objName = ro.Attributes.Name;
 
-          // Fast way to get the displayMesh, try to get the mesh rhino shows on the viewport when available.
-          // This will only return a mesh if the object has been displayed in any mode other than Wireframe.
-          if (ro is BrepObject || ro is ExtrusionObject)
-            displayMesh = GetRhinoRenderMesh(ro);
+            // Fast way to get the displayMesh, try to get the mesh rhino shows on the viewport when available.
+            // This will only return a mesh if the object has been displayed in any mode other than Wireframe.
+            if (ro is BrepObject || ro is ExtrusionObject)
+              displayMesh = GetRhinoRenderMesh(ro);
 
-          //rhino BIM to be deprecated after the mapping tool is released
-          if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
-            schema = ConvertToSpeckleBE(ro, reportObj, displayMesh) ?? ConvertToSpeckleStr(ro, reportObj);
+            //rhino BIM to be deprecated after the mapping tool is released
+            if (ro.Attributes.GetUserString(SpeckleSchemaKey) != null) // schema check - this will change in the near future
+              schema = ConvertToSpeckleBE(ro, reportObj, displayMesh) ?? ConvertToSpeckleStr(ro, reportObj);
 
-          //mapping tool
-          var mappingString = ro.Attributes.GetUserString(SpeckleMappingKey);
-          if (mappingString != null)
-            schema = MappingToSpeckle(mappingString, ro, notes);
+            //mapping tool
+            var mappingString = ro.Attributes.GetUserString(SpeckleMappingKey);
+            if (mappingString != null)
+              schema = MappingToSpeckle(mappingString, ro, notes);
 
-          attributes = ro.Attributes;
+            if (!(@object is InstanceObject))  @object = ro.Geometry; // block instance check
+            break;
 
-          if (!(@object is InstanceObject)) // block instance check
-            @object = ro.Geometry;
+          case Layer l:
+            var lId = l.GetUserString(ApplicationIdKey) ?? l.Id.ToString();
+            reportObj = new ApplicationObject(l.Id.ToString(), "Layer") { applicationId = lId };
+            if (l.RenderMaterial != null) { material = RenderMaterialToSpeckle(l.RenderMaterial.SimulateMaterial(true)); }
+            style = DisplayStyleToSpeckle(new ObjectAttributes(), l);
+            userDictionary = l.UserDictionary;
+            userStrings = l.GetUserStrings();
+            break;
         }
 
         switch (@object)
         {
+          case RhinoDoc doc: // this is the base commit! Create a collection object to use
+            @base = CollectionToSpeckle(doc);
+            break;
+
           case Point3d o:
             @base = PointToSpeckle(o);
             break;
@@ -290,6 +311,9 @@ namespace Objects.Converter.RhinoGh
           case Rhino.Geometry.Dimension o:
             @base = DimensionToSpeckle(o);
             break;
+          case Layer o:
+            @base = LayerToSpeckle(o);
+            break;
           default:
             if (reportObj != null)
             {
@@ -301,15 +325,10 @@ namespace Objects.Converter.RhinoGh
 
         if (@base is null) return @base;
 
-        if (attributes != null)
-        {
-          GetUserInfo(@base, attributes, out List<string> attributeNotes);
-          notes.AddRange(attributeNotes);
-        }
-        if (material != null)
-          @base["renderMaterial"] = material;
-        if (style != null)
-          @base["displayStyle"] = style;
+        GetUserInfo(@base, out List<string> attributeNotes, userDictionary, userStrings, objName);
+        notes.AddRange(attributeNotes);
+        if (material != null) @base["renderMaterial"] = material;
+        if (style != null) @base["displayStyle"] = style;
         if (schema != null)
         {
           schema["renderMaterial"] = material;
@@ -318,7 +337,7 @@ namespace Objects.Converter.RhinoGh
       }
       catch (Exception ex)
       {
-        reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{@object.GetType()} unhandled converion error: {ex.Message}\n{ex.StackTrace}");
+        reportObj?.Update(status: ApplicationObject.State.Failed, logItem: $"{@object.GetType()} unhandled conversion error: {ex.Message}\n{ex.StackTrace}");
       }
 
       if (reportObj != null)
@@ -756,6 +775,10 @@ namespace Objects.Converter.RhinoGh
             rhinoObj = element1DToNative(o);
             break;
 
+          case Collection o:
+            rhinoObj = CollectionToNative(o);
+            break;
+
           case DisplayStyle o:
             rhinoObj = DisplayStyleToNative(o);
             break;
@@ -854,6 +877,7 @@ namespace Objects.Converter.RhinoGh
         case InstanceObject _:
         case TextEntity _:
         case RH.Dimension _:
+        case Layer _:
           return true;
 #endif
         default:
@@ -946,6 +970,7 @@ namespace Objects.Converter.RhinoGh
 #else
         // This types are not supported in GH!
         case Pointcloud _:
+        case Collection _:
         case ModelCurve _:
         case DirectShape _:
         case View3D _:

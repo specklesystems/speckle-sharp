@@ -42,18 +42,13 @@ namespace Speckle.ConnectorRevit.UI
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       // first check if commit is the same and preview objects have already been generated
-      Commit commit = await GetCommitFromState(state, progress);
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       progress.Report = new ProgressReport();
 
       if (commit.id != SelectedReceiveCommit)
       {
         // check for converter 
         var converter = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
-        if (converter == null)
-        {
-          progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-          return null;
-        }
         converter.SetContextDocument(CurrentDoc.Document);
 
         var settings = new Dictionary<string, string>();
@@ -64,12 +59,7 @@ namespace Speckle.ConnectorRevit.UI
         settings["preview"] = "true";
         converter.SetConverterSettings(settings);
 
-        var commitObject = await GetCommit(commit, state, progress);
-        if (commitObject == null)
-        {
-          progress.Report.LogOperationError(new Exception($"Could not retrieve commit {commit.id} from server"));
-          progress.CancellationTokenSource.Cancel();
-        }
+        var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
         Preview.Clear();
         StoredObjects.Clear();
@@ -103,50 +93,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       UnregisterServers();
     }
-
-    #region move these?
-    // gets the state commit
-    private async Task<Commit> GetCommitFromState(StreamState state, ProgressViewModel progress)
-    {
-      Commit commit = null;
-      if (state.CommitId == "latest") //if "latest", always make sure we get the latest commit
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        commit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        var res = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-        commit = res;
-      }
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-      return commit;
-    }
-    private async Task<Base> GetCommit(Commit commit, StreamState state, ProgressViewModel progress)
-    {
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
-
-      var commitObject = await Operations.Receive(
-        commit.referencedObject,
-        progress.CancellationTokenSource.Token,
-        transport,
-        onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (s, e) =>
-        {
-          progress.Report.LogOperationError(e);
-          progress.CancellationTokenSource.Cancel();
-        },
-        onTotalChildrenCountKnown: (c) => progress.Max = c,
-        disposeTransports: true
-        );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      return commitObject;
-    }
-    #endregion
+    
     public void AddMultipleRevitElementServers(List<ApplicationObject> applicationObjects)
     {
       ExternalService directContext3DService = ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.DirectContext3DService);

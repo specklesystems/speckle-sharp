@@ -14,6 +14,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <Version>2.0.0-dev</Version>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>

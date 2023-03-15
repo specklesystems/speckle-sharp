@@ -160,7 +160,7 @@ namespace Speckle.ConnectorRevit.UI
         await Task.Run(() => SendStream(stream, progress));
         progress.IsProgressing = false;
         dialog.Close();
-        if (!progress.CancellationTokenSource.IsCancellationRequested)
+        if (!progress.CancellationToken.IsCancellationRequested)
         {
           Analytics.TrackEvent(stream.Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Schedule" }, { "filter", stream.Filter.Name } });
         }
