@@ -303,6 +303,20 @@ namespace Speckle.Core.Models
         return __type;
       }
     }
+
+    private string __simpleType;
+
+    [JsonIgnore]
+    public string simple_Type
+    {
+      get
+      {
+        if (__simpleType == null)
+          __simpleType = this.GetType().Name;
+        
+        return __simpleType;
+      }
+    }
   }
 
 

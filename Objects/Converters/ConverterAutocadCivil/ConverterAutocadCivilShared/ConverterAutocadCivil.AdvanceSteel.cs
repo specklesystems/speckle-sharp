@@ -134,7 +134,7 @@ namespace Objects.Converter.AutocadCivil
 
       advanceSteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
 
-      var profile = polyBeam.GetProfType();
+      //var profile = polyBeam.GetProfType();
 
       advanceSteelPolyBeam.area = polyBeam.GetPaintArea();
 

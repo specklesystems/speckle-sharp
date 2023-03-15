@@ -1089,7 +1089,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               progress.Update(conversionProgressDict);
 
               // log report object
-              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.simple_Type}");
               progress.Report.Log(reportObj);
 
               convertedCount++;
