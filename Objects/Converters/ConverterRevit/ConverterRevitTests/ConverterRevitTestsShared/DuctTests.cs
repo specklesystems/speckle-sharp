@@ -12,7 +12,7 @@ namespace ConverterRevitTests
   public class DuctFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("Duct.rvt");
-    public override string NewFile => Globals.GetTestModel("Duct_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("DuctToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_DuctCurves };
     public DuctFixture() : base() { }
   }
