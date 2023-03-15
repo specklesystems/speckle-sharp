@@ -446,7 +446,10 @@ namespace SpeckleRhino
           }
           progress.Report.Merge(converter.Report);
         }
-
+        else
+        {
+          Preview.ForEach(o => o.Status = ApplicationObject.State.Unknown);
+        }
         if (progress.Report.OperationErrorsCount != 0)
           return;
 
@@ -466,6 +469,7 @@ namespace SpeckleRhino
           {
             var storedCollection = StoredObjects[collection.OriginalId];
             storedCollection["path"] = path; // needed by converter
+            converter.Report.Log(collection); // Log object so converter can access
             var convertedCollection = converter.ConvertToNative(storedCollection) as List<object>;
             if (convertedCollection != null && convertedCollection.Count > 0)
             {
