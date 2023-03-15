@@ -64,7 +64,7 @@ namespace ConnectorGrasshopper.Streams
         if (DA.Iteration == 0)
           Tracker.TrackNodeRun();
 
-        TaskList.Add(UpdateStream(streamWrapper, name, description, isPublic));
+        TaskList.Add(Task.Run(()=> UpdateStream(streamWrapper, name, description, isPublic), CancelToken));
       }
 
       if (!GetSolveResults(DA, out var success)) return;

@@ -53,7 +53,7 @@ namespace ConnectorGrasshopper.Streams
         if (DA.Iteration == 0)
           Tracker.TrackNodeRun();
         
-        TaskList.Add(AssignAccountToStream(idWrapper, account));
+        TaskList.Add(Task.Run(() => AssignAccountToStream(idWrapper, account), CancelToken));
       }
 
       if (!GetSolveResults(DA, out var data))

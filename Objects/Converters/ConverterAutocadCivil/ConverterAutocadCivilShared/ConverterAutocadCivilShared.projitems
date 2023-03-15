@@ -9,6 +9,7 @@
     <Import_RootNamespace>ConverterAutocadCivilShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.ASGeometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.AdvanceSteel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.DxfNames.cs" />
