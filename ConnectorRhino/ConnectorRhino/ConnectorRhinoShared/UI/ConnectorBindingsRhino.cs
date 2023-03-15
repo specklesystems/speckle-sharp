@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -250,29 +250,18 @@ namespace SpeckleRhino
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
+
       // first check if commit is the same and preview objects have already been generated
-      Commit commit = await GetCommitFromState(state, progress);
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       progress.Report = new ProgressReport();
 
       if (commit.id != SelectedReceiveCommit)
       {
         // check for converter 
         var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-        if (converter == null)
-        {
-          //TODO: Log warning (or throw)
-          progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-          return null;
-        }
         converter.SetContextDocument(Doc);
 
-        var commitObject = await GetCommit(commit, state, progress);
-        if (commitObject == null)
-        {
-          //TODO: Log warning (or throw)
-          progress.Report.LogOperationError(new Exception($"Could not retrieve commit {commit.id} from server"));
-          progress.CancellationTokenSource.Cancel();
-        }
+        var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
         SelectedReceiveCommit = commit.id;
         ClearStorage();
@@ -344,7 +333,7 @@ namespace SpeckleRhino
       Doc.Views.ActiveView.ActiveViewport.ZoomBoundingBox(PreviewConduit.bbox);
       Doc.Views.Redraw();
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+      if (progress.CancellationToken.IsCancellationRequested)
       {
         PreviewConduit.Enabled = false;
         ResetDocument();
@@ -353,23 +342,22 @@ namespace SpeckleRhino
 
       return state;
     }
-
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="progress"></param>
+    /// <exception cref="KitException">When the <see cref="KitManager.GetDefaultKit()"/> fails to successfully find/load a converter to serve <see cref="Utils.RhinoAppName"/></exception>>
+    /// <exception cref="OperationCanceledException">When cancellation is requested via <paramref name="progress"/></exception>
+    /// <returns></returns>
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        //TODO: Log warning (or throw)
-        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-        return null;
-      }
       converter.SetContextDocument(Doc);
       converter.ReceiveMode = state.ReceiveMode;
 
-      Commit commit = await GetCommitFromState(state, progress);
-      if (commit == null) return null;
-
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = commit;
 
       if (SelectedReceiveCommit != commit.id)
@@ -381,18 +369,18 @@ namespace SpeckleRhino
       progress.Report = new ProgressReport();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
-
-      // get commit layer name
-      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
-
+      
       Base commitObject = null;
       if (Preview.Count == 0)
-        commitObject = await GetCommit(commit, state, progress);
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      RhinoApp.InvokeOnUiThread((Action)delegate
+      {
+        commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
+        await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.RhinoAppName);
+      }
+      
+      // get commit layer name
+      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
+      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
+      RhinoApp.InvokeOnUiThread((Action)(() =>
       {
         RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
 
@@ -416,6 +404,7 @@ namespace SpeckleRhino
                   logItem: $"Couldn't retrieve stored object from bindings");
                 continue;
               }
+
               isPreviewIgnore = IsPreviewIgnore(storedObj);
               if (!isPreviewIgnore)
               {
@@ -433,17 +422,20 @@ namespace SpeckleRhino
 
             if (!isPreviewIgnore && (previewObj.Converted == null || previewObj.Converted.Count == 0))
             {
-              var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
-              if (convertedFallback != null && convertedFallback.Count() > 0)
+              var convertedFallback =
+                previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0).ToList();
+              if (convertedFallback.Any())
                 previewObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
               else
-                previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
+                previewObj.Update(status: ApplicationObject.State.Failed,
+                  logItem: $"Couldn't convert object or any fallback values");
             }
 
             progress.Report.Log(previewObj);
-            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            if (progress.CancellationToken.IsCancellationRequested)
               return;
           }
+
           progress.Report.Merge(converter.Report);
         }
         else
@@ -537,14 +529,14 @@ namespace SpeckleRhino
           {
             foreach (var fallback in previewObj.Fallback)
               BakeObject(fallback, converter, layer, previewObj);
-            previewObj.Status = previewObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == previewObj.Fallback.Count ?
+            previewObj.Status = previewObj.Fallback.Count(o => o.Status == ApplicationObject.State.Failed) == previewObj.Fallback.Count ?
               ApplicationObject.State.Failed : isUpdate ?
               ApplicationObject.State.Updated : ApplicationObject.State.Created;
           }
 
           progress.Report.Log(previewObj);
 
-          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          if (progress.CancellationToken.IsCancellationRequested)
             return;
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
@@ -554,7 +546,7 @@ namespace SpeckleRhino
         // undo notes edit
         var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
         Doc.Notes = segments[0];
-      });
+      }));
 
       Doc.Views.Redraw();
       Doc.EndUndoRecord(undoRecord);
@@ -585,49 +577,8 @@ namespace SpeckleRhino
       return match;
     }
 
-    // gets the state commit
-    private async Task<Commit> GetCommitFromState(StreamState state, ProgressViewModel progress)
-    {
-      Commit commit = null;
-      if (state.CommitId == "latest") //if "latest", always make sure we get the latest commit
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        commit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        var res = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-        commit = res;
-      }
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-      return commit;
-    }
-    private async Task<Base> GetCommit(Commit commit, StreamState state, ProgressViewModel progress)
-    {
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-      var commitObject = await Operations.Receive(
-        commit.referencedObject,
-        progress.CancellationTokenSource.Token,
-        transport,
-        onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (s, e) =>
-        {
-          //TODO: Log?
-          progress.Report.LogOperationError(e);
-          progress.CancellationTokenSource.Cancel();
-        },
-        onTotalChildrenCountKnown: (c) => progress.Max = c,
-        disposeTransports: true
-        );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      return commitObject;
-    }
-
+    
     /// <summary>
     /// Traverses the object graph, returning objects to be converted.
     /// </summary>
@@ -904,12 +855,7 @@ namespace SpeckleRhino
       // report and converter
       progress.Report = new ProgressReport();
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        //TODO: Log warning (or throw)
-        progress.Report.LogOperationError(new Exception("Could not load converter"));
-        return;
-      }
+
       converter.SetContextDocument(Doc);
 
       var filterObjs = GetObjectsFromFilter(state.Filter);
@@ -953,11 +899,8 @@ namespace SpeckleRhino
       }
 
       if (successful == 0)
-      {
-        //TODO: Log warning (or throw)
-        progress.Report.LogOperationError(new Exception("No valid objects selected, nothing will be sent!"));
-        return;
-      }
+        throw new InvalidOperationException("No valid objects selected, nothing will be sent!");
+
 
       // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
       Doc.Objects.UnselectAll(false);
@@ -967,14 +910,7 @@ namespace SpeckleRhino
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        //TODO: Log warning (or throw)
-        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-        return null;
-      }
       converter.SetContextDocument(Doc);
 
       var streamId = state.StreamId;
@@ -987,8 +923,8 @@ namespace SpeckleRhino
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
-        return null;
+        throw new InvalidOperationException(
+          "Zero objects selected: Please select some objects, or check that your filter can actually select something.");
       }
 
       progress.Report = new ProgressReport();
@@ -1005,8 +941,7 @@ namespace SpeckleRhino
       // convert all commit objs
       foreach (var selectedId in state.SelectedObjectIds)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return null;
+        progress.CancellationToken.ThrowIfCancellationRequested();
 
         Base converted = null;
         string applicationId = null;
@@ -1167,12 +1102,10 @@ namespace SpeckleRhino
 
       if (objCount == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return null;
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       progress.Max = objCount;
 
@@ -1180,50 +1113,28 @@ namespace SpeckleRhino
 
       var objectId = await Operations.Send(
         @object: commitObject,
-        cancellationToken: progress.CancellationTokenSource.Token,
+        cancellationToken: progress.CancellationToken,
         transports: transports,
-        onProgressAction: dict =>
-        {
-          progress.Update(dict);
-        },
-        onErrorAction: (s, e) =>
-        {
-          progress.Report.LogOperationError(e);
-          progress.CancellationTokenSource.Cancel();
-        },
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
         objectId = objectId,
         branchName = state.BranchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Sent {objCount} elements from Rhino.",
+        message = state.CommitMessage ?? $"Sent {objCount} elements from Rhino.",
         sourceApplication = Utils.RhinoAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-        return commitId;
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
-      }
-      return null;
-
-      //return state;
+      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      return commitId;
     }
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)

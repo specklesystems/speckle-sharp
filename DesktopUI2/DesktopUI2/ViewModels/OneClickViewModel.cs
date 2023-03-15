@@ -180,7 +180,7 @@ namespace DesktopUI2.ViewModels
 
         Progress.IsProgressing = false;
 
-        if (!Progress.CancellationTokenSource.IsCancellationRequested)
+        if (!Progress.CancellationToken.IsCancellationRequested)
         {
           Analytics.TrackEvent(AccountManager.GetDefaultAccount(), Analytics.Events.Send, new Dictionary<string, object> { { "method", "OneClick" } });
           _fileStream.LastUsed = DateTime.Now.ToString();
