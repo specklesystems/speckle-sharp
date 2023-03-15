@@ -1,4 +1,4 @@
-﻿# nullable enable
+# nullable enable
 
 using System;
 using System.Collections.Concurrent;
@@ -35,7 +35,7 @@ namespace Speckle.Core.Api
     /// <param name="onErrorAction">Action invoked on internal errors.</param>
     /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
-    public static Task<Base> Receive(
+    public static Task<Base?> Receive(
       string objectId,
       ITransport? remoteTransport = null,
       ITransport? localTransport = null,
@@ -70,7 +70,7 @@ namespace Speckle.Core.Api
     /// <param name="onErrorAction">Action invoked on internal errors.</param>
     /// <param name="onTotalChildrenCountKnown">Action invoked once the total count of objects is known.</param>
     /// <returns></returns>
-    public static async Task<Base> Receive(
+    public static async Task<Base?> Receive(
       string objectId,
       CancellationToken cancellationToken,
       ITransport? remoteTransport = null,
@@ -114,14 +114,14 @@ namespace Speckle.Core.Api
 
         if (serializerVersion == SerializerVersion.V1)
         {
-          serializer.ReadTransport = localTransport;
+          serializer!.ReadTransport = localTransport;
           serializer.OnProgressAction = internalProgressAction;
           serializer.OnErrorAction = onErrorAction;
           serializer.CancellationToken = cancellationToken;
         }
         else
         {
-          serializerV2.ReadTransport = localTransport;
+          serializerV2!.ReadTransport = localTransport;
           serializerV2.OnProgressAction = internalProgressAction;
           serializerV2.OnErrorAction = onErrorAction;
           serializerV2.CancellationToken = cancellationToken;
@@ -139,30 +139,11 @@ namespace Speckle.Core.Api
         {
           // Shoot out the total children count
           var partial = JsonConvert.DeserializeObject<Placeholder>(objString);
-          if (partial?.__closure != null)
+          if (partial == null) throw new SpeckleDeserializeException($"Failed to deserialize {nameof(objString)} into {nameof(Placeholder)}");
+          if (partial.__closure != null)
             onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-          Base localRes;
-          if (serializerVersion == SerializerVersion.V1)
-            localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
-          else
-          {
-            try
-            {
-              localRes = serializerV2.Deserialize(objString);
-            }
-            catch (Exception ex)
-            {
-              Log.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
-              if (serializerV2.OnErrorAction == null)
-                throw;
-              serializerV2.OnErrorAction.Invoke(
-                $"A deserialization error has occurred: {ex.Message}",
-                new SpeckleException($"A deserialization error has occurred: {ex.Message}", ex)
-              );
-              localRes = null;
-            }
-          }
+          Base? localRes = DeserializeStringToBase(serializerVersion, objString, settings, serializerV2);
 
           if (
             (disposeTransports || !hasUserProvidedLocalTransport)
@@ -177,12 +158,12 @@ namespace Speckle.Core.Api
             dispRemote.Dispose();
 
           timer.Stop();
-          Log.ForContext("deserializerElapsed", serializerV2.Elapsed)
+          Log.ForContext("deserializerElapsed", serializerV2?.Elapsed)
             .ForContext(
               "transportElapsedBreakdown",
               new ITransport?[] { localTransport, remoteTransport }
                 .Where(t => t != null)
-                .ToDictionary(t => t.TransportName, t => t.Elapsed)
+                .ToDictionary(t => t!.TransportName, t => t!.Elapsed)
             )
             .Information(
               "Finished receiving {objectId} from {source} in {elapsed} seconds",
@@ -227,28 +208,7 @@ namespace Speckle.Core.Api
 
         // Proceed to deserialise the object, now safely knowing that all its children are present in the local (fast) transport.
 
-        Base res;
-        if (serializerVersion == SerializerVersion.V1)
-          res = JsonConvert.DeserializeObject<Base>(objString, settings);
-        else
-        {
-          try
-          {
-            res = serializerV2.Deserialize(objString);
-          }
-          catch (Exception ex)
-          {
-            Log.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
-            if (serializerV2.OnErrorAction == null)
-              throw;
-            serializerV2.OnErrorAction.Invoke(
-              $"A deserialization error has occurred: {ex.Message}",
-              ex
-            );
-            res = null;
-          }
-        }
-
+        Base? res = DeserializeStringToBase(serializerVersion, objString, settings, serializerV2);
         if (
           (disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dl
         )
@@ -277,11 +237,52 @@ namespace Speckle.Core.Api
         // Note: if properly implemented, there is no hard distinction between what is a local or remote transport; it's still just a transport. So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a Server/S3 transport as a local transport.
         // This is not reccommended, but shows what you can do. Another tidbit: the local transport does not need to be disk-bound; it can easily be an in memory transport. In memory transports are the fastest ones, but they're of limited use for more
       }
+      
+      
     }
 
+    private static Base? DeserializeStringToBase(SerializerVersion serializerVersion, string objString, JsonSerializerSettings? settings,
+      BaseObjectDeserializerV2? serializerV2)
+    {
+      Base? localRes;
+      if (serializerVersion == SerializerVersion.V1)
+        localRes = JsonConvert.DeserializeObject<Base>(objString, settings);
+      else
+      {
+        try
+        {
+          localRes = serializerV2!.Deserialize(objString);
+        }
+        catch(OperationCanceledException e)
+        {
+          throw;
+        }
+        catch (Exception ex)
+        {
+          Log.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
+          if (serializerV2.OnErrorAction == null)
+            throw;
+          serializerV2.OnErrorAction.Invoke(
+            $"A deserialization error has occurred: {ex.Message}",
+            new SpeckleDeserializeException($"A deserialization error has occurred", ex)
+          );
+          localRes = null;
+        }
+      }
+
+      return localRes;
+    }
+    
     internal class Placeholder
     {
-      public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
+      public Dictionary<string, int>? __closure { get; set; } = new Dictionary<string, int>();
+    }
+
+    public class SpeckleDeserializeException : SpeckleException
+    {
+      public SpeckleDeserializeException() { }
+
+      public SpeckleDeserializeException(string message, Exception? inner = null) : base(message, inner) { }
     }
   }
 }

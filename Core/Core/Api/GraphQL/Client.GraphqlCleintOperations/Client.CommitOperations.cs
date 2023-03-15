@@ -195,9 +195,17 @@ namespace Speckle.Core.Api
       return (bool)res["commitDelete"];
     }
 
+    /// <summary>
+    /// Sends a commitReceived mutation, affirming a commit has been received.
+    /// </summary>
+    /// <remarks>Used for read receipts</remarks>
+    /// <param name="commitReceivedInput"></param>
+    /// <returns></returns>
     public Task<bool> CommitReceived(CommitReceivedInput commitReceivedInput) =>
       CommitReceived(CancellationToken.None, commitReceivedInput);
 
+    /// <inheritdoc cref="CommitReceived(CommitReceivedInput)"/>
+    /// <param name="cancellationToken"></param>
     public async Task<bool> CommitReceived(
       CancellationToken cancellationToken,
       CommitReceivedInput commitReceivedInput

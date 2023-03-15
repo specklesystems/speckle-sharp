@@ -243,6 +243,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAdvanceSteel2023",
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAdvanceSteel2023", "Objects\Converters\ConverterAutocadCivil\ConverterAdvanceSteel2023\ConverterAdvanceSteel2023.csproj", "{F1311789-37DC-47FD-ACEC-75B9B97EDFED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterAutocad2023", "Objects\Converters\ConverterAutocadCivil\ConverterAutocad2023\ConverterAutocad2023.csproj", "{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -1519,6 +1521,22 @@ Global
 		{F1311789-37DC-47FD-ACEC-75B9B97EDFED}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F1311789-37DC-47FD-ACEC-75B9B97EDFED}.Release|x64.ActiveCfg = Release|Any CPU
 		{F1311789-37DC-47FD-ACEC-75B9B97EDFED}.Release|x64.Build.0 = Release|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Debug|x64.Build.0 = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release|x64.ActiveCfg = Release|Any CPU
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1641,6 +1659,7 @@ Global
 		{57BF94A8-8F73-4D1A-91D2-B10CC64178B6} = {0DA15CBF-A6C5-4EEC-BDDE-9FA403E20A17}
 		{F4AA033F-4F85-4990-AFE9-86BE00ABE973} = {890F3257-FCC2-4ED8-9180-22B3641B494C}
 		{F1311789-37DC-47FD-ACEC-75B9B97EDFED} = {BE521908-7944-46F3-98BF-B47D34509934}
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD} = {BE521908-7944-46F3-98BF-B47D34509934}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}

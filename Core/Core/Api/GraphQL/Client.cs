@@ -183,6 +183,11 @@ namespace Speckle.Core.Api
           success = true;
           return result;
         }
+        // cancellations are bubbling up with no logging
+        catch (OperationCanceledException)
+        {
+          throw;
+        }
         // we catch forbidden to rethrow, making sure its not logged.
         catch (SpeckleGraphQLForbiddenException<T>)
         {
