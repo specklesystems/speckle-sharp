@@ -10,7 +10,7 @@ namespace ConverterRevitTests
   public class OpeningFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("Opening.rvt");
-    public override string NewFile => Globals.GetTestModel("Opening_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("OpeningToNative.rvt");
 
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
       BuiltInCategory.OST_CeilingOpening,
