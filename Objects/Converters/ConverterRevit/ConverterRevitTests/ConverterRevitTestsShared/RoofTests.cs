@@ -10,7 +10,7 @@ namespace ConverterRevitTests
   public class RoofFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("Roof.rvt");
-    public override string NewFile => Globals.GetTestModel("Roof_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("RoofToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Roofs };
 
     public RoofFixture() : base()
