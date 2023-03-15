@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
-using Objects.Geometry;
 using Objects.Organization;
+using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
@@ -86,7 +86,7 @@ namespace Objects.Converter.Navisworks
 
       switch (element)
       {
-        case Objects.Geometry geometry:
+        case Organization.Geometry geometry:
           descendants.Add(geometry);
           break;
         case Collection collection:
@@ -301,7 +301,7 @@ namespace Objects.Converter.Navisworks
       switch (elementCategoryType)
       {
         case "Geometry":
-          return new Objects.Geometry { applicationId = applicationId };
+          return new Organization.Geometry { applicationId = applicationId };
         default:
           return new Collection { applicationId = applicationId, collectionType = elementCategoryType };
       }

@@ -33,10 +33,8 @@ namespace Objects.Organization
     /// </remarks>
     [DetachProperty]
     public List<Base> elements { get; set; } = new List<Base>();
-
-    public Collection()
-    {
-    }
+    
+    public Collection() {}
 
     /// <summary>
     /// Constructor for a basic collection.

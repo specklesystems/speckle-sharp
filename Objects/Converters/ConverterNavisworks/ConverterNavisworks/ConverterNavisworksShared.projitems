@@ -9,7 +9,6 @@
     <Import_RootNamespace>ConverterNavisworksShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Objects\ConverterNavisworks.Objects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Properties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.ToNative.cs" />
@@ -18,14 +17,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Other.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Utils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Objects\ConverterNavisworks.Collections.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\..\..\.editorconfig">
       <Link>.editorconfig</Link>
     </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Objects\" />
   </ItemGroup>
 </Project>
