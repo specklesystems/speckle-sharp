@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
@@ -8,8 +9,14 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdvanceSteelBeam : Beam, IHasVolume, IHasArea
+  public class AdvanceSteelBeam : AdvanceSteelObject, IDisplayValue<List<Mesh>>, IHasVolume, IHasArea
   {
+    public ICurve baseLine { get; set; }
+
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
+
+    public string units { get; set; }
     public string name { get; set; }
     [DetachProperty]
     public SectionProfile profile { get; set; }
