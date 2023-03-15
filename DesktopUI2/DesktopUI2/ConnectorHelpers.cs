@@ -26,9 +26,12 @@ namespace DesktopUI2
         /// </summary>
         public const string LatestCommitString = "latest";
         
+        /// <summary>
+        /// Convenience wrapper around <see cref="Operations.Receive"/> with connector-style error handling
+        /// </summary>
         /// <param name="commit">the <see cref="Commit"/> to receive</param>
-        /// <param name="state"></param>
-        /// <param name="progress"></param>
+        /// <param name="state">Current Stream card state (does not mutate)</param>
+        /// <param name="progress">View model to update with progress</param>
         /// <returns>The requested commit data</returns>
         /// <exception cref="SpeckleException">Thrown when any receive operation errors</exception>
         /// <exception cref="OperationCanceledException">Thrown when <paramref name="progress"/> requests a cancellation</exception>
@@ -69,7 +72,7 @@ namespace DesktopUI2
         }
         
         /// <param name="cancellationToken">Progress cancellation token</param>
-        /// <param name="state">Current Stream card state</param>
+        /// <param name="state">Current Stream card state (does not mutate)</param>
         /// <returns>Requested Commit</returns>
         /// <exception cref="SpeckleException">Thrown when any client errors</exception>
         /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> requests a cancellation</exception>
@@ -145,12 +148,18 @@ namespace DesktopUI2
         }
 
         //TODO: should this just be how `CommitCreate` id implemented?
+        /// <summary>
+        /// Wrapper around <see cref="Client.CommitCreate(CancellationToken, CommitCreateInput)"/> with Error handling.
+        /// </summary>
+        /// <inheritdoc cref="Client.CommitCreate(CancellationToken, CommitCreateInput)"/>
+        /// <exception cref="OperationCanceledException"></exception>
+        /// <exception cref="SpeckleException">All other exceptions</exception>
         public static async Task<string> CreateCommit(CancellationToken cancellationToken, Client client, CommitCreateInput commitInput)
         {
-            string commitId;
             try
             {
-                commitId = await client.CommitCreate(cancellationToken, commitInput);
+                var commitId = await client.CommitCreate(cancellationToken, commitInput);
+                return commitId;
             }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
@@ -159,8 +168,6 @@ namespace DesktopUI2
                     .Warning(ex, "Client operation {operationName} failed", nameof(Client.CommitCreate));
                 throw new SpeckleException("Failed to create commit object", ex);
             }
-
-            return commitId;
         }
         
         /// <exception cref="OperationCanceledException"></exception>

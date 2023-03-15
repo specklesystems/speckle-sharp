@@ -116,11 +116,9 @@ namespace Speckle.Core.Api
     public Task<string> CommitCreate(CommitCreateInput commitInput) =>
       CommitCreate(CancellationToken.None, commitInput);
 
-    /// <summary>
-    /// Creates a commit on a branch.
-    /// </summary>
-    /// <param name="commitInput"></param>
-    /// <returns>The commit id.</returns>
+
+    /// <inheritdoc cref="CommitCreate(CommitCreateInput)"/>
+    /// <param name="cancellationToken"></param>
     public async Task<string> CommitCreate(
       CancellationToken cancellationToken,
       CommitCreateInput commitInput

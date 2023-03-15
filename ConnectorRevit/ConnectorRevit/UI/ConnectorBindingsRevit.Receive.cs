@@ -19,7 +19,6 @@ using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
