@@ -4,13 +4,16 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
-using DesktopUI2.ViewModels;
+
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+
+using DesktopUI2.ViewModels;
 
 namespace SpeckleRhino
 {
@@ -40,6 +43,61 @@ namespace SpeckleRhino
       string cleanStr = str.Replace("{", "").Replace("}", "");
       return cleanStr;
     }
+
+    /// <summary>
+    /// Tries to retrieve a doc object from its selected id. THis can be a RhinoObject, Layer, or ViewInfo
+    /// </summary>
+    /// <param name="doc"></param>
+    /// <param name="id"></param>
+    /// <param name="obj"></param>
+    /// <param name="descriptor">The descriptor of this object, used for reporting</param>
+    /// <returns>True if successful, false if not</returns>
+    public static bool FindObjectBySelectedId(RhinoDoc doc, string id, out object obj, out string descriptor)
+    {
+      descriptor = String.Empty;
+      obj = null;
+      try
+      {
+        Guid guid = new Guid(id); // try to get guid from object id
+
+        RhinoObject geom = doc.Objects.FindId(guid);
+        if (geom != null)
+        {
+          descriptor = Formatting.ObjectDescriptor(geom);
+          obj = geom;
+        } 
+        else 
+        { 
+          var layer = doc.Layers.FindId(guid);
+          if (layer != null)
+          {
+            descriptor = "Layer";
+            obj = layer;
+          }
+          else
+          {
+            var standardView = doc.Views.Find(guid)?.ActiveViewport;
+            if (standardView != null) 
+            {
+              descriptor = "Standard View";
+              obj = new ViewInfo(standardView); 
+            }
+          }
+        }
+      }
+      catch // this was a named view name
+      {
+        var viewIndex = doc.NamedViews.FindByName(id);
+        if (viewIndex != -1)
+        {
+          obj = doc.NamedViews[viewIndex];
+          descriptor = "Named View";
+        }
+      }
+
+      return obj == null ? false : true;
+    }
+
     #region extension methods
     /// <summary>
     /// Finds a layer from its full path
@@ -50,6 +108,25 @@ namespace SpeckleRhino
     /// <returns>Null on failure</returns>
     public static Layer GetLayer(this RhinoDoc doc, string path, bool MakeIfNull = false)
     {
+      Layer MakeLayer(string name, Layer parentLayer = null)
+      {
+        try
+        {
+          Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
+          if (parentLayer != null)
+            newLayer.ParentLayerId = parentLayer.Id;
+          int newIndex = doc.Layers.Add(newLayer);
+          if (newIndex < 0)
+            return null;
+          else
+            return doc.Layers.FindIndex(newIndex);
+        }
+        catch (Exception e)
+        {
+          return null;
+        }
+      }
+
       var cleanPath = RemoveInvalidRhinoChars(path);
       int index = doc.Layers.FindByFullPath(cleanPath, RhinoMath.UnsetIntIndex);
       Layer layer = doc.Layers.FindIndex(index);
@@ -65,7 +142,7 @@ namespace SpeckleRhino
           currentLayerPath = (i == 0) ? layerNames[i] : $"{currentLayerPath}{Layer.PathSeparator}{layerNames[i]}";
           currentLayer = doc.GetLayer(currentLayerPath);
           if (currentLayer == null)
-            currentLayer = MakeLayer(doc, layerNames[i], parent);
+            currentLayer = MakeLayer(layerNames[i], parent);
           if (currentLayer == null)
             break;
           parent = currentLayer;
@@ -102,27 +179,6 @@ namespace SpeckleRhino
         .ToList();
 
       return views;
-    }
-    #endregion
-
-    #region internal methods
-    private static Layer MakeLayer(RhinoDoc doc, string name, Layer parentLayer = null)
-    {
-      try
-      {
-        Layer newLayer = new Layer() { Color = System.Drawing.Color.AliceBlue, Name = name };
-        if (parentLayer != null)
-          newLayer.ParentLayerId = parentLayer.Id;
-        int newIndex = doc.Layers.Add(newLayer);
-        if (newIndex < 0)
-          return null;
-        else
-          return doc.Layers.FindIndex(newIndex);
-      }
-      catch (Exception e)
-      {
-        return null;
-      }
     }
     #endregion
   }
