@@ -11,7 +11,7 @@ namespace ConverterRevitTests
   public class CurveFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("Curve.rvt");
-    public override string NewFile => Globals.GetTestModel("Curve_ToNative.rvt");
+    public override string NewFile => Globals.GetTestModel("CurveToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines };
     public CurveFixture() : base()
     {
