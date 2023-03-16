@@ -1,14 +1,21 @@
-﻿using Avalonia.Metadata;
+﻿using Avalonia.Controls;
+using Avalonia.Metadata;
+using Avalonia.Styling;
+using Avalonia.VisualTree;
 using DesktopUI2.Models;
+using DesktopUI2.Views;
 using Objects.BuiltElements.Revit;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reactive;
 using System.Reflection;
@@ -50,7 +57,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
-    internal static MappingsViewModel Instance { get; private set; }
+    public static MappingsViewModel Instance { get; private set; }
 
 
 
@@ -128,14 +135,10 @@ namespace DesktopUI2.ViewModels.MappingTool
       //empty selection
       if (Count == 0)
       {
-        if (SelectedStream != null)
-          PromptMsg = "Select one or more elements.";
-        else
-          PromptMsg = "To get started, select a mapping data source.";
-
+        PromptMsg = "Select one or more elements.";
         SelectedSchema = null;
+        Schemas = new List<Schema>();
         return;
-
       }
 
 
@@ -160,7 +163,7 @@ namespace DesktopUI2.ViewModels.MappingTool
         else if (!AvailableRevitLevels.Any())
           PromptMsg = "The selected branch does not contain any Revit levels, try changing mapping data source.";
         else
-          PromptMsg = "Incompatible selection, try selecting objects of the same type.";
+          PromptMsg = "Incompatible selection, try selecting objects of the same type or changing mapping source";
 
         SelectedSchema = null;
         return;
@@ -250,9 +253,9 @@ namespace DesktopUI2.ViewModels.MappingTool
       }
       catch (Exception ex)
       {
+        Log.Error(ex, "Could not get types and levels: {exceptionMessage}", ex.Message);
         return;
       }
-
 
     }
 
@@ -262,52 +265,145 @@ namespace DesktopUI2.ViewModels.MappingTool
     /// <param name="schemas">Available schemas for the current selection</param>
     private void AddRevitInfoToSchema(List<Schema> schemas)
     {
-      var updatedSchemas = new List<Schema>();
-
-      foreach (var schema in schemas)
+      try
       {
-        switch (schema)
+        //remove duplicates
+        schemas = schemas.GroupBy(x => x.Name, (key, g) => g.First()).ToList();
+        var updatedSchemas = new List<Schema>();
+
+        foreach (var schema in schemas)
         {
-          case RevitWallViewModel o:
-            var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
-            if (!wallFamilies.Any() || !AvailableRevitLevels.Any())
-              break;
 
-            var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
-            o.Families = wallFamiliesViewModels;
-            o.Levels = AvailableRevitLevels;
-            updatedSchemas.Add(o);
+          //no need to do extra stuff
+          if (
+            schema is DirectShapeFreeformViewModel ||
+            schema is RevitTopographyViewModel ||
+            schema is RevitDefaultWallViewModel ||
+            schema is RevitDefaultBeamViewModel ||
+            schema is RevitDefaultBraceViewModel ||
+            schema is RevitDefaultColumnViewModel ||
+            schema is RevitDefaultPipeViewModel ||
+            schema is RevitDefaultDuctViewModel)
+          {
+            updatedSchemas.Add(schema);
+          }
+          //add revit info
+          else
+          {
+            switch (schema)
+            {
+              case RevitWallViewModel o:
+                var wallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+                if (!wallFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = wallFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
 
-            break;
-          case DirectShapeFreeformViewModel o:
-            updatedSchemas.Add(o);
-            break;
+              case RevitFloorViewModel o:
+                var floorFamilies = AvailableRevitTypes.Where(x => x.category == "Floors").ToList();
+                if (!floorFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var floorFamiliesViewModels = floorFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = floorFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitBeamViewModel o:
+                var beamFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
+                if (!beamFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var beamFamiliesViewModels = beamFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = beamFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitBraceViewModel o:
+                var braceFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Framing").ToList();
+                if (!braceFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var braceFamiliesViewModels = braceFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = braceFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitColumnViewModel o:
+                var columnFamilies = AvailableRevitTypes.Where(x => x.category == "Structural Columns").ToList();
+                if (!columnFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var columnFamiliesViewModels = columnFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = columnFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitPipeViewModel o:
+                var pipeFamilies = AvailableRevitTypes.Where(x => x.category == "Pipes").ToList();
+                if (!pipeFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var pipeFamiliesViewModels = pipeFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
+                o.Families = pipeFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitDuctViewModel o:
+                var ductFamilies = AvailableRevitTypes.Where(x => x.category == "Ducts").ToList();
+                if (!ductFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var ductFamiliesViewModels = ductFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList(), g.First().shape)).ToList();
+                o.Families = ductFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitFamilyInstanceViewModel o:
+                var fiFamilies = AvailableRevitTypes.Where(x => x.placementType == "OneLevelBased").ToList();
+                if (!fiFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var fiFamiliesViewModels = fiFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = fiFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+            }
+          }
+
         }
+
+
+        //var revitMetadata = new List<RevitMetadataViewModel>();
+
+        ////ADAPTIVE COMPONENT
+        //var adaptiveFamilies = revitTypes.Where(x => x.placementType == "Adaptive").ToList();
+        //if (adaptiveFamilies.Any())
+        //{
+        //  revitMetadata.Add(new RevitMetadataViewModel("Adaptive Component", new List<Type> { typeof(AdaptiveComponent) }, adaptiveFamilies));
+        //}
+
+        //revitMetadata.Add(new RevitMetadataViewModel("Curve", new List<Type> { typeof(DetailCurve), typeof(ModelCurve), typeof(RoomBoundaryLine), typeof(SpaceSeparationLine) }));
+        //revitMetadata.Add(new RevitMetadataViewModel("DirectShape", new List<Type> { typeof(DirectShape) }));
+
+        ////FAMILY INSTANCE
+        //var fiFamilies = revitTypes.Where(x => x.placementType != "Adaptive" && x.placementType != "Invalid").ToList();
+        //if (fiFamilies.Any())
+        //{
+        //  revitMetadata.Add(new RevitMetadataViewModel("Family Instance", new List<Type> { typeof(FamilyInstance) }, fiFamilies));
+        //}
+
+
+        //also triggers binding refresh
+        Schemas = updatedSchemas;
       }
-
-
-      //var revitMetadata = new List<RevitMetadataViewModel>();
-
-      ////ADAPTIVE COMPONENT
-      //var adaptiveFamilies = revitTypes.Where(x => x.placementType == "Adaptive").ToList();
-      //if (adaptiveFamilies.Any())
-      //{
-      //  revitMetadata.Add(new RevitMetadataViewModel("Adaptive Component", new List<Type> { typeof(AdaptiveComponent) }, adaptiveFamilies));
-      //}
-
-      //revitMetadata.Add(new RevitMetadataViewModel("Curve", new List<Type> { typeof(DetailCurve), typeof(ModelCurve), typeof(RoomBoundaryLine), typeof(SpaceSeparationLine) }));
-      //revitMetadata.Add(new RevitMetadataViewModel("DirectShape", new List<Type> { typeof(DirectShape) }));
-
-      ////FAMILY INSTANCE
-      //var fiFamilies = revitTypes.Where(x => x.placementType != "Adaptive" && x.placementType != "Invalid").ToList();
-      //if (fiFamilies.Any())
-      //{
-      //  revitMetadata.Add(new RevitMetadataViewModel("Family Instance", new List<Type> { typeof(FamilyInstance) }, fiFamilies));
-      //}
-
-
-      //also triggers binding refresh
-      Schemas = updatedSchemas;
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Could not add revit info schema: {exceptionMessage}", ex.Message);
+      }
 
 
     }
@@ -329,19 +425,61 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public void SetMappingsCommand()
     {
-
       Bindings.SetMappings(SelectedSchema.GetSerializedSchema(), SelectedSchema.GetSerializedViewModel());
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Set" }, { "schema", SelectedSchema.Name } });
+    }
+
+    /// <summary>
+    /// Returns the ids of the extiging mapping elements that have been checked
+    /// A bit hacky but it was complicated to set a Binding working across multiple ListBoxes
+    /// </summary>
+    /// <returns></returns>
+    private List<string> GetCheckedBoxesIds()
+    {
+      var ids = new List<string>();
+      try
+      {
+        var lBoxes = MappingsControl.Instance.GetVisualDescendants().OfType<ListBox>().Where(x => x.Classes.Contains("ExistingMapping"));
+        foreach (var lBox in lBoxes)
+        {
+          ids.AddRange(lBox.SelectedItems.Cast<Schema>().Where(x => x != null).Select(x => x.ApplicationId));
+        }
+      }
+      catch (Exception ex)
+      {
+        // fail silently
+      }
+      return ids;
     }
 
     public void ClearMappingsCommand()
     {
-      Bindings.ClearMappings();
+      Bindings.ClearMappings(GetCheckedBoxesIds());
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Clear" } });
     }
 
+    public void SelectElementsCommandCommand()
+    {
+      Bindings.SelectElements(GetCheckedBoxesIds());
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Select Elements" } });
+    }
 
+    public void OpenGuideCommand()
+    {
+      Process.Start(
+       new ProcessStartInfo($"https://speckle.guide/user/mapping-tool.html") { UseShellExecute = true }
+     );
+    }
     public void OpenStreamSelectorCommand()
     {
       StreamSelector.IsVisible = true;
+    }
+
+    public void FeedbackCommand()
+    {
+      Process.Start(
+       new ProcessStartInfo($"https://speckle.community/t/mapping-tool-for-cad-bim-workflows/4086") { UseShellExecute = true }
+     );
     }
 
   }

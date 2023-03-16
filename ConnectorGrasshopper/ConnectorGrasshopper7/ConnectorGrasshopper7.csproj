@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{109B3382-634B-408A-8A5C-4CD09CB92641}</ProjectGuid>
+    <ProjectGuid>{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
@@ -59,10 +59,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" >
+    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build">
        <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build" >
+    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build">
        <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>

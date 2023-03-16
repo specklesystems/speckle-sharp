@@ -42,8 +42,8 @@ namespace Tests
     {
       var commitPulled = Operations.Receive(objId_01).Result;
 
-      Assert.AreEqual(((List<object>)commitPulled["@items"])[0].GetType(), typeof(Point));
-      Assert.AreEqual(((List<object>)commitPulled["@items"]).Count, numObjects);
+      Assert.That(typeof(Point), Is.EqualTo(((List<object>)commitPulled["@items"])[0].GetType()));
+      Assert.That(numObjects, Is.EqualTo(((List<object>)commitPulled["@items"]).Count));
     }
 
     [Test(Description = "Pushing and Pulling a commit locally")]
@@ -63,8 +63,8 @@ namespace Tests
 
       var commitPulled = Operations.Receive(objId_01).Result;
 
-      Assert.AreEqual(((List<object>)commitPulled["@items"])[0].GetType(), typeof(Point));
-      Assert.AreEqual(((List<object>)commitPulled["@items"]).Count, numObjects);
+      Assert.That(typeof(Point), Is.EqualTo(((List<object>)commitPulled["@items"])[0].GetType()));
+      Assert.That(numObjects, Is.EqualTo(((List<object>)commitPulled["@items"]).Count));
     }
 
     [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
@@ -86,7 +86,7 @@ namespace Tests
       TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
 
       var objsPulled = await Operations.Receive(objId_01);
-      Assert.AreEqual(((List<object>)objsPulled["@items"]).Count, 30);
+      Assert.That(((List<object>)objsPulled["@items"]).Count, Is.EqualTo(30));
     }
 
     [Test(Description = "Pushing and pulling a commit locally"), Order(3)]
@@ -105,8 +105,8 @@ namespace Tests
       Assert.NotNull(objId_01);
 
       var objsPulled = await Operations.Receive(objId_01);
-      Assert.AreEqual(((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(), 1);
-      Assert.AreEqual(((List<object>)objsPulled["@list"]).Last(), "ciao");
+      Assert.That(((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(), Is.EqualTo(1));
+      Assert.That(((List<object>)objsPulled["@list"]).Last(), Is.EqualTo("ciao"));
     }
 
     [Test(Description = "Pushing and pulling a random object, with our without detachment"), Order(3)]
@@ -142,21 +142,21 @@ namespace Tests
 
       var objPulled = await Operations.Receive(objId_01);
 
-      Assert.AreEqual(objPulled.GetType(), typeof(Base));
+      Assert.That(typeof(Base), Is.EqualTo(objPulled.GetType()));
 
       // Note: even if the layers were originally declared as lists of "Base" objects, on deserialisation we cannot know that,
       // as it's a dynamic property. Dynamic properties, if their content value is ambigous, will default to a common-sense standard. 
       // This specifically manifests in the case of lists and dictionaries: List<AnySpecificType> will become List<object>, and
       // Dictionary<string, MyType> will deserialize to Dictionary<string,object>. 
       var layerA = ((dynamic)objPulled)["LayerA"] as List<object>;
-      Assert.AreEqual(layerA.Count, 30);
+      Assert.That(layerA.Count, Is.EqualTo(30));
 
       var layerC = ((dynamic)objPulled)["@LayerC"] as List<object>;
-      Assert.AreEqual(layerC.Count, 30);
-      Assert.AreEqual(layerC[0].GetType(), typeof(Point));
+      Assert.That(layerC.Count, Is.EqualTo(30));
+      Assert.That(typeof(Point), Is.EqualTo(layerC[0].GetType()));
 
       var layerD = ((dynamic)objPulled)["@LayerD"] as List<object>;
-      Assert.AreEqual(2, layerD.Count);
+      Assert.That(layerD.Count, Is.EqualTo(2));
     }
 
     [Test(Description = "Should show progress!"), Order(4)]
@@ -201,7 +201,7 @@ namespace Tests
 
       var myLocalTransport = new SQLiteTransport();
       var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true);
-      
+
       // Send
       try
       {

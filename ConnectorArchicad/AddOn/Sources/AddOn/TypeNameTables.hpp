@@ -17,5 +17,6 @@ extern const GS::HashTable<API_AssemblySegmentLengthTypeID, GS::UniString> segme
 extern const GS::HashTable<API_AssemblySegmentCutTypeID, GS::UniString> assemblySegmentCutTypeNames;
 extern const GS::HashTable<API_BHoleTypeID, GS::UniString> beamHoleTypeNames;
 extern const GS::HashTable<API_BeamShapeTypeID, GS::UniString> beamShapeTypeNames;
+extern const GS::HashTable<API_WindowDoorDirectionTypes, GS::UniString> windowDoorDirectionTypeNames;
 
 #endif

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sentry;
-using Sentry;
+using Serilog;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Serialisation;
@@ -20,7 +20,7 @@ namespace Speckle.Core.Api
     #region Pushing objects
 
     /// <summary>
-    /// Sends an object via the provided transports. Defaults to the local cache. 
+    /// Sends an object via the provided transports. Defaults to the local cache.
     /// </summary>
     /// <param name="object">The object you want to send.</param>
     /// <param name="transports">Where you want to send them.</param>
@@ -28,7 +28,15 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static Task<string> Send(Base @object, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false, SerializerVersion serializerVersion = SerializerVersion.V2)
+    public static Task<string> Send(
+      Base @object,
+      List<ITransport> transports = null,
+      bool useDefaultCache = true,
+      Action<ConcurrentDictionary<string, int>> onProgressAction = null,
+      Action<string, Exception> onErrorAction = null,
+      bool disposeTransports = false,
+      SerializerVersion serializerVersion = SerializerVersion.V2
+    )
     {
       return Send(
         @object,
@@ -43,7 +51,7 @@ namespace Speckle.Core.Api
     }
 
     /// <summary>
-    /// Sends an object via the provided transports. Defaults to the local cache. 
+    /// Sends an object via the provided transports. Defaults to the local cache.
     /// </summary>
     /// <param name="object">The object you want to send.</param>
     /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to send notice of cancellation.</param>
@@ -52,9 +60,18 @@ namespace Speckle.Core.Api
     /// <param name="onProgressAction">Action that gets triggered on every progress tick (keeps track of all transports).</param>
     /// <param name="onErrorAction">Use this to capture and handle any errors from within the transports.</param>
     /// <returns>The id (hash) of the object.</returns>
-    public static async Task<string> Send(Base @object, CancellationToken cancellationToken, List<ITransport> transports = null, bool useDefaultCache = true, Action<ConcurrentDictionary<string, int>> onProgressAction = null, Action<string, Exception> onErrorAction = null, bool disposeTransports = false, SerializerVersion serializerVersion = SerializerVersion.V2)
+    public static async Task<string> Send(
+      Base @object,
+      CancellationToken cancellationToken,
+      List<ITransport> transports = null,
+      bool useDefaultCache = true,
+      Action<ConcurrentDictionary<string, int>> onProgressAction = null,
+      Action<string, Exception> onErrorAction = null,
+      bool disposeTransports = false,
+      SerializerVersion serializerVersion = SerializerVersion.V2
+    )
     {
-      Log.AddBreadcrumb("Send");
+      Log.Information("Starting send");
 
       if (transports == null)
       {
@@ -63,7 +80,10 @@ namespace Speckle.Core.Api
 
       if (transports.Count == 0 && useDefaultCache == false)
       {
-        throw new SpeckleException($"You need to provide at least one transport: cannot send with an empty transport list and no default cache.", level : SentryLevel.Error);
+        throw new SpeckleException(
+          $"You need to provide at least one transport: cannot send with an empty transport list and no default cache.",
+          level: SentryLevel.Error
+        );
       }
 
       if (useDefaultCache)
@@ -80,7 +100,10 @@ namespace Speckle.Core.Api
         serializerV2 = new BaseObjectSerializerV2();
 
       var localProgressDict = new ConcurrentDictionary<string, int>();
-      var internalProgressAction = Operations.GetInternalProgressAction(localProgressDict, onProgressAction);
+      var internalProgressAction = Operations.GetInternalProgressAction(
+        localProgressDict,
+        onProgressAction
+      );
 
       if (serializerVersion == SerializerVersion.V1)
       {
@@ -121,24 +144,31 @@ namespace Speckle.Core.Api
         transportAwaits = serializerV2.WriteTransports.Select(t => t.WriteComplete()).ToList();
       }
 
-      if (cancellationToken.IsCancellationRequested)return null;
+      if (cancellationToken.IsCancellationRequested)
+        return null;
 
       await Task.WhenAll(transportAwaits).ConfigureAwait(false);
 
       foreach (var t in transports)
       {
         t.EndWrite();
-        if (useDefaultCache && t is SQLiteTransport lc && lc.TransportName == "LC") { lc.Dispose(); continue; }
-        if (disposeTransports && t is IDisposable disp) disp.Dispose();
+        if (useDefaultCache && t is SQLiteTransport lc && lc.TransportName == "LC")
+        {
+          lc.Dispose();
+          continue;
+        }
+        if (disposeTransports && t is IDisposable disp)
+          disp.Dispose();
       }
 
-      if (cancellationToken.IsCancellationRequested)return null;
+      if (cancellationToken.IsCancellationRequested)
+        return null;
 
       var hash = JObject.Parse(obj).GetValue("id").ToString();
+      Log.Information("Finished send, result {objectId}", hash);
       return hash;
     }
 
     #endregion
-
   }
 }

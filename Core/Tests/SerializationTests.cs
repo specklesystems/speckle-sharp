@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Globalization;
+﻿using System.Drawing;
 using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
 
 namespace Tests
 {
@@ -22,7 +18,7 @@ namespace Tests
       var result = Operations.Serialize(table);
       var test = Operations.Deserialize(result);
 
-      Assert.AreEqual(test.GetId(), table.GetId());
+      Assert.That(table.GetId(), Is.EqualTo(test.GetId()));
 
       var polyline = new Polyline();
       for (int i = 0; i < 100; i++)
@@ -33,7 +29,7 @@ namespace Tests
       var strPoly = Operations.Serialize(polyline);
       var dePoly = Operations.Deserialize(strPoly);
 
-      Assert.AreEqual(polyline.GetId(), dePoly.GetId());
+      Assert.That(dePoly.GetId(), Is.EqualTo(polyline.GetId()));
     }
 
     [Test]
@@ -49,7 +45,7 @@ namespace Tests
       var result = Operations.Serialize(dict);
       var test = Operations.DeserializeDictionary(result);
 
-      Assert.AreEqual(test.Keys, dict.Keys);
+      Assert.That(dict.Keys, Is.EqualTo(test.Keys));
     }
 
     [Test]
@@ -100,7 +96,7 @@ namespace Tests
 
       var deserialisedFeline = Operations.Deserialize(result);
 
-      Assert.AreEqual(cat.GetId(), deserialisedFeline.GetId()); // If we're getting the same hash... we're probably fine!
+      Assert.That(deserialisedFeline.GetId(), Is.EqualTo(cat.GetId())); // If we're getting the same hash... we're probably fine!
     }
 
     [Test]
@@ -111,7 +107,7 @@ namespace Tests
       var str = Operations.Serialize(superPoint);
       var sstr = Operations.Deserialize(str);
 
-      Assert.AreEqual(superPoint.speckle_type, sstr.speckle_type);
+      Assert.That(sstr.speckle_type, Is.EqualTo(superPoint.speckle_type));
     }
 
     [Test]
@@ -131,7 +127,7 @@ namespace Tests
       var dsrls = Operations.Deserialize(str);
 
       var list = dsrls["test"] as List<object>; // NOTE: on dynamically added lists, we cannot infer the inner type and we always fall back to a generic list<object>.
-      Assert.AreEqual(100, list.Count);
+      Assert.That(list.Count, Is.EqualTo(100));
     }
 
     [Test]
@@ -159,13 +155,13 @@ namespace Tests
       var stringChunkString = Operations.Serialize(stringBasedChunk);
       var doubleChunkString = Operations.Serialize(doubleBasedChunk);
 
-      var baseChunkDeserialised = (DataChunk) Operations.Deserialize(baseChunkString);
-      var stringChunkDeserialised = (DataChunk) Operations.Deserialize(stringChunkString);
-      var doubleChunkDeserialised = (DataChunk) Operations.Deserialize(doubleChunkString);
+      var baseChunkDeserialised = (DataChunk)Operations.Deserialize(baseChunkString);
+      var stringChunkDeserialised = (DataChunk)Operations.Deserialize(stringChunkString);
+      var doubleChunkDeserialised = (DataChunk)Operations.Deserialize(doubleChunkString);
 
-      Assert.AreEqual(baseBasedChunk.data.Count, baseChunkDeserialised.data.Count);
-      Assert.AreEqual(stringBasedChunk.data.Count, stringChunkDeserialised.data.Count);
-      Assert.AreEqual(doubleBasedChunk.data.Count, doubleChunkDeserialised.data.Count);
+      Assert.That(baseChunkDeserialised.data.Count, Is.EqualTo(baseBasedChunk.data.Count));
+      Assert.That(stringChunkDeserialised.data.Count, Is.EqualTo(stringBasedChunk.data.Count));
+      Assert.That(doubleChunkDeserialised.data.Count, Is.EqualTo(doubleBasedChunk.data.Count));
     }
 
     [Test]
@@ -188,14 +184,14 @@ namespace Tests
         mesh.ArrayOfDoubles[i] = i * 3.3;
         mesh.ArrayOfLegs[i] = new TableLeg { height = 2 + i };
       }
-      
+
       mesh["@(800)CustomChunk"] = customChunk;
       mesh["@()DefaultChunk"] = defaultChunk;
 
       var serialised = Operations.Serialize(mesh);
       var deserialised = Operations.Deserialize(serialised);
 
-      Assert.AreEqual(deserialised.GetId(), mesh.GetId());
+      Assert.That(mesh.GetId(), Is.EqualTo(deserialised.GetId()));
     }
 
     [Test]
@@ -212,7 +208,7 @@ namespace Tests
       // Note: nested empty lists should be preserved. 
       test["nestedList"] = new List<object>() { new List<object>() { new List<object>() } };
       test["@nestedDetachableList"] = new List<object>() { new List<object>() { new List<object>() } };
-      
+
       var serialised = Operations.Serialize(test);
       var isCorrect =
         serialised.Contains("\"@(5)emptyChunks\":[]") &&
@@ -221,7 +217,7 @@ namespace Tests
         serialised.Contains("\"nestedList\":[[[]]]") &&
         serialised.Contains("\"@nestedDetachableList\":[[[]]]");
 
-      Assert.AreEqual(isCorrect, true);
+      Assert.That(isCorrect, Is.EqualTo(true));
     }
 
 
@@ -233,14 +229,14 @@ namespace Tests
     public void DateSerialisation()
     {
       var date = new DateTime(2020, 1, 14);
-      var mockBase = new DateMock{ TestField = date};
+      var mockBase = new DateMock { TestField = date };
 
       var result = Operations.Serialize(mockBase);
       var test = (DateMock)Operations.Deserialize(result);
 
-      Assert.AreEqual(date, test.TestField);
+      Assert.That(test.TestField, Is.EqualTo(date));
     }
-    
+
     private class GUIDMock : Base
     {
       public Guid TestField { get; set; }
@@ -249,14 +245,14 @@ namespace Tests
     public void GuidSerialisation()
     {
       var guid = Guid.NewGuid();
-      var mockBase = new GUIDMock{ TestField = guid};
+      var mockBase = new GUIDMock { TestField = guid };
 
       var result = Operations.Serialize(mockBase);
       var test = (GUIDMock)Operations.Deserialize(result);
 
-      Assert.AreEqual(guid, test.TestField);
+      Assert.That(test.TestField, Is.EqualTo(guid));
     }
-    
+
     private class ColorMock : Base
     {
       public Color TestField { get; set; }
@@ -265,12 +261,12 @@ namespace Tests
     public void ColorSerialisation()
     {
       var color = Color.FromArgb(255, 4, 126, 251);
-      var mockBase = new ColorMock{ TestField = color};
+      var mockBase = new ColorMock { TestField = color };
 
       var result = Operations.Serialize(mockBase);
       var test = (ColorMock)Operations.Deserialize(result);
 
-      Assert.AreEqual(color, test.TestField);
+      Assert.That(test.TestField, Is.EqualTo(color));
     }
 
     private class StringDateTimeRegressionMock : Base
@@ -285,7 +281,7 @@ namespace Tests
       var result = Operations.Serialize(mockBase);
       var test = (StringDateTimeRegressionMock)Operations.Deserialize(result);
 
-      Assert.AreEqual(mockBase.TestField, test.TestField);
+      Assert.That(test.TestField, Is.EqualTo(mockBase.TestField));
     }
   }
 }

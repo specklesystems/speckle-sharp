@@ -1,17 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using System.IO;
-
 using MongoDB.Bson;
-using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Driver;
-
-using Speckle.Core.Logging;
-using System.Threading;
+using Serilog;
 
 namespace Speckle.Core.Transports
 {
@@ -52,7 +47,7 @@ namespace Speckle.Core.Transports
 
     public MongoDBTransport(string connectionString = "mongodb://localhost:27017", string applicationName = "Speckle", string scope = "Objects")
     {
-      Log.AddBreadcrumb("New MongoDB Transport");
+      Log.Information("Creating new MongoDB Transport");
 
       ConnectionString = connectionString;
       Client = new MongoClient(ConnectionString);

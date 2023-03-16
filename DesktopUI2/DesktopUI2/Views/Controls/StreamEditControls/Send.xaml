@@ -127,7 +127,8 @@
             assists:ShadowAssist.ShadowDepth="Depth0"
             Background="Transparent"
             Command="{Binding OpenSettingsCommand}"
-            Foreground="{DynamicResource PrimaryHueMidBrush}">
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            IsVisible="{Binding HasSettings}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
               <icons:MaterialIcon VerticalAlignment="Center" Kind="Settings" />
               <TextBlock

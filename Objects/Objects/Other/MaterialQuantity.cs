@@ -9,6 +9,7 @@ namespace Objects.Other
 {
     public class MaterialQuantity : Base
     {
+        [DetachProperty]
         public Objects.Other.Material material { get; set; }
         public double volume { get; set; }
 
@@ -18,7 +19,7 @@ namespace Objects.Other
         public double area { get; set; }
 
         /// <summary>
-        /// UnitMeasure of the quantity,e.g meters implies aquaremeters for area and cubicmeters for the volume
+        /// UnitMeasure of the quantity,e.g meters implies squaremeters for area and cubicmeters for the volume
         /// </summary>
         public string units { get; set; }
 

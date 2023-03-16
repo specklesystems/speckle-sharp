@@ -18,6 +18,7 @@ using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -26,6 +27,7 @@ using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
+using Point = Rhino.Geometry.Point;
 
 namespace SpeckleRhino
 {
@@ -45,27 +47,36 @@ namespace SpeckleRhino
 
     public override MappingSelectionInfo GetSelectionInfo()
     {
-      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-      var result = new List<Schema>();
-
-      foreach (var obj in selection)
+      try
       {
-        var schemas = GetObjectSchemas(obj);
+        var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
+        var result = new List<Schema>();
 
-        if (!result.Any())
-          result = schemas;
-        else
-          //intersect lists
-          //TODO: if some elements already have a schema and values are different
-          //we should default to an empty schema, instead of potentially restoring the one with values
-          result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+        foreach (var obj in selection)
+        {
+          var schemas = GetObjectSchemas(obj);
 
-        //incompatible selection
-        if (!result.Any())
-          return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+          if (!result.Any())
+            result = schemas;
+          else
+            //intersect lists
+            //TODO: if some elements already have a schema and values are different
+            //we should default to an empty schema, instead of potentially restoring the one with values
+            result = result.Where(x => schemas.Any(y => y.Name == x.Name)).ToList();
+
+          //incompatible selection
+          if (!result.Any())
+            return new MappingSelectionInfo(new List<Schema>(), selection.Count);
+        }
+
+        return new MappingSelectionInfo(result, selection.Count);
+
       }
-
-      return new MappingSelectionInfo(result, selection.Count);
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
+        return new MappingSelectionInfo(new List<Schema>(), 0);
+      }
     }
 
     /// <summary>
@@ -77,42 +88,93 @@ namespace SpeckleRhino
     {
       var result = new List<Schema>();
 
-      var existingSchema = GetExistingObjectSchema(obj);
-      if (existingSchema != null)
-        result.Add(existingSchema);
-
-
-      switch (obj.Geometry)
+      try
       {
-        case Mesh m:
-          if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
-            result.Add(new DirectShapeFreeformViewModel());
-          break;
 
-        case Brep b:
-          if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
-            result.Add(new DirectShapeFreeformViewModel());
-          break;
-        //case Brep b:
-        //  if (b.IsSurface) cats.Add(DirectShape); // TODO: Wall by face, totally faking it right now
-        //  else cats.Add(DirectShape);
-        //  break;
-        case Extrusion e:
-          if (e.ProfileCount > 1) break;
-          var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
-          if (!(crv.IsLinear() || crv.IsArc())) break;
-          if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
 
-          if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
-            result.Add(new RevitWallViewModel());
-          break;
+        var existingSchema = GetExistingObjectSchema(obj);
+        if (existingSchema != null)
+          result.Add(existingSchema);
 
-          //case Curve c:
-          //  if (c.IsLinear()) cats.Add(Beam);
-          //  if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-          //  if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
-          //  if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
-          //  break;
+        if (obj is InstanceObject)
+        {
+          result.Add(new RevitFamilyInstanceViewModel());
+        }
+        else
+        {
+          switch (obj.Geometry)
+          {
+            case Mesh m:
+              if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+                result.Add(new DirectShapeFreeformViewModel());
+              if (!m.IsClosed)
+                result.Add(new RevitTopographyViewModel());
+              break;
+
+            case Brep b:
+              if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
+                result.Add(new DirectShapeFreeformViewModel());
+
+              var srf = b.Surfaces.First();
+              if (b.Surfaces.Count == 1 && srf.IsPlanar())
+              {
+                if (srf.TryGetPlane(out Plane p))
+                {
+                  Vector3d normal = p.Normal;
+                  if (normal.Unitize())
+                  {
+                    if (Math.Abs(normal.Z) == 1)
+                    {
+                      result.Add(new RevitFloorViewModel());
+                    }
+                  }
+                }
+              }
+              break;
+
+            case Extrusion e:
+              if (e.ProfileCount > 1) break;
+              var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
+              if (!(crv.IsLinear() || crv.IsArc())) break;
+              if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
+
+
+              //if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
+              result.Add(new RevitWallViewModel());
+              //if (!result.Any(x => typeof(RevitDefaultWallViewModel) == x.GetType()))
+              result.Add(new RevitDefaultWallViewModel());
+              break;
+
+            case Curve c:
+              if (c.IsLinear())
+              {
+                result.Add(new RevitBeamViewModel());
+                result.Add(new RevitBraceViewModel());
+                result.Add(new RevitColumnViewModel());
+                result.Add(new RevitPipeViewModel());
+                result.Add(new RevitDuctViewModel());
+
+                result.Add(new RevitDefaultBeamViewModel());
+                result.Add(new RevitDefaultBraceViewModel());
+                result.Add(new RevitDefaultColumnViewModel());
+                result.Add(new RevitDefaultPipeViewModel());
+                result.Add(new RevitDefaultDuctViewModel());
+              }
+
+              //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+              //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
+              //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
+              break;
+
+            case Point p:
+              result.Add(new RevitFamilyInstanceViewModel());
+              break;
+          }
+        }
+      }
+      catch (Exception ex)
+      {
+        Log.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
       }
 
       return result;
@@ -154,14 +216,15 @@ namespace SpeckleRhino
 
     }
 
-    public override void ClearMappings()
+    public override void ClearMappings(List<string> ids)
     {
-      var selection = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
-
-      foreach (var obj in selection)
+      foreach (var id in ids)
       {
         try
         {
+          var obj = RhinoDoc.ActiveDoc.Objects.FindId(new Guid(id));
+          if (obj == null)
+            continue;
           obj.Attributes.DeleteUserString(SpeckleMappingKey);
           obj.Attributes.DeleteUserString(SpeckleMappingViewKey);
         }
@@ -208,7 +271,9 @@ namespace SpeckleRhino
     {
       try
       {
+        RhinoDoc.ActiveDoc.Objects.UnselectAll();
         RhinoDoc.ActiveDoc.Objects.Select(ids.Select(x => Guid.Parse(x)));
+        RhinoDoc.ActiveDoc?.Views.Redraw();
       }
       catch (Exception ex)
       {

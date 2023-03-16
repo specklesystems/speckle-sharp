@@ -1,0 +1,102 @@
+<UserControl
+  x:Class="DesktopUI2.Views.Pages.LogInView"
+  xmlns="https://github.com/avaloniaui"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
+  xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+  d:DesignHeight="650"
+  d:DesignWidth="400"
+  mc:Ignorable="d">
+  <Grid RowDefinitions="auto, *">
+    <!--  HEADER  -->
+    <m:Card
+      Padding="15,10"
+      Background="{DynamicResource PrimaryHueMidBrush}"
+      CornerRadius="0">
+      <Grid ColumnDefinitions="auto,*">
+        <StackPanel
+          VerticalAlignment="Bottom"
+          Orientation="Horizontal"
+          Spacing="6">
+          <Image Height="30" Source="../../Assets/logo.png" />
+          <TextBlock
+            Classes="SpeckleFont"
+            FontSize="18"
+            FontWeight="Medium"
+            Foreground="White"
+            Text="{Binding Title}" />
+
+          <TextBlock
+            Margin="0,0,0,8"
+            VerticalAlignment="Bottom"
+            FontSize="8"
+            Foreground="White"
+            Text="{Binding Version}" />
+        </StackPanel>
+
+        <StackPanel
+          Grid.Column="1"
+          HorizontalAlignment="Right"
+          VerticalAlignment="Bottom"
+          Orientation="Horizontal"
+          Spacing="6" />
+      </Grid>
+    </m:Card>
+
+    <!--  NO ACCOUNTS / LOG IN  -->
+    <Grid Grid.Row="1" Margin="15">
+      <m:Card
+        Margin="10"
+        Padding="30"
+        VerticalAlignment="Top">
+        <StackPanel Orientation="Vertical">
+
+
+          <TextBlock TextAlignment="Center">
+            👋 Hello and welcome!&#10;&#10;Please log in to your Speckle account:
+          </TextBlock>
+          <Button
+            Margin="15,40,15,15"
+            Command="{Binding AddAccountCommand}"
+            Content="Log In or Register"
+            IsEnabled="{Binding !IsLoggingIn}"
+            ToolTip.Tip="A browser window will open asking you to log in" />
+          <StackPanel IsVisible="{Binding IsLoggingIn, FallbackValue=True}" Orientation="Vertical">
+            <TextBlock
+              Margin="15"
+              TextAlignment="Center"
+              TextWrapping="Wrap">
+              ☝ Please follow the instructions in your browser.
+            </TextBlock>
+            <ProgressBar
+              Margin="0,0,0,15"
+              Classes="Circle"
+              IsIndeterminate="True" />
+          </StackPanel>
+
+
+          <StackPanel
+            HorizontalAlignment="Center"
+            IsEnabled="{Binding !IsLoggingIn}"
+            Orientation="Horizontal">
+            <Button
+              Margin="15"
+              Classes="Flat"
+              Command="{Binding LaunchManagerCommand}"
+              Content="Launch Manager"
+              ToolTip.Tip="Manager is the recommended way to log in and install Connectors" />
+            <Button
+              Margin="15"
+              Classes="Flat"
+              Command="{Binding RefreshCommand}"
+              Content="Refresh"
+              ToolTip.Tip="Checks if you are already logged in" />
+          </StackPanel>
+        </StackPanel>
+
+      </m:Card>
+
+    </Grid>
+  </Grid>
+</UserControl>

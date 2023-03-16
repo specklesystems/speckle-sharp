@@ -2,16 +2,25 @@
 using System.Collections.Generic;
 using Objects.Structural.Materials;
 using CSiAPIv1;
+using Objects.Structural.Properties;
+using System.Linq;
 
 namespace Objects.Converter.CSI
-
 {
   public partial class ConverterCSI
   {
-    public object MaterialToNative(Objects.Structural.Materials.StructuralMaterial material)
+    public string MaterialToNative(Objects.Structural.Materials.StructuralMaterial material)
     {
+      material = material ?? new StructuralMaterial("undefined", Structural.MaterialType.Other, null, null, null);
+      int numbMaterial = 0;
+      string[] materials = new string[] { };
+      Model.PropMaterial.GetNameList(ref numbMaterial, ref materials);
+
+      if (materials.Contains(material.name))
+        return material.name;
+
       var matType = material.materialType;
-      var eMaterialType = eMatType.Steel;
+      var eMaterialType = eMatType.NoDesign;
       switch (matType)
       {
         case Structural.MaterialType.Steel:
@@ -49,11 +58,12 @@ namespace Objects.Converter.CSI
       else
       {
         Model.PropMaterial.SetMaterial(material.name, eMaterialType);
-        if(material is Structural.CSI.Materials.CSIConcrete){
-          SetConcreteMaterial((Structural.CSI.Materials.CSIConcrete)material, material.name);
+        if (material is Structural.CSI.Materials.CSIConcrete csiConcrete)
+        {
+          SetConcreteMaterial(csiConcrete, material.name);
         }
-        else if (material is Structural.CSI.Materials.CSISteel){
-          SetSteelMaterial((Structural.CSI.Materials.CSISteel)material, material.name);
+        else if (material is Structural.CSI.Materials.CSISteel csiSteel){
+          SetSteelMaterial(csiSteel, material.name);
         }
       }
       return material.name;

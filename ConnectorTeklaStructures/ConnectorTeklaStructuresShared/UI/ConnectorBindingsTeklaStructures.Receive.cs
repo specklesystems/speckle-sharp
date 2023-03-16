@@ -140,26 +140,9 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
 
       Model.CommitChanges();
-      try
-      {
-        //await state.RefreshStream();
-        WriteStateToFile();
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
-        WriteStateToFile();
-        //state.Errors.Add(e);
-        //Globals.Notify($"Receiving done, but failed to update stream from server.\n{e.Message}");
-      }
       progress.Report.Merge(converter.Report);
       return state;
     }
-
-
-
-
-
 
     /// <summary>
     /// conversion to native

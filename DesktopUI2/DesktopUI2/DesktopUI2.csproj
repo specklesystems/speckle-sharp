@@ -51,11 +51,15 @@
     <None Remove="Views\Filters\ListFilterView.xaml" />
     <None Remove="Views\Filters\ManualFilterView.xaml" />
     <None Remove="Views\Filters\PropertyFilterView.xaml" />
+    <None Remove="Views\Filters\TreeFilterView.xaml" />
     <None Remove="Views\MainUserControl.xaml" />
     <None Remove="Views\MainWindow.xaml" />
     <None Remove="Views\MappingsControl.xaml" />
     <None Remove="Views\MappingsWindow.xaml" />
+    <None Remove="Views\Mappings\Controls\RevitBasic.xaml" />
+    <None Remove="Views\Mappings\Controls\RevitMEP.xaml" />
     <None Remove="Views\Pages\HomeView.xaml" />
+    <None Remove="Views\Pages\LogInView.xaml" />
     <None Remove="Views\Pages\NotificationsView.xaml" />
     <None Remove="Views\Pages\OneClickView.xaml" />
     <None Remove="Views\Controls\StreamEditControls\Activity.xaml" />
@@ -69,6 +73,8 @@
     <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
 	  <None Remove="Views\Settings\ListBoxSettingView.xaml" />
     <None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
+    <None Remove="Views\Settings\NumericSettingView.xaml" />
+    <None Remove="Views\Settings\TextBoxSettingView.xaml" />
     <None Remove="Views\Share.xaml" />
     <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
     <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
@@ -139,6 +145,9 @@
     <AvaloniaXaml Include="Views\Filters\AllFilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Filters\TreeFilterView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Filters\ListFilterView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
@@ -157,10 +166,23 @@
     <AvaloniaXaml Include="Views\MappingsWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Mappings\Controls\RevitBasic.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Mappings\Controls\RevitMEP.xaml" />
+    <AvaloniaXaml Include="Views\Pages\LogInView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\NotificationsView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Pages\OneClickView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\NumericSettingView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </AvaloniaXaml>
+    <AvaloniaXaml Include="Views\Settings\TextBoxSettingView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </AvaloniaXaml>
     <AvaloniaXaml Include="Views\Windows\Dialogs\ChangeRoleDialog.xaml">
@@ -292,6 +314,12 @@
     </Compile>
     <Compile Update="Views\MappingsWindow.xaml.cs">
       <DependentUpon>MappingsWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Mappings\Controls\RevitBasic.xaml.cs">
+      <DependentUpon>RevitBasic.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="Views\Pages\LogInView.xaml.cs">
+      <DependentUpon>LogInView.xaml</DependentUpon>
     </Compile>
     <Compile Update="Views\Pages\NotificationsView.xaml.cs">
       <DependentUpon>NotificationsView.xaml</DependentUpon>

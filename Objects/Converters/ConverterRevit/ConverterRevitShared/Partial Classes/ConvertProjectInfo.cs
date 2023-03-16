@@ -25,12 +25,17 @@ namespace Objects.Converter.Revit
         category = revitType.Category.Name
       };
 
-      if (fs != null)
+      if (fs != null && fs.Family != null)
       {
-        speckleType.placementType = fs.Family.FamilyPlacementType.ToString();
+        speckleType.placementType = fs.Family?.FamilyPlacementType.ToString();
         speckleType.hasFamilySymbol = true;
       }
 
+      if (revitType is MEPCurveType)
+      {
+        var mepType = revitType as MEPCurveType;
+        speckleType.shape = mepType.Shape.ToString();
+      }
       GetAllRevitParamsAndIds(speckleType, revitType);
 
 

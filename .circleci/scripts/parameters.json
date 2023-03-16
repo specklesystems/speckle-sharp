@@ -5,7 +5,8 @@
   "dynamo": true,
   "csi": true,
   "autocadcivil": true,
-  "microstation": true,
+  "bentley": true,
   "archicad": true,
-  "teklastructures": true
+  "teklastructures": true,
+  "navisworks": true
 }

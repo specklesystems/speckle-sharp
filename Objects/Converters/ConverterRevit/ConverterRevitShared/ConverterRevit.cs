@@ -1,8 +1,7 @@
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,6 +67,8 @@ namespace Objects.Converter.Revit
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
+    public Transaction T { get; private set; }
+
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
@@ -90,9 +91,14 @@ namespace Objects.Converter.Revit
 
     public void SetContextDocument(object doc)
     {
-      Doc = (Document)doc;
-      Report.Log($"Using document: {Doc.PathName}");
-      Report.Log($"Using units: {ModelUnits}");
+      if (doc is Transaction t)
+        T = t;
+      else
+      {
+        Doc = (Document)doc;
+        Report.Log($"Using document: {Doc.PathName}");
+        Report.Log($"Using units: {ModelUnits}");
+      }
     }
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
@@ -119,13 +125,16 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject = FamilyInstanceToSpeckle(o, out notes);
+          returnObject = o.MEPModel?.ConnectorManager?.Connectors?.Size > 0 ? NetworkToSpeckle(o, out notes) : FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
           break;
         case DB.FabricationPart o:
           returnObject = FabricationPartToSpeckle(o, out notes);
+          break;
+        case DB.Group o:
+          returnObject = GroupToSpeckle(o);
           break;
         case DB.Level o:
           returnObject = LevelToSpeckle(o);
@@ -164,25 +173,28 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = DuctToSpeckle(o, out notes);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = DuctToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = PipeToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = PipeToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = CableTrayToSpeckle(o);
+          returnObject = NetworkToSpeckle(o, out notes); 
+          break;
+        case DB.Electrical.Conduit o:
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -235,18 +247,21 @@ namespace Objects.Converter.Revit
         case DB.Structure.BoundaryConditions o:
           returnObject = BoundaryConditionsToSpeckle(o);
           break;
-#if REVIT2023
-        case DB.Structure.AnalyticalMember o:
-          returnObject = AnalyticalStickToSpeckle(o);
+        case DB.Structure.StructuralConnectionHandler o:
+          returnObject = StructuralConnectionHandlerToSpeckle(o);
           break;
-        case DB.Structure.AnalyticalPanel o:
-          returnObject = AnalyticalSurfaceToSpeckle(o);
-          break;
-#else
+#if REVIT2020 || REVIT2021 || REVIT2022
         case DB.Structure.AnalyticalModelStick o:
           returnObject = AnalyticalStickToSpeckle(o);
           break;
         case DB.Structure.AnalyticalModelSurface o:
+          returnObject = AnalyticalSurfaceToSpeckle(o);
+          break;
+#else
+         case DB.Structure.AnalyticalMember o:
+          returnObject = AnalyticalStickToSpeckle(o);
+          break;
+        case DB.Structure.AnalyticalPanel o:
           returnObject = AnalyticalSurfaceToSpeckle(o);
           break;
 #endif
@@ -277,25 +292,6 @@ namespace Objects.Converter.Revit
         catch (Exception e)
         {
           // passing for stuff without a material (eg converting the current document to get the `Model` and `Info` objects)
-        }
-      }
-
-      //NOTE: adds the quantities of all materials to an element
-      if (returnObject != null && !(returnObject is Model))
-      {
-        try
-        {
-          var qs = MaterialQuantitiesToSpeckle(@object as DB.Element);
-          if (qs != null)
-          {
-            returnObject["materialQuantities"] = new List<Base>();
-            (returnObject["materialQuantities"] as List<Base>).AddRange(qs);
-          }
-          else returnObject["materialQuantities"] = null;
-        }
-        catch (System.Exception e)
-        {
-          notes.Add(e.Message);
         }
       }
 
@@ -353,6 +349,11 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @object)
     {
+      // Get setting for if the user is only trying to preview the geometry
+      Settings.TryGetValue("preview", out string isPreview);
+      if (bool.Parse(isPreview ?? "false") == true)
+        return PreviewGeometry(@object);
+
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
       if (bool.Parse(recieveModelMesh ?? "false") == true)
@@ -446,7 +447,8 @@ namespace Objects.Converter.Revit
         case BE.Column o:
           return ColumnToNative(o);
 
-#if REVIT2022
+#if REVIT2020  || REVIT2021
+#else
         case BE.Ceiling o:
           return CeilingToNative(o);
 #endif
@@ -481,6 +483,9 @@ namespace Objects.Converter.Revit
 
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
+
+        case BE.Network o:
+          return NetworkToNative(o);
 
         case BE.Floor o:
           return FloorToNative(o);
@@ -526,6 +531,9 @@ namespace Objects.Converter.Revit
 
         case BE.CableTray o:
           return CableTrayToNative(o);
+
+        case BE.Conduit o:
+          return ConduitToNative(o);
 
         case BE.Revit.RevitRailing o:
           return RailingToNative(o);
@@ -607,6 +615,7 @@ namespace Objects.Converter.Revit
         DB.Plumbing.FlexPipe _ => true,
         DB.Electrical.Wire _ => true,
         DB.Electrical.CableTray _ => true,
+        DB.Electrical.Conduit _ => true,
         DB.CurtainGridLine _ => true, //these should be handled by curtain walls
         DB.Architecture.BuildingPad _ => true,
         DB.Architecture.Stairs _ => true,
@@ -622,7 +631,7 @@ namespace Objects.Converter.Revit
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
         DB.FabricationPart _ => true,
-#if !REVIT2023
+#if REVIT2020 || REVIT2021 || REVIT2022
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
 #else
@@ -669,7 +678,7 @@ namespace Objects.Converter.Revit
         BE.Beam _ => true,
         BE.Brace _ => true,
         BE.Column _ => true,
-#if REVIT2022
+#if !REVIT2020 && !REVIT2021
         BE.Ceiling _ => true,
 #endif
         BERC.DetailCurve _ => true,
@@ -691,20 +700,19 @@ namespace Objects.Converter.Revit
         BE.Pipe _ => true,
         BE.Wire _ => true,
         BE.CableTray _ => true,
+        BE.Conduit _ => true,
         BE.Revit.RevitRailing _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
+        BE.Network _ => true,
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
-        STR.Geometry.Node _ => true,
-        STR.Analysis.Model _ => true,
         Other.BlockInstance _ => true,
-        _ => false
-
+        _ => false,
       };
     }
   }

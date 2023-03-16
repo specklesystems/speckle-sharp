@@ -53,7 +53,7 @@ namespace Speckle.Core.Logging
 #endif
 
 
-      Log.Initialize();
+      SpeckleLog.Initialize(hostApplication, versionedHostApplication);
 
       foreach (var account in AccountManager.GetAccounts())
         Analytics.AddConnectorToProfile(account.GetHashedEmail(), hostApplication);

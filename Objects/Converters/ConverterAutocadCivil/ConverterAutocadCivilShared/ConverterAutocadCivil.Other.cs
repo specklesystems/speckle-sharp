@@ -22,7 +22,6 @@ using Speckle.Core.Kits;
 using Autodesk.AutoCAD.Windows.Data;
 using Objects.Other;
 using Autodesk.AutoCAD.Colors;
-using System.Reflection;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -189,8 +188,10 @@ namespace Objects.Converter.AutocadCivil
     }
 
     // TODO: this needs to be improved, hatch curves not being created with HatchLoopTypes.Polyline flag
-    public AcadDB.Hatch HatchToNativeDB(Hatch hatch)
+    public ApplicationObject HatchToNativeDB(Hatch hatch)
     {
+      var appObj = new ApplicationObject(hatch.id, hatch.speckle_type) { applicationId = hatch.applicationId };
+
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
 
       // convert curves
@@ -200,37 +201,39 @@ namespace Objects.Converter.AutocadCivil
         foreach (var loop in hatch.loops)
         {
           var converted = CurveToNativeDB(loop.Curve);
-          if (converted == null)
-            continue;
-
-          var curveId = modelSpaceRecord.Append(converted);
-          if (curveId.IsValid)
+          if (converted == null || converted.Count == 0)
           {
-            HatchLoopTypes type = HatchLoopTypeToNative(loop.Type);
-            loops.Add(converted, type);
+            appObj.Log.Add($"Could not create {loop.Type} loop {loop.id}");
+            continue;
+          }
+          foreach (var convertedItem in converted)
+          {
+            var curveId = modelSpaceRecord.Append(convertedItem);
+            if (curveId.IsValid)
+            {
+              HatchLoopTypes type = HatchLoopTypeToNative(loop.Type);
+              loops.Add(convertedItem, type);
+            }
+            else
+            {
+              appObj.Log.Add($"Could not add {loop.Type} loop {loop.id} to model space");
+            }
           }
         }
       }
-      else // this is just here for backwards compatibility, before loops were introduced. Deprecate a few releases after 2.2.6
+      if (loops.Count == 0)
       {
-        foreach (var loop in hatch.curves)
-        {
-          var converted = CurveToNativeDB(loop);
-          if (converted == null)
-            continue;
-
-          var curveId = modelSpaceRecord.Append(converted);
-          if (curveId.IsValid)
-            loops.Add(converted, HatchLoopTypes.Default);
-        }
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "No loops were successfully created");
+        return appObj;
       }
-      if (loops.Count == 0) return null;
 
       // add hatch to modelspace
       var _hatch = new AcadDB.Hatch();
       modelSpaceRecord.Append(_hatch);
 
+
       _hatch.SetDatabaseDefaults();
+
       // try get hatch pattern
       var patternCategory = HatchPatterns.ValidPatternName(hatch.pattern);
       switch (patternCategory)
@@ -251,18 +254,35 @@ namespace Objects.Converter.AutocadCivil
       }
       _hatch.PatternAngle = hatch.rotation;
       _hatch.PatternScale = hatch.scale;
+
       var style = hatch["style"] as string;
       if (style != null)
         _hatch.HatchStyle = Enum.TryParse(style, out HatchStyle hatchStyle) ? hatchStyle : HatchStyle.Normal;
 
       // create loops
       foreach (var entry in loops)
-        _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
-      _hatch.EvaluateHatch(true);
-      foreach (var entry in loops) // delete created hatch curves
-        entry.Key.Erase();
+      {
+        var loopHandle = entry.Key.Handle.ToString();
+        try
+        {
+          _hatch.AppendLoop(entry.Value, new ObjectIdCollection() { entry.Key.ObjectId });
+          _hatch.EvaluateHatch(true);
+          try
+          {
+            entry.Key.Erase(); // delete created hatch loop curve
+          }
+          catch (Exception e)
+          {
+            appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not delete loop {loopHandle}: {e.Message}");
+          }
+        }
+        catch (Exception e)
+        {
+          appObj.Update(createdId: loopHandle, convertedItem: entry.Key, logItem: $"Could not append loop {loopHandle}: {e.Message}");
+        }
+      }
 
-      return _hatch;
+      return appObj;
     }
     private AcadDB.Polyline GetPolylineFromBulgeVertexCollection(BulgeVertexCollection bulges)
     {
@@ -412,7 +432,9 @@ namespace Objects.Converter.AutocadCivil
     public ObjectId BlockDefinitionToNativeDB(BlockDefinition definition)
     {
       // get modified definition name with commit info
-      var blockName = RemoveInvalidAutocadChars($"{Doc.UserData["commit"]} - {definition.name}");
+      var blockName = ReceiveMode == ReceiveMode.Create ?
+        RemoveInvalidAutocadChars($"{Doc.UserData["commit"]} - {definition.name}") :
+        RemoveInvalidAutocadChars($"{definition.name}");
 
       ObjectId blockId = ObjectId.Null;
 
@@ -536,11 +558,31 @@ namespace Objects.Converter.AutocadCivil
     {
       if (TryUseObjDisplay && obj["displayStyle"] as DisplayStyle != null) style = obj["displayStyle"] as DisplayStyle;
       if (TryUseObjDisplay && obj["renderMaterial"] as RenderMaterial != null) material = obj["renderMaterial"] as RenderMaterial;
-      var convertedGeo = ConvertToNative(obj) as Entity;
-      if (convertedGeo != null)
+
+
+      var convertedList = new List<object>();
+      var convertedGeo = ConvertToNative(obj);
+      if (convertedGeo == null)
+        return;
+
+      //Iteratively flatten any lists
+      void FlattenConvertedObject(object item)
       {
-        convertedGeo = (style != null) ? DisplayStyleToNative(style, convertedGeo) : DisplayStyleToNative(material, convertedGeo);
-        converted.Add(convertedGeo);
+        if (item is System.Collections.IList list)
+          foreach (object child in list)
+            FlattenConvertedObject(child);
+        else
+          convertedList.Add(item);
+      }
+      FlattenConvertedObject(convertedGeo);
+
+      foreach (Entity entity in convertedList)
+      {
+        if (entity != null)
+        {
+          var displayedEntity = (style != null) ? DisplayStyleToNative(style, entity) : DisplayStyleToNative(material, entity);
+          converted.Add(displayedEntity);
+        }
       }
     }
 

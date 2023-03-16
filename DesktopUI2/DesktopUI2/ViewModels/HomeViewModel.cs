@@ -4,6 +4,7 @@ using Avalonia.Data;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
@@ -14,6 +15,7 @@ using Material.Styles.Themes.Base;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Splat;
 using System;
@@ -27,6 +29,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Stream = Speckle.Core.Api.Stream;
+using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -64,12 +67,7 @@ namespace DesktopUI2.ViewModels
       private set => this.RaiseAndSetIfChanged(ref _showProgress, value);
     }
 
-    private bool _isLoggingIn;
-    public bool IsLoggingIn
-    {
-      get => _isLoggingIn;
-      private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
-    }
+
 
     private ObservableCollection<MenuItemViewModel> _menuItems = new ObservableCollection<MenuItemViewModel>();
     public ObservableCollection<MenuItemViewModel> MenuItems
@@ -202,26 +200,9 @@ namespace DesktopUI2.ViewModels
       private set
       {
         this.RaiseAndSetIfChanged(ref _accounts, value);
-        this.RaisePropertyChanged("HasOneAccount");
-        this.RaisePropertyChanged("HasMultipleAccounts");
         this.RaisePropertyChanged("HasAccounts");
         this.RaisePropertyChanged("Avatar");
       }
-    }
-
-    public Bitmap Avatar
-    {
-      get => HasAccounts ? Accounts[0].AvatarImage : null;
-    }
-
-    public bool HasOneAccount
-    {
-      get => Accounts.Count == 1;
-    }
-
-    public bool HasMultipleAccounts
-    {
-      get => Accounts.Count > 1;
     }
 
     public bool HasAccounts
@@ -230,6 +211,13 @@ namespace DesktopUI2.ViewModels
     }
 
     private List<Client> _subscribedClientsStreamAddRemove = new List<Client>();
+
+    private bool _isOffline = false;
+    public bool IsOffline
+    {
+      get => _isOffline;
+      private set => this.RaiseAndSetIfChanged(ref _isOffline, value);
+    }
 
     #endregion
 
@@ -249,11 +237,10 @@ namespace DesktopUI2.ViewModels
 
 
         streamSearchDebouncer = Utils.Debounce(SearchStreams, 500);
-        Init();
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not initialize the Home Screen", ex, true, Sentry.SentryLevel.Error);
       }
     }
 
@@ -265,7 +252,8 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        SavedStreams.Clear();
+        ClearSavedStreams();
+
         foreach (StreamState stream in streams)
         {
           SavedStreams.Add(new StreamViewModel(stream, HostScreen, RemoveSavedStreamCommand));
@@ -275,12 +263,19 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("HasSavedStreams");
 
 
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Saved Streams Load" }, { "count", streams.Count } });
+        //Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Saved Streams Load" }, { "count", streams.Count } }, isAction: false);
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        new SpeckleException("Could not Update Saved STreams", ex, true, Sentry.SentryLevel.Error);
       }
+    }
+
+    private void ClearSavedStreams()
+    {
+      //dispose subscriptions!
+      SavedStreams.ForEach(x => x.Dispose());
+      SavedStreams.Clear();
     }
 
     /// <summary>
@@ -295,7 +290,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -326,7 +321,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -383,9 +378,16 @@ namespace DesktopUI2.ViewModels
           {
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
               return;
-            Log.CaptureException(new Exception("Could not fetch streams", e), Sentry.SentryLevel.Error);
-            //NOTE: the line below crashes revit at startup! We need to investigate more
-            //Dialogs.ShowDialog($"Could not get streams", $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n" + e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+
+            Log.Error(e, "Could not fetch streams");
+            Dispatcher.UIThread.Post(() =>
+              MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+              {
+                Title = "⚠️ Could not get streams",
+                Message = $"With account {account.Account.userInfo.email} on server {account.Account.serverInfo.url}\n\n",
+                Type = Avalonia.Controls.Notifications.NotificationType.Error
+              }), DispatcherPriority.Background);
+
           }
         }
         if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -396,7 +398,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
       finally
       {
@@ -431,7 +433,8 @@ namespace DesktopUI2.ViewModels
           {
             if (e.InnerException is System.Threading.Tasks.TaskCanceledException)
               return;
-            Log.CaptureException(new Exception("Could not fetch invites", e), Sentry.SentryLevel.Error);
+
+            Log.Error(e, "Could not fetch invites");
           }
         }
 
@@ -441,20 +444,47 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
-    private void SearchStreams()
+    private async void SearchStreams()
     {
+      if (await CheckIsOffline())
+        return;
+
       GetStreams().ConfigureAwait(false);
       this.RaisePropertyChanged("StreamsText");
     }
 
-    internal async void Init()
+    private async Task<bool> CheckIsOffline()
+    {
+      if (!await Http.UserHasInternet())
+      {
+        Dispatcher.UIThread.Post(() =>
+          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          {
+            Title = "⚠️ Oh no!",
+            Message = "Could not reach the internet, are you connected?",
+            Type = Avalonia.Controls.Notifications.NotificationType.Error
+          }), DispatcherPriority.Background);
+
+        IsOffline = true;
+      }
+      else
+        IsOffline = false;
+
+      return IsOffline;
+
+    }
+
+    internal async void Refresh()
     {
       try
       {
+        if (await CheckIsOffline())
+          return;
+
         //prevent subscriptions from being registered multiple times
         _subscribedClientsStreamAddRemove.ForEach(x => x.Dispose());
         _subscribedClientsStreamAddRemove.Clear();
@@ -489,7 +519,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -608,21 +638,25 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
+    public async void AddAccountCommand()
+    {
+      await Utils.AddAccountCommand();
+    }
     public async void RemoveAccountCommand(Account account)
     {
       try
       {
         AccountManager.RemoveAccount(account.id);
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Remove" } });
-        Init();
+        MainViewModel.Instance.NavigateToDefaultScreen();
       }
       catch (Exception ex)
       {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
+        Log.Error(ex, ex.Message);
       }
     }
 
@@ -634,74 +668,7 @@ namespace DesktopUI2.ViewModels
 
     public void LaunchManagerCommand()
     {
-      try
-      {
-        string path = "";
-
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-        {
-          path = @"/Applications/SpeckleManager.app";
-        }
-
-        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-        {
-          path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
-        }
-
-        if (File.Exists(path))
-          Process.Start(path);
-
-        else
-        {
-          Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
-        }
-      }
-      catch (Exception ex)
-      {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
-      }
-    }
-    public async void AddAccountCommand()
-    {
-      try
-      {
-        IsLoggingIn = true;
-
-
-        var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
-        var result = await dialog.ShowDialog<string>();
-
-        if (result != null)
-        {
-          Uri u;
-          if (!Uri.TryCreate(result, UriKind.Absolute, out u))
-            Dialogs.ShowDialog("Error", "Invalid URL", Material.Dialog.Icons.DialogIconKind.Error);
-          else
-          {
-            try
-            {
-              Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Account Add" } });
-
-              await AccountManager.AddAccount(result);
-              await Task.Delay(1000);
-              Init();
-            }
-            catch (Exception e)
-            {
-              Log.CaptureException(e, Sentry.SentryLevel.Error);
-              Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
-            }
-          }
-        }
-
-        IsLoggingIn = false;
-      }
-      catch (Exception ex)
-      {
-        Log.CaptureException(ex, Sentry.SentryLevel.Error);
-      }
+      Utils.LaunchManager();
     }
 
     public void ClearSearchCommand()
@@ -735,10 +702,10 @@ namespace DesktopUI2.ViewModels
 
           GetStreams().ConfigureAwait(false); //update streams
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          Log.CaptureException(e, Sentry.SentryLevel.Error);
-          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          Log.Error(ex, ex.Message);
+          Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
     }
@@ -788,10 +755,10 @@ namespace DesktopUI2.ViewModels
 
           Analytics.TrackEvent(account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Add From URL" } });
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          Log.CaptureException(e, Sentry.SentryLevel.Error);
-          Dialogs.ShowDialog("Something went wrong...", e.Message, Material.Dialog.Icons.DialogIconKind.Error);
+          Log.Error(ex, ex.Message);
+          Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
       }
     }
@@ -831,8 +798,11 @@ namespace DesktopUI2.ViewModels
 
 
 
-    private void OpenStreamCommand(object streamAccountWrapper)
+    private async void OpenStreamCommand(object streamAccountWrapper)
     {
+      if (await CheckIsOffline())
+        return;
+
       if (streamAccountWrapper != null)
       {
         var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
@@ -842,8 +812,11 @@ namespace DesktopUI2.ViewModels
     }
 
 
-    private void OpenSavedStreamCommand(object streamViewModel)
+    private async void OpenSavedStreamCommand(object streamViewModel)
     {
+      if (await CheckIsOffline())
+        return;
+
       if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
       {
         try
@@ -855,7 +828,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          Log.CaptureException(ex, Sentry.SentryLevel.Error);
+          Log.Error(ex, ex.Message);
         }
       }
     }
@@ -879,16 +852,16 @@ namespace DesktopUI2.ViewModels
     {
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Refresh" } });
       ApiUtils.ClearCache();
-      Init();
+      Refresh();
     }
 
     private void OneClickModeCommand()
     {
-      MainViewModel.RouterInstance.Navigate.Execute(new OneClickViewModel(HostScreen));
-
       var config = ConfigManager.Load();
       config.OneClickMode = true;
       ConfigManager.Save(config);
+
+      MainViewModel.Instance.NavigateToDefaultScreen();
     }
 
     private void NotificationsCommand()

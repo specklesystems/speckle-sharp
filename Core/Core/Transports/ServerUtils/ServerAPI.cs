@@ -9,6 +9,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Core.Helpers;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Linq;
 
@@ -33,25 +35,28 @@ namespace Speckle.Core.Transports.ServerUtils
     public CancellationToken CancellationToken { get; set; }
     public bool CompressPayloads { get; set; } = true;
 
+    public string BlobStorageFolder { get; set; }
 
     /// <summary>
     /// Callback when sending batches. Parameters: object count, total bytes sent
     /// </summary>
     public Action<int, int> OnBatchSent { get; set; }
 
-    public ServerApi(string baseUri, string authorizationToken, int timeoutSeconds = 60)
+    public ServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
     {
       BaseUri = baseUri;
       CancellationToken = CancellationToken.None;
 
-      Client = new HttpClient(new HttpClientHandler()
+      BlobStorageFolder = blobStorageFolder;
+
+      Client = Http.GetHttpProxyClient(new HttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-      })
-      {
-        BaseAddress = new Uri(baseUri),
-        Timeout = new TimeSpan(0, 0, timeoutSeconds),
-      };
+      });
+
+      Client.BaseAddress = new Uri(baseUri);
+      Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
+
 
       if (authorizationToken.ToLowerInvariant().Contains("bearer"))
       {
@@ -96,7 +101,7 @@ namespace Speckle.Core.Transports.ServerUtils
       }
 
       List<string> crtRequest = new List<string>();
-      foreach(string id in objectIds)
+      foreach (string id in objectIds)
       {
         if (crtRequest.Count >= BATCH_SIZE_GET_OBJECTS)
         {
@@ -162,7 +167,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
       Dictionary<string, bool> ret = new Dictionary<string, bool>();
       List<string> crtBatch = new List<string>(BATCH_SIZE_HAS_OBJECTS);
-      foreach(string objectId in objectIds)
+      foreach (string objectId in objectIds)
       {
         crtBatch.Add(objectId);
         if (crtBatch.Count >= BATCH_SIZE_HAS_OBJECTS)
@@ -202,7 +207,7 @@ namespace Speckle.Core.Transports.ServerUtils
       Dictionary<string, bool> hasObjects = new Dictionary<string, bool>();
 
       JObject doc = JObject.Parse(hasObjectsJson);
-      foreach(KeyValuePair<string, JToken> prop in doc)
+      foreach (KeyValuePair<string, JToken> prop in doc)
         hasObjects[prop.Key] = (bool)prop.Value;
 
       // Console.WriteLine($"ServerApi::HasObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
@@ -222,7 +227,7 @@ namespace Speckle.Core.Transports.ServerUtils
       List<(string, string)> crtMultipart = new List<(string, string)>();
       int crtMultipartSize = 0;
 
-      foreach((string id, string json) in objects)
+      foreach ((string id, string json) in objects)
       {
         int objSize = Encoding.UTF8.GetByteCount(json);
         if (objSize > MAX_OBJECT_SIZE)
@@ -321,17 +326,105 @@ namespace Speckle.Core.Transports.ServerUtils
       }
       message.Content = multipart;
       HttpResponseMessage response = null;
-      while(ShouldRetry(response))
+      while (ShouldRetry(response))
         response = await Client.SendAsync(message, CancellationToken);
       response.EnsureSuccessStatusCode();
 
-      // // TODO: remove
-      // int totalObjCount = 0;
-      // foreach(var ttt in multipartedObjects)
-      // {
-      //   totalObjCount += ttt.Count;
-      // }
       // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
+    }
+
+    public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
+    {
+      if (CancellationToken.IsCancellationRequested) return;
+      if (blobs.Count == 0) return;
+
+      var multipartFormDataContent = new MultipartFormDataContent();
+      var streams = new List<Stream>();
+      foreach (var (id, filePath) in blobs)
+      {
+        var fileName = Path.GetFileName(filePath);
+        var stream = File.OpenRead(filePath);
+        streams.Add(stream);
+        var fsc = new StreamContent(stream);
+        var hash = id.Split(':')[1];
+
+        multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
+      }
+
+      var message = new HttpRequestMessage()
+      {
+        RequestUri = new Uri($"/api/stream/{streamId}/blob", UriKind.Relative),
+        Method = HttpMethod.Post,
+        Content = multipartFormDataContent
+      };
+
+      try
+      {
+        HttpResponseMessage response = null;
+        while (ShouldRetry(response))
+          response = await Client.SendAsync(message, CancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        foreach (var stream in streams) stream.Dispose();
+      }
+      catch (Exception ex)
+      {
+        foreach (var stream in streams) stream.Dispose();
+        throw ex;
+      }
+    }
+
+    public async Task<List<string>> HasBlobs(string streamId, List<string> blobIds)
+    {
+      if (CancellationToken.IsCancellationRequested) return new List<string>();
+      var payload = JsonConvert.SerializeObject(blobIds);
+      var uri = new Uri($"/api/stream/{streamId}/blob/diff", UriKind.Relative);
+
+      HttpResponseMessage response = null;
+      while (ShouldRetry(response))
+        response = await Client.PostAsync(uri, new StringContent(payload, Encoding.UTF8, "application/json"), CancellationToken);
+      response.EnsureSuccessStatusCode();
+
+      var responseString = await response.Content.ReadAsStringAsync();
+      var parsed = JsonConvert.DeserializeObject<List<string>>(responseString);
+      return parsed;
+    }
+
+    public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
+    {
+
+      foreach (var blobId in blobIds)
+      {
+        try
+        {
+          var blobMessage = new HttpRequestMessage()
+          {
+            RequestUri = new Uri($"api/stream/{streamId}/blob/{blobId}", UriKind.Relative),
+            Method = HttpMethod.Get,
+          };
+
+          var response = await Client.SendAsync(blobMessage, CancellationToken);
+          IEnumerable<string> cdHeaderValues;
+          response.Content.Headers.TryGetValues("Content-Disposition", out cdHeaderValues);
+
+          var cdHeader = cdHeaderValues.First();
+          var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
+
+          string fileLocation = Path.Combine(BlobStorageFolder, $"{blobId.Substring(0, Blob.LocalHashPrefixLength)}-{fileName}");
+          using (var fs = new FileStream(fileLocation, FileMode.OpenOrCreate))
+          {
+            await response.Content.CopyToAsync(fs);
+          }
+
+          response.Dispose();
+          onBlobDownloaded();
+        }
+        catch (Exception ex)
+        {
+          throw new Exception($"Failed to download blob {blobId}", ex);
+        }
+      }
+
     }
 
     private bool ShouldRetry(HttpResponseMessage serverResponse)
@@ -349,6 +442,18 @@ namespace Speckle.Core.Transports.ServerUtils
     public void Dispose()
     {
       Client.Dispose();
+    }
+
+    private class BlobUploadResult
+    {
+      public List<BlobUploadResultItem> uploadResults { get; set; }
+    }
+
+    private class BlobUploadResultItem
+    {
+      public string blobId { get; set; }
+      public string formKey { get; set; }
+      public string fileName { get; set; }
     }
   }
 

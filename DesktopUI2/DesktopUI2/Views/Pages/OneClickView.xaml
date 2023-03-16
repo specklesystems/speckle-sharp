@@ -3,17 +3,10 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:dvm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
-  xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
-  xmlns:sc="clr-namespace:DesktopUI2.Views.Pages.SharedControls"
-  xmlns:uc="clr-namespace:DesktopUI2.Views.Pages.HomeControls"
-  xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
   mc:Ignorable="d">
@@ -263,7 +256,7 @@
             HorizontalAlignment="Center"
             Classes="Subtitle1"
             Foreground="White"
-            Text="Done 🎉&#x0a;Your model has been sent!"
+            Text="{Binding SentText}"
             TextAlignment="Center"
             TextWrapping="Wrap" />
           <Button
@@ -271,9 +264,9 @@
             HorizontalAlignment="Center"
             Background="White"
             Command="{Binding ViewOnlineCommand}"
-            Content="Cancel"
             CornerRadius="25"
-            Foreground="{DynamicResource PrimaryHueMidBrush}">
+            Foreground="{DynamicResource PrimaryHueMidBrush}"
+            IsVisible="{Binding SuccessfulSend}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
 
               <icons:MaterialIcon VerticalAlignment="Center" Kind="ExternalLink" />
@@ -292,7 +285,8 @@
             Classes="Flat"
             Command="{Binding ShareCommand}"
             CornerRadius="25"
-            Foreground="White">
+            Foreground="White"
+            IsVisible="{Binding SuccessfulSend}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
 
               <icons:MaterialIcon VerticalAlignment="Center" Kind="UsersAdd" />
@@ -310,9 +304,9 @@
             HorizontalAlignment="Center"
             Classes="Flat"
             Command="{Binding CopyCommand}"
-            Content="Cancel"
             CornerRadius="25"
-            Foreground="White">
+            Foreground="White"
+            IsVisible="{Binding SuccessfulSend}">
             <Grid Margin="0" ColumnDefinitions="auto,*">
 
               <icons:MaterialIcon VerticalAlignment="Center" Kind="LinkVariant" />

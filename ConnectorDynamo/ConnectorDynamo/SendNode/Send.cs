@@ -237,7 +237,7 @@ namespace Speckle.ConnectorDynamo.SendNode
         if (_transports == null)
           throw new SpeckleException("The stream provided is invalid");
 
-        long totalCount = 0;
+
         Base @base = null;
         var converter = new BatchConverter();
         converter.OnError += (sender, args) =>
@@ -245,11 +245,10 @@ namespace Speckle.ConnectorDynamo.SendNode
           Warning(args.Error.ToFormattedString());
           Message = "Conversion errors";
         };
-        
+
         try
         {
           @base = converter.ConvertRecursivelyToSpeckle(_data);
-          totalCount = @base?.GetTotalChildrenCount() ?? 0;
         }
         catch (Exception e)
         {
@@ -257,9 +256,6 @@ namespace Speckle.ConnectorDynamo.SendNode
           Warning(e.ToFormattedString());
           throw new SpeckleException("Conversion error", e);
         }
-        
-        if (totalCount == 0)
-          throw new SpeckleException("Zero objects converted successfully. Send stopped.");
 
         Message = "Sending...";
 
@@ -285,16 +281,11 @@ namespace Speckle.ConnectorDynamo.SendNode
         {
           hasErrors = true;
           Message += e.ToFormattedString();
-          
+
           Message = Message.Contains("401") ? "You don't have enough permissions to send to this stream." : Message;
           _cancellationToken.Cancel();
           ResetNode();
         }
-
-        var plural = (totalCount == 1) ? "" : "s";
-        _commitMessage = string.IsNullOrEmpty(_commitMessage)
-          ? $"Sent {totalCount} object{plural} from Dynamo"
-          : _commitMessage;
 
         var commitIds = Functions.Functions.Send(@base, _transports, _cancellationToken.Token, _branchNames,
           _commitMessage,
@@ -376,7 +367,18 @@ namespace Speckle.ConnectorDynamo.SendNode
         //this port accepts:
         //a stream wrapper, a url, a list of stream wrappers or a list of urls
         var inputTransport = GetInputAs<object>(engine, 1);
-        var transportsDict = TryConvertInputToTransport(inputTransport);
+        var transportsDict = Utils.TryConvertInputToTransport(inputTransport);
+
+        foreach (var transport in transportsDict)
+        {
+          if (transport.Key is ServerTransport)
+          {
+            var st = transport.Key as ServerTransport;
+            _streamWrappers.Add(new StreamWrapper(st.StreamId, st.Account.userInfo.id, st.Account.serverInfo.url));
+          }
+        }
+
+
         _transports = transportsDict.Keys.ToList();
         _branchNames = transportsDict;
       }
@@ -413,43 +415,7 @@ namespace Speckle.ConnectorDynamo.SendNode
       InitializeSender();
     }
 
-    private Dictionary<ITransport, string> TryConvertInputToTransport(object o)
-    {
-      var defaultBranch = "main";
-      var transports = new Dictionary<ITransport, string>();
 
-      switch (o)
-      {
-        case StreamWrapper s:
-          var wrapperTransport = new ServerTransport(s.GetAccount().Result, s.StreamId);
-          var branch = s.BranchName ?? defaultBranch;
-          transports.Add(wrapperTransport, branch);
-          _streamWrappers.Add(s);
-          break;
-        case string s:
-          var streamWrapper = new StreamWrapper(s);
-          var transport = new ServerTransport(streamWrapper.GetAccount().Result, streamWrapper.StreamId);
-          var b = streamWrapper.BranchName ?? defaultBranch;
-          transports.Add(transport, b);
-          _streamWrappers.Add(streamWrapper);
-          break;
-        case ITransport t:
-          transports.Add(t, defaultBranch);
-          break;
-        case List<object> s:
-          transports = s
-            .Select(TryConvertInputToTransport)
-            .Aggregate(transports, (current, t) => new List<Dictionary<ITransport, string>> { current, t }
-              .SelectMany(dict => dict)
-              .ToDictionary(pair => pair.Key, pair => pair.Value));
-          break;
-        default:
-          Warning("Input was neither a transport nor a stream.");
-          break;
-      }
-
-      return transports;
-    }
 
     private void InitializeSender()
     {

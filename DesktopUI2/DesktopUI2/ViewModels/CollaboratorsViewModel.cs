@@ -1,13 +1,16 @@
 ﻿using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using DesktopUI2.Models;
+using DesktopUI2.Views;
 using DesktopUI2.Views.Controls;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Splat;
 using System;
@@ -163,12 +166,25 @@ namespace DesktopUI2.ViewModels
       this.RaisePropertyChanged(nameof(AddedUsers));
     }
 
-    private void Search()
+    private async void Search()
     {
 
       Focus();
       if (SearchQuery.Length < 3)
         return;
+
+      if (!await Http.UserHasInternet())
+      {
+        Dispatcher.UIThread.Post(() =>
+          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          {
+            Title = "⚠️ Oh no!",
+            Message = "Could not reach the internet, are you connected?",
+            Type = Avalonia.Controls.Notifications.NotificationType.Error
+          }), DispatcherPriority.Background);
+
+        return;
+      }
 
       if (SearchQuery.Contains("@"))
       {
@@ -248,6 +264,19 @@ namespace DesktopUI2.ViewModels
 
     async void SaveCommand()
     {
+
+      if (!await Http.UserHasInternet())
+      {
+        Dispatcher.UIThread.Post(() =>
+          MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+          {
+            Title = "⚠️ Oh no!",
+            Message = "Could not reach the internet, are you connected?",
+            Type = Avalonia.Controls.Notifications.NotificationType.Error
+          }), DispatcherPriority.Background);
+
+        return;
+      }
 
       foreach (var user in AddedUsers)
       {

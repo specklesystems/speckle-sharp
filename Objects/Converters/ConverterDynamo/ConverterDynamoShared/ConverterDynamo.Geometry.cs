@@ -325,6 +325,7 @@ namespace Objects.Converter.Dynamo
       var u = units ?? ModelUnits;
       using (DS.Vector xAxis = DS.Vector.ByTwoPoints(a.CenterPoint, a.StartPoint))
       using (DS.Plane basePlane = DS.Plane.ByOriginNormalXAxis(a.CenterPoint, a.Normal, xAxis))
+      using (DS.Point midPoint = a.PointAtParameter(0.5))
       {
         var arc = new Arc(
           PlaneToSpeckle(basePlane, u),
@@ -334,11 +335,15 @@ namespace Objects.Converter.Dynamo
           a.SweepAngle.ToRadians(),
           u
         );
-
+        arc.startPoint = PointToSpeckle(a.StartPoint);
+        arc.midPoint = PointToSpeckle(midPoint);
+        arc.endPoint = PointToSpeckle(a.EndPoint);
+        
         CopyProperties(arc, a);
+        
         arc.length = a.Length;
-
         arc.bbox = BoxToSpeckle(a.BoundingBox);
+        
         return arc;
       }
     }
@@ -711,8 +716,8 @@ namespace Objects.Converter.Dynamo
           }
         })
         .ToList();
-
-      var colors = Enumerable.Repeat(defaultColour.ToArgb(), vertices.Count()).ToList();
+      
+      //var colors = Enumerable.Repeat(defaultColour.ToArgb(), mesh.VertexPositions.Length).ToList();
       //double[] textureCoords;
 
       //if (SpeckleRhinoConverter.AddMeshTextureCoordinates)
@@ -721,7 +726,7 @@ namespace Objects.Converter.Dynamo
       //  return new SpeckleMesh(vertices, faces, Colors, textureCoords, properties: mesh.UserDictionary.ToSpeckle());
       //}
 
-      var speckleMesh = new Mesh(vertices, faces, colors, units: u);
+      var speckleMesh = new Mesh(vertices, faces, units: u);
 
       CopyProperties(speckleMesh, mesh);
 

@@ -1,12 +1,14 @@
-using Autodesk.Revit.DB;
+﻿using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
+using OG = Objects.Geometry;
 
 namespace Objects.Converter.Revit
 {
@@ -149,6 +151,7 @@ namespace Objects.Converter.Revit
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: revitWall.UniqueId, convertedItem: revitWall);
 
+      SetWallVoids(revitWall, speckleWall);
       appObj = SetHostedElements(speckleWall, revitWall, appObj);
       return appObj;
     }
@@ -171,6 +174,8 @@ namespace Objects.Converter.Revit
       speckleWall.topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET);
       speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
+
+      //CreateVoids(revitWall, speckleWall);
 
       if (revitWall.CurtainGrid == null)
       {
@@ -214,6 +219,7 @@ namespace Objects.Converter.Revit
         "WALL_STRUCTURAL_SIGNIFICANT"
       });
 
+      GetWallVoids(speckleWall, revitWall);
       GetHostedElements(speckleWall, revitWall, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);
       return speckleWall;
@@ -253,5 +259,83 @@ namespace Objects.Converter.Revit
     //see https://github.com/specklesystems/speckle-sharp/issues/1197
     private List<ElementId> SubelementIds = new List<ElementId>();
 
+    private void GetWallVoids(Base speckleElement, Wall wall)
+    {
+#if !REVIT2020 && !REVIT2021
+      var profile = ((Sketch)Doc.GetElement(wall.SketchId))?.Profile;
+
+      if (profile == null)
+        return;
+
+      var voidsList = new List<OG.Polycurve>();
+      for (var i = 1; i < profile.Size; i++)
+      {
+        var segments = CurveListToSpeckle(profile.get_Item(i).Cast<Curve>().ToList());
+        if (segments.segments.Count() > 2)
+          voidsList.Add(segments);
+      }
+      if (voidsList.Count > 0)
+        speckleElement["voids"] = voidsList;
+#endif
+    }
+    private void SetWallVoids(Wall wall, Base speckleElement)
+    {
+#if !REVIT2020 && !REVIT2021
+      if (speckleElement["voids"] == null || !(speckleElement["voids"] is IList voidCurves))
+        return;
+
+      if (wall.SketchId.IntegerValue == -1)
+      {
+        Doc.Regenerate();
+        wall.CreateProfileSketch();
+      }
+      else
+      {
+        // TODO: actually update the profile in order to keep the user's dimensions 
+        wall.RemoveProfileSketch();
+        wall.CreateProfileSketch();
+      }
+
+      // need to regen doc in order for the sketch to have an id
+      Doc.Regenerate();
+      var sketch = (Sketch)Doc.GetElement(wall.SketchId);
+
+      T.Commit();
+      var sketchEditScope = new SketchEditScope(Doc, "Add profile to the sketch");
+      sketchEditScope.Start(sketch.Id);
+      T.Start();
+
+      foreach (var obj in voidCurves)
+      {
+
+        if (!(obj is ICurve @void))
+          continue;
+
+        var curveArray = CurveToNative(@void, true);
+        Doc.Create.NewModelCurveArray(curveArray, sketch.SketchPlane);
+      }
+      if (T.Commit() != TransactionStatus.Committed)
+        sketchEditScope.Cancel();
+
+      try
+      {
+        sketchEditScope.Commit(new FailuresPreprocessor());
+      }
+      catch (Exception ex)
+      {
+        sketchEditScope.Cancel();
+      }
+      T.Start();
+#endif
+    }
+
+    public class FailuresPreprocessor : IFailuresPreprocessor
+    {
+      public FailureProcessingResult PreprocessFailures(
+        FailuresAccessor failuresAccessor)
+      {
+        return FailureProcessingResult.Continue;
+      }
+    }
   }
 }

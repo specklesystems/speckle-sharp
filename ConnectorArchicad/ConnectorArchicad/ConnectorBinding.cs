@@ -18,11 +18,11 @@ using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Archicad.Launcher
 {
-  public class ArchicadBinding : ConnectorBindings
+  public partial class ArchicadBinding : ConnectorBindings
   {
     public uint archicadVersion { get; }
 
-    public ArchicadBinding (uint archicadVersion)
+    public ArchicadBinding(uint archicadVersion)
     {
       this.archicadVersion = archicadVersion;
     }
@@ -35,11 +35,6 @@ namespace Archicad.Launcher
     public override List<MenuItem> GetCustomStreamMenuItems()
     {
       return new List<MenuItem>();
-    }
-
-    public override List<ISetting> GetSettings()
-    {
-      return new List<ISetting>();
     }
 
     public ProjectInfoData? GetProjectInfo()
@@ -81,13 +76,18 @@ namespace Archicad.Launcher
 
     public override List<string> GetSelectedObjects()
     {
-      var elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetSelectedElements())?.Result;
+      var elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.Selection))?.Result;
       return elementIds is null ? new List<string>() : elementIds.ToList();
     }
 
     public override List<ISelectionFilter> GetSelectionFilters()
     {
-      return new List<ISelectionFilter> { new ManualSelectionFilter() };
+      return new List<ISelectionFilter>()
+      {
+        new ManualSelectionFilter(),
+        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." }
+      };
+
     }
 
     public override List<StreamState> GetStreamsInFile()
@@ -117,7 +117,9 @@ namespace Archicad.Launcher
       if (commitObject is null)
         return null;
 
-      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, progress.CancellationTokenSource.Token);
+      ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+
+      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, conversionOptions, progress.CancellationTokenSource.Token);
 
       return state;
     }
@@ -137,9 +139,10 @@ namespace Archicad.Launcher
       if (state.Filter is null)
         return null;
 
-      state.SelectedObjectIds = state.Filter.Selection;
+      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(
+        state.Filter,
+        progress);
 
-      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.SelectedObjectIds, progress.CancellationTokenSource.Token);
       if (commitObject is not null)
       {
         return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, HostApplications.Archicad.Name);

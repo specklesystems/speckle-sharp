@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,7 +13,9 @@ using Grasshopper;
 using Grasshopper.GUI.Canvas;
 using Grasshopper.Kernel;
 using Rhino;
+using Serilog;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
@@ -33,7 +35,7 @@ namespace ConnectorGrasshopper
     public ISpeckleKit selectedKit;
     private ToolStripMenuItem speckleMenu;
     private IEnumerable<ToolStripItem> kitMenuItems;
-    
+
     public override GH_LoadingInstruction PriorityLoad()
     {
       var version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
@@ -44,19 +46,19 @@ namespace ConnectorGrasshopper
       {
         // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.
         typeof(Setup).GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
-                     .Invoke(null, new object[] { version, HostApplications.Grasshopper.Slug });
+          .Invoke(null, new object[] { version, HostApplications.Grasshopper.Slug });
       }
       catch (Exception e)
       {
         // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
         // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
         // Recommended practice is to assume that our connector would be installed alongside theirs.
-        Log.CaptureException(e);
+        Log.Error(e, e.Message);
       }
 
       Grasshopper.Instances.CanvasCreated += OnCanvasCreated;
 #if RHINO7
-      if(Grasshopper.Instances.RunningHeadless)
+      if (Grasshopper.Instances.RunningHeadless)
       {
         // If GH is running headless, we listen for document added/removed events.
         Grasshopper.Instances.DocumentServer.DocumentAdded += OnDocumentAdded;
@@ -168,7 +170,7 @@ namespace ConnectorGrasshopper
     {
       if (MenuHasBeenAdded) return;
       // Double check that the menu does not exist.
-      
+
       var menuName = "Speckle 2";
       if (mainMenu.Items.ContainsKey(menuName))
         mainMenu.Items.RemoveByKey(menuName);
@@ -200,7 +202,35 @@ namespace ConnectorGrasshopper
 
       // Manager button
       speckleMenu.DropDown.Items.Add("Open Speckle Manager", Properties.Resources.speckle_logo,
-        (o, args) => Process.Start("speckle://"));
+        (o, args) =>
+        {
+          try
+          {
+            string path = "";
+
+            Speckle.Core.Logging.Analytics.TrackEvent(Speckle.Core.Logging.Analytics.Events.DUIAction,
+              new Dictionary<string, object>() { { "name", "Launch Manager" } });
+
+#if MAC
+            path = @"/Applications/Manager for Speckle.app";
+
+#else
+            path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle",
+              "Manager", "Manager.exe");
+#endif
+
+            if (File.Exists(path) || Directory.Exists(path))
+              Process.Start(path);
+            else
+            {
+              Process.Start(new ProcessStartInfo($"https://speckle.systems/download") { UseShellExecute = true });
+            }
+          }
+          catch (Exception e)
+          {
+            Log.Error(e, e.Message);
+          }
+        });
 
 
       if (!MenuHasBeenAdded)
@@ -224,19 +254,20 @@ namespace ConnectorGrasshopper
       textbox.AutoSize = false;
       textbox.Width = Global_Proc.UiAdjust(200);
       textbox.TextChanged += (sender, text) =>
-        headlessTemplateNameDebounceDispatcher.Debounce(400, o => SpeckleGHSettings.HeadlessTemplateFilename = textbox.Text);
+        headlessTemplateNameDebounceDispatcher.Debounce(400,
+          o => SpeckleGHSettings.HeadlessTemplateFilename = textbox.Text);
       main.DropDown.Items.Add(new ToolStripSeparator());
       main.DropDown.Items.Add("Open Templates folder", null, (sender, args) =>
       {
-        var path = Path.Combine(Helpers.InstallSpeckleFolderPath, "Templates");
-        
+        var path = Path.Combine(SpecklePathProvider.InstallSpeckleFolderPath, "Templates");
+
         if (!Directory.Exists(path))
           Directory.CreateDirectory(path);
-        #if MAC
+#if MAC
           Process.Start("file://" + path);
-        #else
-          Process.Start("explorer.exe", "/select, " + path );
-        #endif
+#else
+        Process.Start("explorer.exe", "/select, " + path);
+#endif
       });
     }
 
@@ -265,7 +296,7 @@ namespace ConnectorGrasshopper
       {
         if (task.Exception != null)
         {
-          Log.CaptureException(task.Exception);
+          Log.Error(task.Exception, task.Exception.Message);
           var errItem = new ToolStripMenuItem("An error occurred while fetching Kits");
           errItem.DropDown.Items.Add(task.Exception.ToFormattedString());
 
@@ -277,6 +308,7 @@ namespace ConnectorGrasshopper
           });
           return;
         }
+
         RhinoApp.InvokeOnUiThread((Action)delegate
         {
           var current = 1;
@@ -316,10 +348,8 @@ namespace ConnectorGrasshopper
 
       tabsMenu.DropDown.Items.Add(new ToolStripSeparator());
 
-      var showDevItem = new ToolStripMenuItem("Show Developer components", null, (o, args) =>
-      {
-        SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents;
-      });
+      var showDevItem = new ToolStripMenuItem("Show Developer components", null,
+        (o, args) => { SpeckleGHSettings.ShowDevComponents = !SpeckleGHSettings.ShowDevComponents; });
       showDevItem.Checked = SpeckleGHSettings.ShowDevComponents;
       showDevItem.CheckOnClick = true;
       tabsMenu.DropDown.Items.Add(showDevItem);
@@ -329,14 +359,12 @@ namespace ConnectorGrasshopper
     private void CreateMeshingSettingsMenu()
     {
       var defaultSetting = new ToolStripMenuItem(
-        "Default")
-      { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
+        "Default") { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
 
       var currentDocSetting = new ToolStripMenuItem(
         "Current Rhino doc")
       {
-        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc,
-        CheckOnClick = true
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc, CheckOnClick = true
       };
       currentDocSetting.Click += (sender, args) =>
       {
@@ -411,18 +439,17 @@ namespace ConnectorGrasshopper
 
     public static void SetupHeadlessDoc()
     {
-
 #if RHINO7
-        // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
-        //   SpeckleGHSettings.HeadlessTemplateFilename);
-        // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
-        // _headlessDoc = File.Exists(templatePath)
-        //   ? RhinoDoc.CreateHeadless(templatePath)
-        //   : RhinoDoc.CreateHeadless(null);
-        
-        _headlessDoc = RhinoDoc.CreateHeadless(null);
-        Console.WriteLine(
-          $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
+      // var templatePath = Path.Combine(Helpers.UserApplicationDataPath, "Speckle", "Templates",
+      //   SpeckleGHSettings.HeadlessTemplateFilename);
+      // Console.WriteLine($"Setting up doc. Looking for '{templatePath}'");
+      // _headlessDoc = File.Exists(templatePath)
+      //   ? RhinoDoc.CreateHeadless(templatePath)
+      //   : RhinoDoc.CreateHeadless(null);
+
+      _headlessDoc = RhinoDoc.CreateHeadless(null);
+      Console.WriteLine(
+        $"Headless run with doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'\n    with units: {_headlessDoc.ModelUnitSystem}");
 #endif
     }
 
@@ -434,15 +461,16 @@ namespace ConnectorGrasshopper
     public static RhinoDoc GetCurrentDocument()
     {
 #if RHINO7
-        if(Instances.RunningHeadless)
-        {
-          Console.WriteLine(
-            $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
-          Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
-        }
-        return Grasshopper.Instances.RunningHeadless ? _headlessDoc : RhinoDoc.ActiveDoc;
+      if (Instances.RunningHeadless && RhinoDoc.ActiveDoc == null)
+      {
+        Console.WriteLine(
+          $"Fetching headless doc '{_headlessDoc.Name ?? "Untitled"}'\n    with template: '{_headlessDoc.TemplateFileUsed ?? "No template"}'");
+        Console.WriteLine("    Model units:" + _headlessDoc.ModelUnitSystem);
+        return _headlessDoc;
+      }
+      return RhinoDoc.ActiveDoc;
 #else
-        return RhinoDoc.ActiveDoc;
+      return RhinoDoc.ActiveDoc;
 #endif
     }
   }

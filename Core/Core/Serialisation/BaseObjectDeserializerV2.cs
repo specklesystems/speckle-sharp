@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -42,15 +39,22 @@ namespace Speckle.Core.Serialisation
 
     private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
 
+    public string BlobStorageFolder { get; set; }
+
     public BaseObjectDeserializerV2()
     {
 
     }
 
-    public Base Deserialize(String rootObjectJson)
+    /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
+    /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
+    /// <exception cref="InvalidOperationException">Thrown when <see cref="Busy"/></exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="rootObjectJson"/> deserializes to a type other than <see cref="Base"/></exception>
+    public Base Deserialize(string rootObjectJson)
     {
       if (Busy)
-        throw new Exception("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
+        throw new InvalidOperationException("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
+      
       try
       {
         Busy = true;
@@ -72,7 +76,12 @@ namespace Speckle.Core.Serialisation
         }
 
         object ret = DeserializeTransportObject(rootObjectJson);
-        return ret as Base;
+        
+        if (ret is Base b) return b;
+        
+        else throw new Exception(
+          $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
+        );
       }
       finally
       {
@@ -92,7 +101,7 @@ namespace Speckle.Core.Serialisation
 
         if (!doc1.ContainsKey("__closure"))
           return new List<(string, int)>();
-        foreach(JToken prop in doc1["__closure"])
+        foreach (JToken prop in doc1["__closure"])
         {
           string childId = ((JProperty)prop).Name;
           int childMinDepth = (int)((JProperty)prop).Value;
@@ -121,7 +130,7 @@ namespace Speckle.Core.Serialisation
     {
       // Apparently this automatically parses DateTimes in strings if it matches the format:
       // JObject doc1 = JObject.Parse(objectJson); 
-      
+
       // This is equivalent code that doesn't parse datetimes:
       JObject doc1;
       using (JsonReader reader = new JsonTextReader(new System.IO.StringReader(objectJson)))
@@ -146,7 +155,7 @@ namespace Speckle.Core.Serialisation
         return null; // Check for cancellation
       }
 
-      switch(doc.Type)
+      switch (doc.Type)
       {
         case JTokenType.Undefined:
         case JTokenType.Null:
@@ -166,7 +175,7 @@ namespace Speckle.Core.Serialisation
           JArray docAsArray = (JArray)doc;
           List<object> jsonList = new List<object>(docAsArray.Count);
           int retListCount = 0;
-          foreach(JToken value in docAsArray)
+          foreach (JToken value in docAsArray)
           {
             object convertedValue = ConvertJsonElement(value);
             retListCount += (convertedValue is DataChunk) ? ((DataChunk)convertedValue).data.Count : 1;
@@ -212,7 +221,7 @@ namespace Speckle.Core.Serialisation
               {
                 deserialized = ((Task<object>)deserialized).Result;
               }
-              catch(AggregateException aggregateEx)
+              catch (AggregateException aggregateEx)
               {
                 throw aggregateEx.InnerException;
               }
@@ -287,7 +296,12 @@ namespace Speckle.Core.Serialisation
         }
       }
 
-      foreach(MethodInfo onDeserialized in onDeserializedCallbacks)
+      if (baseObj is Blob b && BlobStorageFolder != null)
+      {
+        b.filePath = b.getLocalDestinationPath(BlobStorageFolder);
+      }
+
+      foreach (MethodInfo onDeserialized in onDeserializedCallbacks)
       {
         onDeserialized.Invoke(baseObj, new object[] { null });
       }

@@ -11,6 +11,11 @@ namespace Archicad.Converters
 {
   public static class Utils
   {
+    public static Point VertexToPoint (MeshModel.Vertex vertex)
+    {
+      return new Point { x = vertex.x, y = vertex.y , z = vertex.z };
+    }
+
     public static Point ScaleToNative(Point point, string? units = null)
     {
       units ??= point.units;
@@ -39,7 +44,7 @@ namespace Archicad.Converters
         units = Units.Meters,
         closed = archiPolyline.polylineSegments.First().startPoint == archiPolyline.polylineSegments.Last().endPoint
       };
-      foreach ( var segment in archiPolyline.polylineSegments )
+      foreach (var segment in archiPolyline.polylineSegments)
       {
         poly.segments.Add(segment.arcAngle == 0
           ? new Line(segment.startPoint, segment.endPoint)
@@ -65,9 +70,9 @@ namespace Archicad.Converters
       var archiPoly = new ElementShape.Polyline();
       var points = polyline.GetPoints();
       points.ForEach(p => ScaleToNative(p));
-      for ( var i = 0; i < points.Count - 1; i++ )
+      for (var i = 0; i < points.Count - 1; i++)
       {
-        archiPoly.polylineSegments.Add(new ElementShape.PolylineSegment(points[ i ], points[ i + 1 ]));
+        archiPoly.polylineSegments.Add(new ElementShape.PolylineSegment(points[i], points[i + 1]));
       }
 
       return archiPoly;
@@ -101,8 +106,8 @@ namespace Archicad.Converters
 
     public static ElementShape PolycurvesToElementShape(ICurve outline, List<ICurve> voids = null)
     {
-      var shape = new ElementShape( CurveToNative(outline) );
-      if ( voids?.Count > 0 )
+      var shape = new ElementShape(CurveToNative(outline));
+      if (voids?.Count > 0)
         shape.holePolylines = new List<ElementShape.Polyline>(voids.Select(CurveToNative));
 
       return shape;

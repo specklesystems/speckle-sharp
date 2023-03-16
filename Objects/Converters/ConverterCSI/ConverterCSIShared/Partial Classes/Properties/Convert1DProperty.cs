@@ -6,33 +6,21 @@ using Objects.Structural.Properties;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
-
+using Speckle.Core.Models;
+using Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public object Property1DToNative(Property1D property1D)
+    public ApplicationObject Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
     {
-      int numbMaterial = 0;
-      string[] materials = new string[] { };
-      Model.PropFrame.GetNameList(ref numbMaterial, ref materials);
-      if (property1D.material != null)
-      {
-        if (!materials.Contains(property1D.material.name))
-        {
-          MaterialToNative(property1D.material);
-        }
-      }
-      else
-      {
-        Structural.Materials.StructuralMaterial material = new Structural.Materials.StructuralMaterial("default", Structural.MaterialType.Steel, "Grade 50", "United States", "ASTM A992");
-        property1D.material = material;
-        MaterialToNative(property1D.material);
-      }
+      var materialName = MaterialToNative(property1D.material);
 
       var catalogue = new Catalogue();
-      if (property1D.profile.GetType().Equals(catalogue.GetType()))
+      int? success = null;
+
+      if (property1D.profile?.GetType().Equals(catalogue.GetType()) == true)
       {
         Catalogue sectionProfile = (Catalogue)property1D.profile;
 
@@ -43,79 +31,94 @@ namespace Objects.Converter.CSI
             break;
         }
 
+        success = Model.PropFrame.ImportProp(property1D.name, materialName, sectionProfile.catalogueName + ".xml", sectionProfile.sectionName.ToUpper());
 
-        Model.PropFrame.ImportProp(property1D.name, property1D.material.name, sectionProfile.catalogueName + ".xml", sectionProfile.sectionName.ToUpper());
-        return property1D.name;
-      }
-      var rectangle = new Rectangular();
-      if (property1D.profile.GetType().Equals(rectangle.GetType()))
-      {
-        if (property1D.material.materialType == Structural.MaterialType.Concrete)
-        {
-          Rectangular sectionProfile = (Rectangular)property1D.profile;
-          Model.PropFrame.SetRectangle(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width);
-          return property1D.name;
-        }
+        if (success == 0)
+          appObj.Update(status: ApplicationObject.State.Created, createdId: $"{property1D.name}");
         else
-        {
-          Rectangular sectionProfile = (Rectangular)property1D.profile;
-          Model.PropFrame.SetTube(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness);
-          return property1D.name;
-        }
+          appObj.Update(status: ApplicationObject.State.Failed);
 
+        return appObj;
       }
 
-      var circular = new Circular();
-      if (property1D.profile.GetType().Equals(circular.GetType()))
+      switch (property1D.profile)
       {
-        if (property1D.material.materialType == Structural.MaterialType.Concrete)
-        {
-          Circular sectionProfile = (Circular)property1D.profile;
-          Model.PropFrame.SetCircle(property1D.name, property1D.material.name, sectionProfile.radius * 2);
-          return property1D.name;
-        }
-        else
-        {
-          Circular sectionProfile = (Circular)property1D.profile;
-          Model.PropFrame.SetPipe(property1D.name, property1D.material.name, sectionProfile.radius * 2, sectionProfile.wallThickness);
-          return property1D.name;
-        }
+        case Angle o:
+          success = Model.PropFrame.SetAngle(
+            property1D.name, 
+            materialName,
+            ScaleToNative(o.depth, o.units), 
+            ScaleToNative(o.width, o.units), 
+            ScaleToNative(o.flangeThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units));
+          break;
+        case Channel o:
+          success = Model.PropFrame.SetChannel(
+            property1D.name, 
+            materialName, 
+            ScaleToNative(o.depth, o.units), 
+            ScaleToNative(o.width, o.units), 
+            ScaleToNative(o.flangeThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units));
+          break;
+        case Circular o:
+          if (o.wallThickness > 0)
+            success = Model.PropFrame.SetPipe(
+              property1D.name, 
+              materialName, 
+              ScaleToNative(o.radius * 2, o.units), 
+              ScaleToNative(o.wallThickness, o.units));
+          else
+            success = Model.PropFrame.SetCircle(
+              property1D.name, 
+              materialName, 
+              ScaleToNative(o.radius * 2, o.units));
+          break;
+        case ISection o:
+          success = Model.PropFrame.SetISection(
+            property1D.name, 
+            materialName,
+            ScaleToNative(o.depth, o.units),
+            ScaleToNative(o.width, o.units),
+            ScaleToNative(o.flangeThickness, o.units),
+            ScaleToNative(o.webThickness, o.units),
+            ScaleToNative(o.width, o.units),
+            ScaleToNative(o.flangeThickness, o.units));
+          break;
+        case Rectangular o:
+          if (o.flangeThickness > 0 && o.webThickness > 0)
+            success = Model.PropFrame.SetTube(
+              property1D.name,
+              materialName,
+              ScaleToNative(o.depth, o.units),
+              ScaleToNative(o.width, o.units),
+              ScaleToNative(o.flangeThickness, o.units),
+              ScaleToNative(o.webThickness, o.units));
+          else
+            success = Model.PropFrame.SetRectangle(
+              property1D.name, 
+              materialName,
+              ScaleToNative(o.depth, o.units), 
+              ScaleToNative(o.width, o.units));
+          break;
+        case Tee o:
+          success = Model.PropFrame.SetConcreteTee(
+            property1D.name, 
+            materialName, 
+            ScaleToNative(o.depth, o.units), 
+            ScaleToNative(o.width, o.units), 
+            ScaleToNative(o.flangeThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units), 
+            ScaleToNative(o.webThickness, o.units), 
+            false);
+          break;
       }
 
-      var T = new Tee();
-      if (property1D.profile.GetType().Equals(T.GetType()))
-      {
-        Tee sectionProfile = (Tee)property1D.profile;
-        Model.PropFrame.SetConcreteTee(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness, sectionProfile.webThickness, false);
-        return property1D.name;
-      }
-
-      var I = new ISection();
-      if (property1D.profile.GetType().Equals(I.GetType()))
-      {
-        ISection sectionProfile = (ISection)property1D.profile;
-        Model.PropFrame.SetISection(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness, sectionProfile.width, sectionProfile.flangeThickness);
-        return property1D.name;
-      }
-
-      var Channel = new Channel();
-      if (property1D.profile.GetType().Equals(Channel.GetType()))
-      {
-        Channel sectionProfile = (Channel)property1D.profile;
-        Model.PropFrame.SetChannel(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness);
-        return property1D.name;
-      }
-
-      var Angle = new Angle();
-      if (property1D.profile.GetType().Equals(Channel.GetType()))
-      {
-        Angle sectionProfile = (Angle)property1D.profile;
-        Model.PropFrame.SetAngle(property1D.name, property1D.material.name, sectionProfile.depth, sectionProfile.width, sectionProfile.flangeThickness, sectionProfile.webThickness);
-        return property1D.name;
-      }
-
-      return null;
-
+      if (success == 0)
+        appObj.Update(status: ApplicationObject.State.Created, createdId: property1D.name);
+      else
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unable to create section with profile named {property1D.name}");
+      return appObj;
     }
     public Property1D Property1DToSpeckle(string name)
     {

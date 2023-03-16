@@ -3,6 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
+using Avalonia.Threading;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
@@ -14,6 +15,7 @@ using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
 using Speckle.Core.Api;
+using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Splat;
@@ -154,6 +156,9 @@ namespace DesktopUI2.ViewModels
     {
       PreviewOn = false;
       Bindings.ResetDocument();
+      //if not a saved stream dispose client and subs
+      if (!HomeViewModel.Instance.SavedStreams.Any(x => x._guid == _guid))
+        Client.Dispose();
       MainViewModel.GoHome();
     }
 
@@ -211,8 +216,6 @@ namespace DesktopUI2.ViewModels
           AddNewBranch();
         else
           GetCommits();
-
-
       }
     }
 
@@ -259,6 +262,7 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _selectedCommit, value);
+        PreviewImage360Loaded = false;
         if (_selectedCommit != null)
         {
           if (_selectedCommit.id == "latest")
@@ -433,7 +437,7 @@ namespace DesktopUI2.ViewModels
         this.RaisePropertyChanged("HasSettings");
       }
     }
-    public bool HasSettings => true; //AvailableSettings != null && AvailableSettings.Any();
+
 
     public string _previewImageUrl = "";
     public string PreviewImageUrl
@@ -471,7 +475,16 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _previewImage360, value);
     }
 
+    private bool _previewImage360Loaded;
+    public bool PreviewImage360Loaded
+    {
+      get => _previewImage360Loaded;
+      set => this.RaiseAndSetIfChanged(ref _previewImage360Loaded, value);
+    }
+
     public bool CanOpenCommentsIn3DView { get; set; } = false;
+    public bool CanReceive { get; set; }
+    public bool HasSettings { get; set; } = true;
     private bool _isAddingBranches = false;
 
     #endregion
@@ -536,6 +549,7 @@ namespace DesktopUI2.ViewModels
         //use dependency injection to get bindings
         Bindings = Locator.Current.GetService<ConnectorBindings>();
         CanOpenCommentsIn3DView = Bindings.CanOpen3DView;
+        CanReceive = Bindings.CanReceive;
 
         if (Client == null)
         {
@@ -631,13 +645,21 @@ namespace DesktopUI2.ViewModels
     {
       try
       {
-        //receive modes
-        ReceiveModes = Bindings.GetReceiveModes();
-        //by default the first available receive mode is selected
-        SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
+        if (CanReceive)
+        {
+          //receive modes
+          ReceiveModes = Bindings.GetReceiveModes();
+
+          if (!ReceiveModes.Any())
+            throw new SpeckleException("No Receive Mode is available.");
+
+          //by default the first available receive mode is selected
+          SelectedReceiveMode = ReceiveModes.Contains(StreamState.ReceiveMode) ? StreamState.ReceiveMode : ReceiveModes[0];
+        }
 
         //get available settings from our bindings
         Settings = Bindings.GetSettings();
+        HasSettings = Settings.Any();
 
         //get available filters from our bindings
         AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
@@ -1016,6 +1038,10 @@ namespace DesktopUI2.ViewModels
 
         _previewImage360 = new Bitmap(stream);
         this.RaisePropertyChanged(nameof(PreviewImage360));
+        //the default 360 image width is 34300
+        //this is a quick hack to see if the returned image is not an error image like "you do not have access" etc
+        if (_previewImage360.Size.Width > 30000)
+          PreviewImage360Loaded = true;
 
       }
       catch (Exception ex)
@@ -1089,25 +1115,6 @@ namespace DesktopUI2.ViewModels
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Share Open" } });
     }
 
-    public void CloseNotificationCommand(bool track = true)
-    {
-      Notification = "";
-      NotificationUrl = "";
-
-      if (track)
-        Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Dismiss" } });
-    }
-
-    public void LaunchNotificationCommand()
-    {
-      Analytics.TrackEvent(StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Notification Click" } });
-
-      if (!string.IsNullOrEmpty(NotificationUrl))
-        Process.Start(new ProcessStartInfo(NotificationUrl) { UseShellExecute = true });
-
-      CloseNotificationCommand(false);
-    }
-
     public void EditSavedStreamCommand()
     {
       MainViewModel.RouterInstance.Navigate.Execute(this);
@@ -1143,9 +1150,20 @@ namespace DesktopUI2.ViewModels
       {
         UpdateStreamState();
 
-        HomeViewModel.Instance.AddSavedStream(this); //save the stream as well
-
         Reset();
+
+        if (!await Http.UserHasInternet())
+        {
+          Dispatcher.UIThread.Post(() =>
+            MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+            {
+              Title = "⚠️ Oh no!",
+              Message = "Could not reach the internet, are you connected?",
+              Type = Avalonia.Controls.Notifications.NotificationType.Error
+            }), DispatcherPriority.Background);
+
+          return;
+        }
 
         Progress.IsProgressing = true;
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
@@ -1172,7 +1190,7 @@ namespace DesktopUI2.ViewModels
             Message = $"Sent to '{Stream.name}', view it online",
             OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}"),
             Type = Avalonia.Controls.Notifications.NotificationType.Success,
-            Expiration = TimeSpan.FromSeconds(15)
+            Expiration = TimeSpan.FromSeconds(10)
           });
         }
         else
@@ -1180,13 +1198,16 @@ namespace DesktopUI2.ViewModels
           MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
           {
             Title = "😖 Send Error",
-            Message = $"Something went wrong",
+            Message = Progress?.Report?.OperationErrorsString ?? $"Something went wrong",
             Type = Avalonia.Controls.Notifications.NotificationType.Error
           });
         }
 
         GetActivity();
         GetReport();
+
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
       }
       catch (Exception ex)
       {
@@ -1235,10 +1256,22 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-        //save the stream as well
-        HomeViewModel.Instance.AddSavedStream(this);
-
         Reset();
+
+        if (!await Http.UserHasInternet())
+        {
+          Dispatcher.UIThread.Post(() =>
+            MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
+            {
+              Title = "⚠️ Oh no!",
+              Message = "Could not reach the internet, are you connected?",
+              Type = Avalonia.Controls.Notifications.NotificationType.Error
+            }), DispatcherPriority.Background);
+
+          return;
+        }
+
+
         Progress.IsProgressing = true;
         var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
         Progress.IsProgressing = false;
@@ -1266,6 +1299,9 @@ namespace DesktopUI2.ViewModels
 
         GetActivity();
         GetReport();
+
+        //save the stream as well
+        HomeViewModel.Instance.AddSavedStream(this);
       }
       catch (Exception ex)
       {

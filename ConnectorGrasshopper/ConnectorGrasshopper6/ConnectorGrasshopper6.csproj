@@ -65,6 +65,11 @@
     <PackageReference Include="Grasshopper" Version="6.28.20199.17141" IncludeAssets="compile;build" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+
   <Target Name="GenerateT4" BeforeTargets="BeforeRebuild">
     <Message Text="Restoring T4 tool..." Importance="high" />
     <Exec Command="dotnet tool restore" />
