@@ -364,12 +364,14 @@ namespace Objects.Converter.AutocadCivil
 
       foreach (var column in tableProfiles.Columns.Cast<System.Data.DataColumn>())
       {
-        sectionProfileDB[column.ColumnName] = rowSection[column];
+        var rowObject = rowSection[column];
+
+        if(!(rowObject is System.DBNull))
+          sectionProfileDB[column.ColumnName] = rowObject
       }
 
       return sectionProfileDB;
     }
-
   }
 }
 
