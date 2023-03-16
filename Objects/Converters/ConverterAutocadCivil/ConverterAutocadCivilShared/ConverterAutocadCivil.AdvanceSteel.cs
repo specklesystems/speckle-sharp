@@ -366,8 +366,8 @@ namespace Objects.Converter.AutocadCivil
       {
         var rowObject = rowSection[column];
 
-        if(!(rowObject is System.DBNull))
-          sectionProfileDB[column.ColumnName] = rowObject
+        if (!(rowObject is System.DBNull))
+          sectionProfileDB[column.ColumnName] = rowObject;
       }
 
       return sectionProfileDB;
