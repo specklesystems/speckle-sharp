@@ -67,6 +67,7 @@ using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
 using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
 using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
 using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
+using Autodesk.AdvanceSteel.DotNetRoots.DatabaseAccess;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -133,6 +134,9 @@ namespace Objects.Converter.AutocadCivil
       var units = ModelUnits;
 
       advanceSteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
+
+      advanceSteelPolyBeam.adsProfile = new AdsSectionProfile();
+      advanceSteelPolyBeam.adsProfile.SectionProfileDB = GetProfileSectionProperties(polyBeam.ProfSectionType, polyBeam.ProfSectionName);
 
       //var profile = polyBeam.GetProfType();
 
@@ -238,9 +242,9 @@ namespace Objects.Converter.AutocadCivil
         //Create coordinateSystemAligned with OuterContour
         var outerList = faceInfo.OuterContour.Select(x => vertices.ElementAt(x));
 
-        if(outerList.Count() < 3)
+        if (outerList.Count() < 3)
           continue;
-        
+
         CoordinateSystem coordinateSystemAligned = CreateCoordinateSystemAligned(outerList);
 
         input.Add(CreateContour(outerList, coordinateSystemAligned));
@@ -326,6 +330,46 @@ namespace Objects.Converter.AutocadCivil
 
       return DatabaseManager.Open(idFilerObject) as T;
     }
+
+    /// <summary>
+    /// Get profile sections
+    /// </summary>
+    /// <param name="typeNameText">sectionType</param>
+    /// <returns></returns>
+    public static AdsSectionProfileDB GetProfileSectionProperties(string typeNameText, string sectionName)
+    {
+      AdsSectionProfileDB sectionProfileDB = new AdsSectionProfileDB();
+
+      if (string.IsNullOrEmpty(typeNameText) || string.IsNullOrEmpty(sectionName))
+        return sectionProfileDB;
+
+      AstorProfiles astorProfiles = AstorProfiles.Instance;
+      System.Data.DataTable table = astorProfiles.getProfileMasterTable();
+
+      var rowSectionType = table.Select(string.Format("TypeNameText='{0}'", typeNameText)).FirstOrDefault();
+
+      if (rowSectionType == null)
+        return sectionProfileDB;
+
+      var tableName = rowSectionType["TableName"].ToString();
+      var tableProfiles = astorProfiles.getSectionsTable(tableName);
+
+      if (tableProfiles == null)
+        return sectionProfileDB;
+
+      var rowSection = tableProfiles.Select(string.Format("SectionName='{0}'", sectionName)).FirstOrDefault();
+
+      if (rowSection == null)
+        return sectionProfileDB;
+
+      foreach (var column in tableProfiles.Columns.Cast<System.Data.DataColumn>())
+      {
+        sectionProfileDB[column.ColumnName] = rowSection[column];
+      }
+
+      return sectionProfileDB;
+    }
+
   }
 }
 

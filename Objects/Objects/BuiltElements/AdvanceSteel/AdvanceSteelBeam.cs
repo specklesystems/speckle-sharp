@@ -22,6 +22,10 @@ namespace Objects.BuiltElements.AdvanceSteel
     public SectionProfile profile { get; set; }
     [DetachProperty]
     public StructuralMaterial material { get; set; }
+
+    [DetachProperty]
+    public AdsSectionProfile adsProfile { get; set; }
+
     [DetachProperty]
     public string finish { get; set; }
     [DetachProperty]
