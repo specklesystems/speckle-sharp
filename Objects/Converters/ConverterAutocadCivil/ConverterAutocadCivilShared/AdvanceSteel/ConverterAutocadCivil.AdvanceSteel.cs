@@ -68,6 +68,7 @@ using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
 using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
 using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
 using Autodesk.AdvanceSteel.DotNetRoots.DatabaseAccess;
+using Autodesk.AdvanceSteel.Geometry;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -109,63 +110,6 @@ namespace Objects.Converter.AutocadCivil
       SetUserAttributes(filerObject as AtomicElement, advanceSteelObject);
 
       return advanceSteelObject;
-    }
-
-    private void SetUserAttributes(AtomicElement atomicElement, AdvanceSteelObject advanceSteelObject)
-    {
-      advanceSteelObject.UserAttributes = new Dictionary<int, string>();
-      for (int i = 0; i < 10; i++)
-      {
-        string attribute = atomicElement.GetUserAttribute(i);
-
-        if (!string.IsNullOrEmpty(attribute))
-        {
-          advanceSteelObject.UserAttributes.Add(i + 1, attribute);
-        }
-      }
-    }
-
-    private AdvanceSteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
-    {
-      AdvanceSteelPolyBeam advanceSteelPolyBeam = new AdvanceSteelPolyBeam();
-
-      ASPolyline3d polyline3d = polyBeam.GetPolyline(true);
-
-      var units = ModelUnits;
-
-      advanceSteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
-
-      advanceSteelPolyBeam.adsProfile = new AdsSectionProfile();
-      advanceSteelPolyBeam.adsProfile.SectionProfileDB = GetProfileSectionProperties(polyBeam.ProfSectionType, polyBeam.ProfSectionName);
-
-      //var profile = polyBeam.GetProfType();
-
-      advanceSteelPolyBeam.area = polyBeam.GetPaintArea();
-
-      //There is a bug in some polybeams that some faces don't appears in ModelerBody (Bug_Polybeam_Speckle.dwg)
-      //https://speckle.xyz/streams/1a0090e6fc
-      SetDisplayValue(advanceSteelPolyBeam, polyBeam);
-
-      return advanceSteelPolyBeam;
-    }
-
-    private AdvanceSteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
-    {
-      AdvanceSteelBeam advanceSteelBeam = new AdvanceSteelBeam();
-
-      var startPoint = beam.GetPointAtStart();
-      var endPoint = beam.GetPointAtEnd();
-      var units = ModelUnits;
-
-      Point speckleStartPoint = PointToSpeckle(startPoint, units);
-      Point speckleEndPoint = PointToSpeckle(endPoint, units);
-      advanceSteelBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
-
-      advanceSteelBeam.area = beam.GetPaintArea();
-
-      SetDisplayValue(advanceSteelBeam, beam);
-
-      return advanceSteelBeam;
     }
 
     private AdvanceSteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
@@ -331,46 +275,18 @@ namespace Objects.Converter.AutocadCivil
       return DatabaseManager.Open(idFilerObject) as T;
     }
 
-    /// <summary>
-    /// Get profile sections
-    /// </summary>
-    /// <param name="typeNameText">sectionType</param>
-    /// <returns></returns>
-    public static AdsSectionProfileDB GetProfileSectionProperties(string typeNameText, string sectionName)
+    private void SetUserAttributes(AtomicElement atomicElement, AdvanceSteelObject advanceSteelObject)
     {
-      AdsSectionProfileDB sectionProfileDB = new AdsSectionProfileDB();
-
-      if (string.IsNullOrEmpty(typeNameText) || string.IsNullOrEmpty(sectionName))
-        return sectionProfileDB;
-
-      AstorProfiles astorProfiles = AstorProfiles.Instance;
-      System.Data.DataTable table = astorProfiles.getProfileMasterTable();
-
-      var rowSectionType = table.Select(string.Format("TypeNameText='{0}'", typeNameText)).FirstOrDefault();
-
-      if (rowSectionType == null)
-        return sectionProfileDB;
-
-      var tableName = rowSectionType["TableName"].ToString();
-      var tableProfiles = astorProfiles.getSectionsTable(tableName);
-
-      if (tableProfiles == null)
-        return sectionProfileDB;
-
-      var rowSection = tableProfiles.Select(string.Format("SectionName='{0}'", sectionName)).FirstOrDefault();
-
-      if (rowSection == null)
-        return sectionProfileDB;
-
-      foreach (var column in tableProfiles.Columns.Cast<System.Data.DataColumn>())
+      advanceSteelObject.UserAttributes = new Dictionary<int, string>();
+      for (int i = 0; i < 10; i++)
       {
-        var rowObject = rowSection[column];
+        string attribute = atomicElement.GetUserAttribute(i);
 
-        if (!(rowObject is System.DBNull))
-          sectionProfileDB[column.ColumnName] = rowObject;
+        if (!string.IsNullOrEmpty(attribute))
+        {
+          advanceSteelObject.UserAttributes.Add(i + 1, attribute);
+        }
       }
-
-      return sectionProfileDB;
     }
   }
 }
