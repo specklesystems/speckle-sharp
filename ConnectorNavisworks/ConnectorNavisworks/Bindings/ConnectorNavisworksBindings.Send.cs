@@ -332,7 +332,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       }
     }
 
-    public static object InvokeOnUIThreadWithException(System.Windows.Forms.Control control, Delegate method,
+    private static object InvokeOnUIThreadWithException(System.Windows.Forms.Control control, Delegate method,
       params object[] args)
     {
       if (control == null) return null;
