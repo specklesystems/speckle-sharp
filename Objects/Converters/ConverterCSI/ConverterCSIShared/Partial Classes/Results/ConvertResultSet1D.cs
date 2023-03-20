@@ -230,14 +230,19 @@ namespace Objects.Converter.CSI
 
     public void SetLoadCombinationsForResults()
     {
-      int numberOfLoadCombinations = 0;
-      string[] loadCombinationNames = new string[1];
+      var numberOfLoadCombinations = 0;
+      var loadCombinationNames = new string[1];
 
       Model.RespCombo.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
-
       foreach (var loadCombination in loadCombinationNames)
       {
         Model.Results.Setup.SetComboSelectedForOutput(loadCombination);
+      }
+
+      Model.LoadCases.GetNameList(ref numberOfLoadCombinations, ref loadCombinationNames);
+      foreach (var loadCase in loadCombinationNames)
+      {
+        Model.Results.Setup.SetCaseSelectedForOutput(loadCase);
       }
     }
   }
