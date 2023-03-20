@@ -36,11 +36,10 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-
       if (Doc.ActiveSheet == null) throw new InvalidOperationException("Your Document is empty. Nothing to Send.");
-      
+
       var filteredObjects = new List<Tuple<string, int>>();
-     
+
       var progressBar = Application.BeginProgress("Send to Speckle.");
 
       progress.CancellationToken.Register(() =>
@@ -266,43 +265,56 @@ namespace Speckle.ConnectorNavisworks.Bindings
 
       #endregion
 
-      progressBar.BeginSubOperation(1,
+      var totalConversions = convertedCount + conversionProgressDict["Conversion"];
+
+      progressBar.BeginSubOperation(0,
         $"Sending {convertedCount} objects and {conversionProgressDict["Conversion"]} children to Speckle.");
 
       NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", null } });
 
       progress.CancellationToken.ThrowIfCancellationRequested();
 
-      progress.Max = convertedCount;
+      progress.Max = totalConversions;
 
       var transports = new List<ITransport>
       {
         new ServerTransport(client.Account, streamId)
       };
 
-      string objectId = await Operations.Send(
+      var objectId = await Operations.Send(
         commitObject,
         progress.CancellationToken,
         transports,
-        onProgressAction: progress.Update,
-        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
+        onProgressAction: dict => {
+          if (dict.TryGetValue("RemoteTransport", out var rc) && rc > 0) {
+            var p = (double)rc / 2 / totalConversions;
+            if (p <= 1) progressBar.Update(p);
+          }
+          progress.Update(dict);
+        },
+
+        // Deviation from the ideal pattern, which should throw to the DefaultErrorHandler
+        onErrorAction: (err, ex) => { progress.Report.OperationErrors.Add(ex); },
         disposeTransports: true
       );
 
+      if (progress.Report.OperationErrors.Any())
+      {
+        ConnectorHelpers.DefaultSendErrorHandler("", progress.Report.OperationErrors.Last());
+      }
+
       progress.CancellationToken.ThrowIfCancellationRequested();
-      
+
       var commit = new CommitCreateInput
       {
         streamId = streamId,
         objectId = objectId,
         branchName = state.BranchName,
-        message = state.CommitMessage ?? $"Sent {convertedCount} elements from {HostApplications.Navisworks.Name}.",
+        message = state.CommitMessage ?? $"Sent {totalConversions} elements from {HostApplications.Navisworks.Name}.",
         sourceApplication = HostApplications.Navisworks.Slug
       };
 
-      progressBar.Update(0.5);
       var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, commit);
-      progressBar.Update(1.0);
       return commitId;
     }
 
@@ -320,7 +332,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
       }
     }
 
-    public static object InvokeOnUIThreadWithException(System.Windows.Forms.Control control, Delegate method,
+    private static object InvokeOnUIThreadWithException(System.Windows.Forms.Control control, Delegate method,
       params object[] args)
     {
       if (control == null) return null;
