@@ -116,11 +116,9 @@ namespace Speckle.Core.Api
     public Task<string> CommitCreate(CommitCreateInput commitInput) =>
       CommitCreate(CancellationToken.None, commitInput);
 
-    /// <summary>
-    /// Creates a commit on a branch.
-    /// </summary>
-    /// <param name="commitInput"></param>
-    /// <returns>The commit id.</returns>
+
+    /// <inheritdoc cref="CommitCreate(CommitCreateInput)"/>
+    /// <param name="cancellationToken"></param>
     public async Task<string> CommitCreate(
       CancellationToken cancellationToken,
       CommitCreateInput commitInput
@@ -195,9 +193,17 @@ namespace Speckle.Core.Api
       return (bool)res["commitDelete"];
     }
 
+    /// <summary>
+    /// Sends a commitReceived mutation, affirming a commit has been received.
+    /// </summary>
+    /// <remarks>Used for read receipts</remarks>
+    /// <param name="commitReceivedInput"></param>
+    /// <returns></returns>
     public Task<bool> CommitReceived(CommitReceivedInput commitReceivedInput) =>
       CommitReceived(CancellationToken.None, commitReceivedInput);
 
+    /// <inheritdoc cref="CommitReceived(CommitReceivedInput)"/>
+    /// <param name="cancellationToken"></param>
     public async Task<bool> CommitReceived(
       CancellationToken cancellationToken,
       CommitReceivedInput commitReceivedInput

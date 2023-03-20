@@ -12,10 +12,11 @@ using RH = Rhino.DocObjects;
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 using Utilities = Speckle.Core.Models.Utilities;
+using Speckle.Core.Models.GraphTraversal;
 
 using Objects.Other;
+using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
 using Dimension = Objects.Other.Dimension;
@@ -40,63 +41,96 @@ namespace Objects.Converter.RhinoGh
     {
       var attributes = new ObjectAttributes();
 
-      attributes.ColorSource = ObjectColorSource.ColorFromObject;
+      // color
       attributes.ObjectColor = System.Drawing.Color.FromArgb(display.color);
-      attributes.PlotWeightSource = ObjectPlotWeightSource.PlotWeightFromObject;
-      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
-      attributes.PlotWeight = display.lineweight * conversionFactor;
-      attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+      var colorSource = ObjectColorSource.ColorFromObject;
+      if (display["colorSource"] != null) { Enum.TryParse(display["colorSource"] as string, out colorSource); }
+      attributes.ColorSource = colorSource;
+
+      // line type
       var lineStyle = Doc.Linetypes.FindName(display.linetype);
       attributes.LinetypeIndex = (lineStyle != null) ? lineStyle.Index : 0;
+      var lineSource = ObjectLinetypeSource.LinetypeFromObject;
+      if (display["lineSource"] != null) { Enum.TryParse(display["lineSource"] as string, out lineSource); }
+      attributes.LinetypeSource = lineSource;
+
+      // plot weight
+      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
+      attributes.PlotWeight = display.lineweight * conversionFactor;
+      var weightSource = ObjectPlotWeightSource.PlotWeightFromObject;
+      if (display["weightSource"] != null) { Enum.TryParse(display["weightSource"] as string, out weightSource); }
+      attributes.PlotWeightSource = weightSource;
 
       return attributes;
     }
 
-    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes)
+    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes, Layer layer = null)
     {
-      var style = new DisplayStyle();
-
-      // color
-      switch (attributes.ColorSource)
-      {
-        case ObjectColorSource.ColorFromObject:
-          style.color = attributes.ObjectColor.ToArgb();
-          break;
-        case ObjectColorSource.ColorFromMaterial:
-          style.color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
-          break;
-        default: // use layer color as default
-          style.color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
-          break;
-      }
-
-      // line type
+      var style = new DisplayStyle() { units = Units.Millimeters};
+      int color = Color.LightGray.ToArgb();
       Linetype lineType = null;
-      switch (attributes.LinetypeSource)
-      {
-        case ObjectLinetypeSource.LinetypeFromObject:
-          lineType = Doc.Linetypes[attributes.LinetypeIndex];
-          break;
-        default: // use layer linetype as default
-          lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
-          break;
-      }
-      if (lineType.HasName)
-        style.linetype = lineType.Name;
+      double lineWeight = 0;
+      string colorSource = null;
+      string lineTypeSource = null;
+      string weightSource = null;
 
-      // line weight
-      switch (attributes.PlotWeightSource)
+      // use layer attributes if a layer is provided
+      if (layer != null)
       {
-        case ObjectPlotWeightSource.PlotWeightFromObject:
-          style.lineweight = attributes.PlotWeight;
-          break;
-        default: // use layer lineweight as default
-          style.lineweight = Doc.Layers[attributes.LayerIndex].PlotWeight;
-          break;
+        color = layer.Color.ToArgb();
+        lineType = Doc.Linetypes[layer.LinetypeIndex];
+        lineWeight = layer.PlotWeight;
       }
-      if (style.lineweight == 0) style.lineweight = 0.25;
+      else
+      {
+        // color
+        colorSource = attributes.ColorSource.ToString();
+        switch (attributes.ColorSource)
+        {
+          case ObjectColorSource.ColorFromObject:
+            color = attributes.ObjectColor.ToArgb();
+            break;
+          case ObjectColorSource.ColorFromMaterial:
+            color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
+            break;
+          default: // use layer color as default
+            color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
+            break;
+        }
 
-      style.units = Units.Millimeters;
+        // line type
+        lineTypeSource = attributes.LinetypeSource.ToString();
+        switch (attributes.LinetypeSource)
+        {
+          case ObjectLinetypeSource.LinetypeFromObject:
+            lineType = Doc.Linetypes[attributes.LinetypeIndex];
+            break;
+          default: // use layer linetype as default
+            lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
+            break;
+        }
+
+        // line weight
+        weightSource = attributes.PlotWeightSource.ToString();
+        switch (attributes.PlotWeightSource)
+        {
+          case ObjectPlotWeightSource.PlotWeightFromObject:
+            lineWeight = attributes.PlotWeight;
+            break;
+          default: // use layer lineweight as default
+            lineWeight = Doc.Layers[attributes.LayerIndex].PlotWeight;
+            break;
+        }
+      }
+
+      style.color = color;
+      style.lineweight = lineWeight;
+      style.linetype = lineType?.Name ?? "Default";
+
+      // attach rhino specific props
+      if (colorSource != null) style["colorSource"] = colorSource;
+      if (lineTypeSource != null) style["lineSource"] = lineTypeSource;
+      if (weightSource != null) style["weightSource"] = weightSource;
 
       return style;
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,15 +8,17 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
 using ConnectorRevit.Revit;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -45,126 +47,84 @@ namespace Speckle.ConnectorRevit.UI
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
-
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
-
-      var stream = await state.Client.StreamGet(state.StreamId);
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-
-      Commit myCommit = null;
-      //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      if (state.CommitId == "latest")
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        myCommit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        myCommit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-      }
-
+      
+      Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = myCommit;
-
-      string referencedObject = myCommit.referencedObject;
-
-      var commitObject = await Operations.Receive(
-          referencedObject,
-          progress.CancellationTokenSource.Token,
-          transport,
-          onProgressAction: dict => progress.Update(dict),
-          onErrorAction: (s, e) =>
-          {
-            progress.Report.LogOperationError(e);
-            progress.CancellationTokenSource.Cancel();
-          },
-          onTotalChildrenCountKnown: count => { progress.Max = count; },
-          disposeTransports: true
-          );
-
-      try
-      {
-        await state.Client.CommitReceived(new CommitReceivedInput
-        {
-          streamId = stream?.id,
-          commitId = myCommit?.id,
-          message = myCommit?.message,
-          sourceApplication = ConnectorRevitUtils.RevitAppName
-        });
-      }
-      catch
-      {
-        // Do nothing!
-      }
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return state;
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-
+      Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
+      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);
+      
       Preview.Clear();
       StoredObjects.Clear();
-
-
+      
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
         progress.Report.Log(previewObj);
+      
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work 
       converter.SetPreviousContextObjects(previouslyReceiveObjects);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
-
+      
       try
       {
         await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
       }
       catch (Exception ex)
       {
-        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping."));
+        Log.Warning(ex, "Could not update receive object with user types");
+        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
       }
-
-      await RevitTask.RunAsync(app =>
+      
+      var (success, exception) = await RevitTask.RunAsync(app =>
       {
-        using var g = new TransactionGroup(CurrentDoc.Document, $"Baking stream {state.StreamId}");
-        using var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}");
-
+        string transactionName = $"Baking stream {state.StreamId}";
+        using var g = new TransactionGroup(CurrentDoc.Document, transactionName);
+        using var t = new Transaction(CurrentDoc.Document, transactionName);
+        
         g.Start();
         var failOpts = t.GetFailureHandlingOptions();
         failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
         failOpts.SetClearAfterRollback(true);
         t.SetFailureHandlingOptions(failOpts);
         t.Start();
-
-        converter.SetContextDocument(t);
-
-        var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
-        // receive was cancelled by user
-        if (newPlaceholderObjects == null)
+        
+        try
         {
-          progress.Report.LogOperationError(new Exception("fatal error: receive cancelled by user"));
-          t.RollBack();
-          return;
+          converter.SetContextDocument(t);
+
+          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+
+          if (state.ReceiveMode == ReceiveMode.Update)
+            DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
+
+          state.ReceivedObjects = newPlaceholderObjects;
+          t.Commit();
+          g.Assimilate();
+          return (true, null);
         }
+        catch (Exception ex)
+        {
+          Log.Error(ex, "Rolling back connector transaction {transactionName} {transactionType}",transactionName, t.GetType());
+          
+          string message = $"Fatal Error: {ex.Message}";
+          if (ex is OperationCanceledException) message = "Receive cancelled";
+          progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
 
-        if (state.ReceiveMode == ReceiveMode.Update)
-          DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
-
-        state.ReceivedObjects = newPlaceholderObjects;
-
-        t.Commit();
-        t.Dispose();
-
-        g.Assimilate();
-        g.Dispose();
+          t.RollBack();
+          g.RollBack();
+          return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
+        }
       });
 
-      if (converter.Report.OperationErrors.Any(x => x.Message.Contains("fatal error")))
-        return null; // the commit is being rolled back
-
+      if (!success)
+      {
+        //Don't wrap cancellation token (if it's ours!)
+        if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
+        throw new SpeckleException(exception.Message, exception);
+      }
+      
       return state;
     }
 
@@ -195,11 +155,7 @@ namespace Speckle.ConnectorRevit.UI
       foreach (var obj in Preview)
       {
         var @base = StoredObjects[obj.OriginalId];
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        {
-          placeholders = null;
-          break;
-        }
+        progress.CancellationToken.ThrowIfCancellationRequested();
 
         try
         {
@@ -230,6 +186,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception e)
         {
+          Log.Warning("Failed to convert ");
           obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
           progress.Report.UpdateReportObject(obj);
         }

@@ -1,4 +1,5 @@
-﻿using System;
+#nullable enable
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -31,10 +32,10 @@ namespace Speckle.Core.Api
     /// <returns>The id (hash) of the object.</returns>
     public static Task<string> Send(
       Base @object,
-      List<ITransport> transports = null,
+      List<ITransport>? transports = null,
       bool useDefaultCache = true,
-      Action<ConcurrentDictionary<string, int>> onProgressAction = null,
-      Action<string, Exception> onErrorAction = null,
+      Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
+      Action<string, Exception>? onErrorAction = null,
       bool disposeTransports = false,
       SerializerVersion serializerVersion = SerializerVersion.V2
     )
@@ -64,10 +65,10 @@ namespace Speckle.Core.Api
     public static async Task<string> Send(
       Base @object,
       CancellationToken cancellationToken,
-      List<ITransport> transports = null,
+      List<ITransport>? transports = null,
       bool useDefaultCache = true,
-      Action<ConcurrentDictionary<string, int>> onProgressAction = null,
-      Action<string, Exception> onErrorAction = null,
+      Action<ConcurrentDictionary<string, int>>? onProgressAction = null,
+      Action<string, Exception>? onErrorAction = null,
       bool disposeTransports = false,
       SerializerVersion serializerVersion = SerializerVersion.V2
     )
@@ -75,8 +76,9 @@ namespace Speckle.Core.Api
       transports ??= new List<ITransport>();
 
       if (transports.Count == 0 && useDefaultCache == false)
-        throw new SpeckleException(
-          "You need to provide at least one transport: cannot send with an empty transport list and no default cache."
+        throw new ArgumentException(
+          "You need to provide at least one transport: cannot send with an empty transport list and no default cache.",
+          nameof(transports)
         );
 
       if (useDefaultCache)
@@ -91,9 +93,9 @@ namespace Speckle.Core.Api
         var sendTimer = Stopwatch.StartNew();
         Log.Information("Starting send operation");
 
-        BaseObjectSerializer serializer = null;
-        JsonSerializerSettings settings = null;
-        BaseObjectSerializerV2 serializerV2 = null;
+        BaseObjectSerializer? serializer = null;
+        JsonSerializerSettings? settings = null;
+        BaseObjectSerializerV2? serializerV2 = null;
         if (serializerVersion == SerializerVersion.V1)
           (serializer, settings) = GetSerializerInstance();
         else
@@ -107,13 +109,13 @@ namespace Speckle.Core.Api
 
         if (serializerVersion == SerializerVersion.V1)
         {
-          serializer.OnProgressAction = internalProgressAction;
+          serializer!.OnProgressAction = internalProgressAction;
           serializer.CancellationToken = cancellationToken;
           serializer.OnErrorAction = onErrorAction;
         }
         else
         {
-          serializerV2.OnProgressAction = internalProgressAction;
+          serializerV2!.OnProgressAction = internalProgressAction;
           serializerV2.CancellationToken = cancellationToken;
           serializerV2.OnErrorAction = onErrorAction;
         }
@@ -126,9 +128,9 @@ namespace Speckle.Core.Api
           t.BeginWrite();
 
           if (serializerVersion == SerializerVersion.V1)
-            serializer.WriteTransports.Add(t);
+            serializer!.WriteTransports.Add(t);
           else
-            serializerV2.WriteTransports.Add(t);
+            serializerV2!.WriteTransports.Add(t);
         }
 
         string obj;
@@ -136,21 +138,21 @@ namespace Speckle.Core.Api
         if (serializerVersion == SerializerVersion.V1)
         {
           obj = JsonConvert.SerializeObject(@object, settings);
-          transportAwaits = serializer.WriteTransports.Select(t => t.WriteComplete()).ToList();
+          transportAwaits = serializer!.WriteTransports.Select(t => t.WriteComplete()).ToList();
         }
         else
         {
-          obj = serializerV2.Serialize(@object);
+          obj = serializerV2!.Serialize(@object);
           transportAwaits = serializerV2.WriteTransports.Select(t => t.WriteComplete()).ToList();
         }
 
         if (cancellationToken.IsCancellationRequested)
         {
           Log.Information(
-            "Send operation cancelled after {elapsed} seconds. Returning null",
+            "Send operation cancelled after {elapsed} seconds",
             sendTimer.Elapsed.TotalSeconds
           );
-          return null;
+          cancellationToken.ThrowIfCancellationRequested();
         }
 
         await Task.WhenAll(transportAwaits).ConfigureAwait(false);
@@ -170,13 +172,15 @@ namespace Speckle.Core.Api
         if (cancellationToken.IsCancellationRequested)
         {
           Log.Information(
-            "Send operation cancelled after {elapsed}. Returning null",
+            "Send operation cancelled after {elapsed}",
             sendTimer.Elapsed.TotalSeconds
           );
-          return null;
+          cancellationToken.ThrowIfCancellationRequested();
         }
 
-        var hash = JObject.Parse(obj).GetValue("id").ToString();
+        var idToken = JObject.Parse(obj).GetValue("id");
+        if (idToken == null) throw new SpeckleException("Failed to get id of serialized object");
+        var hash = idToken.ToString();
 
         sendTimer.Stop();
         Log.ForContext(
@@ -187,7 +191,7 @@ namespace Speckle.Core.Api
             "note",
             "the elapsed summary doesn't need to add up to the total elapsed... Threading magic..."
           )
-          .ForContext("serializerElapsed", serializerV2.Elapsed)
+          .ForContext("serializerElapsed", serializerV2?.Elapsed)
           .Information(
             "Finished sending {objectCount} objects after {elapsed}, result {objectId}",
             transports.Max(t => t.SavedObjectCount),

@@ -37,37 +37,12 @@ using Vector = Objects.Geometry.Vector;
 using Speckle.Core.Kits;
 using Objects.Geometry;
 
-#if ADVANCESTEEL2023
-using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
-using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
-using MathNet.Spatial.Euclidean;
-#endif
-
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
     // tolerance for geometry:
     public double tolerance = 0.000;
-
-#if ADVANCESTEEL2023
-    public Point PointToSpeckle(ASPoint3d point, string units = null)
-    {
-      //TODO: handle units.none?
-      var u = units ?? ModelUnits;
-      var extPt = ToExternalCoordinates(PointASToAcad(point));
-      return new Point(extPt.X, extPt.Y, extPt.Z, u);
-    }
-
-    public Point3d PointASToAcad(ASPoint3d point)
-    {
-      return new Point3d(point.x * Factor, point.y * Factor, point.z * Factor);
-    }
-    public Point3D PointASToMath(ASPoint3d point)
-    {
-      return new Point3D(point.x * Factor, point.y * Factor, point.z * Factor);
-    }
-#endif
 
     // Points
     public Point PointToSpeckle(Point3d point, string units = null)
@@ -1137,45 +1112,6 @@ namespace Objects.Converter.AutocadCivil
         return null;
       }
     }
-
-#if ADVANCESTEEL2023
-
- public Box BoxToSpeckle(ASExtents extents)
-    {
-      try
-      {
-        // convert min and max pts to speckle first
-        var min = PointToSpeckle(extents.MinPoint);
-        var max = PointToSpeckle(extents.MaxPoint);
-
-        // get dimension intervals
-        var xSize = new Interval(min.x, max.x);
-        var ySize = new Interval(min.y, max.y);
-        var zSize = new Interval(min.z, max.z);
-
-        // get the base plane of the bounding box from extents and current UCS
-        var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
-        var plane = new AcadGeo.Plane(PointASToAcad(extents.MinPoint), ucs.Xaxis, ucs.Yaxis);
-       
-        var box = new Box()
-        {
-          xSize = xSize,
-          ySize = ySize,
-          zSize = zSize,
-          basePlane = PlaneToSpeckle(plane),
-          volume = xSize.Length * ySize.Length * zSize.Length,
-          units = ModelUnits
-        };
-
-        return box;
-      }
-      catch
-      {
-        return null;
-      }
-    }
-
-#endif
 
     // Brep
     public Mesh SolidToSpeckle(Solid3d solid, out List<string> notes, string units = null)

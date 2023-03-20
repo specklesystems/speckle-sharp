@@ -159,10 +159,7 @@ namespace Speckle.Core.Serialisation
 
     public object ConvertJsonElement(JToken doc)
     {
-      if (CancellationToken.IsCancellationRequested)
-      {
-        return null; // Check for cancellation
-      }
+      CancellationToken.ThrowIfCancellationRequested();
 
       switch (doc.Type)
       {

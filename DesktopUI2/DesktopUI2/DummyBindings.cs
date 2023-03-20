@@ -277,7 +277,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
           return state;
 
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
@@ -327,7 +327,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
           return state;
 
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
@@ -386,7 +386,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
         {
           //progress.Report.Log("Fake sending was cancelled");
           return;
@@ -430,7 +430,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
         {
           //progress.Report.Log("Fake sending was cancelled");
           return null;

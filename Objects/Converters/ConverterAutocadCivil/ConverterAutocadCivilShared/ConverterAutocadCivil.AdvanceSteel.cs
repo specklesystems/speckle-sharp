@@ -1,61 +1,72 @@
 ﻿#if ADVANCESTEEL2023
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using Autodesk.AdvanceSteel.CADAccess;
-using Autodesk.AdvanceSteel.CADLink.Database;
-using Autodesk.AdvanceSteel.ConstructionTypes;
-using Autodesk.AdvanceSteel.DocumentManagement;
-using Autodesk.AdvanceSteel.Geometry;
-using Autodesk.AdvanceSteel.Modeler;
-using Autodesk.AdvanceSteel.Modelling;
-using Autodesk.AutoCAD.BoundaryRepresentation;
+
+using Speckle.Core.Models;
+
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
-using MathNet.Spatial.Euclidean;
-using Objects.BuiltElements;
-using Objects.BuiltElements.AdvanceSteel;
-using Objects.Geometry;
-using Objects.Other;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using TriangleNet.Geometry;
-using TriangleNet.Topology;
 using Acad = Autodesk.AutoCAD.Geometry;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+
+using Objects.BuiltElements.AdvanceSteel;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
-using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
-using ASBoltPattern = Autodesk.AdvanceSteel.Modelling.BoltPattern;
-using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
-using ASGrating = Autodesk.AdvanceSteel.Modelling.Grating;
-using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
-using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
-using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
-using ASSpecialPart = Autodesk.AdvanceSteel.Modelling.SpecialPart;
-using Brep = Objects.Geometry.Brep;
-using CADObjectId = Autodesk.AutoCAD.DatabaseServices.ObjectId;
+using Interval = Objects.Primitive.Interval;
+using Polycurve = Objects.Geometry.Polycurve;
 using Curve = Objects.Geometry.Curve;
 using Featureline = Objects.BuiltElements.Featureline;
-using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
-using MathPlane = MathNet.Spatial.Euclidean.Plane;
+using Point = Objects.Geometry.Point;
+using Brep = Objects.Geometry.Brep;
 using Mesh = Objects.Geometry.Mesh;
 using Pipe = Objects.BuiltElements.Pipe;
 using Plane = Objects.Geometry.Plane;
-using Point = Objects.Geometry.Point;
-using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Profile = Objects.BuiltElements.Profile;
 using Spiral = Objects.Geometry.Spiral;
 using SpiralType = Objects.Geometry.SpiralType;
 using Station = Objects.BuiltElements.Station;
 using Structure = Objects.BuiltElements.Structure;
-using TriangleMesh = TriangleNet.Mesh;
+using Objects.Other;
+using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
+using ASPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
+using ASPlate = Autodesk.AdvanceSteel.Modelling.Plate;
+using ASBoltPattern = Autodesk.AdvanceSteel.Modelling.BoltPattern;
+using ASSpecialPart = Autodesk.AdvanceSteel.Modelling.SpecialPart;
+using ASGrating = Autodesk.AdvanceSteel.Modelling.Grating;
+using Autodesk.AdvanceSteel.CADAccess;
+using Autodesk.AdvanceSteel.CADLink.Database;
+using CADObjectId = Autodesk.AutoCAD.DatabaseServices.ObjectId;
+using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
+using Autodesk.AdvanceSteel.DocumentManagement;
+using System.Security.Cryptography;
+using System.Collections;
+using Autodesk.AdvanceSteel.Modeler;
+using Objects.Geometry;
+using Autodesk.AutoCAD.BoundaryRepresentation;
+using MathNet.Spatial.Euclidean;
+using MathPlane = MathNet.Spatial.Euclidean.Plane;
+using TriangleNet.Geometry;
 using TriangleVertex = TriangleNet.Geometry.Vertex;
+using TriangleMesh = TriangleNet.Mesh;
+using TriangleNet.Topology;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Autodesk.AdvanceSteel.ConstructionTypes;
+using Autodesk.AdvanceSteel.Modelling;
+using Objects.BuiltElements;
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+
+using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
+using ASCurve3d = Autodesk.AdvanceSteel.Geometry.Curve3d;
+using ASLineSeg3d = Autodesk.AdvanceSteel.Geometry.LineSeg3d;
+using ASCircArc3d = Autodesk.AdvanceSteel.Geometry.CircArc3d;
+using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
+using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
+using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
+using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -88,13 +99,53 @@ namespace Objects.Converter.AutocadCivil
         throw new System.Exception($"Failed to find Advance Steel object ${@object.Handle.ToString()}.");
       }
 
-      reportObj.Update(descriptor: filerObject.GetType().ToString());
+      reportObj.Update(descriptor: filerObject.GetType().Name);
 
       dynamic dynamicObject = filerObject;
-      return FilerObjectToSpeckle(dynamicObject, notes);
+      AdvanceSteelObject advanceSteelObject = FilerObjectToSpeckle(dynamicObject, notes);
+
+      SetUnits(advanceSteelObject);
+      SetUserAttributes(filerObject as AtomicElement, advanceSteelObject);
+
+      return advanceSteelObject;
     }
 
-    private Base FilerObjectToSpeckle(ASBeam beam, List<string> notes)
+    private void SetUserAttributes(AtomicElement atomicElement, AdvanceSteelObject advanceSteelObject)
+    {
+      advanceSteelObject.UserAttributes = new Dictionary<int, string>();
+      for (int i = 0; i < 10; i++)
+      {
+        string attribute = atomicElement.GetUserAttribute(i);
+
+        if (!string.IsNullOrEmpty(attribute))
+        {
+          advanceSteelObject.UserAttributes.Add(i + 1, attribute);
+        }
+      }
+    }
+
+    private AdvanceSteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
+    {
+      AdvanceSteelPolyBeam advanceSteelPolyBeam = new AdvanceSteelPolyBeam();
+
+      ASPolyline3d polyline3d = polyBeam.GetPolyline(true);
+
+      var units = ModelUnits;
+
+      advanceSteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
+
+      //var profile = polyBeam.GetProfType();
+
+      advanceSteelPolyBeam.area = polyBeam.GetPaintArea();
+
+      //There is a bug in some polybeams that some faces don't appears in ModelerBody (Bug_Polybeam_Speckle.dwg)
+      //https://speckle.xyz/streams/1a0090e6fc
+      SetDisplayValue(advanceSteelPolyBeam, polyBeam);
+
+      return advanceSteelPolyBeam;
+    }
+
+    private AdvanceSteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
     {
       AdvanceSteelBeam advanceSteelBeam = new AdvanceSteelBeam();
 
@@ -105,18 +156,15 @@ namespace Objects.Converter.AutocadCivil
       Point speckleStartPoint = PointToSpeckle(startPoint, units);
       Point speckleEndPoint = PointToSpeckle(endPoint, units);
       advanceSteelBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
-      advanceSteelBeam.baseLine.length = speckleStartPoint.DistanceTo(speckleEndPoint);
 
       advanceSteelBeam.area = beam.GetPaintArea();
 
       SetDisplayValue(advanceSteelBeam, beam);
 
-      SetUnits(advanceSteelBeam);
-
       return advanceSteelBeam;
     }
 
-    private Base FilerObjectToSpeckle(ASPlate plate, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
     {
       AdvanceSteelPlate advanceSteelPlate = new AdvanceSteelPlate();
 
@@ -128,34 +176,28 @@ namespace Objects.Converter.AutocadCivil
 
       SetDisplayValue(advanceSteelPlate, plate);
 
-      SetUnits(advanceSteelPlate);
-
       return advanceSteelPlate;
     }
 
-    private Base FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
     {
       AdvanceSteelBolt advanceSteelBolt = bolt is CircleScrewBoltPattern ? (AdvanceSteelBolt)new AdvanceSteelCircularBolt() : (AdvanceSteelBolt)new AdvanceSteelRectangularBolt();
 
       SetDisplayValue(advanceSteelBolt, bolt);
 
-      SetUnits(advanceSteelBolt);
-
       return advanceSteelBolt;
     }
 
-    private Base FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
     {
       AdvanceSteelSpecialPart advanceSteelSpecialPart = new AdvanceSteelSpecialPart();
 
       SetDisplayValue(advanceSteelSpecialPart, specialPart);
 
-      SetUnits(advanceSteelSpecialPart);
-
       return advanceSteelSpecialPart;
     }
 
-    private Base FilerObjectToSpeckle(ASGrating grating, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
     {
       AdvanceSteelGrating advanceSteelGrating = new AdvanceSteelGrating();
 
@@ -166,7 +208,7 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelGrating;
     }
 
-    private Base FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
+    private AdvanceSteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
     {
       throw new System.Exception("Advance Steel Object type conversion to Speckle not implemented");
     }
@@ -179,11 +221,11 @@ namespace Objects.Converter.AutocadCivil
       @base["displayValue"] = new List<Mesh> { GetMeshFromModelerBody(modelerBody, atomicElement.GeomExtents) };
     }
 
-    private Mesh GetMeshFromModelerBody(ModelerBody modelerBody, Extents extents)
+    private Mesh GetMeshFromModelerBody(ModelerBody modelerBody, ASExtents extents)
     {
       modelerBody.getBrepInfo(out var verticesAS, out var facesInfo);
 
-      IEnumerable<Point3D> vertices = verticesAS.Select(x => PointASToMath(x));
+      IEnumerable<Point3D> vertices = verticesAS.Select(x => PointToMath(x));
 
       List<double> vertexList = new List<double> { };
       List<int> facesList = new List<int> { };
@@ -195,6 +237,10 @@ namespace Objects.Converter.AutocadCivil
 
         //Create coordinateSystemAligned with OuterContour
         var outerList = faceInfo.OuterContour.Select(x => vertices.ElementAt(x));
+
+        if(outerList.Count() < 3)
+          continue;
+        
         CoordinateSystem coordinateSystemAligned = CreateCoordinateSystemAligned(outerList);
 
         input.Add(CreateContour(outerList, coordinateSystemAligned));
@@ -203,7 +249,11 @@ namespace Objects.Converter.AutocadCivil
         {
           foreach (var listInnerContours in faceInfo.InnerContours)
           {
-            input.Add(CreateContour(listInnerContours.Select(x => vertices.ElementAt(x)), coordinateSystemAligned), true);
+            var innerList = listInnerContours.Select(x => vertices.ElementAt(x));
+            if (innerList.Count() < 3)
+              continue;
+
+            input.Add(CreateContour(innerList, coordinateSystemAligned), true);
           }
         }
 
@@ -249,26 +299,6 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    private Polycurve PolycurveToSpeckle(ASPoint3d[] pointsContour)
-    {
-      var units = ModelUnits;
-      var specklePolycurve = new Polycurve(units);
-
-      for (int i = 1; i < pointsContour.Length; i++)
-      {
-        specklePolycurve.segments.Add(LineToSpeckle(pointsContour[i - 1], pointsContour[i]));
-      }
-
-      specklePolycurve.segments.Add(LineToSpeckle(pointsContour.Last(), pointsContour.First()));
-
-      return specklePolycurve;
-    }
-
-    private Line LineToSpeckle(ASPoint3d point1, ASPoint3d point2)
-    {
-      return new Line(PointToSpeckle(point1), PointToSpeckle(point2), ModelUnits);
-    }
-
     private CoordinateSystem CreateCoordinateSystemAligned(IEnumerable<Point3D> points)
     {
       var point1 = points.ElementAt(0);
@@ -276,16 +306,15 @@ namespace Objects.Converter.AutocadCivil
 
       //Centroid calculated to avoid non-collinear points
       var centroid = Point3D.Centroid(points);
-      var plane = MathPlane.FromPoints(point1, point2, centroid);
+      var plane = MathPlane.FromPoints(centroid, point1, point2);
 
-      UnitVector3D vectorX = (point2 - point1).Normalize();
+      UnitVector3D vectorX = (centroid - point1).Normalize();
       UnitVector3D vectorZ = plane.Normal;
       UnitVector3D vectorY = vectorZ.CrossProduct(vectorX);
 
       CoordinateSystem fromCs = new CoordinateSystem(point1, vectorX, vectorY, vectorZ);
       CoordinateSystem toCs = new CoordinateSystem(Point3D.Origin, UnitVector3D.XAxis, UnitVector3D.YAxis, UnitVector3D.ZAxis);
       return CoordinateSystem.CreateMappingCoordinateSystem(fromCs, toCs);
-
     }
 
     public static T GetFilerObjectByEntity<T>(DBObject @object) where T : FilerObject

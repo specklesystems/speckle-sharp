@@ -633,7 +633,7 @@ namespace Objects.Converter.Revit
       var localTransform = instanceTransform;
       if (useParentTransform)
       {
-        localTransform = instanceTransform.Multiply(parentTransform.Inverse);
+        localTransform = parentTransform.Inverse.Multiply(instanceTransform);
       }
       var transform = TransformToSpeckle(localTransform, instance.Document, out bool isMirrored);
 
