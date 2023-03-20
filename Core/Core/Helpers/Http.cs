@@ -2,20 +2,20 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.NetworkInformation;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 using Polly;
 using Polly.Contrib.WaitAndRetry;
-using Serilog;
-using Speckle.Core.Credentials;
 using Polly.Extensions.Http;
 using Polly.Retry;
-using System.Diagnostics;
+using Serilog;
 using Serilog.Context;
-using System.Net.Sockets;
+using Speckle.Core.Credentials;
 
 namespace Speckle.Core.Helpers
 {
@@ -72,15 +72,15 @@ namespace Speckle.Core.Helpers
           delay ?? DefaultDelay(),
           onRetry: (ex, timeSpan, retryAttempt, context) =>
           {
-            context.Remove("retryCount");
-            context.Add("retryCount", retryAttempt);
-            Log.Information(
-              ex.Exception,
-              "The http request failed with {exceptionType} exception retrying after {cooldown} miliseconds. This is retry attempt {retryAttempt}",
-              ex.GetType().Name,
-              timeSpan.TotalSeconds * 1000,
-              retryAttempt
-            );
+            //context.Remove("retryCount");
+            //context.Add("retryCount", retryAttempt);
+            //Log.Information(
+            //  ex.Exception,
+            //  "The http request failed with {exceptionType} exception retrying after {cooldown} milliseconds. This is retry attempt {retryAttempt}",
+            //  ex.GetType().Name,
+            //  timeSpan.TotalSeconds * 1000,
+            //  retryAttempt
+            //);
           }
         );
 
@@ -122,13 +122,13 @@ namespace Speckle.Core.Helpers
           DefaultDelay(),
           (ex, timeSpan, retryAttempt, context) =>
           {
-            Log.Information(
-              ex,
-              "The http request failed with {exceptionType} exception retrying after {cooldown} miliseconds. This is retry attempt {retryAttempt}",
-              ex.GetType().Name,
-              timeSpan.TotalSeconds * 1000,
-              retryAttempt
-            );
+            //Log.Information(
+            //  ex,
+            //  "The http request failed with {exceptionType} exception retrying after {cooldown} milliseconds. This is retry attempt {retryAttempt}",
+            //  ex.GetType().Name,
+            //  timeSpan.TotalSeconds * 1000,
+            //  retryAttempt
+            //);
           }
         );
       var policyResult = await policy.ExecuteAndCaptureAsync(async () =>
@@ -236,7 +236,7 @@ namespace Speckle.Core.Helpers
         );
         if (policyResult.Outcome == OutcomeType.Successful)
           return policyResult.Result!;
-        
+
         // should we wrap this exception into something Speckle specific?
         throw policyResult.FinalException!;
       }
