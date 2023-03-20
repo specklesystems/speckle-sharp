@@ -151,10 +151,34 @@ namespace Objects.Converter.AutocadCivil
     {
       var depth = profileType.H;
       var width = profileType.B;
-      var tf = profileType.Tf;
       var tw = profileType.Tw;
+      var tf = profileType.Tf;
 
       var speckleProfile = new ISection(FormatSectionName(profileType.RunName), depth, width, tw, tf);
+
+      return speckleProfile;
+    }
+
+    private SectionProfile GetProfileSectionProperties(ProfileTypeC profileType)
+    {
+      var depth = profileType.H;
+      var width = profileType.B;
+      var tw = profileType.Tw;
+      var tf = profileType.Tf;
+
+      var speckleProfile = new Channel(FormatSectionName(profileType.RunName), depth, width, tw, tf);
+
+      return speckleProfile;
+    }
+
+    private SectionProfile GetProfileSectionProperties(ProfileTypeT profileType)
+    {
+      var depth = profileType.H;
+      var width = profileType.B;
+      var tw = profileType.Tw;
+      var tf = profileType.Tf;
+
+      var speckleProfile = new Tee(FormatSectionName(profileType.RunName), depth, width, tw, tf);
 
       return speckleProfile;
     }
