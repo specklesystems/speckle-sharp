@@ -26,6 +26,7 @@ using HatchLoopType = Objects.Other.HatchLoopType;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -445,7 +446,10 @@ namespace Objects.Converter.AutocadCivil
 
       // get the definition name
       var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
-      string definitionName = definition is BlockDefinition blockDef ? RemoveInvalidAutocadChars(blockDef.name) : definition.id;
+      string definitionName =
+        definition is BlockDefinition blockDef ? RemoveInvalidAutocadChars(blockDef.name) :
+        definition is RevitSymbolElementType revitDef ? RemoveInvalidAutocadChars($"{revitDef.family} - {revitDef.type} - {definition.id}") :
+        definition.id;
       if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
       BlockTable blckTbl = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
       if (blckTbl.Has(definitionName))
