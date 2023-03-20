@@ -448,7 +448,7 @@ namespace Objects.Converter.AutocadCivil
       var commitInfo = RemoveInvalidAutocadChars(Doc.UserData["commit"] as string);
       string definitionName =
         definition is BlockDefinition blockDef ? RemoveInvalidAutocadChars(blockDef.name) :
-        definition is RevitSymbolElementType revitDef ? RemoveInvalidAutocadChars($"{revitDef.type} - {definition.id}") :
+        definition is RevitSymbolElementType revitDef ? RemoveInvalidAutocadChars($"{revitDef.family} - {revitDef.type} - {definition.id}") :
         definition.id;
       if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
       BlockTable blckTbl = Trans.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;

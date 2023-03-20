@@ -314,7 +314,7 @@ namespace Objects.Converter.RhinoGh
       var commitInfo = GetCommitInfo();
       string definitionName = 
         definition is BlockDefinition blockDef ? blockDef.name : 
-        definition is RevitSymbolElementType revitDef ? $"{revitDef.type} - {definition.id}" : 
+        definition is RevitSymbolElementType revitDef ? $"{revitDef.family} -{revitDef.type} - {definition.id}" : 
         definition.id;
       if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
       if (Doc.InstanceDefinitions.Find(definitionName) is InstanceDefinition def)
