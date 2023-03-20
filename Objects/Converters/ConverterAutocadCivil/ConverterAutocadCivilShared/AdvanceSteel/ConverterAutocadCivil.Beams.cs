@@ -77,21 +77,21 @@ namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
-    private AdvanceSteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
+    private AsteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
     {
-      AdvanceSteelPolyBeam advanceSteelPolyBeam = new AdvanceSteelPolyBeam();
+      AsteelPolyBeam asteelPolyBeam = new AsteelPolyBeam();
 
       ASPolyline3d polyline3d = polyBeam.GetPolyline(true);
-      advanceSteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
+      asteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
 
-      GetBeamPropertiesToSpeckle(advanceSteelPolyBeam, polyBeam);
+      GetBeamPropertiesToSpeckle(asteelPolyBeam, polyBeam);
 
-      return advanceSteelPolyBeam;
+      return asteelPolyBeam;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
+    private AsteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
     {
-      AdvanceSteelBeam advanceSteelBeam = new AdvanceSteelBeam();
+      AsteelBeam asteelBeam = new AsteelBeam();
 
       var startPoint = beam.GetPointAtStart();
       var endPoint = beam.GetPointAtEnd();
@@ -99,16 +99,16 @@ namespace Objects.Converter.AutocadCivil
 
       Point speckleStartPoint = PointToSpeckle(startPoint, units);
       Point speckleEndPoint = PointToSpeckle(endPoint, units);
-      advanceSteelBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
+      asteelBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
 
-      GetBeamPropertiesToSpeckle(advanceSteelBeam, beam);
+      GetBeamPropertiesToSpeckle(asteelBeam, beam);
 
-      return advanceSteelBeam;
+      return asteelBeam;
     }
 
-    private void GetBeamPropertiesToSpeckle(AdvanceSteelBeam advanceSteelBeam, ASBeam beam)
+    private void GetBeamPropertiesToSpeckle(AsteelBeam advanceSteelBeam, ASBeam beam)
     {
-      advanceSteelBeam.adsProfile = new AdsSectionProfile()
+      advanceSteelBeam.asteelProfile = new AsteelSectionProfile()
       {
         ProfSectionType = beam.ProfSectionType,
         ProfSectionName = beam.ProfSectionName
@@ -117,7 +117,7 @@ namespace Objects.Converter.AutocadCivil
       dynamic profType = beam.GetProfType();
       advanceSteelBeam.profile = GetProfileSectionProperties(profType);
 
-      advanceSteelBeam.adsProfile.SectionProfileDB = GetProfileSectionDBProperties(beam.ProfSectionType, beam.ProfSectionName);
+      advanceSteelBeam.asteelProfile.SectionProfileDB = GetProfileSectionDBProperties(beam.ProfSectionType, beam.ProfSectionName);
 
       advanceSteelBeam.area = beam.GetPaintArea();
 
@@ -175,9 +175,9 @@ namespace Objects.Converter.AutocadCivil
     /// </summary>
     /// <param name="typeNameText">sectionType</param>
     /// <returns></returns>
-    private AdsSectionProfileDB GetProfileSectionDBProperties(string typeNameText, string sectionName)
+    private AsteelSectionProfileDB GetProfileSectionDBProperties(string typeNameText, string sectionName)
     {
-      AdsSectionProfileDB sectionProfileDB = new AdsSectionProfileDB();
+      AsteelSectionProfileDB sectionProfileDB = new AsteelSectionProfileDB();
 
       if (string.IsNullOrEmpty(typeNameText) || string.IsNullOrEmpty(sectionName))
         return sectionProfileDB;

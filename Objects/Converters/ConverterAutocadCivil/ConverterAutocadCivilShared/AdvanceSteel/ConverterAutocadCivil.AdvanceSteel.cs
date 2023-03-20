@@ -104,7 +104,7 @@ namespace Objects.Converter.AutocadCivil
       reportObj.Update(descriptor: filerObject.GetType().Name);
 
       dynamic dynamicObject = filerObject;
-      AdvanceSteelObject advanceSteelObject = FilerObjectToSpeckle(dynamicObject, notes);
+      AsteelObject advanceSteelObject = FilerObjectToSpeckle(dynamicObject, notes);
 
       SetUnits(advanceSteelObject);
       SetUserAttributes(filerObject as AtomicElement, advanceSteelObject);
@@ -112,51 +112,51 @@ namespace Objects.Converter.AutocadCivil
       return advanceSteelObject;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
+    private AsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
     {
-      AdvanceSteelPlate advanceSteelPlate = new AdvanceSteelPlate();
+      AsteelPlate asteelPlate = new AsteelPlate();
 
       plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
 
-      advanceSteelPlate.outline = PolycurveToSpeckle(ptsContour);
+      asteelPlate.outline = PolycurveToSpeckle(ptsContour);
 
-      advanceSteelPlate.area = plate.GetPaintArea();
+      asteelPlate.area = plate.GetPaintArea();
 
-      SetDisplayValue(advanceSteelPlate, plate);
+      SetDisplayValue(asteelPlate, plate);
 
-      return advanceSteelPlate;
+      return asteelPlate;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
+    private AsteelObject FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
     {
-      AdvanceSteelBolt advanceSteelBolt = bolt is CircleScrewBoltPattern ? (AdvanceSteelBolt)new AdvanceSteelCircularBolt() : (AdvanceSteelBolt)new AdvanceSteelRectangularBolt();
+      AsteelBolt asteelBolt = bolt is CircleScrewBoltPattern ? (AsteelBolt)new AsteelCircularBolt() : (AsteelBolt)new AsteelRectangularBolt();
 
-      SetDisplayValue(advanceSteelBolt, bolt);
+      SetDisplayValue(asteelBolt, bolt);
 
-      return advanceSteelBolt;
+      return asteelBolt;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
+    private AsteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
     {
-      AdvanceSteelSpecialPart advanceSteelSpecialPart = new AdvanceSteelSpecialPart();
+      AsteelSpecialPart asteelSpecialPart = new AsteelSpecialPart();
 
-      SetDisplayValue(advanceSteelSpecialPart, specialPart);
+      SetDisplayValue(asteelSpecialPart, specialPart);
 
-      return advanceSteelSpecialPart;
+      return asteelSpecialPart;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
+    private AsteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
     {
-      AdvanceSteelGrating advanceSteelGrating = new AdvanceSteelGrating();
+      AsteelGrating asteelGrating = new AsteelGrating();
 
-      SetDisplayValue(advanceSteelGrating, grating);
+      SetDisplayValue(asteelGrating, grating);
 
-      SetUnits(advanceSteelGrating);
+      SetUnits(asteelGrating);
 
-      return advanceSteelGrating;
+      return asteelGrating;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
+    private AsteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
     {
       throw new System.Exception("Advance Steel Object type conversion to Speckle not implemented");
     }
@@ -275,7 +275,7 @@ namespace Objects.Converter.AutocadCivil
       return DatabaseManager.Open(idFilerObject) as T;
     }
 
-    private void SetUserAttributes(AtomicElement atomicElement, AdvanceSteelObject advanceSteelObject)
+    private void SetUserAttributes(AtomicElement atomicElement, AsteelObject advanceSteelObject)
     {
       advanceSteelObject.UserAttributes = new Dictionary<int, string>();
       for (int i = 0; i < 10; i++)

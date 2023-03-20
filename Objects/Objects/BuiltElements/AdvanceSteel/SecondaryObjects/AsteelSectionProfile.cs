@@ -6,12 +6,12 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdsSectionProfile : Base
+  public class AsteelSectionProfile : Base
   {
     public string ProfSectionType { get; set; }
 
     public string ProfSectionName { get; set; }
     
-    public AdsSectionProfileDB SectionProfileDB { get; set; }
+    public AsteelSectionProfileDB SectionProfileDB { get; set; }
   }
 }

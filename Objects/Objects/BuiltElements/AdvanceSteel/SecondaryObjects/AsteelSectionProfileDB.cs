@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdsSectionProfileDB : Base
+  public class AsteelSectionProfileDB : Base
   {
   }
 }

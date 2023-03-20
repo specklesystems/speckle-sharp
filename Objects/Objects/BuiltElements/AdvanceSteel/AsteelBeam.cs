@@ -9,7 +9,7 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdvanceSteelBeam : AdvanceSteelObject, IDisplayValue<List<Mesh>>, IHasVolume, IHasArea
+  public class AsteelBeam : AsteelObject, IDisplayValue<List<Mesh>>, IHasVolume, IHasArea
   {
     public ICurve baseLine { get; set; }
 
@@ -24,7 +24,7 @@ namespace Objects.BuiltElements.AdvanceSteel
     public StructuralMaterial material { get; set; }
 
     [DetachProperty]
-    public AdsSectionProfile adsProfile { get; set; }
+    public AsteelSectionProfile asteelProfile { get; set; }
 
     [DetachProperty]
     public string finish { get; set; }
@@ -32,14 +32,14 @@ namespace Objects.BuiltElements.AdvanceSteel
     public string classNumber { get; set; }
 
     public Base userProperties { get; set; }
-    public AdvanceSteelBeamType AdvanceSteelBeamType { get; set; }
+
     public double volume { get; set; }
     public double area { get; set; }
 
-    public AdvanceSteelBeam() { }
+    public AsteelBeam() { }
 
-    [SchemaInfo("AdvanceSteelBeam", "Creates a Advance Steel beam by curve.", "Advance Steel", "Structure")]
-    public AdvanceSteelBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, StructuralMaterial material)
+    [SchemaInfo("AsteelBeam", "Creates a Advance Steel beam by curve.", "Advance Steel", "Structure")]
+    public AsteelBeam([SchemaMainParam] ICurve baseLine, SectionProfile profile, StructuralMaterial material)
     {
       this.baseLine = baseLine;
       this.profile = profile;

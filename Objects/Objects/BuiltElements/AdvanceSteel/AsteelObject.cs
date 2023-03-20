@@ -5,9 +5,9 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdvanceSteelObject : Base
+  public class AsteelObject : Base
   {
-    public AdvanceSteelObject()
+    public AsteelObject()
     {
         
     }

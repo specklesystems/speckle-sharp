@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AdvanceSteelPlate : AdvanceSteelObject, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
+  public class AsteelPlate : AsteelObject, IHasArea, IHasVolume, IDisplayValue<List<Mesh>>
   {
     public double area { get; set; }
     public double volume { get; set; }
@@ -22,8 +22,8 @@ namespace Objects.BuiltElements.AdvanceSteel
     [DetachProperty]
     public StructuralMaterial material { get; set; }
 
-    [SchemaInfo("AdvanceSteelPlate", "Creates a Advance Steel plate.", "Advance Steel", "Structure")]
-    public AdvanceSteelPlate(SectionProfile profile, Polyline outline, string units, StructuralMaterial material = null)
+    [SchemaInfo("AsteelPlate", "Creates a Advance Steel plate.", "Advance Steel", "Structure")]
+    public AsteelPlate(SectionProfile profile, Polyline outline, string units, StructuralMaterial material = null)
     {
       this.outline = outline;
       this.material = material;
@@ -31,7 +31,7 @@ namespace Objects.BuiltElements.AdvanceSteel
     }
 
 
-    public AdvanceSteelPlate()
+    public AsteelPlate()
     {
     }
   }
