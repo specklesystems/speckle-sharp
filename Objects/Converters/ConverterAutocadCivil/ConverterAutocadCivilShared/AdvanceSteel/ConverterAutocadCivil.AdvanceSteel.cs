@@ -275,16 +275,16 @@ namespace Objects.Converter.AutocadCivil
       return DatabaseManager.Open(idFilerObject) as T;
     }
 
-    private void SetUserAttributes(AtomicElement atomicElement, AsteelObject advanceSteelObject)
+    private void SetUserAttributes(AtomicElement atomicElement, AsteelObject asteelObject)
     {
-      advanceSteelObject.UserAttributes = new Dictionary<int, string>();
+      asteelObject.userAttributes = new Base();
       for (int i = 0; i < 10; i++)
       {
         string attribute = atomicElement.GetUserAttribute(i);
 
         if (!string.IsNullOrEmpty(attribute))
         {
-          advanceSteelObject.UserAttributes.Add(i + 1, attribute);
+          asteelObject.userAttributes[(i + 1).ToString()] = attribute;
         }
       }
     }

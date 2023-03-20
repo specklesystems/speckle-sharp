@@ -17,7 +17,6 @@ namespace Objects.BuiltElements.AdvanceSteel
     public List<Mesh> displayValue { get; set; }
 
     public string units { get; set; }
-    public string name { get; set; }
     [DetachProperty]
     public SectionProfile profile { get; set; }
     [DetachProperty]
@@ -25,13 +24,6 @@ namespace Objects.BuiltElements.AdvanceSteel
 
     [DetachProperty]
     public AsteelSectionProfile asteelProfile { get; set; }
-
-    [DetachProperty]
-    public string finish { get; set; }
-    [DetachProperty]
-    public string classNumber { get; set; }
-
-    public Base userProperties { get; set; }
 
     public double volume { get; set; }
     public double area { get; set; }

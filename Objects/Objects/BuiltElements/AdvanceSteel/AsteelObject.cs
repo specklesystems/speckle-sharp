@@ -12,6 +12,6 @@ namespace Objects.BuiltElements.AdvanceSteel
         
     }
 
-    public Dictionary<int, string> UserAttributes { get; set; }
+    public Base userAttributes { get; set; }
   }
 }

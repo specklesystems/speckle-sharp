@@ -133,7 +133,7 @@ namespace Objects.Converter.AutocadCivil
       var tf1 = profileType.Tf;
       var tf2 = profileType.Tw;
 
-      var speckleProfile = new Structural.Properties.Profiles.Angle(FormatSectionName(profileType.RunName), depth, width, tf1, tf2);
+      var speckleProfile = new Angle(FormatSectionName(profileType.RunName), depth, width, tf1, tf2);
 
       return speckleProfile;
     }
@@ -142,7 +142,7 @@ namespace Objects.Converter.AutocadCivil
     {
       var diameter = profileType.D;
 
-      var speckleProfile = new Structural.Properties.Profiles.Circular(FormatSectionName(profileType.RunName), diameter * 0.5);
+      var speckleProfile = new Circular(FormatSectionName(profileType.RunName), diameter * 0.5);
 
       return speckleProfile;
     }
@@ -162,7 +162,12 @@ namespace Objects.Converter.AutocadCivil
     private SectionProfile GetProfileSectionProperties(ProfileType profileType)
     {
       //Undefined
-      return new SectionProfile();
+      SectionProfile sectionProfile = new SectionProfile()
+      {
+        name = profileType.GetType().Name
+      };
+
+      return sectionProfile;
     }
 
     private string FormatSectionName(string sectionName)
