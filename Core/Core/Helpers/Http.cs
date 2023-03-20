@@ -225,8 +225,10 @@ namespace Speckle.Core.Helpers
         context.TryGetValue("retryCount", out var retryCount);
         Log.ForContext("ExceptionType", policyResult.FinalException?.GetType())
           .Information(
-          "Execution of http request to {targetUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
-          request.RequestUri,
+          "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
+          request.RequestUri.Scheme,
+          request.RequestUri.Host,
+          request.RequestUri.PathAndQuery,
           status,
           policyResult.Result?.StatusCode,
           timer.Elapsed.TotalSeconds,
