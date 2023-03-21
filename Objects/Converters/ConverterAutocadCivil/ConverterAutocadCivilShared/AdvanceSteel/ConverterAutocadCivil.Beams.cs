@@ -106,24 +106,24 @@ namespace Objects.Converter.AutocadCivil
       return asteelBeam;
     }
 
-    private void GetBeamPropertiesToSpeckle(AsteelBeam advanceSteelBeam, ASBeam beam)
+    private void GetBeamPropertiesToSpeckle(AsteelBeam asteelBeam, ASBeam beam)
     {
-      advanceSteelBeam.asteelProfile = new AsteelSectionProfile()
+      asteelBeam.asteelProfile = new AsteelSectionProfile()
       {
         ProfSectionType = beam.ProfSectionType,
         ProfSectionName = beam.ProfSectionName
       };
 
       dynamic profType = beam.GetProfType();
-      advanceSteelBeam.profile = GetProfileSectionProperties(profType);
+      asteelBeam.profile = GetProfileSectionProperties(profType);
 
-      advanceSteelBeam.asteelProfile.SectionProfileDB = GetProfileSectionDBProperties(beam.ProfSectionType, beam.ProfSectionName);
+      asteelBeam.asteelProfile.SectionProfileDB = GetProfileSectionDBProperties(beam.ProfSectionType, beam.ProfSectionName);
 
-      advanceSteelBeam.area = beam.GetPaintArea();
+      asteelBeam.area = beam.GetPaintArea();
 
       //There is a bug in some beams that some faces don't appears in ModelerBody (Bug_Polybeam_Speckle.dwg)
       //https://speckle.xyz/streams/1a0090e6fc
-      SetDisplayValue(advanceSteelBeam, beam);
+      SetDisplayValue(asteelBeam, beam);
     }
 
     private SectionProfile GetProfileSectionProperties(ProfileTypeW profileType)

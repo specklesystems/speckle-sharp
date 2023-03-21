@@ -104,12 +104,12 @@ namespace Objects.Converter.AutocadCivil
       reportObj.Update(descriptor: filerObject.GetType().Name);
 
       dynamic dynamicObject = filerObject;
-      AsteelObject advanceSteelObject = FilerObjectToSpeckle(dynamicObject, notes);
+      AsteelObject asteelObject = FilerObjectToSpeckle(dynamicObject, notes);
 
-      SetUnits(advanceSteelObject);
-      SetUserAttributes(filerObject as AtomicElement, advanceSteelObject);
+      SetUnits(asteelObject);
+      SetUserAttributes(filerObject as AtomicElement, asteelObject);
 
-      return advanceSteelObject;
+      return asteelObject;
     }
 
     private AsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
