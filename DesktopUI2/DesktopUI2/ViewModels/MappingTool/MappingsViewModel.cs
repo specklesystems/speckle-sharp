@@ -464,6 +464,12 @@ namespace DesktopUI2.ViewModels.MappingTool
       Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Select Elements" } });
     }
 
+    public void SelectAllMappingsCommand()
+    {
+      Bindings.SelectElements(ExistingSchemas.SelectMany(x => x.Schemas.Select(y => y.ApplicationId)).ToList());
+      Analytics.TrackEvent(Analytics.Events.MappingsAction, new Dictionary<string, object>() { { "name", "Mappings Select All" } });
+    }
+
     public void OpenGuideCommand()
     {
       Process.Start(
