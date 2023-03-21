@@ -63,7 +63,13 @@ namespace DesktopUI2.ViewModels.MappingTool
 
         //force the refresh of the dropdown after these lists have been updated
         SelectedFamily = Families?.FirstOrDefault(x => x.Name == SelectedFamily?.Name);
+        //fall back on first option
+        if (SelectedFamily == null)
+          SelectedFamily = Families?.FirstOrDefault();
+
         SelectedType = SelectedFamily?.Types?.FirstOrDefault(x => x == SelectedType);
+        if (SelectedType == null)
+          SelectedType = SelectedFamily?.Types?.FirstOrDefault();
       }
     }
 
@@ -101,6 +107,8 @@ namespace DesktopUI2.ViewModels.MappingTool
 
         //force the refresh of the dropdown after these lists have been updated
         SelectedLevel = Levels?.FirstOrDefault(x => x == SelectedLevel);
+        if (SelectedLevel == null)
+          SelectedLevel = Levels?.FirstOrDefault();
       }
     }
 
