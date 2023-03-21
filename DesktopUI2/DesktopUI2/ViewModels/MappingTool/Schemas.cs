@@ -307,7 +307,7 @@ namespace DesktopUI2.ViewModels.MappingTool
   {
     public override string Name => "DirectShape";
 
-    private string _shapeName;
+    private string _shapeName = "Speckle Mapper Shape";
     [DataMember]
     public string ShapeName
     {
@@ -374,7 +374,6 @@ namespace DesktopUI2.ViewModels.MappingTool
       get
       {
         return
-          !string.IsNullOrEmpty(ShapeName) &&
           !string.IsNullOrEmpty(SelectedCategory);
       }
     }
