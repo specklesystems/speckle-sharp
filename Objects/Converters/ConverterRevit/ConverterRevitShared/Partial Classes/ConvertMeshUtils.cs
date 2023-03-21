@@ -294,6 +294,7 @@ namespace Objects.Converter.Revit
         int numberOfFaces = 0;
         foreach (DB.Mesh mesh in meshData.Value)
         {
+          if (mesh == null) continue;
           numberOfVertices += mesh.Vertices.Count * 3;
           numberOfFaces += mesh.NumTriangles * 4;
         }
@@ -302,6 +303,7 @@ namespace Objects.Converter.Revit
         meshData.Key.vertices.Capacity = numberOfVertices;
         foreach (DB.Mesh mesh in meshData.Value)
         {
+          if (mesh == null) continue;
           ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d);
         }
       }
