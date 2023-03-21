@@ -1,29 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
-using System.Collections.Specialized;
 using System.Numerics;
-
-using Rhino;
-using Rhino.Display;
-using Rhino.DocObjects;
-using Rhino.Geometry;
-using Rhino.Collections;
-using RH = Rhino.Geometry;
 using Grasshopper.Kernel.Types;
-
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
-
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Objects.Primitive;
-
+using Rhino;
+using Rhino.Collections;
+using Rhino.Display;
+using Rhino.DocObjects;
+using Rhino.Geometry;
+using Speckle.Core.Api;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
@@ -42,6 +37,7 @@ using ModelCurve = Objects.BuiltElements.Revit.Curve.ModelCurve;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
+using RH = Rhino.Geometry;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Text = Objects.Other.Text;
@@ -116,7 +112,7 @@ namespace Objects.Converter.RhinoGh
       var s = (MeshSettings)settings;
       SelectedMeshSettings = s;
     }
-    
+
     public void SetContextDocument(object doc)
     {
       Doc = (RhinoDoc)doc;
@@ -184,7 +180,7 @@ namespace Objects.Converter.RhinoGh
             if (mappingString != null)
               schema = MappingToSpeckle(mappingString, ro, notes);
 
-            if (!(@object is InstanceObject))  @object = ro.Geometry; // block instance check
+            if (!(@object is InstanceObject)) @object = ro.Geometry; // block instance check
             break;
 
           case Layer l:
@@ -405,6 +401,8 @@ namespace Objects.Converter.RhinoGh
             break;
 
           case DirectShape o:
+            if (string.IsNullOrEmpty(o.name))
+              o.name = "Speckle Mapper Shape";
             if (@object.Geometry as RH.Brep != null)
               o.baseGeometries = new List<Base> { BrepToSpeckle((RH.Brep)@object.Geometry) };
             else if (@object.Geometry as RH.Mesh != null)
