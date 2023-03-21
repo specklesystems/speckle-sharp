@@ -13,6 +13,7 @@ using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Newtonsoft.Json.Linq;
 using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
 using ElementType = Autodesk.Revit.DB.ElementType;
@@ -724,6 +725,87 @@ namespace Objects.Converter.Revit
       value = (T)(object)match;
       return true;
     }
+    
+    private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
+    {
+      isExactMatch = false;
+      ElementType match = null;
+
+      var filter = GetCategoryFilter(element);
+      var types = GetElementTypesThatPassFilter<T>(filter);
+
+      if (types.Count == 0)
+        return default;
+
+      if (types.Count == 0)
+      {
+        var name = typeof(T).Name;
+        if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
+          name = category;
+
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
+      }
+
+      var family = (element["family"] as string)?.ToLower();
+      var type = GetTypeOfSpeckleObject(element)?.ToLower();
+
+      return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
+    }
+
+    private T GetElementType<T>(Base element, string family, string type, List<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
+    {
+      isExactMatch = false;
+      ElementType match = null;
+
+      if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
+      {
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family && x.Name?.ToLower() == type);
+        isExactMatch = match != null;
+      }
+
+      //some elements only have one family so we didn't add such prop our schema
+      if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
+      {
+        match = types.FirstOrDefault(x => x.Name?.ToLower() == type);
+        isExactMatch = match != null;
+      }
+
+      // match the type only for when we auto assign it
+      if (match == null && !string.IsNullOrEmpty(type))
+      {
+        match = types.FirstOrDefault(x =>
+        {
+          var symbolTypeParam = x.get_Parameter(DB.BuiltInParameter.ELEM_TYPE_PARAM);
+          var symbolTypeNameParam = x.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM);
+          if (symbolTypeParam != null && symbolTypeParam.AsValueString()?.ToLower() == type)
+            return true;
+          else if (symbolTypeNameParam != null && symbolTypeNameParam.AsValueString()?.ToLower() == type)
+            return true;
+          return false;
+        });
+        isExactMatch = match != null;
+      }
+
+      if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
+      {
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family);
+      }
+
+      if (match == null) // okay, try something!
+      {
+        if (element is BuiltElements.Wall) // specifies the basic wall sub type as default
+          match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
+        match ??= types.First();
+      }
+
+      if (!isExactMatch)
+        appObj.Update(logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+
+      if (match is FamilySymbol fs && !fs.IsActive)
+        fs.Activate();
+
+      return (T)(object)match;
+    }
 
     private ElementFilter GetCategoryFilter(Base element)
     {
@@ -763,6 +845,30 @@ namespace Objects.Converter.Revit
           }
           return filter;
       }
+    }
+
+    private List<ElementType> GetElementTypesThatPassFilter<T>(ElementFilter filter)
+    {
+      List<ElementType> types;
+      if (filter != null)
+        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
+      else
+        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
+
+      return types;
+    }
+
+    private string GetTypeOfSpeckleObject(Base @base)
+    {
+      var type = @base["type"] as string;
+
+      // if the object is structural, we keep the type name in a different location
+      if (@base is OSG.Element1D element1D)
+        type = element1D.property.name.Replace('X', 'x');
+      else if (@base is OSG.Element2D element2D)
+        type = element2D.property.name;
+
+      return type;
     }
 
     #endregion

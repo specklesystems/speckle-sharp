@@ -33,7 +33,9 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (!GetElementType<WallType>(speckleWall, appObj, out WallType wallType))
+      var wallType = GetElementType<WallType>(speckleWall, appObj, out bool exactSymbolMatch);
+
+      if (wallType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -83,7 +85,7 @@ namespace Objects.Converter.Revit
       //is structural update
       TrySetParam(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT, structural);
 
-      if (revitWall.WallType.Name != wallType.Name)
+      if (exactSymbolMatch && revitWall.WallType.Name != wallType.Name)
         revitWall.ChangeTypeId(wallType.Id);
 
       if (isUpdate)

@@ -67,7 +67,9 @@ namespace Objects.Converter.Revit
       appObj = CreatePhysicalMember(speckleElement);
       // TODO: set properties?
 #else
-      if (!GetElementType(speckleElement, appObj, out DB.ElementType elementType))
+      var elementType = GetElementType<ElementType>(speckleElement, appObj, out bool exactSymbolMatch);
+
+      if (elementType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
