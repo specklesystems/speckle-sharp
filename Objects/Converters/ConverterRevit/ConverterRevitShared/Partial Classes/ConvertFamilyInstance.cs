@@ -681,9 +681,7 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var gElem = instance.GetOriginalGeometry(new Options());
-        var solids = gElem.SelectMany(GetSolids);
-        var meshes = GetMeshesFromSolids(solids, instance.Document);
+        var meshes = GetElementDisplayValue(instance, null, true);
         symbol.displayValue = meshes;
       }
       catch (Exception e)

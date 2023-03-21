@@ -194,6 +194,7 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
+    /* TODO: no references - deprecate?
     private Mesh SolidToSpeckleMesh(Solid solid, Document doc)
     {
       var mesh = new Mesh();
@@ -201,6 +202,7 @@ namespace Objects.Converter.Revit
       mesh.units = ModelUnits;
       return mesh;
     }
+    */
 
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {

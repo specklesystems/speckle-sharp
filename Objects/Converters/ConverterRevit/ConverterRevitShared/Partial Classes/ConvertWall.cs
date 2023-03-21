@@ -187,7 +187,7 @@ namespace Objects.Converter.Revit
             speckleWall.elements.Add(WallToSpeckle(wall, out List<string> stackedWallNotes));
         }
 
-        speckleWall.displayValue = GetElementDisplayMesh(revitWall,
+        speckleWall.displayValue = GetElementDisplayValue(revitWall,
           new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       }
       else
