@@ -633,12 +633,12 @@ namespace Objects.Converter.Revit
       var localTransform = instanceTransform;
       if (useParentTransform)
       {
-        localTransform = instanceTransform.Multiply(parentTransform.Inverse);
+        localTransform = parentTransform.Inverse.Multiply(instanceTransform);
       }
       var transform = TransformToSpeckle(localTransform, instance.Document, out bool isMirrored);
 
       // get the definition base of this instance
-      RevitSymbolElementType definition = ConvertAndCacheRevitInstanceDefinition(instance, Doc, out List<string> definitionNotes, instanceTransform);
+      RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, instanceTransform);
       notes.AddRange(definitionNotes);
 
       var _instance = new RevitInstance();
@@ -660,18 +660,14 @@ namespace Objects.Converter.Revit
       return _instance;
     }
 
-    private RevitSymbolElementType ConvertAndCacheRevitInstanceDefinition(DB.FamilyInstance instance, Document doc, out List<string> notes, Transform parentTransform)
-    {
-      notes = new List<string>();
-      var _symbol = instance.Document.GetElement(instance.GetTypeId()) as DB.FamilySymbol;
-
-      if (_symbol == null) return null;
-      if (!Symbols.ContainsKey(_symbol.UniqueId))
-        Symbols[_symbol.UniqueId] = GetRevitInstanceDefinition(instance, out notes, parentTransform);
-
-      return Symbols[_symbol.UniqueId] as RevitSymbolElementType;
-    }
-
+    /// <summary>
+    /// Converts the familysymbol into a revitsymbolelementtype
+    /// </summary>
+    /// <param name="instance"></param>
+    /// <param name="notes"></param>
+    /// <param name="parentTransform"></param>
+    /// <returns></returns>
+    /// <remarks>TODO: could potentially optimize this for symbols with the same displayvalues by caching previously converted symbols</remarks>
     private RevitSymbolElementType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes, Transform parentTransform)
     {
       notes = new List<string>();

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -246,7 +246,7 @@ namespace SpeckleRhino
     #region receiving 
     public override bool CanPreviewReceive => true;
 
-    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View") || @object.speckle_type.Contains("Collection");
+    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Instance") || @object.speckle_type.Contains("View") || @object.speckle_type.Contains("Collection");
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
@@ -394,9 +394,9 @@ namespace SpeckleRhino
           foreach (var previewObj in Preview)
           {
             var isPreviewIgnore = false;
+            converter.Report.Log(previewObj); // Log object so converter can access
             if (previewObj.Convertible)
             {
-              converter.Report.Log(previewObj); // Log object so converter can access
               var storedObj = StoredObjects[previewObj.OriginalId];
               if (storedObj == null)
               {
