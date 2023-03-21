@@ -125,8 +125,7 @@ namespace Objects.Converter.Revit
       //create analytical panel (floor or wall)
       if (revitMember == null)
       {
-        var polycurve = PolycurveFromTopology(speckleElement.topology);
-        var level = LevelFromPoint(PointToNative(speckleElement.topology[0].basePoint));
+        var polycurve = PolycurveFromTopology(speckleElement.topology);       
         var curveArray = CurveToNative(polycurve, true);
         var curveLoop = CurveArrayToCurveLoop(curveArray);
         revitMember = AnalyticalPanel.Create(Doc, curveLoop);
@@ -137,6 +136,7 @@ namespace Objects.Converter.Revit
       {
         var physicalMemberAppObj = CreatePhysicalMember(speckleElement);
         physicalMember = (DB.Element)physicalMemberAppObj.Converted.FirstOrDefault();
+        analyticalToPhysicalManager.AddAssociation(revitMember.Id, physicalMember.Id);
 
         appObj.Update(createdId: physicalMember.UniqueId, convertedItem: physicalMember);
       }
