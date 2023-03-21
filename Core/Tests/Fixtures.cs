@@ -24,7 +24,7 @@ namespace Tests
           logToSeq: false
         )
       );
-      Log.Information("Initialized logger for testing");
+      SpeckleLog.Logger.Information("Initialized logger for testing");
     }
   }
 

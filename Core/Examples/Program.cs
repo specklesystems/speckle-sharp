@@ -46,14 +46,14 @@ namespace ExampleApp
       // logs to the stdout console (useful when debugging)
       // note, not all props are available in the file and console log, context is not rendered there
 
-      Log.Information(
+      SpeckleLog.Logger.Information(
         "Captain's first log, stardate {stardate:.0}. This is the beginning of our journey",
         40759.5123
       );
 
-      var log = Log.ForContext("currentSpeed", "warp 5").ForContext("captain", "Jean-Luc Picard");
+      var log = SpeckleLog.Logger.ForContext("currentSpeed", "warp 5").ForContext("captain", "Jean-Luc Picard");
 
-      log.Information(
+      SpeckleLog.Logger.Information(
         "We're traveling to {destination} our current speed is {currentSpeed}",
         "Fairpoint station"
       );
@@ -63,17 +63,17 @@ namespace ExampleApp
       using (LogContext.PushProperty("actingEnsign", "Wesley Crusher"))
       {
         var bearing = new { bearing = 25, mark = 134 };
-        Log.Information("Picking up an anomaly, bearing {@bearing}", bearing);
+        SpeckleLog.Logger.Information("Picking up an anomaly, bearing {@bearing}", bearing);
       }
       try
       {
-        Log.Warning("Yellow alert, shields up");
+        SpeckleLog.Logger.Warning("Yellow alert, shields up");
         throw new Exception("Shields are not responding.");
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Cannot raise shields, {reason}", ex.Message);
-        Log.Fatal(ex, "Cannot raise shields, {reason}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Cannot raise shields, {reason}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Cannot raise shields, {reason}", ex.Message);
       }
 
       // await Subscriptions.SubscriptionConnection();
