@@ -359,7 +359,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public DirectShapeFreeformViewModel()
     {
-      Categories = Enum.GetValues(typeof(RevitCategory)).Cast<RevitCategory>().Select(x => x.ToString()).ToList(); ;
+      Categories = Enum.GetValues(typeof(RevitCategory)).Cast<RevitCategory>().Select(x => x.ToString()).OrderBy(x => x).ToList(); ;
     }
 
 
