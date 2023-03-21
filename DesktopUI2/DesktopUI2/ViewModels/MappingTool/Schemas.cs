@@ -327,7 +327,7 @@ namespace DesktopUI2.ViewModels.MappingTool
       set => this.RaiseAndSetIfChanged(ref _categories, value);
     }
 
-    private string _selectedCategory;
+    private string _selectedCategory = RevitCategory.GenericModel.ToString();
     [DataMember]
     public string SelectedCategory
     {
