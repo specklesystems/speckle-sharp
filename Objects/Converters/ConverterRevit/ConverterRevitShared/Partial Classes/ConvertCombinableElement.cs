@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
             geometries.Add(MeshToSpeckle(mesh, combinableElement.Document));
             break;
           case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
-            geometries.AddRange(GetMeshesFromSolids(new[] { solid }, combinableElement.Document));
+            geometries.AddRange(ConvertSolidsByRenderMaterial(new[] { solid }, combinableElement.Document));
             break;
         }
       }
