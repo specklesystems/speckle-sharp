@@ -53,7 +53,7 @@ namespace ConnectorGrasshopper
         // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
         // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
         // Recommended practice is to assume that our connector would be installed alongside theirs.
-        Log.Error(e, e.Message);
+        SpeckleLog.Logger.Error(e, e.Message);
       }
 
       Grasshopper.Instances.CanvasCreated += OnCanvasCreated;
@@ -228,7 +228,7 @@ namespace ConnectorGrasshopper
           }
           catch (Exception e)
           {
-            Log.Error(e, e.Message);
+            SpeckleLog.Logger.Error(e, e.Message);
           }
         });
 
@@ -296,7 +296,7 @@ namespace ConnectorGrasshopper
       {
         if (task.Exception != null)
         {
-          Log.Error(task.Exception, task.Exception.Message);
+          SpeckleLog.Logger.Error(task.Exception, task.Exception.Message);
           var errItem = new ToolStripMenuItem("An error occurred while fetching Kits");
           errItem.DropDown.Items.Add(task.Exception.ToFormattedString());
 
@@ -361,12 +361,14 @@ namespace ConnectorGrasshopper
     private void CreateMeshingSettingsMenu()
     {
       var defaultSetting = new ToolStripMenuItem(
-        "Default") { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
+        "Default")
+      { Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.Default, CheckOnClick = true };
 
       var currentDocSetting = new ToolStripMenuItem(
         "Current Rhino doc")
       {
-        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc, CheckOnClick = true
+        Checked = SpeckleGHSettings.MeshSettings == SpeckleMeshSettings.CurrentDoc,
+        CheckOnClick = true
       };
       currentDocSetting.Click += (sender, args) =>
       {

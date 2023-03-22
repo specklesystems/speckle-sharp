@@ -142,12 +142,15 @@ namespace Speckle.Core.Logging
       );
       var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
         .Is(logConfiguration.minimumLevel)
-        .Enrich.WithClientAgent()
-        .Enrich.WithClientIp()
         .Enrich.FromLogContext()
-        .Enrich.FromGlobalLogContext()
-        .Enrich.WithExceptionDetails();
-
+        .Enrich.FromGlobalLogContext();
+      
+#if !MAC
+       serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
+                              .Enrich.WithClientIp()
+                              .Enrich.WithExceptionDetails();
+#endif
+      
       if (logConfiguration.logToFile && canLogToFile)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
           logFilePath,

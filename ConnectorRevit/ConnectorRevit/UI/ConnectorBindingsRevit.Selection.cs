@@ -313,7 +313,7 @@ namespace Speckle.ConnectorRevit.UI
             }
             catch (Exception ex)
             {
-              Serilog.Log.Error(ex, ex.Message);
+              SpeckleLog.Logger.Error(ex, ex.Message);
             }
             return selection;
         }
