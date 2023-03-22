@@ -266,7 +266,7 @@ namespace Speckle.Core.Models
             }
             catch (Exception ex)
             {
-              Log.Warning(ex, "Failed to get computed member: {name}", attr.Name);
+              SpeckleLog.Logger.Warning(ex, "Failed to get computed member: {name}", attr.Name);
               dic[attr.Name] = null;
             }
           }
