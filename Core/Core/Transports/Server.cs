@@ -85,7 +85,7 @@ namespace Speckle.Core.Transports
       int timeoutSeconds = 60
     )
     {
-      Log.Information("Initializing New Remote V1 Transport for {baseUri}", baseUri);
+      SpeckleLog.Logger.Information("Initializing New Remote V1 Transport for {baseUri}", baseUri);
 
       BaseUri = baseUri;
       StreamId = streamId;

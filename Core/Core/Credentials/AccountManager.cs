@@ -176,7 +176,7 @@ namespace Speckle.Core.Credentials
       {
         var firstAccount = GetAccounts().FirstOrDefault();
         if (firstAccount == null)
-          Log.Information("No Speckle accounts found. Visit the Speckle web app to create one.");
+          SpeckleLog.Logger.Information("No Speckle accounts found. Visit the Speckle web app to create one.");
         return firstAccount;
       }
       return defaultAccount;
@@ -337,7 +337,7 @@ namespace Speckle.Core.Credentials
       if (string.IsNullOrEmpty(localUrl))
       {
         localUrl = GetDefaultServerUrl();
-        Log.Debug(
+        SpeckleLog.Logger.Debug(
           "The provided server url was null or empty. Changed to the default url {serverUrl}",
           localUrl
         );
@@ -349,7 +349,7 @@ namespace Speckle.Core.Credentials
     {
       if (!HttpListener.IsSupported)
       {
-        Log.Error("HttpListener not supported");
+        SpeckleLog.Logger.Error("HttpListener not supported");
         throw new Exception("Your operating system is not supported");
       }
     }
@@ -362,7 +362,7 @@ namespace Speckle.Core.Credentials
     {
       _ensureGetAccessCodeFlowIsSupported();
 
-      Log.Debug(
+      SpeckleLog.Logger.Debug(
         "Starting auth process for {server}/authn/verify/sca/{challenge}",
         server,
         challenge
@@ -381,14 +381,14 @@ namespace Speckle.Core.Credentials
         var localUrl = "http://localhost:29363/";
         listener.Prefixes.Add(localUrl);
         listener.Start();
-        Log.Debug("Listening for auth redirects on {localUrl}", localUrl);
+        SpeckleLog.Logger.Debug("Listening for auth redirects on {localUrl}", localUrl);
         // Note: The GetContext method blocks while waiting for a request.
         HttpListenerContext context = listener.GetContext();
         HttpListenerRequest request = context.Request;
         HttpListenerResponse response = context.Response;
 
         accessCode = request.QueryString["access_code"];
-        Log.Debug("Got access code {accessCode}", accessCode);
+        SpeckleLog.Logger.Debug("Got access code {accessCode}", accessCode);
         var message = "";
         if (accessCode != null)
           message =
@@ -403,7 +403,7 @@ namespace Speckle.Core.Credentials
         System.IO.Stream output = response.OutputStream;
         output.Write(buffer, 0, buffer.Length);
         output.Close();
-        Log.Debug("Processed finished processing the access code.");
+        SpeckleLog.Logger.Debug("Processed finished processing the access code.");
         listener.Stop();
         listener.Close();
       });
@@ -417,7 +417,7 @@ namespace Speckle.Core.Credentials
       // this is means the task timed out
       if (completedTask != task)
       {
-        Log.Warning(
+        SpeckleLog.Logger.Warning(
           "Local auth flow failed to complete within the timeout window. Access code is {accessCode}",
           accessCode
         );
@@ -426,7 +426,7 @@ namespace Speckle.Core.Credentials
 
       if (task.IsFaulted)
       {
-        Log.Error(
+        SpeckleLog.Logger.Error(
           task.Exception,
           "Getting access code flow failed with {exceptionMessage}",
           task.Exception.Message
@@ -435,7 +435,7 @@ namespace Speckle.Core.Credentials
       }
 
       // task completed within timeout
-      Log.Information(
+      SpeckleLog.Logger.Information(
         "Local auth flow completed successfully within the timeout window. Access code is {accessCode}",
         accessCode
       );
@@ -461,7 +461,7 @@ namespace Speckle.Core.Credentials
           serverInfo = userResponse.serverInfo,
           userInfo = userResponse.user
         };
-        Log.Information("Successfully created account for {serverUrl}", server);
+        SpeckleLog.Logger.Information("Successfully created account for {serverUrl}", server);
         account.serverInfo.url = server;
 
         return account;
@@ -528,7 +528,7 @@ namespace Speckle.Core.Credentials
     /// <returns></returns>
     public static async Task AddAccount(string server = "")
     {
-      Log.Debug("Starting to add account for {serverUrl}", server);
+      SpeckleLog.Logger.Debug("Starting to add account for {serverUrl}", server);
 
       server = _ensureCorrectServerUrl(server);
 
@@ -551,17 +551,17 @@ namespace Speckle.Core.Credentials
 
         //if the account already exists it will not be added again
         AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
-        Log.Debug("Finished adding account {accountId} for {serverUrl}", account.id, server);
+        SpeckleLog.Logger.Debug("Finished adding account {accountId} for {serverUrl}", account.id, server);
       }
       catch (SpeckleAccountManagerException ex)
       {
-        Log.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
         // rethrowing any known errors
         throw;
       }
       catch (Exception ex)
       {
-        Log.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to add account: {exceptionMessage}", ex.Message);
         throw new SpeckleAccountManagerException($"Failed to add account: {ex.Message}", ex);
       }
       finally

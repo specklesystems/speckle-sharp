@@ -1,7 +1,6 @@
 ﻿using System.Net.Mime;
 using System.Text;
 using Newtonsoft.Json;
-using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -25,7 +24,7 @@ namespace TestsIntegration
           logToSeq: false
         )
       );
-      Log.Information("Initialized logger for testing");
+      SpeckleLog.Logger.Information("Initialized logger for testing");
     }
   }
 

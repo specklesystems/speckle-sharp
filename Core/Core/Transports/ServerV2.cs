@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Serilog;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports.ServerUtils;
 using Speckle.Newtonsoft.Json.Linq;
@@ -94,7 +95,7 @@ namespace Speckle.Core.Transports
       int timeoutSeconds = 60
     )
     {
-      Log.Information("Initializing a new Remote Transport for {baseUri}", baseUri);
+      SpeckleLog.Logger.Information("Initializing a new Remote Transport for {baseUri}", baseUri);
 
       BaseUri = baseUri;
       StreamId = streamId;
