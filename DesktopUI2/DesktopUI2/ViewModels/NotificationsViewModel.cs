@@ -37,7 +37,7 @@ namespace DesktopUI2.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}", GetType(), ex.Message);
+                SpeckleLog.Logger.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}", GetType(), ex.Message);
             }
         }
     }

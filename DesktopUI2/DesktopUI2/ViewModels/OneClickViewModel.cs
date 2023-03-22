@@ -189,7 +189,7 @@ namespace DesktopUI2.ViewModels
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Could not send with one click {exceptionMessage}", ex.Message);
+                SpeckleLog.Logger.Error(ex, "Could not send with one click {exceptionMessage}", ex.Message);
                 SentText = "Something went wrong!\nPlease try again or switch to advanced mode.";
                 SuccessfulSend = false;
             }
@@ -241,7 +241,7 @@ namespace DesktopUI2.ViewModels
             }
             catch (Exception ex)
             {
-                Log.ForContext("fileName", _fileName)
+                SpeckleLog.Logger.ForContext("fileName", _fileName)
                   .Debug(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SearchStreams), ex.Message);
             }
             return stream;
