@@ -144,7 +144,7 @@ namespace Speckle.Core.Api
           onRetry: (ex, timeout, context) =>
           {
             var graphqlEx = ex as SpeckleGraphQLException<T>;
-            Log.ForContext("graphqlExtensions", graphqlEx.Extensions)
+            SpeckleLog.Logger.ForContext("graphqlExtensions", graphqlEx.Extensions)
               .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
               .Warning(
                 ex,
@@ -166,7 +166,7 @@ namespace Speckle.Core.Api
     {
       using (LogContext.Push(_createEnrichers<T>(request)))
       {
-        Log.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
+        SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
         var timer = new Stopwatch();
         var success = false;
         timer.Start();
@@ -196,7 +196,7 @@ namespace Speckle.Core.Api
         // anything else related to graphql gets logged
         catch (SpeckleGraphQLException<T> gqlException)
         {
-          Log.ForContext("graphqlResponse", gqlException.Response)
+          SpeckleLog.Logger.ForContext("graphqlResponse", gqlException.Response)
             .ForContext("graphqlExtensions", gqlException.Extensions)
             .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
             .Warning(
@@ -212,7 +212,7 @@ namespace Speckle.Core.Api
         // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
         catch (Exception ex)
         {
-          Log.Warning(
+          SpeckleLog.Logger.Warning(
             ex,
             "Execution of the graphql request to get {resultType} failed without a graphql response. Cause {exceptionMessage}",
             typeof(T).Name,
@@ -232,7 +232,7 @@ namespace Speckle.Core.Api
           // the same performance log
           timer.Stop();
           var status = success ? "succeeded" : "failed";
-          Log.Information(
+          SpeckleLog.Logger.Information(
             "Execution of graphql request to get {resultType} {resultStatus} after {elapsed} seconds",
             typeof(T).Name,
             status,
@@ -339,7 +339,7 @@ namespace Speckle.Core.Api
                 }
                 else
                 {
-                  Log.ForContext("graphqlResponse", response)
+                  SpeckleLog.Logger.ForContext("graphqlResponse", response)
                     .Error(
                       "Cannot execute graphql callback for {resultType}, the response has no data.",
                       typeof(T).Name
@@ -354,7 +354,7 @@ namespace Speckle.Core.Api
               // anything else related to graphql gets logged
               catch (SpeckleGraphQLException<T> gqlException)
               {
-                Log.ForContext("graphqlResponse", gqlException.Response)
+                SpeckleLog.Logger.ForContext("graphqlResponse", gqlException.Response)
                   .ForContext("graphqlExtensions", gqlException.Extensions)
                   .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
                   .Warning(
@@ -375,7 +375,7 @@ namespace Speckle.Core.Api
             {
               // we're logging this as an error for now, to keep track of failures
               // so far we've swallowed these errors
-              Log.Error(
+              SpeckleLog.Logger.Error(
                 ex,
                 "Subscription request for {resultType} failed with {exceptionMessage}",
                 typeof(T).Name,
@@ -388,7 +388,7 @@ namespace Speckle.Core.Api
         }
         catch (Exception ex)
         {
-          Log.Warning(
+          SpeckleLog.Logger.Warning(
             ex,
             "Subscribing to graphql {resultType} failed without a graphql response. Cause {exceptionMessage}",
             typeof(T).Name,
