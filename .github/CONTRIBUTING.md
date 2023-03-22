@@ -24,6 +24,14 @@ This means that what might look like a simple quick change in one repo may have 
 
 You fixed something! Great! We hope you logged it first :) Make sure though that you've covered the lateral thinking needed for a bug report, as described above, also in your implementation! If there any tests, make sure they all pass. If there are none, it means they're missing - so add them!
 
+### Code Style
+
+When collaborating on a project in GitHub, it's important to follow coding conventions and style guidelines to ensure consistency and readability of the codebase. One commonly used convention is to use two spaces for indentation.
+
+To use two spaces for indentation in GitHub, you can configure your text editor or IDE to use this indentation style. Once you've written your code, you can commit and push your changes to GitHub.
+
+When collaborating with others on GitHub, it's important to communicate any changes to coding conventions or style guidelines, and to work together to maintain a consistent coding style throughout the project. Code reviews can also help ensure that code is well-formatted and easy to read.
+
 ## New Features 🎉
 
 The golden rule is to Discuss First!
