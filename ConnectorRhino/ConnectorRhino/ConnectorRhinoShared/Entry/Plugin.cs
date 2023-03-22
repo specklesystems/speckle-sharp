@@ -127,6 +127,7 @@ namespace SpeckleRhino
           SpeckleCommandMac.CreateOrFocusSpeckle();
         } catch (Exception ex)
         {
+          Log.Fatal(ex, "Failed to create or focus Speckle window");
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
         }
 #else
