@@ -99,7 +99,7 @@ namespace Speckle.ConnectorRevit.UI
           }
           catch (Exception ex)
           {
-            Serilog.Log.Error(ex, ex.Message);
+            SpeckleLog.Logger.Error(ex, ex.Message);
           }
         };
         dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -341,7 +341,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
         MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
         {
           Title = "📷 Open View Error",
