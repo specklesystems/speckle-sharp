@@ -226,10 +226,11 @@ namespace Objects.Converter.Revit
 
         case OG.Curve nurbs:
           var curvePoints = new List<double>();
+          var nurbsConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, nurbs.units);
           for (var i = 0; i < nurbs.points.Count; i++)
           {
             if (i % 3 == 2)
-              curvePoints.Add(z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, nurbs.units));
+              curvePoints.Add(z * nurbsConversionFactor);
             else
               curvePoints.Add(nurbs.points[i]);
           }
@@ -240,10 +241,11 @@ namespace Objects.Converter.Revit
         case OG.Polyline poly:
           var polylinePonts = new List<double>();
           var originalPolylinePoints = poly.ToList();
+          var polyConversionFactor = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, poly.units);
           for (var i = 0; i < originalPolylinePoints.Count; i++)
           {
             if (i % 3 == 2)
-              polylinePonts.Add(z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, poly.units));
+              polylinePonts.Add(z * polyConversionFactor);
             else
               polylinePonts.Add(originalPolylinePoints[i]);
           }
