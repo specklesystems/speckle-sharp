@@ -7,6 +7,7 @@ using System.Timers;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Serilog;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
@@ -66,7 +67,7 @@ namespace Speckle.Core.Transports
       string scope = "Objects"
     )
     {
-      Log.Information("Creating new MongoDB Transport");
+      SpeckleLog.Logger.Information("Creating new MongoDB Transport");
 
       ConnectionString = connectionString;
       Client = new MongoClient(ConnectionString);

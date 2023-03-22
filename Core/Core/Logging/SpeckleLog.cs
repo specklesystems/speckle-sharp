@@ -80,6 +80,7 @@ namespace Speckle.Core.Logging
   /// </summary>
   public static class SpeckleLog
   {
+    public static ILogger Logger { get; private set; }
     private static bool _initialized = false;
 
     /// <summary>
@@ -94,20 +95,21 @@ namespace Speckle.Core.Logging
       if (_initialized)
         return;
 
-      logConfiguration = logConfiguration ?? new SpeckleLogConfiguration();
+      logConfiguration ??= new SpeckleLogConfiguration();
 
-      Log.Logger = CreateConfiguredLogger(
+      Logger = CreateConfiguredLogger(
         hostApplicationName,
         hostApplicationVersion,
         logConfiguration
       );
+      Log.Logger = Logger;
 
       _addUserIdToGlobalContextFromDefaultAccount();
       _addVersionInfoToGlobalContext();
       _addHostOsInfoToGlobalContext();
       _addHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
 
-      Log.ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
+      Logger.ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
         .ForContext("installApplicationDataPath", SpecklePathProvider.InstallApplicationDataPath)
         .ForContext("speckleLogConfiguration", logConfiguration)
         .Information(
@@ -207,7 +209,7 @@ namespace Speckle.Core.Logging
       }
       catch (Exception ex)
       {
-        Log.Warning(ex, "Cannot set user id for the global log context.");
+        Logger.Warning(ex, "Cannot set user id for the global log context.");
       }
       GlobalLogContext.PushProperty("id", id);
 

@@ -194,7 +194,7 @@ namespace Speckle.Core.Logging
         }
         catch (Exception ex)
         {
-          Log.ForContext("eventName", eventName.ToString())
+          SpeckleLog.Logger.ForContext("eventName", eventName.ToString())
             .ForContext("isAction", isAction)
             .Warning(ex, "Analytics event failed {exceptionMessage}", ex.Message);
         }
