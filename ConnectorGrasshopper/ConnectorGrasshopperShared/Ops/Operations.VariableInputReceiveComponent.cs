@@ -458,7 +458,7 @@ namespace ConnectorGrasshopper.Ops
             refreshToken = ""
           };
         }
-        
+
         ApiClient?.Dispose();
         ApiClient = new Client(account);
         ApiClient.SubscribeCommitCreated(StreamWrapper.StreamId);
@@ -578,7 +578,7 @@ namespace ConnectorGrasshopper.Ops
             }
           });
         };
-        
+
         if (receiveComponent.ApiResetTask == null)
           receiveComponent.ApiResetTask = receiveComponent.ResetApiClient(InputWrapper);
         receiveComponent.ApiResetTask.Wait();
@@ -670,7 +670,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(e, e.Message);
+        SpeckleLog.Logger.Error(e, e.Message);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         Done();
       }
@@ -1012,7 +1012,7 @@ namespace ConnectorGrasshopper.Ops
         return GH_ObjectResponse.Handled;
       }
 
-      // TODO: check if owner has null account/client, and call the reset thing SYNC 
+      // TODO: check if owner has null account/client, and call the reset thing SYNC
 
       ((VariableInputReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
       Owner.ExpireSolution(true);

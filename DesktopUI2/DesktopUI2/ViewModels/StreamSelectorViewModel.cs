@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 
 namespace DesktopUI2.ViewModels
 {
@@ -178,7 +179,7 @@ namespace DesktopUI2.ViewModels
         {
           bool isError = !(ex is TaskCanceledException || ex.InnerException is TaskCanceledException);
           var logLevel = isError ? LogEventLevel.Error : LogEventLevel.Debug;
-          Serilog.Log.Write(logLevel, ex, "Failed to fetch streams {exceptionMessage} for account", ex.Message);
+          SpeckleLog.Logger.Write(logLevel, ex, "Failed to fetch streams {exceptionMessage} for account", ex.Message);
         }
       }
       if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -190,7 +191,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Fatal(ex, "Failed to fetch streams  {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to fetch streams  {exceptionMessage}", ex.Message);
       }
       finally
       {

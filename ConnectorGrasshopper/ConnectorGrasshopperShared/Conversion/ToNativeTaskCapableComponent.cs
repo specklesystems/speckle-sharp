@@ -95,7 +95,7 @@ namespace ConnectorGrasshopper.Conversion
         if (e is AggregateException aggregateException)
           e = aggregateException.Flatten();
 
-        Log.Error(e, e.Message);
+        SpeckleLog.Logger.Error(e, e.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
         return new GH_SpeckleBase();
       }

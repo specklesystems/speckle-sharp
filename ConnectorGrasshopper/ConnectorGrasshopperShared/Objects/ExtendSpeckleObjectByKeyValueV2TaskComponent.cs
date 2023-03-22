@@ -118,10 +118,10 @@ namespace ConnectorGrasshopper.Objects
 
         // 👉 Checking for cancellation!
         if (CancelToken.IsCancellationRequested) return null;
-        
+
         if (keys.Count != values.Count)
           throw new Exception("Keys and Values list do not have the same number of items");
-        
+
         // We got a list of values
 
         var hasErrors = false;
@@ -131,7 +131,7 @@ namespace ConnectorGrasshopper.Objects
           var value = values[i];
           try
           {
-            if(value is SpeckleObjectGroup group)
+            if (value is SpeckleObjectGroup group)
               @base[key] = Converter != null ? group.Value.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList() : group.Value;
             else
               @base[key] = Converter != null ? Utilities.TryConvertItemToSpeckle(value, Converter) : value;
@@ -150,7 +150,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(ex, ex.Message);
+        Logging.SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Object could not be extended: " + ex.ToFormattedString());
         return null;
       }

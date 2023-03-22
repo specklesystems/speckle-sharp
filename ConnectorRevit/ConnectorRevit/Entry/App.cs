@@ -117,7 +117,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
         var td = new TaskDialog("Could not load Speckle");
         td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
