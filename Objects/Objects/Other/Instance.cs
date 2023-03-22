@@ -133,6 +133,7 @@ namespace Objects.Other.Revit
     public Level level { get; set; }
     public bool facingFlipped { get; set; }
     public bool handFlipped { get; set; }
+    public bool mirrored { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
     
