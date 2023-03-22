@@ -58,7 +58,7 @@ namespace ConnectorGrasshopper.Objects
         {
           foreach (var error in Converter.Report.ConversionErrors)
             AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, error.ToFormattedString());
-          
+
           Converter.Report.ConversionErrors.Clear();
         }
 
@@ -90,7 +90,7 @@ namespace ConnectorGrasshopper.Objects
           var value = values[i];
           try
           {
-            if(value is SpeckleObjectGroup group)
+            if (value is SpeckleObjectGroup group)
               speckleObj[key] = Converter != null ? group.Value.Select(item => Utilities.TryConvertItemToSpeckle(item, Converter)).ToList() : group.Value;
             else
               speckleObj[key] = Converter != null ? Utilities.TryConvertItemToSpeckle(value, Converter) : value;
@@ -112,7 +112,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not create Speckle object: " + ex.ToFormattedString());
         return null;
       }

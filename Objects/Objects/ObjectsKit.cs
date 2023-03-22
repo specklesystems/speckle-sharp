@@ -53,7 +53,7 @@ namespace Objects
     public IEnumerable<string> Converters => _converters ??= GetAvailableConverters();
 
     private readonly Dictionary<string, Type> _loadedConverters = new Dictionary<string, Type>();
-    
+
     /// <inheritdoc/>
     public ISpeckleConverter LoadConverter(string app)
     {
@@ -64,7 +64,7 @@ namespace Objects
         {
           return (ISpeckleConverter)Activator.CreateInstance(t);
         }
-        
+
         var converterInstance = LoadConverterFromDisk(app);
         _loadedConverters[app] = converterInstance.GetType();
 
@@ -72,7 +72,7 @@ namespace Objects
       }
       catch (Exception ex)
       {
-        Log.Warning(ex, "Failed to load converter for app {app}", app);
+        SpeckleLog.Logger.Warning(ex, "Failed to load converter for app {app}", app);
         throw new KitException($"Failed to load converter for app {app}", this, ex);
       }
     }
@@ -98,7 +98,7 @@ namespace Objects
         .Select(type => (ISpeckleConverter)Activator.CreateInstance(type))
         .First(converter => converter.GetServicedApplications().Contains(app));
 
-      Log.ForContext<ObjectsKit>()
+      SpeckleLog.Logger.ForContext<ObjectsKit>()
         .ForContext("basePath", basePath)
         .ForContext("app", app)
         .Information("Converter {converterName} successfully loaded from {path}", converterInstance.Name, path);
@@ -112,7 +112,7 @@ namespace Objects
       var availableConverters = Directory.EnumerateFiles(basePath!, "Objects.Converter.*")
         .Select(dllPath => dllPath.Split('.').Reverse().ElementAt(1))
         .ToList();
-      
+
 
       //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
       if (!availableConverters.Any())

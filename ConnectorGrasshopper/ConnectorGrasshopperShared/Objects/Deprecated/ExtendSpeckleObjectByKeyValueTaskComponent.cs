@@ -190,7 +190,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
         return null;
       }

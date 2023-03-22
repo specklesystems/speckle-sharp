@@ -156,8 +156,8 @@ namespace SpeckleRhino
       var hostAppName = HostApplications.Rhino.Name;
       var hostAppVersion = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
       SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
-      Log.Information("Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}", hostAppName, hostAppVersion);
-      
+      SpeckleLog.Logger.Information("Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}", hostAppName, hostAppVersion);
+
       string processName = "";
       System.Version processVersion = null;
       HostUtils.GetCurrentProcessInfo(out processName, out processVersion);
@@ -166,7 +166,7 @@ namespace SpeckleRhino
       // https://speckle.community/t/revit-command-failure-for-external-command/3489/27
       if (!processName.Equals("rhino", StringComparison.InvariantCultureIgnoreCase))
       {
-        Log.ForContext("processVersion", processVersion)
+        SpeckleLog.Logger.ForContext("processVersion", processVersion)
           .Warning("Speckle does not currently support unsupported process {processName}", processName);
         errorMessage = "Speckle does not currently support Rhino.Inside";
         RhinoApp.CommandLineOut.WriteLine(errorMessage);
@@ -177,9 +177,9 @@ namespace SpeckleRhino
       {
         Init();
       }
-      catch(Exception ex)
+      catch (Exception ex)
       {
-        Log.Fatal(ex, "Failed to load Speckle Plugin with {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle Plugin with {exceptionMessage}", ex.Message);
         errorMessage = $"Failed to load Speckle Plugin with {ex.ToFormattedString()}";
         RhinoApp.CommandLineOut.WriteLine(errorMessage);
         return LoadReturnCode.ErrorShowDialog;
@@ -207,13 +207,13 @@ namespace SpeckleRhino
       var plugin_version = Settings.GetString("PlugInVersion", null);
 
       if (string.IsNullOrEmpty(plugin_version)) return;
-      
-      
+
+
       // If the version number of the plugin that was last used does not match the
       // version number of this plugin, proceed.
       if (0 == string.Compare(Version, plugin_version, StringComparison.OrdinalIgnoreCase)) return;
-      
-        
+
+
       // Build a path to the user's staged RUI file.
       var sb = new StringBuilder();
       sb.Append(SpecklePathProvider.InstallApplicationDataPath);
@@ -228,17 +228,17 @@ namespace SpeckleRhino
 
       using (LogContext.PushProperty("path", path))
       {
-        Log.Debug("Deleting and Updating RUI settings file");
-        
+        SpeckleLog.Logger.Debug("Deleting and Updating RUI settings file");
+
         if (File.Exists(path))
         {
           try
           {
             File.Delete(path);
           }
-          catch(Exception ex)
+          catch (Exception ex)
           {
-            Log.Warning(ex, "Failed to delete rui file {exceptionMessage}", ex.Message);
+            SpeckleLog.Logger.Warning(ex, "Failed to delete rui file {exceptionMessage}", ex.Message);
           }
         }
       }
@@ -246,7 +246,7 @@ namespace SpeckleRhino
       // Save the version number of this plugin to our settings file.
       Settings.SetString("PlugInVersion", Version);
     }
-    
+
     private void RhinoApp_Idle(object sender, EventArgs e)
     {
 

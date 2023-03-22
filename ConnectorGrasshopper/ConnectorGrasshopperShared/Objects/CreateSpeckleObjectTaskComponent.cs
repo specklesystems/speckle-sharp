@@ -63,7 +63,7 @@ namespace ConnectorGrasshopper.Objects
           return;
         }
 
-        //TODO: Original node 
+        //TODO: Original node
         if (DA.Iteration == 0)
           Tracker.TrackNodeRun("Create Object");
 
@@ -174,7 +174,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception ex)
             {
-              Log.Error(ex, ex.Message);
+              SpeckleLog.Logger.Error(ex, ex.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -185,7 +185,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception ex)
             {
-              Log.Error(ex, ex.Message);
+              SpeckleLog.Logger.Error(ex, ex.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -203,7 +203,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              Log.Error(e, e.Message);
+              SpeckleLog.Logger.Error(e, e.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
               hasErrors = true;
             }
@@ -220,7 +220,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(e, e.Message);
+        SpeckleLog.Logger.Error(e, e.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
       }
 
