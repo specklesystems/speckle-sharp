@@ -140,13 +140,18 @@ namespace Speckle.Core.Logging
         SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion),
         "SpeckleCoreLog.txt"
       );
-      var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
+      LoggerConfiguration serilogLogConfiguration;
+      try
+      {
+        serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
         .Is(logConfiguration.minimumLevel)
-        .Enrich.WithClientAgent()
-        .Enrich.WithClientIp()
         .Enrich.FromLogContext()
-        .Enrich.FromGlobalLogContext()
-        .Enrich.WithExceptionDetails();
+        .Enrich.FromGlobalLogContext();
+
+      } catch(Exception e)
+      {
+        throw;
+      }
 
       if (logConfiguration.logToFile && canLogToFile)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
