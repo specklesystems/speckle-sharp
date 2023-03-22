@@ -174,7 +174,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, ex.Message);
+              Logging.SpeckleLog.Logger.Error(ex, ex.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -185,7 +185,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, ex.Message);
+              Logging.SpeckleLog.Logger.Error(ex, ex.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -203,7 +203,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception e)
             {
-              SpeckleLog.Logger.Error(e, e.Message);
+              Logging.SpeckleLog.Logger.Error(e, e.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
               hasErrors = true;
             }
@@ -220,7 +220,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        SpeckleLog.Logger.Error(e, e.Message);
+        Logging.SpeckleLog.Logger.Error(e, e.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
       }
 

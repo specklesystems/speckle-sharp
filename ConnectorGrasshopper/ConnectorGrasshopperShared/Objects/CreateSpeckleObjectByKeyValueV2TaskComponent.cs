@@ -112,7 +112,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        Logging.SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not create Speckle object: " + ex.ToFormattedString());
         return null;
       }

@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views.Controls.StreamEditControls;
 using Serilog;
 using Serilog.Events;
 using Speckle.Core.Api;
@@ -27,7 +28,7 @@ namespace DesktopUI2
         public const string LatestCommitString = "latest";
 
         /// <summary>
-        /// Convenience wrapper around <see cref="Operations.Receive"/> with connector-style error handling
+        /// Convenience wrapper around <see cref="Receive"/> with connector-style error handling
         /// </summary>
         /// <param name="commit">the <see cref="Commit"/> to receive</param>
         /// <param name="state">Current Stream card state (does not mutate)</param>

@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Speckle.Core.Helpers;
 using Serilog;
+using Speckle.Core.Logging;
 
 namespace Objects
 {

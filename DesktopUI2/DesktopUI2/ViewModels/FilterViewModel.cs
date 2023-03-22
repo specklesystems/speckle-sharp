@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Serilog;
+using Speckle.Core.Logging;
 
 namespace DesktopUI2.ViewModels
 {
