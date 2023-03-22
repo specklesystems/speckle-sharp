@@ -72,6 +72,12 @@ namespace Objects.Converter.Revit
       return displayMeshes;
     }
 
+    /// <summary>
+    /// Given a collection of <paramref name="meshes"/>, will create one <see cref="Mesh"/> per distinct <see cref="DB.Material"/>
+    /// </summary>
+    /// <param name="meshes"></param>
+    /// <param name="d"></param>
+    /// <returns></returns>
     public List<Mesh> ConvertMeshesByRenderMaterial(List<DB.Mesh> meshes, Document d)
     {
       MeshBuildHelper buildHelper = new MeshBuildHelper();
@@ -86,7 +92,13 @@ namespace Objects.Converter.Revit
       return buildHelper.GetAllValidMeshes();
     }
 
-    public List<Mesh> ConvertSolidsByRenderMaterial(List<Solid> solids, Document d)
+    /// <summary>
+    /// Given a collection of <paramref name="solids"/>, will create one <see cref="Mesh"/> per distinct <see cref="DB.Material"/>
+    /// </summary>
+    /// <param name="solids"></param>
+    /// <param name="d"></param>
+    /// <returns></returns>
+    public List<Mesh> ConvertSolidsByRenderMaterial(IEnumerable<Solid> solids, Document d)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
 
@@ -220,7 +232,7 @@ namespace Objects.Converter.Revit
       var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
       if (allSolids.Any())
       {
-        return GetMeshesFromSolids(allSolids, element.Document);
+        return ConvertSolidsByRenderMaterial(allSolids, element.Document);
       }
       else //it's a mesh!
       {
@@ -252,7 +264,7 @@ namespace Objects.Converter.Revit
       else
         solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
 
-      return GetMeshesFromSolids(solids, elem.Document);
+      return ConvertSolidsByRenderMaterial(solids, elem.Document);
     }
 
     /// <summary>
@@ -351,7 +363,7 @@ namespace Objects.Converter.Revit
           allSolids.AddRange(GetElementSolids(sb));
 
       //Convert solids to meshes
-      meshes.AddRange(GetMeshesFromSolids(allSolids, element.Document));
+      meshes.AddRange(ConvertSolidsByRenderMaterial(allSolids, element.Document));
 
       return meshes;
     }
@@ -385,79 +397,6 @@ namespace Objects.Converter.Revit
       Iterate(gObj);
 
       return solids;
-    }
-
-    /* TODO: no references - deprecate?
-    /// <summary>
-    /// Returns a merged face and vertex array for the group of solids passed in that can be used to set them in a speckle mesh or any object that inherits from a speckle mesh.
-    /// </summary>
-    /// <param name="solids"></param>
-    /// <returns></returns>
-    public (List<int>, List<double>) GetFaceVertexArrFromSolids(IEnumerable<Solid> solids, Document doc)
-    {
-      var faceArr = new List<int>();
-      var vertexArr = new List<double>();
-
-      if (solids == null) return (faceArr, vertexArr);
-
-      foreach (var solid in solids)
-      {
-        foreach (Face face in solid.Faces)
-        {
-          ConvertMeshData(face.Triangulate(), faceArr, vertexArr, doc);
-        }
-      }
-
-      return (faceArr, vertexArr);
-    }
-    */
-
-    /// <summary>
-    /// Given a collection of <paramref name="solids"/>, will create one <see cref="Mesh"/> per distinct <see cref="DB.Material"/>
-    /// </summary>
-    /// <param name="solids"></param>
-    /// <returns></returns>
-    public List<Mesh> GetMeshesFromSolids(IEnumerable<Solid> solids, Document d)
-    {
-      MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
-
-      var MeshMap = new Dictionary<Mesh, List<DB.Mesh>>();
-      foreach (Solid solid in solids)
-      {
-        foreach (Face face in solid.Faces)
-        {
-          DB.Material faceMaterial = d.GetElement(face.MaterialElementId) as DB.Material;
-          Mesh m = meshBuildHelper.GetOrCreateMesh(faceMaterial, ModelUnits);
-          if (!MeshMap.ContainsKey(m))
-          {
-            MeshMap.Add(m, new List<DB.Mesh>());
-          }
-          MeshMap[m].Add(face.Triangulate());
-        }
-      }
-
-      foreach (var meshData in MeshMap)
-      {
-        //It's cheaper to resize lists manually, since we would otherwise be resizing a lot!
-        int numberOfVertices = 0;
-        int numberOfFaces = 0;
-        foreach (DB.Mesh mesh in meshData.Value)
-        {
-          if (mesh == null) continue;
-          numberOfVertices += mesh.Vertices.Count * 3;
-          numberOfFaces += mesh.NumTriangles * 4;
-        }
-
-        meshData.Key.faces.Capacity = numberOfFaces;
-        meshData.Key.vertices.Capacity = numberOfVertices;
-        foreach (DB.Mesh mesh in meshData.Value)
-        {
-          if (mesh == null) continue;
-          ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d);
-        }
-      }
-
-      return meshBuildHelper.GetAllValidMeshes();
     }
 
     #endregion

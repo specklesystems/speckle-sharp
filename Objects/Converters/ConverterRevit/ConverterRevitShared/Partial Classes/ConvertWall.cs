@@ -248,8 +248,8 @@ namespace Objects.Converter.Revit
         solidMullions.AddRange(GetElementSolids(wall.Document.GetElement(mullionId)));
       }
 
-      var meshPanels = GetMeshesFromSolids(solidPanels, wall.Document);
-      var meshMullions = GetMeshesFromSolids(solidMullions, wall.Document);
+      var meshPanels = ConvertSolidsByRenderMaterial(solidPanels, wall.Document);
+      var meshMullions = ConvertSolidsByRenderMaterial(solidMullions, wall.Document);
 
       return (meshPanels, meshMullions);
     }

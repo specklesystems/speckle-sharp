@@ -194,16 +194,6 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    /* TODO: no references - deprecate?
-    private Mesh SolidToSpeckleMesh(Solid solid, Document doc)
-    {
-      var mesh = new Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid> { solid }, doc);
-      mesh.units = ModelUnits;
-      return mesh;
-    }
-    */
-
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
@@ -219,7 +209,7 @@ namespace Objects.Converter.Revit
             geometries.Add(MeshToSpeckle(mesh, revitAc.Document));
             break;
           case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
-            geometries.AddRange(GetMeshesFromSolids(new[] { solid }, revitAc.Document));
+            geometries.AddRange(ConvertSolidsByRenderMaterial(new[] { solid }, revitAc.Document));
             break;
         }
       }
