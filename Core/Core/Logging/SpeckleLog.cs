@@ -146,7 +146,7 @@ namespace Speckle.Core.Logging
         .Enrich.FromGlobalLogContext();
       
 #if !MAC
-       serilogLogConfiguration.Enrich.WithClientAgent()
+       serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
                               .Enrich.WithClientIp()
                               .Enrich.WithExceptionDetails();
 #endif
