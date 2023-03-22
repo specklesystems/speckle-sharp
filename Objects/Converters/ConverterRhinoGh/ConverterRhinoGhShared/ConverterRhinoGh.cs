@@ -89,6 +89,8 @@ namespace Objects.Converter.RhinoGh
 
     public RhinoDoc Doc { get; private set; }
 
+    public Dictionary<string, BlockDefinition> BlockDefinitions { get; private set; } = new Dictionary<string, BlockDefinition>();
+
     public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;

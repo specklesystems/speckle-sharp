@@ -137,7 +137,7 @@ namespace ConnectorGrasshopper.Objects
 
               if (value is SpeckleObjectGroup group)
                 value = group.Value;
-              
+
               inputData[key] = value;
               break;
             case GH_ParamAccess.list:
@@ -235,7 +235,7 @@ namespace ConnectorGrasshopper.Objects
         inputData?.Keys.ToList().ForEach(key =>
         {
           var value = inputData[key];
-          
+
 
           if (value is List<object> list)
           {
@@ -250,7 +250,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception ex)
             {
-              Log.Error(ex, ex.Message);
+              Logging.SpeckleLog.Logger.Error(ex, ex.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -261,7 +261,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception ex)
             {
-              Log.Error(ex, ex.Message);
+              Logging.SpeckleLog.Logger.Error(ex, ex.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -279,7 +279,7 @@ namespace ConnectorGrasshopper.Objects
             }
             catch (Exception ex)
             {
-              Log.Error(ex, ex.Message);
+              Logging.SpeckleLog.Logger.Error(ex, ex.Message);
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -294,7 +294,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(ex, ex.Message);
+        Logging.SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
       }
 

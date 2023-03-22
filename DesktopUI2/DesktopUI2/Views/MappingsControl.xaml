@@ -65,7 +65,7 @@
               FontSize="16"
               FontWeight="Medium"
               Foreground="White"
-              Text="Mapping Tool (alpha)"
+              Text="Mapper (alpha)"
               TextTrimming="CharacterEllipsis" />
 
             <TextBlock
@@ -422,15 +422,15 @@
                     </ItemsControl>
 
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
-                    
+
                       <Button
                         Margin="0,0,10,0"
                         Classes="Flat"
-                        Foreground="Red"
                         Command="{Binding ClearMappingsCommand}"
                         Content="Clear Mappings"
+                        Foreground="Red"
                         ToolTip.Tip="Remove mappings from the selected elements" />
-                          <Button
+                      <Button
                         Margin="0,0,10,0"
                         Classes="Flat"
                         Command="{Binding SelectAllMappingsCommand}"

@@ -15,57 +15,57 @@ using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
-  public class LogInViewModel : ReactiveObject, IRoutableViewModel
-  {
-    public string UrlPathSegment => "login";
-
-    public IScreen HostScreen { get; }
-
-    public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
-
-
-    #region bindings
-
-    public string Title => "for " + Bindings.GetHostAppNameVersion();
-    public string Version => "v" + Bindings.ConnectorVersion;
-
-    private bool _isLoggingIn;
-    public bool IsLoggingIn
+    public class LogInViewModel : ReactiveObject, IRoutableViewModel
     {
-      get => _isLoggingIn;
-      private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
-    }
+        public string UrlPathSegment => "login";
 
-    public async void AddAccountCommand()
-    {
-      IsLoggingIn = true;
-      await Utils.AddAccountCommand();
-      IsLoggingIn = false;
-    }
+        public IScreen HostScreen { get; }
 
-    public void LaunchManagerCommand()
-    {
-      Utils.LaunchManager();
-    }
+        public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
 
-    public void RefreshCommand()
-    {
-      MainViewModel.Instance.NavigateToDefaultScreen();
-    }
 
-    #endregion
+        #region bindings
 
-    public LogInViewModel(IScreen screen)
-    {
-      try
-      {
-        HostScreen = screen;
-        Bindings = Locator.Current.GetService<ConnectorBindings>();
-      }
-      catch (Exception ex)
-      {
-        Log.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}",GetType(), ex.Message);
-      }
+        public string Title => "for " + Bindings.GetHostAppNameVersion();
+        public string Version => "v" + Bindings.ConnectorVersion;
+
+        private bool _isLoggingIn;
+        public bool IsLoggingIn
+        {
+            get => _isLoggingIn;
+            private set => this.RaiseAndSetIfChanged(ref _isLoggingIn, value);
+        }
+
+        public async void AddAccountCommand()
+        {
+            IsLoggingIn = true;
+            await Utils.AddAccountCommand();
+            IsLoggingIn = false;
+        }
+
+        public void LaunchManagerCommand()
+        {
+            Utils.LaunchManager();
+        }
+
+        public void RefreshCommand()
+        {
+            MainViewModel.Instance.NavigateToDefaultScreen();
+        }
+
+        #endregion
+
+        public LogInViewModel(IScreen screen)
+        {
+            try
+            {
+                HostScreen = screen;
+                Bindings = Locator.Current.GetService<ConnectorBindings>();
+            }
+            catch (Exception ex)
+            {
+                SpeckleLog.Logger.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}", GetType(), ex.Message);
+            }
+        }
     }
-  }
 }

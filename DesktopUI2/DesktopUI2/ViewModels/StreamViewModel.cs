@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Selection;
 using Avalonia.Media.Imaging;
 using Avalonia.Metadata;
@@ -13,6 +14,7 @@ using DynamicData;
 using Material.Icons;
 using Material.Icons.Avalonia;
 using ReactiveUI;
+using Serilog.Events;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
@@ -27,8 +29,6 @@ using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Avalonia.Controls.Notifications;
-using Serilog.Events;
 using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
@@ -527,7 +527,7 @@ namespace DesktopUI2.ViewModels
       {
         _guid = Guid.NewGuid().ToString();
         StreamState = streamState;
-        //use cached stream, then load a fresh one async 
+        //use cached stream, then load a fresh one async
         //this way we can immediately show stream name and other info and update it later if it changed
         Stream = streamState.CachedStream;
         Client = streamState.Client;
@@ -567,7 +567,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.ForContext("StreamState", streamState)
+        SpeckleLog.Logger.ForContext("StreamState", streamState)
           .Fatal(ex, "Failed to create stream view model");
       }
     }
@@ -585,7 +585,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Failed to initialise stream view model");
+        SpeckleLog.Logger.Warning(ex, "Failed to initialise stream view model");
         throw;
       }
     }
@@ -618,7 +618,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Failed to generate menu items {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed to generate menu items {exceptionMessage}", ex.Message);
       }
     }
 
@@ -638,7 +638,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Failed retrieving stream");
+        SpeckleLog.Logger.Error(ex, "Failed retrieving stream");
       }
     }
 
@@ -703,7 +703,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Failed restoring stream state {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed restoring stream state {exceptionMessage}", ex.Message);
       }
     }
 
@@ -747,7 +747,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Failed getting activity {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed getting activity {exceptionMessage}", ex.Message);
       }
     }
 
@@ -766,7 +766,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Failed getting comments {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed getting comments {exceptionMessage}", ex.Message);
       }
     }
 
@@ -787,7 +787,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(ScrollToBottom), ex.Message);
+        SpeckleLog.Logger.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(ScrollToBottom), ex.Message);
       }
     }
 
@@ -811,7 +811,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Failed updating stream state {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed updating stream state {exceptionMessage}", ex.Message);
       }
     }
 
@@ -853,7 +853,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Failed getting commits {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed getting commits {exceptionMessage}", ex.Message);
       }
     }
 
@@ -906,11 +906,11 @@ namespace DesktopUI2.ViewModels
           Message = e.rawText,
           OnClick = () =>
           {
-            if (openStream)
-              MainViewModel.RouterInstance.Navigate.Execute(this);
+          if (openStream)
+            MainViewModel.RouterInstance.Navigate.Execute(this);
 
-            SelectedTab = 3;
-          }
+          SelectedTab = 3;
+        }
           ,
           Type = Avalonia.Controls.Notifications.NotificationType.Success,
           Expiration = TimeSpan.FromSeconds(15)
@@ -966,13 +966,13 @@ namespace DesktopUI2.ViewModels
             OnClick = () =>
             {
               //if in stream edit open online
-              if (openOnline)
-                ViewOnlineSavedStreamCommand();
+          if (openOnline)
+            ViewOnlineSavedStreamCommand();
               //if on home, open stream
-              else
-                MainViewModel.RouterInstance.Navigate.Execute(this);
+          else
+            MainViewModel.RouterInstance.Navigate.Execute(this);
 
-            }
+        }
             ,
             Type = Avalonia.Controls.Notifications.NotificationType.Success,
             Expiration = TimeSpan.FromSeconds(10)
@@ -986,7 +986,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Client_OnCommitCreated), ex.Message);
+        SpeckleLog.Logger.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Client_OnCommitCreated), ex.Message);
       }
     }
 
@@ -1017,7 +1017,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage), ex.Message);
+        SpeckleLog.Logger.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage), ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         _previewImage = null; // Could not download...
       }
@@ -1048,7 +1048,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.ForContext("imageUrl", url)
+        SpeckleLog.Logger.ForContext("imageUrl", url)
           .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage360), ex.Message);
         System.Diagnostics.Debug.WriteLine(ex);
         _previewImage360 = null; // Could not download...
@@ -1061,7 +1061,7 @@ namespace DesktopUI2.ViewModels
 
     private const string CommandFailedLogTemplate = "{commandName} failed - {exceptionMessage}";
     private const string CommandSucceededLogTemplate = "{commandName} succeeded";
-    
+
     private async void AddNewBranch()
     {
       var dialog = new NewBranchDialog();
@@ -1087,7 +1087,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          Serilog.Log.Error(ex, "Failed adding new branch {exceptionMessage}", ex.Message);
+          SpeckleLog.Logger.Error(ex, "Failed adding new branch {exceptionMessage}", ex.Message);
           Dialogs.ShowDialog("Something went wrong...", ex.Message, Material.Dialog.Icons.DialogIconKind.Error);
         }
         finally
@@ -1114,7 +1114,7 @@ namespace DesktopUI2.ViewModels
     {
       SearchQuery = "";
     }
-    
+
     public void ShareCommand()
     {
       MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
@@ -1166,17 +1166,17 @@ namespace DesktopUI2.ViewModels
 
         // We don't pass the progress cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
         var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
-        
+
         if (commitId == null)
         {
           // Ideally, commitId shouldn't return null, as we have no context WHY, or if the application is left in an invalid state.
           // This is a last ditch effort to display a semi-useful error to the user.
           string message = Progress?.Report?.OperationErrorsString;
-          if(string.IsNullOrEmpty(message))
+          if (string.IsNullOrEmpty(message))
             message = "Something went very wrong";
           throw new Exception(message);
         }
-        
+
         LastUsed = DateTime.Now.ToString();
         var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
 
@@ -1199,15 +1199,15 @@ namespace DesktopUI2.ViewModels
           Type = NotificationType.Success,
           Expiration = TimeSpan.FromSeconds(10)
         });
-        
+
 
         GetActivity();
         GetReport();
 
         //save the stream as well
         HomeViewModel.Instance.AddSavedStream(this);
-        
-        Serilog.Log.Information(CommandSucceededLogTemplate, nameof(SendCommand));
+
+        SpeckleLog.Logger.Information(CommandSucceededLogTemplate, nameof(SendCommand));
       }
       catch (Exception ex)
       {
@@ -1238,10 +1238,10 @@ namespace DesktopUI2.ViewModels
         Progress.IsPreviewProgressing = true;
 
         string previewName = IsReceiver ? "Preview Receive" : "Preview Send";
-        
+
         Analytics.TrackEvent(Analytics.Events.DUIAction,
           new Dictionary<string, object>() { { "name", previewName } });
-        
+
         if (IsReceiver)
         {
           await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
@@ -1252,7 +1252,7 @@ namespace DesktopUI2.ViewModels
         }
 
         GetReport();
-        Serilog.Log.ForContext("IsReceiver", IsReceiver)
+        SpeckleLog.Logger.ForContext("IsReceiver", IsReceiver)
           .Information(CommandSucceededLogTemplate, nameof(PreviewCommand));
       }
       catch (Exception ex)
@@ -1274,24 +1274,24 @@ namespace DesktopUI2.ViewModels
         Reset();
 
         Progress.IsProgressing = true;
-        
+
         if (!await Http.UserHasInternet()) throw new InvalidOperationException("Could not reach the internet, are you connected?");
-        
+
         Progress.CancellationToken.ThrowIfCancellationRequested();
-        
+
         //NOTE: We don't pass the cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
         var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
-        
+
         if (state == null)
         {
           //NOTE: Ideally, ReceiveStream shouldn't return null, as we have no context WHY, or if the application is left in an invalid state.
           // This is a last ditch effort to display a semi-useful error to the user.
           string message = Progress?.Report?.OperationErrorsString;
-          if(string.IsNullOrEmpty(message))
+          if (string.IsNullOrEmpty(message))
             message = "Something went very wrong";
           throw new Exception(message);
         }
-         
+
         // Track receive operation
         var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
         LastUsed = DateTime.Now.ToString();
@@ -1299,8 +1299,8 @@ namespace DesktopUI2.ViewModels
           new Dictionary<string, object>() {
             { "mode", StreamState.ReceiveMode },
             { "auto", StreamState.AutoReceive },
-            { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastCommit.sourceApplication).Slug },
-            { "sourceHostAppVersion", state.LastCommit.sourceApplication },
+            { "sourceHostApp", HostApplications.GetHostAppFromString(state.LastCommit?.sourceApplication).Slug },
+            { "sourceHostAppVersion", state.LastCommit?.sourceApplication },
             { "view", view },
             { "collaborators", Stream.collaborators.Count },
             { "isMain", SelectedBranch.Branch.name == "main" ? true : false },
@@ -1309,17 +1309,17 @@ namespace DesktopUI2.ViewModels
             { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
             { "isMultiplayer", state.LastCommit.authorId != state.UserId }
           });
-        
+
         // Show report
         GetActivity();
         GetReport();
-        
+
         // Save the stream
         HomeViewModel.Instance.AddSavedStream(this);
 
         // Display success message
         string successMessage = "";
-        
+
         var warningsCount = Progress.Report.OperationErrors.Count + Progress.Report.ConversionErrors.Count;
         if (warningsCount > 0)
         {
@@ -1331,11 +1331,11 @@ namespace DesktopUI2.ViewModels
           successMessage = "It was too late to cancel";
         }
 
-        DisplayPopupNotification(new PopUpNotificationViewModel{Title = "👌 Receive completed!", Message = successMessage, Type = NotificationType.Success});
-        
-        Serilog.Log.Information(CommandSucceededLogTemplate, nameof(ReceiveCommand));
+        DisplayPopupNotification(new PopUpNotificationViewModel { Title = "👌 Receive completed!", Message = successMessage, Type = NotificationType.Success });
+
+        SpeckleLog.Logger.Information(CommandSucceededLogTemplate, nameof(ReceiveCommand));
       }
-      catch(Exception ex)
+      catch (Exception ex)
       {
         HandleCommandException(ex, Progress);
       }
@@ -1349,7 +1349,7 @@ namespace DesktopUI2.ViewModels
     private static void HandleCommandException(Exception ex, ProgressViewModel progress, [CallerMemberName] string commandName = "UnknownCommand")
     {
       string commandPrettyName = commandName.EndsWith("Command") ? commandName.Substring(0, commandName.Length - "Command".Length) : commandName;
-      
+
       LogEventLevel logLevel;
       INotification notificationViewModel;
       switch (ex)
@@ -1359,8 +1359,8 @@ namespace DesktopUI2.ViewModels
           // If our token wasn't cancelled, then this is highly unexpected, and treated with HIGH SEVERITY!
           // Likely, another deeper token was cancelled, and the exception wasn't handled correctly somewhere deeper.
           bool isUserCancel = progress.CancellationToken.IsCancellationRequested;
-          
-          logLevel = isUserCancel ? LogEventLevel.Information : LogEventLevel.Error ; 
+
+          logLevel = isUserCancel ? LogEventLevel.Information : LogEventLevel.Error;
           notificationViewModel = new PopUpNotificationViewModel
           {
             Title = $"✋ {commandPrettyName} cancelled!",
@@ -1374,7 +1374,7 @@ namespace DesktopUI2.ViewModels
           notificationViewModel = new PopUpNotificationViewModel
           {
             Title = $"❌ {commandPrettyName} cancelled!", // InvalidOperation implies we didn't even try to complete the command, therefore "cancelled" rather than "failed"
-            Message = ex.Message, 
+            Message = ex.Message,
             Type = NotificationType.Warning
           };
           break;
@@ -1383,7 +1383,7 @@ namespace DesktopUI2.ViewModels
           logLevel = LogEventLevel.Warning;
           notificationViewModel = new PopUpNotificationViewModel
           {
-            Title = $"😞 {commandPrettyName} Failed!", 
+            Title = $"😞 {commandPrettyName} Failed!",
             Message = $"Failed to fetch stream data from server. Reason: {ex.Message}",
             Type = NotificationType.Error
           };
@@ -1392,7 +1392,7 @@ namespace DesktopUI2.ViewModels
           logLevel = LogEventLevel.Error;
           notificationViewModel = new PopUpNotificationViewModel
           {
-            Title = $"😖 {commandPrettyName} Failed!", 
+            Title = $"😖 {commandPrettyName} Failed!",
             Message = ex.Message,
             Type = NotificationType.Error
           };
@@ -1403,7 +1403,7 @@ namespace DesktopUI2.ViewModels
           logLevel = LogEventLevel.Fatal;
           notificationViewModel = new PopUpNotificationViewModel
           {
-            Title = $"💥 {commandPrettyName} Error!", 
+            Title = $"💥 {commandPrettyName} Error!",
             Message = $"{ex.GetType()} - {ex.Message}",
             Type = NotificationType.Error
           };
@@ -1411,9 +1411,9 @@ namespace DesktopUI2.ViewModels
       }
 
       DisplayPopupNotification(notificationViewModel);
-      Serilog.Log.Write(logLevel, ex, CommandFailedLogTemplate, commandName,ex.Message);
+      SpeckleLog.Logger.Write(logLevel, ex, CommandFailedLogTemplate, commandName, ex.Message);
     }
-    
+
     private static void DisplayPopupNotification(INotification notification)
     {
       Dispatcher.UIThread.Post(() =>
@@ -1429,11 +1429,11 @@ namespace DesktopUI2.ViewModels
     public void CancelSendOrReceiveCommand()
     {
       Progress.CancellationTokenSource.Cancel();
-      
+
       string cancelledEvent = IsReceiver ? "Cancel Receive" : "Cancel Send";
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", cancelledEvent } });
 
-      //NOTE: We don't want to show a notification yet! Just because cancellation is requested, doesn't mean the receive operation has been cancelled yet.  
+      //NOTE: We don't want to show a notification yet! Just because cancellation is requested, doesn't mean the receive operation has been cancelled yet.
     }
 
     public void CancelPreviewCommand()
@@ -1467,7 +1467,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(SaveCommand), ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(SaveCommand), ex.Message);
       }
     }
 
@@ -1481,7 +1481,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(OpenSettingsCommand), ex.Message);
+        SpeckleLog.Logger.Error(ex, "Unexpected exception in {commandName} {exceptionMessage}", nameof(OpenSettingsCommand), ex.Message);
       }
     }
 

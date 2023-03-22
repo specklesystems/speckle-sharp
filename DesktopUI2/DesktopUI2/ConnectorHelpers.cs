@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
+using DesktopUI2.Views.Controls.StreamEditControls;
 using Serilog;
 using Serilog.Events;
 using Speckle.Core.Api;
@@ -15,7 +16,7 @@ using Speckle.Core.Transports;
 
 namespace DesktopUI2
 {
-    
+
     /// <summary>
     /// Code shared between connector bindings.
     /// </summary>
@@ -25,9 +26,9 @@ namespace DesktopUI2
         /// Proxy <see cref="StreamState"/> commit ID for getting the latest commit on a branch
         /// </summary>
         public const string LatestCommitString = "latest";
-        
+
         /// <summary>
-        /// Convenience wrapper around <see cref="Operations.Receive"/> with connector-style error handling
+        /// Convenience wrapper around <see cref="Receive"/> with connector-style error handling
         /// </summary>
         /// <param name="commit">the <see cref="Commit"/> to receive</param>
         /// <param name="state">Current Stream card state (does not mutate)</param>
@@ -40,7 +41,7 @@ namespace DesktopUI2
             progress.CancellationToken.ThrowIfCancellationRequested();
 
             var transport = new ServerTransport(state.Client.Account, state.StreamId);
-      
+
             Base? commitObject = await Operations.Receive(
                 commit.referencedObject,
                 progress.CancellationToken,
@@ -48,16 +49,16 @@ namespace DesktopUI2
                 onProgressAction: dict => progress.Update(dict),
                 onErrorAction: (s, ex) =>
                 {
-                    //Don't wrap cancellation exceptions!      
+                    //Don't wrap cancellation exceptions!
                     if (ex is OperationCanceledException) throw ex;
-          
+
                     //HACK: Sometimes, the task was cancelled, and Operations.Receive doesn't fail in a reliable way. In this case, the exception is often simply a symptom of a cancel.
                     if (progress.CancellationToken.IsCancellationRequested)
                     {
-                        Log.Warning(ex, "A task was cancelled, ignoring potentially symptomatic exception");
+                        SpeckleLog.Logger.Warning(ex, "A task was cancelled, ignoring potentially symptomatic exception");
                         progress.CancellationToken.ThrowIfCancellationRequested();
                     }
-          
+
                     //Treat all operation errors as fatal
                     throw new SpeckleException($"Failed to receive commit: {commit.id} objects from server", ex);
                 },
@@ -67,10 +68,10 @@ namespace DesktopUI2
 
             if (commitObject == null)
                 throw new SpeckleException($"Failed to receive commit: {commit.id} objects from server: {nameof(Operations.Receive)} returned null");
-            
+
             return commitObject;
         }
-        
+
         /// <param name="cancellationToken">Progress cancellation token</param>
         /// <param name="state">Current Stream card state (does not mutate)</param>
         /// <returns>Requested Commit</returns>
@@ -79,7 +80,7 @@ namespace DesktopUI2
         public static async Task<Commit> GetCommitFromState(CancellationToken cancellationToken, StreamState state)
         {
             cancellationToken.ThrowIfCancellationRequested();
-      
+
             Commit commit;
             try
             {
@@ -109,7 +110,7 @@ namespace DesktopUI2
 
 
         public const LogEventLevel DefaultTryCommitReceivedLogLevel = LogEventLevel.Warning;
-        
+
         /// <summary>
         /// Try catch wrapper around <see cref="Client.CommitReceived(CancellationToken, CommitReceivedInput)"/> with logging
         /// </summary>
@@ -122,13 +123,13 @@ namespace DesktopUI2
             {
                 await client.CommitReceived(cancellationToken, commitReceivedInput);
             }
-            catch(SpeckleException ex)
+            catch (SpeckleException ex)
             {
-                Log.ForContext("commitReceivedInput", commitReceivedInput)
+                SpeckleLog.Logger.ForContext("commitReceivedInput", commitReceivedInput)
                     .Write(logLevel, ex, "Client operation {operationName} failed", nameof(Client.CommitReceived));
             }
         }
-        
+
         /// <inheritdoc cref="TryCommitReceived(CancellationToken, Client, CommitReceivedInput, LogEventLevel)"/>
         public static async Task TryCommitReceived(CancellationToken cancellationToken,
             StreamState state,
@@ -164,23 +165,23 @@ namespace DesktopUI2
             catch (OperationCanceledException) { throw; }
             catch (Exception ex)
             {
-                Log.ForContext("commitInput", commitInput)
+                SpeckleLog.Logger.ForContext("commitInput", commitInput)
                     .Warning(ex, "Client operation {operationName} failed", nameof(Client.CommitCreate));
                 throw new SpeckleException("Failed to create commit object", ex);
             }
         }
-        
+
         /// <exception cref="OperationCanceledException"></exception>
         /// <exception cref="SpeckleException"></exception>
         public static void DefaultSendErrorHandler(string error, Exception ex)
         {
-            //Don't wrap cancellation exceptions!      
+            //Don't wrap cancellation exceptions!
             if (ex is OperationCanceledException cex) throw cex;
 
             //Treat all operation errors as fatal
             throw new SpeckleException($"Failed to send objects to server - {error}", ex);
         }
-       
-        
+
+
     }
 }

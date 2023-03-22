@@ -2,6 +2,7 @@
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
+using Speckle.Core.Logging;
 using System.Windows;
 
 namespace DesktopUI2.WPF
@@ -13,11 +14,12 @@ namespace DesktopUI2.WPF
   {
     public MainWindow()
     {
+      SpeckleLog.Initialize("dui", "2");
       BuildAvaloniaApp().SetupWithoutStarting();
       InitializeComponent();
 
       var viewModel = new MainViewModel();
-      this.DataContext = viewModel;
+      DataContext = viewModel;
 
       AvaloniaHost.Content = new MainUserControl();
 
