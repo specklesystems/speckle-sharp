@@ -5,10 +5,12 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public abstract class AsteelBolt : AsteelObject
+  public abstract class AsteelBolt : Base, IAsteelObject
   {
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
+
+    public Base userAttributes { get; set; }
 
     public AsteelBolt()
     {

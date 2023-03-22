@@ -9,16 +9,11 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AsteelBeam : AsteelObject, IDisplayValue<List<Mesh>>, IHasVolume, IHasArea
+  public class AsteelBeam : Beam, IDisplayValue<List<Mesh>>, IHasVolume, IHasArea, IAsteelObject
   {
-    public ICurve baseLine { get; set; }
-
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-
-    public string units { get; set; }
     [DetachProperty]
     public SectionProfile profile { get; set; }
+
     [DetachProperty]
     public StructuralMaterial material { get; set; }
 
@@ -27,6 +22,7 @@ namespace Objects.BuiltElements.AdvanceSteel
 
     public double volume { get; set; }
     public double area { get; set; }
+    public Base userAttributes { get; set; }
 
     public AsteelBeam() { }
 

@@ -9,10 +9,12 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AsteelSpecialPart : AsteelObject
+  public class AsteelSpecialPart : Base, IAsteelObject
   {
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
+
+    public Base userAttributes { get; set; }
 
     //[SchemaInfo("AsteelSpecialPart", "Creates a Advance Steel special part.", "Advance Steel", "Structure")]
     public AsteelSpecialPart()

@@ -77,7 +77,7 @@ namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
-    private AsteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
+    private IAsteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
     {
       AsteelPolyBeam asteelPolyBeam = new AsteelPolyBeam();
 
@@ -89,7 +89,7 @@ namespace Objects.Converter.AutocadCivil
       return asteelPolyBeam;
     }
 
-    private AsteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
+    private IAsteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
     {
       AsteelBeam asteelBeam = new AsteelBeam();
 

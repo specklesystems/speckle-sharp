@@ -5,13 +5,8 @@ using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public class AsteelObject : Base
+  public interface IAsteelObject
   {
-    public AsteelObject()
-    {
-        
-    }
-
-    public Base userAttributes { get; set; }
+    Base userAttributes { get; set; }
   }
 }
