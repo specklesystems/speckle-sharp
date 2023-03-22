@@ -286,6 +286,10 @@ namespace Objects.Converter.RhinoGh
 
     public BlockDefinition BlockDefinitionToSpeckle(InstanceDefinition definition)
     {
+      // check if this has been converted and cached already
+      if (BlockDefinitions.ContainsKey(definition.Name))
+        return BlockDefinitions[definition.Name];
+
       var geometry = new List<Base>();
       foreach (var obj in definition.GetObjects())
       {
@@ -301,7 +305,8 @@ namespace Objects.Converter.RhinoGh
       }
 
       // rhino by default sets selected block def base pt at world origin
-      var _definition = new BlockDefinition(definition.Name, geometry, PointToSpeckle(Point3d.Origin)) { units = ModelUnits };
+      var _definition = new BlockDefinition(definition.Name, geometry, PointToSpeckle(Point3d.Origin)) { units = ModelUnits, applicationId = definition.Id.ToString() };
+      BlockDefinitions.Add(definition.Name, _definition);
 
       return _definition;
     }
@@ -314,7 +319,7 @@ namespace Objects.Converter.RhinoGh
       var commitInfo = GetCommitInfo();
       string definitionName = 
         definition is BlockDefinition blockDef ? blockDef.name : 
-        definition is RevitSymbolElementType revitDef ? $"{revitDef.family} -{revitDef.type} - {definition.id}" : 
+        definition is RevitSymbolElementType revitDef ? $"{revitDef.family} - {revitDef.type} - {definition.id}" : 
         definition.id;
       if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
       if (Doc.InstanceDefinitions.Find(definitionName) is InstanceDefinition def)
