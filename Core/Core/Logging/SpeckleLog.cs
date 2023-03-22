@@ -80,7 +80,10 @@ namespace Speckle.Core.Logging
   /// </summary>
   public static class SpeckleLog
   {
-    public static ILogger Logger { get; private set; }
+    private static ILogger? _logger;
+
+    public static ILogger Logger => _logger ?? throw new SpeckleException(
+      $"The logger has not been initialized. Please call {typeof(SpeckleLog).FullName}.{nameof(Initialize)}");
     private static bool _initialized = false;
 
     /// <summary>
@@ -97,7 +100,7 @@ namespace Speckle.Core.Logging
 
       logConfiguration ??= new SpeckleLogConfiguration();
 
-      Logger = CreateConfiguredLogger(
+      _logger = CreateConfiguredLogger(
         hostApplicationName,
         hostApplicationVersion,
         logConfiguration
