@@ -9,6 +9,7 @@ using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
 using Serilog;
+using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
 namespace SpeckleRhino
@@ -38,7 +39,7 @@ namespace SpeckleRhino
       }
       catch (Exception e)
       {
-        Log.Fatal(e, "Failed to create or focus Speckle window");
+        SpeckleLog.Logger.Fatal(e, "Failed to create or focus Speckle window");
         RhinoApp.CommandLineOut.WriteLine($"Speckle Error - { e.ToFormattedString() }");
         return Result.Failure;
       }
