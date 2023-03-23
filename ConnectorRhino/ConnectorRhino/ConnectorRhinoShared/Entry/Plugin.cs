@@ -156,7 +156,7 @@ namespace SpeckleRhino
         var hostAppName = Utils.AppName;
         var hostAppVersion = Utils.RhinoAppName;
 #if MAC
-        logConfig.enhancedLogContext = true;
+        logConfig.enhancedLogContext = false;
 #endif
         SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
         SpeckleLog.Logger.Information("Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}", hostAppName, hostAppVersion);
