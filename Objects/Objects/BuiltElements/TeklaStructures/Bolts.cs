@@ -28,7 +28,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public double cutLength { get; set; }
     public List<Point> coordinates { get; set; }
     public List<string> boltedPartsIds { get; set; } = new List<string>(); // First guid is PartToBeBolted, second guid is PartToBoltTo, any others are OtherPartsToBolt
-    
+
     public Bolts() { }
 
   }

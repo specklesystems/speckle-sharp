@@ -4,6 +4,7 @@ using SkiaSharp;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using System;
 using System.Drawing;
 using System.IO;
@@ -119,7 +120,7 @@ namespace DesktopUI2.ViewModels
 
         if (!result.IsSuccessStatusCode)
         {
-          Log.ForContext("imageUrl", url).Warning("{methodName} failed with code: {exceptionMessage}", nameof(DownloadImage), result.StatusCode);
+          SpeckleLog.Logger.ForContext("imageUrl", url).Warning("{methodName} failed with code: {exceptionMessage}", nameof(DownloadImage), result.StatusCode);
           AvatarUrl = null; // Could not download...
           return;
         }
@@ -131,7 +132,7 @@ namespace DesktopUI2.ViewModels
         }
         catch (Exception ex)
         {
-          Log.ForContext("imageUrl", url)
+          SpeckleLog.Logger.ForContext("imageUrl", url)
          .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage), ex.Message);
           AvatarUrl = null; // Could not download...
         }

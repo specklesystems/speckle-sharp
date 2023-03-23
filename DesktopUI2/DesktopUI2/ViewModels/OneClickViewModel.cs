@@ -2,6 +2,7 @@
 using DesktopUI2.Models;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -11,7 +12,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -91,7 +91,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Fatal(ex, "Could not initialize one click screen {exceptionMessage}",ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Could not initialize one click screen {excep tionMessage}", ex.Message);
       }
     }
 
@@ -109,10 +109,10 @@ namespace DesktopUI2.ViewModels
         {
           fileName = Bindings.GetFileName();
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
           //todo: handle properly in each connector bindings
-          Log.Error(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Send), ex.Message);
+          SpeckleLog.Logger.Error(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(Send), ex.Message);
         }
 
         //filename is different, might have been renamed or be a different document
@@ -189,7 +189,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Could not send with one click {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Could not send with one click {exceptionMessage}", ex.Message);
         SentText = "Something went wrong!\nPlease try again or switch to advanced mode.";
         SuccessfulSend = false;
       }
@@ -241,7 +241,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.ForContext("fileName", _fileName)
+        SpeckleLog.Logger.ForContext("fileName", _fileName)
           .Debug(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SearchStreams), ex.Message);
       }
       return stream;

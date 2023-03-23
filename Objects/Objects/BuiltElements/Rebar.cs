@@ -1,24 +1,24 @@
-﻿using Objects.Geometry;
-using Objects.Utils;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using Speckle.Newtonsoft.Json;
+using Objects.Geometry;
 using Objects.Structural.Materials;
+using Objects.Utils;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
   public class Rebar : Base, IHasVolume, IDisplayValue<List<Mesh>>
   {
     public List<ICurve> curves { get; set; } = new List<ICurve>();
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
-    
+
     public string units { get; set; }
     public double volume { get; set; }
 
@@ -35,7 +35,7 @@ namespace Objects.BuiltElements.TeklaStructures
     }
 
     public string name { get; set; }
-    
+
     [DetachProperty]
     public Hook startHook { get; set; }
     [DetachProperty]
@@ -46,7 +46,8 @@ namespace Objects.BuiltElements.TeklaStructures
     [DetachProperty]
     public StructuralMaterial material { get; set; }
   }
-  public class Hook :Base {
+  public class Hook : Base
+  {
     public Hook()
     {
     }

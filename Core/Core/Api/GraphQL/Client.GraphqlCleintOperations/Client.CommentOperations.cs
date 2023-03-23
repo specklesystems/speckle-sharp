@@ -3,6 +3,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using GraphQL;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Api
 {

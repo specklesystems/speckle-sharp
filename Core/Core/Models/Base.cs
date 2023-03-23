@@ -91,10 +91,10 @@ namespace Speckle.Core.Models
       {
         bool isIgnored = prop.IsDefined(typeof(ObsoleteAttribute), true) || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
         if (isIgnored) continue;
-        
+
         var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
         var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
-        
+
         object value = prop.GetValue(@base);
 
         if (detachAttribute != null && detachAttribute.Detachable && chunkAttribute == null)
@@ -151,38 +151,38 @@ namespace Speckle.Core.Models
           count += CountDescendants(b, parsed);
           return count;
         case IDictionary d:
-        {
-          foreach (DictionaryEntry kvp in d)
           {
-            if (kvp.Value is Base)
+            foreach (DictionaryEntry kvp in d)
             {
-              count++;
-              count += CountDescendants(kvp.Value as Base, parsed);
+              if (kvp.Value is Base)
+              {
+                count++;
+                count += CountDescendants(kvp.Value as Base, parsed);
+              }
+              else
+              {
+                count += HandleObjectCount(kvp.Value, parsed);
+              }
             }
-            else
-            {
-              count += HandleObjectCount(kvp.Value, parsed);
-            }
+            return count;
           }
-          return count;
-        }
         case IEnumerable e when !(value is string):
-        {
-          foreach (var arrValue in e)
           {
-            if (arrValue is Base)
+            foreach (var arrValue in e)
             {
-              count++;
-              count += CountDescendants(arrValue as Base, parsed);
+              if (arrValue is Base)
+              {
+                count++;
+                count += CountDescendants(arrValue as Base, parsed);
+              }
+              else
+              {
+                count += HandleObjectCount(arrValue, parsed);
+              }
             }
-            else
-            {
-              count += HandleObjectCount(arrValue, parsed);
-            }
-          }
 
-          return count;
-        }
+            return count;
+          }
         default:
           return count;
       }
@@ -252,7 +252,7 @@ namespace Speckle.Core.Models
         if (__type == null)
         {
           List<string> bases = new List<string>();
-          Type myType = this.GetType();
+          Type myType = GetType();
 
           while (myType.Name != nameof(Base))
           {

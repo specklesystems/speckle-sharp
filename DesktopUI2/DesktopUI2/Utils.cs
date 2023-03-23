@@ -102,7 +102,7 @@ namespace DesktopUI2
     public static string CommitInfo(string stream, string branch, string commitId)
     {
       string formatted = $"{stream}[ {branch} @ {commitId} ]";
-      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
+      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :(
       return clean;
     }
 
@@ -231,7 +231,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.ForContext("path", path)
+        SpeckleLog.Logger.ForContext("path", path)
           .Error(ex, "Failed to launch Manager");
       }
     }
@@ -263,7 +263,7 @@ namespace DesktopUI2
             }
             catch (Exception ex)
             {
-              Log.ForContext("dialogResult", result)
+              SpeckleLog.Logger.ForContext("dialogResult", result)
                 .Warning(ex, "Swallowing exception in {methodName} {exceptionMessage}", nameof(AddAccountCommand), nameof(AddAccountCommand), ex.Message);
 
               //errors already handled in AddAccount
@@ -284,7 +284,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.Fatal(ex, "Failed to add account {viewModel} {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to add account {viewModel} {exceptionMessage}", ex.Message);
       }
     }
 

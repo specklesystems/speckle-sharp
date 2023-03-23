@@ -637,7 +637,7 @@ namespace ConnectorGrasshopper.Ops
       {
 
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(e, e.Message);
+        SpeckleLog.Logger.Error(e, e.Message);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         //Parent.Message = "Error";
         //((SendComponent)Parent).CurrentComponentState = "expired";

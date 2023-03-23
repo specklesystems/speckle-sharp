@@ -22,7 +22,7 @@ namespace Objects.Other
     public double opacity { get; set; } = 1;
     public double metalness { get; set; } = 0;
     public double roughness { get; set; } = 1;
-    
+
     [SchemaIgnore]
     public int diffuse { get; set; } = Color.LightGray.ToArgb();
     [SchemaIgnore]
@@ -34,14 +34,14 @@ namespace Objects.Other
       get => Color.FromArgb(diffuse);
       set => diffuse = value.ToArgb();
     }
-    
+
     [JsonIgnore]
     public Color emissiveColor
     {
       get => Color.FromArgb(emissive);
       set => diffuse = value.ToArgb();
     }
-    
+
     public RenderMaterial() { }
 
     [SchemaInfo("RenderMaterial", "Creates a render material.", "BIM", "Other")]

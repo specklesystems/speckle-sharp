@@ -51,6 +51,14 @@ namespace Speckle.Core.Logging
     public bool logToFile;
 
     /// <summary>
+    /// Flag to enable enhanced log context. This adds the following enrich calls:
+    /// - WithClientAgent
+    /// - WithClientIp
+    /// - WithExceptionDetails
+    /// </summary>
+    public bool enhancedLogContext;
+
+    /// <summary>
     /// Default SpeckleLogConfiguration constructor.
     /// These are the sane defaults we should be using across connectors.
     /// </summary>
@@ -59,12 +67,14 @@ namespace Speckle.Core.Logging
     /// <param name="logToSeq">Flag to enable Seq log sink</param>
     /// <param name="logToSentry">Flag to enable Sentry log sink</param>
     /// <param name="logToFile">Flag to enable File log sink</param>
+    /// <param name="enhancedLogContext">Flag to enable enhanced context on every log event</param>
     public SpeckleLogConfiguration(
       LogEventLevel minimumLevel = LogEventLevel.Debug,
       bool logToConsole = true,
       bool logToSeq = true,
       bool logToSentry = true,
-      bool logToFile = true
+      bool logToFile = true,
+      bool enhancedLogContext = true
     )
     {
       this.minimumLevel = minimumLevel;
@@ -72,6 +82,7 @@ namespace Speckle.Core.Logging
       this.logToSeq = logToSeq;
       this.logToSentry = logToSentry;
       this.logToFile = logToFile;
+      this.enhancedLogContext = enhancedLogContext;
     }
   }
 
@@ -80,7 +91,10 @@ namespace Speckle.Core.Logging
   /// </summary>
   public static class SpeckleLog
   {
-    public static ILogger Logger { get; private set; }
+    private static ILogger? _logger;
+
+    public static ILogger Logger => _logger ?? throw new SpeckleException(
+      $"The logger has not been initialized. Please call {typeof(SpeckleLog).FullName}.{nameof(Initialize)}");
     private static bool _initialized = false;
 
     /// <summary>
@@ -97,7 +111,7 @@ namespace Speckle.Core.Logging
 
       logConfiguration ??= new SpeckleLogConfiguration();
 
-      Logger = CreateConfiguredLogger(
+      _logger = CreateConfiguredLogger(
         hostApplicationName,
         hostApplicationVersion,
         logConfiguration
@@ -115,7 +129,7 @@ namespace Speckle.Core.Logging
         .Information(
           "Initialized logger inside {hostApplication}/{productVersion}/{version} for user {id}. Path info {userApplicationDataPath} {installApplicationDataPath}."
         );
-      
+
       _initialized = true;
     }
 
@@ -142,11 +156,14 @@ namespace Speckle.Core.Logging
       );
       var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
         .Is(logConfiguration.minimumLevel)
-        .Enrich.WithClientAgent()
-        .Enrich.WithClientIp()
         .Enrich.FromLogContext()
-        .Enrich.FromGlobalLogContext()
-        .Enrich.WithExceptionDetails();
+        .Enrich.FromGlobalLogContext();
+
+      if (logConfiguration.enhancedLogContext)
+        serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
+                               .Enrich.WithClientIp()
+                               .Enrich.WithExceptionDetails();
+
 
       if (logConfiguration.logToFile && canLogToFile)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(

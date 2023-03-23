@@ -1,8 +1,8 @@
-﻿using Objects.Geometry;
+﻿using System.Collections.Generic;
+using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
 
 namespace Objects.BuiltElements.Revit
 {
@@ -22,7 +22,7 @@ namespace Objects.BuiltElements.Revit
 
     [DetachProperty]
     public List<Base> elements { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -42,7 +42,7 @@ namespace Objects.BuiltElements.Revit
       this.rotation = rotation;
       this.facingFlipped = facingFlipped;
       this.handFlipped = handFlipped;
-      this.mirrored = false;
+      mirrored = false;
       this.parameters = parameters.ToBase();
     }
   }

@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
@@ -16,7 +16,7 @@ namespace Objects.BuiltElements
 
     [DetachProperty]
     public List<Base> elements { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -114,7 +114,7 @@ namespace Objects.BuiltElements.Archicad
     public string? hiddenContourLineType { get; set; }
 
     // Floor Plan and Section - Cover Fills
-   public bool? useFloorFill { get; set; }
+    public bool? useFloorFill { get; set; }
     public short? floorFillPen { get; set; }
     public short? floorFillBGPen { get; set; }
     public string? floorFillName { get; set; }
