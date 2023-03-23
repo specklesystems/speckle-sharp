@@ -9,7 +9,7 @@ namespace DesktopUI2.Views.Converters
   {
     public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
     {
-      return value!=null && value.ToString() != "stream:reviewer";
+      return value != null && value.ToString() != "stream:reviewer";
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

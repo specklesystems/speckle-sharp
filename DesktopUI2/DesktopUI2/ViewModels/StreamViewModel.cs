@@ -906,11 +906,11 @@ namespace DesktopUI2.ViewModels
           Message = e.rawText,
           OnClick = () =>
           {
-          if (openStream)
-            MainViewModel.RouterInstance.Navigate.Execute(this);
+            if (openStream)
+              MainViewModel.RouterInstance.Navigate.Execute(this);
 
-          SelectedTab = 3;
-        }
+            SelectedTab = 3;
+          }
           ,
           Type = Avalonia.Controls.Notifications.NotificationType.Success,
           Expiration = TimeSpan.FromSeconds(15)
@@ -966,13 +966,13 @@ namespace DesktopUI2.ViewModels
             OnClick = () =>
             {
               //if in stream edit open online
-          if (openOnline)
-            ViewOnlineSavedStreamCommand();
+              if (openOnline)
+                ViewOnlineSavedStreamCommand();
               //if on home, open stream
-          else
-            MainViewModel.RouterInstance.Navigate.Execute(this);
+              else
+                MainViewModel.RouterInstance.Navigate.Execute(this);
 
-        }
+            }
             ,
             Type = Avalonia.Controls.Notifications.NotificationType.Success,
             Expiration = TimeSpan.FromSeconds(10)

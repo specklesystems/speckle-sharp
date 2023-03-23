@@ -20,11 +20,11 @@ namespace Objects.BuiltElements
 
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
-    
+
     public string units { get; set; }
 
     public Roof() { }
-    
+
     [SchemaDeprecated]
     [SchemaInfo("Roof", "Creates a Speckle roof", "BIM", "Architecture")]
     public Roof([SchemaMainParam] ICurve outline, List<ICurve> voids = null, List<Base> elements = null)

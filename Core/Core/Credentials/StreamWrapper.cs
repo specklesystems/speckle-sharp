@@ -181,7 +181,7 @@ namespace Speckle.Core.Credentials
           default:
             throw new SpeckleException($"Cannot parse {uri} into a stream wrapper class.");
         }
-        
+
       var queryDictionary = System.Web.HttpUtility.ParseQueryString(uri.Query);
       UserId = queryDictionary["u"];
 
@@ -307,7 +307,7 @@ namespace Speckle.Core.Credentials
       if (Type == StreamWrapperType.Branch)
       {
         var branch = await client.BranchGet(StreamId, BranchName, 1).ConfigureAwait(false);
-        if(branch == null)
+        if (branch == null)
           throw new SpeckleException(
             $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", false);
       }

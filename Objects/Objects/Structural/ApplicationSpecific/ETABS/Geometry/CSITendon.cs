@@ -18,7 +18,7 @@ namespace Objects.Structural.CSI.Geometry
     public CSITendonProperty CSITendonProperty { get; set; }
 
 
-    public CSITendon(string name,Polycurve polycurve, CSITendonProperty CSITendonProperty)
+    public CSITendon(string name, Polycurve polycurve, CSITendonProperty CSITendonProperty)
     {
       this.name = name;
       this.polycurve = polycurve;

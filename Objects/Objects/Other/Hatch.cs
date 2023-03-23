@@ -1,17 +1,17 @@
-﻿using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using System;
-using System.Linq;
+﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Text;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.Other
 {
   public class Hatch : Base
   {
-    [Obsolete ("Use Loops instead")]
+    [Obsolete("Use Loops instead")]
     public List<ICurve> curves { get; set; }
     public List<HatchLoop> loops { get; set; }
     public string pattern { get; set; }

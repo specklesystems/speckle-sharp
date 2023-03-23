@@ -23,7 +23,7 @@ namespace Objects
     public static List<double> ToArray(List<ICurve> curves)
     {
       var list = new List<double>();
-      foreach(var curve in curves)
+      foreach (var curve in curves)
       {
         switch (curve)
         {
@@ -47,13 +47,13 @@ namespace Objects
       if (list.Count == 0) return curves;
       var done = false;
       var currentIndex = 0;
-      
-      while(!done)
+
+      while (!done)
       {
-        var itemLength = (int) list[currentIndex];
+        var itemLength = (int)list[currentIndex];
         var item = list.GetRange(currentIndex, itemLength + 1);
 
-        switch(item[1])
+        switch (item[1])
         {
           case CurveTypeEncoding.Arc: curves.Add(Arc.FromList(item)); break;
           case CurveTypeEncoding.Circle: curves.Add(Circle.FromList(item)); break;

@@ -118,7 +118,7 @@ namespace Speckle.Core.Logging
         .Information(
           "Initialized logger inside {hostApplication}/{productVersion}/{version} for user {id}. Path info {userApplicationDataPath} {installApplicationDataPath}."
         );
-      
+
       _initialized = true;
     }
 
@@ -147,13 +147,13 @@ namespace Speckle.Core.Logging
         .Is(logConfiguration.minimumLevel)
         .Enrich.FromLogContext()
         .Enrich.FromGlobalLogContext();
-      
+
 #if !MAC
-       serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
-                              .Enrich.WithClientIp()
-                              .Enrich.WithExceptionDetails();
+      serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
+                             .Enrich.WithClientIp()
+                             .Enrich.WithExceptionDetails();
 #endif
-      
+
       if (logConfiguration.logToFile && canLogToFile)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
           logFilePath,

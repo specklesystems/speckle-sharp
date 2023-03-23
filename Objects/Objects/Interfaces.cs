@@ -49,13 +49,13 @@ namespace Objects
   /// <summary>
   /// Represents 
   /// </summary>
-  public interface ICurve   
+  public interface ICurve
   {
     /// <summary>
     /// The length of the curve.
     /// </summary>
     double length { get; set; }
-    
+
     /// <summary>
     /// The numerical domain driving the curve's internal parametrization.
     /// </summary>
@@ -66,7 +66,7 @@ namespace Objects
   /// Generic Interface for transformable objects.
   /// </summary>
   /// <typeparam name="T">The type of object to support transformations.</typeparam>
-  public interface ITransformable<T>: ITransformable where T : ITransformable<T>
+  public interface ITransformable<T> : ITransformable where T : ITransformable<T>
   {
     /// <inheritdoc cref="ITransformable.TransformTo"/>
     bool TransformTo(Transform transform, out T transformed);
@@ -89,7 +89,7 @@ namespace Objects
   #endregion
 
   #region Built elements
-  
+
   /// <summary>
   /// Specifies displayable <see cref="Base"/> value(s) to be used as a fallback
   /// if a displayable form cannot be converted.
@@ -112,7 +112,7 @@ namespace Objects
     /// </summary>
     T displayValue { get; set; }
   }
-  
+
 
   #endregion
 }
