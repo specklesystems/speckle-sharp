@@ -244,6 +244,7 @@ namespace Speckle.Core.Kits
             }
           }
           catch (FileLoadException ex) { }
+          catch (BadImageFormatException ex) { }
         }
       }
     }
