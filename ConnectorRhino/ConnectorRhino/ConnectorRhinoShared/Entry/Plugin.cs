@@ -150,16 +150,19 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
-      try {
+      try
+      {
         var logConfig = new SpeckleLogConfiguration(logToSentry: false);
         var hostAppName = Utils.AppName;
         var hostAppVersion = Utils.RhinoAppName;
 #if MAC
-        logConfig.restrictedLogging = true;
+        logConfig.enhancedLogContext = true;
 #endif
         SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
         SpeckleLog.Logger.Information("Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}", hostAppName, hostAppVersion);
-      } catch(Exception e) {
+      }
+      catch (Exception e)
+      {
         RhinoApp.CommandLineOut.WriteLine("Failed to init speckle logger: " + e.ToFormattedString());
         return LoadReturnCode.ErrorShowDialog;
       }
