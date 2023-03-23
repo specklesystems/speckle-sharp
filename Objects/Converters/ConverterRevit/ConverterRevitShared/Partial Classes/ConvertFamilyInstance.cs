@@ -76,7 +76,7 @@ namespace Objects.Converter.Revit
       // point based, convert these as revit instances
       if (@base == null)
       {
-        if (revitFi.Category.Name.Contains("Structural Foundations")) // don't know why, but the transforms on some one level based structural elements are really messed up 
+        if (revitFi.Category.Name.Contains("Structural Foundation")) // don't know why, but the transforms on structural foundation elements are really messed up 
         {
           @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
         }
