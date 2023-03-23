@@ -401,7 +401,7 @@ namespace Objects.Converter.RhinoGh
         var attribute = new ObjectAttributes();
 
         // layer
-        var geoLayer = item.Value;
+        var geoLayer = item.Key["layer"] is string s ?  s : item.Value; // blocks sent from rhino will have a layer prop dynamically attached
         var layerName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
         int index = 1;
         if (layerName != null)
