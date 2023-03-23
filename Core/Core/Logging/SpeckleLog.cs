@@ -51,12 +51,12 @@ namespace Speckle.Core.Logging
     public bool logToFile;
 
     /// <summary>
-    /// Flag to enable restricted logging. This disables the following enrich calls:
+    /// Flag to enable enhanced log context. This adds the following enrich calls:
     /// - WithClientAgent
     /// - WithClientIp
     /// - WithExceptionDetails
     /// </summary>
-    public bool restrictedLogging;
+    public bool enhancedLogContext;
 
     /// <summary>
     /// Default SpeckleLogConfiguration constructor.
@@ -73,7 +73,7 @@ namespace Speckle.Core.Logging
       bool logToSeq = true,
       bool logToSentry = true,
       bool logToFile = true,
-      bool restrictedLogging = false
+      bool enhancedLogContext = true
     )
     {
       this.minimumLevel = minimumLevel;
@@ -81,6 +81,7 @@ namespace Speckle.Core.Logging
       this.logToSeq = logToSeq;
       this.logToSentry = logToSentry;
       this.logToFile = logToFile;
+      this.enhancedLogContext = enhancedLogContext;
     }
   }
 
@@ -157,7 +158,7 @@ namespace Speckle.Core.Logging
         .Enrich.FromLogContext()
         .Enrich.FromGlobalLogContext();
       
-      if(!logConfiguration.restrictedLogging)
+      if(logConfiguration.enhancedLogContext)
          serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
                                 .Enrich.WithClientIp()
                                 .Enrich.WithExceptionDetails();

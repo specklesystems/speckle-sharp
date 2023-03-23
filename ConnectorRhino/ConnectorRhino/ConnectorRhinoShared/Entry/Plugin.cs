@@ -50,7 +50,6 @@ namespace SpeckleRhino
     {
       if (appBuilder != null)
         return;
-
 #if MAC
       InitAvaloniaMac();
 #else
@@ -87,7 +86,6 @@ namespace SpeckleRhino
       MacOSHelpers.MainMenu = rhinoMenuPtr;
       MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
       MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
-
     }
 
     public static AppBuilder BuildAvaloniaApp()
