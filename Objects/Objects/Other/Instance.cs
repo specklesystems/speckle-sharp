@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using Speckle.Newtonsoft.Json;
-
-using Objects.Geometry;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using Plane = Objects.Geometry.Plane;
 using Vector = Objects.Geometry.Vector;
 
@@ -25,7 +23,7 @@ namespace Objects.Other
     /// </remarks>
     public Transform transform { get; set; }
 
-    public abstract Base definition { get; set; }
+    public abstract Base definition { get; internal set; }
 
     /// <summary>
     /// The units of this Instance, should be the same as the instance transform units
@@ -46,11 +44,11 @@ namespace Objects.Other
   public abstract class Instance<T> : Instance where T : Base
   {
     [JsonIgnore]
-    protected T _definition;
+    public T typedDefinition { get; set; }
 
     protected Instance(T definition, Transform transform) : base(transform)
     {
-      _definition = definition;
+      typedDefinition = definition;
     }
 
     public Instance() : base(new Transform()) { }
@@ -58,11 +56,11 @@ namespace Objects.Other
     [DetachProperty]
     public override Base definition
     {
-      get => _definition;
-      set
+      get => typedDefinition;
+      internal set
       {
         if (value is T type)
-          _definition = type;
+          typedDefinition = type;
       }
     }
 
@@ -73,8 +71,8 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Instance<BlockDefinition>
   {
-    [DetachProperty, Obsolete("Use definition property")]
-    public BlockDefinition blockDefinition { get => _definition; set => _definition = value; }
+    [DetachProperty, Obsolete("Use definition property", true), JsonIgnore]
+    public BlockDefinition blockDefinition { get => typedDefinition; set => typedDefinition = value; }
 
     public BlockInstance() { }
 
@@ -90,7 +88,7 @@ namespace Objects.Other
     [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
     {
-      return _definition.geometry.SelectMany(b =>
+      return typedDefinition.geometry.SelectMany(b =>
       {
         switch (b)
         {
@@ -119,7 +117,7 @@ namespace Objects.Other
     public Plane GetInsertionPlane()
     {
       // TODO: UPDATE!
-      var plane = new Plane(_definition.basePoint ?? new Point(0, 0, 0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
+      var plane = new Plane(typedDefinition.basePoint ?? new Point(0, 0, 0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
@@ -140,10 +138,10 @@ namespace Objects.Other.Revit
     [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
     {
-      var allChildren = _definition.elements ?? new List<Base>();
-      if (_definition.displayValue.Any())
+      var allChildren = typedDefinition.elements ?? new List<Base>();
+      if (typedDefinition.displayValue.Any())
       {
-        allChildren.AddRange(_definition.displayValue);
+        allChildren.AddRange(typedDefinition.displayValue);
       }
 
       // get transformed definition objs
