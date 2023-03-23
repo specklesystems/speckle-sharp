@@ -75,7 +75,16 @@ namespace Objects.Converter.Revit
 
       // point based, convert these as revit instances
       if (@base == null)
-        @base = RevitInstanceToSpeckle(revitFi, out notes, null);
+      {
+        if (revitFi.Category.Name.Contains("Structural Foundations")) // don't know why, but the transforms on some one level based structural elements are really messed up 
+        {
+          @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
+        }
+        else
+        {
+          @base = RevitInstanceToSpeckle(revitFi, out notes, null);
+        }
+      } 
 
       // add additional props to base object
       foreach (var prop in extraProps.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
@@ -299,7 +308,6 @@ namespace Objects.Converter.Revit
       return familyInstance;
     }
 
-    /* OBSOLETE point-based family instance code
     private Base PointBasedFamilyInstanceToSpeckle(DB.FamilyInstance revitFi, Point basePoint, out List<string> notes)
     {
       notes = new List<string>();
@@ -367,7 +375,6 @@ namespace Objects.Converter.Revit
 
       return speckleFi;
     }
-    */
 
     #endregion
 
@@ -408,6 +415,8 @@ namespace Objects.Converter.Revit
     }
 
     #region new instancing
+
+
 
     // transforms
     private Other.Transform TransformToSpeckle(Transform transform, Document doc)
@@ -481,7 +490,6 @@ namespace Objects.Converter.Revit
       var transform = TransformToNative(instance.transform);
       DB.Level level = ConvertLevelToRevit(instance.level, out ApplicationObject.State levelState);
       var insertionPoint = transform.OfPoint(XYZ.Zero);
-      var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
       FamilyPlacementType placement = Enum.TryParse<FamilyPlacementType>(definition.placementType, true, out FamilyPlacementType placementType) ? placementType : FamilyPlacementType.Invalid;
 
       // check for existing and update if so
@@ -595,16 +603,22 @@ namespace Objects.Converter.Revit
         familyInstance.flipFacing();
 
       // rotation about the z axis
-      try // some point based families don't have a rotation, so keep this in a try catch
+      var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
+      if (familyInstance.Location is LocationPoint location)
       {
-        var location = familyInstance.Location as LocationPoint;
-        if (rotation != location.Rotation)
+        try // some point based families don't have a rotation, so keep this in a try catch
         {
-          var axis = DB.Line.CreateBound(new XYZ(location.Point.X, location.Point.Y, 0), new XYZ(location.Point.X, location.Point.Y, 1000));
-          location.Rotate(axis, rotation - location.Rotation);
+          if (rotation != location.Rotation)
+          {
+            var axis = DB.Line.CreateUnbound(new XYZ(location.Point.X, location.Point.Y, 0), new XYZ(location.Point.X, location.Point.Y, 1));
+            location.Rotate(axis, rotation - location.Rotation);
+          }
+        }
+        catch (Exception e)
+        {
+          appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
         }
       }
-      catch { }
 
       // mirroring
       // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
@@ -692,7 +706,7 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var meshes = GetElementDisplayValue(instance, null, true);
+        var meshes = GetElementDisplayValue(instance, new Options() { DetailLevel = ViewDetailLevel.Fine }, true); // previous point-based family instnace conversion was using GetElementMesh(revitFi);
         symbol.displayValue = meshes;
       }
       catch (Exception e)
