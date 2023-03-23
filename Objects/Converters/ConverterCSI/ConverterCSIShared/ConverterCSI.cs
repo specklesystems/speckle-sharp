@@ -25,11 +25,11 @@ namespace Objects.Converter.CSI
     public static string CSIAppName = HostApplications.SAP2000.Name;
     public static string CSISlug = HostApplications.SAP2000.Slug;
 #elif CSIBRIDGE
-    public static string CSIAppName = HostApplications.CSIBridge.Name;
-    public static string CSISlug = HostApplications.CSIBridge.Slug;
+    public static string CSIAppName = HostApplications.CSiBridge.Name;
+    public static string CSISlug = HostApplications.CSiBridge.Slug;
 #elif SAFE
-      public static string CSIAppName = HostApplications.SAFE.Name;
-      public static string CSISlug = HostApplications.SAFE.Slug;
+    public static string CSIAppName = HostApplications.SAFE.Name;
+    public static string CSISlug = HostApplications.SAFE.Slug;
 #endif
     public string Description => "Default Speckle Kit for CSI";
 

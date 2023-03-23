@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
     <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
     <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
@@ -86,15 +87,6 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.Desktop">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.ReactiveUI">
-      <Version>0.10.18</Version>
-    </PackageReference>
     <PackageReference Include="CSiAPIv1">
       <Version>1.0.0</Version>
     </PackageReference>
@@ -106,4 +98,11 @@
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+      if EXIST "$(LocalAppData)\Computers and Structures\CSIBridge\Speckle2CSiBridge" (
+      xcopy "$(TargetDir)*.*" "$(LocalAppData)\Computers and Structures\CSIBridge\Speckle2CSiBridge" /Y /I /E
+      )
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>
