@@ -51,6 +51,14 @@ namespace Speckle.Core.Logging
     public bool logToFile;
 
     /// <summary>
+    /// Flag to enable enhanced log context. This adds the following enrich calls:
+    /// - WithClientAgent
+    /// - WithClientIp
+    /// - WithExceptionDetails
+    /// </summary>
+    public bool enhancedLogContext;
+
+    /// <summary>
     /// Default SpeckleLogConfiguration constructor.
     /// These are the sane defaults we should be using across connectors.
     /// </summary>
@@ -59,12 +67,14 @@ namespace Speckle.Core.Logging
     /// <param name="logToSeq">Flag to enable Seq log sink</param>
     /// <param name="logToSentry">Flag to enable Sentry log sink</param>
     /// <param name="logToFile">Flag to enable File log sink</param>
+    /// <param name="enhancedLogContext">Flag to enable enhanced context on every log event</param>
     public SpeckleLogConfiguration(
       LogEventLevel minimumLevel = LogEventLevel.Debug,
       bool logToConsole = true,
       bool logToSeq = true,
       bool logToSentry = true,
-      bool logToFile = true
+      bool logToFile = true,
+      bool enhancedLogContext = true
     )
     {
       this.minimumLevel = minimumLevel;
@@ -72,6 +82,7 @@ namespace Speckle.Core.Logging
       this.logToSeq = logToSeq;
       this.logToSentry = logToSentry;
       this.logToFile = logToFile;
+      this.enhancedLogContext = enhancedLogContext;
     }
   }
 
@@ -148,11 +159,11 @@ namespace Speckle.Core.Logging
         .Enrich.FromLogContext()
         .Enrich.FromGlobalLogContext();
       
-#if !MAC
-       serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
-                              .Enrich.WithClientIp()
-                              .Enrich.WithExceptionDetails();
-#endif
+      if(logConfiguration.enhancedLogContext)
+         serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
+                                .Enrich.WithClientIp()
+                                .Enrich.WithExceptionDetails();
+
       
       if (logConfiguration.logToFile && canLogToFile)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
