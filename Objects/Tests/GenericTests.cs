@@ -1,16 +1,12 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using System.Reflection;
 using NUnit.Framework;
-using Objects;
-using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
-namespace Tests
+namespace Objects.Tests
 {
   [TestFixture]
   public class GenericTests

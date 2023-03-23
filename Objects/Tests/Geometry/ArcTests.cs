@@ -1,9 +1,8 @@
 using System;
 using NUnit.Framework;
-using NUnit.Framework.Internal;
 using Objects.Geometry;
 
-namespace Tests.Geometry
+namespace Objects.Tests.Geometry
 {
   [TestFixture, TestOf(typeof(Arc))]
 
