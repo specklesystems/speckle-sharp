@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 #nullable enable
 namespace Speckle.Core.Models.GraphTraversal
@@ -47,7 +48,9 @@ namespace Speckle.Core.Models.GraphTraversal
         
         Base current = head.current;
         var activeRule = GetActiveRuleOrDefault(current);
-        foreach (string childProp in activeRule.MembersToTraverse(current))
+        var membersToTraverse = activeRule.MembersToTraverse(current).ToList();
+        
+        foreach (string childProp in membersToTraverse)
         {
           TraverseMemberToStack(stack, current[childProp], childProp, head);
         }
