@@ -51,6 +51,14 @@ namespace Speckle.Core.Logging
     public bool logToFile;
 
     /// <summary>
+    /// Flag to enable restricted logging. This disables the following enrich calls:
+    /// - WithClientAgent
+    /// - WithClientIp
+    /// - WithExceptionDetails
+    /// </summary>
+    public bool restrictedLogging;
+
+    /// <summary>
     /// Default SpeckleLogConfiguration constructor.
     /// These are the sane defaults we should be using across connectors.
     /// </summary>
@@ -64,7 +72,8 @@ namespace Speckle.Core.Logging
       bool logToConsole = true,
       bool logToSeq = true,
       bool logToSentry = true,
-      bool logToFile = true
+      bool logToFile = true,
+      bool restrictedLogging = false
     )
     {
       this.minimumLevel = minimumLevel;
@@ -148,11 +157,11 @@ namespace Speckle.Core.Logging
         .Enrich.FromLogContext()
         .Enrich.FromGlobalLogContext();
       
-#if !MAC
-       serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
-                              .Enrich.WithClientIp()
-                              .Enrich.WithExceptionDetails();
-#endif
+      if(!logConfiguration.restrictedLogging)
+         serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
+                                .Enrich.WithClientIp()
+                                .Enrich.WithExceptionDetails();
+
       
       if (logConfiguration.logToFile && canLogToFile)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(

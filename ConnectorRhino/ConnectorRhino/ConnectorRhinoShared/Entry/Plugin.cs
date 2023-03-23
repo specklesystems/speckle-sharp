@@ -152,13 +152,19 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
-      //TODO proper host app name getting
-      var logConfig = new SpeckleLogConfiguration(logToSentry: false);
-      var hostAppName = HostApplications.Rhino.Name;
-      var hostAppVersion = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
-      SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
-      SpeckleLog.Logger.Information("Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}", hostAppName, hostAppVersion);
-
+      try {
+        var logConfig = new SpeckleLogConfiguration(logToSentry: false);
+        var hostAppName = Utils.AppName;
+        var hostAppVersion = Utils.RhinoAppName;
+#if MAC
+        logConfig.restrictedLogging = true;
+#endif
+        SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
+        SpeckleLog.Logger.Information("Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}", hostAppName, hostAppVersion);
+      } catch(Exception e) {
+        RhinoApp.CommandLineOut.WriteLine("Failed to init speckle logger: " + e.ToFormattedString());
+        return LoadReturnCode.ErrorShowDialog;
+      }
       string processName = "";
       System.Version processVersion = null;
       HostUtils.GetCurrentProcessInfo(out processName, out processVersion);
