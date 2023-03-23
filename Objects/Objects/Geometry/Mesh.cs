@@ -13,7 +13,7 @@ namespace Objects.Geometry
   {
     [DetachProperty, Chunkable(31250)]
     public List<double> vertices { get; set; } = new List<double>();
-    
+
     [DetachProperty, Chunkable(62500)]
     public List<int> faces { get; set; } = new List<int>();
 
@@ -43,7 +43,7 @@ namespace Objects.Geometry
     {
 
     }
-    
+
     /// <summary>
     /// Constructs a new mesh from it's raw values.
     /// </summary>
@@ -58,11 +58,11 @@ namespace Objects.Geometry
       this.vertices = vertices;
       this.faces = faces;
       this.colors = colors ?? this.colors;
-      this.textureCoordinates = texture_coords?? this.textureCoordinates;
+      this.textureCoordinates = texture_coords ?? this.textureCoordinates;
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     [Obsolete("Use lists constructor")]
     public Mesh(double[] vertices, int[] faces, int[] colors = null, double[] texture_coords = null, string units = Units.Meters, string applicationId = null)
     : this(
@@ -76,7 +76,7 @@ namespace Objects.Geometry
     { }
 
     #region Convenience Methods
-    
+
     [JsonIgnore]
     public int VerticesCount => vertices.Count / 3;
     [JsonIgnore]
@@ -92,7 +92,7 @@ namespace Objects.Geometry
       index *= 3;
       return new Point(
         vertices[index],
-        vertices[index + 1], 
+        vertices[index + 1],
         vertices[index + 2],
         units,
         applicationId
@@ -104,7 +104,7 @@ namespace Objects.Geometry
     public List<Point> GetPoints()
     {
       if (vertices.Count % 3 != 0) throw new SpeckleException($"{nameof(Mesh)}.{nameof(vertices)} list is malformed: expected length to be multiple of 3");
-      
+
       var pts = new List<Point>(vertices.Count / 3);
       for (int i = 2; i < vertices.Count; i += 3)
       {
@@ -112,13 +112,13 @@ namespace Objects.Geometry
       }
       return pts;
     }
-    
+
     /// <summary>
     /// Gets a texture coordinate as a <see cref="ValueTuple{T1,T2}"/> by <paramref name="index"/>
     /// </summary>
     /// <param name="index">The index of the texture coordinate</param>
     /// <returns>Texture coordinate as a <see cref="ValueTuple{T1,T2}"/></returns>
-    public (double,double) GetTextureCoordinate(int index)
+    public (double, double) GetTextureCoordinate(int index)
     {
       index *= 2;
       return (textureCoordinates[index], textureCoordinates[index + 1]);
@@ -141,27 +141,27 @@ namespace Objects.Geometry
     {
       if (textureCoordinates.Count == 0) return;
       if (TextureCoordinatesCount == VerticesCount) return; //Tex-coords already aligned as expected
-      
+
       var facesUnique = new List<int>(faces.Count);
       var verticesUnique = new List<double>(TextureCoordinatesCount * 3);
       bool hasColors = colors.Count > 0;
-      var colorsUnique = hasColors? new List<int>(TextureCoordinatesCount) : null;
-      
-      
+      var colorsUnique = hasColors ? new List<int>(TextureCoordinatesCount) : null;
+
+
       int nIndex = 0;
       while (nIndex < faces.Count)
       {
         int n = faces[nIndex];
         if (n < 3) n += 3; // 0 -> 3, 1 -> 4
-        
+
         if (nIndex + n >= faces.Count) break; //Malformed face list
-        
+
         facesUnique.Add(n);
         for (int i = 1; i <= n; i++)
         {
           int vertIndex = faces[nIndex + i];
           int newVertIndex = verticesUnique.Count / 3;
-          
+
           var (x, y, z) = GetPoint(vertIndex);
           verticesUnique.Add(x);
           verticesUnique.Add(y);
@@ -170,15 +170,15 @@ namespace Objects.Geometry
           colorsUnique?.Add(colors[vertIndex]);
           facesUnique.Add(newVertIndex);
         }
-        
+
         nIndex += n + 1;
       }
-      
+
       vertices = verticesUnique;
       colors = colorsUnique ?? colors;
       faces = facesUnique;
     }
-    
+
     #endregion
 
     /// <inheritdoc/>

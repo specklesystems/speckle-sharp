@@ -10,8 +10,8 @@ namespace Speckle.Core.Models.GraphTraversal
   /// Specifies what members to traverse if any provided <see cref="conditions"/> are met.
   /// </summary>
   /// <remarks>Follows the builder pattern to ensure that a rule is complete before usable, see usages</remarks>
-  public sealed class TraversalRule 
-    : ITraversalRule, 
+  public sealed class TraversalRule
+    : ITraversalRule,
       ITraversalBuilderWhen,
       ITraversalBuilderTraverse
   {
@@ -22,7 +22,7 @@ namespace Speckle.Core.Models.GraphTraversal
     {
       conditions = new List<WhenCondition>();
     }
-    
+
     /// <returns>a new Traversal Rule to be initialised using the Builder Pattern interfaces</returns>
     public static ITraversalBuilderWhen NewTraversalRule()
     {
@@ -48,18 +48,18 @@ namespace Speckle.Core.Models.GraphTraversal
       conditions.Add(condition);
       return this;
     }
-    
+
     public ITraversalRule ContinueTraversing(SelectMembers membersToTraverse)
     {
       this.membersToTraverse = membersToTraverse;
       return this;
     }
   }
-  
-  
+
+
   #region Builder interfaces/delegates
-  public delegate bool WhenCondition(Base o); 
-  
+  public delegate bool WhenCondition(Base o);
+
   /// <summary>
   /// Interface for traversal rule in a building (unusable) state
   /// </summary>
@@ -72,12 +72,12 @@ namespace Speckle.Core.Models.GraphTraversal
     /// <returns>Traversal rule in a building (unusable) state</returns>
     ITraversalBuilderTraverse When(WhenCondition condition);
   }
-  
+
   /// <summary>
   /// Delegate for selecting members (by member name) of an given <see cref="Base"/> object
   /// </summary>
-  public delegate IEnumerable<string> SelectMembers(Base o); 
-  
+  public delegate IEnumerable<string> SelectMembers(Base o);
+
   /// <summary>
   /// Interface for traversal rule in a building (unusable) state
   /// </summary>

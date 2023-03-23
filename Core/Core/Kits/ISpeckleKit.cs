@@ -47,15 +47,15 @@ namespace Speckle.Core.Kits
     /// <exception cref="KitException">Thrown if the requested converter failed to load</exception>
     public ISpeckleConverter LoadConverter(string app);
   }
-  
+
   public class KitException : Exception
   {
     public ISpeckleKit Kit { get; }
 
     public KitException(string message, ISpeckleKit kit, Exception? innerException = null) : base(message, innerException)
     {
-      this.Kit = kit;
+      Kit = kit;
     }
-    
+
   }
 }

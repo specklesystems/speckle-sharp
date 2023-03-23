@@ -20,8 +20,8 @@ namespace Objects.Geometry
     /// "True" if weights differ, "False" if weights are the same.
     /// </summary>
     public bool rational { get; set; }
-    
-    
+
+
     [DetachProperty]
     [Chunkable(31250)]
     public List<double> points { get; set; }
@@ -46,7 +46,7 @@ namespace Objects.Geometry
     /// <inheritdoc/>
     [DetachProperty]
     public Polyline displayValue { get; set; }
-    
+
     public bool closed { get; set; }
 
     /// <inheritdoc/>
@@ -67,7 +67,7 @@ namespace Objects.Geometry
     /// Constructs an empty <see cref="Curve"/> instance.
     /// </summary>
     public Curve() { }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Curve"/> instance based on displayValue a polyline.
     /// </summary>
@@ -80,13 +80,13 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     /// <returns><see cref="points"/> as list of <see cref="Point"/>s</returns>
     /// <exception cref="SpeckleException">when list is malformed</exception>
     public List<Point> GetPoints()
     {
       if (points.Count % 3 != 0) throw new SpeckleException($"{nameof(Curve)}.{nameof(points)} list is malformed: expected length to be multiple of 3");
-      
+
       var pts = new List<Point>(points.Count / 3);
       for (int i = 2; i < points.Count; i += 3)
       {
@@ -94,7 +94,7 @@ namespace Objects.Geometry
       }
       return pts;
     }
-    
+
     /// <summary>
     /// Returns the vales of this <see cref="Curve"/> as a list of numbers
     /// </summary>
@@ -173,11 +173,11 @@ namespace Objects.Geometry
         points = transformedPoints.SelectMany(o => o.ToList()).ToList(),
         weights = weights,
         knots = knots,
-        displayValue = ( Polyline ) polyline,
+        displayValue = (Polyline)polyline,
         closed = closed,
-        units =  units,
+        units = units,
         applicationId = applicationId,
-        domain = domain != null ? new Interval{start = domain.start, end = domain.end} : null
+        domain = domain != null ? new Interval { start = domain.start, end = domain.end } : null
       };
 
       return result;

@@ -6,10 +6,10 @@ using Objects.Geometry;
 
 namespace Objects.Structural.Analysis
 {
-    public enum UnitsType
-    {
-        Metric,
-        Imperial
-    }
+  public enum UnitsType
+  {
+    Metric,
+    Imperial
+  }
 }
 

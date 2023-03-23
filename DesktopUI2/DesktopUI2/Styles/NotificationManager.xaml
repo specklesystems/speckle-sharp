@@ -31,7 +31,7 @@
                 <TextBlock
                   MaxHeight="80"
                   Margin="0,0,12,0"
-									Opacity="0.8"
+                  Opacity="0.8"
                   Text="{Binding Message}"
                   TextWrapping="Wrap" />
               </StackPanel>

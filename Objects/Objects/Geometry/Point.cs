@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Speckle.Newtonsoft.Json;
+using Objects.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-
-using Objects.Other;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Geometry
 {
@@ -27,20 +25,20 @@ namespace Objects.Geometry
       get { return null; }
       set
       {
-        x = value[ 0 ];
-        y = value[ 1 ];
-        z = value.Count > 2 ? value[ 2 ] : 0;
+        x = value[0];
+        y = value[1];
+        z = value.Count > 2 ? value[2] : 0;
       }
     }
 
     /// <inheritdoc/>
     public Box bbox { get; set; }
-    
+
     /// <inheritdoc/>
     public Point()
     {
     }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Point"/> from a set of coordinates and it's units.
     /// </summary>
@@ -57,13 +55,13 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Point"/> from a <see cref="Vector"/>
     /// </summary>
     /// <param name="vector">The Vector whose coordinates will be used for the Point</param>
     public Point(Vector vector) : this(vector.x, vector.y, vector.z, vector.units, vector.applicationId)
-    {}
+    { }
 
     /// <summary>
     /// The x coordinate of the point.
@@ -98,7 +96,7 @@ namespace Objects.Geometry
     /// <param name="list">The list of coordinates {x, y, z}</param>
     /// <param name="units">The units the coordinates are in</param>
     /// <returns>A new <see cref="Point"/> with the provided coordinates.</returns>
-    public static Point FromList(IList<double> list, string units) => new Point(list[ 0 ], list[ 1 ], list[ 2 ], units);
+    public static Point FromList(IList<double> list, string units) => new Point(list[0], list[1], list[2], units);
 
     /// <summary>
     /// Deconstructs a <see cref="Point"/> into it's coordinates and units
@@ -125,7 +123,7 @@ namespace Objects.Geometry
       y = this.y;
       z = this.z;
     }
-    
+
     public static Point operator +(Point point1, Point point2) => new Point(
       point1.x + point2.x,
       point1.y + point2.y,
@@ -155,13 +153,13 @@ namespace Objects.Geometry
     {
       if (point1 is null && point2 is null) return true;
       if (point1 is null ^ point2 is null) return false;
-      
+
       return point1.units == point2.units &&
         point1.x == point2.x &&
         point1.y == point2.y &&
         point1.z == point2.z;
     }
-    
+
     public static bool operator !=(Point point1, Point point2) => !(point1 == point2);
 
     /// <summary>
@@ -171,10 +169,10 @@ namespace Objects.Geometry
     /// <param name="point2">Second point.</param>
     /// <returns>A point at the same distance from <paramref name="point1"/> and <paramref name="point2"/></returns>
     public static Point Midpoint(Point point1, Point point2) => new Point(
-      0.5 * ( point1.x + point2.x ),
-      0.5 * ( point1.y + point2.y ),
-      0.5 * ( point1.z + point2.z ), point1.units);
-    
+      0.5 * (point1.x + point2.x),
+      0.5 * (point1.y + point2.y),
+      0.5 * (point1.z + point2.z), point1.units);
+
     /// <summary>
     /// Computes the distance between two points
     /// </summary>
@@ -183,7 +181,7 @@ namespace Objects.Geometry
     /// <returns>The distance from <paramref name="point1"/> to <paramref name="point2"/></returns>
     public static double Distance(Point point1, Point point2) => Math.Sqrt(
       Math.Pow(point1.x - point2.x, 2) + Math.Pow(point1.y - point2.y, 2) + Math.Pow(point1.z - point2.z, 2));
-    
+
     /// <summary>
     /// Computes the distance between two points.
     /// </summary>
@@ -201,13 +199,13 @@ namespace Objects.Geometry
     {
       var matrix = transform.matrix;
 
-      var unitFactor = this.units != null ? Units.GetConversionFactor(transform.units, this.units) : 1; // applied to translation vector
+      var unitFactor = units != null ? Units.GetConversionFactor(transform.units, units) : 1; // applied to translation vector
       var divisor = matrix.M41 + matrix.M42 + matrix.M43 + unitFactor * matrix.M44;
       var x = (this.x * matrix.M11 + this.y * matrix.M12 + this.z * matrix.M13 + unitFactor * matrix.M14) / divisor;
       var y = (this.x * matrix.M21 + this.y * matrix.M22 + this.z * matrix.M23 + unitFactor * matrix.M24) / divisor;
       var z = (this.x * matrix.M31 + this.y * matrix.M32 + this.z * matrix.M33 + unitFactor * matrix.M34) / divisor;
 
-      point = new Point(x, y, z) { units = this.units, applicationId = this.applicationId };
+      point = new Point(x, y, z) { units = units, applicationId = applicationId };
       return true;
     }
 

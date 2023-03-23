@@ -22,7 +22,7 @@ namespace Objects.Geometry
         weight = value.Count > 3 ? value[3] : 1;
       }
     }
-    
+
     public ControlPoint()
     {
 
@@ -48,7 +48,7 @@ namespace Objects.Geometry
     }
 
     public override string ToString() => $"{{{x},{y},{z},{weight}}}";
-    
+
     public void Deconstruct(out double x, out double y, out double z, out double weight) => Deconstruct(out x, out y, out z, out weight, out _);
 
     public void Deconstruct(out double x, out double y, out double z, out double weight, out string units)

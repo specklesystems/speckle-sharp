@@ -4,16 +4,17 @@ using System.Text;
 
 namespace Objects.Structural.CSI.Properties
 {
-  public enum DiaphragmOption{
-  Disconnect,
-  FromShellObject,
-  DefinedDiaphragm
+  public enum DiaphragmOption
+  {
+    Disconnect,
+    FromShellObject,
+    DefinedDiaphragm
   }
   public enum NonLinearOptions
   {
-  Linear,
-  CompressionOnly,
-  TensionOnly
+    Linear,
+    CompressionOnly,
+    TensionOnly
   }
 
   public enum SpringOption
@@ -21,18 +22,20 @@ namespace Objects.Structural.CSI.Properties
     Link,
     SoilProfileFooting
   }
-  public enum ModelingOption {
-  Loads,
-  Elements
+  public enum ModelingOption
+  {
+    Loads,
+    Elements
   }
 
-  public enum DesignProcedure{
-  ProgramDetermined,
-  SteelFrameDesign,
-  ConcreteFrameDesign,
-  CompositeBeamDesign,
-  SteelJoistDesign,
-  NoDesign,
-  CompositeColumnDesign
+  public enum DesignProcedure
+  {
+    ProgramDetermined,
+    SteelFrameDesign,
+    ConcreteFrameDesign,
+    CompositeBeamDesign,
+    SteelJoistDesign,
+    NoDesign,
+    CompositeColumnDesign
   }
 }
