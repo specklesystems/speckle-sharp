@@ -173,7 +173,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
                   $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver -maxcpucount:6
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
       - unless:
@@ -317,7 +317,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 command: |
                   TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
                   SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER -maxcpucount:6
             # Compress build files
             - run:
                 name: Zip Objects Kit files
