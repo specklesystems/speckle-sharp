@@ -67,6 +67,7 @@ namespace Speckle.Core.Logging
     /// <param name="logToSeq">Flag to enable Seq log sink</param>
     /// <param name="logToSentry">Flag to enable Sentry log sink</param>
     /// <param name="logToFile">Flag to enable File log sink</param>
+    /// <param name="enhancedLogContext">Flag to enable enhanced context on every log event</param>
     public SpeckleLogConfiguration(
       LogEventLevel minimumLevel = LogEventLevel.Debug,
       bool logToConsole = true,
