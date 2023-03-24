@@ -1211,7 +1211,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        HandleCommandException(ex, Progress);
+        HandleCommandException(ex);
       }
       finally
       {
@@ -1257,7 +1257,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        HandleCommandException(ex, Progress);
+        HandleCommandException(ex);
       }
       finally
       {
@@ -1337,7 +1337,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        HandleCommandException(ex, Progress);
+        HandleCommandException(ex);
       }
       finally
       {
@@ -1346,7 +1346,7 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    private static void HandleCommandException(Exception ex, ProgressViewModel progress, [CallerMemberName] string commandName = "UnknownCommand")
+    private void HandleCommandException(Exception ex, [CallerMemberName] string commandName = "UnknownCommand")
     {
       string commandPrettyName = commandName.EndsWith("Command") ? commandName.Substring(0, commandName.Length - "Command".Length) : commandName;
 
@@ -1358,13 +1358,13 @@ namespace DesktopUI2.ViewModels
           // NOTE: We expect an OperationCanceledException to occur when our CancellationToken is cancelled.
           // If our token wasn't cancelled, then this is highly unexpected, and treated with HIGH SEVERITY!
           // Likely, another deeper token was cancelled, and the exception wasn't handled correctly somewhere deeper.
-          bool isUserCancel = progress.CancellationToken.IsCancellationRequested;
+          bool isUserCancel = Progress.CancellationToken.IsCancellationRequested;
 
           logLevel = isUserCancel ? LogEventLevel.Information : LogEventLevel.Error;
           notificationViewModel = new PopUpNotificationViewModel
           {
             Title = $"✋ {commandPrettyName} cancelled!",
-            Message = isUserCancel ? "Operation canceled by user" : ex.Message,
+            Message = isUserCancel ? "Operation canceled" : ex.Message,
             Type = isUserCancel ? NotificationType.Success : NotificationType.Error
           };
           break;
