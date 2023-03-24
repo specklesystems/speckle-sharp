@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -21,6 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="WindowsBase_Core.STW" Version="4.0.30319.1" />
+    <PackageReference Include="EPP.PresentationCore" Version="1.0.0" />
     <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" />
   </ItemGroup>
 

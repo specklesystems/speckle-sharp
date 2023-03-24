@@ -41,6 +41,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="WindowsBase_Core.STW" Version="4.0.30319.1" />
+    <PackageReference Include="EPP.PresentationCore" Version="1.0.0" />
     <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.2" />
     <PackageReference Include="Speckle.Civil3D.API" Version="2021.0.2" />
   </ItemGroup>
