@@ -28,9 +28,9 @@ namespace Objects.Other
     public string units { get; set; }
 
     public BlockDefinition() { }
-    
-    [SchemaInfo("Block Definition","A Speckle Block definition")]
-    public BlockDefinition(string name, List<Base> geometry, Point basePoint = null )
+
+    [SchemaInfo("Block Definition", "A Speckle Block definition")]
+    public BlockDefinition(string name, List<Base> geometry, Point basePoint = null)
     {
       this.name = name;
       this.basePoint = basePoint ?? new Point(0, 0, 0, Units.None);

@@ -26,21 +26,21 @@ namespace Objects.Geometry
     /// If true, do not add the last point to the value list. Polyline first and last points should be unique.
     /// </summary>
     public bool closed { get; set; }
-    
+
     /// <summary>
     /// The internal domain of this curve.
     /// </summary>
     public Interval domain { get; set; }
-    
+
     /// <inheritdoc/>
     public Box bbox { get; set; }
-    
+
     /// <inheritdoc/>
     public double area { get; set; }
-    
+
     /// <inheritdoc/>
     public double length { get; set; }
-    
+
     /// <summary>
     /// The unit's this <see cref="Polyline"/> is in.
     /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
@@ -52,7 +52,7 @@ namespace Objects.Geometry
     /// </summary>
     public Polyline()
     { }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Polyline"/> instance from a flat list of coordinates.
     /// </summary>
@@ -63,7 +63,7 @@ namespace Objects.Geometry
     public Polyline(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId)
     { }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Polyline"/> instance from a flat list of coordinates.
     /// </summary>
@@ -82,14 +82,14 @@ namespace Objects.Geometry
     /// </summary>
     [JsonIgnore, Obsolete("Use " + nameof(GetPoints) + " Instead")]
     public List<Point> points => GetPoints();
-    
+
     ///<remarks>This function may be suboptimal for performance for polylines with many points</remarks>
     /// <returns><see cref="value"/> as List of <see cref="Point"/>s</returns>
     /// <exception cref="SpeckleException">when list is malformed</exception>
     public List<Point> GetPoints()
     {
       if (value.Count % 3 != 0) throw new SpeckleException($"{nameof(Polyline)}.{nameof(value)} list is malformed: expected length to be multiple of 3");
-      
+
       var pts = new List<Point>(value.Count / 3);
       for (int i = 2; i < value.Count; i += 3)
       {

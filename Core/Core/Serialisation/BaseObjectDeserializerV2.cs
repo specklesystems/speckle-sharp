@@ -57,7 +57,7 @@ namespace Speckle.Core.Serialisation
     {
       if (Busy)
         throw new InvalidOperationException("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
-      
+
       try
       {
         Busy = true;
@@ -87,7 +87,7 @@ namespace Speckle.Core.Serialisation
         stopwatch.Stop();
         Elapsed += stopwatch.Elapsed;
         if (ret is Base b) return b;
-        
+
         else throw new Exception(
           $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
         );
@@ -174,7 +174,7 @@ namespace Speckle.Core.Serialisation
           {
             return (long)doc;
           }
-          catch(OverflowException ex)
+          catch (OverflowException ex)
           {
             var v = (object)(double)doc;
             SpeckleLog.Logger.Debug(ex, "Json property {tokenType} failed to deserialize {value} to {targetType}, will be deserialized as {fallbackType}", doc.Type, v, typeof(long), typeof(double));

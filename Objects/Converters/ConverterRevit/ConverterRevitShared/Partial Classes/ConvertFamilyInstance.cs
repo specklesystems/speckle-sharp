@@ -653,7 +653,7 @@ namespace Objects.Converter.Revit
 
       var _instance = new RevitInstance();
       _instance.transform = transform;
-      _instance.definition = definition;
+      _instance.typedDefinition = definition;
       _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);
       _instance.facingFlipped = instance.FacingFlipped;
       _instance.handFlipped = instance.HandFlipped;

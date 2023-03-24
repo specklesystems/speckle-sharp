@@ -10,7 +10,7 @@ namespace Objects.Structural.CSI.Geometry
     public string name { get; set; }
     public int numberStories { get; set; }
     public string[] storyName { get; set; }
-    public double[] axisAngle {get;set;} 
+    public double[] axisAngle { get; set; }
     public int[] numAreaObjs { get; set; }
     public int[] numLineObjs { get; set; }
     public double[] widthBot { get; set; }
@@ -25,7 +25,7 @@ namespace Objects.Structural.CSI.Geometry
     public double[] centerofGravityTopY { get; set; }
     public double[] centerofGravityTopZ { get; set; }
 
-    public CSIPier(string name, int numberStories, string[] storyName,double[] axisAngle, int[] numAreaObjs, int[] numLineObjs, double[] widthBot, double[] thicknessBot, double[] widthTop, double[] thicknessTop, string[] matProp, double[] centerofGravityBotX, double[] centerofGravityBotY, double[] centerofGravityBotZ, double[] centerofGravityTopX, double[] centerofGravityTopY, double[] centerofGravityTopZ)
+    public CSIPier(string name, int numberStories, string[] storyName, double[] axisAngle, int[] numAreaObjs, int[] numLineObjs, double[] widthBot, double[] thicknessBot, double[] widthTop, double[] thicknessTop, string[] matProp, double[] centerofGravityBotX, double[] centerofGravityBotY, double[] centerofGravityBotZ, double[] centerofGravityTopX, double[] centerofGravityTopY, double[] centerofGravityTopZ)
     {
       this.name = name;
       this.numberStories = numberStories;

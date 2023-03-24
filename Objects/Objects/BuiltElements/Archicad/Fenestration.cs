@@ -7,7 +7,7 @@ using System.Collections.Generic;
 namespace Objects.BuiltElements.Archicad
 {
   public class ArchicadFenestration : Base, IDisplayValue<List<Mesh>>
-    {
+  {
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 

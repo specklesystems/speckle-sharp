@@ -121,7 +121,7 @@ namespace Objects.BuiltElements.Archicad
       public string? rightMaterial { get; set; }
       public string? bottomMaterial { get; set; }
       public string? endsMaterial { get; set; }
-	  // Segment - The overridden materials are chained
+      // Segment - The overridden materials are chained
       public bool? materialChained { get; set; }
       public AssemblySegment assemblySegmentData { get; set; }
     }

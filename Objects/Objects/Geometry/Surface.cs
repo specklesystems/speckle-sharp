@@ -15,74 +15,74 @@ namespace Objects.Geometry
     /// The degree of the surface in the U direction
     /// </summary>
     public int degreeU { get; set; }
-    
+
     /// <summary>
     /// The degree of the surface in the V direction
     /// </summary>
     public int degreeV { get; set; }
-    
+
     /// <summary>
     /// Determines if the <see cref="Surface"/> is rational.
     /// </summary>
     public bool rational { get; set; }
-    
+
     /// <inheritdoc/>
     public double area { get; set; }
-    
+
     /// <summary>
     /// The raw data of the surface's control points. Use GetControlPoints or SetControlPoints instead of accessing this directly.
     /// </summary>
     public List<double> pointData { get; set; }
-    
+
     /// <summary>
     /// The number of control points in the U direction
     /// </summary>
     public int countU { get; set; }
-    
+
     /// <summary>
     /// The number of control points in the V direction
     /// </summary>
     public int countV { get; set; }
-    
+
     /// <inheritdoc/>
     public Box bbox { get; set; }
-    
+
     /// <summary>
     /// The knot vector in the U direction
     /// </summary>
     public List<double> knotsU { get; set; }
-    
+
     /// <summary>
     /// The knot vector in the V direction
     /// </summary>
     public List<double> knotsV { get; set; }
-    
+
     /// <summary>
     /// The surface's domain in the U direction
     /// </summary>
     public Interval domainU { get; set; }
-    
+
     /// <summary>
     /// The surface's domain in the V direction
     /// </summary>
     public Interval domainV { get; set; }
-    
+
     /// <summary>
     /// Determines if a surface is closed around the <see cref="domainU"/>.
     /// </summary>
     public bool closedU { get; set; }
-    
+
     /// <summary>
     /// Determines if a surface is closed around the <see cref="domainV"/>
     /// </summary>
     public bool closedV { get; set; }
-    
+
     /// <summary>
     /// The unit's this <see cref="Surface"/> is in.
     /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
     /// </summary>
     public string units { get; set; }
-    
+
     /// <summary>
     /// Constructs a new empty <see cref="Surface"/>
     /// </summary>
@@ -91,7 +91,7 @@ namespace Objects.Geometry
       this.applicationId = null;
       this.pointData = new List<double>();
     }
-    
+
     /// <summary>
     /// Constructs a new empty <see cref="Surface"/> 
     /// </summary>
@@ -102,7 +102,7 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     /// <summary>
     /// Gets the control points of this s<see cref="Surface"/>
     /// </summary>
@@ -125,7 +125,7 @@ namespace Objects.Geometry
 
       return matrix;
     }
-    
+
     /// <summary>
     /// Sets the control points of this <see cref="Surface"/>.
     /// </summary>
@@ -194,7 +194,7 @@ namespace Objects.Geometry
       srf.rational = list[4] == 1;
       srf.closedU = list[5] == 1;
       srf.closedV = list[6] == 1;
-      srf.domainU = new Interval() { start = list[7], end = list[8] }; 
+      srf.domainU = new Interval() { start = list[7], end = list[8] };
       srf.domainV = new Interval() { start = list[9], end = list[10] };
 
       var pointCount = (int)list[11];
@@ -204,7 +204,7 @@ namespace Objects.Geometry
       srf.pointData = list.GetRange(14, pointCount);
       srf.knotsU = list.GetRange(14 + pointCount, knotsUCount);
       srf.knotsV = list.GetRange(14 + pointCount + knotsUCount, knotsVCount);
-      
+
       var u = list[list.Count - 1];
       srf.units = Units.GetUnitFromEncoding(u);
       return srf;
@@ -214,12 +214,12 @@ namespace Objects.Geometry
     public bool TransformTo(Transform transform, out Surface surface)
     {
       var ptMatrix = GetControlPoints();
-      foreach ( var ctrlPts in ptMatrix )
+      foreach (var ctrlPts in ptMatrix)
       {
-        for ( int i = 0; i < ctrlPts.Count; i++ )
+        for (int i = 0; i < ctrlPts.Count; i++)
         {
-          ctrlPts[ i ].TransformTo(transform, out var tPt);
-          ctrlPts[ i ] = tPt;
+          ctrlPts[i].TransformTo(transform, out var tPt);
+          ctrlPts[i] = tPt;
         }
       }
       surface = new Surface()

@@ -175,7 +175,7 @@ namespace Speckle.Core.Kits
           if (reference.FullName.StartsWith("Microsoft.")) continue;
 
           if (loadedAssemblies.Contains(reference.FullName)) continue;
-          
+
           Assembly assembly;
           try
           {
@@ -205,7 +205,7 @@ namespace Speckle.Core.Kits
         if (assembly.IsDynamic || assembly.ReflectionOnly) continue;
         if (!assembly.IsReferencing(SpeckleAssemblyName)) continue;
         if (_SpeckleKits.ContainsKey(assembly.FullName)) continue;
-        
+
         var kitClass = GetKitClass(assembly);
         if (kitClass == null) continue;
 
@@ -218,7 +218,7 @@ namespace Speckle.Core.Kits
     {
       if (!Directory.Exists(KitsFolder))
         return;
-      
+
       var directories = Directory.GetDirectories(KitsFolder);
 
       foreach (var directory in directories)

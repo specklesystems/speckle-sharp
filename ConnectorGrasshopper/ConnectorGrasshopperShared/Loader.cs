@@ -42,6 +42,11 @@ namespace ConnectorGrasshopper
       if (RhinoApp.Version.Major == 7)
         version = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
 
+      var logConfig = new SpeckleLogConfiguration(logToSentry: false);
+#if MAC
+      logConfig.enhancedLogContext = false;
+#endif
+      SpeckleLog.Initialize(HostApplications.Grasshopper.Name, version, logConfig);
       try
       {
         // Using reflection instead of calling `Setup.Init` to prevent loader from exploding. See comment on Catch clause.

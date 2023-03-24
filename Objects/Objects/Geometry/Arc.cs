@@ -18,7 +18,7 @@ namespace Objects.Geometry
     /// The radius of the <see cref="Arc"/>
     /// </summary>
     public double? radius { get; set; }
-        
+
     /// <summary>
     /// The start angle of the <see cref="Arc"/> based on it's <see cref="Arc.plane"/>
     /// </summary>
@@ -41,7 +41,7 @@ namespace Objects.Geometry
 
     /// <inheritdoc/>
     public Interval domain { get; set; }
-        
+
     /// <summary>
     /// The start <see cref="Point"/> of the <see cref="Arc"/>
     /// </summary>
@@ -56,7 +56,7 @@ namespace Objects.Geometry
     /// The end <see cref="Point"/> of the <see cref="Arc"/>
     /// </summary>
     public Point endPoint { get; set; }
-        
+
     /// <inheritdoc/>
     public Box bbox { get; set; }
 
@@ -65,7 +65,7 @@ namespace Objects.Geometry
 
     /// <inheritdoc/>
     public double length { get; set; }
-        
+
     /// <summary>
     /// The units this object was specified in.
     /// </summary>
@@ -75,7 +75,7 @@ namespace Objects.Geometry
     public Arc()
     {
     }
-        
+
     /// <summary>
     /// Constructs a new <see cref="Arc"/> using angle values.
     /// </summary>
@@ -178,7 +178,7 @@ namespace Objects.Geometry
       // Set the plane of this arc
       this.plane = plane;
     }
-        
+
     /// <summary>
     /// Creates a flat list with the values of the <see cref="Arc"/>
     /// This is only used for serialisation purposes.
@@ -203,7 +203,7 @@ namespace Objects.Geometry
       list.Insert(0, list.Count);
       return list;
     }
-        
+
     /// <summary>
     /// Creates a new <see cref="Arc"/> instance based on a flat list of numerical values.
     /// This is only used for deserialisation purposes.
@@ -229,7 +229,7 @@ namespace Objects.Geometry
 
       return arc;
     }
-        
+
     /// <inheritdoc/>
     public bool TransformTo(Transform transform, out Arc transformed)
     {
@@ -244,7 +244,7 @@ namespace Objects.Geometry
       return true;
     }
 
-      /// <inheritdoc/>
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Arc arc);

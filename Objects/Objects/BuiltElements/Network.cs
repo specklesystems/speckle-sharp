@@ -1,13 +1,13 @@
-﻿using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements;
+using Objects.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
@@ -45,14 +45,14 @@ namespace Objects.BuiltElements
     /// <remarks>
     /// Currently named "elements" to assist with receiving in connector flatten method.
     /// </remarks>
-    public Base elements { get; set; } 
+    public Base elements { get; set; }
 
     /// <summary>
     /// The index of the links in <see cref="network"/> that are connected to this element
     /// </summary>
     public List<int> linkIndices { get; set; }
 
-    [JsonIgnore] 
+    [JsonIgnore]
     public Network network { get; set; }
 
     public NetworkElement() { }
@@ -72,7 +72,7 @@ namespace Objects.BuiltElements
     /// </summary>
     public List<int> elementIndices { get; set; }
 
-    [JsonIgnore] 
+    [JsonIgnore]
     public Network network { get; set; }
 
     public NetworkLink() { }

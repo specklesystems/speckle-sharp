@@ -37,7 +37,7 @@ namespace Objects.Geometry
     /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
     /// </summary>
     public string units { get; set; }
-    
+
     /// <summary>
     /// Constructs an empty <see cref="Plane"/>
     /// </summary>
@@ -45,7 +45,7 @@ namespace Objects.Geometry
     {
 
     }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Plane"/> given it's individual values.
     /// </summary>
@@ -83,7 +83,7 @@ namespace Objects.Geometry
 
       return list;
     }
-    
+
     /// <summary>
     /// Creates a new <see cref="Plane"/> based on a list of values and the unit they're drawn in.
     /// </summary>

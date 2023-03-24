@@ -36,7 +36,7 @@ namespace Objects.Structural.Geometry
 
     [DetachProperty]
     public List<Node> topology { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 

@@ -62,12 +62,23 @@ namespace Speckle.ConnectorRevit.UI
       RevitApp.Application.DocumentSynchronizingWithCentral += Application_DocumentSynchronizingWithCentral;
       RevitApp.Application.DocumentSynchronizedWithCentral += Application_DocumentSynchronizedWithCentral;
       RevitApp.Application.FileExported += Application_FileExported;
+      RevitApp.ApplicationClosing += RevitApp_ApplicationClosing;
       //RevitApp.Application.FileExporting += Application_FileExporting;
       //RevitApp.Application.FileImporting += Application_FileImporting;
       //SelectionTimer = new Timer(1400) { AutoReset = true, Enabled = true };
       //SelectionTimer.Elapsed += SelectionTimer_Elapsed;
       // TODO: Find a way to handle when document is closed via middle mouse click
       // thus triggering the focus on a new project
+    }
+
+    private void RevitApp_ApplicationClosing(object sender, Autodesk.Revit.UI.Events.ApplicationClosingEventArgs e)
+    {
+      if (HomeViewModel.Instance == null)
+        return;
+
+
+      ///ensure WS connections etc are disposed, otherwise it might throw
+      HomeViewModel.Instance.SavedStreams.ForEach(s => s.Dispose());
     }
 
     //DISABLED

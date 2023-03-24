@@ -1,12 +1,12 @@
-﻿using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
+﻿using System;
 using System.Collections.Generic;
-using Objects.Structural.Materials;
-using Objects.Structural.Properties.Profiles;
-using System;
 using System.Linq;
 using System.Text;
+using Objects.Geometry;
+using Objects.Structural.Materials;
+using Objects.Structural.Properties.Profiles;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
 
@@ -29,7 +29,7 @@ namespace Objects.BuiltElements.TeklaStructures
     [DetachProperty]
     public Base rebars { get; set; }
     public List<TeklaContourPoint> contour { get; set; } // Use for ToNative to Tekla. Other programs can use Area.outline.
-    
+
 
     [SchemaInfo("ContourPlate", "Creates a TeklaStructures contour plate.", "Tekla", "Structure")]
     public TeklaContourPlate(SectionProfile profile, Polyline outline, string finish, string classNumber, string units, StructuralMaterial material = null, TeklaPosition position = null, Base rebars = null)

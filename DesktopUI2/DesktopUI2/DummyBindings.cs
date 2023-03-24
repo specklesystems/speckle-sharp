@@ -96,10 +96,31 @@ namespace DesktopUI2
     {
       return new List<ISelectionFilter>
       {
-        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects and project information." },
+        new AllSelectionFilter
+        {
+          Slug="all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Selects all document objects and project information."
+        },
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="view",Name = "View", Icon = "RemoveRedEye", Description = "Hello world. This is a something something filter.", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
-        new ListSelectionFilter {Slug="cat",Name = "Category", Icon = "Category",Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
+        new ListSelectionFilter
+        {
+          Slug="view",
+          Name = "View",
+          Icon = "RemoveRedEye",
+          Description = "Hello world. This is a something something filter.",
+          Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" }
+        },
+        new ListSelectionFilter
+        {
+          Slug="cat",
+          Name = "Category",
+          Icon = "Category",
+          Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.",
+          Values = new List<string>()
+        { "Boats", "Rafts", "Barges", "Structural framing", "This is a very long name", "structural floors", "Spaceships", "Ninja turtles", "this is another long one" }
+        },
         new PropertySelectionFilter
         {
           Slug="param",

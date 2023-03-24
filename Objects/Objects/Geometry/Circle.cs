@@ -1,7 +1,7 @@
-﻿using Objects.Primitive;
-using Speckle.Core.Models;
+﻿using System.Collections.Generic;
+using Objects.Primitive;
 using Speckle.Core.Kits;
-using System.Collections.Generic;
+using Speckle.Core.Models;
 
 namespace Objects.Geometry
 {
@@ -14,7 +14,7 @@ namespace Objects.Geometry
     /// The radius of the circle
     /// </summary>
     public double? radius { get; set; }
-    
+
     /// <summary>
     /// The <see cref="Plane"/> the circle lies in.
     /// </summary>
@@ -33,19 +33,19 @@ namespace Objects.Geometry
 
     /// <inheritdoc/>
     public double length { get; set; }
-    
+
     /// <summary>
     /// The units this object was modeled in.
     /// </summary>
     public string units { get; set; }
-    
+
     /// <summary>
     /// Constructs an empty <see cref="Circle"/> instance.
     /// </summary>
     public Circle()
     {
     }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Circle"/> instance.
     /// </summary>
@@ -60,7 +60,7 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     /// <summary>
     /// Returns the coordinates of this <see cref="Circle"/> as a list of numbers
     /// </summary>

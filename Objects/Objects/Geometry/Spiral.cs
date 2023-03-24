@@ -32,7 +32,7 @@ namespace Objects.Geometry
     public Vector pitchAxis { get; set; } = new Vector();
     public double pitch { get; set; } = 0;
     public SpiralType spiralType { get; set; }
-  
+
     [DetachProperty]
     public Polyline displayValue { get; set; }
 
