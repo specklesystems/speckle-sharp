@@ -118,22 +118,15 @@ namespace Objects.Converter.AutocadCivil
 
       List<Polyline> listPolyline = new List<Polyline>();
 
-      foreach (System.Windows.Media.PathFigure pathFigure in pathFigureList)//LetterScope
+      foreach (System.Windows.Media.PathFigure pathFigure in pathFigureList) //Letter
       {
-        System.Windows.Media.PathSegmentCollection pSegColl;
-        pSegColl = pathFigure.Segments;
-        int countSeg = pSegColl.Count;
+        var segments = pathFigure.Segments;
         sp.WinStPt = pathFigure.StartPoint;
 
-        foreach (System.Windows.Media.PathSegment ps in pSegColl)//LoopScope
+        foreach (System.Windows.Media.PathSegment pathSegment in segments)
         {
-          if (pathFigureList.Count == 1 && countSeg == 1) sp.FigureClosed = pathFigure.IsClosed;
-          sp.AddPathSegment(ps);
-        }
-        if (m_asRegion)//to subreact internal geometry out of Region letters
-        {
-          m_rde.ProcessObjectCollection(sp.DBObjColl);
-          sp.Reset();
+          if (pathFigureList.Count == 1 && segments.Count == 1) sp.FigureClosed = pathFigure.IsClosed;
+          sp.AddPathSegment(pathSegment);
         }
       }
 
