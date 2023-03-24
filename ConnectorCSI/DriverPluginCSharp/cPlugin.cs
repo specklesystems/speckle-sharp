@@ -13,7 +13,6 @@ namespace SpeckleConnector
 
     public void Main(ref cSapModel SapModel, ref cPluginCallback ISapPlugin)
     {
-      Debugger.Launch();
       m_SapModel = SapModel;
       m_PluginCallback = ISapPlugin;
 
