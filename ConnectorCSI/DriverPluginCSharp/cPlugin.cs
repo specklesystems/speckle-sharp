@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using CSiAPIv1;
 
@@ -9,6 +8,7 @@ namespace SpeckleConnector
   {
     private cSapModel m_SapModel;
     private cPluginCallback m_PluginCallback;
+    private Process connectorProcess;
 
     public void Main(ref cSapModel SapModel, ref cPluginCallback ISapPlugin)
     {
@@ -22,23 +22,26 @@ namespace SpeckleConnector
       Process currentProcess = Process.GetCurrentProcess();
       string guiType = System.IO.Path.GetFileNameWithoutExtension(currentProcess.ProcessName);
 
-      Process driver = new Process();
+      connectorProcess = new Process();
       {
-        var withBlock = driver.StartInfo;
+        var withBlock = connectorProcess.StartInfo;
         withBlock.CreateNoWindow = true;
         withBlock.FileName = appPath;
         withBlock.UseShellExecute = false;
         withBlock.Arguments = guiType;
       }
 
-      Task.Run(() =>
-      {
-        driver.Start();
-        driver.WaitForExit();
+      connectorProcess.Start();
 
-        m_PluginCallback.Finish(driver.ExitCode);
-      }
-  );
+      // we need to immediately call this or else the program UI will be blocked by the connector process which will cause API calls to hang
+      m_PluginCallback.Finish(0);
+
+      System.Windows.Forms.Application.ApplicationExit += Application_ApplicationExit;
+    }
+
+    private void Application_ApplicationExit(object sender, EventArgs e)
+    {
+      connectorProcess?.CloseMainWindow();
     }
 
     public int Info(ref string Text)
