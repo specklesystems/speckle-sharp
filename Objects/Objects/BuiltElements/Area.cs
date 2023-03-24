@@ -1,11 +1,11 @@
-﻿using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
+using Objects.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
@@ -20,7 +20,7 @@ namespace Objects.BuiltElements
     public Point center { get; set; }
     public List<ICurve> voids { get; set; } = new List<ICurve>();
     public ICurve outline { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -40,6 +40,6 @@ namespace Objects.BuiltElements
       this.level = level;
       this.center = center;
     }
-    
+
   }
 }

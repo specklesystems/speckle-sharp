@@ -91,7 +91,7 @@ namespace Speckle.Core.Api
       using (LogContext.PushProperty("correlationId", Guid.NewGuid().ToString()))
       {
         var sendTimer = Stopwatch.StartNew();
-        Log.Information("Starting send operation");
+        SpeckleLog.Logger.Information("Starting send operation");
 
         BaseObjectSerializer? serializer = null;
         JsonSerializerSettings? settings = null;
@@ -148,7 +148,7 @@ namespace Speckle.Core.Api
 
         if (cancellationToken.IsCancellationRequested)
         {
-          Log.Information(
+          SpeckleLog.Logger.Information(
             "Send operation cancelled after {elapsed} seconds",
             sendTimer.Elapsed.TotalSeconds
           );
@@ -171,7 +171,7 @@ namespace Speckle.Core.Api
 
         if (cancellationToken.IsCancellationRequested)
         {
-          Log.Information(
+          SpeckleLog.Logger.Information(
             "Send operation cancelled after {elapsed}",
             sendTimer.Elapsed.TotalSeconds
           );
@@ -183,7 +183,7 @@ namespace Speckle.Core.Api
         var hash = idToken.ToString();
 
         sendTimer.Stop();
-        Log.ForContext(
+        SpeckleLog.Logger.ForContext(
             "transportElapsedBreakdown",
             transports.ToDictionary(t => t.TransportName, t => t.Elapsed)
           )

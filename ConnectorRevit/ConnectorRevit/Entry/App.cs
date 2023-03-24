@@ -97,6 +97,8 @@ namespace Speckle.ConnectorRevit.Entry
     {
       try
       {
+        Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
+        
         AppInstance = new UIApplication(sender as Application);
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
@@ -108,7 +110,6 @@ namespace Speckle.ConnectorRevit.Entry
         SchedulerCommand.Bindings = bindings;
 
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
-        Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
         Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
         SpeckleRevitCommand.RegisterPane();
@@ -117,7 +118,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
         var td = new TaskDialog("Could not load Speckle");
         td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");

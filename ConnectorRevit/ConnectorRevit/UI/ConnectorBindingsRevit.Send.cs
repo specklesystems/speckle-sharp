@@ -51,10 +51,10 @@ namespace Speckle.ConnectorRevit.UI
       var selectedObjects = GetSelectionFilterObjects(state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
-      
+
       if (!selectedObjects.Any())
         throw new InvalidOperationException("There are zero objects to send. Please use a filter, or set some via selection.");
-      
+
       converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
 
@@ -76,18 +76,18 @@ namespace Speckle.ConnectorRevit.UI
           var reportObj = alreadyConverted
             ? applicationObject
             : new ApplicationObject(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
-          
+
           if (alreadyConverted)
           {
             progress.Report.Log(reportObj);
             continue;
           }
-          
+
           if (revitElement == null)
             continue;
 
-          using var _d0= LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
-          using var _d1= LogContext.PushProperty("elementType", revitElement.GetType());
+          using var _d0 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+          using var _d1 = LogContext.PushProperty("elementType", revitElement.GetType());
           using var _d2 = LogContext.PushProperty("elementCategory", revitElement.Category.Name);
 
           try
@@ -133,7 +133,7 @@ namespace Speckle.ConnectorRevit.UI
               if (commitObject[$"@{catName}"] is List<Base> objs)
               {
                 var hostIndex = objs.FindIndex(obj => obj.applicationId == host.applicationId);
-                // if the "host" is present, then it has already been converted and we need to 
+                // if the "host" is present, then it has already been converted and we need to
                 // attach the current, dependent, elements as a hosted element
                 if (hostIndex != -1)
                 {
@@ -192,7 +192,7 @@ namespace Speckle.ConnectorRevit.UI
                   if (conversionResult["elements"] is List<Base> els)
                     els.AddRange(elements);
                   else
-                    conversionResult[ "elements" ] = elements;
+                    conversionResult["elements"] = elements;
                 }
 
                 objs.Add(conversionResult);
@@ -205,7 +205,7 @@ namespace Speckle.ConnectorRevit.UI
           catch (OperationCanceledException) { throw; }
           catch (Exception ex)
           {
-            Log.Warning(ex, "Object failed during conversion");
+            SpeckleLog.Logger.Warning(ex, "Object failed during conversion");
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
           }
           progress.Report.Log(reportObj);
@@ -215,7 +215,7 @@ namespace Speckle.ConnectorRevit.UI
       progress.Report.Merge(converter.Report);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
-      
+
       if (convertedCount == 0)
       {
         throw new SpeckleException("Zero objects converted successfully. Send stopped.");
@@ -231,7 +231,7 @@ namespace Speckle.ConnectorRevit.UI
         onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
-      
+
       progress.CancellationToken.ThrowIfCancellationRequested();
 
       var actualCommit = new CommitCreateInput()
@@ -244,7 +244,7 @@ namespace Speckle.ConnectorRevit.UI
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
-      
+
       var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
       return commitId;
     }

@@ -227,7 +227,7 @@ namespace Objects.Converter.Revit
       if (baseLine == null && baseGeometry is Point basePoint)
       {
         if (symbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBased || symbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
-          return PointBasedFamilyInstanceToSpeckle(revitColumn, basePoint, out notes);
+          return RevitInstanceToSpeckle(revitColumn, out notes, null);
 
         var elevation = speckleColumn.topLevel.elevation;
         baseLine = new Line(basePoint, new Point(basePoint.x, basePoint.y, elevation + speckleColumn.topOffset, ModelUnits), ModelUnits);

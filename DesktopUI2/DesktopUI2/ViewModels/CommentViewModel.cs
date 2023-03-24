@@ -1,5 +1,6 @@
 ﻿using DesktopUI2.Views;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Splat;
@@ -9,7 +10,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -86,7 +86,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Failed to open comment view {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed to open comment view {exceptionMessage}", ex.Message);
       }
 
       //something went wrong

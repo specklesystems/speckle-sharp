@@ -10,7 +10,7 @@ namespace Objects.BuiltElements.AdvanceSteel
     //[SchemaInfo("AdvanceSteelStraightBeam", "Creates a Advance Steel straightBeam.", "Advance Steel", "Structure")]
     public AdvanceSteelStraightBeam()
     {
-        
+
     }
   }
 }

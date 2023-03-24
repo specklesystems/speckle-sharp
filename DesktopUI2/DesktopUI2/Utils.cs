@@ -6,6 +6,8 @@ using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
 using Material.Dialog.Icons;
 using Material.Dialog.Interfaces;
+using Serilog;
+using SkiaSharp;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -17,7 +19,6 @@ using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace DesktopUI2
 {
@@ -101,7 +102,7 @@ namespace DesktopUI2
     public static string CommitInfo(string stream, string branch, string commitId)
     {
       string formatted = $"{stream}[ {branch} @ {commitId} ]";
-      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
+      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :(
       return clean;
     }
 
@@ -230,7 +231,7 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.ForContext("path", path)
+        SpeckleLog.Logger.ForContext("path", path)
           .Error(ex, "Failed to launch Manager");
       }
     }
@@ -262,9 +263,9 @@ namespace DesktopUI2
             }
             catch (Exception ex)
             {
-              Log.ForContext("dialogResult", result)
+              SpeckleLog.Logger.ForContext("dialogResult", result)
                 .Warning(ex, "Swallowing exception in {methodName} {exceptionMessage}", nameof(AddAccountCommand), nameof(AddAccountCommand), ex.Message);
-              
+
               //errors already handled in AddAccount
 
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
@@ -283,8 +284,24 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        Log.Fatal(ex, "Failed to add account {viewModel} {exceptionMessage}",ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to add account {viewModel} {exceptionMessage}", ex.Message);
       }
+    }
+
+
+    public static byte[] ResizeImage(byte[] fileContents, int maxWidth, int maxHeight, SKFilterQuality quality = SKFilterQuality.Medium)
+    {
+      using MemoryStream ms = new MemoryStream(fileContents);
+      using SKBitmap sourceBitmap = SKBitmap.Decode(ms);
+
+      int height = Math.Min(maxHeight, sourceBitmap.Height);
+      int width = Math.Min(maxWidth, sourceBitmap.Width);
+
+      using SKBitmap scaledBitmap = sourceBitmap.Resize(new SKImageInfo(width, height), quality);
+      using SKImage scaledImage = SKImage.FromBitmap(scaledBitmap);
+      using SKData data = scaledImage.Encode();
+
+      return data.ToArray();
     }
   }
 }

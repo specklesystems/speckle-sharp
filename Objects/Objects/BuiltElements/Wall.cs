@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
@@ -16,7 +16,7 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public List<Base> elements { get; set; }
     public ICurve baseLine { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -132,16 +132,17 @@ namespace Objects.BuiltElements.Revit
   {
     public string family { get; set; }
     public string type { get; set; }
-    
+
     public Brep brep { get; set; }
-    
+
     [Obsolete("Use `Wall.brep` instead", false), SchemaIgnore]
-    public Surface surface { 
+    public Surface surface
+    {
       get => brep?.Surfaces.FirstOrDefault();
       //TODO: This is a simplistic representation of a BREP, may not work in all cases.
       set => new Brep { Surfaces = new List<Surface> { value } };
     }
-    
+
     public Level level { get; set; }
     public LocationLine locationLine { get; set; }
     public Base parameters { get; set; }
@@ -156,15 +157,15 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
-      if (surface.Surfaces.Count == 0) 
+      if (surface.Surfaces.Count == 0)
         throw new Exception("Cannot create a RevitWall with an empty BREP");
       if (surface.Surfaces.Count > 1)
         throw new Exception(
           "The provided brep has more than 1 surface. Please deconstruct/explode it to create multiple instances");
-      
+
       this.family = family;
       this.type = type;
-      this.brep = surface;
+      brep = surface;
       this.locationLine = locationLine;
       this.level = level;
       this.elements = elements;

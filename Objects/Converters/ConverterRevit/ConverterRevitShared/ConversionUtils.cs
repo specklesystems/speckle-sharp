@@ -172,6 +172,9 @@ namespace Objects.Converter.Revit
     {
       if (@base == null) return appObj;
 
+      var nestedElements = @base["elements"];
+      if (nestedElements == null) return appObj;
+
       CurrentHostElement = host;
       foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
       {
@@ -192,8 +195,8 @@ namespace Objects.Converter.Revit
           appObj.Update(logItem: $"Failed to create hosted element {obj.speckle_type} in host ({host.Id}): \n{e.Message}");
           continue;
         }
+        CurrentHostElement = host; // set this again in case this is a deeply hosted element
       }
-
       CurrentHostElement = null; // unset the current host element.
       return appObj;
     }
@@ -294,7 +297,9 @@ namespace Objects.Converter.Revit
 
       //exclude parameters that don't have a value and those pointing to other elements as we don't support them
       var revitParameters = element.Parameters.Cast<DB.Parameter>()
-        .Where(x => x.StorageType != StorageType.ElementId && !exclusions.Contains(GetParamInternalName(x))).ToList();
+        .Where(x => x.HasValue 
+          && x.StorageType != StorageType.ElementId 
+          && !exclusions.Contains(GetParamInternalName(x))).ToList();
 
       //exclude parameters that failed to convert
       var speckleParameters = revitParameters.Select(x => ParameterToSpeckle(x, isTypeParameter))

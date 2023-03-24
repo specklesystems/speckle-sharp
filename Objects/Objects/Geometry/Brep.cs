@@ -228,7 +228,7 @@ namespace Objects.Geometry
             .GetRange(6, loopValues.Count - 6)
             .Select(d => Convert.ToInt32(d))
             .ToArray();
-          
+
           var edge = new BrepEdge(this, curve3dIndex, trimIndices, startIndex, endIndex, proxyReversed, domain);
           Edges.Add(edge);
           i += n + 1;
@@ -302,7 +302,7 @@ namespace Objects.Geometry
       get
       {
         List<int> list = new List<int>();
-        foreach(var trim in Trims)
+        foreach (var trim in Trims)
         {
           list.Add(trim.EdgeIndex);
           list.Add(trim.StartIndex);
@@ -321,7 +321,7 @@ namespace Objects.Geometry
       {
         if (value == null) return;
         var list = new List<BrepTrim>();
-        for(int i = 0; i < value.Count; i+=9)
+        for (int i = 0; i < value.Count; i += 9)
         {
           var trim = new BrepTrim
           {
@@ -571,7 +571,7 @@ namespace Objects.Geometry
 
       return success3D;
     }
-    
+
     /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {

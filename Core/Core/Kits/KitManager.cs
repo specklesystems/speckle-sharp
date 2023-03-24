@@ -115,7 +115,7 @@ namespace Speckle.Core.Kits
     {
       if (_initialized)
       {
-        Log.Error("{objectType} is already initialised", typeof(KitManager));
+        SpeckleLog.Logger.Error("{objectType} is already initialised", typeof(KitManager));
         throw new SpeckleException(
           "The kit manager has already been initialised. Make sure you call this method earlier in your code!");
       }
@@ -138,7 +138,7 @@ namespace Speckle.Core.Kits
 
     private static void Load()
     {
-      Log.Information(
+      SpeckleLog.Logger.Information(
         "Initializing Kit Manager in {KitsFolder}",
         SpecklePathProvider.KitsFolderPath
       );
@@ -175,7 +175,7 @@ namespace Speckle.Core.Kits
           if (reference.FullName.StartsWith("Microsoft.")) continue;
 
           if (loadedAssemblies.Contains(reference.FullName)) continue;
-          
+
           Assembly assembly;
           try
           {
@@ -205,7 +205,7 @@ namespace Speckle.Core.Kits
         if (assembly.IsDynamic || assembly.ReflectionOnly) continue;
         if (!assembly.IsReferencing(SpeckleAssemblyName)) continue;
         if (_SpeckleKits.ContainsKey(assembly.FullName)) continue;
-        
+
         var kitClass = GetKitClass(assembly);
         if (kitClass == null) continue;
 
@@ -218,7 +218,7 @@ namespace Speckle.Core.Kits
     {
       if (!Directory.Exists(KitsFolder))
         return;
-      
+
       var directories = Directory.GetDirectories(KitsFolder);
 
       foreach (var directory in directories)

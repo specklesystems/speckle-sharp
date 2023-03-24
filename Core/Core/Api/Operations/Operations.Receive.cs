@@ -89,7 +89,7 @@ namespace Speckle.Core.Api
       using (LogContext.PushProperty("objectId", objectId))
       {
         var timer = Stopwatch.StartNew();
-        Log.Information(
+        SpeckleLog.Logger.Information(
           "Starting receive {objectId} from transports {localTransport} / {remoteTransport}",
           objectId,
           localTransport.TransportName,
@@ -158,7 +158,7 @@ namespace Speckle.Core.Api
             dispRemote.Dispose();
 
           timer.Stop();
-          Log.ForContext("deserializerElapsed", serializerV2?.Elapsed)
+          SpeckleLog.Logger.ForContext("deserializerElapsed", serializerV2?.Elapsed)
             .ForContext(
               "transportElapsedBreakdown",
               new ITransport?[] { localTransport, remoteTransport }
@@ -179,7 +179,7 @@ namespace Speckle.Core.Api
             $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
           );
 
-          Log.Error(
+          SpeckleLog.Logger.Error(
             ex,
             "Cannot receive object from the given transports {exceptionMessage}",
             ex.Message
@@ -193,7 +193,7 @@ namespace Speckle.Core.Api
         remoteTransport.OnProgressAction = internalProgressAction;
         remoteTransport.CancellationToken = cancellationToken;
 
-        Log.Debug(
+        SpeckleLog.Logger.Debug(
           "Cannot find object {objectId} in the local transport, hitting remote {transportName}.",
           remoteTransport.TransportName
         );
@@ -216,7 +216,7 @@ namespace Speckle.Core.Api
         if (disposeTransports && remoteTransport is IDisposable dr)
           dr.Dispose();
 
-        Log.ForContext("deserializerElapsed", serializerV2.Elapsed)
+        SpeckleLog.Logger.ForContext("deserializerElapsed", serializerV2.Elapsed)
           .ForContext(
             "transportElapsedBreakdown",
             new ITransport?[] { localTransport, remoteTransport }
@@ -237,8 +237,8 @@ namespace Speckle.Core.Api
         // Note: if properly implemented, there is no hard distinction between what is a local or remote transport; it's still just a transport. So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a Server/S3 transport as a local transport.
         // This is not reccommended, but shows what you can do. Another tidbit: the local transport does not need to be disk-bound; it can easily be an in memory transport. In memory transports are the fastest ones, but they're of limited use for more
       }
-      
-      
+
+
     }
 
     private static Base? DeserializeStringToBase(SerializerVersion serializerVersion, string objString, JsonSerializerSettings? settings,
@@ -253,13 +253,13 @@ namespace Speckle.Core.Api
         {
           localRes = serializerV2!.Deserialize(objString);
         }
-        catch(OperationCanceledException e)
+        catch (OperationCanceledException e)
         {
           throw;
         }
         catch (Exception ex)
         {
-          Log.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
+          SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
           if (serializerV2.OnErrorAction == null)
             throw;
           serializerV2.OnErrorAction.Invoke(
@@ -272,7 +272,7 @@ namespace Speckle.Core.Api
 
       return localRes;
     }
-    
+
     internal class Placeholder
     {
       public Dictionary<string, int>? __closure { get; set; } = new Dictionary<string, int>();

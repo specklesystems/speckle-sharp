@@ -573,7 +573,7 @@ namespace ConnectorGrasshopper.Ops
       catch (Exception e)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(e, e.Message);
+        Logging.SpeckleLog.Logger.Error(e, e.Message);
         RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
         Done();
       }
@@ -770,7 +770,7 @@ namespace ConnectorGrasshopper.Ops
         return GH_ObjectResponse.Handled;
       }
 
-      // TODO: check if owner has null account/client, and call the reset thing SYNC 
+      // TODO: check if owner has null account/client, and call the reset thing SYNC
 
       ((ReceiveComponent)Owner).CurrentComponentState = "primed_to_receive";
       Owner.ExpireSolution(true);

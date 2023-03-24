@@ -8,6 +8,7 @@ using DesktopUI2.Views.Controls;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -18,7 +19,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
-using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -295,7 +295,7 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception ex)
           {
-            Log.Error(ex, "Failed to invite user {exceptionMessage}", ex.Message);
+            SpeckleLog.Logger.Error(ex, "Failed to invite user {exceptionMessage}", ex.Message);
           }
         }
         //add new collaborators
@@ -308,7 +308,7 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception ex)
           {
-            Log.Error(ex, "Failed to invite collaborator {exceptionMessage}", ex.Message);
+            SpeckleLog.Logger.Error(ex, "Failed to invite collaborator {exceptionMessage}", ex.Message);
           }
         }
         //update permissions, only if changed
@@ -321,7 +321,7 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception ex)
           {
-            Log.Error(ex, "Failed to update permissions {exceptionMessage}", ex.Message);
+            SpeckleLog.Logger.Error(ex, "Failed to update permissions {exceptionMessage}", ex.Message);
           }
         }
       }
@@ -338,7 +338,7 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception ex)
           {
-            Log.Error(ex, "Failed to revoke permissions {exceptionMessage}", ex.Message);
+            SpeckleLog.Logger.Error(ex, "Failed to revoke permissions {exceptionMessage}", ex.Message);
           }
         }
       }
@@ -355,7 +355,7 @@ namespace DesktopUI2.ViewModels
           }
           catch (Exception ex)
           {
-            Log.Error(ex, "Failed to revoke invites {exceptionMessage}", ex.Message);
+            SpeckleLog.Logger.Error(ex, "Failed to revoke invites {exceptionMessage}", ex.Message);
           }
         }
       }
@@ -371,7 +371,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SaveCommand),ex.Message);
+        SpeckleLog.Logger.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SaveCommand), ex.Message);
       }
 
       if (IsDialog)

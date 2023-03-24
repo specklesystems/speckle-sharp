@@ -34,6 +34,7 @@ namespace Speckle.ConnectorNavisworks.Entry
   {
     public override Control CreateControlPane()
     {
+      Setup.Init(ConnectorBindingsNavisworks.HostAppNameVersion, ConnectorBindingsNavisworks.HostAppName);
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
       try
       {
@@ -50,7 +51,6 @@ namespace Speckle.ConnectorNavisworks.Entry
       bindings.RegisterAppEvents();
       var viewModel = new MainViewModel(bindings);
 
-      Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
       Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
       var speckleHost = new ElementHost

@@ -6,6 +6,7 @@ using Sentry.Reflection;
 using Speckle.Core.Kits;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Speckle.Core.Models;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2

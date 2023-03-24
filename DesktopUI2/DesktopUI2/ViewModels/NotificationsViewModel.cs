@@ -1,11 +1,11 @@
 ﻿using ReactiveUI;
+using Serilog;
 using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
 using System.Reactive;
 using System.Text;
-using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -37,7 +37,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}",GetType(), ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}", GetType(), ex.Message);
       }
     }
   }

@@ -1110,7 +1110,7 @@ namespace Objects.Converter.Revit
       brep.Trims = speckleTrims;
       brep.Edges = speckleEdges.Values.ToList();
       brep.Loops = speckleLoops;
-      brep.displayValue = GetMeshesFromSolids(new[] { solid }, d);
+      brep.displayValue = ConvertSolidsByRenderMaterial(new[] { solid }, d);
       return brep;
 
 #endif

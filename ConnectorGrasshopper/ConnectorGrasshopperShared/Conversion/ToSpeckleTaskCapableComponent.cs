@@ -121,14 +121,14 @@ namespace ConnectorGrasshopper.Conversion
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
         return new GH_SpeckleBase();
       }
     }
 
     private bool preprocessGeometry = false;
-    
+
     public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
     {
       base.AppendAdditionalMenuItems(menu);
@@ -137,8 +137,8 @@ namespace ConnectorGrasshopper.Conversion
         preprocessGeometry = !preprocessGeometry;
         Converter.SetConverterSettings(new Dictionary<string, object> { { "preprocessGeometry", preprocessGeometry } });
         ExpireSolution(true);
-      },null, true, preprocessGeometry);
-      
+      }, null, true, preprocessGeometry);
+
     }
 
     public override bool Write(GH_IWriter writer)

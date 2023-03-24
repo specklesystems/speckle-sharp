@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
@@ -31,7 +32,7 @@ namespace Speckle.Core.Transports
 
     public MemoryTransport()
     {
-      Log.Debug("Creating a new Memory Transport");
+      SpeckleLog.Logger.Debug("Creating a new Memory Transport");
 
       Objects = new Dictionary<string, string>();
     }

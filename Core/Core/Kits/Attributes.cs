@@ -78,7 +78,7 @@ namespace Speckle.Core.Kits
   public class SchemaIgnore : Attribute
   {
   }
-  
+
   [AttributeUsage(AttributeTargets.Method)]
   public class SchemaComputedAttribute : Attribute
   {

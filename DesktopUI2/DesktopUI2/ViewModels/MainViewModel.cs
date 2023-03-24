@@ -4,13 +4,14 @@ using DesktopUI2.Models;
 using DesktopUI2.Views.Pages;
 using Material.Styles.Themes;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Linq;
 using System.Reactive;
-using Serilog;
+using System.Threading.Tasks;
 
 namespace DesktopUI2.ViewModels
 {
@@ -72,6 +73,8 @@ namespace DesktopUI2.ViewModels
       Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
 
       RxApp.DefaultExceptionHandler = Observer.Create<Exception>(CatchReactiveException);
+      TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+
 
       Router = new RoutingState();
 
@@ -116,7 +119,13 @@ namespace DesktopUI2.ViewModels
     //https://github.com/AvaloniaUI/Avalonia/issues/5290
     private void CatchReactiveException(Exception ex)
     {
-      Log.Error(ex, "Reactive exception handler observed an exception {exceptionMessage}", ex.Message);
+      SpeckleLog.Logger.Fatal(ex, "Reactive exception handler observed an exception {exceptionMessage}", ex.Message);
+    }
+
+    //https://docs.avaloniaui.net/docs/getting-started/unhandledexceptions
+    private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+    {
+      SpeckleLog.Logger.Fatal(e.Exception, "Error in async task {error}", e.Exception.Message);
     }
 
 

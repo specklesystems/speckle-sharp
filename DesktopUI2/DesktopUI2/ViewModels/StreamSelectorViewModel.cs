@@ -2,6 +2,7 @@
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels.MappingTool;
 using ReactiveUI;
+using Serilog.Events;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using System;
@@ -9,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog.Events;
+using Speckle.Core.Logging;
 
 namespace DesktopUI2.ViewModels
 {
@@ -146,7 +147,7 @@ namespace DesktopUI2.ViewModels
         return;
 
       ShowProgress = true;
-      
+
       //needed for the search feature
       StreamGetCancelTokenSource?.Cancel();
       StreamGetCancelTokenSource = new CancellationTokenSource();
@@ -178,19 +179,19 @@ namespace DesktopUI2.ViewModels
         {
           bool isError = !(ex is TaskCanceledException || ex.InnerException is TaskCanceledException);
           var logLevel = isError ? LogEventLevel.Error : LogEventLevel.Debug;
-          Serilog.Log.Write(logLevel, ex , "Failed to fetch streams {exceptionMessage} for account", ex.Message);
+          SpeckleLog.Logger.Write(logLevel, ex, "Failed to fetch streams {exceptionMessage} for account", ex.Message);
         }
       }
       if (StreamGetCancelTokenSource.IsCancellationRequested)
         return;
-      
+
       try
       {
         Streams = streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
       }
       catch (Exception ex)
       {
-        Serilog.Log.Fatal(ex, "Failed to fetch streams  {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to fetch streams  {exceptionMessage}", ex.Message);
       }
       finally
       {
@@ -202,7 +203,7 @@ namespace DesktopUI2.ViewModels
     {
       var client = new Client(SelectedStream.Account);
 
-      Branches = await client.StreamGetBranches(SelectedStream.Stream.id, 100, 0);
+      Branches = (await client.StreamGetBranches(SelectedStream.Stream.id, 100, 1)).Where(x => x.commits.totalCount > 0).ToList();
 
       if (Branches.Any())
         SelectedBranch = Branches.FirstOrDefault();

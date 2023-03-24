@@ -15,7 +15,7 @@
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
   xmlns:s="clr-namespace:DesktopUI2.ViewModels.MappingTool"
   d:DesignHeight="650"
-  d:DesignWidth="400"
+  d:DesignWidth="500"
   mc:Ignorable="d">
   <UserControl.Styles>
     <Style Selector="ContentControl#MappingsUserControl">
@@ -65,7 +65,7 @@
               FontSize="16"
               FontWeight="Medium"
               Foreground="White"
-              Text="Mapping Tool (alpha)"
+              Text="Mapper (alpha)"
               TextTrimming="CharacterEllipsis" />
 
             <TextBlock
@@ -422,12 +422,20 @@
                     </ItemsControl>
 
                     <StackPanel HorizontalAlignment="Right" Orientation="Horizontal">
+
                       <Button
                         Margin="0,0,10,0"
                         Classes="Flat"
                         Command="{Binding ClearMappingsCommand}"
                         Content="Clear Mappings"
+                        Foreground="Red"
                         ToolTip.Tip="Remove mappings from the selected elements" />
+                      <Button
+                        Margin="0,0,10,0"
+                        Classes="Flat"
+                        Command="{Binding SelectAllMappingsCommand}"
+                        Content="Select All Mappings"
+                        ToolTip.Tip="Select all elements with mappings" />
                       <Button
                         Command="{Binding SelectElementsCommandCommand}"
                         Content="Select"

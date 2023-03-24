@@ -85,7 +85,7 @@ namespace Objects.Organization
     /// The name of the site location as a string.
     /// </summary>
     public string siteName { get; set; }
- 
+
     /// <summary>
     /// The latitude of the site location in radians.
     /// </summary>
@@ -105,8 +105,8 @@ namespace Objects.Organization
     {
     }
   }
-  
-  public class Setting  : Base
+
+  public class Setting : Base
   {
     /// <summary>
     /// The name of the setting

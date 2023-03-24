@@ -172,7 +172,7 @@ namespace Speckle.Core.Models
     /// <returns></returns>
     [Obsolete("Use GetMembers(DynamicBaseMemberType.InstanceAll).Keys instead")]
     public IEnumerable<string> GetInstanceMembersNames() => GetInstanceMembersNames(GetType());
-    
+
     public static IEnumerable<string> GetInstanceMembersNames(Type t)
     {
       PopulatePropInfoCache(t);
@@ -214,7 +214,7 @@ namespace Speckle.Core.Models
     /// Default <see cref="DynamicBaseMemberType"/> value for <see cref="GetMembers"/>
     /// </summary>
     public const DynamicBaseMemberType DefaultIncludeMembers = DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic;
-    
+
     /// <summary>
     ///  Gets the typed and dynamic properties. 
     /// </summary>
@@ -245,7 +245,7 @@ namespace Speckle.Core.Models
         });
         foreach (var pi in pinfos)
         {
-          if(!dic.ContainsKey(pi.Name)) //todo This is a TEMP FIX FOR #1969, and should be reverted after a proper fix is made!
+          if (!dic.ContainsKey(pi.Name)) //todo This is a TEMP FIX FOR #1969, and should be reverted after a proper fix is made!
             dic.Add(pi.Name, pi.GetValue(this));
         }
       }
@@ -266,7 +266,7 @@ namespace Speckle.Core.Models
             }
             catch (Exception ex)
             {
-              Log.Warning(ex, "Failed to get computed member: {name}", attr.Name);
+              SpeckleLog.Logger.Warning(ex, "Failed to get computed member: {name}", attr.Name);
               dic[attr.Name] = null;
             }
           }

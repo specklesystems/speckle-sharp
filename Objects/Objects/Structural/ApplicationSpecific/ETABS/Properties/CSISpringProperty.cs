@@ -1,17 +1,17 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
+﻿using System;
 using System.Collections.Generic;
 using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Properties;
 using Objects.Structural.CSI.Analysis;
+using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
-using System;
+using Objects.Structural.Properties;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Structural.CSI.Properties
 {
-  public class CSISpringProperty: PropertySpring
+  public class CSISpringProperty : PropertySpring
   {
     public SpringOption springOption { get; set; }
     public string CYs { get; set; }
@@ -24,24 +24,24 @@ namespace Objects.Structural.CSI.Properties
     }
 
     [SchemaInfo("PointSpring from Link", "Create an CSI PointSpring from Link", "CSI", "Properties")]
-    public CSISpringProperty( string name, string cYs, double StiffnessX, double StiffnessY, double StiffnessZ, double StiffnessXX, double StiffnezzYY, double StiffnessZZ)
+    public CSISpringProperty(string name, string cYs, double StiffnessX, double StiffnessY, double StiffnessZ, double StiffnessXX, double StiffnezzYY, double StiffnessZZ)
     {
       this.name = name;
-      this.springOption = SpringOption.Link;
-      this.stiffnessX = StiffnessX;
-      this.stiffnessY = StiffnessY;
-      this.stiffnessZ = StiffnessZ;
-      this.stiffnessXX = StiffnessXX;
-      this.stiffnessYY = StiffnezzYY;
-      this.stiffnessZZ = StiffnessZZ;
+      springOption = SpringOption.Link;
+      stiffnessX = StiffnessX;
+      stiffnessY = StiffnessY;
+      stiffnessZ = StiffnessZ;
+      stiffnessXX = StiffnessXX;
+      stiffnessYY = StiffnezzYY;
+      stiffnessZZ = StiffnessZZ;
       CYs = cYs;
     }
 
     [SchemaInfo("PointSpring from Soil Profile", "Create an CSI PointSpring from Soil Profile", "CSI", "Properties")]
-    public CSISpringProperty( string name, string soilProfile, string footing, double period)
+    public CSISpringProperty(string name, string soilProfile, string footing, double period)
     {
       this.name = name;
-      this.springOption = SpringOption.SoilProfileFooting;
+      springOption = SpringOption.SoilProfileFooting;
       SoilProfile = soilProfile;
       this.footing = footing;
       this.period = period;
@@ -49,7 +49,7 @@ namespace Objects.Structural.CSI.Properties
   }
   public class CSILinearSpring : PropertySpring
   {
-    public NonLinearOptions LinearOption1{ get; set; }
+    public NonLinearOptions LinearOption1 { get; set; }
     public NonLinearOptions LinearOption2 { get; set; }
 
     public CSILinearSpring()
@@ -57,10 +57,10 @@ namespace Objects.Structural.CSI.Properties
     }
 
     [SchemaInfo("LinearSpring", "Create an CSI LinearSpring", "CSI", "Properties")]
-    public CSILinearSpring(string name,double StiffnessX,double StiffnessY, double StiffnessZ, double StiffnessXX,NonLinearOptions linearOption1, NonLinearOptions linearOption2, string applicationID = null)
+    public CSILinearSpring(string name, double StiffnessX, double StiffnessY, double StiffnessZ, double StiffnessXX, NonLinearOptions linearOption1, NonLinearOptions linearOption2, string applicationID = null)
     {
       this.name = name;
-      this.stiffnessX = StiffnessX;
+      stiffnessX = StiffnessX;
       stiffnessY = StiffnessY;
       stiffnessZ = StiffnessZ;
       stiffnessXX = StiffnessXX;
@@ -69,7 +69,7 @@ namespace Objects.Structural.CSI.Properties
       applicationId = applicationID;
     }
   }
-  public class CSIAreaSpring : PropertySpring 
+  public class CSIAreaSpring : PropertySpring
   {
     public NonLinearOptions LinearOption3 { get; set; }
 
@@ -78,10 +78,10 @@ namespace Objects.Structural.CSI.Properties
     }
 
     [SchemaInfo("LinearSpring", "Create an CSI AreaSpring", "CSI", "Properties")]
-    public CSIAreaSpring(string name, double StiffnessX, double StiffnessY, double StiffnessZ,  NonLinearOptions linearOption3, string applicationID = null)
+    public CSIAreaSpring(string name, double StiffnessX, double StiffnessY, double StiffnessZ, NonLinearOptions linearOption3, string applicationID = null)
     {
       this.name = name;
-      this.stiffnessX = StiffnessX;
+      stiffnessX = StiffnessX;
       stiffnessY = StiffnessY;
       stiffnessZ = StiffnessZ;
       LinearOption3 = linearOption3;

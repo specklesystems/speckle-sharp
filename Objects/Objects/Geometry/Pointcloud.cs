@@ -27,7 +27,7 @@ namespace Objects.Geometry
     [DetachProperty]
     [Chunkable(62500)]
     public List<int> colors { get; set; } = new List<int>();
-    
+
     /// <summary>
     /// Gets or sets the list of sizes of this <see cref="Pointcloud"/>'s points.
     /// </summary>
@@ -37,7 +37,7 @@ namespace Objects.Geometry
 
     /// <inheritdoc/>
     public Box bbox { get; set; }
-    
+
     /// <summary>
     /// The unit's this <see cref="Pointcloud"/> is in.
     /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
@@ -50,7 +50,7 @@ namespace Objects.Geometry
     public Pointcloud()
     { }
 
-    
+
     /// <param name="points">Flat list of x,y,z coordinates</param>
     /// <param name="colors">Optional list of colors</param>
     /// <param name="sizes">Optional list of sizes</param>
@@ -68,7 +68,7 @@ namespace Objects.Geometry
     public List<Point> GetPoints()
     {
       if (points.Count % 3 != 0) throw new SpeckleException($"{nameof(Pointcloud)}.{nameof(points)} list is malformed: expected length to be multiple of 3");
-      
+
       var pts = new List<Point>(points.Count / 3);
       for (int i = 2; i < points.Count; i += 3)
       {
@@ -96,7 +96,7 @@ namespace Objects.Geometry
         sizes = sizes,
         applicationId = applicationId
       };
-      
+
       return true;
     }
 
