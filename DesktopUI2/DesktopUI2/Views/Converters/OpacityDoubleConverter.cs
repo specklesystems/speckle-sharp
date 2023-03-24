@@ -13,7 +13,7 @@ namespace DesktopUI2.Views.Converters
       if (result > 0)
         return true;
       return false;
-       
+
     }
 
     public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)

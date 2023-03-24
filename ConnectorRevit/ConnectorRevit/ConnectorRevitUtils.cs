@@ -57,11 +57,24 @@ namespace Speckle.ConnectorRevit
       return _categories;
     }
 
+    /// <summary>
+    /// We want to display a user-friendly category names when grouping objects
+    /// For this we are simplifying the BuiltIn one as otherwise, by using the display value, we'd be getting localized category names
+    /// which would make querying etc more difficult
+    /// TODO: deprecate this in favour of model collections
+    /// </summary>
+    /// <param name="category"></param>
+    /// <returns></returns>
     public static string GetEnglishCategoryName(Category category)
     {
       var builtInCategory = (BuiltInCategory)category.Id.IntegerValue;
-
-      return Regex.Replace(builtInCategory.ToString().Replace("OST_", ""), "([A-Z])", " $1", RegexOptions.Compiled).Trim();
+      var builtInCategoryName = builtInCategory.ToString()
+        .Replace("OST_IOS", "") //for OST_IOSModelGroups
+        .Replace("OST_MEP", "") //for OST_MEPSpaces
+        .Replace("OST_", "") //for any other OST_blablabla
+        .Replace("_", " ");
+      builtInCategoryName = Regex.Replace(builtInCategoryName, "([a-z])([A-Z])", "$1 $2", RegexOptions.Compiled).Trim();
+      return builtInCategoryName;
     }
 
     #region extension methods

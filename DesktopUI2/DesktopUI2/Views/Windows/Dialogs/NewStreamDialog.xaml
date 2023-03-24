@@ -7,18 +7,18 @@
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
-	<UserControl.Styles>
+  <UserControl.Styles>
 
-		<Style Selector="ToggleSwitch[IsChecked=true]">
-			<Setter Property="Content" Value="Public stream" />
-		</Style>
+    <Style Selector="ToggleSwitch[IsChecked=true]">
+      <Setter Property="Content" Value="Public stream" />
+    </Style>
 
-		<Style Selector="ToggleSwitch[IsChecked=false]">
-			<Setter Property="Content" Value="Private stream" />
-		</Style>
+    <Style Selector="ToggleSwitch[IsChecked=false]">
+      <Setter Property="Content" Value="Private stream" />
+    </Style>
 
 
-	</UserControl.Styles>
+  </UserControl.Styles>
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"

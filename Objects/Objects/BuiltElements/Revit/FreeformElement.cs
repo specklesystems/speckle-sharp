@@ -66,7 +66,7 @@ namespace Objects.BuiltElements.Revit
     {
       if (!IsValidObject(baseGeometry))
         throw new Exception("Freeform elements can only be created from BREPs or Meshes");
-      this.baseGeometries = new List<Base>{baseGeometry};
+      this.baseGeometries = new List<Base> { baseGeometry };
       this.parameters = parameters.ToBase();
     }
 

@@ -92,7 +92,7 @@ namespace Objects.Geometry
     /// <returns>A list of coordinates {x, y, z} </returns>
     public List<double> ToList()
     {
-      return new List<double>() {x, y, z};
+      return new List<double>() { x, y, z };
     }
 
     /// <summary>
@@ -202,7 +202,7 @@ namespace Objects.Geometry
 
     [Obsolete("Renamed to " + nameof(Vector.Normalize))]
     public void Unitize() => Normalize();
-    
+
     /// <summary>
     /// Compute and return a unit vector from this vector
     /// </summary>

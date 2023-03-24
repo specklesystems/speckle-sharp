@@ -47,9 +47,12 @@ namespace Speckle.ConnectorRevit.UI
       //NotifyUi(new UpdateSelectionEvent() { ObjectIds = selectedObjects });
     }
 
-    public override string GetHostAppNameVersion() => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
-    public override string GetHostAppName() => HostApplications.Revit.Slug;
+    public static string HostAppNameVersion => ConnectorRevitUtils.RevitAppName.Replace("Revit", "Revit "); //hack for ADSK store
+    public static string HostAppName => HostApplications.Revit.Slug;
 
+    public override string GetHostAppName() => HostAppName;
+    public override string GetHostAppNameVersion() => HostAppNameVersion;
+    
     public override string GetDocumentId() => CurrentDoc?.Document?.GetHashCode().ToString();
 
     public override string GetDocumentLocation() => CurrentDoc.Document.PathName;

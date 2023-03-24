@@ -10,11 +10,11 @@ using Objects.Structural.Materials;
 
 namespace Objects.Structural.CSI.Loading
 {
-    public class CSIWindLoadingFace : LoadFace
-    {
-        public double Cp { get; set; }
+  public class CSIWindLoadingFace : LoadFace
+  {
+    public double Cp { get; set; }
 
-        public WindPressureType WindPressureType {get;set;}
+    public WindPressureType WindPressureType { get; set; }
 
     public CSIWindLoadingFace()
     {

@@ -73,9 +73,9 @@
     <Setter Property="FontWeight" Value="Regular" />
   </Style>
 
-	<Style Selector="ComboBox.Outline /template/ Grid#PART_RootBorder">
-		<Setter Property="MinHeight" Value="0" />
-	</Style>
+  <Style Selector="ComboBox.Outline /template/ Grid#PART_RootBorder">
+    <Setter Property="MinHeight" Value="0" />
+  </Style>
 
 
   <Design.PreviewWith>

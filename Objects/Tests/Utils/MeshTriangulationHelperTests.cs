@@ -5,7 +5,7 @@ using NUnit.Framework;
 using Objects.Geometry;
 using Objects.Utils;
 
-namespace Tests.Utils
+namespace Objects.Tests.Utils
 {
 
     [TestFixture, TestOf(typeof(MeshTriangulationHelper))]

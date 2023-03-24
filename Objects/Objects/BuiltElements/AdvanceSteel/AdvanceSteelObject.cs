@@ -9,7 +9,7 @@ namespace Objects.BuiltElements.AdvanceSteel
   {
     public AdvanceSteelObject()
     {
-        
+
     }
 
     public Dictionary<int, string> UserAttributes { get; set; }

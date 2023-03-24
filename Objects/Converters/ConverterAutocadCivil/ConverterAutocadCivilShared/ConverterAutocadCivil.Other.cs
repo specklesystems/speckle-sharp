@@ -329,7 +329,7 @@ namespace Objects.Converter.AutocadCivil
       var instance = new BlockInstance()
       {
         transform = new Transform( reference.BlockTransform.ToArray(), ModelUnits ),
-        definition = definition,
+        typedDefinition = definition,
         units = ModelUnits
       };
 

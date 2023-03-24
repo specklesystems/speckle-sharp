@@ -15,24 +15,24 @@ namespace Objects.Geometry
     /// Gets or sets the list of segments that comprise this <see cref="Polycurve"/>
     /// </summary>
     public List<ICurve> segments { get; set; } = new List<ICurve>();
-    
+
     /// <summary>
     /// The internal domain of this curve.
     /// </summary>
     public Interval domain { get; set; }
-    
+
     /// <summary>
     /// Gets or sets a Boolean value indicating if the <see cref="Polycurve"/> is closed
     /// (i.e. The start point of the first segment and the end point of the last segment coincide.)
     /// </summary>
     public bool closed { get; set; }
-    
+
     /// <inheritdoc/>
     public Box bbox { get; set; }
-    
+
     /// <inheritdoc/>
     public double area { get; set; }
-    
+
     /// <inheritdoc/>
     public double length { get; set; }
 
@@ -48,7 +48,7 @@ namespace Objects.Geometry
     public Polycurve()
     {
     }
-    
+
     /// <summary>
     /// Constructs a new empty <see cref="Polycurve"/> with defined units and unique application ID.
     /// </summary>
@@ -59,7 +59,7 @@ namespace Objects.Geometry
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     /// <summary>
     /// Constructs a new <see cref="Polycurve"/> instance from an existing <see cref="Polyline"/> curve.
     /// </summary>
@@ -81,7 +81,7 @@ namespace Objects.Geometry
       for (var i = 0; i < points.Count - 1; i++)
       {
         var line = new Line(points[i], points[i + 1], polyline.units);
-          polycurve.segments.Add(line);
+        polycurve.segments.Add(line);
       }
       if (polyline.closed)
       {

@@ -520,7 +520,7 @@ namespace Objects.Converter.RhinoGh
       var _instance = new BlockInstance()
       {
         transform = new Transform(t, ModelUnits),
-        definition = def,
+        typedDefinition = def,
         units = ModelUnits
       };
 

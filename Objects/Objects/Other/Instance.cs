@@ -1,21 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using Speckle.Newtonsoft.Json;
-
-using Objects.Geometry;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.Geometry;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using Plane = Objects.Geometry.Plane;
 using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Other
 {
-  
-  public abstract class Instance: Base
+
+  public abstract class Instance : Base
   {
     /// <summary>
     /// The column-dominant 4x4 transform of this instance.
@@ -24,9 +22,9 @@ namespace Objects.Other
     /// Indicates transform from internal origin [0,0,0]
     /// </remarks>
     public Transform transform { get; set; }
-    
-    public abstract Base definition { get; set; }
-    
+
+    public abstract Base definition { get; internal set; }
+
     /// <summary>
     /// The units of this Instance, should be the same as the instance transform units
     /// </summary>
@@ -39,33 +37,33 @@ namespace Objects.Other
 
     public Instance() { }
   }
-  
+
   /// <summary>
   /// Generic instance class
   /// </summary>
-  public abstract class Instance<T> : Instance where T: Base
+  public abstract class Instance<T> : Instance where T : Base
   {
     [JsonIgnore]
-    protected T _definition;
+    public T typedDefinition { get; set; }
 
-    protected Instance(T definition, Transform transform): base(transform)
+    protected Instance(T definition, Transform transform) : base(transform)
     {
-      _definition = definition;
+      typedDefinition = definition;
     }
-    
-    public Instance(): base(new Transform()) {}
+
+    public Instance() : base(new Transform()) { }
 
     [DetachProperty]
     public override Base definition
     {
-      get => _definition;
-      set
+      get => typedDefinition;
+      internal set
       {
         if (value is T type)
-          _definition = type;
+          typedDefinition = type;
       }
     }
-    
+
   }
 
   /// <summary>
@@ -73,24 +71,24 @@ namespace Objects.Other
   /// </summary>
   public class BlockInstance : Instance<BlockDefinition>
   {
-    [DetachProperty, Obsolete("Use definition property")]
-    public BlockDefinition blockDefinition { get => _definition; set => _definition = value; }
+    [DetachProperty, Obsolete("Use definition property", true), JsonIgnore]
+    public BlockDefinition blockDefinition { get => typedDefinition; set => typedDefinition = value; }
 
     public BlockInstance() { }
 
     [SchemaInfo("Block Instance", "A Speckle Block Instance")]
-    public BlockInstance(BlockDefinition blockDefinition, Transform transform): base(blockDefinition, transform)
+    public BlockInstance(BlockDefinition blockDefinition, Transform transform) : base(blockDefinition, transform)
     {
       // OLD: TODO: need to verify
       // Add base translation to transform. This assumes the transform is based on the world origin,
       // whereas the instance transform assumes it contains the basePoint translation already.
       //this.transform = transform * blockDefinition.GetBasePointTransform();
     }
-    
+
     [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
     {
-      return _definition.geometry.SelectMany(b =>
+      return typedDefinition.geometry.SelectMany(b =>
       {
         switch (b)
         {
@@ -119,7 +117,7 @@ namespace Objects.Other
     public Plane GetInsertionPlane()
     {
       // TODO: UPDATE!
-      var plane = new Plane(_definition.basePoint ?? new Point(0,0,0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
+      var plane = new Plane(typedDefinition.basePoint ?? new Point(0, 0, 0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
@@ -136,14 +134,14 @@ namespace Objects.Other.Revit
     public bool mirrored { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
-    
+
     [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
     {
-      var allChildren = _definition.elements ?? new List<Base>();
-      if (_definition.displayValue.Any())
+      var allChildren = typedDefinition.elements ?? new List<Base>();
+      if (typedDefinition.displayValue.Any())
       {
-        allChildren.AddRange(_definition.displayValue);
+        allChildren.AddRange(typedDefinition.displayValue);
       }
 
       // get transformed definition objs

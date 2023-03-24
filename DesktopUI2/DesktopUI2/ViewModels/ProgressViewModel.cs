@@ -21,7 +21,7 @@ namespace DesktopUI2.ViewModels
     /// </summary>
     public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
     public CancellationToken CancellationToken => CancellationTokenSource.Token;
-    
+
     public ProgressReport Report { get; set; } = new ProgressReport();
 
     private ConcurrentDictionary<string, int> _progressDict;
