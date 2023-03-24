@@ -1156,7 +1156,7 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-        Reset();
+        ResetProgress();
         Progress.IsProgressing = true;
 
         if (!await Http.UserHasInternet())
@@ -1233,8 +1233,7 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-
-        Progress.CancellationTokenSource = new System.Threading.CancellationTokenSource();
+        ResetProgress();
         Progress.IsPreviewProgressing = true;
 
         string previewName = IsReceiver ? "Preview Receive" : "Preview Send";
@@ -1271,8 +1270,7 @@ namespace DesktopUI2.ViewModels
       try
       {
         UpdateStreamState();
-        Reset();
-
+        ResetProgress();
         Progress.IsProgressing = true;
 
         if (!await Http.UserHasInternet()) throw new InvalidOperationException("Could not reach the internet, are you connected?");
@@ -1421,7 +1419,7 @@ namespace DesktopUI2.ViewModels
         DispatcherPriority.Background);
     }
 
-    private void Reset()
+    private void ResetProgress()
     {
       Progress = new ProgressViewModel();
     }
