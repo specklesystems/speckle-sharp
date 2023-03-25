@@ -379,9 +379,8 @@ namespace Objects.Converter.AutocadCivil
       }
 
       // transform
-      var matrix = instance.transform.ConvertTo(ModelUnits).ToArray();
-      Matrix3d convertedTransform = new Matrix3d(matrix);
-
+      Matrix3d convertedTransform = TransformToNativeMatrix(instance.transform);
+      
       // add block reference
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
       var insertionPoint = Point3d.Origin.TransformBy(convertedTransform);
@@ -411,6 +410,10 @@ namespace Objects.Converter.AutocadCivil
         appObj.CreatedIds.Add(id.Handle.ToString());
       return appObj;
     }
+    
+    
+
+    
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
       // get geometry

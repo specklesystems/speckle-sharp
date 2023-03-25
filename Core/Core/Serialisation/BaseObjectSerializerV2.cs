@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Numerics;
+using System.DoubleNumerics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -158,7 +158,7 @@ namespace Speckle.Core.Serialisation
       }
       if (obj is Matrix4x4 m)
       {
-        return new List<float>()
+        return new List<double>()
         {
           m.M11, m.M12, m.M13, m.M14,
           m.M21, m.M22, m.M23, m.M24,

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
-
+using System.DoubleNumerics;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-
 using Objects.Geometry;
 using Vector = Objects.Geometry.Vector;
 
@@ -45,22 +43,7 @@ namespace Objects.Other
       if (value.Length != 16)
         throw new SpeckleException($"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16");
 
-      this.matrix = SetMatrix(value);
-      this.units = units;
-    }
-
-    /// <summary>
-    /// Construct a transform from a row-based float array of size 16
-    /// </summary>
-    /// <param name="value"></param>
-    /// <param name="units"></param>
-    /// <exception cref="SpeckleException"></exception>
-    public Transform(float[] value, string units = null)
-    {
-      if (value.Length != 16)
-        throw new SpeckleException($"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16");
-
-      this.matrix = SetMatrix(value);
+      this.matrix = CreateMatrix(value);
       this.units = units;
     }
 
@@ -85,10 +68,10 @@ namespace Objects.Other
     public Transform(Vector x, Vector y, Vector z, Vector translation)
     {
       this.matrix = new Matrix4x4(
-       Convert.ToSingle(x.x), Convert.ToSingle(y.x), Convert.ToSingle(z.x), Convert.ToSingle(translation.x),
-       Convert.ToSingle(x.y), Convert.ToSingle(y.y), Convert.ToSingle(z.y), Convert.ToSingle(translation.y),
-       Convert.ToSingle(x.z), Convert.ToSingle(y.z), Convert.ToSingle(z.z), Convert.ToSingle(translation.z),
-       0f, 0f, 0f, 1f
+       x.x, y.x, z.x, translation.x,
+       x.y, y.y, z.y, translation.y,
+       x.z, y.z, z.z, translation.z,
+       0d, 0d, 0d, 1d
        );
       this.units = translation.units;
     }
@@ -134,43 +117,43 @@ namespace Objects.Other
       var m21 = vector.Y;
       var m22 = vector.Z;
 
-      float num8 = m00 + m11 + m22;
-      if (num8 > 0f)
+      var num8 = m00 + m11 + m22;
+      if (num8 > 0d)
       {
-        var num = (float)Math.Sqrt(num8 + 1f);
-        num = 0.5f / num;
+        var num = Math.Sqrt(num8 + 1d);
+        num = 0.5d / num;
         return new Quaternion(
           (m12 - m21) * num,
           (m20 - m02) * num,
           (m01 - m10) * num,
-          num * 0.5f);
+          num * 0.5d);
       }
       if ((m00 >= m11) && (m00 >= m22))
       {
-        var num7 = (float)Math.Sqrt(1d + m00 - m11 - m22);
-        var num4 = 0.5f / num7;
+        var num7 = Math.Sqrt(1d + m00 - m11 - m22);
+        var num4 = 0.5d / num7;
         return new Quaternion(
-          0.5f * num7,
+          0.5d * num7,
           (m01 + m10) * num4,
           (m02 + m20) * num4,
           (m12 - m21) * num4);
       }
       if (m11 > m22)
       {
-        var num6 = (float)Math.Sqrt(1d + m11 - m00 - m22);
-        var num3 = 0.5f / num6;
+        var num6 = Math.Sqrt(1d + m11 - m00 - m22);
+        var num3 = 0.5d / num6;
         return new Quaternion(
           (m10 + m01) * num3,
-          0.5f * num6,
+          0.5d * num6,
           (m21 + m12) * num3,
           (m20 - m02) * num3);
       }
-      var num5 = (float)Math.Sqrt(1d + m22 - m00 - m11);
-      var num2 = 0.5f / num5;
+      var num5 = Math.Sqrt(1d + m22 - m00 - m11);
+      var num2 = 0.5d / num5;
       return new Quaternion(
           (m20 + m02) * num2,
           (m21 + m12) * num2,
-          0.5f * num5,
+          0.5d * num5,
           (m01 - m10) * num2);
     }
 
@@ -185,7 +168,7 @@ namespace Objects.Other
         return this;
 
       var unitFactor = Units.GetConversionFactor(units, newUnits);
-      if (unitFactor == 1)
+      if (unitFactor == 1d)
         return this;
 
       var newMatrix = matrix;
@@ -193,6 +176,22 @@ namespace Objects.Other
       newMatrix.M24 = Convert.ToSingle(matrix.M24 * unitFactor);
       newMatrix.M34 = Convert.ToSingle(matrix.M34 * unitFactor);
       return new Transform(newMatrix, newUnits);
+    }
+    
+    public double[] GetMatrixWithUnits(string newUnits)
+    {
+      if (newUnits == null) throw new ArgumentNullException(nameof(newUnits));
+      if (units == null) throw new InvalidOperationException($"Cannot call {nameof(GetMatrixWithUnits)} on a {nameof(Transform)} that has null {nameof(units)}");
+
+      var sf = Units.GetConversionFactor(units, newUnits);
+
+      return new double[] {
+        matrix.M11, matrix.M12, matrix.M13, matrix.M14 * sf,
+        matrix.M21, matrix.M22, matrix.M23, matrix.M24 * sf,
+        matrix.M31, matrix.M32, matrix.M33, matrix.M34 * sf,
+        matrix.M41, matrix.M42, matrix.M43, matrix.M44 * sf
+      };
+      
     }
 
     /// <summary>
@@ -221,21 +220,9 @@ namespace Objects.Other
         matrix.M41, matrix.M42, matrix.M43, matrix.M44
       };
     }
-
-    // Creates a matrix4x4 from a double array
-    private Matrix4x4 SetMatrix(double[] value)
-    {
-      return new Matrix4x4
-      (
-        Convert.ToSingle(value[0]), Convert.ToSingle(value[1]), Convert.ToSingle(value[2]), Convert.ToSingle(value[3]),
-        Convert.ToSingle(value[4]), Convert.ToSingle(value[5]), Convert.ToSingle(value[6]), Convert.ToSingle(value[7]),
-        Convert.ToSingle(value[8]), Convert.ToSingle(value[9]), Convert.ToSingle(value[10]), Convert.ToSingle(value[11]),
-        Convert.ToSingle(value[12]), Convert.ToSingle(value[13]), Convert.ToSingle(value[14]), Convert.ToSingle(value[15])
-      );
-    }
-
+    
     // Creates a matrix from a float array
-    private Matrix4x4 SetMatrix(float[] value)
+    private static Matrix4x4 CreateMatrix(double[] value)
     {
       return new Matrix4x4
       (
@@ -244,6 +231,16 @@ namespace Objects.Other
         value[8], value[9], value[10], value[11],
         value[12], value[13], value[14], value[15]
       );
+    }
+
+    private static double[] ArrayFromMatrix(Matrix4x4 matrix)
+    {
+      return new double[] {
+        matrix.M11, matrix.M12, matrix.M13, matrix.M14,
+        matrix.M21, matrix.M22, matrix.M23, matrix.M24,
+        matrix.M31, matrix.M32, matrix.M33, matrix.M34,
+        matrix.M41, matrix.M42, matrix.M43, matrix.M44
+      };
     }
 
     #region obsolete
@@ -257,7 +254,7 @@ namespace Objects.Other
       }
       set
       {
-        matrix = SetMatrix(value);
+        matrix = CreateMatrix(value);
       }
     }
 
@@ -266,15 +263,15 @@ namespace Objects.Other
     {
       get
       {
-        Decompose(out Vector3 scale, out Quaternion rotation, out Vector4 translation);
+        Decompose(out _, out Quaternion rotation, out _);
         return Math.Acos(rotation.W) * 2;
       }
     }
 
-    [Obsolete("Use transform method in Point class", true)]
     /// <summary>
     /// Transform a flat list of doubles representing points
     /// </summary>
+    [Obsolete("Use transform method in Point class", true)]
     public List<double> ApplyToPoints(List<double> points)
     {
       if (points.Count % 3 != 0)
@@ -290,10 +287,10 @@ namespace Objects.Other
       return transformed;
     }
 
-    [Obsolete("Use transform method in Point class", true)]
     /// <summary>
     /// Transform a flat list of speckle Points
     /// </summary>
+    [Obsolete("Use transform method in Point class", true)]
     public List<Point> ApplyToPoints(List<Point> points)
     {
       var transformedPoints = new List<Point>();
@@ -305,10 +302,10 @@ namespace Objects.Other
       return transformedPoints;
     }
 
-    [Obsolete("Use transform method in Point class", true)]
     /// <summary>
     /// Transform a single speckle Point
     /// </summary>
+    [Obsolete("Use transform method in Point class", true)]
     public Point ApplyToPoint(Point point)
     {
       if (point == null) return null;
@@ -317,10 +314,10 @@ namespace Objects.Other
       return transformedPoint;
     }
 
-    [Obsolete("Use transform method in Point class")]
     /// <summary>
     /// Transform a list of three doubles representing a point
     /// </summary>
+    [Obsolete("Use transform method in Point class")]
     public List<double> ApplyToPoint(List<double> point)
     {
       var _point = new Point(point[0], point[1], point[2]);
@@ -328,10 +325,10 @@ namespace Objects.Other
       return transformedPoint.ToList();
     }
 
-    [Obsolete("Use transform method in Vector class")]
     /// <summary>
     /// Transform a single speckle Vector
     /// </summary>
+    [Obsolete("Use transform method in Vector class")]
     public Vector ApplyToVector(Vector vector)
     {
       var newCoords = ApplyToVector(new List<double> { vector.x, vector.y, vector.z });
@@ -339,10 +336,10 @@ namespace Objects.Other
       return new Geometry.Vector(newCoords[0], newCoords[1], newCoords[2], vector.units, vector.applicationId);
     }
 
-    [Obsolete("Use transform method in Vector class")]
     /// <summary>
     /// Transform a list of three doubles representing a vector
     /// </summary>
+    [Obsolete("Use transform method in Vector class")]
     public List<double> ApplyToVector(List<double> vector)
     {
       var newPoint = new List<double>();
@@ -353,11 +350,11 @@ namespace Objects.Other
       return newPoint;
     }
 
-    [Obsolete("Use transform method in Curve class")]
     /// <summary>
     /// Transform a flat list of ICurves. Note that if any of the ICurves does not implement `ITransformable`,
     /// it will not be returned.
     /// </summary>
+    [Obsolete("Use transform method in Curve class")]
     public List<ICurve> ApplyToCurves(List<ICurve> curves, out bool success)
     {
       // TODO: move to curve class
