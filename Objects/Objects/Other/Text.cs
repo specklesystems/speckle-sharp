@@ -12,9 +12,9 @@ namespace Objects.Other
   /// <summary>
   /// Text class for Rhino and AutoCAD
   /// </summary>
-  public class Text : Base, IDisplayValue<List<Polyline>>
+  public class Text : Base, IDisplayValue<List<ICurve>>
   {
-    public List<Polyline> displayValue { get; set; } = new List<Polyline>();
+    public List<ICurve> displayValue { get; set; } = new List<ICurve>();
     public Plane plane { get; set; } // origin should be center
     public double rotation { get; set; } = 0; // using radians
     public string value { get; set; } // text without RTF

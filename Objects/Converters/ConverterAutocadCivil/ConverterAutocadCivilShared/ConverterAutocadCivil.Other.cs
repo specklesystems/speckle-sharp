@@ -27,6 +27,7 @@ using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Objects.BuiltElements.Revit;
+using System.Windows;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -707,7 +708,7 @@ namespace Objects.Converter.AutocadCivil
       // not realistically feasible to extract outline curves for displayvalue currently
       _text.height = text.Height;
       var center = GetTextCenter(text);
-      _text.plane = PlaneToSpeckle( new Plane(center, text.Normal));
+      _text.plane = PlaneToSpeckle(new Plane(center, text.Normal));
       _text.rotation = text.Rotation;
       _text.value = text.TextString;
       _text.units = ModelUnits;
@@ -725,15 +726,27 @@ namespace Objects.Converter.AutocadCivil
 
       return _text;
     }
+
     public Text TextToSpeckle(MText text)
     {
       var _text = new Text();
 
-      // not realistically feasible to extract outline curves for displayvalue currently
+      // FIXED: not realistically feasible to extract outline curves for displayvalue currently
+
+      TextStyleTable textStyleTable = Trans.GetObject(Doc.Database.TextStyleTableId, OpenMode.ForRead) as TextStyleTable;
+      if (textStyleTable.Has(text.TextStyleName))
+      {
+        ObjectId id = textStyleTable[text.TextStyleName];
+        TextStyleTableRecord textStyleTableRecord = Trans.GetObject(id, OpenMode.ForRead) as TextStyleTableRecord;
+
+        var fontName = textStyleTableRecord.Font.TypeFace;
+        _text.displayValue = TextCurvesToSpeckle(text.Text, fontName, textStyleTableRecord.Font, text.TextHeight, text.Location);
+      }
+
       _text.height = text.Height;
       var center = (text.Bounds != null) ? GetTextCenter(text.Bounds.Value) : text.Location;
-      _text.plane = PlaneToSpeckle( new Plane(center, text.Normal));
-      _text.rotation = text.Rotation;    
+      _text.plane = PlaneToSpeckle(new Plane(center, text.Normal));
+      _text.rotation = text.Rotation;
       _text.value = text.Contents;
       _text.richText = text.ContentsRTF;
       _text.units = ModelUnits;

@@ -18,5 +18,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.TextConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PathSegmentConverter.cs" />
   </ItemGroup>
 </Project>

@@ -3,15 +3,22 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
+using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.GraphicsInterface;
 using Polyline = Objects.Geometry.Polyline;
+using Curve = Objects.Geometry.Curve;
+
+using CADSpline = Autodesk.AutoCAD.DatabaseServices.Spline;
+using CADCurve = Autodesk.AutoCAD.DatabaseServices.Curve;
+using CADLine = Autodesk.AutoCAD.DatabaseServices.Line;
+using CADPolyline = Autodesk.AutoCAD.DatabaseServices.Polyline;
 
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
-    public List<Polyline> TextPolylineToSpeckle(string text, string fontName, FontDescriptor fontDescriptor, double height, Point3d pointOriginal)
+    public List<ICurve> TextCurvesToSpeckle(string text, string fontName, FontDescriptor fontDescriptor, double height, Point3d pointOriginal)
     {
       if (!GetGlyphTypeface(fontName, fontDescriptor, out GlyphTypeface glyphTypeface))
         return null;
@@ -20,17 +27,17 @@ namespace Objects.Converter.AutocadCivil
       if (listGlyphRun == null)
         return null;
 
-      List<Polyline> listPolyline = new List<Polyline>();
+      List<ICurve> listCurve = new List<ICurve>();
 
       foreach (GlyphRun glyphRun in listGlyphRun)//Text Scope
       {
-        List<Polyline> listPolylineLetter = CreatePolylineListByLetter(glyphRun);
+        List<ICurve> listPolylineLetter = CreatePolylineListByLetter(glyphRun, height, pointOriginal);
 
         if (listPolylineLetter != null)
-          listPolyline.AddRange(listPolylineLetter);
+          listCurve.AddRange(listPolylineLetter);
       }
 
-      return listPolyline;
+      return listCurve;
     }
 
     private bool GetGlyphTypeface(string fontName, FontDescriptor fontDescriptor, out GlyphTypeface glyphTypeface)
@@ -44,7 +51,7 @@ namespace Objects.Converter.AutocadCivil
       else if (fontDescriptor.Bold)
         fontWeight = FontWeight.FromOpenTypeWeight(700); //Bold
 
-      bool isValid = false;
+      bool isValid = true;
 
       Typeface typeface = new Typeface(new System.Windows.Media.FontFamily(fontName), fontStyle, fontWeight, new System.Windows.FontStretch());
       try
@@ -107,7 +114,7 @@ namespace Objects.Converter.AutocadCivil
       return listGlyphRun;
     }
 
-    private List<Polyline> CreatePolylineListByLetter(GlyphRun glyphRun)
+    private List<ICurve> CreatePolylineListByLetter(GlyphRun glyphRun, double heightText, Point3d pointOriginal)
     {
       var geometry = glyphRun.BuildGeometry();
       var pathGeometry = geometry.GetOutlinedPathGeometry();
@@ -116,22 +123,60 @@ namespace Objects.Converter.AutocadCivil
       if (pathFigureList.Count < 1)
         return null; //Text space
 
-      List<Polyline> listPolyline = new List<Polyline>();
+      List<CADCurve> listCurveCAD = new List<CADCurve>();
+      PathSegmentConverter pathSegmentConverter = new PathSegmentConverter();
 
-      foreach (System.Windows.Media.PathFigure pathFigure in pathFigureList) //Letter
+      foreach (PathFigure pathFigure in pathFigureList) //Letter paths
       {
-        var segments = pathFigure.Segments;
-        sp.WinStPt = pathFigure.StartPoint;
+        listCurveCAD.AddRange(pathSegmentConverter.ConverterPathFigureLetterToCurveCAD(pathFigure, pathFigureList.Count));
+      }
 
-        foreach (System.Windows.Media.PathSegment pathSegment in segments)
+      Extents3d extentsText = new Extents3d();
+      listCurveCAD.ForEach(x => extentsText.AddExtents(x.GeometricExtents));
+      Double Factor = heightText / Point3d.Origin.GetVectorTo(extentsText.MaxPoint).Y;
+
+      //Coordinate system adjustments
+      foreach (var curve in listCurveCAD)
+      {
+        curve.TransformBy(Matrix3d.Scaling(Factor, Point3d.Origin));
+
+        curve.TransformBy(Matrix3d.Displacement(pointOriginal - new Point3d()));
+      }
+
+      BlockTableRecord currSpace = Trans.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+    
+      foreach (var curve in listCurveCAD)
+      {
+        //curve.SetDatabaseDefaults();
+        currSpace.AppendEntity(curve);
+        Trans.AddNewlyCreatedDBObject(curve, true);
+      }
+
+      throw new Exception("Adicionar no banco para testar");
+
+      List<ICurve> listCurveSpeckle = new List<ICurve>();
+      foreach (var curve in listCurveCAD)
+      {
+        if (curve is CADSpline)
         {
-          if (pathFigureList.Count == 1 && segments.Count == 1) sp.FigureClosed = pathFigure.IsClosed;
-          sp.AddPathSegment(pathSegment);
+          var curveSpeckle = SplineToSpeckle(curve as CADSpline);
+          listCurveSpeckle.Add(curveSpeckle);
+        }
+        else if (curve is CADLine)
+        {
+          var curveSpeckle = LineToSpeckle(curve as CADLine);
+          listCurveSpeckle.Add(curveSpeckle);
+        }
+        else if (curve is CADSpline)
+        {
+          var curveSpeckle = SplineToSpeckle(curve as CADSpline);
+          listCurveSpeckle.Add(curveSpeckle);
         }
       }
 
-      return listPolyline;
+      return listCurveSpeckle;
     }
+
 
   }
 }
