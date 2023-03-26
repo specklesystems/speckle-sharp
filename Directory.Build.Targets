@@ -2,6 +2,7 @@
 <Project>
     <PropertyGroup>
         <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+        <CopyToKitFolder Condition="'$(CopyToKitFolder)' == ''">false</CopyToKitFolder>
         <KitFolder Condition="$(KitFolder) == ''">Objects</KitFolder>
     </PropertyGroup>
     <Target
