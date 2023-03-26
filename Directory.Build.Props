@@ -1,4 +1,4 @@
-<!-- A basic directory.build.props structure -->
+<?xml version="1.0" encoding="utf-8"?>
 <Project>
   <PropertyGroup Label="Company Info">
     <Authors>Speckle</Authors>
@@ -30,9 +30,5 @@
     <!-- Repo info -->
     <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-  </PropertyGroup>
-
-  <PropertyGroup Label="CI Build">
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
 </Project>
