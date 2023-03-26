@@ -10,7 +10,7 @@ namespace Objects.Tests.Geometry
   [TestFixture, TestOf(typeof(Transform))]
   public class TransformTests
   {
-    const double FLOAT_TOLLERANCE = 0.01d;
+    const double FLOAT_TOLLERANCE = 1e-6d;
 
     [Test]
     [TestCaseSource(nameof(TransformTestCases))]
@@ -84,9 +84,9 @@ namespace Objects.Tests.Geometry
     /// <returns></returns>
     private static IEnumerable TransformTestCases()
     {
-      var t = new Vector3(128.128f, 255.255f, 512.512f);
-      var r = Quaternion.CreateFromYawPitchRoll(1.9f, 0.6666667f, 0.5f);
-      var s = new Vector3(123f, 32f, 0.5f);
+      var t = new Vector3(128.128, 255.255, 512.512);
+      var r = Quaternion.CreateFromYawPitchRoll(1.9, 0.6666667, 0.5);
+      var s = new Vector3(123, 32, 0.5);
 
       yield return new TestCaseData(Matrix4x4.Identity)
         .SetName("{m} Identity Matrix");
@@ -106,16 +106,16 @@ namespace Objects.Tests.Geometry
       yield return new TestCaseData(Matrix4x4.CreateTranslation(-t))
         .SetName("{m} Translation Only -XYZ ");
 
-      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.5f, 00f, 0.0f))
+      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.5, 0.0, 0.0))
         .SetName("{m} Rotation Only X ");
       
-      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.0f, 0.5f, 0.0f))
+      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.0, 0.5, 0.0))
         .SetName("{m} Rotation Only Y ");
       
-      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.0f, 0.0f, 0.5f))
+      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.0, 0.0, 0.5))
         .SetName("{m} Rotation Only Z ");
       
-      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.5f, 0.5f, 0.5f))
+      yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.5, 0.5, 0.5))
         .SetName("{m} Rotation Only XYZ ");
       
       yield return new TestCaseData(Matrix4x4.CreateFromQuaternion(r))
