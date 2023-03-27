@@ -410,52 +410,56 @@ namespace Objects.Converter.Revit
     #region new instancing
 
     // transforms
-    private Other.Transform TransformToSpeckle(Transform transform, Document doc)
+    private Other.Transform TransformToSpeckle(Transform transform)
     {
+      // get the reference point transform 
+      var docTransform = GetDocReferencePointTransform(Doc);
+      var externalTransform = docTransform.Inverse.Multiply(transform);
 
-      // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
-      var point = PointToSpeckle(transform.Origin, doc);
-      var t = new Vector(point.x, point.y, point.z, point.units);
+      // translation
+      var tX = ScaleToSpeckle(externalTransform.Origin.X, ModelUnits);
+      var tY = ScaleToSpeckle(externalTransform.Origin.Y, ModelUnits);
+      var tZ = ScaleToSpeckle(externalTransform.Origin.Z, ModelUnits);
+      var t = new Vector(tX, tY, tZ, ModelUnits);
 
-      var rX = VectorToSpeckle(transform.BasisX, doc);
-      var rY = VectorToSpeckle(transform.BasisY, doc);
-      var rZ = VectorToSpeckle(transform.BasisZ, doc);
+      // basis vectors
+      var vX = new Vector(externalTransform.BasisX.X, externalTransform.BasisX.Y, externalTransform.BasisX.Z, ModelUnits);
+      var vY = new Vector(externalTransform.BasisY.X, externalTransform.BasisY.Y, externalTransform.BasisY.Z, ModelUnits);
+      var vZ = new Vector(externalTransform.BasisZ.X, externalTransform.BasisZ.Y, externalTransform.BasisZ.Z, ModelUnits);
 
       // get the scale: TODO: do revit transforms ever have scaling?
       var scale = (float)transform.Scale;
 
-      return new Other.Transform(rX, rY, rZ, t) { units = ModelUnits };
+      return new Other.Transform(vX, vY, vZ, t) { units = ModelUnits };
     }
 
-    private Transform TransformToNative(Other.Transform transform, bool useScaling = false)
+    private Transform TransformToNative(Other.Transform transform)
     {
       var _transform = new Transform(Transform.Identity);
 
-      // decompose the matrix to retrieve the translation and rotation factors
-      transform.Decompose(out Vector3 scale, out Quaternion q, out Vector4 translation);
-
       // translation
-      if (translation.W == 0) return _transform;
-      if (translation.W != 1)
-      {
-        translation.X /= translation.W;
-        translation.Y /= translation.W;
-        translation.Z /= translation.W;
-      }
-      var convertedTranslation = PointToNative(new Geometry.Point(translation.X, translation.Y, translation.Z, transform.units));
+      if (transform.matrix.M44 == 0) return _transform;
+      var tX = ScaleToNative(transform.matrix.M14 / transform.matrix.M44, transform.units);
+      var tY = ScaleToNative(transform.matrix.M24 / transform.matrix.M44, transform.units);
+      var tZ = ScaleToNative(transform.matrix.M34 / transform.matrix.M44, transform.units);
+      var t = new XYZ(tX, tY, tZ);
 
       // basis vectors
-      XYZ xvec = new XYZ(transform.matrix.M11, transform.matrix.M21, transform.matrix.M31);
-      XYZ yvec = new XYZ(transform.matrix.M12, transform.matrix.M22, transform.matrix.M32);
-      XYZ zvec = new XYZ(transform.matrix.M13, transform.matrix.M23, transform.matrix.M33);
+      XYZ vX = new XYZ(transform.matrix.M11, transform.matrix.M21, transform.matrix.M31);
+      XYZ vY = new XYZ(transform.matrix.M12, transform.matrix.M22, transform.matrix.M32);
+      XYZ vZ = new XYZ(transform.matrix.M13, transform.matrix.M23, transform.matrix.M33);
 
       // apply to new transform
-      _transform.Origin = convertedTranslation;
-      _transform.BasisX = xvec.Normalize();
-      _transform.BasisY = yvec.Normalize();
-      _transform.BasisZ = zvec.Normalize();
+      _transform.Origin = t;
+      _transform.BasisX = vX.Normalize();
+      _transform.BasisY = vY.Normalize();
+      _transform.BasisZ = vZ.Normalize();
 
-      return _transform;
+      // apply doc transform
+      var docTransform = GetDocReferencePointTransform(Doc);
+      var internalTransform = docTransform.Multiply(_transform);
+
+      return internalTransform;
     }
 
     // revit instances
@@ -646,7 +650,7 @@ namespace Objects.Converter.Revit
       {
         localTransform = parentTransform.Inverse.Multiply(instanceTransform);
       }
-      var transform = TransformToSpeckle(localTransform, instance.Document);
+      var transform = TransformToSpeckle(localTransform);
 
       // get the definition base of this instance
       RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, localTransform);
