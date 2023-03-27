@@ -51,20 +51,18 @@ namespace Objects.Converter.AutocadCivil
       else if (fontDescriptor.Bold)
         fontWeight = FontWeight.FromOpenTypeWeight(700); //Bold
 
-      bool isValid = true;
-
       Typeface typeface = new Typeface(new System.Windows.Media.FontFamily(fontName), fontStyle, fontWeight, new System.Windows.FontStretch());
       try
       {
         if (!typeface.TryGetGlyphTypeface(out glyphTypeface))
-          isValid = false;
+          return false;
       }
       catch
       {
-        isValid = false;
+        return false;
       }
 
-      return isValid;
+      return true;
     }
 
     private float GetPixelsPerDip()
@@ -139,20 +137,22 @@ namespace Objects.Converter.AutocadCivil
       foreach (var curve in listCurveCAD)
       {
         curve.TransformBy(Matrix3d.Scaling(Factor, Point3d.Origin));
+       
+        curve.TransformBy(Matrix3d.Displacement(new Point3d() - extentsText.MinPoint));
 
         curve.TransformBy(Matrix3d.Displacement(pointOriginal - new Point3d()));
       }
 
-      BlockTableRecord currSpace = Trans.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
+      //BlockTableRecord currSpace = Trans.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
     
-      foreach (var curve in listCurveCAD)
-      {
-        //curve.SetDatabaseDefaults();
-        currSpace.AppendEntity(curve);
-        Trans.AddNewlyCreatedDBObject(curve, true);
-      }
+      //foreach (var curve in listCurveCAD)
+      //{
+      //  curve.SetDatabaseDefaults();
+      //  currSpace.AppendEntity(curve);
+      //  Trans.AddNewlyCreatedDBObject(curve, true);
+      //}
 
-      throw new Exception("Adicionar no banco para testar");
+      //throw new Exception("Adicionar no banco para testar");
 
       List<ICurve> listCurveSpeckle = new List<ICurve>();
       foreach (var curve in listCurveCAD)
@@ -167,10 +167,14 @@ namespace Objects.Converter.AutocadCivil
           var curveSpeckle = LineToSpeckle(curve as CADLine);
           listCurveSpeckle.Add(curveSpeckle);
         }
-        else if (curve is CADSpline)
+        else if (curve is CADPolyline)
         {
-          var curveSpeckle = SplineToSpeckle(curve as CADSpline);
+          var curveSpeckle = PolylineToSpeckle(curve as CADPolyline);
           listCurveSpeckle.Add(curveSpeckle);
+        }
+        else
+        {
+          throw new NotImplementedException($"Conversion from {curve.GetType()} to Speckle not implemented");
         }
       }
 

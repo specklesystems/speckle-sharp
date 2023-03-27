@@ -28,6 +28,9 @@ using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Objects.BuiltElements.Revit;
 using System.Windows;
+using static System.Net.Mime.MediaTypeNames;
+using System.Xml.Linq;
+using Autodesk.AutoCAD.GraphicsInterface;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -705,7 +708,14 @@ namespace Objects.Converter.AutocadCivil
     {
       var _text = new Text();
 
-      // not realistically feasible to extract outline curves for displayvalue currently
+      // FIXED: not realistically feasible to extract outline curves for displayvalue currently
+
+      string fontName = GetFontName(text.TextStyleName, out FontDescriptor fontDescriptor);
+      if (!string.IsNullOrEmpty(fontName))
+      {
+        _text.displayValue = TextCurvesToSpeckle(text.TextString, fontName, fontDescriptor, text.Height, text.Position);
+      }
+
       _text.height = text.Height;
       var center = GetTextCenter(text);
       _text.plane = PlaneToSpeckle(new Plane(center, text.Normal));
@@ -733,14 +743,10 @@ namespace Objects.Converter.AutocadCivil
 
       // FIXED: not realistically feasible to extract outline curves for displayvalue currently
 
-      TextStyleTable textStyleTable = Trans.GetObject(Doc.Database.TextStyleTableId, OpenMode.ForRead) as TextStyleTable;
-      if (textStyleTable.Has(text.TextStyleName))
+      string fontName = GetFontName(text.TextStyleName, out FontDescriptor fontDescriptor);
+      if (!string.IsNullOrEmpty(fontName))
       {
-        ObjectId id = textStyleTable[text.TextStyleName];
-        TextStyleTableRecord textStyleTableRecord = Trans.GetObject(id, OpenMode.ForRead) as TextStyleTableRecord;
-
-        var fontName = textStyleTableRecord.Font.TypeFace;
-        _text.displayValue = TextCurvesToSpeckle(text.Text, fontName, textStyleTableRecord.Font, text.TextHeight, text.Location);
+        _text.displayValue = TextCurvesToSpeckle(text.Text, fontName, fontDescriptor, text.TextHeight, text.Location);
       }
 
       _text.height = text.Height;
@@ -765,6 +771,35 @@ namespace Objects.Converter.AutocadCivil
 
       return _text;
     }
+
+    private string GetFontName(string textStyleName, out FontDescriptor fontDescriptor)
+    {
+      fontDescriptor = new FontDescriptor();
+
+      TextStyleTable textStyleTable = Trans.GetObject(Doc.Database.TextStyleTableId, OpenMode.ForRead) as TextStyleTable;
+      if (textStyleTable.Has(textStyleName))
+      {
+        ObjectId id = textStyleTable[textStyleName];
+        TextStyleTableRecord textStyleTableRecord = Trans.GetObject(id, OpenMode.ForRead) as TextStyleTableRecord;
+
+        fontDescriptor = textStyleTableRecord.Font;
+
+        var fontName = textStyleTableRecord.Font.TypeFace;
+        if (string.IsNullOrEmpty(fontName) && !string.IsNullOrEmpty(textStyleTableRecord.FileName))
+        {
+          string fontFileName = textStyleTableRecord.FileName;
+          //TODO:Implement the search algorithm to find a font name of FileName
+          fontName = "Arial";
+        }
+        else
+          fontName = "Arial";
+
+        return fontName;
+      }
+
+      return null;
+    }
+
     public Entity AcadTextToNative(Text text)
     {
       Entity _text = null;
