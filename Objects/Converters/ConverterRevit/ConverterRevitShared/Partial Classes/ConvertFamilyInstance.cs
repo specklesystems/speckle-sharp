@@ -416,9 +416,10 @@ namespace Objects.Converter.Revit
       // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
       var point = PointToSpeckle(transform.Origin, doc);
       var t = new Vector(point.x, point.y, point.z, point.units);
-      var rX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
-      var rY = new Vector(transform.BasisY.X, transform.BasisY.Y, transform.BasisY.Z);
-      var rZ = new Vector(transform.BasisZ.X, transform.BasisZ.Y, transform.BasisZ.Z);
+
+      var rX = VectorToSpeckle(transform.BasisX, doc);
+      var rY = VectorToSpeckle(transform.BasisY, doc);
+      var rZ = VectorToSpeckle(transform.BasisZ, doc);
 
       // get the scale: TODO: do revit transforms ever have scaling?
       var scale = (float)transform.Scale;
@@ -648,7 +649,7 @@ namespace Objects.Converter.Revit
       var transform = TransformToSpeckle(localTransform, instance.Document);
 
       // get the definition base of this instance
-      RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, instanceTransform);
+      RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, localTransform);
       notes.AddRange(definitionNotes);
 
       var _instance = new RevitInstance();
