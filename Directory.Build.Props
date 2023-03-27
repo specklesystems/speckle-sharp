@@ -2,7 +2,7 @@
 <Project>
   <PropertyGroup Label="Company Info">
     <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
+    <Company>Speckle</Company> 
     <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
   </PropertyGroup>
 
@@ -23,6 +23,9 @@
   <PropertyGroup Label="Package Config">
     <!-- Version info -->
     <Version Condition="$(Version) == ''">2.0.999-local</Version>
+    <FileVersion Condition="$(FileVersion) == ''">2.0.999.4444</FileVersion>
+    <AssemblyVersion Condition="$(AssemblyVersion) == ''">$(FileVersion)</AssemblyVersion>
+
     <!-- Package info -->
     <PackageVersion Condition="$(PackageVersion) == ''">$(Version)</PackageVersion>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
