@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Objects.Converter.CSIBridge</AssemblyName>
+    <AssemblyName>Objects.Converter.CSiBridge</AssemblyName>
     <RootNamespace>Objects.Converter.CSIBridge</RootNamespace>
   </PropertyGroup>
 
@@ -37,7 +37,7 @@
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent"  Condition="'$(IsDesktopBuild)' == true">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
     <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
   </Target>
 

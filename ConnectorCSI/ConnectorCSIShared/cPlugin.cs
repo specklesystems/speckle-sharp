@@ -17,7 +17,6 @@ using Speckle.ConnectorCSI.UI;
 using System.Reflection;
 using System.IO;
 
-
 namespace SpeckleConnectorCSI
 {
   public class cPlugin
@@ -71,7 +70,6 @@ namespace SpeckleConnectorCSI
       CreateOrFocusSpeckle();
     }
 
-
     private static void SpeckleWindowClosed(object sender, EventArgs e)
     {
       isSpeckleClosed = true;
@@ -84,9 +82,6 @@ namespace SpeckleConnectorCSI
       //Environment.Exit(0);
       pluginCallback.Finish(0);
     }
-
-
-
 
     public int Info(ref string Text)
     {
@@ -116,14 +111,10 @@ namespace SpeckleConnectorCSI
       model = SapModel;
       AppDomain domain = null;
 
-
       try
       {
         OpenOrFocusSpeckle(model);
-
-
       }
-
       catch (Exception e)
       {
         throw e;
