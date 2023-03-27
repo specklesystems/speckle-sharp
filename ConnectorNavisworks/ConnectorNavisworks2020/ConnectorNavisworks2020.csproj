@@ -9,7 +9,6 @@
 		<AssemblyName>SpeckleConnectorNavisworks</AssemblyName>
 		<RootNamespace>Speckle.ConnectorNavisworks</RootNamespace>
 		<ProjectGuid>{9A7D7F9A-4FE1-4053-950B-50B43BC81087}</ProjectGuid>
-		<Version>2.11.0-alpha3</Version>
 		
 		<TargetFramework>net48</TargetFramework>
 		<PlatformTarget>x64</PlatformTarget>
@@ -18,12 +17,8 @@
 		<Deterministic>true</Deterministic>
 
 		<Description>Speckle writer for Autodesk Navisworks Manage</Description>
-		<Authors>jonathon@speckle.systems</Authors>
-		<Company>Speckle</Company>
-		
-		<RepositoryUrl>https://github.com/jsdbroughton/speckle-navis</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageTags>speckle connector nwd nwc nwf navisworks manage</PackageTags>
+		<Authors>$(Authors) jonathon@speckle.systems</Authors>
+		<PackageTags>$(PackageTags) connector nwd nwc nwf navisworks manage</PackageTags>
 		
 		<UseWindowsForms>true</UseWindowsForms>
 		<OutputType>Library</OutputType>
@@ -140,9 +135,6 @@
 			<Private>False</Private>
 		</Reference>
 	</ItemGroup>
-	<PropertyGroup>
-		<IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-	</PropertyGroup>
 	<!-- Post Builds -->
 	<PropertyGroup>
 		<PostBuildEvent Condition=" '$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true">
