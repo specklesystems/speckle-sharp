@@ -746,6 +746,7 @@ namespace Objects.Converter.AutocadCivil
       string fontName = GetFontName(text.TextStyleName, out FontDescriptor fontDescriptor);
       if (!string.IsNullOrEmpty(fontName))
       {
+        //TODO: Implement the newline iterate - First split the string
         _text.displayValue = TextCurvesToSpeckle(text.Text, fontName, fontDescriptor, text.TextHeight, text.Location);
       }
 
