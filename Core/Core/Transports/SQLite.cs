@@ -383,7 +383,6 @@ namespace Speckle.Core.Transports
     {
       if (CancellationToken.IsCancellationRequested)
         yield break; // Check for cancellation
-
       using var c = new SqliteConnection(ConnectionString);
       c.Open();
       using var command = new SqliteCommand("SELECT * FROM objects", c);
