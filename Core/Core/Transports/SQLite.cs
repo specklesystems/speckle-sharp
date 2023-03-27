@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -385,9 +386,11 @@ namespace Speckle.Core.Transports
 
       using var c = new SqliteConnection(ConnectionString);
       c.Open();
-
+      if(c.State != ConnectionState.Open)
+        throw new Exception("Could not open connection to database.");
       using var command = new SqliteCommand("SELECT * FROM objects", c);
-
+      if (command == null)
+        throw new Exception("Could not create command.");
       using var reader = command.ExecuteReader();
       while (reader.Read())
       {

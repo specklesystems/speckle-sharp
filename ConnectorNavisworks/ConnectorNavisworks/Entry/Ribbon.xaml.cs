@@ -1,4 +1,8 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api.Plugins;
@@ -56,6 +60,8 @@ namespace Speckle.ConnectorNavisworks.Entry
 
     public bool LoadPlugin(string plugin, bool notAutomatedCheck = true, string command = "")
     {
+      
+      AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
       if (notAutomatedCheck && NavisworksApp.IsAutomated) return false;
 
       if (plugin.Length == 0 || command.Length == 0) return false;
@@ -157,6 +163,20 @@ namespace Speckle.ConnectorNavisworks.Entry
       }
 
       return 0;
+    }
+    
+    private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      Assembly a = null;
+      var name = args.Name.Split(',')[0];
+      var path = Path.GetDirectoryName(typeof(RibbonHandler).Assembly.Location);
+
+      var assemblyFile = Path.Combine(path ?? string.Empty, name + ".dll");
+
+      if (File.Exists(assemblyFile))
+        a = Assembly.LoadFrom(assemblyFile);
+
+      return a;
     }
   }
 }
