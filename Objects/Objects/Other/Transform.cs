@@ -133,64 +133,43 @@ namespace Objects.Other
       var m22 = vector.Z;
 
       var num8 = m00 + m11 + m22;
-      if (num8 > 0f)
+      if (num8 > 0d)
       {
-        var num = (float)Math.Sqrt(num8 + 1f);
-        num = 0.5f / num;
+        var num = Math.Sqrt(num8 + 1d);
+        num = 0.5d / num;
         return new Quaternion(
-          (m12 - m21) * num,
-          (m20 - m02) * num,
-          (m01 - m10) * num,
-          num * 0.5f);
+          (float)((m12 - m21) * num),
+          (float)((m20 - m02) * num), 
+          (float)((m01 - m10) * num),
+          (float)(num * 0.5d));
       }
       if ((m00 >= m11) && (m00 >= m22))
       {
-        var num7 = (float)Math.Sqrt(1f + m00 - m11 - m22);
-        var num4 = 0.5f / num7;
+        var num7 = Math.Sqrt(1d + m00 - m11 - m22);
+        var num4 = 0.5d / num7;
         return new Quaternion(
-          0.5f * num7,
-          (m01 + m10) * num4,
-          (m02 + m20) * num4,
-          (m12 - m21) * num4);
+          (float)(0.5d * num7),
+          (float)((m01 + m10) * num4),
+          (float)((m02 + m20) * num4),
+          (float)((m12 - m21) * num4));
       }
       if (m11 > m22)
       {
-        var num6 = (float)Math.Sqrt(1f + m11 - m00 - m22);
-        var num3 = 0.5f / num6;
+        var num6 = Math.Sqrt(1d + m11 - m00 - m22);
+        var num3 = 0.5d / num6;
         return new Quaternion(
-          (m10 + m01) * num3,
-          0.5f * num6,
-          (m21 + m12) * num3,
-          (m20 - m02) * num3);
+          (float)((m10 + m01) * num3),
+          (float)(0.5d * num6),
+          (float)((m21 + m12) * num3),
+          (float)((m20 - m02) * num3));
       }
-      var num5 = (float)Math.Sqrt(1f + m22 - m00 - m11);
-      var num2 = 0.5f / num5;
+      var num5 = Math.Sqrt(1d + m22 - m00 - m11);
+      var num2 = 0.5d / num5;
       return new Quaternion(
-          (m20 + m02) * num2,
-          (m21 + m12) * num2,
-          0.5f * num5,
-          (m01 - m10) * num2);
-    }
-
-    /// <summary>
-    /// Converts this transform to the input units
-    /// </summary>
-    /// <param name="newUnits"></param>
-    /// <returns>A matrix with the translation scaled by input units</returns>
-    public Transform ConvertTo(string newUnits)
-    {
-      if (newUnits == null || units == null)
-        return this;
-
-      var unitFactor = Units.GetConversionFactor(units, newUnits);
-      if (unitFactor == 1)
-        return this;
-
-      var newMatrix = matrix;
-      newMatrix.M14 = Convert.ToSingle(matrix.M14 * unitFactor);
-      newMatrix.M24 = Convert.ToSingle(matrix.M24 * unitFactor);
-      newMatrix.M34 = Convert.ToSingle(matrix.M34 * unitFactor);
-      return new Transform(newMatrix, newUnits);
+        (float)((m20 + m02) * num2),
+        (float)((m21 + m12) * num2),
+        (float)(0.5d * num5),
+        (float)((m01 - m10) * num2));
     }
     
     /// <summary>
