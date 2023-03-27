@@ -37,7 +37,7 @@ namespace Speckle.ConnectorNavisworks.Entry
     {
       
       Setup.Init(ConnectorBindingsNavisworks.HostAppNameVersion, ConnectorBindingsNavisworks.HostAppName);
-      
+      AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
       try
       {
         InitAvalonia();
@@ -91,6 +91,20 @@ namespace Speckle.ConnectorNavisworks.Entry
     public static void InitAvalonia()
     {
       BuildAvaloniaApp().SetupWithoutStarting();
+    }
+    
+    private static Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+    {
+      Assembly a = null;
+      var name = args.Name.Split(',')[0];
+      var path = Path.GetDirectoryName(typeof(RibbonHandler).Assembly.Location);
+
+      var assemblyFile = Path.Combine(path ?? string.Empty, name + ".dll");
+
+      if (File.Exists(assemblyFile))
+        a = Assembly.LoadFrom(assemblyFile);
+
+      return a;
     }
 
     
