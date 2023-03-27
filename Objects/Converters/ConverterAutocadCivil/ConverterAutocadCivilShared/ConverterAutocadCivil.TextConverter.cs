@@ -143,8 +143,9 @@ namespace Objects.Converter.AutocadCivil
         curve.TransformBy(Matrix3d.Displacement(pointOriginal - new Point3d()));
       }
 
+      ////////////////////////////// ONLY TO TEST
       //BlockTableRecord currSpace = Trans.GetObject(Doc.Database.CurrentSpaceId, OpenMode.ForWrite) as BlockTableRecord;
-    
+
       //foreach (var curve in listCurveCAD)
       //{
       //  curve.SetDatabaseDefaults();
@@ -152,7 +153,9 @@ namespace Objects.Converter.AutocadCivil
       //  Trans.AddNewlyCreatedDBObject(curve, true);
       //}
 
-      //throw new Exception("Adicionar no banco para testar");
+      //throw new Exception("only to test");
+      //////////////////////// ////////////////////////
+      ///
 
       List<ICurve> listCurveSpeckle = new List<ICurve>();
       foreach (var curve in listCurveCAD)
