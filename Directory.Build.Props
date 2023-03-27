@@ -16,6 +16,8 @@
 
     <!-- Ignore some warnings for now -->
     <NoWarn>CS1591;CS1573;CS1572;CS1570;CS1574;CS1711;CS8618;CS8602;CS8600;CS1998;IDE0007</NoWarn>
+
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
   </PropertyGroup>
 
   <PropertyGroup Label="Package Config">
