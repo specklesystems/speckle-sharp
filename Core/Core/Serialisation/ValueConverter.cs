@@ -2,10 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.DoubleNumerics;
-using System.Reflection;
-using System.Text;
-
+using System.Numerics;
 namespace Speckle.Core.Serialisation
 {
   internal static class ValueConverter
@@ -160,7 +157,7 @@ namespace Speckle.Core.Serialisation
       if (type == typeof(Matrix4x4) && valueType == typeof(List<object>))
       {
         var l = (value as List<object>).ToList();
-        double I(int index) => Convert.ToDouble(l[index]);
+        float I(int index) => Convert.ToSingle(l[index]);
         convertedValue = new Matrix4x4(
           I(0), I(1), I(2), I(3),
           I(4), I(5), I(6), I(7),

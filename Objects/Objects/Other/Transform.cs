@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.DoubleNumerics;
+using System.Numerics;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -41,6 +41,21 @@ namespace Objects.Other
     public Transform(double[] value, string units = null)
     {
       if (value.Length != 16)
+        throw new ArgumentException($"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16", nameof(value));
+
+      this.matrix = CreateMatrix(value);
+      this.units = units;
+    }
+    
+    /// <summary>
+    /// Construct a transform from a row-based float array of size 16
+    /// </summary>
+    /// <param name="value"></param>
+    /// <param name="units"></param>
+    /// <exception cref="SpeckleException"></exception>
+    public Transform(float[] value, string units = null)
+    {
+      if (value.Length != 16)
         throw new SpeckleException($"{nameof(Transform)}.{nameof(value)} array is malformed: expected length to be 16");
 
       this.matrix = CreateMatrix(value);
@@ -68,11 +83,11 @@ namespace Objects.Other
     public Transform(Vector x, Vector y, Vector z, Vector translation)
     {
       this.matrix = new Matrix4x4(
-       x.x, y.x, z.x, translation.x,
-       x.y, y.y, z.y, translation.y,
-       x.z, y.z, z.z, translation.z,
-       0d, 0d, 0d, 1d
-       );
+        Convert.ToSingle(x.x), Convert.ToSingle(y.x), Convert.ToSingle(z.x), Convert.ToSingle(translation.x),
+        Convert.ToSingle(x.y), Convert.ToSingle(y.y), Convert.ToSingle(z.y), Convert.ToSingle(translation.y),
+        Convert.ToSingle(x.z), Convert.ToSingle(y.z), Convert.ToSingle(z.z), Convert.ToSingle(translation.z),
+        0f, 0f, 0f, 1f
+      );
       this.units = translation.units;
     }
 
@@ -118,42 +133,42 @@ namespace Objects.Other
       var m22 = vector.Z;
 
       var num8 = m00 + m11 + m22;
-      if (num8 > 0d)
+      if (num8 > 0f)
       {
-        var num = Math.Sqrt(num8 + 1d);
-        num = 0.5d / num;
+        var num = (float)Math.Sqrt(num8 + 1f);
+        num = 0.5f / num;
         return new Quaternion(
           (m12 - m21) * num,
           (m20 - m02) * num,
           (m01 - m10) * num,
-          num * 0.5d);
+          num * 0.5f);
       }
       if ((m00 >= m11) && (m00 >= m22))
       {
-        var num7 = Math.Sqrt(1d + m00 - m11 - m22);
-        var num4 = 0.5d / num7;
+        var num7 = (float)Math.Sqrt(1f + m00 - m11 - m22);
+        var num4 = 0.5f / num7;
         return new Quaternion(
-          0.5d * num7,
+          0.5f * num7,
           (m01 + m10) * num4,
           (m02 + m20) * num4,
           (m12 - m21) * num4);
       }
       if (m11 > m22)
       {
-        var num6 = Math.Sqrt(1d + m11 - m00 - m22);
-        var num3 = 0.5d / num6;
+        var num6 = (float)Math.Sqrt(1f + m11 - m00 - m22);
+        var num3 = 0.5f / num6;
         return new Quaternion(
           (m10 + m01) * num3,
-          0.5d * num6,
+          0.5f * num6,
           (m21 + m12) * num3,
           (m20 - m02) * num3);
       }
-      var num5 = Math.Sqrt(1d + m22 - m00 - m11);
-      var num2 = 0.5d / num5;
+      var num5 = (float)Math.Sqrt(1f + m22 - m00 - m11);
+      var num2 = 0.5f / num5;
       return new Quaternion(
           (m20 + m02) * num2,
           (m21 + m12) * num2,
-          0.5d * num5,
+          0.5f * num5,
           (m01 - m10) * num2);
     }
 
@@ -168,7 +183,7 @@ namespace Objects.Other
         return this;
 
       var unitFactor = Units.GetConversionFactor(units, newUnits);
-      if (unitFactor == 1d)
+      if (unitFactor == 1)
         return this;
 
       var newMatrix = matrix;
@@ -178,11 +193,17 @@ namespace Objects.Other
       return new Transform(newMatrix, newUnits);
     }
     
-    public double[] GetMatrixWithUnits(string newUnits)
+    /// <summary>
+    /// Converts this transform to the input units
+    /// </summary>
+    /// <param name="newUnits">The target units</param>
+    /// <returns>A matrix array with the translation scaled by input units</returns>
+    /// <remarks>If either the transform's <see cref="units"/> or the given <paramref name="newUnits"/> is <see langword="null"/>, will return the matrix array data unscaled</remarks>
+    public double[] ConvertToUnits(string newUnits)
     {
-      if (newUnits == null) throw new ArgumentNullException(nameof(newUnits));
-      if (units == null) throw new InvalidOperationException($"Cannot call {nameof(GetMatrixWithUnits)} on a {nameof(Transform)} that has null {nameof(units)}");
-
+      if (newUnits == null || units == null)
+        return ToArray();
+      
       var sf = Units.GetConversionFactor(units, newUnits);
 
       return new double[] {
@@ -191,7 +212,6 @@ namespace Objects.Other
         matrix.M31, matrix.M32, matrix.M33, matrix.M34 * sf,
         matrix.M41, matrix.M42, matrix.M43, matrix.M44 * sf
       };
-      
     }
 
     /// <summary>
@@ -202,8 +222,8 @@ namespace Objects.Other
     /// <returns>A transform matrix with the units of the first transform</returns>
     public static Transform operator *(Transform t1, Transform t2)
     {
-      var convertedTransform = t2.ConvertTo(t1.units);
-      var newMatrix = t1.matrix * convertedTransform.matrix;
+      var convertedTransform = CreateMatrix(t2.ConvertToUnits(t1.units));
+      var newMatrix = t1.matrix * convertedTransform;
       return new Transform(newMatrix, t1.units);
     }
 
@@ -221,8 +241,20 @@ namespace Objects.Other
       };
     }
     
+    // Creates a matrix4x4 from a double array
+    internal static Matrix4x4 CreateMatrix(double[] value)
+    {
+      return new Matrix4x4
+      (
+        Convert.ToSingle(value[0]), Convert.ToSingle(value[1]), Convert.ToSingle(value[2]), Convert.ToSingle(value[3]),
+        Convert.ToSingle(value[4]), Convert.ToSingle(value[5]), Convert.ToSingle(value[6]), Convert.ToSingle(value[7]),
+        Convert.ToSingle(value[8]), Convert.ToSingle(value[9]), Convert.ToSingle(value[10]), Convert.ToSingle(value[11]),
+        Convert.ToSingle(value[12]), Convert.ToSingle(value[13]), Convert.ToSingle(value[14]), Convert.ToSingle(value[15])
+      );
+    }
+    
     // Creates a matrix from a float array
-    private static Matrix4x4 CreateMatrix(double[] value)
+    internal static Matrix4x4 CreateMatrix(float[] value)
     {
       return new Matrix4x4
       (
@@ -231,16 +263,6 @@ namespace Objects.Other
         value[8], value[9], value[10], value[11],
         value[12], value[13], value[14], value[15]
       );
-    }
-
-    private static double[] ArrayFromMatrix(Matrix4x4 matrix)
-    {
-      return new double[] {
-        matrix.M11, matrix.M12, matrix.M13, matrix.M14,
-        matrix.M21, matrix.M22, matrix.M23, matrix.M24,
-        matrix.M31, matrix.M32, matrix.M33, matrix.M34,
-        matrix.M41, matrix.M42, matrix.M43, matrix.M44
-      };
     }
 
     #region obsolete

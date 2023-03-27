@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.DoubleNumerics;
+using System.Numerics;
 using System.Linq;
 using System.Drawing;
 
@@ -167,34 +167,35 @@ namespace Objects.Converter.AutocadCivil
     public Matrix3d TransformToNativeMatrix(Transform transform)
     {
       // transform
-      var scaledTransform = transform.ConvertTo(ModelUnits);
-      Matrix3d convertedTransform = new Matrix3d(scaledTransform.ToArray());
+      var scaledTransform = transform.ConvertToUnits(ModelUnits);
+      Matrix3d convertedTransform = new Matrix3d(scaledTransform);
 
       //Autocad is very picky about transform basis being perfectly perpendicular, if they are not, we can correct for this by re-calculating basis vectors
       if (!convertedTransform.IsScaledOrtho())
       {
-        return new Matrix3d(MakePerpendicular(scaledTransform.matrix));
+        return new Matrix3d(MakePerpendicular(convertedTransform));
       }
 
       return convertedTransform;
     }
     
     // https://forums.autodesk.com/t5/net/set-blocktransform-values/m-p/6452121#M49479
-    private static double[] MakePerpendicular(Matrix4x4 matrix)
+    private static double[] MakePerpendicular(Matrix3d matrix)
     {
       // Get the basis vectors of the matrix
-      Vector3 right = new Vector3(matrix.M11, matrix.M21, matrix.M31);
-      Vector3 up = new Vector3(matrix.M12, matrix.M22, matrix.M32);
+      Vector3d right = new Vector3d(matrix[0,0], matrix[1,0], matrix[2,0]);
+      Vector3d up = new Vector3d(matrix[0,1], matrix[1,1], matrix[2,1]);
+
       
-      Vector3 newForward = Vector3.Normalize(Vector3.Cross(right, up));
+      Vector3d newForward = right.CrossProduct(up).GetNormal();;
       
-      Vector3 newUp = Vector3.Normalize(Vector3.Cross(newForward, right));
-      
+      Vector3d newUp = newForward.CrossProduct(right).GetNormal();
+
       return new []{
-        right.X,  newUp.X,  newForward.X,  matrix.M14,
-        right.Y,  newUp.Y,  newForward.Y,  matrix.M24,
-        right.Z,  newUp.Z,  newForward.Z,  matrix.M34,
-        0.0,      0.0,      0.0,           matrix.M44,
+        right.X,  newUp.X,  newForward.X,  matrix[0,3],
+        right.Y,  newUp.Y,  newForward.Y,  matrix[1,3],
+        right.Z,  newUp.Z,  newForward.Z,  matrix[2,3],
+        0.0,      0.0,      0.0,           matrix[3,3],
       };
 
     }

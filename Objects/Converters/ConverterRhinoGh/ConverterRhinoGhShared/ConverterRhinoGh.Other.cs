@@ -268,7 +268,7 @@ namespace Objects.Converter.RhinoGh
     // blocks
     public Rhino.Geometry.Transform TransformToNative(Transform transform)
     {
-      var matrix = transform.ConvertTo(ModelUnits).ToArray();
+      var matrix = transform.ConvertToUnits(ModelUnits);
       var _transform = Rhino.Geometry.Transform.Identity;
       double homogeneousDivisor = matrix[15]; // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
       int count = 0;

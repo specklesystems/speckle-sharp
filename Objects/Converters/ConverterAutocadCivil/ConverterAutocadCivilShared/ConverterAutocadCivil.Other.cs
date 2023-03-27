@@ -410,10 +410,7 @@ namespace Objects.Converter.AutocadCivil
         appObj.CreatedIds.Add(id.Handle.ToString());
       return appObj;
     }
-    
-    
 
-    
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
       // get geometry
