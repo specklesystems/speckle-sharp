@@ -2,5 +2,8 @@
   "python.formatting.provider": "black",
   "python.linting.pylintEnabled": false,
   "python.linting.banditEnabled": true,
-  "python.linting.enabled": true
+  "python.linting.enabled": true,
+  "files.associations": {
+    "*.slnf": "json"
+  }
 }
