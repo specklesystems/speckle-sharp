@@ -522,6 +522,7 @@ namespace Objects.Converter.RhinoGh
         curve.TryGetEllipse(pln, out var getObj, tolerance);
         var ellipse = EllipseToSpeckle(getObj, u);
         ellipse.domain = IntervalToSpeckle(curve.Domain);
+        return ellipse;
       }
 
       if (curve.IsLinear(tolerance) || curve.IsPolyline()) // defaults to polyline
