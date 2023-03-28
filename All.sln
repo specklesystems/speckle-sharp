@@ -1696,8 +1696,8 @@ Global
 		{F4AA033F-4F85-4990-AFE9-86BE00ABE973} = {890F3257-FCC2-4ED8-9180-22B3641B494C}
 		{F1311789-37DC-47FD-ACEC-75B9B97EDFED} = {BE521908-7944-46F3-98BF-B47D34509934}
 		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD} = {BE521908-7944-46F3-98BF-B47D34509934}
-		{A8607330-1B23-43CC-8B9B-25818D9C1D64} = {1FD850CA-A8D7-41DC-9316-B315800437E1}
 		{EA81F83C-1485-49C8-AB05-9DF2798D70EC} = {1FD850CA-A8D7-41DC-9316-B315800437E1}
+		{A8607330-1B23-43CC-8B9B-25818D9C1D64} = {1FD850CA-A8D7-41DC-9316-B315800437E1}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
@@ -1710,7 +1710,7 @@ Global
 		ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.projitems*{23be6e54-96c1-4373-89f3-e18a1c9807fd}*SharedItemsImports = 4
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{2639e37d-80d3-415a-b4d1-20d7f321f27f}*SharedItemsImports = 4
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{26eca1be-f5b2-4a41-9658-46a4a917bfe6}*SharedItemsImports = 5
-		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 4
+		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 5
 		ConnectorTeklaStructures\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems*{28e2ea7f-ffd1-4e13-9165-0243b5ac82f5}*SharedItemsImports = 13
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
@@ -1726,7 +1726,7 @@ Global
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{4dbf45ee-3bce-47f4-b399-963b36a31951}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{50bc1552-3e7e-4c77-ac3a-aa7c572dfe09}*SharedItemsImports = 5
 		ConnectorBentley\ConnectorBentleyShared\ConnectorBentleyShared.projitems*{57bf94a8-8f73-4d1a-91d2-b10cc64178b6}*SharedItemsImports = 4
-		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 4
+		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{58a88f1a-7489-46d2-949d-2fc3f68c8d84}*SharedItemsImports = 4
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{5bab09dc-b0fc-4004-9fd5-6496a9634071}*SharedItemsImports = 13
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{5bbde14e-50f8-4d6e-8e35-747667ad4a09}*SharedItemsImports = 13
@@ -1743,7 +1743,7 @@ Global
 		ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.projitems*{81299d15-5788-414d-a962-1a568c251323}*SharedItemsImports = 4
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{8581b4bb-a8bc-4328-99fe-d18615af2554}*SharedItemsImports = 5
 		ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{86920221-416e-4a66-a601-3418207e2401}*SharedItemsImports = 5
-		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{8a53b084-20d8-48f6-9591-9d53cfa74130}*SharedItemsImports = 4
+		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{8a53b084-20d8-48f6-9591-9d53cfa74130}*SharedItemsImports = 5
 		Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{8b467ff4-6a6c-4071-87a7-0dd7b9822251}*SharedItemsImports = 5
 		Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{8b50fa79-2ff0-4efa-b50f-9bf47ff3e130}*SharedItemsImports = 5
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{907aed7a-719b-4157-8cc9-d21cb26e9243}*SharedItemsImports = 5
@@ -1775,7 +1775,7 @@ Global
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{d9f443b5-c55b-4ad8-9c70-bc3d2be781be}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{debc2174-5e31-4b6e-8680-690d75e50e2d}*SharedItemsImports = 5
-		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{dfdfdbb8-018b-4dcb-a012-54227abf53a7}*SharedItemsImports = 4
+		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{dfdfdbb8-018b-4dcb-a012-54227abf53a7}*SharedItemsImports = 5
 		Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{ec2436db-b7f4-4d78-807b-8d91d7d5165c}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{f1311789-37dc-47fd-acec-75b9b97edfed}*SharedItemsImports = 5
 		Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{f2146143-c240-4920-a01b-2bd7e076ad11}*SharedItemsImports = 5
