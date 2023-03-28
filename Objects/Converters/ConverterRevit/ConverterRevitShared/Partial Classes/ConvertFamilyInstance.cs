@@ -653,7 +653,7 @@ namespace Objects.Converter.Revit
       var transform = TransformToSpeckle(localTransform, instance.Document);
 
       // get the definition base of this instance
-      RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, localTransform);
+      RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, instanceTransform);
       notes.AddRange(definitionNotes);
 
       var _instance = new RevitInstance();
