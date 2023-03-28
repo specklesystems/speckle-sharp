@@ -554,7 +554,11 @@ namespace Objects.Converter.Revit
       }
       var materialName = material.MaterialClass;
       var materialType = GetMaterialType(materialName);
-      return GetStructuralMaterial(materialType, materialAsset, name);
+
+      var speckleMaterial = GetStructuralMaterial(materialType, materialAsset, name);
+      speckleMaterial.applicationId = material.UniqueId;
+
+      return speckleMaterial;
     }
 
     private StructuralMaterial GetStructuralMaterial(StructuralMaterialType materialType, StructuralAsset materialAsset, string name)
