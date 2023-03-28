@@ -6,11 +6,12 @@
     <AssemblyTitle>ConnectorDynamoFunctions</AssemblyTitle>
     <Product>ConnectorDynamoFunctions</Product>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    <Reference Include="System.Net.Http"/>
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Net.Http" />
   </ItemGroup>
   <ItemGroup>
     <None Include="SpeckleConnectorDynamoFunctions_DynamoCustomization.xml">
@@ -23,6 +24,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\accountdetails%40128.png" />
