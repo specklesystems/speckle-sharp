@@ -6,14 +6,12 @@
     </PropertyGroup>
     <Target
         Label="Copy To Objects Kit Folder"
-        Name="PostBuild"
+        Name="CopyToKitFolder"
         AfterTargets="PostBuildEvent"
         Condition="'$(CopyToKitFolder)' == true AND '$(IsDesktopBuild)' == true">
         <Message Text="Copying $(AssemblyName).dll to $(KitFolder) Kit folder" Importance="high" />
         <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
             Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\$(KitFolder)\&quot;" />
-        <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
-            Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).pdb&quot; &quot;$(AppData)\Speckle\Kits\$(KitFolder)\&quot;" />
         <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))"
             Command="mkdir -p $HOME'/.config/Speckle/Kits/$(KitFolder)'" />
         <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))"

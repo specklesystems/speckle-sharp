@@ -10,7 +10,7 @@
     <LangVersion>latest</LangVersion>
 
     <!-- Code quality -->
-    <EnableNetAnalyzers>true</EnableNetAnalyzers>
+    <EnableNetAnalyzers>false</EnableNetAnalyzers>
     <AnalysisLevel>latest-Recommended</AnalysisLevel>
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
 
