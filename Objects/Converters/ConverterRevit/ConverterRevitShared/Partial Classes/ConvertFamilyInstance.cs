@@ -410,10 +410,10 @@ namespace Objects.Converter.Revit
     #region new instancing
 
     // transforms
-    private Other.Transform TransformToSpeckle(Transform transform)
+    private Other.Transform TransformToSpeckle(Transform transform, Document doc)
     {
       // get the reference point transform 
-      var docTransform = GetDocReferencePointTransform(Doc);
+      var docTransform = GetDocReferencePointTransform(doc);
       var externalTransform = docTransform.Inverse.Multiply(transform);
 
       // translation
@@ -650,7 +650,7 @@ namespace Objects.Converter.Revit
       {
         localTransform = parentTransform.Inverse.Multiply(instanceTransform);
       }
-      var transform = TransformToSpeckle(localTransform);
+      var transform = TransformToSpeckle(localTransform, instance.Document);
 
       // get the definition base of this instance
       RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, localTransform);
