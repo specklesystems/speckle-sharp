@@ -1,138 +1,67 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Speckle.ConnectorDynamo</RootNamespace>
     <AssemblyName>SpeckleConnectorDynamo</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <TargetFramework>net48</TargetFramework>
     <StartAction>Program</StartAction>
-    <FileAlignment>512</FileAlignment>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
     <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
     <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
     <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
     <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
     <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <DocumentationFile>bin\Debug\SpeckleConnectorDynamo.xml</DocumentationFile>
+    <AssemblyTitle>ConnectorDynamo</AssemblyTitle>
+    <Product>ConnectorDynamo</Product>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <StartProgram>C:\Program Files\Dynamo\Dynamo Core\2.7\DynamoSandbox.exe</StartProgram>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
+  <PropertyGroup>
+    <PackageName>SpeckleDynamo2</PackageName>
+    <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
+    <BinFolder>$(PackageFolder)bin\</BinFolder>
+    <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
+    <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
     <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DynamoVisualProgramming.Core">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <Version>2.8.0.2471</Version>
-      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.WpfUILibrary">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>runtime</ExcludeAssets>
-      <Version>2.8.0.2471</Version>
-    </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471">
-      <PrivateAssets>all</PrivateAssets>
-      <ExcludeAssets>runtime</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="MaterialDesignColors">
-      <Version>2.0.3</Version>
-    </PackageReference>
-    <PackageReference Include="MaterialDesignThemes">
-      <Version>4.2.1</Version>
-    </PackageReference>
-    <PackageReference Include="MSBuild.AssemblyVersion">
-      <Version>1.3.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="DynamoVisualProgramming.WpfUILibrary" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="MaterialDesignColors" Version="2.0.3" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.2.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj">
-      <Project>{3f02e475-e777-4dfd-8ae9-8065edd092dc}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ConnectorDynamoExtension\ConnectorDynamoExtension.csproj">
-      <Project>{b494fd40-5e59-4d5e-87b0-80aac8bdcd5a}</Project>
-      <Name>ConnectorDynamoExtension</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj">
-      <Project>{8f4d907b-a2df-4b40-8ea6-d79f9ed6d906}</Project>
-      <Name>ConnectorDynamoFunctions</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\ConnectorDynamoExtension\ConnectorDynamoExtension.csproj" />
+    <ProjectReference Include="..\ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj" />
   </ItemGroup>
   <ItemGroup>
     <None Include="pkg.json" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AccountsNode\Accounts.cs" />
-    <Compile Include="AccountsNode\AccountsUi.xaml.cs">
+    <Compile Update="AccountsNode\AccountsUi.xaml.cs">
       <DependentUpon>AccountsUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AccountsNode\AccountsViewCustomization.cs" />
-    <Compile Include="CreateStreamNode\CreateStreamUi.xaml.cs">
+    <Compile Update="CreateStreamNode\CreateStreamUi.xaml.cs">
       <DependentUpon>CreateStreamUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CreateStreamNode\CreateStream.cs" />
-    <Compile Include="CreateStreamNode\CreateStreamViewCustomization.cs" />
-    <Compile Include="DebounceTimer.cs" />
-    <Compile Include="ReceiveNode\ReceiveUi.xaml.cs">
+    <Compile Update="ReceiveNode\ReceiveUi.xaml.cs">
       <DependentUpon>ReceiveUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="SendNode\SendViewCustomization.cs" />
-    <Compile Include="SendNode\Send.cs" />
-    <Compile Include="ReceiveNode\Receive.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ReceiveNode\ReceiveViewCustomization.cs" />
-    <Compile Include="SendNode\SendUi.xaml.cs">
+    <Compile Update="SendNode\SendUi.xaml.cs">
       <DependentUpon>SendUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ValueConverters\BoolVisibConverter.cs" />
-    <Compile Include="ViewNode\View.cs" />
-    <Compile Include="ViewNode\ViewUi.xaml.cs">
+    <Compile Update="ViewNode\ViewUi.xaml.cs">
       <DependentUpon>SendUi.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ViewNode\ViewViewCustomization.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Assets\AccountDetails%40128.png" />
@@ -197,9 +126,6 @@
     <Content Include="Assets\ToSpeckle%4032.png" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="SpeckleConnectorDynamoImages.resx" />
-  </ItemGroup>
-  <ItemGroup>
     <Page Include="AccountsNode\AccountsUi.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -225,26 +151,8 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  -->
-  <PropertyGroup>
-    <PackageName>SpeckleDynamo2</PackageName>
-    <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
-    <BinFolder>$(PackageFolder)bin\</BinFolder>
-    <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
-    <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
-  </PropertyGroup>
-  <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\dist;$(AppData)\Dynamo\Dynamo Revit\2.7\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.7\packages\SpeckleDynamo2" />
-    <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.8\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.8\packages\SpeckleDynamo2" />
-    <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.9\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.9\packages\SpeckleDynamo2" />
-    <RemoveDir Directories="$(AppData)\Dynamo\Dynamo Revit\2.6\packages\SpeckleDynamo2;$(AppData)\Dynamo\Dynamo Core\2.6\packages\SpeckleDynamo2" />
-  </Target>
-  <Target Name="AfterBuild">
+  
+  <Target Name="AfterBuildMigrated" AfterTargets="Build">
     <!-- Icons stuff -->
     <!-- Get System.Drawing.dll -->
     <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.8">
@@ -265,10 +173,8 @@
       <!--<XML Include="$(OutDir)*.xml" />-->
       <PackageJson Include="$(ProjectDir)pkg.json" />
     </ItemGroup>
-    <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))">
-    </MakeDir>
-    <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))">
-    </MakeDir>
+    <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))" />
+    <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))" />
     <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)\%(RecursiveDir)" />
     <!--<Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />-->
     <!--<Copy SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />-->
