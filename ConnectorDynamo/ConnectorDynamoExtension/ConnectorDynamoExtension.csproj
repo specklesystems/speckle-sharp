@@ -35,5 +35,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="DynamoVisualProgramming.WpfUILibrary" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="PresentationFramework" Version="4.6.0" />
   </ItemGroup>
 </Project>
