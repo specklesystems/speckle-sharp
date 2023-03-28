@@ -14,7 +14,7 @@ namespace Objects.Converter.Revit
     /// Retreives the meshes on an element to use as the speckle displayvalue
     /// </summary>
     /// <param name="element"></param>
-    /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
+    /// <param name="doNotTransformWithReferencePoint">For instances, determines if the retrieved geometry should be transformed by the selected document reference point.</param>
     /// <returns></returns>
     /// <remarks>
     /// See https://www.revitapidocs.com/2023/e0f15010-0e19-6216-e2f0-ab7978145daa.htm for a full Geometry Object inheritance
@@ -48,7 +48,8 @@ namespace Objects.Converter.Revit
           switch (geomObj)
           {
             case Solid solid:
-              solids.Add(solid);
+              if (solid.Faces.Size > 0 && Math.Abs(solid.SurfaceArea) > 0) // skip invalid solid
+                solids.Add(solid);
               break;
             case DB.Mesh mesh:
               meshes.Add(mesh);
