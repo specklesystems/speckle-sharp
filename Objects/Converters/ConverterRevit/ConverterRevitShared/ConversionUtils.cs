@@ -863,7 +863,7 @@ namespace Objects.Converter.Revit
     private DB.Transform GetDocReferencePointTransform(Document doc)
     {
       //linked files are always saved to disc and will have a path name
-      //if the durrent doc is unsaved it will not, but then it'll be the only one :)
+      //if the current doc is unsaved it will not, but then it'll be the only one :)
       var id = doc.PathName;
 
       if (!_docTransforms.ContainsKey(id))
@@ -896,6 +896,8 @@ namespace Objects.Converter.Revit
 
       //in the case of linked models, it seems they get aligned base off their surey point
       //the translations below for linked models were retrieved a bit empirically
+      // TODO: This linked model code is hacky and incorrect for any linked models that have been moved! Use the `RevitLinkInstance` class transform to determine the full transform between an element in a linked model in the coordinate system of the main doc.
+      // See: https://thebuildingcoder.typepad.com/blog/2013/11/determining-host-document-location-of-a-linked-element.html
       switch (type)
       {
         case ProjectBase:
