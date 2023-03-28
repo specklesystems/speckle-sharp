@@ -12,11 +12,6 @@
         <CopyToKitFolder>true</CopyToKitFolder>
     </PropertyGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec
-            Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-    </Target>
-
     <ItemGroup>
         <PackageReference Include="Speckle.AutoCAD.API" Version="2022.0.0.3" />
     </ItemGroup>

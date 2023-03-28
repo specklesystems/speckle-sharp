@@ -1,42 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <RootNamespace>Objects.Converter.Revit</RootNamespace>
+    <AssemblyName>Objects.Converter.Revit2023</AssemblyName>
+    <DefineConstants>$(DefineConstants);REVIT2023</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.Revit2023</PackageId>
+    <Product>Objects.Converter.Revit2023</Product>
+    <Description>Converter for Revit 2023</Description>
+    <PackageTags>$(PackageTags) objects converter revit</PackageTags>
+    <CopyToKitFolder>true</CopyToKitFolder>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <RootNamespace>Objects.Converter.Revit</RootNamespace>
-        <AssemblyName>Objects.Converter.Revit2023</AssemblyName>
-        <Configurations>Debug;Release</Configurations>
-        <DefineConstants>$(DefineConstants);REVIT2023</DefineConstants>
-        <PackageId>Speckle.Objects.Converter.Revit2023</PackageId>
-        <Product>Objects.Converter.Revit2023</Product>
-        <Description>Converter for Revit 2023</Description>
-        <PackageTags>$(PackageTags) objects converter revit</PackageTags>
-    </PropertyGroup>
+  <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared"/>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj"/>
+    <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-        <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Speckle.Revit.API" Version="2023.0.0"/>
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Include="..\..\..\..\logo.png">
+      <Pack>True</Pack>
+    </None>
+  </ItemGroup>
 
-
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-        <Exec
-            Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-        <Exec
-            Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\&quot;" />
-    </Target>
-
-    <ItemGroup>
-        <None Include="..\..\..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
-        <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
-    </ItemGroup>
-
-    <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
+  <Target Name="CopyTemplatesToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
+    <Message Text="Copying templates to kit folder"/>
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
+          Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\&quot;"/>
+  </Target>
 </Project>
