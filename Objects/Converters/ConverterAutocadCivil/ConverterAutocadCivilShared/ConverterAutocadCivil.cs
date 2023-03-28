@@ -491,7 +491,7 @@ namespace Objects.Converter.AutocadCivil
 
         case Dimension _:
         case BlockDefinition _:
-        case BlockInstance _:
+        case Instance _:
         case Text _:
 
         case Alignment _:
