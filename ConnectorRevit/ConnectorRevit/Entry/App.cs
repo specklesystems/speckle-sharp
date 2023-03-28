@@ -96,11 +96,13 @@ namespace Speckle.ConnectorRevit.Entry
     private void ControlledApplication_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
     {
       try
-      {
-        Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
-        
-        AppInstance = new UIApplication(sender as Application);
+      {        
+        // We need to hook into the AssemblyResolve event before doing anything else
+        // or we'll run into unresolved issues loading dependencies
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+        AppInstance = new UIApplication(sender as Application);
+
+        Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
 
         //DUI2 - pre build app, so that it's faster to open up
         SpeckleRevitCommand.InitAvalonia();

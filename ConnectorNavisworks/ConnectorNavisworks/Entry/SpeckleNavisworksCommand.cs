@@ -34,8 +34,8 @@ namespace Speckle.ConnectorNavisworks.Entry
   {
     public override Control CreateControlPane()
     {
-      Setup.Init(ConnectorBindingsNavisworks.HostAppNameVersion, ConnectorBindingsNavisworks.HostAppName);
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+      Setup.Init(ConnectorBindingsNavisworks.HostAppNameVersion, ConnectorBindingsNavisworks.HostAppName);
       try
       {
         InitAvalonia();
