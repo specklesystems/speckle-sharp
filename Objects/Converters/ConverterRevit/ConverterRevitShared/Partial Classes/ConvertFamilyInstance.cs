@@ -410,11 +410,16 @@ namespace Objects.Converter.Revit
     #region new instancing
 
     // transforms
-    private Other.Transform TransformToSpeckle(Transform transform, Document doc)
+    private Other.Transform TransformToSpeckle(Transform transform, Document doc, bool skipDocReferencePointTransform = false)
     {
-      // get the reference point transform 
-      var docTransform = GetDocReferencePointTransform(doc);
-      var externalTransform = docTransform.Inverse.Multiply(transform);
+      var externalTransform = transform;
+
+      // get the reference point transform and apply if this is a top level instance
+      if (!skipDocReferencePointTransform)
+      {
+        var docTransform = GetDocReferencePointTransform(doc);
+        externalTransform = docTransform.Inverse.Multiply(transform);
+      }
 
       // translation
       var tX = ScaleToSpeckle(externalTransform.Origin.X, ModelUnits);
@@ -646,11 +651,11 @@ namespace Objects.Converter.Revit
       // get the transform
       var instanceTransform = instance.GetTotalTransform();
       var localTransform = instanceTransform;
-      if (useParentTransform)
+      if (useParentTransform) // this is a nested instance, remove the parent transform from it and don't apply doc reference point transforms
       {
         localTransform = parentTransform.Inverse.Multiply(instanceTransform);
       }
-      var transform = TransformToSpeckle(localTransform, instance.Document);
+      var transform = TransformToSpeckle(localTransform, instance.Document, useParentTransform);
 
       // get the definition base of this instance
       RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, instanceTransform);
