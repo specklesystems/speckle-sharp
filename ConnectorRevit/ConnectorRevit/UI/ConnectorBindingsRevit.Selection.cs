@@ -217,6 +217,7 @@ namespace Speckle.ConnectorRevit.UI
 
             foreach (var view in views)
             {
+              selection.Add(view);
               var ids = selection.Select(x => x.UniqueId);
 
               foreach (var doc in allDocs)
