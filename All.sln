@@ -48,10 +48,16 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutocadCivil", "AutocadCivil", "{890F3257-FCC2-4ED8-9180-22B3641B494C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutocad2021", "ConnectorAutocadCivil\ConnectorAutocad2021\ConnectorAutocad2021.csproj", "{58A88F1A-7489-46D2-949D-2FC3F68C8D84}"
+	ProjectSection(ProjectDependencies) = postProject
+		{78573ADC-87A5-489F-8134-FB4A435A05F0} = {78573ADC-87A5-489F-8134-FB4A435A05F0}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorAutocadCivilShared", "ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.shproj", "{B47492D9-2EDA-4016-A930-7FA708C85C3D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2021", "ConnectorAutocadCivil\ConnectorCivil2021\ConnectorCivil2021.csproj", "{AD10C167-937F-4706-9EB5-C99F86C35E8F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D9F443B5-C55B-4AD8-9C70-BC3D2BE781BE} = {D9F443B5-C55B-4AD8-9C70-BC3D2BE781BE}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ConverterAutocadCivil", "ConverterAutocadCivil", "{BE521908-7944-46F3-98BF-B47D34509934}"
 EndProject
@@ -64,8 +70,14 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorRevit2020", "ConnectorRevit\ConnectorRevit2020\ConnectorRevit2020.csproj", "{8A53B084-20D8-48F6-9591-9D53CFA74130}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutocad2022", "ConnectorAutocadCivil\ConnectorAutocad2022\ConnectorAutocad2022.csproj", "{FF1793E1-77F5-4A92-B3F2-6D8B104E479B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{50BC1552-3E7E-4C77-AC3A-AA7C572DFE09} = {50BC1552-3E7E-4C77-AC3A-AA7C572DFE09}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2022", "ConnectorAutocadCivil\ConnectorCivil2022\ConnectorCivil2022.csproj", "{464F2220-D7D9-4D8C-BB3D-B93A1C603469}"
+	ProjectSection(ProjectDependencies) = postProject
+		{8581B4BB-A8BC-4328-99FE-D18615AF2554} = {8581B4BB-A8BC-4328-99FE-D18615AF2554}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2022", "Objects\Converters\ConverterAutocadCivil\ConverterAutocad2022\ConverterAutocad2022.csproj", "{50BC1552-3E7E-4C77-AC3A-AA7C572DFE09}"
 EndProject
@@ -160,8 +172,15 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorArchicad", "ConnectorArchicad\ConnectorArchicad\ConnectorArchicad.csproj", "{D163D710-B946-4D50-8833-BD8B9941033A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutocad2023", "ConnectorAutocadCivil\ConnectorAutocad2023\ConnectorAutocad2023.csproj", "{F4BFB155-7BA9-4E46-8240-9C825060C904}"
+	ProjectSection(ProjectDependencies) = postProject
+		{60BE029E-1F31-4473-8B68-A745A43AF179} = {60BE029E-1F31-4473-8B68-A745A43AF179}
+		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD} = {88A24C40-74C8-4E20-9051-6BE9E6ADECFD}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2023", "ConnectorAutocadCivil\ConnectorCivil2023\ConnectorCivil2023.csproj", "{2639E37D-80D3-415A-B4D1-20D7F321F27F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{F03AF41C-3489-4414-A887-B52D529B5A55} = {F03AF41C-3489-4414-A887-B52D529B5A55}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DesktopUI", "DesktopUI", "{59764E6A-8366-4AF3-AB0A-BA28BD0318FA}"
 EndProject
@@ -252,6 +271,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorTeklaStructures2022", "ConnectorTeklaStructures\ConnectorTeklaStructures2022\ConnectorTeklaStructures2022.csproj", "{48C44A7A-122F-4A1F-B3BA-613CB432A7BC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterTeklaStructures2022", "Objects\Converters\ConverterTeklaStructures\ConverterTeklaStructures2022\ConverterTeklaStructures2022.csproj", "{05F993A6-8651-4801-A732-9A30D1472EEF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterCivil2023", "Objects\Converters\ConverterAutocadCivil\ConverterCivil2023\ConverterCivil2023.csproj", "{F03AF41C-3489-4414-A887-B52D529B5A55}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1609,6 +1630,22 @@ Global
 		{05F993A6-8651-4801-A732-9A30D1472EEF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{05F993A6-8651-4801-A732-9A30D1472EEF}.Release|x64.ActiveCfg = Release|Any CPU
 		{05F993A6-8651-4801-A732-9A30D1472EEF}.Release|x64.Build.0 = Release|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Debug|x64.Build.0 = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release Mac|Any CPU.Build.0 = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release Mac|x64.ActiveCfg = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release Mac|x64.Build.0 = Debug|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release|x64.ActiveCfg = Release|Any CPU
+		{F03AF41C-3489-4414-A887-B52D529B5A55}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1736,6 +1773,7 @@ Global
 		{A8607330-1B23-43CC-8B9B-25818D9C1D64} = {1FD850CA-A8D7-41DC-9316-B315800437E1}
 		{48C44A7A-122F-4A1F-B3BA-613CB432A7BC} = {18C8730C-0173-4987-9416-46F86EC20541}
 		{05F993A6-8651-4801-A732-9A30D1472EEF} = {5D988C50-8E85-402A-9020-A4AB0565F0C9}
+		{F03AF41C-3489-4414-A887-B52D529B5A55} = {BE521908-7944-46F3-98BF-B47D34509934}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
