@@ -5,5 +5,7 @@
   "python.linting.enabled": true,
   "files.associations": {
     "*.slnf": "json"
-  }
+  },
+  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableRoslynAnalyzers": true
 }
