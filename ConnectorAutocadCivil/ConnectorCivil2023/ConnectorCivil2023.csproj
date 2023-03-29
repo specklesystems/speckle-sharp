@@ -12,7 +12,7 @@
     <AssemblyTitle>ConnectorCivil2023</AssemblyTitle>
     <Product>ConnectorCivil2023</Product>
     <DefineConstants>$(DefineConstants);CIVIL2023</DefineConstants>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Target Name="Clean">
