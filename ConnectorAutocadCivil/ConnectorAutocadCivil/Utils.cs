@@ -114,7 +114,6 @@ namespace Speckle.ConnectorAutocadCivil
             handles.Add(obj.Handle.ToString());
           }
         }
-        tr.Commit();
       }
 
       return handles;
