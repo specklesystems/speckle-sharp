@@ -17,4 +17,8 @@
         <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))"
             Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/$(KitFolder)/'" />
     </Target>
+
+    <Target Name="ReportBuildVersion" BeforeTargets="BeforeBuild">
+        <Message Text="Building $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)" Importance="high" />
+    </Target>
 </Project>
