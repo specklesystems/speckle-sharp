@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "../All.sln",
+    "path": "All.sln",
     "projects": [
       "Core/Core/Core.csproj",
       "Core/IntegrationTests/TestsIntegration.csproj",
