@@ -9,43 +9,42 @@ namespace Objects.Organization
 {
   public class DataTable : Base
   {
-    private DataTable() { }
+    public DataTable() { }
     public DataTable(int columnCount)
     {
       _columnCount = columnCount;
-
     }
 
     public object this[int column, int row]
     {
-      get => _rows[row][column];
-      set => _rows[row][column] = value;
+      get => Rows[row][column];
+      set => Rows[row][column] = value;
     }
 
     private int _rowCount = 0;
     public int RowCount => _rowCount;
 
-    private int _columnCount = 0;
-    public int ColumnCount => _columnCount;
+    private int? _columnCount = null;
+    public int? ColumnCount => _columnCount;
 
     [Chunkable()]
     [DetachProperty]
-    private List<DataRow> _rows { get; } = new List<DataRow>();
+    public List<DataRow> Rows { get; } = new List<DataRow>();
 
     public void AddRow(DataRow row)
     {
-      _rows.Add(row);
+      _columnCount ??= row.CellData.Count;
+      if (row.CellData.Count != _columnCount)
+        throw new ArgumentException($"\"AddRow\" method was passed {row.CellData.Count} objects, but the DataTable has {_columnCount} column. Partial and extended table rows are not accepted by the DataTable object.");
+
+      Rows.Add(row);
       _rowCount++;
     }
 
     public void AddRow(params object[] objects)
     {
-      if (objects.Length != _columnCount)
-        throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {_columnCount} column. Partial and extended table rows are not accepted by the DataTable object.");
-
       var newRow = new DataRow(objects);
-      _rows.Add(newRow);
-      _rowCount++;
+      AddRow(newRow);
     }
 
     public void AddColumn(int index = -1, params object[] objects)
@@ -65,15 +64,20 @@ namespace Objects.Organization
       {
         if (index < objects.Length)
         {
-          _rows[i].Insert(index, objects[i]);
+          Rows[i].CellData.Insert(index, objects[i]);
         }
         else
         {
-          _rows[i].Add(objects[i]);
+          Rows[i].CellData.Add(objects[i]);
         }
       }
       _columnCount++;
     }
+  }
+
+  public class TableData : Base
+  {
+
   }
 
   public class DataRow : Base
@@ -81,35 +85,40 @@ namespace Objects.Organization
     public DataRow() { }
     public DataRow(params object[] objects)
     {
-      _data = new List<object>();
-      _data.AddRange(objects);
+      CellData.AddRange(objects);
     }
 
-    private readonly List<object> _data;
+    public List<object> CellData { get; } = new List<object> { };
+    public Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
     public object this[int index]
     {
-      get => _data[index];
-      set => _data[index] = value;
+      get => CellData[index];
+      set => CellData[index] = value;
     }
 
-    internal void Add(object value)
-    {
-      _data.Add(value);
-    }
+    //internal void AddCell(object value)
+    //{
+    //  CellData.Add(value);
+    //}
 
-    internal void Insert(int index, object value)
-    {
-      _data.Insert(index, value);
-    }
+    //internal void InsertCell(int index, object value)
+    //{
+    //  CellData.Insert(index, value);
+    //}
 
-    internal void Remove(object value)
-    {
-      _data.Remove(value);
-    }
-    internal void RemoveAt(int index)
-    {
-      _data.RemoveAt(index);
-    }
+    //internal void AddMetadata(string key, object value)
+    //{
+    //  Metadata.Add(key, value);
+    //}
+
+    //internal void RemoveCell(object value)
+    //{
+    //  CellData.Remove(value);
+    //}
+    //internal void RemoveCellAt(int index)
+    //{
+    //  CellData.RemoveAt(index);
+    //}
   }
 
   //public class DataColumn<T> : Base
