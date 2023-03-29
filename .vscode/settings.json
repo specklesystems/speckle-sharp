@@ -7,5 +7,6 @@
     "*.slnf": "json"
   },
   "omnisharp.enableEditorConfigSupport": true,
-  "omnisharp.enableRoslynAnalyzers": true
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.defaultLaunchSolution": "SDK.slnf"
 }
