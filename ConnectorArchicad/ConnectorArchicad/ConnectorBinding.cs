@@ -117,16 +117,9 @@ namespace Archicad.Launcher
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
       if (commitObject == null) throw new SpeckleException("Failed to receive specified");
 
-      ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
-
-      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, conversionOptions, progress.CancellationToken);
+      await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
 
       return state;
-    }
-
-    public override void SelectClientObjects(List<string> args, bool deselect = false)
-    {
-      // TODO!
     }
 
     public override bool CanPreviewSend => false;

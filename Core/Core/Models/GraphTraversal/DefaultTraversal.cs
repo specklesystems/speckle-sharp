@@ -72,6 +72,29 @@ namespace Speckle.Core.Models.GraphTraversal
     }
 
 
+    /// <summary>
+    /// Traverses until finds a convertable object (or fallback) then traverses members
+    /// </summary>
+    /// <param name="converter"></param>
+    /// <returns></returns>
+    public static GraphTraversal CreateBIMTraverseFunc(ISpeckleConverter converter)
+    {
+      var bimElementRule = TraversalRule.NewTraversalRule()
+        .When(converter.CanConvertToNative)
+        .ContinueTraversing(ElementsAliases);
+
+      //WORKAROUND: ideally, traversal rules would not have Objects specific rules.  
+      var ignoreResultsRule = TraversalRule.NewTraversalRule()
+        .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
+        .ContinueTraversing(None);
+
+      var defaultRule = TraversalRule.NewTraversalRule()
+        .When(_ => true)
+        .ContinueTraversing(Members());
+
+      return new GraphTraversal(bimElementRule, ignoreResultsRule, defaultRule);
+    }
+
 
     //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
     #region Helper Functions

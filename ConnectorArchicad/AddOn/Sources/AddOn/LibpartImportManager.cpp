@@ -6,6 +6,11 @@
 #include "GSUnID.hpp"
 #include "MD5Channel.hpp"
 #include "AttributeManager.hpp"
+#include "Box3DData.h"
+
+
+UInt32 LibpartImportManager::runningNumber = 1;
+
 
 LibpartImportManager::LibpartImportManager ()
 {
@@ -14,7 +19,9 @@ LibpartImportManager::LibpartImportManager ()
 }
 
 
-GSErrCode LibpartImportManager::GetLibpart (const ModelInfo& modelInfo, AttributeManager& attributeManager, API_LibPart& libPart)
+GSErrCode LibpartImportManager::GetLibpart (const ModelInfo& modelInfo,
+	AttributeManager& attributeManager,
+	API_LibPart& libPart)
 {
 	GS::UInt64 checksum = GenerateFingerPrint (modelInfo.GetIds ());
 	GSErrCode err = Error;
@@ -30,7 +37,9 @@ GSErrCode LibpartImportManager::GetLibpart (const ModelInfo& modelInfo, Attribut
 }
 
 
-GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, AttributeManager& attributeManager, API_LibPart& libPart)
+GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, 
+	AttributeManager& attributeManager,
+	API_LibPart& libPart)
 {
 	GSErrCode err = NoError;
 	BNZeroMemory (&libPart, sizeof (API_LibPart));
@@ -42,7 +51,7 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, A
 	const GS::UnID unID = BL::BuiltInLibraryMainGuidContainer::GetInstance ().GetUnIDWithNullRevGuid (BL::BuiltInLibPartID::BuildingElementLibPartID);
 	CHCopyC (unID.ToUniString ().ToCStr (), libPart.parentUnID);
 
-	GS::ucscpy (libPart.docu_UName, L ("Speckle Object"));
+	GS::ucscpy (libPart.docu_UName, GS::UniString::SPrintf ("Speckle Object %u", runningNumber++).ToUStr());
 
 	err = GetLocation (libPart.location, true);
 	if (err != NoError)
@@ -142,9 +151,11 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, A
 		}
 
 		GS::Array<ModelInfo::Vertex> vertices = modelInfo.GetVertices ();
+		Box3D box = Box3D::CreateEmpty ();
 		for (UInt32 i = 0; i < vertices.GetSize (); i++) {
 			sprintf (buffer, "VERT %f, %f, %f\t!#%d%s", vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ (), i + 1, GS::EOL);
 			ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+			box.Extend (Point3D (vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ ()));
 		}
 
 		sprintf (buffer, "%s", GS::EOL);
@@ -166,10 +177,10 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, A
 					materialName = material.GetName ();
 				}
 			}
-			
+
 			sprintf (buffer, "! Polygon #%d%s%sMATERIAL \"%s\"%s", polygonIndex, GS::EOL, GS::EOL, materialName.ToCStr ().Get (), GS::EOL);
 			ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-			
+
 			for (UInt32 i = 0; i < pointsCount; i++) {
 				Int32 start = i;
 				Int32 end = i == pointIds.GetSize () - 1 ? 0 : i + 1;
@@ -179,7 +190,7 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, A
 
 				bool smooth = false;
 				bool hidden = false;
-				if (edges.ContainsKey(edge)) {
+				if (edges.ContainsKey (edge)) {
 					switch (edges[edge]) {
 					case ModelInfo::HiddenEdge:
 						hidden = true;
@@ -214,6 +225,26 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, A
 		}
 
 		sprintf (buffer, "BODY 4%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+
+		sprintf (buffer, "DEL TOP");
 		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
 
 		ACAPI_LibPart_EndSection ();

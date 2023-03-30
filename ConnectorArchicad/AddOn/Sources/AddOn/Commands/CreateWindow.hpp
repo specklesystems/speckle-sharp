@@ -1,19 +1,25 @@
 #ifndef CREATE_WINDOW_HPP
 #define CREATE_WINDOW_HPP
 
-#include "BaseCommand.hpp"
+#include "CreateOpeningBase.hpp"
 
 
 namespace AddOnCommands {
 
 
-class CreateWindow : public BaseCommand {
+class CreateWindow : public CreateOpeningBase {
+	GS::UniString		GetUndoableCommandName () const override;
+	GSErrCode			GetElementFromObjectState (const GS::ObjectState& os,
+							API_Element& element,
+							API_Element& elementMask,
+							API_ElementMemo& memo,
+							GS::UInt64& memoMask,
+							AttributeManager& attributeManager,
+							LibpartImportManager& libpartImportManager,
+							API_SubElement** marker = nullptr) const override;
+
 public:
-	virtual GS::String							GetName () const override;
-	virtual GS::ObjectState						Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-#ifdef ServerMainVers_2600
-	virtual bool								IsProcessWindowVisible () const override { return true; }
-#endif
+	virtual GS::String	GetName () const override;
 };
 
 
