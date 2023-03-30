@@ -75,7 +75,16 @@ namespace Objects.Converter.Revit
 
       // point based, convert these as revit instances
       if (@base == null)
-        @base = RevitInstanceToSpeckle(revitFi, out notes, null);
+      {
+        if (revitFi.Category.Name.Contains("Structural Foundation")) // don't know why, but the transforms on structural foundation elements are really messed up 
+        {
+          @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
+        }
+        else
+        {
+          @base = RevitInstanceToSpeckle(revitFi, out notes, null);
+        }
+      } 
 
       // add additional props to base object
       foreach (var prop in extraProps.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
@@ -299,7 +308,6 @@ namespace Objects.Converter.Revit
       return familyInstance;
     }
 
-    /* OBSOLETE point-based family instance code
     private Base PointBasedFamilyInstanceToSpeckle(DB.FamilyInstance revitFi, Point basePoint, out List<string> notes)
     {
       notes = new List<string>();
@@ -367,7 +375,6 @@ namespace Objects.Converter.Revit
 
       return speckleFi;
     }
-    */
 
     #endregion
 
@@ -409,52 +416,64 @@ namespace Objects.Converter.Revit
 
     #region new instancing
 
-    // transforms
-    private Other.Transform TransformToSpeckle(Transform transform, Document doc)
-    {
 
-      // get the 3x3 rotation matrix and translation as part of the 4x4 identity matrix
-      var point = PointToSpeckle(transform.Origin, doc);
-      var t = new Vector(point.x, point.y, point.z, point.units);
-      var rX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
-      var rY = new Vector(transform.BasisY.X, transform.BasisY.Y, transform.BasisY.Z);
-      var rZ = new Vector(transform.BasisZ.X, transform.BasisZ.Y, transform.BasisZ.Z);
+
+    // transforms
+    private Other.Transform TransformToSpeckle(Transform transform, Document doc, bool skipDocReferencePointTransform = false)
+    {
+      var externalTransform = transform;
+
+      // get the reference point transform and apply if this is a top level instance
+      if (!skipDocReferencePointTransform)
+      {
+        var docTransform = GetDocReferencePointTransform(doc);
+        externalTransform = docTransform.Inverse.Multiply(transform);
+      }
+
+      // translation
+      var tX = ScaleToSpeckle(externalTransform.Origin.X, ModelUnits);
+      var tY = ScaleToSpeckle(externalTransform.Origin.Y, ModelUnits);
+      var tZ = ScaleToSpeckle(externalTransform.Origin.Z, ModelUnits);
+      var t = new Vector(tX, tY, tZ, ModelUnits);
+
+      // basis vectors
+      var vX = new Vector(externalTransform.BasisX.X, externalTransform.BasisX.Y, externalTransform.BasisX.Z, ModelUnits);
+      var vY = new Vector(externalTransform.BasisY.X, externalTransform.BasisY.Y, externalTransform.BasisY.Z, ModelUnits);
+      var vZ = new Vector(externalTransform.BasisZ.X, externalTransform.BasisZ.Y, externalTransform.BasisZ.Z, ModelUnits);
 
       // get the scale: TODO: do revit transforms ever have scaling?
       var scale = (float)transform.Scale;
 
-      return new Other.Transform(rX, rY, rZ, t) { units = ModelUnits };
+      return new Other.Transform(vX, vY, vZ, t) { units = ModelUnits };
     }
 
-    private Transform TransformToNative(Other.Transform transform, bool useScaling = false)
+    private Transform TransformToNative(Other.Transform transform)
     {
       var _transform = new Transform(Transform.Identity);
 
-      // decompose the matrix to retrieve the translation and rotation factors
-      transform.Decompose(out Vector3 scale, out Quaternion q, out Vector4 translation);
-
       // translation
-      if (translation.W == 0) return _transform;
-      if (translation.W != 1)
-      {
-        translation.X /= translation.W;
-        translation.Y /= translation.W;
-        translation.Z /= translation.W;
-      }
-      var convertedTranslation = PointToNative(new Geometry.Point(translation.X, translation.Y, translation.Z, transform.units));
+      if (transform.matrix.M44 == 0) return _transform;
+      var tX = ScaleToNative(transform.matrix.M14 / transform.matrix.M44, transform.units);
+      var tY = ScaleToNative(transform.matrix.M24 / transform.matrix.M44, transform.units);
+      var tZ = ScaleToNative(transform.matrix.M34 / transform.matrix.M44, transform.units);
+      var t = new XYZ(tX, tY, tZ);
 
       // basis vectors
-      XYZ xvec = new XYZ(transform.matrix.M11, transform.matrix.M21, transform.matrix.M31);
-      XYZ yvec = new XYZ(transform.matrix.M12, transform.matrix.M22, transform.matrix.M32);
-      XYZ zvec = new XYZ(transform.matrix.M13, transform.matrix.M23, transform.matrix.M33);
+      XYZ vX = new XYZ(transform.matrix.M11, transform.matrix.M21, transform.matrix.M31);
+      XYZ vY = new XYZ(transform.matrix.M12, transform.matrix.M22, transform.matrix.M32);
+      XYZ vZ = new XYZ(transform.matrix.M13, transform.matrix.M23, transform.matrix.M33);
 
       // apply to new transform
-      _transform.Origin = convertedTranslation;
-      _transform.BasisX = xvec.Normalize();
-      _transform.BasisY = yvec.Normalize();
-      _transform.BasisZ = zvec.Normalize();
+      _transform.Origin = t;
+      _transform.BasisX = vX.Normalize();
+      _transform.BasisY = vY.Normalize();
+      _transform.BasisZ = vZ.Normalize();
 
-      return _transform;
+      // apply doc transform
+      var docTransform = GetDocReferencePointTransform(Doc);
+      var internalTransform = docTransform.Multiply(_transform);
+
+      return internalTransform;
     }
 
     // revit instances
@@ -481,7 +500,6 @@ namespace Objects.Converter.Revit
       var transform = TransformToNative(instance.transform);
       DB.Level level = ConvertLevelToRevit(instance.level, out ApplicationObject.State levelState);
       var insertionPoint = transform.OfPoint(XYZ.Zero);
-      var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
       FamilyPlacementType placement = Enum.TryParse<FamilyPlacementType>(definition.placementType, true, out FamilyPlacementType placementType) ? placementType : FamilyPlacementType.Invalid;
 
       // check for existing and update if so
@@ -595,16 +613,22 @@ namespace Objects.Converter.Revit
         familyInstance.flipFacing();
 
       // rotation about the z axis
-      try // some point based families don't have a rotation, so keep this in a try catch
+      var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
+      if (familyInstance.Location is LocationPoint location)
       {
-        var location = familyInstance.Location as LocationPoint;
-        if (rotation != location.Rotation)
+        try // some point based families don't have a rotation, so keep this in a try catch
         {
-          var axis = DB.Line.CreateBound(new XYZ(location.Point.X, location.Point.Y, 0), new XYZ(location.Point.X, location.Point.Y, 1000));
-          location.Rotate(axis, rotation - location.Rotation);
+          if (rotation != location.Rotation)
+          {
+            var axis = DB.Line.CreateUnbound(new XYZ(location.Point.X, location.Point.Y, 0), new XYZ(location.Point.X, location.Point.Y, 1));
+            location.Rotate(axis, rotation - location.Rotation);
+          }
+        }
+        catch (Exception e)
+        {
+          appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
         }
       }
-      catch { }
 
       // mirroring
       // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
@@ -641,11 +665,11 @@ namespace Objects.Converter.Revit
       // get the transform
       var instanceTransform = instance.GetTotalTransform();
       var localTransform = instanceTransform;
-      if (useParentTransform)
+      if (useParentTransform) // this is a nested instance, remove the parent transform from it and don't apply doc reference point transforms
       {
         localTransform = parentTransform.Inverse.Multiply(instanceTransform);
       }
-      var transform = TransformToSpeckle(localTransform, instance.Document);
+      var transform = TransformToSpeckle(localTransform, instance.Document, useParentTransform);
 
       // get the definition base of this instance
       RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, instanceTransform);
@@ -692,7 +716,7 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var meshes = GetElementDisplayValue(instance, null, true);
+        var meshes = GetElementDisplayValue(instance, new Options() { DetailLevel = ViewDetailLevel.Fine }, true); // previous point-based family instnace conversion was using GetElementMesh(revitFi);
         symbol.displayValue = meshes;
       }
       catch (Exception e)

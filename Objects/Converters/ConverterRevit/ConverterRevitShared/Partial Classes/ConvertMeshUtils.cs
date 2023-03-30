@@ -14,12 +14,12 @@ namespace Objects.Converter.Revit
     /// Retreives the meshes on an element to use as the speckle displayvalue
     /// </summary>
     /// <param name="element"></param>
-    /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
+    /// <param name="doNotTransformWithReferencePoint">For instances, determines if the retrieved geometry should be transformed by the selected document reference point.</param>
     /// <returns></returns>
     /// <remarks>
     /// See https://www.revitapidocs.com/2023/e0f15010-0e19-6216-e2f0-ab7978145daa.htm for a full Geometry Object inheritance
     /// </remarks>
-    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool useOriginGeom4FamilyInstance = false)
+    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool doNotTransformWithReferencePoint = false)
     {
       var displayMeshes = new List<Mesh>();
 
@@ -28,7 +28,7 @@ namespace Objects.Converter.Revit
       {
         foreach (var id in g.GetMemberIds())
         {
-          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id));
+          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, doNotTransformWithReferencePoint);
           displayMeshes.AddRange(groupMeshes);
         }
         return displayMeshes;
@@ -48,13 +48,14 @@ namespace Objects.Converter.Revit
           switch (geomObj)
           {
             case Solid solid:
-              solids.Add(solid);
+              if (solid.Faces.Size > 0 && Math.Abs(solid.SurfaceArea) > 0) // skip invalid solid
+                solids.Add(solid);
               break;
             case DB.Mesh mesh:
               meshes.Add(mesh);
               break;
             case GeometryInstance instance:
-              var instanceGeo = useOriginGeom4FamilyInstance ? instance.GetSymbolGeometry() : instance.GetInstanceGeometry();
+              var instanceGeo = doNotTransformWithReferencePoint ? instance.GetSymbolGeometry() : instance.GetInstanceGeometry();
               SortGeometry(instanceGeo);
               break;
             case GeometryElement element:
@@ -65,8 +66,8 @@ namespace Objects.Converter.Revit
       }
 
       // convert meshes and solids
-      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document));
-      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document));
+      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, doNotTransformWithReferencePoint));
+      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, doNotTransformWithReferencePoint));
 
       return displayMeshes;
     }
@@ -77,7 +78,7 @@ namespace Objects.Converter.Revit
     /// <param name="meshes"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    public List<Mesh> ConvertMeshesByRenderMaterial(List<DB.Mesh> meshes, Document d)
+    public List<Mesh> ConvertMeshesByRenderMaterial(List<DB.Mesh> meshes, Document d, bool doNotTransformWithReferencePoint = false)
     {
       MeshBuildHelper buildHelper = new MeshBuildHelper();
 
@@ -85,7 +86,7 @@ namespace Objects.Converter.Revit
       {
         var revitMaterial = d.GetElement(mesh.MaterialElementId) as DB.Material;
         Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, ModelUnits);
-        ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices, d);
+        ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices, d, doNotTransformWithReferencePoint);
       }
 
       return buildHelper.GetAllValidMeshes();
@@ -97,7 +98,7 @@ namespace Objects.Converter.Revit
     /// <param name="solids"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    public List<Mesh> ConvertSolidsByRenderMaterial(IEnumerable<Solid> solids, Document d)
+    public List<Mesh> ConvertSolidsByRenderMaterial(IEnumerable<Solid> solids, Document d, bool doNotTransformWithReferencePoint = false)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
 
@@ -133,7 +134,7 @@ namespace Objects.Converter.Revit
         foreach (DB.Mesh mesh in meshData.Value)
         {
           if (mesh == null) continue;
-          ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d);
+          ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d, doNotTransformWithReferencePoint);
         }
       }
 
@@ -146,13 +147,13 @@ namespace Objects.Converter.Revit
     /// <param name="mesh">The revit mesh to convert</param>
     /// <param name="faces">The faces list to add to</param>
     /// <param name="vertices">The vertices list to add to</param>
-    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices, Document doc)
+    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices, Document doc, bool doNotTransformWithReferencePoint = false)
     {
       int faceIndexOffset = vertices.Count / 3;
 
       foreach (var vert in mesh.Vertices)
       {
-        var (x, y, z) = PointToSpeckle(vert, doc);
+        var (x, y, z) = PointToSpeckle(vert, doc, null, doNotTransformWithReferencePoint);
         vertices.Add(x);
         vertices.Add(y);
         vertices.Add(z);

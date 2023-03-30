@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Linq;
 using System.Drawing;
 
@@ -36,6 +37,7 @@ using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
 using Speckle.Core.Kits;
 using Objects.Geometry;
+using Objects.Other;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -67,6 +69,7 @@ namespace Objects.Converter.AutocadCivil
       var intPt = ToInternalCoordinates(_point);
       return intPt;
     }
+    
     public List<List<ControlPoint>> ControlPointsToSpeckle(AcadGeo.NurbSurface surface, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -158,7 +161,44 @@ namespace Objects.Converter.AutocadCivil
     {
       return new AcadGeo.Plane(PointToNative(plane.origin), VectorToNative(plane.normal));
     }
+    
+    //Matrix
 
+    public Matrix3d TransformToNativeMatrix(Transform transform)
+    {
+      // transform
+      var scaledTransform = transform.ConvertToUnits(ModelUnits);
+      Matrix3d convertedTransform = new Matrix3d(scaledTransform);
+
+      //Autocad is very picky about transform basis being perfectly perpendicular, if they are not, we can correct for this by re-calculating basis vectors
+      if (!convertedTransform.IsScaledOrtho())
+      {
+        return new Matrix3d(MakePerpendicular(convertedTransform));
+      }
+
+      return convertedTransform;
+    }
+    
+    // https://forums.autodesk.com/t5/net/set-blocktransform-values/m-p/6452121#M49479
+    private static double[] MakePerpendicular(Matrix3d matrix)
+    {
+      // Get the basis vectors of the matrix
+      Vector3d right = new Vector3d(matrix[0,0], matrix[1,0], matrix[2,0]);
+      Vector3d up = new Vector3d(matrix[0,1], matrix[1,1], matrix[2,1]);
+
+      
+      Vector3d newForward = right.CrossProduct(up).GetNormal();;
+      
+      Vector3d newUp = newForward.CrossProduct(right).GetNormal();
+
+      return new []{
+        right.X,  newUp.X,  newForward.X,  matrix[0,3],
+        right.Y,  newUp.Y,  newForward.Y,  matrix[1,3],
+        right.Z,  newUp.Z,  newForward.Z,  matrix[2,3],
+        0.0,      0.0,      0.0,           matrix[3,3],
+      };
+
+    }
     // Line
     public Line LineToSpeckle(LineSegment2d line)
     {
