@@ -1,22 +1,23 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+
 using Autodesk.Revit.DB;
-using Autodesk.Revit.UI.Selection;
-using Objects.BuiltElements;
-using Objects.BuiltElements.Revit;
-using Objects.Geometry;
-using Objects.Other;
+using DB = Autodesk.Revit.DB;
+using ElementType = Autodesk.Revit.DB.ElementType;
+
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using DB = Autodesk.Revit.DB;
+
+using Objects.BuiltElements;
+using Objects.BuiltElements.Revit;
+using Objects.Geometry;
+using Objects.Other;
 using Duct = Objects.BuiltElements.Duct;
-using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -899,84 +900,49 @@ namespace Objects.Converter.Revit
     ////////////////////////////////////////////////
     private DB.Transform GetReferencePointTransform(string type, Document doc)
     {
-      // For linked documents, if the coordinates haven't been shared with the main Doc
-      // we can just grab the total transform on the actual RevitLinkInstance elements
-      var linkedFileTransform = DB.Transform.Identity;
-      if (doc.IsLinked)
-      {
-       
-        var instance = RevitLinkInstances.FirstOrDefault(x => x.GetLinkDocument().PathName == doc.PathName);
-        // NOTE: if you want to check if the linked file has a shared site use the check below
-        // but according to my tests, this doesn't really make a difference
-        // see https://forums.autodesk.com/t5/revit-api-forum/check-if-revit-link-instance-is-placed-by-shared-coordinates/td-p/9834378
-        //if (instance.Name.Contains("<") && instance.Name.Contains(">"))
-        //{ //this link has a <Not Shared> site }
-        if (instance != null)
-        {
-          //return instance.GetTotalTransform().Inverse;
-        }
-      }
-
-      // get the correct base point from
-      // settings
+      // first get the main doc base points and reference setting transform
       var referencePointTransform = DB.Transform.Identity;
-
-      var points = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
+      var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
       var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
       var surveyPoint = points.FirstOrDefault(o => o.IsShared == true);
-      var point = new XYZ();
-
-
       switch (type)
       {
-        case ProjectBase:
-          if (projectPoint != null)
-          {
-            point = projectPoint.Position;
-            if (doc.IsLinked && surveyPoint != null)
-            {
-              var mainProjectPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == false);
-              point = point + mainProjectPoint.SharedPosition + surveyPoint.Position;
-            }
-            // rotation to base point is registered by survey point
-            referencePointTransform = DB.Transform.CreateTranslation(point);
-          }
+        case ProjectBase: // note that the project base (ui) rotation is registered on the survey pt, not on the base point
+            referencePointTransform = DB.Transform.CreateTranslation(projectPoint.Position);
           break;
         case Survey:
-          if (surveyPoint != null)
-          {
-
-            point = surveyPoint.Position;
-            if (doc.IsLinked)
-            {
-              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
-              point = point + mainSurveyPoint.SharedPosition;
-            }
-
-            // !! retrieve survey point angle from project base point, null in some cases
-            var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
-            referencePointTransform = DB.Transform.CreateTranslation(point)
-              .Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
-            if (doc.IsLinked)
-            {
-              //Maybe look at doc.ActiveProjectLocation.GetTotalTransform(); ?
-              //referencePointTransform.Origin = referencePointTransform.Origin - linkedFileTransform.Origin;
-            }
-          }
+          // note that the project base (ui) rotation is registered on the survey pt, not on the base point
+          // retrieve the survey point rotation from the project point
+          var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
+          referencePointTransform = DB.Transform.CreateTranslation(surveyPoint.Position).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
           break;
         case InternalOrigin:
-          if (doc.IsLinked && surveyPoint != null)
-          {
-            var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
-            point = surveyPoint.Position - mainSurveyPoint.Position + mainSurveyPoint.SharedPosition;
-          }
-
-          referencePointTransform = DB.Transform.CreateTranslation(point);
           break;
         default:
           break;
       }
-      return referencePointTransform;
+
+      // Second, if this is a linked doc get the transform and adjust
+      var linkInstanceTransform = DB.Transform.Identity;
+      if (doc.IsLinked)
+      {
+        // get the linked doc base points
+        var linkedPoints = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
+        var linkedProjectPoint = linkedPoints.FirstOrDefault(o => o.IsShared == false);
+        var linkedSurveyPoint = linkedPoints.FirstOrDefault(o => o.IsShared == true);
+
+        // get the linked doc instance transform
+        var instance = RevitLinkInstances.FirstOrDefault(x => x.GetLinkDocument().PathName == doc.PathName);
+        if (instance != null)
+        {
+          linkInstanceTransform = instance.GetTotalTransform();
+        }
+      }
+
+      // combine the reference point transform and the linked doc transform
+      var totalTransfrom = linkInstanceTransform.Inverse.Multiply(referencePointTransform);
+ 
+      return totalTransfrom;
     }
 
     /// <summary>
