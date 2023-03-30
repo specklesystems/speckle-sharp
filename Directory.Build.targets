@@ -19,6 +19,13 @@
     </Target>
 
     <Target Name="ReportBuildVersion" BeforeTargets="BeforeBuild">
-        <Message Text="Building $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)" Importance="high" />
+        <Message
+            Text="Building $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)"
+            Importance="high" />
+    </Target>
+
+    <Target Name="DeepClean" AfterTargets="Clean" Condition="'$(DeepClean)'=='true'">
+        <RemoveDir Directories="$(BaseIntermediateOutputPath)" />
+        <RemoveDir Directories="$(BaseOutputPath)" />
     </Target>
 </Project>
