@@ -152,14 +152,26 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CSI", "CSI", "{11C013F3-2583-4292-938B-707294DAECE1}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCSIBridge", "ConnectorCSI\ConnectorCSIBridge\ConnectorCSIBridge.csproj", "{23BE6E54-96C1-4373-89F3-E18A1C9807FD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{60BE029E-1F31-4473-8B68-A745A43AF179} = {60BE029E-1F31-4473-8B68-A745A43AF179}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorCSIShared", "ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.shproj", "{61374CD0-E774-4DCD-BFAB-6356B0931283}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorETABS", "ConnectorCSI\ConnectorETABS\ConnectorETABS.csproj", "{81299D15-5788-414D-A962-1A568C251323}"
+	ProjectSection(ProjectDependencies) = postProject
+		{60BE029E-1F31-4473-8B68-A745A43AF179} = {60BE029E-1F31-4473-8B68-A745A43AF179}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorSAFE", "ConnectorCSI\ConnectorSAFE\ConnectorSAFE.csproj", "{9D188843-8841-4A76-A844-EFBE8E32EE05}"
+	ProjectSection(ProjectDependencies) = postProject
+		{60BE029E-1F31-4473-8B68-A745A43AF179} = {60BE029E-1F31-4473-8B68-A745A43AF179}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorSAP2000", "ConnectorCSI\ConnectorSAP2000\ConnectorSAP2000.csproj", "{31E0C098-6813-4571-AB96-A245E0FC1C23}"
+	ProjectSection(ProjectDependencies) = postProject
+		{60BE029E-1F31-4473-8B68-A745A43AF179} = {60BE029E-1F31-4473-8B68-A745A43AF179}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DriverCSharp", "ConnectorCSI\DriverCSharp\DriverCSharp.csproj", "{C091E499-597D-4077-B83F-08E069091090}"
 EndProject
