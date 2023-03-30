@@ -2,6 +2,8 @@
   "solution": {
     "path": "..\\All.sln",
     "projects": [
+      "ConnectorAutocadCivil\\AdvanceSteelAddinRegistrator\\AdvanceSteelAddinRegistrator.csproj",
+      "ConnectorAutocadCivil\\ConnectorAdvanceSteel2023\\ConnectorAdvanceSteel2023.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2021\\ConnectorAutocad2021.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2022\\ConnectorAutocad2022.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2023\\ConnectorAutocad2023.csproj",
@@ -20,6 +22,7 @@
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocadCivilShared\\ConverterAutocadCivilShared.shproj",
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterCivil2021\\ConverterCivil2021.csproj",
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterCivil2022\\ConverterCivil2022.csproj",
+      "Objects\\Converters\\StructuralUtilities\\Triangle\\Triangle.csproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Tests.csproj"
     ]
