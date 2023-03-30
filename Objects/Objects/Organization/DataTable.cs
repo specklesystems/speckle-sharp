@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Organization
 {
@@ -17,38 +18,60 @@ namespace Objects.Organization
 
     public object this[int column, int row]
     {
-      get => Rows[row][column];
-      set => Rows[row][column] = value;
+      get => _data[row][column];
+      set => _data[row][column] = value;
     }
 
     private int _rowCount = 0;
     public int RowCount => _rowCount;
 
-    private int? _columnCount = null;
-    public int? ColumnCount => _columnCount;
+    private int _columnCount = 0;
+    public int ColumnCount => _columnCount;
 
     [Chunkable()]
     [DetachProperty]
+    internal List<List<object>> _data { get; } = new List<List<object>>();
+    public List<IDataColumn> Columns { get; } = new List<IDataColumn>();
     public List<DataRow> Rows { get; } = new List<DataRow>();
 
-    public void AddRow(DataRow row)
+    public void AddRow(Dictionary<string, object> metadata, params object[] objects)
     {
-      _columnCount ??= row.CellData.Count;
-      if (row.CellData.Count != _columnCount)
-        throw new ArgumentException($"\"AddRow\" method was passed {row.CellData.Count} objects, but the DataTable has {_columnCount} column. Partial and extended table rows are not accepted by the DataTable object.");
+      if (objects.Length != _columnCount)
+        throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {_columnCount} column. Partial and extended table rows are not accepted by the DataTable object.");
 
-      Rows.Add(row);
+      var newRow = new List<object>();
+      for (var i = 0; i < _columnCount; i++)
+      {
+        if (objects[i] != null 
+          && (objects[i].GetType() != Columns[i].Type 
+            || objects[i].GetType().IsSubclassOf(Columns[i].Type)))
+          throw new ArgumentException($"Trying to add value \"{objects[i]}\" of type \"{objects[i].GetType().Name}\" to table column at index {i}. This column is expecting a value of type {Columns[i].GetType().Name}");
+
+        newRow.Add(objects[i]);
+      }
+
+      _data.Add(newRow);
+      Rows.Add(new DataRow(this, metadata));
       _rowCount++;
     }
 
-    public void AddRow(params object[] objects)
+    public DataRow GetRow(int index)
     {
-      var newRow = new DataRow(objects);
-      AddRow(newRow);
+      return Rows[index];
     }
 
-    public void AddColumn(int index = -1, params object[] objects)
+    public void DefineColumn<T>()
     {
+      var newColumn = new DataColumn<T>(this);
+      Columns.Add(newColumn);
+      _columnCount++;
+    }
+
+    public void AddColumn<T>(int index = -1, params T[] objects)
+    {
+      if (objects.Length == 0)
+        throw new ArgumentException("No objects provided. Use \"DefineColumn\" to define an empty column");
+
       if (objects.Length != _rowCount)
         throw new ArgumentException($"\"AddColumn\" method was passed {objects.Length} objects, but the DataTable has {_rowCount} rows. Partial and extended table columns are not accepted by the DataTable object.");
 
@@ -57,21 +80,31 @@ namespace Objects.Organization
 
       if (index == -1)
       {
-        index = objects.Length > 0 ? objects.Length - 1 : 0;
+        index = objects.Length - 1;
       }
 
-      for (var i = 0; i < objects.Length; i++)
+      DefineColumn<T>();
+      for (var i = 0; i < objects.Length; i++ )
       {
         if (index < objects.Length)
         {
-          Rows[i].CellData.Insert(index, objects[i]);
+          _data[i].Insert(index, objects[i]);
         }
         else
         {
-          Rows[i].CellData.Add(objects[i]);
+          _data[i].Add(objects[i]);
         }
       }
-      _columnCount++;
+    }
+
+    public IDataColumn GetColumn(int index)
+    {
+      return Columns[index];
+    }
+
+    private void AddCellValue()
+    {
+
     }
   }
 
@@ -82,21 +115,86 @@ namespace Objects.Organization
 
   public class DataRow : Base
   {
+    public int RowIndex => ParentTable.Rows.FindIndex(row => row == this);
     public DataRow() { }
-    public DataRow(params object[] objects)
+    public DataRow(DataTable table, Dictionary<string, object> metadata)
     {
-      CellData.AddRange(objects);
+      ParentTable = table;
+      Metadata = metadata;
     }
-
-    public List<object> CellData { get; } = new List<object> { };
+    //public DataRow(params T[] objects)
+    //{
+    //  CellData.AddRange(objects);
+    //}
+    public IEnumerable CellData
+    {
+      get
+      {
+        return ParentTable._data[RowIndex];
+      }
+    }
+    public IEnumerator GetEnumerator()
+    {
+      return CellData.GetEnumerator();
+    }
     public Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
+
+    [DetachProperty]
+    public DataTable ParentTable { get; }
+
     public object this[int index]
     {
-      get => CellData[index];
-      set => CellData[index] = value;
+      get => ParentTable._data[RowIndex][index];
+      set => ParentTable._data[RowIndex][index] = value;
+    }
+  }
+  public interface IDataColumn : IEnumerable
+  {
+    public DataTable ParentTable { get; }
+    public Type Type { get; }
+  }
+  
+  public class DataColumn<T> : Base, IDataColumn
+  {
+    [JsonIgnore]
+    public Type Type => typeof(T);
+    public int ColumnIndex => ParentTable.Columns.FindIndex(col => col as DataColumn<T> == this);
+    public DataColumn() { }
+    public DataColumn(DataTable table) 
+    {
+      ParentTable = table;
+    }
+    //public DataColumn(params T[] objects)
+    //{
+    //  CellData.AddRange(objects);
+    //}
+    public IEnumerable<T> CellData 
+    { 
+      get
+      {
+        var index = ColumnIndex;
+        foreach (var row in ParentTable._data)
+        {
+          yield return (T)row[index];
+        }
+      }
+    }
+    public IEnumerator GetEnumerator()
+    {
+      return CellData.GetEnumerator();
+    }
+    public Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
+
+    [DetachProperty]
+    public DataTable ParentTable { get; }
+
+    public T this[int index]
+    {
+      get => (T)ParentTable._data[index][ColumnIndex];
+      set => ParentTable._data[index][ColumnIndex] = value;
     }
 
-    //internal void AddCell(object value)
+    //internal void Add(T value)
     //{
     //  CellData.Add(value);
     //}
@@ -120,34 +218,4 @@ namespace Objects.Organization
     //  CellData.RemoveAt(index);
     //}
   }
-
-  //public class DataColumn<T> : Base
-  //{
-  //  public DataColumn() { }
-  //  public DataColumn(params T[] objects)
-  //  {
-  //    _data = new List<T>(objects);
-  //  }
-
-  //  private readonly List<T> _data;
-  //  public T this[int index]
-  //  {
-  //    get => _data[index];
-  //    set => _data[index] = value;
-  //  }
-
-  //  internal void Add(T value)
-  //  {
-  //    _data.Add(value);
-  //  }
-
-  //  internal void Remove(T value)
-  //  {
-  //    _data.Remove(value);
-  //  }
-  //  internal void RemoveAt(int index)
-  //  {
-  //    _data.RemoveAt(index);
-  //  }
-  //}
 }

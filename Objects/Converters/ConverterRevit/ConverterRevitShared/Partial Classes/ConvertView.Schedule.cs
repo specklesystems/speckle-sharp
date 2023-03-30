@@ -26,7 +26,6 @@ namespace Objects.Converter.Revit
     }
     private DataTable ScheduleToSpeckle(DB.ViewSchedule revitSchedule)
     {
-      //var table = revitSchedule.GetTableData();
       var speckleTable = new DataTable
       {
         applicationId = revitSchedule.UniqueId
@@ -35,11 +34,19 @@ namespace Objects.Converter.Revit
       var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id)
           .ToElementIds();
 
+      var table = revitSchedule.GetTableData();
+      var section = table.GetSectionData(SectionType.Body);
+      for (var columnIndex = 0; columnIndex < section.NumberOfColumns; columnIndex++)
+      {
+        speckleTable.DefineColumn<string>();
+      }
+
       foreach (SectionType tableSection in Enum.GetValues(typeof(SectionType)))
       {
         // the table must be recomputed here because of our hacky row deleting trick
-        var table = revitSchedule.GetTableData();
-        var section = table.GetSectionData(tableSection);
+        table = revitSchedule.GetTableData();
+        
+        section = table.GetSectionData(tableSection);
 
         if (section == null)
         {
@@ -50,29 +57,42 @@ namespace Objects.Converter.Revit
 
         for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
         {
-          var rowData = new List<string>();
-          for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
+          try
           {
-            try
-            {
-              rowData.Add(revitSchedule.GetCellText(tableSection, rowIndex, columnIndex));
-            }
-            catch (Exception ex)
-            {
-
-            }
-            
+            AddRowToSpeckleTable(
+              revitSchedule,
+              speckleTable,
+              originalTableIds,
+              tableSection,
+              section,
+              columnCount,
+              rowIndex
+            );
           }
-          var newRow = new DataRow(rowData.ToArray());
-          newRow.Metadata.Add(
-            "RevitApplicationIds", 
-            ElementApplicationIdsInRow(rowIndex, section, originalTableIds.ToList(), revitSchedule)
-          );
-          speckleTable.Rows.Add(newRow);
+          catch (Exception ex)
+          {
+          }
         }
       }
       
       return speckleTable;
+    }
+
+    private void AddRowToSpeckleTable(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, SectionType tableSection, TableSectionData section, int columnCount, int rowIndex)
+    {
+      var rowData = new List<string>();
+      for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
+      {
+        rowData.Add(revitSchedule.GetCellText(tableSection, rowIndex, columnIndex));
+      }
+      var metadata = new Dictionary<string, object>()
+      {
+        {
+          "RevitApplicationIds",
+          ElementApplicationIdsInRow(rowIndex, section, originalTableIds.ToList(), revitSchedule)
+        }
+      };
+      speckleTable.AddRow(metadata, rowData.ToArray());
     }
 
     private List<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, List<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule)
@@ -109,12 +129,12 @@ namespace Objects.Converter.Revit
         }
       }
 
-      using (var t = new Transaction(Doc, "This Transaction Will Never Get Committed"))
-      {
-        t.Start();
-        Doc.Regenerate();
-        t.RollBack();
-      }
+      //using (var t = new Transaction(Doc, "This Transaction Will Never Get Committed"))
+      //{
+      //  t.Start();
+      //  Doc.Regenerate();
+      //  t.RollBack();
+      //}
 
       if (remainingIdsInRow == null || remainingIdsInRow.Count == orginialTableIds.Count)
         return elementApplicationIdsInRow;
