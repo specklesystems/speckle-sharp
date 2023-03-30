@@ -1,0 +1,14 @@
+{
+  "solution": {
+    "path": "..\\All.sln",
+    "projects": [
+      "ConnectorArchicad\\ConnectorArchicad\\ConnectorArchicad.csproj",
+      "Core\\Core\\Core.csproj",
+      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}
