@@ -10,8 +10,7 @@
   </PropertyGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Target Name="AfterBuildMigrated" Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <!--<GenerateManifest InputFilename="$(ProjectDir)\MyAddons.xml" OutputFilename="C:\Program Files\Autodesk\AutoCAD 2023\ADVS\Addons\MyAddons.xml" MatchExpression="\$PATH\$" ReplacementText="$(TargetPath)" />
-  -->
+    <GenerateManifest InputFilename="$(ProjectDir)\MyAddons.xml" OutputFilename="C:\Program Files\Autodesk\AutoCAD 2023\ADVS\Addons\MyAddons.xml" MatchExpression="\$PATH\$" ReplacementText="$(TargetPath)" />
   </Target>
   <ItemGroup>
     <Reference Include="PresentationCore" />
