@@ -50,19 +50,20 @@ namespace Objects.Converter.RhinoGh
       return new double[] { pt.X, pt.Y, pt.Z };
     }
 
-    // Mass point converter - deprecate once mesh implements pts method
-    public Point3d[] PointListToNative(IEnumerable<double> arr, string units)
+    /// Mass point converter
+    /// <remarks>This is faster than calling <see cref="Mesh.GetPoints"/> <see cref="Objects.Geometry.Polyline.GetPoints"/></remarks>
+    public List<Point3d> PointListToNative(IList<double> arr, string units)
     {
-      var enumerable = arr.ToList();
-      if (enumerable.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
+      if (arr.Count % 3 != 0) throw new Speckle.Core.Logging.SpeckleException("Array malformed: length%3 != 0.");
 
-      Point3d[] points = new Point3d[enumerable.Count / 3];
-      var asArray = enumerable.ToArray();
-      for (int i = 2, k = 0; i < enumerable.Count; i += 3)
-        points[k++] = new Point3d(
-          ScaleToNative(asArray[i - 2], units),
-          ScaleToNative(asArray[i - 1], units),
-          ScaleToNative(asArray[i], units));
+      var points = new List<Point3d>(arr.Count / 3);
+      
+      var sf = Units.GetConversionFactor(units, ModelUnits);
+      for (int i = 2; i < arr.Count; i += 3)
+        points.Add(new Point3d(
+          arr[i - 2] * sf,
+          arr[i - 1] * sf,
+          arr[i] * sf));
 
       return points;
     }
@@ -395,11 +396,12 @@ namespace Objects.Converter.RhinoGh
 
       return null;
     }
-
+    
     // Deserialise
     public PolylineCurve PolylineToNative(Polyline poly)
     {
-      List<Point3d> points = poly.GetPoints().Select(o => PointToNative(o).Location).ToList();
+      List<Point3d> points = PointListToNative(poly.value, poly.units);
+
       if (poly.closed) points.Add(points[0]);
 
       var myPoly = new PolylineCurve(points);
@@ -520,6 +522,7 @@ namespace Objects.Converter.RhinoGh
         curve.TryGetEllipse(pln, out var getObj, tolerance);
         var ellipse = EllipseToSpeckle(getObj, u);
         ellipse.domain = IntervalToSpeckle(curve.Domain);
+        return ellipse;
       }
 
       if (curve.IsLinear(tolerance) || curve.IsPolyline()) // defaults to polyline
@@ -825,14 +828,12 @@ namespace Objects.Converter.RhinoGh
       //tol = 0;
       var u = units ?? ModelUnits;
       brep.Repair(tol);
-      // foreach (var f in brep.Faces)
-      // {
-      //   f.RebuildEdges(tol, false, false);
-      // }
-      // Create complex
+      
+      if(PreprocessGeometry)
+        brep = BrepEncoder.ToRawBrep(brep, 1.0, Doc.ModelAngleToleranceRadians, Doc.ModelRelativeTolerance);
 
       // get display mesh and attach render material to it if it exists
-      var displayMesh = previewMesh != null ? previewMesh : GetBrepDisplayMesh(brep);
+      var displayMesh = previewMesh ?? GetBrepDisplayMesh(brep);
       var displayValue = MeshToSpeckle(displayMesh, u);
       if (displayValue != null && mat != null)
         displayValue["renderMaterial"] = mat;
@@ -841,55 +842,18 @@ namespace Objects.Converter.RhinoGh
 
       // Vertices, uv curves, 3d curves and surfaces
       spcklBrep.Vertices = brep.Vertices
-        .Select(vertex => PointToSpeckle(vertex, u)).ToList();
+        .Select(vertex => PointToSpeckle(vertex, u))
+        .ToList();
       spcklBrep.Curve3D = brep.Curves3D
-        .Select(curve3d =>
-        {
-          Rhino.Geometry.Curve crv = curve3d;
-          if (crv is NurbsCurve nurbsCurve)
-          {
-            // Nurbs curves of degree 2 have weird support in Revit, so we up everything to degree 3.
-            if (nurbsCurve.Degree < 3)
-              nurbsCurve.IncreaseDegree(3);
-            // Check for invalid multiplicity in the curves. This is also to better support Revit.
-            var invalid = HasInvalidMultiplicity(nurbsCurve);
-
-            // If the curve has invalid multiplicity and is not closed, rebuild with same number of points and degree.
-            // TODO: Figure out why closed curves don't like this hack?
-            if (invalid )
-            {
-              nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);;
-              var in1 = HasInvalidMultiplicity(nurbsCurve);
-              Console.WriteLine(in1);
-            }
-            nurbsCurve.Domain = curve3d.Domain;
-            crv = nurbsCurve;
-          }
-          var icrv = ConvertToSpeckle(crv) as ICurve;
-          return icrv;
-
-          // And finally convert to speckle
-        }).ToList();
-      spcklBrep.Curve2D = brep.Curves2D.ToList().Select(c =>
-      {
-        var curve = c;
-        if (c is NurbsCurve nurbsCurve)
-        {
-          var invalid = HasInvalidMultiplicity(nurbsCurve);
-          if (invalid)
-          {
-            //nurbsCurve = nurbsCurve.Fit(nurbsCurve.Degree, 0, 0).ToNurbsCurve();
-            nurbsCurve = nurbsCurve.Rebuild(nurbsCurve.Points.Count * 3, nurbsCurve.Degree, true);
-            var in1 = HasInvalidMultiplicity(nurbsCurve);
-          }
-
-          curve = nurbsCurve;
-        }
-        var crv = CurveToSpeckle(c, Units.None);
-        return crv;
-      }).ToList();
+        .Select(curve3d => ConvertToSpeckle(curve3d) as ICurve)
+        .ToList();
+      spcklBrep.Curve2D = brep.Curves2D
+        .Select(c => CurveToSpeckle(c, Units.None))
+        .ToList();
       spcklBrep.Surfaces = brep.Surfaces
-        .Select(srf => SurfaceToSpeckle(srf.ToNurbsSurface(), u)).ToList();
+        .Select(srf => SurfaceToSpeckle(srf.ToNurbsSurface(), u))
+        .ToList();
+      
       spcklBrep.IsClosed = brep.IsSolid;
       spcklBrep.Orientation = (BrepOrientation)brep.SolidOrientation;
 
@@ -945,9 +909,8 @@ namespace Objects.Converter.RhinoGh
           return t;
         })
         .ToList();
-      //spcklBrep.volume = brep.GetVolume();
+      
       spcklBrep.volume = brep.IsSolid ? brep.GetVolume() : 0;
-
       spcklBrep.area = brep.GetArea();
       spcklBrep.bbox = BoxToSpeckle(new RH.Box(brep.GetBoundingBox(false)), u);
       
@@ -968,8 +931,16 @@ namespace Objects.Converter.RhinoGh
           mySettings = MeshingParameters.DocumentCurrentSetting(Doc);
           break;
       }
-      joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
-      return joinedMesh;
+
+      try
+      {
+        joinedMesh.Append(RH.Mesh.CreateFromBrep(brep, mySettings));
+        return joinedMesh;
+      }
+      catch(Exception e)
+      {
+        return null;
+      }
     }
 
     /// <summary>

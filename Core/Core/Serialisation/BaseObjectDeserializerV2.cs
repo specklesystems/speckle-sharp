@@ -1,10 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
@@ -41,6 +42,7 @@ namespace Speckle.Core.Serialisation
     private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
 
     public string BlobStorageFolder { get; set; }
+    public TimeSpan Elapsed { get; private set; }
 
     public BaseObjectDeserializerV2()
     {
@@ -55,10 +57,11 @@ namespace Speckle.Core.Serialisation
     {
       if (Busy)
         throw new InvalidOperationException("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
-      
+
       try
       {
         Busy = true;
+        var stopwatch = Stopwatch.StartNew();
         DeserializedObjects = new Dictionary<string, object>();
         WorkerThreads = new DeserializationWorkerThreads(this);
         WorkerThreads.Start();
@@ -68,7 +71,10 @@ namespace Speckle.Core.Serialisation
         foreach (var closure in closures)
         {
           string objId = closure.Item1;
+          // pausing for getting object from the transport
+          stopwatch.Stop();
           string objJson = ReadTransport.GetObject(objId);
+          stopwatch.Start();
           object deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
           lock (DeserializedObjects)
           {
@@ -77,9 +83,11 @@ namespace Speckle.Core.Serialisation
         }
 
         object ret = DeserializeTransportObject(rootObjectJson);
-        
+
+        stopwatch.Stop();
+        Elapsed += stopwatch.Elapsed;
         if (ret is Base b) return b;
-        
+
         else throw new Exception(
           $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
         );
@@ -151,10 +159,7 @@ namespace Speckle.Core.Serialisation
 
     public object ConvertJsonElement(JToken doc)
     {
-      if (CancellationToken.IsCancellationRequested)
-      {
-        return null; // Check for cancellation
-      }
+      CancellationToken.ThrowIfCancellationRequested();
 
       switch (doc.Type)
       {
@@ -169,10 +174,10 @@ namespace Speckle.Core.Serialisation
           {
             return (long)doc;
           }
-          catch(OverflowException ex)
+          catch (OverflowException ex)
           {
             var v = (object)(double)doc;
-            Log.Debug(ex, "Json property {tokenType} failed to deserialize {value} to {targetType}, will be deserialized as {fallbackType}", doc.Type, v, typeof(long), typeof(double));
+            SpeckleLog.Logger.Debug(ex, "Json property {tokenType} failed to deserialize {value} to {targetType}, will be deserialized as {fallbackType}", doc.Type, v, typeof(long), typeof(double));
             return v;
           }
         case JTokenType.Float:

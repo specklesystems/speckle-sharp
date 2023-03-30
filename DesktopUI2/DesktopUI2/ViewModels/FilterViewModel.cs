@@ -1,6 +1,8 @@
 ﻿using Avalonia.Controls.Selection;
 using DesktopUI2.Models.Filters;
 using ReactiveUI;
+using Serilog;
+using Speckle.Core.Logging;
 using Splat;
 using System;
 using System.Collections.Generic;
@@ -20,7 +22,9 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _filter, value);
+        isSearching = true;
         RestoreSelectedItems();
+        isSearching = false;
         this.RaisePropertyChanged("Summary");
       }
     }
@@ -54,14 +58,14 @@ namespace DesktopUI2.ViewModels
 
         if (filter is TreeSelectionFilter tree)
         {
-           //TODO:
+          //TODO:
         }
 
 
       }
       catch (Exception ex)
       {
-
+        SpeckleLog.Logger.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}", GetType(), ex.Message);
       }
     }
 
@@ -83,7 +87,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        SpeckleLog.Logger.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SelectionChanged), ex.Message);
       }
     }
     private bool isSearching = false;
@@ -104,7 +108,7 @@ namespace DesktopUI2.ViewModels
       }
     }
 
-    // searching will change data source and remove selected items in the ListBox, 
+    // searching will change data source and remove selected items in the ListBox,
     // restore them as the query is cleared
     public void RestoreSelectedItems()
     {
@@ -132,7 +136,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-
+        SpeckleLog.Logger.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(RestoreSelectedItems), ex.Message);
       }
     }
 

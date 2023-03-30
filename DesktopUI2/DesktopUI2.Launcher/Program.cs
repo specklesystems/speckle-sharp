@@ -1,5 +1,6 @@
 ﻿using Avalonia;
 using Avalonia.ReactiveUI;
+using Speckle.Core.Logging;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -27,6 +28,8 @@ namespace DesktopUI2.Launcher
       //Debugger.Launch();
       //while (!Debugger.IsAttached)
       //  Thread.Sleep(100);
+
+      SpeckleLog.Initialize("dui", "2");
 
       string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
 

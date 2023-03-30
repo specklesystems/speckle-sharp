@@ -1,21 +1,21 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using Autodesk.Revit.DB.Mechanical;
 using Autodesk.Revit.DB.Plumbing;
+using ConverterRevitShared.Revit;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Speckle.Newtonsoft.Json.Linq;
 using DB = Autodesk.Revit.DB;
 using Network = Objects.BuiltElements.Network;
 using NetworkElement = Objects.BuiltElements.NetworkElement;
 using NetworkLink = Objects.BuiltElements.NetworkLink;
 using RevitNetworkElement = Objects.BuiltElements.Revit.RevitNetworkElement;
 using RevitNetworkLink = Objects.BuiltElements.Revit.RevitNetworkLink;
-using Objects.BuiltElements.Revit;
-using ConverterRevitShared.Revit;
-using Speckle.Newtonsoft.Json.Linq;
 
 namespace Objects.Converter.Revit
 {
@@ -65,7 +65,7 @@ namespace Objects.Converter.Revit
           appObj.Update(status: ApplicationObject.State.Failed);
           continue;
         }
-        
+
         DB.FamilyInstance familyInstance = null;
 
         var tempCurves = new Dictionary<int, MEPCurve>();
@@ -195,7 +195,7 @@ namespace Objects.Converter.Revit
         else
           continue;
 
-        ApplicationObject reportObj = Report.GetReportObject(element.UniqueId, out int index) ? Report.ReportObjects[index] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
 
         Base obj = null;
         bool connectorBasedCreation = false;
@@ -278,9 +278,9 @@ namespace Objects.Converter.Revit
 
           var origin = connection.Connector.Origin;
 
-          link.origin = PointToSpeckle(origin);
+          link.origin = PointToSpeckle(origin, initialElement.Document);
           link.fittingIndex = connector.Id;
-          link.direction = VectorToSpeckle(connector.CoordinateSystem.BasisZ);
+          link.direction = VectorToSpeckle(connector.CoordinateSystem.BasisZ, initialElement.Document);
           link.isConnected = connection.IsConnected;
           link.needsPlaceholders = connection.ConnectedToCurve(out MEPCurve curve) && IsWithinContext(curve);
           link.diameter = connection.Diameter;

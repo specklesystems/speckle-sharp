@@ -6,6 +6,8 @@ using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
 using Material.Dialog.Icons;
 using Material.Dialog.Interfaces;
+using Serilog;
+using SkiaSharp;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -100,7 +102,7 @@ namespace DesktopUI2
     public static string CommitInfo(string stream, string branch, string commitId)
     {
       string formatted = $"{stream}[ {branch} @ {commitId} ]";
-      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :( 
+      string clean = Regex.Replace(formatted, @"[^\u0000-\u007F]+", string.Empty).Trim(); // remove emojis and trim :(
       return clean;
     }
 
@@ -109,21 +111,21 @@ namespace DesktopUI2
 
   public static class ApiUtils
   {
-    private static Dictionary<string, User> CachedUsers = new Dictionary<string, User>();
+    private static Dictionary<string, UserBase> CachedUsers = new Dictionary<string, UserBase>();
     private static Dictionary<string, AccountViewModel> CachedAccounts = new Dictionary<string, AccountViewModel>();
 
     public static void ClearCache()
     {
       CachedAccounts = new Dictionary<string, AccountViewModel>();
-      CachedUsers = new Dictionary<string, User>();
+      CachedUsers = new Dictionary<string, UserBase>();
     }
 
-    private static async Task<User> GetUser(string userId, Client client)
+    private static async Task<UserBase> GetUser(string userId, Client client)
     {
       if (CachedUsers.ContainsKey(userId))
         return CachedUsers[userId];
 
-      User user = await client.UserGet(userId);
+      var user = await client.OtherUserGet(userId);
 
       if (user != null)
         CachedUsers[userId] = user;
@@ -136,7 +138,7 @@ namespace DesktopUI2
       if (CachedAccounts.ContainsKey(userId))
         return CachedAccounts[userId];
 
-      User user = await GetUser(userId, client);
+      var user = await GetUser(userId, client);
 
       if (user == null)
         return null;
@@ -205,10 +207,9 @@ namespace DesktopUI2
 
     public static void LaunchManager()
     {
+      string path = "";
       try
       {
-        string path = "";
-
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Launch Manager" } });
 
         if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -230,7 +231,8 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not Launch Manager", ex, true, Sentry.SentryLevel.Error);
+        SpeckleLog.Logger.ForContext("path", path)
+          .Error(ex, "Failed to launch Manager");
       }
     }
 
@@ -259,14 +261,17 @@ namespace DesktopUI2
 
               MainViewModel.Instance.NavigateToDefaultScreen();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
+              SpeckleLog.Logger.ForContext("dialogResult", result)
+                .Warning(ex, "Swallowing exception in {methodName} {exceptionMessage}", nameof(AddAccountCommand), nameof(AddAccountCommand), ex.Message);
+
               //errors already handled in AddAccount
 
               MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
               {
                 Title = "Something went wrong...",
-                Message = e.Message,
+                Message = ex.Message,
                 Expiration = TimeSpan.Zero,
                 Type = Avalonia.Controls.Notifications.NotificationType.Error,
 
@@ -279,8 +284,24 @@ namespace DesktopUI2
       }
       catch (Exception ex)
       {
-        new SpeckleException("Could not Add Account", ex, true, Sentry.SentryLevel.Error);
+        SpeckleLog.Logger.Fatal(ex, "Failed to add account {viewModel} {exceptionMessage}", ex.Message);
       }
+    }
+
+
+    public static byte[] ResizeImage(byte[] fileContents, int maxWidth, int maxHeight, SKFilterQuality quality = SKFilterQuality.Medium)
+    {
+      using MemoryStream ms = new MemoryStream(fileContents);
+      using SKBitmap sourceBitmap = SKBitmap.Decode(ms);
+
+      int height = Math.Min(maxHeight, sourceBitmap.Height);
+      int width = Math.Min(maxWidth, sourceBitmap.Width);
+
+      using SKBitmap scaledBitmap = sourceBitmap.Resize(new SKImageInfo(width, height), quality);
+      using SKImage scaledImage = SKImage.FromBitmap(scaledBitmap);
+      using SKData data = scaledImage.Encode();
+
+      return data.ToArray();
     }
   }
 }

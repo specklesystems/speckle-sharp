@@ -8,6 +8,7 @@ using DesktopUI2.Views.Controls;
 using DesktopUI2.Views.Pages;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -292,9 +293,9 @@ namespace DesktopUI2.ViewModels
             await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { email = user.Name, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!", role = user.Role });
             Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Invite Email" } });
           }
-          catch (Exception e)
+          catch (Exception ex)
           {
-            new SpeckleException("Error inviting user", e, true, Sentry.SentryLevel.Error);
+            SpeckleLog.Logger.Error(ex, "Failed to invite user {exceptionMessage}", ex.Message);
           }
         }
         //add new collaborators
@@ -305,9 +306,9 @@ namespace DesktopUI2.ViewModels
             await _stream.StreamState.Client.StreamInviteCreate(new StreamInviteCreateInput { userId = user.Id, streamId = _stream.StreamState.StreamId, message = "I would like to share a model with you via Speckle!", role = user.Role });
             Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Invite User" } });
           }
-          catch (Exception e)
+          catch (Exception ex)
           {
-            new SpeckleException("Error adding collaborator", e, true, Sentry.SentryLevel.Error);
+            SpeckleLog.Logger.Error(ex, "Failed to invite collaborator {exceptionMessage}", ex.Message);
           }
         }
         //update permissions, only if changed
@@ -318,9 +319,9 @@ namespace DesktopUI2.ViewModels
             await _stream.StreamState.Client.StreamUpdatePermission(new StreamPermissionInput { userId = user.Id, streamId = _stream.StreamState.StreamId, role = user.Role });
             Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Update Permissions" } });
           }
-          catch (Exception e)
+          catch (Exception ex)
           {
-            new SpeckleException("Error updating permissions", e, true, Sentry.SentryLevel.Error);
+            SpeckleLog.Logger.Error(ex, "Failed to update permissions {exceptionMessage}", ex.Message);
           }
         }
       }
@@ -335,9 +336,9 @@ namespace DesktopUI2.ViewModels
             await _stream.StreamState.Client.StreamRevokePermission(new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId });
             Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Remove User" } });
           }
-          catch (Exception e)
+          catch (Exception ex)
           {
-            new SpeckleException("Error updating permissions", e, true, Sentry.SentryLevel.Error);
+            SpeckleLog.Logger.Error(ex, "Failed to revoke permissions {exceptionMessage}", ex.Message);
           }
         }
       }
@@ -352,9 +353,9 @@ namespace DesktopUI2.ViewModels
             await _stream.StreamState.Client.StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId);
             Analytics.TrackEvent(_stream.StreamState.Client.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream Share" }, { "method", "Cancel Invite" } });
           }
-          catch (Exception e)
+          catch (Exception ex)
           {
-            new SpeckleException("Error updating permissions", e, true, Sentry.SentryLevel.Error);
+            SpeckleLog.Logger.Error(ex, "Failed to revoke invites {exceptionMessage}", ex.Message);
           }
         }
       }
@@ -368,8 +369,9 @@ namespace DesktopUI2.ViewModels
 
         ReloadUsers();
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
+        SpeckleLog.Logger.Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(SaveCommand), ex.Message);
       }
 
       if (IsDialog)

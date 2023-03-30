@@ -6,6 +6,7 @@
 #include "FieldNames.hpp"
 #include "AngleData.h"
 #include "OnExit.hpp"
+using namespace FieldNames;
 
 
 namespace AddOnCommands
@@ -30,7 +31,7 @@ static GSErrCode GetZoneFromObjectState (const GS::ObjectState& os,
 										GS::UInt64& memoMask)
 {
 	GS::UniString guidString;
-	os.Get (ApplicationIdFieldName, guidString);
+	os.Get (ApplicationId, guidString);
 	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_ZoneID;
@@ -53,8 +54,8 @@ static GSErrCode GetZoneFromObjectState (const GS::ObjectState& os,
 	// The shape of the zone
 	Objects::ElementShape zoneShape;
 
-	if (os.Contains (ShapeFieldName)) {
-		os.Get (ShapeFieldName, zoneShape);
+	if (os.Contains (Shape)) {
+		os.Get (Shape, zoneShape);
 		element.zone.poly.nSubPolys = zoneShape.SubpolyCount ();
 		element.zone.poly.nCoords = zoneShape.VertexCount ();
 		element.zone.poly.nArcs = zoneShape.ArcCount ();
@@ -62,24 +63,24 @@ static GSErrCode GetZoneFromObjectState (const GS::ObjectState& os,
 		zoneShape.SetToMemo (zoneMemo);
 	}
 
-	if (os.Contains (Room::HeightFieldName)) {
-		os.Get (Room::HeightFieldName, element.zone.roomHeight);
+	if (os.Contains (Room::Height)) {
+		os.Get (Room::Height, element.zone.roomHeight);
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomHeight);
 	}
 
 	// The name and number of the zone
-	if (os.Contains (Room::NameFieldName)) {
-		os.Get (Room::NameFieldName, element.zone.roomName);
+	if (os.Contains (Room::Name)) {
+		os.Get (Room::Name, element.zone.roomName);
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomName);
 	}
-	if (os.Contains (Room::NumberFieldName)) {
-		os.Get (Room::NumberFieldName, element.zone.roomNoStr);
+	if (os.Contains (Room::Number)) {
+		os.Get (Room::Number, element.zone.roomNoStr);
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomNoStr);
 	}
 
 	// The floor index and level of the zone
-	if (os.Contains (FloorIndexFieldName)) {
-		os.Get (FloorIndexFieldName, element.header.floorInd);
+	if (os.Contains (FloorIndex)) {
+		os.Get (FloorIndex, element.header.floorInd);
 		Utility::SetStoryLevel (zoneShape.Level (), element.header.floorInd, element.zone.roomBaseLev);
 	} else {
 		Utility::SetStoryLevelAndFloor (zoneShape.Level (), element.header.floorInd, element.zone.roomBaseLev);
@@ -99,9 +100,9 @@ GS::ObjectState CreateZone::Execute (const GS::ObjectState& parameters, GS::Proc
 	GS::ObjectState result;
 
 	GS::Array<GS::ObjectState> zones;
-	parameters.Get (ZonesFieldName, zones);
+	parameters.Get (Zones, zones);
 
-	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIdsFieldName);
+	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIds);
 
 	ACAPI_CallUndoableCommand ("CreateSpeckleZone", [&] () -> GSErrCode {
 		for (const GS::ObjectState& zoneOs : zones) {

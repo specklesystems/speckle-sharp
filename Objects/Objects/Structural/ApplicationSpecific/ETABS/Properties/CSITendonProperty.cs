@@ -1,17 +1,17 @@
-﻿using Speckle.Newtonsoft.Json;
+﻿using System.Collections.Generic;
+using Objects.Geometry;
+using Objects.Structural.CSI.Analysis;
+using Objects.Structural.CSI.Properties;
+using Objects.Structural.Geometry;
+using Objects.Structural.Materials;
+using Objects.Structural.Properties;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Properties;
-using Objects.Structural.CSI.Analysis;
-using Objects.Structural.Materials;
-using Objects.Structural.CSI.Properties;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.Structural.CSI.Properties
 {
-  public class CSITendonProperty: Property1D
+  public class CSITendonProperty : Property1D
   {
     public CSITendonProperty()
     {

@@ -13,7 +13,7 @@ namespace Speckle.ConnectorNavisworks.Bindings
   {
     // Much of the interaction in Navisworks is through the ActiveDocument API
     public static Document Doc;
-    public Control Control;
+    public static Control Control;
     public ISpeckleKit DefaultKit;
     public ISpeckleConverter NavisworksConverter;
 
@@ -44,16 +44,14 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return new List<MenuItem>();
     }
 
-    public override string GetHostAppName()
-    {
-      return HostApplications.Navisworks.Slug;
-    }
+    public static string HostAppName => HostApplications.Navisworks.Slug;
+
+    public static string HostAppNameVersion => Utils.VersionedAppName.Replace("Navisworks", "Navisworks ");
+    
+    public override string GetHostAppName() => HostAppName;
 
 
-    public override string GetHostAppNameVersion()
-    {
-      return Utils.VersionedAppName.Replace("Navisworks", "Navisworks ");
-    }
+    public override string GetHostAppNameVersion() => HostAppNameVersion;
 
     public override string GetFileName()
     {

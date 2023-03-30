@@ -48,7 +48,7 @@ namespace ConnectorGrasshopper.Transports
       pManager.AddGenericParameter("disk transport", "T", "The Memory Transport you have created.", GH_ParamAccess.item);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (DA.Iteration != 0)
       {

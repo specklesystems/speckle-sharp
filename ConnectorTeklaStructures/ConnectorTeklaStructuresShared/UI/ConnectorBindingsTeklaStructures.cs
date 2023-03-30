@@ -21,14 +21,14 @@ namespace Speckle.ConnectorTeklaStructures.UI
         UpdateSavedStreams(streams);
     }
     public static Model Model { get; set; }
-    public List<Exception> Exceptions { get; set; } = new List<Exception>();
+    public List<Exception> Exceptions { get; set; } = new List<Exception>(); //What is this? and can we get rid of it?
     public List<StreamState> DocumentStreams { get; set; } = new List<StreamState>();
 
 
     public ConnectorBindingsTeklaStructures(Model model)
     {
       Model = model;
-
+      
 
 
     }

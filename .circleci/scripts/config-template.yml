@@ -5,6 +5,7 @@ orbs:
   aws-s3: circleci/aws-s3@2.0.0
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
+  discord: antonioned/discord@0.1.0
 
 commands:
   packandpublish:
@@ -21,6 +22,18 @@ commands:
             dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n --skip-duplicate
           environment:
             WORKFLOW_NUM: << pipeline.number >>
+  cached-checkout:
+    steps:
+      - restore_cache:
+          keys:
+            - &source-cache source-v1-{{ .Branch }}-{{ .Revision }}
+            - source-v1-{{ .Branch }}-
+            - source-v1-
+      - checkout
+      - save_cache:
+          key: *source-cache
+          paths:
+            - ".git"
   packandpublish-bash:
     parameters:
       projectfilepath:
@@ -38,11 +51,10 @@ commands:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-core:
-    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
-      - checkout
+      - cached-checkout
       - run:
           name: Build Core
           command: dotnet build Core/Core.sln -c Release -v q
@@ -79,61 +91,49 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           S3_CREATE_BUCKET: "true"
           WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
     steps:
-      - checkout
+      - cached-checkout
       - run:
           name: Unit Test
           command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - run:
           name: Integration Tests # The integration tests are runinng on our test sevrer
           command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-      - store_test_results:
-          path: TestResults
       - store_artifacts:
           path: TestResults
 
       #- codecov/upload
 
   build-objects:
-    macos:
-      xcode: 12.5.1
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
-      - checkout
-      - run:
-          name: Install mono
-          command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install mono mono-libgdiplus
-      - run:
-          name: Install dotnet
-          command: |
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin
-            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel 3.1
+      - cached-checkout
       - run:
           name: Restore Objects
-          command: ~/.dotnet/dotnet restore Objects/Objects.sln
+          command: | # Restore only the projects we're about to build.
+            dotnet restore Objects/Objects/Objects.csproj
+            dotnet restore Objects/Tests/Tests.csproj
       - run:
           name: Build Objects
-          command: ~/.dotnet/dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
       - run:
           name: Test Objects
-          command: ~/.dotnet/dotnet test Objects/Tests/Tests.csproj --no-restore -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c
+            Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults
+            --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
       - store_test_results:
           path: TestResults
       - store_artifacts:
           path: TestResults
-      # Upload to codecov if necessary
-      # Currently disabled until we figure out a strategy to
-      # upload Core and Objects at once
-      # - codecov/upload
 
   build-desktopui:
-    executor: # Using a win executor since there are post-steps in the nuget workflow that use powershell
-      name: win/default
-      shell: powershell.exe
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
-      - checkout
+      - cached-checkout
       - run:
           name: Build DesktopUI2
-          command: dotnet build DesktopUI2/DesktopUI2.sln -c Release -v q
+          command: dotnet build DesktopUI2/DesktopUI2/DesktopUI2.csproj -c Release -v q
 
   build-connector: # Reusable job for basic connectors
     executor:
@@ -144,7 +144,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
       projname:
         type: string
-        default: ''
+        default: ""
       dllname:
         type: string
       slug:
@@ -157,7 +157,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: boolean
         default: false
     steps:
-      - checkout
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
@@ -166,16 +166,16 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - when:
           condition: << parameters.build-with-msbuild >>
           steps:
-          - run:
-              name: Build << parameters.slnname >>
-              command: |
-                $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
-                $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
-                $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
-                $version = "$($ver).$($env:WORKFLOW_NUM)"
-                msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
-              environment:
-                WORKFLOW_NUM: << pipeline.number >>
+            - run:
+                name: Build << parameters.slnname >>
+                command: |
+                  $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999" } else { $env:CIRCLE_TAG }
+                  $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
+                  $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
+                  $version = "$($ver).$($env:WORKFLOW_NUM)"
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+                environment:
+                  WORKFLOW_NUM: << pipeline.number >>
       - unless:
           condition: << parameters.build-with-msbuild >>
           steps:
@@ -188,7 +188,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
                   dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
                 environment:
-                  WORKFLOW_NUM: << pipeline.number >> 
+                  WORKFLOW_NUM: << pipeline.number >>
+      - run:
+          name: Exit if External PR
+          shell: bash.exe
+          command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
       - run:
           name: Create Innosetup signing cert
           command: |
@@ -231,7 +235,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: Any
     steps:
-      - checkout
       - attach_workspace:
           at: ./
       - run:
@@ -277,7 +280,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
-      - checkout
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
@@ -367,6 +370,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   cp << parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.slug >>-mac.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
       # Create installer
       - run:
+          name: Exit if External PR
+          command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
+      - run:
           name: Build Mac installer
           command: ~/.dotnet/dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release
       - run:
@@ -424,7 +430,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       name: << parameters.e >>
       shell: bash.exe
     steps:
-      - checkout
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
@@ -444,7 +450,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             cd ConnectorArchicad/AddOn
             mkdir Build.Win.x64.<<parameters.archicadversion>>
             export PATH=$PATH:"C:\Program Files\CMake\bin"
-            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            cmake -B "./Build.Win.x64.<<parameters.archicadversion>>/" -A "x64" -T "v142" -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKit" -DAC_MDID_DEV=${GRAPHISOFT_DEV_ID:-1} -DAC_MDID_LOC=${GRAPHISOFT_ADDON_ID:-1}
       - run:
           name: Build add-on
           command: |
@@ -469,7 +475,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
         type: string
         default: ""
     steps:
-      - checkout
+      - cached-checkout
       - attach_workspace:
           at: ./
       - run:
@@ -488,7 +494,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             cd ConnectorArchicad/AddOn
             mkdir Build.macOS.x64.<<parameters.archicadversion>>
-            cmake -B "./Build.macOS.x64.<<parameters.archicadversion>>/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKitMac" -DAC_MDID_DEV=$GRAPHISOFT_DEV_ID -DAC_MDID_LOC=$GRAPHISOFT_ADDON_ID
+            cmake -B "./Build.macOS.x64.<<parameters.archicadversion>>/" -G 'Xcode' -DCMAKE_OSX_ARCHITECTURES=x86_64 -DAC_API_DEVKIT_DIR="../../Resources/Archicad<<parameters.archicadversion>>DevKitMac" -DAC_MDID_DEV=${GRAPHISOFT_DEV_ID:-1} -DAC_MDID_LOC=${GRAPHISOFT_ADDON_ID:-1}
       - run:
           name: Build add-on
           command: |
@@ -518,7 +524,16 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Proceed to deploy
           command: echo "This step is just here to wait for all build jobs before proceeding to deploy each of them individually. If a job fails, no connector will be deployed."
-
+  notify-deploy:
+    docker:
+      - image: cimg/base:2021.01
+    steps:
+      - discord/status:
+          mentions: "1067457311980933140"
+          success_message:
+            ":tada: a new version of Speckle-Sharp connectors was build
+            successfully!"
+          failure_message: ":red_circle: oh no! Speckle-Sharp connectors build has failed!"
 # The main workflows for our monorepo pipeline.
 # There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'.
 # These parameters are set by the 'selective-ci' job.

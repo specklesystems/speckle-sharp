@@ -62,19 +62,20 @@ namespace Archicad
       if (filter.Slug == "all")
         elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))?.Result;
 
-      SelectedObjects = await GetElementsType(elementIds, progress.CancellationTokenSource.Token);  // Gets all selected objects
+      SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken);  // Gets all selected objects
       SelectedObjects = SortSelectedObjects();
 
       foreach (var (element, guids) in SelectedObjects) // For all kind of selected objects (like window, door, wall, etc.)
       {
-        var objects = await ConvertOneTypeToSpeckle(guids, ElementTypeProvider.GetTypeByName(element), progress.CancellationTokenSource.Token);  // Deserialize all objects with hiven type
+        var objects = await ConvertOneTypeToSpeckle(guids, ElementTypeProvider.GetTypeByName(element), progress.CancellationToken);  // Deserialize all objects with hiven type
         if (objects.Count() > 0)
         {
           objectToCommit["@" + element] = objects;  // Save 'em. Assigned objects are parents with subelements
 
           // itermediate solution for the OneClick Send report
           for (int i = 0; i < objects.Count(); i++)
-            progress.Report.ReportObjects.Add(new ApplicationObject("", ""));
+            if (!progress.Report.ReportObjects.ContainsKey(objects[i].applicationId))
+              progress.Report.ReportObjects.Add(objects[i].applicationId, new ApplicationObject("", ""));
         }
       }
 

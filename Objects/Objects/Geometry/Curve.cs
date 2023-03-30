@@ -21,6 +21,7 @@ namespace Objects.Geometry
     /// </summary>
     public bool rational { get; set; }
 
+
     [DetachProperty]
     [Chunkable(31250)]
     public List<double> points { get; set; }
@@ -39,36 +40,53 @@ namespace Objects.Geometry
     [Chunkable(31250)]
     public List<double> knots { get; set; }
 
+    /// <inheritdoc/>
     public Interval domain { get; set; }
 
+    /// <inheritdoc/>
     [DetachProperty]
     public Polyline displayValue { get; set; }
 
     public bool closed { get; set; }
 
+    /// <inheritdoc/>
     public Box bbox { get; set; }
 
+    /// <inheritdoc/>
     public double area { get; set; }
 
+    /// <inheritdoc/>
     public double length { get; set; }
 
+    /// <summary>
+    /// The units this object was specified in.
+    /// </summary>
     public string units { get; set; }
 
+    /// <summary>
+    /// Constructs an empty <see cref="Curve"/> instance.
+    /// </summary>
     public Curve() { }
 
+    /// <summary>
+    /// Constructs a new <see cref="Curve"/> instance based on displayValue a polyline.
+    /// </summary>
+    /// <param name="poly">The polyline that will be this curve's <see cref="displayValue"/></param>
+    /// <param name="units">The units this curve is be modelled in</param>
+    /// <param name="applicationId">The unique ID of this curve in a specific application</param>
     public Curve(Polyline poly, string units = Units.Meters, string applicationId = null)
     {
       this.displayValue = poly;
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     /// <returns><see cref="points"/> as list of <see cref="Point"/>s</returns>
     /// <exception cref="SpeckleException">when list is malformed</exception>
     public List<Point> GetPoints()
     {
       if (points.Count % 3 != 0) throw new SpeckleException($"{nameof(Curve)}.{nameof(points)} list is malformed: expected length to be multiple of 3");
-      
+
       var pts = new List<Point>(points.Count / 3);
       for (int i = 2; i < points.Count; i += 3)
       {
@@ -77,6 +95,10 @@ namespace Objects.Geometry
       return pts;
     }
 
+    /// <summary>
+    /// Returns the vales of this <see cref="Curve"/> as a list of numbers
+    /// </summary>
+    /// <returns>A list of values representing the <see cref="Curve"/></returns>
     public List<double> ToList()
     {
       var list = new List<double>();
@@ -102,6 +124,11 @@ namespace Objects.Geometry
       return list;
     }
 
+    /// <summary>
+    /// Creates a new <see cref="Curve"/> based on a list of coordinates and the unit they're drawn in.
+    /// </summary>
+    /// <param name="list">The list of values representing this <see cref="Curve"/></param>
+    /// <returns>A new <see cref="Curve"/> with the provided values.</returns>
     public static Curve FromList(List<double> list)
     {
       if (list[0] != list.Count - 1) throw new Exception($"Incorrect length. Expected {list[0]}, got {list.Count}.");
@@ -126,27 +153,37 @@ namespace Objects.Geometry
       return curve;
     }
 
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out Curve transformed)
     {
+      // transform points
+      var transformedPoints = new List<Point>();
+      foreach (var point in GetPoints())
+      {
+        point.TransformTo(transform, out Point transformedPoint);
+        transformedPoints.Add(transformedPoint);
+      }
+
       var result = displayValue.TransformTo(transform, out ITransformable polyline);
       transformed = new Curve
       {
         degree = degree,
         periodic = periodic,
         rational = rational,
-        points = transform.ApplyToPoints(points),
+        points = transformedPoints.SelectMany(o => o.ToList()).ToList(),
         weights = weights,
         knots = knots,
-        displayValue = ( Polyline ) polyline,
+        displayValue = (Polyline)polyline,
         closed = closed,
-        units =  units,
+        units = units,
         applicationId = applicationId,
-        domain = domain != null ? new Interval{start = domain.start, end = domain.end} : null
+        domain = domain != null ? new Interval { start = domain.start, end = domain.end } : null
       };
 
       return result;
     }
 
+    /// <inheritdoc/>
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {
       var res = TransformTo(transform, out Curve curve);

@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Models.Filters;
+using static System.Tuple;
 using static Speckle.ConnectorNavisworks.Utils;
 using Cursor = System.Windows.Forms.Cursor;
 
@@ -17,9 +18,9 @@ namespace Speckle.ConnectorNavisworks.Bindings
       return objects;
     }
 
-    private static IEnumerable<string> GetObjectsFromFilter(ISelectionFilter filter)
+    private static IEnumerable<Tuple<string, int>> GetObjectsFromFilter(ISelectionFilter filter)
     {
-      var filteredObjects = new List<string>();
+      var filteredObjects = new List<Tuple<string, int>>();
 
       switch (filter.Slug)
       {
@@ -44,63 +45,97 @@ namespace Speckle.ConnectorNavisworks.Bindings
       }
     }
 
-    private static IEnumerable<string> GetObjectsFromSavedViewpoint(ISelectionFilter filter)
+    private static IEnumerable<Tuple<string, int>> GetObjectsFromSavedViewpoint(ISelectionFilter filter)
     {
-      var reference = filter.Selection[0].Split(new[] { ":" }, StringSplitOptions.None);
-      var savedViewpoint = (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+      var selection = filter.Selection.FirstOrDefault();
+      if (string.IsNullOrEmpty(selection))
+      {
+        return Enumerable.Empty<Tuple<string, int>>();
+      }
 
-      // TODO: Handle an amended viewpoint hierarchy.
-      // Possibly by adding a GUID to the selected viewpoint if none is set at the
-      // point of selection comparison can then be made by the GUID if the name and
-      // path don't align. This would be better as both order and name could be
-      // changed after a stream state is saved.
-      if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides) return Enumerable.Empty<string>();
+      var savedViewpoint = ResolveSavedViewpoint(selection);
+      if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides)
+      {
+        return Enumerable.Empty<Tuple<string, int>>();
+      }
 
       var items = savedViewpoint.GetVisibilityOverrides().Hidden;
       items.Invert(Doc);
 
-      // TODO: Where the SavedViews Filter is amended to accept multiple views
-      // for conversion, the logic for returning Object ids will have to change
-      // for processing i.e. Handle lists or id lists instead of a singular list,
-      // and in turn handle only converting member objects once.
-      return items.DescendantsAndSelf.Select(GetPseudoId).ToList();
+      var uniqueIds = new Dictionary<string, int>();
+
+      for (var i = 0; i < items.Count; i += 1)
+      {
+        if (!IsElementVisible(items[i])) continue;
+        uniqueIds.Add(GetPseudoId(items[i]), VisibleDescendantsCount(items[i]));
+      }
+
+      return uniqueIds.Select(kv => Create(kv.Key, kv.Value)).ToList();
     }
 
-    private static IEnumerable<string> GetObjectsFromSelection(ISelectionFilter filter)
+    private static SavedViewpoint ResolveSavedViewpoint(string savedViewReference)
+    {
+      var flattenedViewpointList = Doc.SavedViewpoints.RootItem.Children
+        .Select(GetViews)
+        .Where(x => x != null)
+        .SelectMany(node => node.Flatten())
+        .Select(node => new { Reference = node?.Reference?.Split(':'), node?.Guid })
+        .ToList();
+
+      var viewpointMatch = flattenedViewpointList
+        .FirstOrDefault(node =>
+          node.Guid.ToString() == savedViewReference ||
+          node.Reference?.Length == 2 && node.Reference[1] == savedViewReference);
+
+      return viewpointMatch == null
+        ? null
+        // Resolve the SavedViewpoint
+        : ResolveSavedViewpoint(viewpointMatch, savedViewReference);
+    }
+
+    private static SavedViewpoint ResolveSavedViewpoint(dynamic viewpointMatch, string savedViewReference)
+    {
+      if (Guid.TryParse(savedViewReference, out var guid))
+      {
+        // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
+        if (savedViewReference != new Guid().ToString()) return (SavedViewpoint)Doc.SavedViewpoints.ResolveGuid(guid);
+      }
+
+      if (!(viewpointMatch?.Reference is string[] reference) || reference.Length != 2)
+      {
+        return null;
+      }
+
+      return (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+    }
+
+
+    private static IEnumerable<Tuple<string, int>> GetObjectsFromSelection(ISelectionFilter filter)
     {
       // TODO: Handle a resorted selection Tree as this invalidates any saves filter selections. Effectively this could be:
       // a) Delete any saved streams based on Manual Selection
       // b) Change what is stored to allow for a cross check that the pseudoId still matches the original item at the path
       // c) As a SelectionTree isChanging event load in all manual selection saved states and watch the changes and rewrite the result
 
-      // Manual Selection becomes a straightforward collection of the pseudoIds and all descendant nodes
+      // Manual Selection becomes a straightforward collection of the pseudoIds and a count of all visible descendant nodes
       // The saved filter should store only the visible selected nodes
 
       var selection = filter.Selection;
-
-      var uniqueIds = new HashSet<string>();
+      var uniqueIds = new Dictionary<string, int>();
 
       for (var i = 0; i < selection.Count; i += 1)
       {
         var modelItem = PointerToModelItem(selection[i]);
-
         if (modelItem == null) continue;
-
         if (!IsElementVisible(modelItem)) continue;
-        var descendants = modelItem.DescendantsAndSelf.ToList();
-
-        for (var j = 0; j < descendants.Count; j += 1)
-        {
-          var item = descendants[j];
-          if (!IsElementVisible(item)) continue;
-          uniqueIds.Add(GetPseudoId(item));
-        }
+        uniqueIds.Add(selection[i], VisibleDescendantsCount(modelItem));
       }
 
-      return uniqueIds.ToList();
+      return uniqueIds.Select(kv => Create(kv.Key, kv.Value)).ToList();
     }
 
-    private static IEnumerable<string> GetObjectsFromSavedSets(ISelectionFilter filter)
+
+    private static IEnumerable<Tuple<string, int>> GetObjectsFromSavedSets(ISelectionFilter filter)
     {
       Cursor.Current = Cursors.WaitCursor;
       // Saved Sets filter stores Guids of the selection sets. This can be converted to ModelItem pseudoIds
@@ -110,31 +145,56 @@ namespace Speckle.ConnectorNavisworks.Bindings
         .Cast<SelectionSet>()
         .ToList();
 
-      var objectPseudoIds = new HashSet<string>();
+      var objectPseudoIds = new Dictionary<string, int>();
 
-      savedItems.ForEach(
-        item =>
+      savedItems.ForEach(item =>
+      {
+        if (item.HasExplicitModelItems)
         {
-          // If the Saved Set is a Selection, add all the saved items and map to pseudoIds
-          if (item.HasExplicitModelItems)
-            objectPseudoIds.UnionWith(item.ExplicitModelItems.Select(GetPseudoId)
-            );
+          var nodes = item.ExplicitModelItems;
+          if (nodes != null) objectPseudoIds = MergeDictionaries(objectPseudoIds, nodes);
+        }
 
-          // If the Saved Set is a Search, add all the matching items and map to pseudoIds
-          if (item.HasSearch)
-            objectPseudoIds
-              .UnionWith(item.Search
-                .FindAll(Doc, false).Select(GetPseudoId)
-              );
-        });
+        if (item.HasSearch)
+        {
+          var nodes = item.Search.FindAll(Doc, false);
+          if (nodes != null) objectPseudoIds = MergeDictionaries(objectPseudoIds, nodes);
+        }
+      });
+
 
       Cursor.Current = Cursors.Default;
-      return objectPseudoIds.ToList();
+      return objectPseudoIds.Select(kv => Create(kv.Key, kv.Value)).ToList();
     }
 
-    private static IEnumerable<string> GetObjectsFromClashResults(ISelectionFilter filter)
+    private static int VisibleDescendantsCount(ModelItem modelItem)
     {
-      // Clash Results filter stores Guids of the Clash Result groups per Test. This can be converted to ModelItem pseudoIds
+      return modelItem.Descendants.Count(IsElementVisible);
+    }
+
+    private static Func<ModelItem, Tuple<string, int>> IdAndCountFunc()
+    {
+      return x =>
+        new Tuple<string, int>(GetPseudoId(x), VisibleDescendantsCount(x));
+    }
+
+    private static Dictionary<string, int> MergeDictionaries(
+      Dictionary<string, int> dict1, ModelItemCollection modelItemsCollection)
+    {
+      var dict2 = modelItemsCollection.Where(IsElementVisible)
+        .Select(IdAndCountFunc())
+        .ToDictionary(t => t.Item1, t => t.Item2);
+
+      return dict1
+        .Concat(dict2)
+        .GroupBy(kv => kv.Key)
+        .ToDictionary(g => g.Key, g => g.First().Value);
+    }
+
+    // ReSharper disable once UnusedParameter.Local
+    private static IEnumerable<Tuple<string, int>> GetObjectsFromClashResults(ISelectionFilter unused)
+    {
+      // Clash Results filter stores Guid of the Clash Result groups per Test. This can be converted to ModelItem pseudoIds
       throw new NotImplementedException();
     }
   }

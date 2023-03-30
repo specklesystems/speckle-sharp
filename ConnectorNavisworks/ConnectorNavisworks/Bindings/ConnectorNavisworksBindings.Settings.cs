@@ -51,9 +51,9 @@ namespace Speckle.ConnectorNavisworks.Bindings
         },
         new CheckBoxSetting
         {
-          Slug = "current-view", Name = "Include View", IsChecked = false,
+          Slug = "current-view", Name = "Include View", IsChecked = true,
           Description = "Include the current display view in the commit."
-        }
+        },
       };
     }
   }

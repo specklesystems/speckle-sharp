@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
@@ -54,6 +55,26 @@ namespace Speckle.ConnectorRevit
       }
 
       return _categories;
+    }
+
+    /// <summary>
+    /// We want to display a user-friendly category names when grouping objects
+    /// For this we are simplifying the BuiltIn one as otherwise, by using the display value, we'd be getting localized category names
+    /// which would make querying etc more difficult
+    /// TODO: deprecate this in favour of model collections
+    /// </summary>
+    /// <param name="category"></param>
+    /// <returns></returns>
+    public static string GetEnglishCategoryName(Category category)
+    {
+      var builtInCategory = (BuiltInCategory)category.Id.IntegerValue;
+      var builtInCategoryName = builtInCategory.ToString()
+        .Replace("OST_IOS", "") //for OST_IOSModelGroups
+        .Replace("OST_MEP", "") //for OST_MEPSpaces
+        .Replace("OST_", "") //for any other OST_blablabla
+        .Replace("_", " ");
+      builtInCategoryName = Regex.Replace(builtInCategoryName, "([a-z])([A-Z])", "$1 $2", RegexOptions.Compiled).Trim();
+      return builtInCategoryName;
     }
 
     #region extension methods
@@ -206,7 +227,7 @@ namespace Speckle.ConnectorRevit
       if (e.Category == null) return false;
       if (e.ViewSpecific) return false;
       // exclude specific unwanted categories
-      if (((BuiltInCategory) e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones) return false;
+      if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones) return false;
       return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
     }
 
@@ -215,7 +236,7 @@ namespace Speckle.ConnectorRevit
       if (e.Category == null) return false;
       if (e.ViewSpecific) return false;
 
-      if (SupportedBuiltInCategories.Contains((BuiltInCategory) e.Category.Id.IntegerValue))
+      if (SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
         return true;
       return false;
     }
@@ -227,12 +248,12 @@ namespace Speckle.ConnectorRevit
     /// <returns></returns>
     public static string SimplifySpeckleType(string type)
     {
-      return type.Split(new char[] {':'}, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+      return type.Split(new char[] { ':' }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
     }
 
     public static string ObjectDescriptor(Element obj)
     {
-      var simpleType = obj.GetType().ToString().Split(new string[] {"DB."}, StringSplitOptions.RemoveEmptyEntries)
+      var simpleType = obj.GetType().ToString().Split(new string[] { "DB." }, StringSplitOptions.RemoveEmptyEntries)
         .LastOrDefault();
       return string.IsNullOrEmpty(obj.Name) ? $"{simpleType}" : $"{simpleType} {obj.Name}";
     }

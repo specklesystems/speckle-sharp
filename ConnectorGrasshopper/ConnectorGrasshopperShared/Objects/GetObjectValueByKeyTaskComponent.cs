@@ -18,7 +18,7 @@ namespace ConnectorGrasshopper.Objects
   public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBase<object>
   {
     public override Guid ComponentGuid => new Guid("BA787569-36E6-4522-AC76-B09983E0A40D");
-    public override GH_Exposure Exposure => GH_Exposure.secondary;
+    public override GH_Exposure Exposure => GH_Exposure.tertiary;
     protected override Bitmap Icon => Properties.Resources.GetObjectValueByKey;
 
     public GetObjectValueByKeyTaskComponent() : base("Speckle Object Value by Key", "SOVK",
@@ -37,7 +37,7 @@ namespace ConnectorGrasshopper.Objects
       pManager.AddGenericParameter("Value", "V", "Speckle object", GH_ParamAccess.list);
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
       if (InPreSolve)
       {
@@ -123,7 +123,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(ex, ex.Message);
+        Logging.SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
 
       }

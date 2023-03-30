@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.0</TargetFramework>
+		<AssemblyName>Objects.Converter.AdvanceSteel2023</AssemblyName>
+		<RootNamespace>Objects.Converter.AdvanceSteel</RootNamespace>
+		<DefineConstants>$(DefineConstants);ADVANCESTEEL2023</DefineConstants>
+		<PackageId>Speckle.Objects.Converter.AdvanceSteel2023</PackageId>
+		<Authors>Speckle</Authors>
+		<Company>Speckle</Company>
+		<Product>Objects.Converter.AdvanceSteel2023</Product>
+		<Version>2.1.0</Version>
+		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+		<Description>Converter for Advance Steel 2023</Description>
+		<PackageTags>speckle objects converter advancesteel</PackageTags>
+		<RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageIcon>logo.png</PackageIcon>
+		<PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+		<Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+	</PropertyGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
+		<Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)TriangleNet.dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
+	</Target>
+
+	<ItemGroup>
+		<PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+		<PackageReference Include="MathNet.Spatial" Version="0.6.0" />
+		<PackageReference Include="PH.AdvanceSteel.API" Version="2023.0.3" />
+		<PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+		<ProjectReference Include="..\..\StructuralUtilities\Triangle\Triangle.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="..\..\..\..\logo.png">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+	</ItemGroup>
+
+	<Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
+
+</Project>

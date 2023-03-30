@@ -25,6 +25,10 @@ namespace Speckle.Core.Models
     /// </summary>
     SchemaIgnored = 8,
     /// <summary>
+    /// The typed methods flagged with TODO:
+    /// </summary>
+    SchemaComputed = 16,
+    /// <summary>
     /// All the typed members, including ones with <see cref="ObsoleteAttribute"/> or <see cref="Speckle.Core.Kits.SchemaIgnore"/> attributes.
     /// </summary>
     InstanceAll = Instance + Obsolete + SchemaIgnored,

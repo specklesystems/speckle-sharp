@@ -9,11 +9,14 @@
     <Import_RootNamespace>ConverterRhinoGhShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Organization.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BrepEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.BuiltElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Other.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Structural.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)KnotListEncoder.cs" />
   </ItemGroup>
 </Project>

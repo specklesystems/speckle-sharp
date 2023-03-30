@@ -14,7 +14,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Speckle.netDxf" Version="3.0.1" PrivateAssets="true" />
+      <PackageReference Include="Speckle.netDxf" Version="3.0.2" PrivateAssets="true" />
     </ItemGroup>
     
     <PropertyGroup>

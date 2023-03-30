@@ -61,7 +61,7 @@ namespace Speckle.Core.Kits
   /// <summary>
   /// Used to indicate which is the main input parameter of the schema builder component. Schema info will be attached to this object.
   /// </summary>
-  [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+  [AttributeUsage(AttributeTargets.Parameter)]
   public class SchemaMainParam : Attribute
   {
     public SchemaMainParam()
@@ -74,8 +74,18 @@ namespace Speckle.Core.Kits
   /// <summary>
   /// Used to ignore properties from expand objects etc
   /// </summary>
-  [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
+  [AttributeUsage(AttributeTargets.Property)]
   public class SchemaIgnore : Attribute
   {
+  }
+
+  [AttributeUsage(AttributeTargets.Method)]
+  public class SchemaComputedAttribute : Attribute
+  {
+    public virtual string Name { get; }
+    public SchemaComputedAttribute(string name)
+    {
+      Name = name;
+    }
   }
 }

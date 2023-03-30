@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Objects.Geometry;
-using Objects.Structural.Geometry;
-using Objects.Structural.Analysis;
-using CSiAPIv1; 
+﻿using Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
 {

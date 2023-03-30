@@ -5,7 +5,7 @@ using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 
-namespace Tests.Utils
+namespace Objects.Tests.Utils
 {
   [TestFixture]
   public class ShallowCopyTests

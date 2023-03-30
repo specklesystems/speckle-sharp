@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
@@ -19,7 +19,7 @@ namespace Objects.BuiltElements
     public double diameter { get; set; }
     public double length { get; set; }
     public double velocity { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -40,7 +40,7 @@ namespace Objects.BuiltElements
     [SchemaDeprecated]
     public Duct([SchemaMainParam] Line baseLine, double width, double height, double diameter, double velocity = 0)
     {
-      this.baseCurve = baseLine;
+      baseCurve = baseLine;
       this.width = width;
       this.height = height;
       this.diameter = diameter;
@@ -101,7 +101,7 @@ namespace Objects.BuiltElements.Revit
     [SchemaDeprecated]
     public RevitDuct(string family, string type, [SchemaMainParam] Line baseLine, string systemName, string systemType, Level level, double width, double height, double diameter, double velocity = 0, List<Parameter> parameters = null)
     {
-      this.baseCurve = baseLine;
+      baseCurve = baseLine;
       this.family = family;
       this.type = type;
       this.width = width;

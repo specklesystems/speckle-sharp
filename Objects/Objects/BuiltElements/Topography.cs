@@ -13,7 +13,7 @@ namespace Objects.BuiltElements
   public class Topography : Base, IDisplayValue<List<Mesh>>
   {
     public Mesh baseGeometry { get; set; } = new Mesh();
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -27,10 +27,10 @@ namespace Objects.BuiltElements
     [SchemaInfo("Topography", "Creates a Speckle topography", "BIM", "Architecture")]
     public Topography([SchemaMainParam] Mesh displayMesh)
     {
-      displayValue = new List<Mesh>{displayMesh};
+      displayValue = new List<Mesh> { displayMesh };
     }
     //TODO Figure out if we should add a new constructor that takes a List<Mesh> or if Topography should just have a single mesh display value
-    
+
   }
 }
 
@@ -46,7 +46,7 @@ namespace Objects.BuiltElements.Revit
     [SchemaInfo("RevitTopography", "Creates a Revit topography", "Revit", "Architecture")]
     public RevitTopography([SchemaMainParam] Mesh displayMesh, List<Parameter> parameters = null)
     {
-      this.displayValue = new List<Mesh>{displayMesh};
+      this.displayValue = new List<Mesh> { displayMesh };
       this.parameters = parameters.ToBase();
     }
   }

@@ -47,7 +47,7 @@ namespace Objects.BuiltElements.Revit
     public RevitPipe() { }
 
     [SchemaInfo("RevitPipe", "Creates a Revit pipe", "Revit", "MEP")]
-    public RevitPipe(string family, string type, [SchemaMainParam] ICurve baseCurve, double diameter, Level level,  string systemName = "", string systemType = "", List<Parameter> parameters = null)
+    public RevitPipe(string family, string type, [SchemaMainParam] ICurve baseCurve, double diameter, Level level, string systemName = "", string systemType = "", List<Parameter> parameters = null)
     {
       this.family = family;
       this.type = type;

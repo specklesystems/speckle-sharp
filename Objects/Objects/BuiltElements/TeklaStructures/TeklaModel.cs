@@ -8,8 +8,8 @@ namespace Objects.BuiltElements.TeklaStructures
   {
     [DetachProperty]
     public List<Base> Beams { get; set; }
-    
-   [DetachProperty]
+
+    [DetachProperty]
 
     public List<Base> Rebars { get; set; }
   }

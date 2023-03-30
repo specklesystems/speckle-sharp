@@ -122,14 +122,12 @@ namespace ConnectorGrasshopper.Objects
 
     protected override void RegisterInputParams(GH_InputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
-        level: SentryLevel.Warning);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly");
     }
 
     protected override void RegisterOutputParams(GH_OutputParamManager pManager)
     {
-      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly",
-        level: SentryLevel.Warning);
+      throw new SpeckleException("Please inherit from this class, don't use SelectKitComponentBase directly");
     }
 
     protected override void BeforeSolveInstance()
@@ -146,7 +144,6 @@ namespace ConnectorGrasshopper.Objects
         AddRuntimeMessage(GH_RuntimeMessageLevel.Remark, "No converter was provided. Conversions are disabled.");
 
       }
-
       base.SolveInstance(DA);
     }
   }

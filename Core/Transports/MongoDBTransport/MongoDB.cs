@@ -7,17 +7,29 @@ using System.Timers;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Serilog;
+using Speckle.Core.Logging;
 
 namespace Speckle.Core.Transports
 {
   // If data storage accessed by transports will always use the hash and content field names, move this enum to ITransport instead.
-  public enum Field { hash, content }
+  public enum Field
+  {
+    hash,
+    content
+  }
 
   // Question: the benefit of noSQL is the use of unstructured collections of variable documents.
   // Explore storing partially serialized Speckle objects with dynamically generated fields instead of just a content string?
   public class MongoDBTransport : IDisposable, ITransport
   {
     public string TransportName { get; set; } = "MongoTransport";
+
+    public Dictionary<string, object> TransportContext =>
+      new Dictionary<string, object>
+      {
+        { "name", TransportName },
+        { "type", this.GetType().Name },
+      };
 
     public CancellationToken CancellationToken { get; set; }
 
@@ -27,12 +39,16 @@ namespace Speckle.Core.Transports
     private IMongoDatabase Database { get; set; }
     private IMongoCollection<BsonDocument> Collection { get; set; }
 
-    private ConcurrentQueue<(string, string, int)> Queue = new ConcurrentQueue<(string, string, int)>();
+    private ConcurrentQueue<(string, string, int)> Queue =
+      new ConcurrentQueue<(string, string, int)>();
 
     public Action<string, int> OnProgressAction { get; set; }
 
     public Action<string, Exception> OnErrorAction { get; set; }
     public int SavedObjectCount { get; private set; }
+
+    // not implementing this properly
+    public TimeSpan Elapsed => TimeSpan.Zero;
 
     /// <summary>
     /// Timer that ensures queue is consumed if less than MAX_TRANSACTION_SIZE objects are being sent.
@@ -45,9 +61,13 @@ namespace Speckle.Core.Transports
     private bool IS_WRITING = false;
     private int MAX_TRANSACTION_SIZE = 1000;
 
-    public MongoDBTransport(string connectionString = "mongodb://localhost:27017", string applicationName = "Speckle", string scope = "Objects")
+    public MongoDBTransport(
+      string connectionString = "mongodb://localhost:27017",
+      string applicationName = "Speckle",
+      string scope = "Objects"
+    )
     {
-      Log.Information("Creating new MongoDB Transport");
+      SpeckleLog.Logger.Information("Creating new MongoDB Transport");
 
       ConnectionString = connectionString;
       Client = new MongoClient(ConnectionString);
@@ -56,7 +76,12 @@ namespace Speckle.Core.Transports
 
       Initialize();
 
-      WriteTimer = new System.Timers.Timer() { AutoReset = true, Enabled = false, Interval = PollInterval };
+      WriteTimer = new System.Timers.Timer()
+      {
+        AutoReset = true,
+        Enabled = false,
+        Interval = PollInterval
+      };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
 
@@ -88,7 +113,13 @@ namespace Speckle.Core.Transports
     /// <returns></returns>
     public async Task WriteComplete()
     {
-      await Utilities.WaitUntil(() => { return GetWriteCompletionStatus(); }, 500);
+      await Utilities.WaitUntil(
+        () =>
+        {
+          return GetWriteCompletionStatus();
+        },
+        500
+      );
     }
 
     /// <summary>
@@ -122,7 +153,11 @@ namespace Speckle.Core.Transports
       while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
       {
         Queue.TryDequeue(out result);
-        var document = new BsonDocument { { Field.hash.ToString(), result.Item1 }, { Field.content.ToString(), result.Item2 } };
+        var document = new BsonDocument
+        {
+          { Field.hash.ToString(), result.Item1 },
+          { Field.content.ToString(), result.Item2 }
+        };
         Collection.InsertOne(document);
       }
 
@@ -133,13 +168,15 @@ namespace Speckle.Core.Transports
     }
 
     /// <summary>
-    /// Adds an object to the saving queue. 
+    /// Adds an object to the saving queue.
     /// </summary>
     /// <param name="hash"></param>
     /// <param name="serializedObject"></param>
     public void SaveObject(string hash, string serializedObject)
     {
-      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
+      Queue.Enqueue(
+        (hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject))
+      );
 
       WriteTimer.Enabled = true;
       WriteTimer.Start();
@@ -148,7 +185,9 @@ namespace Speckle.Core.Transports
     public void SaveObject(string hash, ITransport sourceTransport)
     {
       var serializedObject = sourceTransport.GetObject(hash);
-      Queue.Enqueue((hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject)));
+      Queue.Enqueue(
+        (hash, serializedObject, System.Text.Encoding.UTF8.GetByteCount(serializedObject))
+      );
     }
 
     /// <summary>
@@ -158,7 +197,11 @@ namespace Speckle.Core.Transports
     /// <param name="serializedObject"></param>
     public void SaveObjectSync(string hash, string serializedObject)
     {
-      var document = new BsonDocument { { Field.hash.ToString(), hash }, { Field.content.ToString(), serializedObject } };
+      var document = new BsonDocument
+      {
+        { Field.hash.ToString(), hash },
+        { Field.content.ToString(), serializedObject }
+      };
       Collection.InsertOne(document);
     }
 
@@ -184,7 +227,11 @@ namespace Speckle.Core.Transports
       return null;
     }
 
-    public async Task<string> CopyObjectAndChildren(string hash, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
+    public async Task<string> CopyObjectAndChildren(
+      string hash,
+      ITransport targetTransport,
+      Action<int> onTotalChildrenCountKnown = null
+    )
     {
       throw new NotImplementedException();
     }

@@ -1,10 +1,17 @@
 ﻿using ReactiveUI;
+using Serilog;
+using SkiaSharp;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
+using Speckle.Core.Logging;
 using System;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Http.Headers;
 
 namespace DesktopUI2.ViewModels
 {
@@ -97,27 +104,42 @@ namespace DesktopUI2.ViewModels
 
 
 
-    public void DownloadImage(string url)
+
+    public async void DownloadImage(string url)
     {
-      try
-      {
-        if (string.IsNullOrEmpty(url))
-          return;
+      if (string.IsNullOrEmpty(url))
+        return;
 
-        using (WebClient client = new WebClient())
+      _firstDownload = false;
+
+      using (var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url)))
+      {
+        HttpClient client = Http.GetHttpProxyClient();
+        //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "Bearer " + Account.token);
+        var result = await client.SendAsync(request);
+
+        if (!result.IsSuccessStatusCode)
         {
-          //client.Headers.Set("Authorization", "Bearer " + Client.ApiToken);
-          client.DownloadDataAsync(new Uri(url));
-          client.DownloadDataCompleted += DownloadComplete;
+          SpeckleLog.Logger.ForContext("imageUrl", url).Warning("{methodName} failed with code: {exceptionMessage}", nameof(DownloadImage), result.StatusCode);
+          AvatarUrl = null; // Could not download...
+          return;
         }
-      }
-      catch (Exception ex)
-      {
 
+        try
+        {
+          var bytes = await result.Content.ReadAsByteArrayAsync();
+          SetImage(bytes);
+        }
+        catch (Exception ex)
+        {
+          SpeckleLog.Logger.ForContext("imageUrl", url)
+         .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage), ex.Message);
+          AvatarUrl = null; // Could not download...
+        }
       }
     }
 
-
+    private bool _firstDownload = true;
 
     public string _avatarUrl = "";
     public string AvatarUrl
@@ -140,7 +162,9 @@ namespace DesktopUI2.ViewModels
           }
         }
 
-        if (value == null && Id != null)
+        // only use robohas if it's the first attempt
+        // otherwise it'll end up in a loop
+        if (value == null && Id != null && _firstDownload)
         {
           this.RaiseAndSetIfChanged(ref _avatarUrl, $"https://robohash.org/{Id}.png?size=28x28");
         }
@@ -160,26 +184,14 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _avatarImage, value);
     }
 
-    private void DownloadComplete(object sender, DownloadDataCompletedEventArgs e)
-    {
-      try
-      {
-        byte[] bytes = e.Result;
-        SetImage(bytes);
-      }
-      catch (Exception ex)
-      {
-        System.Diagnostics.Debug.WriteLine(ex);
-        AvatarUrl = null; // Could not download...
-      }
-    }
+
 
     private void SetImage(byte[] bytes)
     {
-      System.IO.Stream stream = new MemoryStream(bytes);
+      var resizedBytes = Utils.ResizeImage(bytes, 28, 28);
+      System.IO.Stream stream = new MemoryStream(resizedBytes);
       AvatarImage = new Avalonia.Media.Imaging.Bitmap(stream);
       this.RaisePropertyChanged(nameof(AvatarImage));
-
     }
   }
 }

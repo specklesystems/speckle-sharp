@@ -1,14 +1,21 @@
-using Objects.Other;
+﻿using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
+using RH = Rhino.DocObjects;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
+using Utilities = Speckle.Core.Models.Utilities;
+using Speckle.Core.Models.GraphTraversal;
+
+using Objects.Other;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
@@ -21,10 +28,9 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polyline = Objects.Geometry.Polyline;
 using RenderMaterial = Objects.Other.RenderMaterial;
-using RH = Rhino.DocObjects;
 using Text = Objects.Other.Text;
 using Transform = Objects.Other.Transform;
-using Utilities = Speckle.Core.Models.Utilities;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.RhinoGh
 {
@@ -35,63 +41,96 @@ namespace Objects.Converter.RhinoGh
     {
       var attributes = new ObjectAttributes();
 
-      attributes.ColorSource = ObjectColorSource.ColorFromObject;
+      // color
       attributes.ObjectColor = System.Drawing.Color.FromArgb(display.color);
-      attributes.PlotWeightSource = ObjectPlotWeightSource.PlotWeightFromObject;
-      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
-      attributes.PlotWeight = display.lineweight * conversionFactor;
-      attributes.LinetypeSource = ObjectLinetypeSource.LinetypeFromObject;
+      var colorSource = ObjectColorSource.ColorFromObject;
+      if (display["colorSource"] != null) { Enum.TryParse(display["colorSource"] as string, out colorSource); }
+      attributes.ColorSource = colorSource;
+
+      // line type
       var lineStyle = Doc.Linetypes.FindName(display.linetype);
       attributes.LinetypeIndex = (lineStyle != null) ? lineStyle.Index : 0;
+      var lineSource = ObjectLinetypeSource.LinetypeFromObject;
+      if (display["lineSource"] != null) { Enum.TryParse(display["lineSource"] as string, out lineSource); }
+      attributes.LinetypeSource = lineSource;
+
+      // plot weight
+      var conversionFactor = (display.units == null) ? 1 : Units.GetConversionFactor(Units.GetUnitsFromString(display.units), Units.Millimeters);
+      attributes.PlotWeight = display.lineweight * conversionFactor;
+      var weightSource = ObjectPlotWeightSource.PlotWeightFromObject;
+      if (display["weightSource"] != null) { Enum.TryParse(display["weightSource"] as string, out weightSource); }
+      attributes.PlotWeightSource = weightSource;
 
       return attributes;
     }
 
-    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes)
+    public DisplayStyle DisplayStyleToSpeckle(ObjectAttributes attributes, Layer layer = null)
     {
-      var style = new DisplayStyle();
-
-      // color
-      switch (attributes.ColorSource)
-      {
-        case ObjectColorSource.ColorFromObject:
-          style.color = attributes.ObjectColor.ToArgb();
-          break;
-        case ObjectColorSource.ColorFromMaterial:
-          style.color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
-          break;
-        default: // use layer color as default
-          style.color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
-          break;
-      }
-
-      // line type
+      var style = new DisplayStyle() { units = Units.Millimeters};
+      int color = Color.LightGray.ToArgb();
       Linetype lineType = null;
-      switch (attributes.LinetypeSource)
-      {
-        case ObjectLinetypeSource.LinetypeFromObject:
-          lineType = Doc.Linetypes[attributes.LinetypeIndex];
-          break;
-        default: // use layer linetype as default
-          lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
-          break;
-      }
-      if (lineType.HasName)
-        style.linetype = lineType.Name;
+      double lineWeight = 0;
+      string colorSource = null;
+      string lineTypeSource = null;
+      string weightSource = null;
 
-      // line weight
-      switch (attributes.PlotWeightSource)
+      // use layer attributes if a layer is provided
+      if (layer != null)
       {
-        case ObjectPlotWeightSource.PlotWeightFromObject:
-          style.lineweight = attributes.PlotWeight;
-          break;
-        default: // use layer lineweight as default
-          style.lineweight = Doc.Layers[attributes.LayerIndex].PlotWeight;
-          break;
+        color = layer.Color.ToArgb();
+        lineType = Doc.Linetypes[layer.LinetypeIndex];
+        lineWeight = layer.PlotWeight;
       }
-      if (style.lineweight == 0) style.lineweight = 0.25;
+      else
+      {
+        // color
+        colorSource = attributes.ColorSource.ToString();
+        switch (attributes.ColorSource)
+        {
+          case ObjectColorSource.ColorFromObject:
+            color = attributes.ObjectColor.ToArgb();
+            break;
+          case ObjectColorSource.ColorFromMaterial:
+            color = Doc.Materials[attributes.MaterialIndex].DiffuseColor.ToArgb();
+            break;
+          default: // use layer color as default
+            color = Doc.Layers[attributes.LayerIndex].Color.ToArgb();
+            break;
+        }
 
-      style.units = Units.Millimeters;
+        // line type
+        lineTypeSource = attributes.LinetypeSource.ToString();
+        switch (attributes.LinetypeSource)
+        {
+          case ObjectLinetypeSource.LinetypeFromObject:
+            lineType = Doc.Linetypes[attributes.LinetypeIndex];
+            break;
+          default: // use layer linetype as default
+            lineType = Doc.Linetypes[Doc.Layers[attributes.LayerIndex].LinetypeIndex];
+            break;
+        }
+
+        // line weight
+        weightSource = attributes.PlotWeightSource.ToString();
+        switch (attributes.PlotWeightSource)
+        {
+          case ObjectPlotWeightSource.PlotWeightFromObject:
+            lineWeight = attributes.PlotWeight;
+            break;
+          default: // use layer lineweight as default
+            lineWeight = Doc.Layers[attributes.LayerIndex].PlotWeight;
+            break;
+        }
+      }
+
+      style.color = color;
+      style.lineweight = lineWeight;
+      style.linetype = lineType?.Name ?? "Default";
+
+      // attach rhino specific props
+      if (colorSource != null) style["colorSource"] = colorSource;
+      if (lineTypeSource != null) style["lineSource"] = lineTypeSource;
+      if (weightSource != null) style["weightSource"] = weightSource;
 
       return style;
     }
@@ -102,9 +141,11 @@ namespace Objects.Converter.RhinoGh
       var speckleName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {speckleMaterial.name}" : $"{speckleMaterial.name}";
 
       // check if the doc already has a material with speckle material name, or a previously created speckle material
+      //NOTE: Looking up renderMaterials this way is slow, maybe we can create a dictionary?
       var existing = Doc.RenderMaterials.FirstOrDefault(x => x.Name == speckleName);
       if (existing != null)
         return existing;
+        
 
       Rhino.Render.RenderMaterial rm;
       //#if RHINO6
@@ -115,6 +156,7 @@ namespace Objects.Converter.RhinoGh
         EmissionColor = Color.FromArgb(speckleMaterial.emissive),
         Transparency = 1 - speckleMaterial.opacity
       };
+      Doc.Materials.Add(rhinoMaterial);
       rm = Rhino.Render.RenderMaterial.CreateBasicMaterial(rhinoMaterial, Doc);
       //#else
       //TODO Convert materials as PhysicallyBasedMaterial 
@@ -224,8 +266,30 @@ namespace Objects.Converter.RhinoGh
     }
 
     // blocks
+    public Rhino.Geometry.Transform TransformToNative(Transform transform)
+    {
+      var matrix = transform.ConvertToUnits(ModelUnits);
+      var _transform = Rhino.Geometry.Transform.Identity;
+      double homogeneousDivisor = matrix[15]; // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
+      int count = 0;
+      for (var i = 0; i < 4; i++)
+      {
+        for (var j = 0; j < 4; j++)
+        {
+          _transform[i, j] = (j == 3 && homogeneousDivisor != 1) ? matrix[count] / homogeneousDivisor : matrix[count];
+          count++;
+        }
+      }
+
+      return _transform;
+    }
+
     public BlockDefinition BlockDefinitionToSpeckle(InstanceDefinition definition)
     {
+      // check if this has been converted and cached already
+      if (BlockDefinitions.ContainsKey(definition.Name))
+        return BlockDefinitions[definition.Name];
+
       var geometry = new List<Base>();
       foreach (var obj in definition.GetObjects())
       {
@@ -234,177 +298,261 @@ namespace Objects.Converter.RhinoGh
           Base converted = ConvertToSpeckle(obj);
           if (converted != null)
           {
-            converted["Layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
+            converted["layer"] = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
             geometry.Add(converted);
           }
         }
       }
 
-      var _definition = new BlockDefinition()
-      {
-        name = definition.Name,
-        basePoint = PointToSpeckle(Point3d.Origin), // rhino by default sets selected block def base pt at world origin
-        geometry = geometry,
-        units = ModelUnits
-      };
+      // rhino by default sets selected block def base pt at world origin
+      var _definition = new BlockDefinition(definition.Name, geometry, PointToSpeckle(Point3d.Origin)) { units = ModelUnits, applicationId = definition.Id.ToString() };
+      BlockDefinitions.Add(definition.Name, _definition);
 
       return _definition;
     }
 
-    public InstanceDefinition BlockDefinitionToNative(BlockDefinition definition, out List<string> notes)
+    public InstanceDefinition DefinitionToNative(Base definition, out List<string> notes)
     {
       notes = new List<string>();
 
-      // get modified definition name with commit info
+      // get the definition name
       var commitInfo = GetCommitInfo();
-      var blockName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {definition.name}" : $"{definition.name}";
-
-      // see if block name already exists and return if so
-      if (Doc.InstanceDefinitions.Find(blockName) is InstanceDefinition def)
+      string definitionName = 
+        definition is BlockDefinition blockDef ? blockDef.name : 
+        definition is RevitSymbolElementType revitDef ? $"{revitDef.family} - {revitDef.type} - {definition.id}" : 
+        definition.id;
+      if (ReceiveMode == ReceiveMode.Create) definitionName = $"{commitInfo} - " + definitionName;
+      if (Doc.InstanceDefinitions.Find(definitionName) is InstanceDefinition def)
         return def;
 
-      // base point
-      if (definition.basePoint == null)
+      // get definition geometry to traverse and base point
+      Point3d basePoint = Point3d.Origin;
+      var toTraverse = new List<Base>();
+      switch (definition)
       {
-        notes.Add("definition had no basepoint");
-        return null;
+        case BlockDefinition o:
+          if (o.basePoint != null)
+            basePoint = PointToNative(o.basePoint).Location;
+          toTraverse = o.geometry ?? (o["@geometry"] as List<object>).Cast<Base>().ToList();
+          break;
+        default:
+          toTraverse.Add(definition);
+          break;
       }
-      Point3d basePoint = PointToNative(definition.basePoint).Location;
 
-      // geometry and attributes
-      var geometry = new List<GeometryBase>();
-      var attributes = new List<ObjectAttributes>();
-      var definitionGeo = definition.geometry ?? (definition["@geometry"] as List<object>).Cast<Base>().ToList();
-      if (definitionGeo == null)
+      // traverse definition geo to get convertible geo
+      var conversionDict = new Dictionary<Base, string>();
+      foreach (var obj in toTraverse)
       {
-        notes.Add("Definition had no geometry");
-        return null;
-      }
-      foreach (var geo in definitionGeo)
-      {
-        if (CanConvertToNative(geo))
+        var convertible = FlattenDefinitionObject(obj);
+        foreach (var key in convertible.Keys)
         {
-          List<GeometryBase> converted = new List<GeometryBase>();
-          switch (geo)
+          if (!conversionDict.ContainsKey(key))
           {
-            case BlockInstance o:
-              var instanceNotes = new List<string>();
-              var instanceAppObj = BlockInstanceToNative(o, false);
-              var instance = instanceAppObj.Converted.FirstOrDefault() as InstanceObject;
-              if (instance != null)
-              {
-                converted.Add(instance.DuplicateGeometry());
-                Doc.Objects.Delete(instance);
-              }
-              else
-              {
-                notes.AddRange(instanceNotes);
-                notes.Add($"Could not create nested Instance of definition {o.blockDefinition.name}");
-              }
-              break;
-            default:
-              var convertedObj = ConvertToNative(geo);
-              if (converted == null)
-              {
-                notes.Add($"Could not create definition geometry {geo.speckle_type} ({geo.id})");
-                continue;
-              }
-              if (convertedObj.GetType().IsArray)
-                foreach (object o in (Array)convertedObj)
-                  converted.Add((GeometryBase)o);
-              else
-                converted.Add((GeometryBase)convertedObj);
-              break;
+            conversionDict.Add(key, convertible[key]);
           }
-          if (converted.Count == 0)
-            continue;
-          var geoLayer = ((string)geo["Layer"])?? $"block definition geometry";
-          var layerName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
-          int index = 1;
-          if (layerName != null)
-            GetLayer(Doc, layerName, out index, true);
-
-          var attribute = new ObjectAttributes();
-          if (geo[@"displayStyle"] is Base display)
-          {
-            if (ConvertToNative(display) is ObjectAttributes displayAttribute)
-              attribute = displayAttribute;
-          }
-          else if (geo[@"renderMaterial"] is Base renderMaterial)
-          {
-            if (renderMaterial["diffuse"] is int color)
-            {
-              attribute.ColorSource = ObjectColorSource.ColorFromObject;
-              attribute.ObjectColor = Color.FromArgb(color);
-            }
-          }
-          attribute.LayerIndex = index;
-
-          geometry.AddRange(converted);
-          attributes.Add(attribute);
         }
       }
 
-      int definitionIndex = Doc.InstanceDefinitions.Add(blockName, string.Empty, basePoint, geometry, attributes);
+      // convert definition geometry and attributes
+      var converted = new List<GeometryBase>();
+      var attributes = new List<ObjectAttributes>();
+      foreach (var item in conversionDict)
+      {
+        var geo = item.Key;
+        var convertedGeo = new List<GeometryBase>();
+        switch (geo)
+        {
+          case Instance o:
+            var instanceNotes = new List<string>();
+            var instanceAppObj = InstanceToNative(o, false);
+            var instance = instanceAppObj.Converted.FirstOrDefault() as InstanceObject;
+            if (instance != null)
+            {
+              converted.Add(instance.DuplicateGeometry());
+              attributes.Add(instance.Attributes);
+              Doc.Objects.Delete(instance);
+            }
+            else
+            {
+              notes.AddRange(instanceNotes);
+              notes.Add($"Could not create nested Instance of definition {definitionName}");
+            }
+            break;
+          default:
+            var convertedObj = ConvertToNative(geo);
+            if (convertedObj == null)
+            {
+              notes.Add($"Could not create definition geometry {geo.speckle_type} ({geo.id})");
+              continue;
+            }
 
-      if (definitionIndex < 0)
+            if (convertedObj.GetType().IsArray)
+              foreach (object o in (Array)convertedObj)
+                convertedGeo.Add((GeometryBase)o);
+            else
+              convertedGeo.Add((GeometryBase)convertedObj);
+            break;
+        }
+        if (convertedGeo.Count == 0)
+          continue;
+
+        // get attributes
+        var attribute = new ObjectAttributes();
+
+        // layer
+        var geoLayer = item.Key["layer"] is string s ?  s : item.Value; // blocks sent from rhino will have a layer prop dynamically attached
+        var layerName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
+        int index = 1;
+        if (layerName != null)
+          GetLayer(Doc, layerName, out index, true);
+        attribute.LayerIndex = index;
+
+        // display
+        var renderMaterial = geo[@"renderMaterial"] as RenderMaterial;
+        if (geo[@"displayStyle"] is DisplayStyle display)
+        {
+          attribute = DisplayStyleToNative(display);
+        }
+        else if (renderMaterial != null)
+        {
+          attribute.ObjectColor = Color.FromArgb(renderMaterial.diffuse);
+          attribute.ColorSource = ObjectColorSource.ColorFromObject;
+        }
+
+        // render material
+        if (renderMaterial != null)
+        {
+          var material = RenderMaterialToNative(renderMaterial);
+          attribute.MaterialIndex = GetMaterialIndex(material?.Name);
+          attribute.MaterialSource = ObjectMaterialSource.MaterialFromObject;
+        }
+
+        converted.AddRange(convertedGeo);
+        for(int i = 0; i < convertedGeo.Count; i++)
+          attributes.Add(attribute);
+      }
+
+      if (converted.Count == 0)
+      {
+        notes.Add("Could not convert any definition geometry");
         return null;
-
+      }
+      
+      // add definition to the doc
+      int definitionIndex = Doc.InstanceDefinitions.Add(definitionName, string.Empty, basePoint, converted, attributes);
+      if (definitionIndex < 0)
+      {
+        notes.Add("Could not add definition to the document");
+        return null;
+      }
       var blockDefinition = Doc.InstanceDefinitions[definitionIndex];
 
       return blockDefinition;
     }
 
+#region block def flattening
+    /// <summary>
+    /// Traverses the object graph, returning objects that can be converted.
+    /// </summary>
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private Dictionary<Base, string> FlattenDefinitionObject(Base obj)
+    {
+      var StoredObjects = new Dictionary<Base, string>();
+
+      void StoreObject(Base current, string containerId)
+      {
+        //Handle convertable objects
+        if (CanConvertToNative(current))
+        {
+          StoredObjects.Add(current, containerId);
+          return;
+        }
+
+        //Handle objects convertable using displayValues
+        var fallbackMember = current["displayValue"] ?? current["@displayValue"];
+        if (fallbackMember != null)
+        {
+          GraphTraversal.TraverseMember(fallbackMember).ToList()
+            .ForEach(o => StoreObject(o, containerId));
+          return;
+        }
+      }
+
+      string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
+      StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
+      {
+        if (context.propName == null) return stringBuilder;
+
+        // see if there's a layer property on this obj
+        var layer = context.current["layer"] as string ?? context.current["Layer"] as string;
+        if (!string.IsNullOrEmpty(layer)) return new StringBuilder(layer);
+
+        var objectLayerName = context.propName[0] == '@'
+          ? context.propName.Substring(1)
+          : context.propName;
+
+        LayerIdRecurse(context.parent, stringBuilder);
+        stringBuilder.Append(Layer.PathSeparator);
+        stringBuilder.Append(objectLayerName);
+
+        return stringBuilder;
+      }
+
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(this);
+
+      traverseFunction.Traverse(obj).ToList()
+        .ForEach(tc => StoreObject(tc.current, LayerId(tc)));
+
+      return StoredObjects;
+    }
+#endregion
+
     // Rhino convention seems to order the origin of the vector space last instead of first
     // This results in a transposed transformation matrix - may need to be addressed later
     public BlockInstance BlockInstanceToSpeckle(InstanceObject instance)
     {
-      var t = instance.InstanceXform;
-      var transformArray = new double[] {
-        t.M00, t.M01, t.M02, t.M03,
-        t.M10, t.M11, t.M12, t.M13,
-        t.M20, t.M21, t.M22, t.M23,
-        t.M30, t.M31, t.M32, t.M33 };
+      var t = instance.InstanceXform.ToFloatArray(true);
 
       var def = BlockDefinitionToSpeckle(instance.InstanceDefinition);
 
       var _instance = new BlockInstance()
       {
-        transform = new Transform(transformArray, ModelUnits),
-        blockDefinition = def,
+        transform = new Transform(t, ModelUnits),
+        typedDefinition = def,
         units = ModelUnits
       };
 
       return _instance;
     }
 
-    public ApplicationObject BlockInstanceToNative(BlockInstance instance, bool AppendToModelSpace = true)
+    public ApplicationObject InstanceToNative(Instance instance, bool AppendToModelSpace = true)
     {
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
 
-      // get the block definition
-      var def = instance.blockDefinition ?? instance["@blockDefinition"] as BlockDefinition; // some applications need to dynamically attach block defs (eg sketchup)
-      if (def == null)
+      // get the definition
+      var definition = instance.definition ?? instance["@definition"] as Base ?? instance["@blockDefinition"] as Base; // some applications need to dynamically attach defs (eg sketchup)
+      if (definition == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a block definition");
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "instance did not have a definition");
         return appObj;
       }
-      InstanceDefinition definition = BlockDefinitionToNative(def, out List<string> notes);
-      notes.ForEach(o => appObj.Update(logItem: o));
-      if (definition == null)
+
+      // convert the definition
+      InstanceDefinition instanceDef = DefinitionToNative(definition, out List<string> notes);
+      if (notes.Count > 0) appObj.Update(log: notes);
+      if (instanceDef == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create block definition");
         return appObj;
       }
 
       // get the transform
-      // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
-      var iT = instance.transform;
-      var units = instance.units;
-      var transform = TransformToNative(iT, units);
+      var transform = TransformToNative(instance.transform);
 
       // create the instance
-      Guid instanceId = Doc.Objects.AddInstanceObject(definition.Index, transform);
+      Guid instanceId = Doc.Objects.AddInstanceObject(instanceDef.Index, transform);
 
       if (instanceId == Guid.Empty)
       {
@@ -451,41 +599,6 @@ namespace Objects.Converter.RhinoGh
       speckleMaterial.emissive = material.Emission.ToArgb();
       speckleMaterial.opacity = 1.0 - material.Transparency;
       return speckleMaterial;
-    }
-
-    public Rhino.Geometry.Transform TransformToNative(Transform speckleTransform, string units = null)
-    {
-      var u = units ?? speckleTransform.units;
-      var transform = Rhino.Geometry.Transform.Identity;
-      var t = speckleTransform.value;
-      if (t.Length != 16) return transform;
-      var count = 0;
-      for (var i = 0; i < 4; i++)
-      {
-        for (var j = 0; j < 4; j++)
-        {
-          if (j == 3) // scale the delta values for translation transformations and set last value (divisor) to 1
-            if (t[15] != 0)
-              transform[i, j] = (i != 3) ? ScaleToNative(t[count] / t[15], u) : 1;
-            else
-              transform[i, j] = (i != 3) ? ScaleToNative(t[count], u) : 1;
-          else
-            transform[i, j] = t[count];
-          count++;
-        }
-      }
-      return transform;
-    }
-
-    public Transform TransformToSpeckle(Rhino.Geometry.Transform t, string units = null)
-    {
-      var u = units ?? ModelUnits;
-      var transformArray = new double[] {
-        t.M00, t.M01, t.M02, t.M03,
-        t.M10, t.M11, t.M12, t.M13,
-        t.M20, t.M21, t.M22, t.M23,
-        t.M30, t.M31, t.M32, t.M33 };
-      return new Transform(transformArray, ModelUnits);
     }
 
     // Text

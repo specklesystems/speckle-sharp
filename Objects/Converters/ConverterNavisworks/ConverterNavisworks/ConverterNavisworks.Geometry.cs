@@ -485,3 +485,13 @@ namespace Objects.Converter.Navisworks
     }
   }
 }
+
+namespace Objects.Organization
+{
+  public class Geometry : Base
+  {
+    public Geometry()
+    {
+    }
+  }
+}

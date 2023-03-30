@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System;
+using System.Collections.Generic;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Speckle.Newtonsoft.Json;
-
-using Speckle.Core.Models;
+using System.Text;
 using Objects.Geometry;
+using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.TeklaStructures
 {
@@ -30,7 +29,7 @@ namespace Objects.BuiltElements.TeklaStructures
     public TeklaWeldType typeAbove { get; set; }
     public TeklaWeldType typeBelow { get; set; }
     public TeklaWeldIntermittentType intermittentType { get; set; }
-    
+
     public Welds() { }
 
   }

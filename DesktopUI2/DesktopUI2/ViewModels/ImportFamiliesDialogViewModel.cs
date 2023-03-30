@@ -1,9 +1,9 @@
-﻿using ReactiveUI;
+﻿using DesktopUI2.Views.Windows.Dialogs;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using DesktopUI2.Views.Windows.Dialogs;
 
 namespace DesktopUI2.ViewModels
 {
@@ -22,9 +22,9 @@ namespace DesktopUI2.ViewModels
     }
     public Dictionary<string, List<Symbol>> allSymbols { get; private set; }
     public ObservableCollection<Symbol> selectedFamilySymbols { get; set; } = new ObservableCollection<Symbol>();
-    
+
     private string _searchQuery;
-    public string SearchQuery 
+    public string SearchQuery
     {
       get => _searchQuery;
       set
@@ -73,7 +73,7 @@ namespace DesktopUI2.ViewModels
 
     public ObservableCollection<string> LoadedFamilies { get; set; } = new ObservableCollection<string>();
 
-    public ImportFamiliesDialogViewModel(Dictionary<string,List<Symbol>> allSymbols)
+    public ImportFamiliesDialogViewModel(Dictionary<string, List<Symbol>> allSymbols)
     {
       Instance = this;
       this.allSymbols = allSymbols;
@@ -155,9 +155,9 @@ namespace DesktopUI2.ViewModels
       public bool isImported { get; set; }
       public string FamilyName { get; set; }
 
-      private bool _isChecked = false; 
-      public bool isChecked 
-      { 
+      private bool _isChecked = false;
+      public bool isChecked
+      {
         get => _isChecked;
         set
         {

@@ -1,15 +1,18 @@
-﻿using Autodesk.Revit.DB;
-using Objects.Geometry;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using BlockInstance = Objects.Other.BlockInstance;
+
+using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using Mesh = Objects.Geometry.Mesh;
+
+using Speckle.Core.Models;
+
+using Objects.Geometry;
+using Objects.Other;
+using BlockInstance = Objects.Other.BlockInstance;
 using Transform = Objects.Other.Transform;
+using Mesh = Objects.Geometry.Mesh;
 
 namespace Objects.Converter.Revit
 {
@@ -49,7 +52,7 @@ namespace Objects.Converter.Revit
       var meshes = new List<Mesh>();
       var curves = new List<DB.Curve>();
       var blocks = new List<BlockInstance>();
-      foreach (var geometry in instance.blockDefinition.geometry)
+      foreach (var geometry in instance.typedDefinition.geometry)
       {
         switch (geometry)
         {
@@ -147,7 +150,7 @@ namespace Objects.Converter.Revit
       try
       {
         group = Doc.Create.NewGroup(ids);
-        group.GroupType.Name = $"SpeckleBlock_{RemoveProhibitedCharacters(instance.blockDefinition.name)}_{instance.applicationId ?? instance.id}";
+        group.GroupType.Name = $"SpeckleBlock_{RemoveProhibitedCharacters(instance.typedDefinition.name)}_{instance.applicationId ?? instance.id}";
         string skipped = $"{(skippedBreps > 0 ? $"{skippedBreps} breps " : "")}{(skippedMeshes > 0 ? $"{skippedMeshes} meshes " : "")}{(skippedCurves > 0 ? $"{skippedCurves} curves " : "")}{(skippedBlocks > 0 ? $"{skippedBlocks} blocks " : "")}";
         if (!string.IsNullOrEmpty(skipped)) appObj.Update(logItem: $"Skipped {skipped}");
         var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
@@ -158,26 +161,6 @@ namespace Objects.Converter.Revit
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Group could not be created");
       }
       return appObj;
-    }
-
-    private bool MatrixDecompose(double[] m, out double rotation)
-    {
-      var matrix = new Matrix4x4(
-        (float)m[0], (float)m[1], (float)m[2], (float)m[3],
-        (float)m[4], (float)m[5], (float)m[6], (float)m[7],
-        (float)m[8], (float)m[9], (float)m[10], (float)m[11],
-        (float)m[12], (float)m[13], (float)m[14], (float)m[15]);
-
-      if (Matrix4x4.Decompose(matrix, out Vector3 _scale, out Quaternion _rotation, out Vector3 _translation))
-      {
-        rotation = Math.Acos(_rotation.W) * 2;
-        return true;
-      }
-      else
-      {
-        rotation = 0;
-        return false;
-      }
     }
   }
 }

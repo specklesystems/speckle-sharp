@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Transports;
@@ -74,7 +75,8 @@ namespace Speckle.Core.Models
       return 1 + CountDescendants(this, parsed);
     }
 
-    private long CountDescendants(Base @base, HashSet<int> parsed)
+    private static readonly Regex ChunkSyntax = new Regex(@"^@\((\d*)\)"); //TODO: this same regex is duplicated a few times across the code base, we could consolidate them
+    private static long CountDescendants(Base @base, HashSet<int> parsed)
     {
       if (parsed.Contains(@base.GetHashCode()))
       {
@@ -87,18 +89,11 @@ namespace Speckle.Core.Models
       var typedProps = @base.GetInstanceMembers();
       foreach (var prop in typedProps.Where(p => p.CanRead))
       {
+        bool isIgnored = prop.IsDefined(typeof(ObsoleteAttribute), true) || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
+        if (isIgnored) continue;
+
         var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
         var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
-        var obsoleteAttr = prop.GetCustomAttribute<ObsoleteAttribute>(true);
-        var jsonIgnoredAttr = prop.GetCustomAttribute<JsonIgnoreAttribute>(true);
-
-        if (obsoleteAttr != null || jsonIgnoredAttr != null)
-        {
-          // Skip properties from the count that are:
-          // - Obsolete
-          // - Ignored by the serializer
-          continue;
-        }
 
         object value = prop.GetValue(@base);
 
@@ -115,17 +110,10 @@ namespace Speckle.Core.Models
             count += asList.Count / chunkAttribute.MaxObjCountPerChunk;
             continue;
           }
-          var asArray = value as Array;
-          if (asArray != null)
-          {
-            count += asArray.Length / chunkAttribute.MaxObjCountPerChunk;
-            continue;
-          }
         }
       }
 
       var dynamicProps = @base.GetDynamicMembers();
-      var chunkSyntax = new System.Text.RegularExpressions.Regex(@"^@\((\d*)\)");
       foreach (var propName in dynamicProps)
       {
         if (!propName.StartsWith("@"))
@@ -134,23 +122,15 @@ namespace Speckle.Core.Models
         }
 
         // Simplfied dynamic prop chunking handling
-        if (chunkSyntax.IsMatch(propName))
+        if (ChunkSyntax.IsMatch(propName))
         {
           int chunkSize = -1;
-          var match = chunkSyntax.Match(propName);
+          var match = ChunkSyntax.Match(propName);
           int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
 
-          var asList = @base[propName] as IList;
-          if (chunkSize != -1 && asList != null)
+          if (chunkSize != -1 && @base[propName] is IList asList)
           {
             count += asList.Count / chunkSize;
-            continue;
-          }
-
-          var asArr = @base[propName] as Array;
-          if (chunkSize != -1 && asArr != null)
-          {
-            count += asArr.Length / chunkSize;
             continue;
           }
         }
@@ -161,58 +141,51 @@ namespace Speckle.Core.Models
       return count;
     }
 
-    private long HandleObjectCount(object value, HashSet<int> parsed)
+    private static long HandleObjectCount(object value, HashSet<int> parsed)
     {
       long count = 0;
-      if (value == null)
+      switch (value)
       {
-        return count;
-      }
-
-      if (value is Base)
-      {
-        count++;
-        count += CountDescendants(value as Base, parsed);
-        return count;
-      }
-
-      var propType = value.GetType();
-      if (typeof(IEnumerable).IsAssignableFrom(propType) && !typeof(IDictionary).IsAssignableFrom(propType) && propType != typeof(string))
-      {
-        foreach (var arrValue in ((IEnumerable)value))
-        {
-          if (arrValue is Base)
+        case Base b:
+          count++;
+          count += CountDescendants(b, parsed);
+          return count;
+        case IDictionary d:
           {
-            count++;
-            count += CountDescendants(arrValue as Base, parsed);
+            foreach (DictionaryEntry kvp in d)
+            {
+              if (kvp.Value is Base)
+              {
+                count++;
+                count += CountDescendants(kvp.Value as Base, parsed);
+              }
+              else
+              {
+                count += HandleObjectCount(kvp.Value, parsed);
+              }
+            }
+            return count;
           }
-          else
+        case IEnumerable e when !(value is string):
           {
-            count += HandleObjectCount(arrValue, parsed);
-          }
-        }
+            foreach (var arrValue in e)
+            {
+              if (arrValue is Base)
+              {
+                count++;
+                count += CountDescendants(arrValue as Base, parsed);
+              }
+              else
+              {
+                count += HandleObjectCount(arrValue, parsed);
+              }
+            }
 
-        return count;
+            return count;
+          }
+        default:
+          return count;
       }
-
-      if (typeof(IDictionary).IsAssignableFrom(propType))
-      {
-        foreach (DictionaryEntry kvp in (IDictionary)value)
-        {
-          if (kvp.Value is Base)
-          {
-            count++;
-            count += CountDescendants(kvp.Value as Base, parsed);
-          }
-          else
-          {
-            count += HandleObjectCount(kvp.Value, parsed);
-          }
-        }
-        return count;
-      }
-
-      return count;
     }
 
     /// <summary>
@@ -279,11 +252,14 @@ namespace Speckle.Core.Models
         if (__type == null)
         {
           List<string> bases = new List<string>();
-          Type myType = this.GetType();
+          Type myType = GetType();
 
           while (myType.Name != nameof(Base))
           {
-            bases.Add(myType.FullName);
+            if (!myType.IsAbstract)
+            {
+              bases.Add(myType.FullName);
+            }
             myType = myType.BaseType;
           }
 

@@ -1,16 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Numerics;
 using System.Linq;
 using System.Drawing;
 
 using Autodesk.AutoCAD.Geometry;
 using AcadGeo = Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.DatabaseServices;
-using Objects.Utils;
 using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+
 using Speckle.Core.Models;
 
+using Objects.Utils;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
@@ -33,6 +35,9 @@ using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
 using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
+using Speckle.Core.Kits;
+using Objects.Geometry;
+using Objects.Other;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -64,6 +69,7 @@ namespace Objects.Converter.AutocadCivil
       var intPt = ToInternalCoordinates(_point);
       return intPt;
     }
+    
     public List<List<ControlPoint>> ControlPointsToSpeckle(AcadGeo.NurbSurface surface, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -155,7 +161,44 @@ namespace Objects.Converter.AutocadCivil
     {
       return new AcadGeo.Plane(PointToNative(plane.origin), VectorToNative(plane.normal));
     }
+    
+    //Matrix
 
+    public Matrix3d TransformToNativeMatrix(Transform transform)
+    {
+      // transform
+      var scaledTransform = transform.ConvertToUnits(ModelUnits);
+      Matrix3d convertedTransform = new Matrix3d(scaledTransform);
+
+      //Autocad is very picky about transform basis being perfectly perpendicular, if they are not, we can correct for this by re-calculating basis vectors
+      if (!convertedTransform.IsScaledOrtho())
+      {
+        return new Matrix3d(MakePerpendicular(convertedTransform));
+      }
+
+      return convertedTransform;
+    }
+    
+    // https://forums.autodesk.com/t5/net/set-blocktransform-values/m-p/6452121#M49479
+    private static double[] MakePerpendicular(Matrix3d matrix)
+    {
+      // Get the basis vectors of the matrix
+      Vector3d right = new Vector3d(matrix[0,0], matrix[1,0], matrix[2,0]);
+      Vector3d up = new Vector3d(matrix[0,1], matrix[1,1], matrix[2,1]);
+
+      
+      Vector3d newForward = right.CrossProduct(up).GetNormal();;
+      
+      Vector3d newUp = newForward.CrossProduct(right).GetNormal();
+
+      return new []{
+        right.X,  newUp.X,  newForward.X,  matrix[0,3],
+        right.Y,  newUp.Y,  newForward.Y,  matrix[1,3],
+        right.Z,  newUp.Z,  newForward.Z,  matrix[2,3],
+        0.0,      0.0,      0.0,           matrix[3,3],
+      };
+
+    }
     // Line
     public Line LineToSpeckle(LineSegment2d line)
     {
@@ -427,6 +470,10 @@ namespace Objects.Converter.AutocadCivil
         }
         segments.Add(CurveToSpeckle(segment));
       }
+
+      if (segments.Count() == 0)
+        throw new Exception("Failed to convert Autocad Polyline2d to Speckle Polycurve");
+
       polycurve.segments = segments;
 
       polycurve.length = polyline.Length;
@@ -477,6 +524,10 @@ namespace Objects.Converter.AutocadCivil
         }
         segments.Add(CurveToSpeckle(segment));
       }
+
+      if (segments.Count() == 0)
+        throw new Exception("Failed to convert Autocad Polyline to Speckle Polycurve");
+
       polycurve.segments = segments;
 
       polycurve.length = polyline.Length;
@@ -577,7 +628,7 @@ namespace Objects.Converter.AutocadCivil
 
       // add all vertices
       int count = 0;
-      foreach(var segment in polycurve.segments)
+      foreach (var segment in polycurve.segments)
       {
         switch (segment)
         {
@@ -598,7 +649,7 @@ namespace Objects.Converter.AutocadCivil
             break;
           case Spiral o:
             var vertices = o.displayValue.GetPoints().Select(p => PointToNative(p)).ToList();
-            foreach(var vertex in vertices)
+            foreach (var vertex in vertices)
             {
               polyline.AddVertexAt(count, vertex.Convert2d(plane), 0, 0, 0);
               count++;
@@ -972,7 +1023,7 @@ namespace Objects.Converter.AutocadCivil
           {
             converted = PolycurveToNativeDB(polycurve);
           }
-          break;  
+          break;
         case Curve curve:
           converted = NurbsToNativeDB(curve);
           break;
@@ -1083,7 +1134,7 @@ namespace Objects.Converter.AutocadCivil
         // get the base plane of the bounding box from extents and current UCS
         var ucs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
         var plane = new AcadGeo.Plane(extents.MinPoint, ucs.Xaxis, ucs.Yaxis);
-       
+
         var box = new Box()
         {
           xSize = xSize,
@@ -1155,7 +1206,7 @@ namespace Objects.Converter.AutocadCivil
               var indices = new List<int>();
               for (short i = 0; i < 4; i++)
               {
-                short index = o.GetVertexAt(i); 
+                short index = o.GetVertexAt(i);
                 if (index == 0) continue;
                 var adjustedIndex = index > 0 ? index - 1 : Math.Abs(index) - 1; // vertices are 1 indexed, and can be negative (hidden)
                 indices.Add(adjustedIndex);
@@ -1215,7 +1266,7 @@ namespace Objects.Converter.AutocadCivil
     public PolyFaceMesh MeshToNativeDB(Mesh mesh)
     {
       mesh.TriangulateMesh(true);
-      
+
       // get vertex points
       var vertices = new Point3dCollection();
       var points = mesh.GetPoints().Select(o => PointToNative(o)).ToList();
@@ -1269,7 +1320,7 @@ namespace Objects.Converter.AutocadCivil
             face = new FaceRecord((short)(mesh.faces[j + 1] + 1), (short)(mesh.faces[j + 2] + 1), (short)(mesh.faces[j + 3] + 1), (short)(mesh.faces[j + 4] + 1));
             j += 5;
           }
-          
+
           if (face.IsNewObject)
           {
             _mesh.AppendFaceRecord(face);
@@ -1303,7 +1354,7 @@ namespace Objects.Converter.AutocadCivil
         }
         catch (Exception e)
         { };
-        
+
         bbox = BoxToSpeckle(solid.GeometricExtents);
       }
       else if (surface != null)
@@ -1369,7 +1420,7 @@ namespace Objects.Converter.AutocadCivil
             mesh.volume = volume;
           }
         }
-        catch(Exception e)
+        catch (Exception e)
         {
           notes.Add(e.Message);
         }

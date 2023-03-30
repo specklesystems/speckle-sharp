@@ -1,10 +1,9 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Autodesk.Revit.DB;
+using Objects.BuiltElements;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -100,7 +99,7 @@ namespace Objects.Converter.Revit
     public GridLine GridLineToSpeckle(DB.Grid revitGridLine)
     {
       var speckleGridline = new GridLine();
-      speckleGridline.baseLine = CurveToSpeckle(revitGridLine.Curve);
+      speckleGridline.baseLine = CurveToSpeckle(revitGridLine.Curve, revitGridLine.Document);
       speckleGridline.label = revitGridLine.Name;
 
       //speckleGridline.elementId = revitCurve.Id.ToString(); this would need a RevitGridLine element

@@ -22,6 +22,11 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <LangVersion>8</LangVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tests"/>
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Private>false</Private>
@@ -43,6 +48,7 @@
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
     <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\$(ProjectName)\&quot;" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).pdb&quot; &quot;$(AppData)\Speckle\Kits\$(ProjectName)\&quot;" />
     <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="mkdir -p $HOME'/.config/Speckle/Kits/$(ProjectName)'" />
     <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/$(ProjectName)/'" />
   </Target>
