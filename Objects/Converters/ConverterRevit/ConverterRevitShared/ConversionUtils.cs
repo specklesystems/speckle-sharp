@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI.Selection;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -297,8 +298,8 @@ namespace Objects.Converter.Revit
 
       //exclude parameters that don't have a value and those pointing to other elements as we don't support them
       var revitParameters = element.Parameters.Cast<DB.Parameter>()
-        .Where(x => x.HasValue 
-          && x.StorageType != StorageType.ElementId 
+        .Where(x => x.HasValue
+          && x.StorageType != StorageType.ElementId
           && !exclusions.Contains(GetParamInternalName(x))).ToList();
 
       //exclude parameters that failed to convert
@@ -859,6 +860,19 @@ namespace Objects.Converter.Revit
     const string ProjectBase = "Project Base";
     const string Survey = "Survey";
 
+    //cached during conversion
+    private List<RevitLinkInstance> _revitLinkInstances = null;
+    private List<RevitLinkInstance> RevitLinkInstances
+    {
+      get
+      {
+        if (_revitLinkInstances == null)
+          _revitLinkInstances = new FilteredElementCollector(Doc).OfClass(typeof(RevitLinkInstance)).ToElements().Cast<RevitLinkInstance>().ToList();
+
+        return _revitLinkInstances;
+      }
+    }
+
     private Dictionary<string, DB.Transform> _docTransforms = new Dictionary<string, DB.Transform>();
     private DB.Transform GetDocReferencePointTransform(Document doc)
     {
@@ -885,6 +899,24 @@ namespace Objects.Converter.Revit
     ////////////////////////////////////////////////
     private DB.Transform GetReferencePointTransform(string type, Document doc)
     {
+      // For linked documents, if the coordinates haven't been shared with the main Doc
+      // we can just grab the total transform on the actual RevitLinkInstance elements
+      var linkedFileTransform = DB.Transform.Identity;
+      if (doc.IsLinked)
+      {
+       
+        var instance = RevitLinkInstances.FirstOrDefault(x => x.GetLinkDocument().PathName == doc.PathName);
+        // NOTE: if you want to check if the linked file has a shared site use the check below
+        // but according to my tests, this doesn't really make a difference
+        // see https://forums.autodesk.com/t5/revit-api-forum/check-if-revit-link-instance-is-placed-by-shared-coordinates/td-p/9834378
+        //if (instance.Name.Contains("<") && instance.Name.Contains(">"))
+        //{ //this link has a <Not Shared> site }
+        if (instance != null)
+        {
+          //return instance.GetTotalTransform().Inverse;
+        }
+      }
+
       // get the correct base point from
       // settings
       var referencePointTransform = DB.Transform.Identity;
@@ -894,10 +926,7 @@ namespace Objects.Converter.Revit
       var surveyPoint = points.FirstOrDefault(o => o.IsShared == true);
       var point = new XYZ();
 
-      //in the case of linked models, it seems they get aligned base off their surey point
-      //the translations below for linked models were retrieved a bit empirically
-      // TODO: This linked model code is hacky and incorrect for any linked models that have been moved! Use the `RevitLinkInstance` class transform to determine the full transform between an element in a linked model in the coordinate system of the main doc.
-      // See: https://thebuildingcoder.typepad.com/blog/2013/11/determining-host-document-location-of-a-linked-element.html
+
       switch (type)
       {
         case ProjectBase:
@@ -926,25 +955,27 @@ namespace Objects.Converter.Revit
 
             // !! retrieve survey point angle from project base point, null in some cases
             var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
-            referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+            referencePointTransform = DB.Transform.CreateTranslation(point)
+              .Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+            if (doc.IsLinked)
+            {
+              //Maybe look at doc.ActiveProjectLocation.GetTotalTransform(); ?
+              //referencePointTransform.Origin = referencePointTransform.Origin - linkedFileTransform.Origin;
+            }
           }
           break;
         case InternalOrigin:
-          if (surveyPoint != null)
+          if (doc.IsLinked && surveyPoint != null)
           {
-            if (doc.IsLinked)
-            {
-              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
-              point = surveyPoint.Position - mainSurveyPoint.Position + mainSurveyPoint.SharedPosition;
-            }
-
-            referencePointTransform = DB.Transform.CreateTranslation(point);
+            var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
+            point = surveyPoint.Position - mainSurveyPoint.Position + mainSurveyPoint.SharedPosition;
           }
+
+          referencePointTransform = DB.Transform.CreateTranslation(point);
           break;
         default:
           break;
       }
-
       return referencePointTransform;
     }
 

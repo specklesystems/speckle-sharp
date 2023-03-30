@@ -44,18 +44,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDxf", "..\Objects\Converters\ConverterDxf\ConverterDxf\ConverterDxf.csproj", "{64A2BFC9-8711-4C9D-A1B4-BEE678C8E640}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{236cff40-7dda-4cc5-84a9-b1df6f0985ef}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{240ead7e-ef10-482a-b299-3b85b64b032f}*SharedItemsImports = 5
-		ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 4
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
-		ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 4
-		ConnectorRevit\ConnectorRevit.projitems*{5fd0d810-03e9-4fd2-93e4-b1b51e5d82c5}*SharedItemsImports = 13
-		ConnectorRevit\ConnectorRevit.projitems*{8a53b084-20d8-48f6-9591-9d53cfa74130}*SharedItemsImports = 4
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{c74e4c61-ca68-47f9-825e-91b7a5c4546d}*SharedItemsImports = 5
-		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{cfbd9a83-5aa2-4849-8735-28d4f73f4f56}*SharedItemsImports = 5
-		ConnectorRevit\ConnectorRevit.projitems*{dfdfdbb8-018b-4dcb-a012-54227abf53a7}*SharedItemsImports = 4
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|x64 = Debug|x64
@@ -79,6 +67,10 @@ Global
 		{BE852BE3-37B8-4B62-AC2C-0872C41A2542}.Release|Any CPU.Build.0 = Release|Any CPU
 		{BE852BE3-37B8-4B62-AC2C-0872C41A2542}.Release|x64.ActiveCfg = Release|Any CPU
 		{BE852BE3-37B8-4B62-AC2C-0872C41A2542}.Release|x64.Build.0 = Release|Any CPU
+		{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DCD648D-DCA5-4D2A-8B14-AD2CB85D24B0}.Release|x64.ActiveCfg = Release|Any CPU
 		{240EAD7E-EF10-482A-B299-3B85B64B032F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{240EAD7E-EF10-482A-B299-3B85B64B032F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{240EAD7E-EF10-482A-B299-3B85B64B032F}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -95,6 +87,10 @@ Global
 		{CFBD9A83-5AA2-4849-8735-28D4F73F4F56}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CFBD9A83-5AA2-4849-8735-28D4F73F4F56}.Release|x64.ActiveCfg = Release|Any CPU
 		{CFBD9A83-5AA2-4849-8735-28D4F73F4F56}.Release|x64.Build.0 = Release|Any CPU
+		{5FD0D810-03E9-4FD2-93E4-B1B51E5D82C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5FD0D810-03E9-4FD2-93E4-B1B51E5D82C5}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5FD0D810-03E9-4FD2-93E4-B1B51E5D82C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5FD0D810-03E9-4FD2-93E4-B1B51E5D82C5}.Release|x64.ActiveCfg = Release|Any CPU
 		{27A79ACA-7EA8-4406-8BB8-216578CC3AB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{27A79ACA-7EA8-4406-8BB8-216578CC3AB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27A79ACA-7EA8-4406-8BB8-216578CC3AB7}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -207,5 +203,17 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {650BE642-C7CC-4FF5-9EE5-8C57BF553143}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{236cff40-7dda-4cc5-84a9-b1df6f0985ef}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{240ead7e-ef10-482a-b299-3b85b64b032f}*SharedItemsImports = 5
+		ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 4
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{2dcd648d-dca5-4d2a-8b14-ad2cb85d24b0}*SharedItemsImports = 13
+		ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 4
+		ConnectorRevit\ConnectorRevit.projitems*{5fd0d810-03e9-4fd2-93e4-b1b51e5d82c5}*SharedItemsImports = 13
+		ConnectorRevit\ConnectorRevit.projitems*{8a53b084-20d8-48f6-9591-9d53cfa74130}*SharedItemsImports = 4
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{c74e4c61-ca68-47f9-825e-91b7a5c4546d}*SharedItemsImports = 5
+		..\Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{cfbd9a83-5aa2-4849-8735-28d4f73f4f56}*SharedItemsImports = 5
+		ConnectorRevit\ConnectorRevit.projitems*{dfdfdbb8-018b-4dcb-a012-54227abf53a7}*SharedItemsImports = 4
 	EndGlobalSection
 EndGlobal
