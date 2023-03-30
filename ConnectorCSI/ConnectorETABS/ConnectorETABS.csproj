@@ -15,28 +15,21 @@
       )
     </PostBuildEvent>
   </PropertyGroup>
-  <PropertyGroup>
-    <PostBuildEvent>if EXIST "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" (
-      xcopy "$(TargetDir)*.*" "$(LocalAppData)\Computers and Structures\ETABS\Speckle2ETABS" /Y /I /E
-      )
-    </PostBuildEvent>
-  </PropertyGroup>
-  <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared"/>
+  <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <ItemGroup>
-    <Reference Include="PresentationFramework"/>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    <Reference Include="Microsoft.CSharp"/>
-    <Reference Include="System.Net.Http"/>
-    <Reference Include="WindowsBase"/>
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
-    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj"/>
-    <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj" Private="false" ExcludeAssets="runtime"/>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CSiAPIv1" Version="1.0.0"/>
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0"/>
+    <PackageReference Include="CSiAPIv1" Version="1.0.0" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 </Project>

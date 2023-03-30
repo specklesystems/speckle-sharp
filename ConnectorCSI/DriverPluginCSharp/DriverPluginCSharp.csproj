@@ -6,8 +6,7 @@
     <PlatformTarget>x64</PlatformTarget>
     <AssemblyTitle>DriverPluginCSharp</AssemblyTitle>
     <Product>DriverPluginCSharp</Product>
-    <Copyright/>
-    <OutputPath>..\DriverCSharp\bin\$(Configuration)\</OutputPath>
+    <Copyright />
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
