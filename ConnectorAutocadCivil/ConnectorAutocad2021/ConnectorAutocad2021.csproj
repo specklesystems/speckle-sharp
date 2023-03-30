@@ -9,7 +9,7 @@
     <AssemblyTitle>ConnectorAutocad2021</AssemblyTitle>
     <Product>ConnectorAutocad2021</Product>
     <DefineConstants>$(DefineConstants);AUTOCAD2021</DefineConstants>
-    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Target Name="Clean">
