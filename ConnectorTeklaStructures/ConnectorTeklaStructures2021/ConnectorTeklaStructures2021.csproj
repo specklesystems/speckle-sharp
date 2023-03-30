@@ -17,23 +17,22 @@
       )
     </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared"/>
+  <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared" />
   <ItemGroup>
-    <Reference Include="PresentationCore"/>
-    <Reference Include="PresentationFramework"/>
-    <Reference Include="System.Windows.Forms"/>
-    <Reference Include="System.Xaml"/>
-    <Reference Include="System.Data.DataSetExtensions"/>
-    <Reference Include="Microsoft.CSharp"/>
-    <Reference Include="System.Net.Http"/>
-    <Reference Include="WindowsBase"/>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
-    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj"/>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="TeklaOpenAPI" Version="2021.0.1"/>
+    <PackageReference Include="TeklaOpenAPI" Version="2021.0.1" />
   </ItemGroup>
 </Project>
