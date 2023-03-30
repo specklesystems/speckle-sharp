@@ -52,27 +52,20 @@
         <PackageReference Include="Speckle.OpenRoads.OpenRail.API" Version="0.0.0" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <BentleyName>OpenRailDesigner</BentleyName>
-        <BentleyLongName>OpenRail Designer CE</BentleyLongName>
-        <BentleySpeckleName>Speckle2OpenRail</BentleySpeckleName>
-    </PropertyGroup>
-
     <Target Name="CopyBentleyConnector" AfterTargets="PostBuildEvent"
-        Condition="'$(IsDesktopBuild)' == true AND $([MSBuild]::IsOsPlatform('Windows'))">
-        <ItemGroup>
-            <SourceDLLs Include="$(TargetDir)\**\*.*" />
-            <Connector Include="connector">
-                <PluginFolder>$(AppData)\Bentley\$(BentleyName)\Addins\$(BentleySpeckleName)</PluginFolder>
-                <CfgFolder>
-                    $(ProgramData)\Bentley\$(BentleyLongName)\Configuration\Organization
-                </CfgFolder>
-            </Connector>
-        </ItemGroup>
-        <Message Importance="high" Text="Copying $(AssemblyName) to %(Connector.PluginFolder)" />
-        <Copy DestinationFolder="%(Connector.PluginFolder)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
-        <Message Importance="high" Text="Copying $(BentleySpeckleName).cfg to %(Connector.CfgFolder)" />
-        <Copy DestinationFolder="%(Connector.CfgFolder)" SourceFiles="$(TargetDir)\$(BentleySpeckleName).cfg" />
+            Condition="'$(IsDesktopBuild)' == true AND $([MSBuild]::IsOsPlatform('Windows'))">
+      <PropertyGroup>
+        <PluginName>Speckle2OpenRail</PluginName>
+        <PluginFolder>$(AppData)\Bentley\OpenRailDesigner\Addins\$(PluginName)</PluginFolder>
+        <CfgFolder>
+          $(ProgramData)\Bentley\OpenRail Designer CE\Configuration\Organization
+        </CfgFolder>
+      </PropertyGroup>
+      <ItemGroup>
+        <SourceDLLs Include="$(TargetDir)\**\*.*" />
+      </ItemGroup>
+      <Copy DestinationFolder="$(PluginFolder)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+      <Copy DestinationFolder="$(CfgFolder)" SourceFiles="$(TargetDir)\$(PluginName).cfg" />
     </Target>
 
     <Target Name="Clean">
