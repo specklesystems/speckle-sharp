@@ -13,11 +13,12 @@ namespace ConverterRevitTests
   {
     public static string GetTestModel(string filename)
     {
+      var path = string.Empty;
 #if REVIT2021
-      var path = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "TestModels", "2021", filename);
+      path = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "TestModels", "2021", filename);
 #elif REVIT2022
 #elif REVIT2023
-      var path = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "TestModels", "2023", filename);
+      path = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..", "..", "TestModels", "2023", filename);
 #endif
       return path;
 
