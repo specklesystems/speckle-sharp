@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <PropertyGroup>
+        <CopyToKitFolder Condition="'$(CopyToKitFolder)' == ''">false</CopyToKitFolder>
+        <KitFolder Condition="$(KitFolder) == ''">Objects</KitFolder>
+    </PropertyGroup>
+    <Target
+        Label="Copy To Objects Kit Folder"
+        Name="CopyToKitFolder"
+        AfterTargets="PostBuildEvent"
+        Condition="'$(CopyToKitFolder)' == true AND '$(IsDesktopBuild)' == true">
+        <Message Text="Copying $(AssemblyName).dll to $(KitFolder) Kit folder" Importance="high" />
+        <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
+            Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\$(KitFolder)\&quot;" />
+        <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))"
+            Command="mkdir -p $HOME'/.config/Speckle/Kits/$(KitFolder)'" />
+        <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))"
+            Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/$(KitFolder)/'" />
+    </Target>
+
+    <Target Name="ReportBuildVersion" BeforeTargets="BeforeBuild">
+        <Message Text="Building $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)" Importance="high" />
+    </Target>
+</Project>
