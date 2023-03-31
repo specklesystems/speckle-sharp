@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32210.238
@@ -244,6 +244,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAdvanceSteel2023", "Objects\Converters\ConverterAutocadCivil\ConverterAdvanceSteel2023\ConverterAdvanceSteel2023.csproj", "{F1311789-37DC-47FD-ACEC-75B9B97EDFED}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterAutocad2023", "Objects\Converters\ConverterAutocadCivil\ConverterAutocad2023\ConverterAutocad2023.csproj", "{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2024", "ConnectorNavisworks\ConnectorNavisworks2024\ConnectorNavisworks2024.csproj", "{2568500E-F1BC-440E-9150-DB4820B3FAD6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterNavisworks2024", "Objects\Converters\ConverterNavisworks\ConverterNavisworks2024\ConverterNavisworks2024.csproj", "{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1537,6 +1540,38 @@ Global
 		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release|Any CPU.Build.0 = Release|Any CPU
 		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release|x64.ActiveCfg = Release|Any CPU
 		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD}.Release|x64.Build.0 = Release|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug Mac|x64.ActiveCfg = Debug|x64
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug Mac|x64.Build.0 = Debug|x64
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug|x64.ActiveCfg = Debug|x64
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Debug|x64.Build.0 = Debug|x64
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release Mac|x64.ActiveCfg = Release|x64
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release Mac|x64.Build.0 = Release|x64
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release|x64.ActiveCfg = Release|x64
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6}.Release|x64.Build.0 = Release|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug Mac|x64.ActiveCfg = Debug|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug Mac|x64.Build.0 = Debug|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug|x64.ActiveCfg = Debug|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Debug|x64.Build.0 = Debug|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release Mac|x64.ActiveCfg = Release|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release Mac|x64.Build.0 = Release|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release|x64.ActiveCfg = Release|x64
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1660,6 +1695,8 @@ Global
 		{F4AA033F-4F85-4990-AFE9-86BE00ABE973} = {890F3257-FCC2-4ED8-9180-22B3641B494C}
 		{F1311789-37DC-47FD-ACEC-75B9B97EDFED} = {BE521908-7944-46F3-98BF-B47D34509934}
 		{88A24C40-74C8-4E20-9051-6BE9E6ADECFD} = {BE521908-7944-46F3-98BF-B47D34509934}
+		{2568500E-F1BC-440E-9150-DB4820B3FAD6} = {B6887DDC-B9B9-4B00-95DC-1DD930A1E901}
+		{A0CEFC44-A3EF-4931-8E74-BCF681FF7AD6} = {B6C38DB9-7B20-4B7E-BC90-6A8CAFC16807}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
@@ -1670,6 +1707,7 @@ Global
 		ConnectorGrasshopper\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems*{0f1fd0c3-875f-4689-9c4a-c56e9ab31102}*SharedItemsImports = 13
 		Objects\Converters\ConverterCSI\ConverterCSIShared\ConverterCSIShared.projitems*{21223ba5-c6e8-405d-b581-106c4726edc0}*SharedItemsImports = 5
 		ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.projitems*{23be6e54-96c1-4373-89f3-e18a1c9807fd}*SharedItemsImports = 4
+		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{2568500e-f1bc-440e-9150-db4820b3fad6}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{2639e37d-80d3-415a-b4d1-20d7f321f27f}*SharedItemsImports = 4
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{26eca1be-f5b2-4a41-9658-46a4a917bfe6}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{27a79aca-7ea8-4406-8bb8-216578cc3ab7}*SharedItemsImports = 4
@@ -1712,6 +1750,7 @@ Global
 		Objects\Converters\ConverterBentley\ConverterBentleyShared\ConverterBentleyShared.projitems*{931fc9a8-18b4-4ac5-81d9-14c48499bfb5}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{9a7d7f9a-4fe1-4053-950b-50b43bc81087}*SharedItemsImports = 5
 		ConnectorCSI\ConnectorCSIShared\ConnectorCSIShared.projitems*{9d188843-8841-4a76-a844-efbe8e32ee05}*SharedItemsImports = 4
+		Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworksShared.projitems*{a0cefc44-a3ef-4931-8e74-bcf681ff7ad6}*SharedItemsImports = 5
 		ConnectorBentley\ConnectorBentleyShared\ConnectorBentleyShared.projitems*{a3a0ee09-6055-4009-ab8e-13fbc1a403a9}*SharedItemsImports = 4
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{a517a609-cab1-4b33-b83c-1b13b34e4560}*SharedItemsImports = 13
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{a64acbf9-db82-4839-af99-57ed2e7989f4}*SharedItemsImports = 5
