@@ -1,0 +1,3 @@
+[submodule "Objects/Converters/ConverterRevit/ConverterRevitTests/xUnitRevit"]
+	path = Objects/Converters/ConverterRevit/ConverterRevitTests/xUnitRevit
+	url = https://github.com/specklesystems/xUnitRevit.git
