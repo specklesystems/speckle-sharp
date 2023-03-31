@@ -4,17 +4,17 @@ using Rhino.Input.Custom;
 using Rhino.UI;
 using SpeckleRhino;
 
-namespace SampleCsEto.Commands
+namespace SpeckleRhino
 {
-  public class SampleCsEtoPanelCommand : Command
+  public class SpeckleWebUICommand : Command
   {
-    public SampleCsEtoPanelCommand()
+    public SpeckleWebUICommand()
     {
-      Panels.RegisterPanel(PlugIn, typeof(Views.SampleCsEtoPanel), "Sample", Resources.icon);
+     Panels.RegisterPanel(PlugIn, typeof(SpeckleRhino.WebUIPanel), "Speckle - WebUI", Resources.icon);
       Instance = this;
     }
 
-    public static SampleCsEtoPanelCommand Instance
+    public static SpeckleWebUICommand Instance
     {
       get;
       private set;
@@ -22,12 +22,12 @@ namespace SampleCsEto.Commands
 
     public override string EnglishName
     {
-      get { return "SampleCsEtoPanel"; }
+      get { return "SpeckleWebUI"; }
     }
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
-      var panel_id = Views.SampleCsEtoPanel.PanelId;
+      var panel_id = SpeckleRhino.WebUIPanel.PanelId;
       var visible = Panels.IsPanelVisible(panel_id);
 
       var prompt = (visible)

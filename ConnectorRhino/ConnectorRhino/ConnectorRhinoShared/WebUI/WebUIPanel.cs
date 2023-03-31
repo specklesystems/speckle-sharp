@@ -2,14 +2,17 @@
 using Eto.Drawing;
 using Eto.Forms;
 using Rhino.UI;
+using Eto.Wpf;
+using Microsoft.Web.WebView2.Core;
+using JetBrains.Annotations;
 
-namespace SampleCsEto.Views
+namespace SpeckleRhino
 {
   /// <summary>
   /// Required class GUID, used as the panel Id
   /// </summary>
-  [System.Runtime.InteropServices.Guid("0E7780CA-F004-4AE7-B918-19E68BF7C7C9")]
-  public class SampleCsEtoPanel : Panel, IPanel
+  [System.Runtime.InteropServices.Guid("EA93829C-67EA-449E-B69D-8FCC39D4B1E0")]
+  public class WebUIPanel : Panel, IPanel
   {
     readonly uint m_document_sn = 0;
     WebView webView;
@@ -17,30 +20,36 @@ namespace SampleCsEto.Views
     /// <summary>
     /// Provide easy access to the SampleCsEtoPanel.GUID
     /// </summary>
-    public static System.Guid PanelId => typeof(SampleCsEtoPanel).GUID;
+    public static System.Guid PanelId => typeof(WebUIPanel).GUID;
 
     /// <summary>
     /// Required public constructor with NO parameters
     /// </summary>
-    public SampleCsEtoPanel(uint documentSerialNumber)
+    public WebUIPanel(uint documentSerialNumber)
     {
       m_document_sn = documentSerialNumber;
-
+      
       Title = GetType().Name;
-
-      var hello_button = new Button { Text = "Hello..." };
-      hello_button.Click += (sender, e) => OnHelloButton();
-
-      var child_button = new Button { Text = "Child Dialog..." };
-      child_button.Click += (sender, e) => OnChildButton();
-
-      var document_sn_label = new Label() { Text = $"Document serial number: {documentSerialNumber}" };
+            
+      Eto.Wpf.Forms.Controls.WebView2Loader.InstallMode = Eto.Wpf.Forms.Controls.WebView2InstallMode.Manual;
+      
+      Eto.Wpf.Forms.Controls.WebView2Handler.GetCoreWebView2Environment = () =>
+      {
+        var userDataFolder = Rhino.RhinoApp.GetDataDirectory(true, true);
+        return Microsoft.Web.WebView2.Core.CoreWebView2Environment.CreateAsync(userDataFolder: userDataFolder);
+      };
 
       webView = new WebView();
+      webView.Width = 640;
+      webView.Height = 480;
+
       webView.DocumentLoading += (sender, e) =>
       {
-        
-        
+        Microsoft.Web.WebView2.Wpf.WebView2 webView2 = (Microsoft.Web.WebView2.Wpf.WebView2)webView.ControlObject;
+        Microsoft.Web.WebView2.Core.CoreWebView2 coreWebView2 = webView2.CoreWebView2;
+        coreWebView2.AddHostObjectToScript("UiBindings", new Speckle.ConnectorRhino.UI.RhinoWebUIBindings());
+
+        // old method
         if (e.Uri.Scheme == "myscheme")
         {
           e.Cancel = true; // prevent navigation
@@ -49,45 +58,21 @@ namespace SampleCsEto.Views
           if (path == "dosomething")
           {
             // do something..
-          
           }
         }
       };
 
+      webView.Url = new System.Uri("http://nas/dui3/button.html");
+      //webView.Url = new System.Uri("https://appui.speckle.systems");
+
       var layout = new DynamicLayout { DefaultSpacing = new Size(5, 5), Padding = new Padding(10) };
-      layout.AddSeparateRow(hello_button, null);
-      layout.AddSeparateRow(child_button, null);
-      layout.AddSeparateRow(document_sn_label, null);
       layout.AddSeparateRow(webView, null);
       layout.Add(null);
       Content = layout;
     }
 
-
     public string Title { get; }
-
-    /// <summary>
-    /// Example of proper way to display a message box
-    /// </summary>
-    protected void OnHelloButton()
-    {
-      // Use the Rhino common message box and NOT the Eto MessageBox,
-      // the Eto version expects a top level Eto Window as the owner for
-      // the MessageBox and will cause problems when running on the Mac.
-      // Since this panel is a child of some Rhino container it does not
-      // have a top level Eto Window.
-      Dialogs.ShowMessage("Hello Rhino!", Title);
-
-      webView.Url = new System.Uri("http://nas/dui3/button.html");
-    }
-
-    /// <summary>
-    /// Sample of how to display a child Eto dialog
-    /// </summary>
-    protected void OnChildButton()
-    {
-    }
-
+      
     #region IPanel methods
     public void PanelShown(uint documentSerialNumber, ShowPanelReason reason)
     {
