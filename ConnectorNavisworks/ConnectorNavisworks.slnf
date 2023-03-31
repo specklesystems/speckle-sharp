@@ -7,12 +7,14 @@
       "ConnectorNavisworks\\ConnectorNavisworks2021\\ConnectorNavisworks2021.csproj",
       "ConnectorNavisworks\\ConnectorNavisworks2022\\ConnectorNavisworks2022.csproj",
       "ConnectorNavisworks\\ConnectorNavisworks2023\\ConnectorNavisworks2023.csproj",
+      "ConnectorNavisworks\\ConnectorNavisworks2023\\ConnectorNavisworks2024.csproj",
       "ConnectorNavisworks\\ConnectorNavisworks\\ConnectorNavisworks.shproj",
 
       "Objects\\Converters\\ConverterNavisworks\\ConverterNavisworks2020\\ConverterNavisworks2020.csproj",
       "Objects\\Converters\\ConverterNavisworks\\ConverterNavisworks2021\\ConverterNavisworks2021.csproj",
       "Objects\\Converters\\ConverterNavisworks\\ConverterNavisworks2022\\ConverterNavisworks2022.csproj",
       "Objects\\Converters\\ConverterNavisworks\\ConverterNavisworks2023\\ConverterNavisworks2023.csproj",
+      "Objects\\Converters\\ConverterNavisworks\\ConverterNavisworks2023\\ConverterNavisworks2024.csproj",
       "Objects\\Converters\\ConverterNavisworks\\ConverterNavisworks\\ConverterNavisworks.shproj",
       
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
