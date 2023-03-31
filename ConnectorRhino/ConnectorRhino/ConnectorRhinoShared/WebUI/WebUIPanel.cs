@@ -42,8 +42,12 @@ namespace SpeckleRhino
       webView.DocumentLoading += (sender, e) =>
       {
         Microsoft.Web.WebView2.Wpf.WebView2 webView2 = (Microsoft.Web.WebView2.Wpf.WebView2)webView.ControlObject;
-        Microsoft.Web.WebView2.Core.CoreWebView2 coreWebView2 = webView2.CoreWebView2;
-        coreWebView2.AddHostObjectToScript("UiBindings", new Speckle.ConnectorRhino.UI.RhinoWebUIBindings());
+        if (webView2 != null)
+        {
+          Microsoft.Web.WebView2.Core.CoreWebView2 coreWebView2 = webView2.CoreWebView2;
+          if (coreWebView2 != null)
+            coreWebView2.AddHostObjectToScript("UiBindings", new Speckle.ConnectorRhino.UI.RhinoWebUIBindings());
+        }
 
         // old method
         if (e.Uri.Scheme == "myscheme")
@@ -65,6 +69,15 @@ namespace SpeckleRhino
       layout.AddSeparateRow(webView, null);
       layout.Add(null);
       Content = layout;
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+      if (disposing && (webView != null))
+      {
+        webView.Dispose();
+      }
+      base.Dispose(disposing);
     }
 
     public string Title { get; }
