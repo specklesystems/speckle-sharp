@@ -918,31 +918,21 @@ namespace Objects.Converter.Revit
           break;
         case InternalOrigin:
           break;
-        default:
-          break;
       }
 
       // Second, if this is a linked doc get the transform and adjust
-      var linkInstanceTransform = DB.Transform.Identity;
       if (doc.IsLinked)
       {
-        // get the linked doc base points
-        var linkedPoints = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
-        var linkedProjectPoint = linkedPoints.FirstOrDefault(o => o.IsShared == false);
-        var linkedSurveyPoint = linkedPoints.FirstOrDefault(o => o.IsShared == true);
-
         // get the linked doc instance transform
         var instance = RevitLinkInstances.FirstOrDefault(x => x.GetLinkDocument().PathName == doc.PathName);
         if (instance != null)
         {
-          linkInstanceTransform = instance.GetTotalTransform();
+          var linkInstanceTransform = instance.GetTotalTransform();
+          referencePointTransform = linkInstanceTransform.Inverse.Multiply(referencePointTransform);
         }
       }
 
-      // combine the reference point transform and the linked doc transform
-      var totalTransfrom = linkInstanceTransform.Inverse.Multiply(referencePointTransform);
- 
-      return totalTransfrom;
+      return referencePointTransform;
     }
 
     /// <summary>
