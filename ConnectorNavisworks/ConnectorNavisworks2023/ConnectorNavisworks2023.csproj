@@ -70,7 +70,6 @@
 		<ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
 	</ItemGroup>
 
-
 	<!-- References -->
 	<ItemGroup>
 		<Reference Include="System.ComponentModel.Composition">

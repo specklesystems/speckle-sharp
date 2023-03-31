@@ -9,7 +9,6 @@
 		<AssemblyName>SpeckleConnectorNavisworks</AssemblyName>
 		<RootNamespace>Speckle.ConnectorNavisworks</RootNamespace>
 		<ProjectGuid>{DEBC2174-5E31-4B6E-8680-690D75E50E2D}</ProjectGuid>
-		<Version>2.11.0-alpha3</Version>
 		
 		<TargetFramework>net48</TargetFramework>
 		<PlatformTarget>x64</PlatformTarget>
@@ -73,7 +72,6 @@
 
 	<!-- References -->
 	<ItemGroup>
-	
 		<Reference Include="System.ComponentModel.Composition">
 		  <Private>False</Private>
 		</Reference>
