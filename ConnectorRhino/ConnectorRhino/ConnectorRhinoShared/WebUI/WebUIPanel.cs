@@ -1,10 +1,6 @@
-﻿using System;
-using Eto.Drawing;
+﻿using Eto.Drawing;
 using Eto.Forms;
 using Rhino.UI;
-using Eto.Wpf;
-using Microsoft.Web.WebView2.Core;
-using JetBrains.Annotations;
 
 namespace SpeckleRhino
 {
