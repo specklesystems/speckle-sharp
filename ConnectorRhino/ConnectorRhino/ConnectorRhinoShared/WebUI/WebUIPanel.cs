@@ -58,8 +58,8 @@ namespace SpeckleRhino
         }
       };
 
-      webView.Url = new System.Uri("http://nas/dui3/button.html");
-      //webView.Url = new System.Uri("https://appui.speckle.systems");
+      //webView.Url = new System.Uri("http://nas/dui3/button.html");
+      webView.Url = new System.Uri("https://appui.speckle.systems");
 
       var layout = new DynamicLayout { DefaultSpacing = new Size(5, 5), Padding = new Padding(10) };
       layout.AddSeparateRow(webView, null);
