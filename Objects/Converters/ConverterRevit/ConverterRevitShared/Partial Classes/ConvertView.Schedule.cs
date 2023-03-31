@@ -22,6 +22,16 @@ namespace Objects.Converter.Revit
         applicationId = speckleTable.applicationId 
       };
 
+      if (docObj == null)
+      {
+        throw new NotSupportedException("Creating brand new schedules is currently not supported");
+      }
+
+      foreach (var row in speckleTable.Rows)
+      {
+
+      }
+
       return appObj;
     }
     private DataTable ScheduleToSpeckle(DB.ViewSchedule revitSchedule)
