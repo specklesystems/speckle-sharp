@@ -1,0 +1,27 @@
+{
+  "solution": {
+    "path": "../All.sln",
+    "projects": [
+      "ConnectorGrasshopper/ConnectorGrasshopper6/ConnectorGrasshopper6.csproj",
+      "ConnectorGrasshopper/ConnectorGrasshopper7/ConnectorGrasshopper7.csproj",
+      "ConnectorGrasshopper/ConnectorGrasshopperShared/ConnectorGrasshopperShared.shproj",
+      "ConnectorGrasshopper/ConnectorGrasshopperUtils/ConnectorGrasshopperUtils.csproj",
+      "ConnectorRhino/ConnectorRhino/ConnectorRhinoShared/ConnectorRhinoShared.shproj",
+      "ConnectorRhino/ConnectorRhino6/ConnectorRhino6.csproj",
+      "ConnectorRhino/ConnectorRhino7/ConnectorRhino7.csproj",
+      "Core/Core/Core.csproj",
+      "Core/Tests/TestsUnit.csproj",
+      "Core/Transports/DiskTransport/DiskTransport.csproj",
+      "Core/Transports/MongoDBTransport/MongoDBTransport.csproj",
+      "DesktopUI2/AvaloniaHwndHost/AvaloniaHwndHost.csproj",
+      "DesktopUI2/DesktopUI2/DesktopUI2.csproj",
+      "Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/ConverterGrasshopper6.csproj",
+      "Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/ConverterGrasshopper7.csproj",
+      "Objects/Converters/ConverterRhinoGh/ConverterRhino6/ConverterRhino6.csproj",
+      "Objects/Converters/ConverterRhinoGh/ConverterRhino7/ConverterRhino7.csproj",
+      "Objects/Converters/ConverterRhinoGh/ConverterRhinoGhShared/ConverterRhinoGhShared.shproj",
+      "Objects/Objects/Objects.csproj",
+      "Objects/Tests/Tests.csproj"
+    ]
+  }
+}

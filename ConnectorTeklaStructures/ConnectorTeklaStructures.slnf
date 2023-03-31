@@ -1,0 +1,21 @@
+{
+  "solution": {
+    "path": "..\\All.sln",
+    "projects": [
+      "ConnectorTeklaStructures\\ConnectorTeklaStructures2020\\ConnectorTeklaStructures2020.csproj",
+      "ConnectorTeklaStructures\\ConnectorTeklaStructures2021\\ConnectorTeklaStructures2021.csproj",
+      "ConnectorTeklaStructures\\ConnectorTeklaStructures2022\\ConnectorTeklaStructures2022.csproj",
+      "ConnectorTeklaStructures\\ConnectorTeklaStructuresShared\\ConnectorTeklaStructuresShared.shproj",
+      "Core\\Core\\Core.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "Objects\\Converters\\ConverterTeklaStructures\\ConverterTeklaStructures2020\\ConverterTeklaStructures2020.csproj",
+      "Objects\\Converters\\ConverterTeklaStructures\\ConverterTeklaStructures2021\\ConverterTeklaStructures2021.csproj",
+      "Objects\\Converters\\ConverterTeklaStructures\\ConverterTeklaStructures2022\\ConverterTeklaStructures2022.csproj",
+      "Objects\\Converters\\ConverterTeklaStructures\\ConverterTeklaStructuresShared\\ConverterTeklaStructuresShared.shproj",
+      "Objects\\Converters\\StructuralUtilities\\PolygonMesher\\PolygonMesher.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}

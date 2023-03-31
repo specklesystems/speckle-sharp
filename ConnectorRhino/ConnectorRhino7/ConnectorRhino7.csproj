@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
-    <Version>2.0.0-dev</Version>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
@@ -12,7 +11,8 @@
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
     <Product>ConnectorRhino7</Product>
-   
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+
     <!--NOTE-->
   <!--
     Since Rhino uses mono we build for win-x64 also on mac
@@ -42,6 +42,7 @@
     <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build">
        <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
