@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Autodesk.Revit.DB;
@@ -29,7 +30,7 @@ namespace Objects.Converter.Revit
 
       foreach (var row in speckleTable.Rows)
       {
-
+        Debug.WriteLine(row.Metadata.FirstOrDefault().Value);
       }
 
       return appObj;
@@ -48,7 +49,7 @@ namespace Objects.Converter.Revit
       var section = table.GetSectionData(SectionType.Body);
       for (var columnIndex = 0; columnIndex < section.NumberOfColumns; columnIndex++)
       {
-        speckleTable.DefineColumn<string>();
+        speckleTable.DefineColumn<string>(out var _);
       }
 
       foreach (SectionType tableSection in Enum.GetValues(typeof(SectionType)))
@@ -102,7 +103,7 @@ namespace Objects.Converter.Revit
           ElementApplicationIdsInRow(rowIndex, section, originalTableIds.ToList(), revitSchedule)
         }
       };
-      speckleTable.AddRow(metadata, rowData.ToArray());
+      speckleTable.AddRow(metadata: metadata, objects: rowData.ToArray());
     }
 
     private List<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, List<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule)

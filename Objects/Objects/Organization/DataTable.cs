@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using System.Runtime.Serialization;
 using System.Text;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
@@ -11,90 +13,100 @@ namespace Objects.Organization
   public class DataTable : Base
   {
     public DataTable() { }
-    public DataTable(int columnCount)
-    {
-      _columnCount = columnCount;
-    }
 
+    [JsonIgnore]
     public object this[int column, int row]
     {
-      get => _data[row][column];
-      set => _data[row][column] = value;
+      get => DataStorage.Data[row][column];
+      set => DataStorage.Data[row][column] = value;
     }
+    public DataStorage DataStorage { get; set; } = new DataStorage();
 
-    private int _rowCount = 0;
-    public int RowCount => _rowCount;
-
-    private int _columnCount = 0;
-    public int ColumnCount => _columnCount;
-
-    [Chunkable()]
-    [DetachProperty]
-    internal List<List<object>> _data { get; } = new List<List<object>>();
-    public List<IDataColumn> Columns { get; } = new List<IDataColumn>();
-    public List<DataRow> Rows { get; } = new List<DataRow>();
-
-    public void AddRow(Dictionary<string, object> metadata, params object[] objects)
+    #region Rows
+    public List<DataRow> Rows { get; set; } = new List<DataRow>();
+    public int RowCount => Rows.Count;
+    public void DefineRow(out DataRow dataRow, Dictionary<string, object> metadata = null, int index = -1)
     {
-      if (objects.Length != _columnCount)
-        throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {_columnCount} column. Partial and extended table rows are not accepted by the DataTable object.");
+      if (index < -1 || index > RowCount)
+        throw new ArgumentException($"Index of value {index} is outside of the acceptable range, -1:{RowCount}");
+
+      dataRow = new DataRow(this, metadata);
+
+      if (index == -1)
+      {
+        index = Rows.Count;
+      }
+
+      if (index < Rows.Count)
+      {
+        Rows.Insert(index, dataRow);
+        DataStorage.Data.Insert(index, new List<object>());
+      }
+      else
+      {
+        Rows.Add(dataRow);
+        DataStorage.Data.Add(new List<object>());
+      }
+    }
+    public void AddRow(Dictionary<string, object> metadata = null, int index = -1, params object[] objects)
+    {
+      #region validation
+      if (objects.Length != Columns.Count)
+        throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {Columns.Count} column. Partial and extended table rows are not accepted by the DataTable object.");
 
       var newRow = new List<object>();
-      for (var i = 0; i < _columnCount; i++)
+      for (var i = 0; i < Columns.Count; i++)
       {
         if (objects[i] != null 
-          && (objects[i].GetType() != Columns[i].Type 
-            || objects[i].GetType().IsSubclassOf(Columns[i].Type)))
+          && (objects[i].GetType() != Columns[i].DataType
+            || objects[i].GetType().IsSubclassOf(Columns[i].DataType)))
           throw new ArgumentException($"Trying to add value \"{objects[i]}\" of type \"{objects[i].GetType().Name}\" to table column at index {i}. This column is expecting a value of type {Columns[i].GetType().Name}");
 
         newRow.Add(objects[i]);
       }
+      #endregion
 
-      _data.Add(newRow);
-      Rows.Add(new DataRow(this, metadata));
-      _rowCount++;
+      DefineRow(out var dataRow, metadata, index);
+      dataRow.PopulateRow(objects);
     }
 
     public DataRow GetRow(int index)
     {
       return Rows[index];
     }
+    #endregion
 
-    public void DefineColumn<T>()
+    #region Columns
+    public List<IDataColumn> Columns { get; set; } = new List<IDataColumn>();
+    public int ColumnCount => Columns.Count;
+    public void DefineColumn<T>(out DataColumn newColumn, Dictionary<string, object> metadata = null, int index = -1)
     {
-      var newColumn = new DataColumn<T>(this);
-      Columns.Add(newColumn);
-      _columnCount++;
+      if (index < -1 || index > RowCount)
+        throw new ArgumentException($"Index of value {index} is outside of the acceptable range, -1:{RowCount}");
+
+      newColumn = new DataColumn(this, typeof(T), metadata);
+
+      if (index == -1)
+      {
+        index = Columns.Count;
+      }
+
+      if (index < Columns.Count)
+        Columns.Insert(index, newColumn);
+      else
+        Columns.Add(newColumn);
     }
 
-    public void AddColumn<T>(int index = -1, params T[] objects)
+    public void AddColumn<T>(Dictionary<string, object> metadata = null, int index = -1, params object[] objects)
     {
       if (objects.Length == 0)
         throw new ArgumentException("No objects provided. Use \"DefineColumn\" to define an empty column");
 
-      if (objects.Length != _rowCount)
-        throw new ArgumentException($"\"AddColumn\" method was passed {objects.Length} objects, but the DataTable has {_rowCount} rows. Partial and extended table columns are not accepted by the DataTable object.");
+      if (objects.Length != Rows.Count)
+        throw new ArgumentException($"\"AddColumn\" method was passed {objects.Length} objects, but the DataTable has {Rows.Count} rows. Partial and extended table columns are not accepted by the DataTable object.");
 
-      if (index > _rowCount || index < -1)
-        throw new ArgumentException($"Column index {index} is out of range");
-
-      if (index == -1)
-      {
-        index = objects.Length - 1;
-      }
-
-      DefineColumn<T>();
-      for (var i = 0; i < objects.Length; i++ )
-      {
-        if (index < objects.Length)
-        {
-          _data[i].Insert(index, objects[i]);
-        }
-        else
-        {
-          _data[i].Add(objects[i]);
-        }
-      }
+      DefineColumn<T>(out var newColumn, metadata, index);
+      newColumn.Populate(objects);
     }
 
     public IDataColumn GetColumn(int index)
@@ -102,25 +114,26 @@ namespace Objects.Organization
       return Columns[index];
     }
 
-    private void AddCellValue()
-    {
-
-    }
+    #endregion
   }
 
-  public class TableData : Base
+  public class DataStorage : Base
   {
-
+    [Chunkable()]
+    [DetachProperty]
+    public List<List<object>> Data { get; set; } = new List<List<object>>();
   }
 
   public class DataRow : Base
   {
     public int RowIndex => ParentTable.Rows.FindIndex(row => row == this);
     public DataRow() { }
-    public DataRow(DataTable table, Dictionary<string, object> metadata)
+    public DataRow(DataTable table, Dictionary<string, object> metadata = null)
     {
       ParentTable = table;
-      Metadata = metadata;
+
+      if (metadata != null)
+        Metadata = metadata;
     }
     //public DataRow(params T[] objects)
     //{
@@ -130,52 +143,71 @@ namespace Objects.Organization
     {
       get
       {
-        return ParentTable._data[RowIndex];
+        return ParentTable.DataStorage.Data[RowIndex];
       }
     }
     public IEnumerator GetEnumerator()
     {
       return CellData.GetEnumerator();
     }
-    public Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
+    public Dictionary<string, object> Metadata { get; set;  } = new Dictionary<string, object>();
 
     [DetachProperty]
-    public DataTable ParentTable { get; }
+    public DataTable ParentTable { get; set; }
 
+    [JsonIgnore]
     public object this[int index]
     {
-      get => ParentTable._data[RowIndex][index];
-      set => ParentTable._data[RowIndex][index] = value;
+      get
+      {
+        VerifyDataTableExists();
+        return ParentTable.DataStorage.Data[RowIndex][index];
+      }
+      set
+      {
+        VerifyDataTableExists();
+        ParentTable.DataStorage.Data[RowIndex][index] = value;
+      }
+    }
+
+    private void VerifyDataTableExists()
+    {
+      if (ParentTable == null)
+        throw new Exception("DataRow must be added to a DataTable using the \"DataTable.AddRow()\" method before data can be added to the DataRow");
+    }
+
+    internal void PopulateRow(object[] objects)
+    {
+      ParentTable.DataStorage.Data[RowIndex] = new List<object>(objects);
     }
   }
   public interface IDataColumn : IEnumerable
   {
-    public DataTable ParentTable { get; }
-    public Type Type { get; }
+    public DataTable ParentTable { get; set; }
+    public Type DataType { get; set; }
   }
-  
-  public class DataColumn<T> : Base, IDataColumn
+
+  public class DataColumn : Base, IDataColumn
   {
     [JsonIgnore]
-    public Type Type => typeof(T);
-    public int ColumnIndex => ParentTable.Columns.FindIndex(col => col as DataColumn<T> == this);
+    public Type DataType { get; set; } = typeof(object);
+    public int ColumnIndex => ParentTable.Columns.FindIndex(col => col == this);
     public DataColumn() { }
-    public DataColumn(DataTable table) 
+    public DataColumn(DataTable table, Type type, Dictionary<string, object> metadata = null)
     {
       ParentTable = table;
+      DataType = type;
+      if (metadata != null)
+        Metadata = metadata;
     }
-    //public DataColumn(params T[] objects)
-    //{
-    //  CellData.AddRange(objects);
-    //}
-    public IEnumerable<T> CellData 
-    { 
+    public IEnumerable CellData
+    {
       get
       {
         var index = ColumnIndex;
-        foreach (var row in ParentTable._data)
+        foreach (var row in ParentTable.DataStorage.Data)
         {
-          yield return (T)row[index];
+          yield return row[index];
         }
       }
     }
@@ -183,39 +215,94 @@ namespace Objects.Organization
     {
       return CellData.GetEnumerator();
     }
-    public Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
 
-    [DetachProperty]
-    public DataTable ParentTable { get; }
-
-    public T this[int index]
+    internal void Populate(object[] objects)
     {
-      get => (T)ParentTable._data[index][ColumnIndex];
-      set => ParentTable._data[index][ColumnIndex] = value;
+      var index = ColumnIndex;
+      for (var i = 0; i < ParentTable.Rows.Count; i++)
+      {
+        if (index < ParentTable.Rows.Count)
+        {
+          ParentTable.DataStorage.Data[i].Insert(index, objects[i]);
+        }
+        else
+        {
+          ParentTable.DataStorage.Data[i].Add(objects[i]);
+        }
+      }
     }
 
-    //internal void Add(T value)
-    //{
-    //  CellData.Add(value);
-    //}
+    public Dictionary<string, object> Metadata { get; set; } = new Dictionary<string, object>();
 
-    //internal void InsertCell(int index, object value)
-    //{
-    //  CellData.Insert(index, value);
-    //}
+    [DetachProperty]
+    public DataTable ParentTable { get; set; }
 
-    //internal void AddMetadata(string key, object value)
-    //{
-    //  Metadata.Add(key, value);
-    //}
-
-    //internal void RemoveCell(object value)
-    //{
-    //  CellData.Remove(value);
-    //}
-    //internal void RemoveCellAt(int index)
-    //{
-    //  CellData.RemoveAt(index);
-    //}
+    [JsonIgnore]
+    public object this[int index]
+    {
+      get => ParentTable.DataStorage.Data[index][ColumnIndex];
+      set => ParentTable.DataStorage.Data[index][ColumnIndex] = value;
+    }
   }
+
+  //public class DataColumn<T> : Base, IDataColumn
+  //{
+  //  [JsonIgnore]
+  //  public Type DataType => typeof(T);
+  //  public int ColumnIndex => ParentTable.Columns.FindIndex(col => col as DataColumn<T> == this);
+  //  public DataColumn() { }
+  //  public DataColumn(DataTable table, Dictionary<string, object> metadata = null) 
+  //  {
+  //    ParentTable = table;
+  //    if (metadata != null)
+  //      Metadata = metadata;
+  //  }
+  //  //public DataColumn(params T[] objects)
+  //  //{
+  //  //  CellData.AddRange(objects);
+  //  //}
+  //  public IEnumerable<T> CellData 
+  //  { 
+  //    get
+  //    {
+  //      var index = ColumnIndex;
+  //      foreach (var row in ParentTable.DataStorage.Data)
+  //      {
+  //        yield return (T)row[index];
+  //      }
+  //    }
+  //  }
+  //  public IEnumerator GetEnumerator()
+  //  {
+  //    return CellData.GetEnumerator();
+  //  }
+
+  //  internal void Populate(T[] objects)
+  //  {
+  //    var index = ColumnIndex;
+  //    for (var i = 0; i < ParentTable.Rows.Count; i++)
+  //    {
+  //      if (index < ParentTable.Rows.Count)
+  //      {
+  //        ParentTable.DataStorage.Data[i].Insert(index, objects[i]);
+  //      }
+  //      else
+  //      {
+  //        ParentTable.DataStorage.Data[i].Add(objects[i]);
+  //      }
+  //    }
+  //  }
+
+  //  public Dictionary<string, object> Metadata { get; } = new Dictionary<string, object>();
+
+  //  [DetachProperty]
+  //  public DataTable ParentTable { get; }
+
+  //  [JsonIgnore]
+  //  public T this[int index]
+  //  {
+  //    get => (T)ParentTable.DataStorage.Data[index][ColumnIndex];
+  //    set => ParentTable.DataStorage.Data[index][ColumnIndex] = value;
+  //  }
+  //}
 }
