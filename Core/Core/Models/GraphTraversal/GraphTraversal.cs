@@ -48,9 +48,8 @@ namespace Speckle.Core.Models.GraphTraversal
 
         Base current = head.current;
         var activeRule = GetActiveRuleOrDefault(current);
-        var membersToTraverse = activeRule.MembersToTraverse(current).ToList();
 
-        foreach (string childProp in membersToTraverse)
+        foreach (string childProp in activeRule.MembersToTraverse(current))
         {
           TraverseMemberToStack(stack, current[childProp], childProp, head);
         }
