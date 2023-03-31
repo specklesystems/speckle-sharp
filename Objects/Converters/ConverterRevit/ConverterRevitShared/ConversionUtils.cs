@@ -1,23 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using ElementType = Autodesk.Revit.DB.ElementType;
-
-using Speckle.Core.Helpers;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
-
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Helpers;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
+using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
+using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -299,8 +297,8 @@ namespace Objects.Converter.Revit
 
       //exclude parameters that don't have a value and those pointing to other elements as we don't support them
       var revitParameters = element.Parameters.Cast<DB.Parameter>()
-        .Where(x => x.HasValue
-          && x.StorageType != StorageType.ElementId
+        .Where(x => x.HasValue 
+          && x.StorageType != StorageType.ElementId 
           && !exclusions.Contains(GetParamInternalName(x))).ToList();
 
       //exclude parameters that failed to convert
@@ -861,19 +859,6 @@ namespace Objects.Converter.Revit
     const string ProjectBase = "Project Base";
     const string Survey = "Survey";
 
-    //cached during conversion
-    private List<RevitLinkInstance> _revitLinkInstances = null;
-    private List<RevitLinkInstance> RevitLinkInstances
-    {
-      get
-      {
-        if (_revitLinkInstances == null)
-          _revitLinkInstances = new FilteredElementCollector(Doc).OfClass(typeof(RevitLinkInstance)).ToElements().Cast<RevitLinkInstance>().ToList();
-
-        return _revitLinkInstances;
-      }
-    }
-
     private Dictionary<string, DB.Transform> _docTransforms = new Dictionary<string, DB.Transform>();
     private DB.Transform GetDocReferencePointTransform(Document doc)
     {
@@ -900,36 +885,64 @@ namespace Objects.Converter.Revit
     ////////////////////////////////////////////////
     private DB.Transform GetReferencePointTransform(string type, Document doc)
     {
-      // first get the main doc base points and reference setting transform
+      // get the correct base point from
+      // settings
       var referencePointTransform = DB.Transform.Identity;
-      var points = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
+
+      var points = new FilteredElementCollector(doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().ToList();
       var projectPoint = points.FirstOrDefault(o => o.IsShared == false);
       var surveyPoint = points.FirstOrDefault(o => o.IsShared == true);
+      var point = new XYZ();
+
+      //in the case of linked models, it seems they get aligned base off their surey point
+      //the translations below for linked models were retrieved a bit empirically
+      // TODO: This linked model code is hacky and incorrect for any linked models that have been moved! Use the `RevitLinkInstance` class transform to determine the full transform between an element in a linked model in the coordinate system of the main doc.
+      // See: https://thebuildingcoder.typepad.com/blog/2013/11/determining-host-document-location-of-a-linked-element.html
       switch (type)
       {
-        case ProjectBase: // note that the project base (ui) rotation is registered on the survey pt, not on the base point
-            referencePointTransform = DB.Transform.CreateTranslation(projectPoint.Position);
+        case ProjectBase:
+          if (projectPoint != null)
+          {
+            point = projectPoint.Position;
+            if (doc.IsLinked && surveyPoint != null)
+            {
+              var mainProjectPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == false);
+              point = point + mainProjectPoint.SharedPosition + surveyPoint.Position;
+            }
+            // rotation to base point is registered by survey point
+            referencePointTransform = DB.Transform.CreateTranslation(point);
+          }
           break;
         case Survey:
-          // note that the project base (ui) rotation is registered on the survey pt, not on the base point
-          // retrieve the survey point rotation from the project point
-          var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
-          referencePointTransform = DB.Transform.CreateTranslation(surveyPoint.Position).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+          if (surveyPoint != null)
+          {
+
+            point = surveyPoint.Position;
+            if (doc.IsLinked)
+            {
+              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
+              point = point + mainSurveyPoint.SharedPosition;
+            }
+
+            // !! retrieve survey point angle from project base point, null in some cases
+            var angle = projectPoint.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM)?.AsDouble() ?? 0;
+            referencePointTransform = DB.Transform.CreateTranslation(point).Multiply(DB.Transform.CreateRotation(XYZ.BasisZ, angle));
+          }
           break;
         case InternalOrigin:
-          break;
-      }
+          if (surveyPoint != null)
+          {
+            if (doc.IsLinked)
+            {
+              var mainSurveyPoint = new FilteredElementCollector(Doc).OfClass(typeof(BasePoint)).Cast<BasePoint>().FirstOrDefault(o => o.IsShared == true);
+              point = surveyPoint.Position - mainSurveyPoint.Position + mainSurveyPoint.SharedPosition;
+            }
 
-      // Second, if this is a linked doc get the transform and adjust
-      if (doc.IsLinked)
-      {
-        // get the linked doc instance transform
-        var instance = RevitLinkInstances.FirstOrDefault(x => x.GetLinkDocument().PathName == doc.PathName);
-        if (instance != null)
-        {
-          var linkInstanceTransform = instance.GetTotalTransform();
-          referencePointTransform = linkInstanceTransform.Inverse.Multiply(referencePointTransform);
-        }
+            referencePointTransform = DB.Transform.CreateTranslation(point);
+          }
+          break;
+        default:
+          break;
       }
 
       return referencePointTransform;
