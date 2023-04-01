@@ -18,6 +18,8 @@ namespace Speckle.ConnectorRevit.Entry
 
     internal static DockablePaneId PanelId = new DockablePaneId(new Guid("{A3D4C26B-238A-440A-ACA3-79F0B8862AB7}"));
 
+    public static ConnectorBindingsRevit Bindings { get; set; }
+
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
       try

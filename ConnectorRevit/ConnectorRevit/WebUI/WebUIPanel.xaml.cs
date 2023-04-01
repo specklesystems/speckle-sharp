@@ -11,7 +11,7 @@ namespace Speckle.ConnectorRevit
 {
   public partial class WebUIPanel : Page, Autodesk.Revit.UI.IDockablePaneProvider
   {
-    public WebUIPanel(WebUIBindings webUIBindings, string address = "https://appui.speckle.systems")
+    public WebUIPanel(WebUIBindings webUIBindings, string address = "https://dashing-haupia-e8f6e3.netlify.app/")
     {
       //InitializeCef();
       InitializeComponent();

@@ -2,6 +2,8 @@
 using System.Text;
 using CefSharp;
 using CefSharp.Wpf;
+using DesktopUI2.ViewModels;
+using Speckle.ConnectorRevit.Entry;
 
 namespace WebUI
 {
@@ -13,11 +15,8 @@ namespace WebUI
     {
     }
 
-    public virtual void ShowAccountsPopup()
-    {
-      // mimic an abract function call
-      SendStream(null);
-    }
+    public abstract void ShowAccountsPopup();
+
 
     public abstract void SendStream(string args);
 
