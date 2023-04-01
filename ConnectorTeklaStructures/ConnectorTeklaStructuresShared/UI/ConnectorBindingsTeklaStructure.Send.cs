@@ -34,7 +34,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
     public override async System.Threading.Tasks.Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var kit = KitManager.GetDefaultKit();
-      //var converter = new ConverterTeklaStructures();
       var converter = kit.LoadConverter(ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
       converter.SetContextDocument(Model);
       Exceptions.Clear();
@@ -60,8 +59,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       if (totalObjectCount == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
-        return null;
+        throw new InvalidOperationException(
+          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
       }
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -75,7 +74,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       foreach (ModelObject obj in selectedObjects)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
         {
           return null;
         }
@@ -102,8 +101,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
         {
           converted = converter.ConvertToSpeckle(obj);
         }
-        catch (Exception ex) 
-        { }
+        catch (Exception ex)
+        {
+          //TODO: log
+        }
 
         if (converted == null)
         {
@@ -131,14 +132,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       if (objCount == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return null;
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
-        return null;
-      }
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       var streamId = state.StreamId;
       var client = state.Client;
@@ -147,23 +144,14 @@ namespace Speckle.ConnectorTeklaStructures.UI
       progress.Max = totalObjectCount;
       var objectId = await Operations.Send(
           @object: commitObj,
-          cancellationToken: progress.CancellationTokenSource.Token,
+          cancellationToken: progress.CancellationToken,
           transports: transports,
           onProgressAction: dict => progress.Update(dict),
-          onErrorAction: (Action<string, Exception>)((s, e) =>
-          {
-            progress.Report.LogOperationError(e);
-            progress.CancellationTokenSource.Cancel();
-          }),
+          onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
           disposeTransports: true
           );
-
-
-      if (progress.Report.OperationErrorsCount != 0)
-      {
-        //RaiseNotification($"Failed to send: \n {Exceptions.Last().Message}");
-        return null;
-      }
+      
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       var actualCommit = new CommitCreateInput
       {
@@ -176,23 +164,8 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-
-        //await state.RefreshStream();
-        state.PreviousCommitId = commitId;
-        return commitId;
-        //PersistAndUpdateStreamInFile(state);
-        //RaiseNotification($"{objCount} objects sent to {state.Stream.name}. 🚀");
-      }
-      catch (Exception e)
-      {
-        //Globals.Notify($"Failed to create commit.\n{e.Message}");
-        progress.Report.LogOperationError(e);
-      }
-      return null;
-      //return state;
+      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      return commitId;
     }
 
     #endregion

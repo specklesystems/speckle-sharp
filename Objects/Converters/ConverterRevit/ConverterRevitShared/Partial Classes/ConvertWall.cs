@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 using OG = Objects.Geometry;
@@ -45,7 +45,7 @@ namespace Objects.Converter.Revit
       var baseCurve = CurveToNative(speckleWall.baseLine).get_Item(0);
 
       List<string> joinSettings = new List<string>();
-      
+
       if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
         joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
 
@@ -187,7 +187,7 @@ namespace Objects.Converter.Revit
             speckleWall.elements.Add(WallToSpeckle(wall, out List<string> stackedWallNotes));
         }
 
-        speckleWall.displayValue = GetElementDisplayMesh(revitWall,
+        speckleWall.displayValue = GetElementDisplayValue(revitWall,
           new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       }
       else
@@ -248,8 +248,8 @@ namespace Objects.Converter.Revit
         solidMullions.AddRange(GetElementSolids(wall.Document.GetElement(mullionId)));
       }
 
-      var meshPanels = GetMeshesFromSolids(solidPanels, wall.Document);
-      var meshMullions = GetMeshesFromSolids(solidMullions, wall.Document);
+      var meshPanels = ConvertSolidsByRenderMaterial(solidPanels, wall.Document);
+      var meshMullions = ConvertSolidsByRenderMaterial(solidMullions, wall.Document);
 
       return (meshPanels, meshMullions);
     }
@@ -270,7 +270,7 @@ namespace Objects.Converter.Revit
       var voidsList = new List<OG.Polycurve>();
       for (var i = 1; i < profile.Size; i++)
       {
-        var segments = CurveListToSpeckle(profile.get_Item(i).Cast<Curve>().ToList());
+        var segments = CurveListToSpeckle(profile.get_Item(i).Cast<Curve>().ToList(), wall.Document);
         if (segments.segments.Count() > 2)
           voidsList.Add(segments);
       }

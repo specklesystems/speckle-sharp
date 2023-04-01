@@ -15,7 +15,12 @@ namespace DesktopUI2.ViewModels
 {
   public class ProgressViewModel : ReactiveObject
   {
+    /// <summary>
+    /// Cancellation token source for the current receive/send/preview.
+    /// Avoid calling <see cref="System.Threading.CancellationTokenSource.Cancel()"/> unless the user has requested a Cancel.
+    /// </summary>
     public CancellationTokenSource CancellationTokenSource { get; set; } = new CancellationTokenSource();
+    public CancellationToken CancellationToken => CancellationTokenSource.Token;
 
     public ProgressReport Report { get; set; } = new ProgressReport();
 

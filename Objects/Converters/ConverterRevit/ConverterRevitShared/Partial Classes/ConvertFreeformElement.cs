@@ -1,6 +1,7 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using ConverterRevitShared.Revit;
 using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
@@ -14,7 +15,7 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public ApplicationObject FreeformElementToNative( Objects.BuiltElements.Revit.FreeformElement freeformElement )
+    public ApplicationObject FreeformElementToNative(Objects.BuiltElements.Revit.FreeformElement freeformElement)
     {
       var appObj = new ApplicationObject(freeformElement.id, freeformElement.speckle_type) { applicationId = freeformElement.applicationId };
 
@@ -38,7 +39,7 @@ namespace Objects.Converter.Revit
             }
             break;
           case Objects.Geometry.Mesh mesh:
-            var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort)
+            var meshSolids = MeshToNative(mesh, DB.TessellatedShapeBuilderTarget.Solid, DB.TessellatedShapeBuilderFallback.Abort, mesh["renderMaterial"] as RenderMaterial)
                 .Select(m => m as DB.Solid);
             solids.AddRange(meshSolids);
             break;
@@ -60,7 +61,16 @@ namespace Objects.Converter.Revit
       }
       catch { }
 
-      var freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      FamilyInstance freeform;
+      if (Doc.IsFamilyDocument)
+      {
+        freeform = Doc.FamilyCreate.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      }
+      else
+      {
+        freeform = Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+      }
+
       appObj.Update(status: ApplicationObject.State.Created, createdId: freeform.UniqueId, convertedItem: freeform);
       SetInstanceParameters(freeform, freeformElement);
       return appObj;
@@ -208,5 +218,35 @@ namespace Objects.Converter.Revit
       notes.Add($"Created temp family {tempFamilyPath}");
       return tempFamilyPath;
     }
+    
+    private DB.FamilyInstance CreateFreeformElementFamily(List<Solid> solids, string name, string templateName)
+    {
+      var templatePath = GetTemplatePath(templateName);
+      if (!File.Exists(templatePath))
+        throw new FileNotFoundException($"Could not find Generic Model rft file - {templatePath}");
+      
+      var famDoc = Doc.Application.NewFamilyDocument(templatePath);
+
+      using (var t = new Transaction(famDoc, "Create Freeform Elements"))
+      {
+        t.Start();
+        foreach (var s in solids)
+          FreeFormElement.Create(famDoc, s);
+        t.Commit();
+      }
+      
+      var famName = "SpeckleFreeform_" + name;
+      var tempFamilyPath = Path.Combine(Path.GetTempPath(), famName + ".rfa");
+      var so = new SaveAsOptions { OverwriteExistingFile = true};
+      famDoc.SaveAs(tempFamilyPath, so);
+      famDoc.Close();
+      
+      Doc.LoadFamily(tempFamilyPath, new FamilyLoadOption(), out var fam);
+        
+      var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as FamilySymbol;
+      symbol.Activate();
+      return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
+    }
+
   }
 }

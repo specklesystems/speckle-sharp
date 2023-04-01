@@ -13,6 +13,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Serilog;
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
@@ -41,85 +42,13 @@ namespace Speckle.ConnectorTeklaStructures.UI
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
 
-      if (converter == null)
-      {
-        throw new Exception("Could not find any Kit!");
-        //RaiseNotification($"Could not find any Kit!");
-        progress.CancellationTokenSource.Cancel();
-        //return null;
-      }
-
-
-      var stream = await state.Client.StreamGet(state.StreamId);
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
-        return null;
-      }
-
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
-
       Exceptions.Clear();
 
-      Commit commit = null;
-      if (state.CommitId == "latest")
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        commit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-      }
-      string referencedObject = commit.referencedObject;
-
-      state.LastSourceApp = commit.sourceApplication;
-
-      var commitObject = await Operations.Receive(
-                referencedObject,
-                progress.CancellationTokenSource.Token,
-                transport,
-                onProgressAction: dict => progress.Update(dict),
-                onErrorAction: (Action<string, Exception>)((s, e) =>
-                {
-                  progress.Report.LogOperationError(e);
-                  progress.CancellationTokenSource.Cancel();
-                }),
-               onTotalChildrenCountKnown: count => { progress.Max = count; },
-                disposeTransports: true
-                );
-
-      if (progress.Report.OperationErrorsCount != 0)
-      {
-        return state;
-      }
-
-      try
-      {
-        await state.Client.CommitReceived(new CommitReceivedInput
-        {
-          streamId = stream?.id,
-          commitId = commit?.id,
-          message = commit?.message,
-          sourceApplication = ConnectorTeklaStructuresUtils.TeklaStructuresAppName
-        });
-      }
-      catch
-      {
-        // Do nothing!
-      }
-
-
-      if (progress.Report.OperationErrorsCount != 0)
-      {
-        return state;
-      }
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-      {
-        return null;
-      }
-
+      Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      state.LastCommit = myCommit;
+      Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
+      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
+      
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());

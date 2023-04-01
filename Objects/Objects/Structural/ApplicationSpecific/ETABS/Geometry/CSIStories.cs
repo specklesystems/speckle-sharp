@@ -13,7 +13,7 @@ namespace Objects.Structural.CSI.Analysis
     public int NumberStories { get; set; }
 
     [DetachProperty]
-    public List<CSIStorey> CSIStory{ get; set; }
+    public List<CSIStorey> CSIStory { get; set; }
 
     public CSIStories() { }
 
@@ -29,7 +29,7 @@ namespace Objects.Structural.CSI.Analysis
     public double SpliceHeight { get; set; }
     public int Color { get; set; }
 
-    public CSIStorey(string name,double elevation,double storeyHeight, bool isMasterStory, string similarToStory, bool spliceAbove, double spliceHeight)
+    public CSIStorey(string name, double elevation, double storeyHeight, bool isMasterStory, string similarToStory, bool spliceAbove, double spliceHeight)
     {
       this.name = name;
       this.elevation = elevation;

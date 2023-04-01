@@ -108,9 +108,13 @@ namespace Speckle.ConnectorRevit.Entry
     private void ControlledApplication_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
     {
       try
-      {
-        AppInstance = new UIApplication(sender as Application);
+      {        
+        // We need to hook into the AssemblyResolve event before doing anything else
+        // or we'll run into unresolved issues loading dependencies
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+        AppInstance = new UIApplication(sender as Application);
+
+        Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
 
         //DUI2 - pre build app, so that it's faster to open up
         SpeckleRevitCommand.InitAvalonia();
@@ -120,7 +124,6 @@ namespace Speckle.ConnectorRevit.Entry
         SchedulerCommand.Bindings = bindings;
 
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
-        Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
         Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
         SpeckleRevitCommand.RegisterPane();
@@ -131,7 +134,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
         var td = new TaskDialog("Could not load Speckle");
         td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");

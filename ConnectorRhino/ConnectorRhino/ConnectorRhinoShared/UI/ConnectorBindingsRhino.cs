@@ -7,16 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using DesktopUI2;
-using DesktopUI2.Models;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-using DesktopUI2.ViewModels;
+
 using Rhino;
 using Rhino.Display;
 using Rhino.DocObjects;
 using Rhino.Geometry;
 using Rhino.Render;
+
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -24,8 +21,14 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
+
+using DesktopUI2;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
+using DesktopUI2.ViewModels;
+using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace SpeckleRhino
 {
@@ -37,6 +40,8 @@ namespace SpeckleRhino
     private static string UserStrings = "userStrings";
     private static string UserDictionary = "userDictionary";
     private static string ApplicationIdKey = "applicationId";
+    private static string LayersString = "Layers";
+    private static string ElementsString = "elements";
 
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
     public Dictionary<string, Base> StoredObjectParams = new Dictionary<string, Base>(); // these are to store any parameters found on parent objects to add to fallback objects
@@ -163,7 +168,7 @@ namespace SpeckleRhino
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var layers = Doc.Layers.ToList().Where(layer => !layer.IsDeleted).Select(layer => layer.FullPath).ToList();
-      var projectInfo = new List<string> { "Named Views", "Standard Views" };
+      var projectInfo = new List<string> { "Named Views", "Standard Views", "Layers" };
 
       return new List<ISelectionFilter>()
       {
@@ -241,31 +246,22 @@ namespace SpeckleRhino
     #region receiving 
     public override bool CanPreviewReceive => true;
 
-    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Block") || @object.speckle_type.Contains("View");
+    private static bool IsPreviewIgnore(Base @object) => @object.speckle_type.Contains("Instance") || @object.speckle_type.Contains("View") || @object.speckle_type.Contains("Collection");
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
+
       // first check if commit is the same and preview objects have already been generated
-      Commit commit = await GetCommitFromState(state, progress);
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       progress.Report = new ProgressReport();
 
       if (commit.id != SelectedReceiveCommit)
       {
         // check for converter 
         var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-        if (converter == null)
-        {
-          progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-          return null;
-        }
         converter.SetContextDocument(Doc);
 
-        var commitObject = await GetCommit(commit, state, progress);
-        if (commitObject == null)
-        {
-          progress.Report.LogOperationError(new Exception($"Could not retrieve commit {commit.id} from server"));
-          progress.CancellationTokenSource.Cancel();
-        }
+        var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
         SelectedReceiveCommit = commit.id;
         ClearStorage();
@@ -337,7 +333,7 @@ namespace SpeckleRhino
       Doc.Views.ActiveView.ActiveViewport.ZoomBoundingBox(PreviewConduit.bbox);
       Doc.Views.Redraw();
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+      if (progress.CancellationToken.IsCancellationRequested)
       {
         PreviewConduit.Enabled = false;
         ResetDocument();
@@ -346,23 +342,23 @@ namespace SpeckleRhino
 
       return state;
     }
-
+    
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="state"></param>
+    /// <param name="progress"></param>
+    /// <exception cref="KitException">When the <see cref="KitManager.GetDefaultKit()"/> fails to successfully find/load a converter to serve <see cref="Utils.RhinoAppName"/></exception>>
+    /// <exception cref="OperationCanceledException">When cancellation is requested via <paramref name="progress"/></exception>
+    /// <returns></returns>
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-        return null;
-      }
       converter.SetContextDocument(Doc);
       converter.ReceiveMode = state.ReceiveMode;
 
-      Commit commit = await GetCommitFromState(state, progress);
-      if (commit == null) return null;
-
-      state.LastSourceApp = commit.sourceApplication;
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      state.LastCommit = commit;
 
       if (SelectedReceiveCommit != commit.id)
       {
@@ -373,18 +369,18 @@ namespace SpeckleRhino
       progress.Report = new ProgressReport();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
-      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
-
-      // get commit layer name
-      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
-
+      
       Base commitObject = null;
       if (Preview.Count == 0)
-        commitObject = await GetCommit(commit, state, progress);
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      RhinoApp.InvokeOnUiThread((Action)delegate
+      {
+        commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
+        await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.RhinoAppName);
+      }
+      
+      // get commit layer name
+      var undoRecord = Doc.BeginUndoRecord($"Speckle bake operation for {state.CachedStream.name}");
+      var commitLayerName = DesktopUI2.Formatting.CommitInfo(state.CachedStream.name, state.BranchName, commit.id);
+      RhinoApp.InvokeOnUiThread((Action)(() =>
       {
         RhinoDoc.ActiveDoc.Notes += "%%%" + commitLayerName; // give converter a way to access commit layer info
 
@@ -398,9 +394,9 @@ namespace SpeckleRhino
           foreach (var previewObj in Preview)
           {
             var isPreviewIgnore = false;
+            converter.Report.Log(previewObj); // Log object so converter can access
             if (previewObj.Convertible)
             {
-              converter.Report.Log(previewObj); // Log object so converter can access
               var storedObj = StoredObjects[previewObj.OriginalId];
               if (storedObj == null)
               {
@@ -408,6 +404,7 @@ namespace SpeckleRhino
                   logItem: $"Couldn't retrieve stored object from bindings");
                 continue;
               }
+
               isPreviewIgnore = IsPreviewIgnore(storedObj);
               if (!isPreviewIgnore)
               {
@@ -425,55 +422,101 @@ namespace SpeckleRhino
 
             if (!isPreviewIgnore && (previewObj.Converted == null || previewObj.Converted.Count == 0))
             {
-              var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
-              if (convertedFallback != null && convertedFallback.Count() > 0)
+              var convertedFallback =
+                previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0).ToList();
+              if (convertedFallback.Any())
                 previewObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
               else
-                previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
+                previewObj.Update(status: ApplicationObject.State.Failed,
+                  logItem: $"Couldn't convert object or any fallback values");
             }
 
             progress.Report.Log(previewObj);
-            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            if (progress.CancellationToken.IsCancellationRequested)
               return;
           }
+
           progress.Report.Merge(converter.Report);
         }
-
+        else
+        {
+          Preview.ForEach(o => o.Status = ApplicationObject.State.Unknown);
+        }
         if (progress.Report.OperationErrorsCount != 0)
           return;
 
+        #region layer creation
+
+        // sort by depth and create all the containers as layers first
+        var layers = new Dictionary<string, Layer>();
+        var containers = Preview.Select(o => o.Container).Distinct().ToList().OrderBy(path => path.Count(c => c == ':')).ToList();
+        foreach (var container in containers)
+        {
+          var path = state.ReceiveMode == ReceiveMode.Create ? $"{commitLayerName}{Layer.PathSeparator}{container}" : container;
+          Layer layer = null;
+
+          // try to see if there's a collection object first
+          var collection = Preview.Where(o => o.Container == container && o.Descriptor.Contains("Collection")).FirstOrDefault();
+          if (collection != null)
+          {
+            var storedCollection = StoredObjects[collection.OriginalId];
+            storedCollection["path"] = path; // needed by converter
+            converter.Report.Log(collection); // Log object so converter can access
+            var convertedCollection = converter.ConvertToNative(storedCollection) as List<object>;
+            if (convertedCollection != null && convertedCollection.Count > 0)
+            {
+              layer = convertedCollection.First() as Layer;
+              Preview[Preview.IndexOf(collection)] = converter.Report.ReportObjects[collection.OriginalId];
+            }
+          }
+
+          // otherwise create the layer here (old commits before collections implementations, or from apps not supporting collections)
+          else
+          {
+            layer = Doc.GetLayer(path, true);
+          }
+
+          if (layer == null)
+          {
+            progress.Report.OperationErrors.Add(new Exception($"Could not create layer [{path}]. Objects will be placed on default layer."));
+            continue;
+          }
+
+          layers.Add(layer.FullPath, layer);
+        }
+        #endregion
+
         foreach (var previewObj in Preview)
         {
+          if (previewObj.Status != ApplicationObject.State.Unknown) { continue; } // this has already been converted and baked
+          
           var isUpdate = false;
 
           // check receive mode & if objects need to be removed from the document after bake (or received objs need to be moved layers)
           var toRemove = new List<RhinoObject>();
-          var layer = previewObj.Container;
-          switch (state.ReceiveMode)
+          if (state.ReceiveMode == ReceiveMode.Update)
           {
-            case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-              toRemove = GetObjectsByApplicationId(previewObj.applicationId);
-              toRemove.ForEach(o => Doc.Objects.Delete(o));
+            toRemove = GetObjectsByApplicationId(previewObj.applicationId);
+            toRemove.ForEach(o => Doc.Objects.Delete(o));
 
-              if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+            if (!toRemove.Any()) // if no rhinoobjects were found, this could've been a view
+            {
+              var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
+              if (viewId != -1)
               {
-                var viewId = Doc.NamedViews.FindByName(previewObj.applicationId);
-                if (viewId != -1)
-                {
-                  isUpdate = true;
-                  Doc.NamedViews.Delete(viewId);
-                }
+                isUpdate = true;
+                Doc.NamedViews.Delete(viewId);
               }
-              break;
-            default:
-              layer = $"{commitLayerName}{Layer.PathSeparator}{previewObj.Container}"; // use the commit as the top level layer in create mode
-              break;
+            }
           }
           if (toRemove.Count() > 0) isUpdate = true;
 
-          // bake
-
+          // find layer and bake
           previewObj.CreatedIds.Clear(); // clear created ids before bake because these may be speckle ids from the preview
+          var path = state.ReceiveMode == ReceiveMode.Create ? $"{commitLayerName}{Layer.PathSeparator}{previewObj.Container}" : previewObj.Container;
+          var layer = layers.ContainsKey(path) ?
+            layers[path] :
+            Doc.GetLayer("Default", true);
 
           if (previewObj.Convertible)
           {
@@ -486,14 +529,14 @@ namespace SpeckleRhino
           {
             foreach (var fallback in previewObj.Fallback)
               BakeObject(fallback, converter, layer, previewObj);
-            previewObj.Status = previewObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == previewObj.Fallback.Count ?
+            previewObj.Status = previewObj.Fallback.Count(o => o.Status == ApplicationObject.State.Failed) == previewObj.Fallback.Count ?
               ApplicationObject.State.Failed : isUpdate ?
               ApplicationObject.State.Updated : ApplicationObject.State.Created;
           }
 
           progress.Report.Log(previewObj);
 
-          if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+          if (progress.CancellationToken.IsCancellationRequested)
             return;
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
@@ -503,7 +546,7 @@ namespace SpeckleRhino
         // undo notes edit
         var segments = Doc.Notes.Split(new string[] { "%%%" }, StringSplitOptions.None).ToList();
         Doc.Notes = segments[0];
-      });
+      }));
 
       Doc.Views.Redraw();
       Doc.EndUndoRecord(undoRecord);
@@ -534,47 +577,7 @@ namespace SpeckleRhino
       return match;
     }
 
-    // gets the state commit
-    private async Task<Commit> GetCommitFromState(StreamState state, ProgressViewModel progress)
-    {
-      Commit commit = null;
-      if (state.CommitId == "latest") //if "latest", always make sure we get the latest commit
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        commit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        var res = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-        commit = res;
-      }
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-      return commit;
-    }
-    private async Task<Base> GetCommit(Commit commit, StreamState state, ProgressViewModel progress)
-    {
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-      var commitObject = await Operations.Receive(
-        commit.referencedObject,
-        progress.CancellationTokenSource.Token,
-        transport,
-        onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (s, e) =>
-        {
-          progress.Report.LogOperationError(e);
-          progress.CancellationTokenSource.Cancel();
-        },
-        onTotalChildrenCountKnown: (c) => progress.Max = c,
-        disposeTransports: true
-        );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      return commitObject;
-    }
     
     /// <summary>
     /// Traverses the object graph, returning objects to be converted.
@@ -597,16 +600,20 @@ namespace SpeckleRhino
         if (parameters != null && !StoredObjectParams.ContainsKey(@base.id))
           StoredObjectParams.Add(@base.id, parameters);
       }
-      
+
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
         ApplicationObject NewAppObj()
         {
-          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          var speckleType = current.speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
             .LastOrDefault();
           return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
-        
+
+        // skip if it is the base commit collection
+        if (current.speckle_type.Contains("Collection") && string.IsNullOrEmpty(containerId))
+          return null;
+
         //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
@@ -629,23 +636,30 @@ namespace SpeckleRhino
           StoreObject(current, appObj, parameters);
           return appObj;
         }
-        
+
         return null;
       }
-      
+
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
-        if (context.propName == null) return stringBuilder;
+        if (context.propName == null) return stringBuilder; // this was probably the base commit collection
 
-        var objectLayerName = context.propName[0] == '@'
-          ? context.propName.Substring(1)
-          : context.propName;
-
+        string objectLayerName = string.Empty;
+        if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
+        {
+          objectLayerName = context.current["name"] as string;
+        }
+        else if (context.propName.ToLower() != "elements")// this is for any other property on the collection. skip elements props in layer structure.
+        {
+          objectLayerName = context.propName[0] == '@'
+            ? context.propName.Substring(1)
+            : context.propName;
+        }
         LayerIdRecurse(context.parent, stringBuilder);
-        stringBuilder.Append(Layer.PathSeparator);
+        if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName)) { stringBuilder.Append(Layer.PathSeparator); }
         stringBuilder.Append(objectLayerName);
-        
+
         return stringBuilder;
       }
 
@@ -682,7 +696,7 @@ namespace SpeckleRhino
 
       return convertedList;
     }
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, string layer, ApplicationObject parent = null)
+    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Layer layer, ApplicationObject parent = null)
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
@@ -705,16 +719,6 @@ namespace SpeckleRhino
                 appObj.Update(logItem: invalidMessage);
               continue;
             }
-            Layer bakeLayer = Doc.GetLayer(layer, true);
-            if (bakeLayer == null)
-            {
-              var layerMessage = $"Could not create layer {layer}.";
-              if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.applicationId}: {layerMessage}");
-              else
-                appObj.Update(logItem: layerMessage);
-              continue;
-            }
             var attributes = new ObjectAttributes();
 
             // handle display style
@@ -729,7 +733,7 @@ namespace SpeckleRhino
             }
 
             // assign layer
-            attributes.LayerIndex = bakeLayer.Index;
+            attributes.LayerIndex = layer.Index;
 
             // handle user info, including application id
             SetUserInfo(obj, attributes, parent);
@@ -851,88 +855,62 @@ namespace SpeckleRhino
       // report and converter
       progress.Report = new ProgressReport();
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        progress.Report.LogOperationError(new Exception("Could not load converter"));
-        return;
-      }
+
       converter.SetContextDocument(Doc);
 
-      // remove any invalid objs
       var filterObjs = GetObjectsFromFilter(state.Filter);
-      var existingIds = new List<string>();
+      var idsToSelect = new List<string>();
+      int successful = 0;
       foreach (var id in filterObjs)
       {
-        RhinoObject obj = null;
-        bool isView = false;
-        int viewId = -1;
-        RhinoView rhinoView = null;
-        try
+        if (Utils.FindObjectBySelectedId(Doc, id, out object obj, out string descriptor))
         {
-          obj = Doc.Objects.FindId(new Guid(id)); // this is a rhinoobj
-          if (obj == null)
+          // create applicationObject
+          ApplicationObject reportObj = new ApplicationObject(id, descriptor);
+          var applicationId = string.Empty;
+          switch (obj)
           {
-            // Try to check if it's a standard view
-            rhinoView = Doc.Views.Find(new Guid(id));
-            if (rhinoView != null)
-              isView = true;
+            case RhinoObject o:
+              applicationId = o.Attributes.GetUserString(ApplicationIdKey) ?? id;
+              if (converter.CanConvertToSpeckle(obj))
+                reportObj.Update(status: ApplicationObject.State.Created);
+              else
+                reportObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
+              idsToSelect.Add(id);
+              successful++;
+              break;
+            case Layer o:
+              applicationId = o.GetUserString(ApplicationIdKey) ?? id;
+              reportObj.Update(status: ApplicationObject.State.Created);
+              successful++;
+              break;
+            case ViewInfo o:
+              reportObj.Update(status: ApplicationObject.State.Created);
+              successful++;
+              break;
           }
-        }
-        catch
-        {
-          viewId = Doc.NamedViews.FindByName(id);
-          if(viewId != -1)
-            isView= true;
-        }
-
-        if (obj != null)
-        {
-          var appObj = new ApplicationObject(id, obj.ObjectType.ToString()) { Status = ApplicationObject.State.Unknown };
-
-          if (converter.CanConvertToSpeckle(obj))
-            appObj.Update(status: ApplicationObject.State.Created);
-          else
-            appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
-          progress.Report.Log(appObj);
-          existingIds.Add(id);
-        }
-        else if (isView)
-        {
-          var viewObj = viewId != -1 ? new ApplicationObject(id, "Named View") : new ApplicationObject(id, "Standard View");
-          if (viewId != -1 || rhinoView != null)
-            viewObj.Update(status: ApplicationObject.State.Created);
-          else
-            viewObj.Update(status: ApplicationObject.State.Failed, logItem: "Does not exist in document");
-          progress.Report.Log(viewObj);
+          reportObj.applicationId = applicationId;
+          progress.Report.Log(reportObj);
         }
         else
         {
-          progress.Report.Log(new ApplicationObject(id, "unknown") { Status = ApplicationObject.State.Failed, Log = new List<string>() { "Could not find object in document" } });
-          continue;
+          progress.Report.Log(new ApplicationObject(id, "Unknown") { Status = ApplicationObject.State.Failed, Log = new List<string> { $"Could not find object in document" } });
         }
       }
 
-      if (existingIds.Count == 0)
-      {
-        progress.Report.LogOperationError(new Exception("No valid objects selected, nothing will be sent!"));
-        return;
-      }
+      if (successful == 0)
+        throw new InvalidOperationException("No valid objects selected, nothing will be sent!");
+
 
       // TODO: instead of selection, consider saving current visibility of objects in doc, hiding everything except selected, and restoring original states on cancel
       Doc.Objects.UnselectAll(false);
-      SelectClientObjects(existingIds);
+      SelectClientObjects(idsToSelect);
       Doc.Views.Redraw();
     }
 
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      // check for converter 
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.RhinoAppName);
-      if (converter == null)
-      {
-        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-        return null;
-      }
       converter.SetContextDocument(Doc);
 
       var streamId = state.StreamId;
@@ -941,12 +919,12 @@ namespace SpeckleRhino
       int objCount = 0;
 
       state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
-      var commitObject = new Base();
+      var commitObject = converter.ConvertToSpeckle(Doc); // create a collection base obj
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.", false));
-        return null;
+        throw new InvalidOperationException(
+          "Zero objects selected: Please select some objects, or check that your filter can actually select something.");
       }
 
       progress.Report = new ProgressReport();
@@ -955,99 +933,85 @@ namespace SpeckleRhino
 
       progress.Max = state.SelectedObjectIds.Count;
 
-      foreach (var guid in state.SelectedObjectIds)
+      // store converted commit objects and layers by layer paths
+      var commitLayerObjects = new Dictionary<string, List<Base>>();
+      var commitLayers = new Dictionary<string, Layer>();
+      var commitCollections = new Dictionary<string, Base>();
+
+      // convert all commit objs
+      foreach (var selectedId in state.SelectedObjectIds)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-          return null;
+        progress.CancellationToken.ThrowIfCancellationRequested();
 
         Base converted = null;
-        string containerName = string.Empty;
-
-        // applicationId can either be doc obj/view guid or name of a NamedView
-        RhinoObject obj = null;
-        bool isView = false;
-        int viewIndex = -1;
-        try
+        string applicationId = null;
+        var reportObj = new ApplicationObject(selectedId, "Unknown");
+        if (Utils.FindObjectBySelectedId(Doc, selectedId, out object obj, out string descriptor))
         {
-          obj = Doc.Objects.FindId(new Guid(guid)); // try get geom object
-          if (obj == null)
-          {
-            // Try to check if it's a standard view
-            RhinoView view = Doc.Views.Find(new Guid(guid));
-            if (view != null)
-              isView = true;
-          }
-        }
-        catch
-        {
-          viewIndex = Doc.NamedViews.FindByName(guid); // try get a NamedView
-          if (viewIndex != -1)
-            isView = true;
-        }
-
-        string descriptor = string.Empty; ;
-        if (isView)
-        {
-          descriptor = viewIndex != -1 ? "Named View" : "Standard View"; 
-        }
-        else if(obj != null)
-        {
-          descriptor = Formatting.ObjectDescriptor(obj);
-        }
-
-        var applicationId = obj?.Attributes.GetUserString(ApplicationIdKey) ?? guid;
-        ApplicationObject reportObj = new ApplicationObject(guid, descriptor) { applicationId = applicationId };
-
-        if (obj != null)
-        {
-          if (!converter.CanConvertToSpeckle(obj))
-          {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Rhino");
-            progress.Report.Log(reportObj);
-            continue;
-          }
-
+          // create applicationObject
+          reportObj = new ApplicationObject(selectedId, descriptor);
           converter.Report.Log(reportObj); // Log object so converter can access
-          converted = converter.ConvertToSpeckle(obj);
-          if (converted == null)
+          switch (obj)
           {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
-            progress.Report.Log(reportObj);
-            continue;
-          }
+            case RhinoObject o:
+              applicationId = o.Attributes.GetUserString(ApplicationIdKey) ?? selectedId;
+              if (!converter.CanConvertToSpeckle(o))
+              {
+                reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in Rhino");
+                progress.Report.Log(reportObj);
+                continue;
+              }
 
-          if (obj is InstanceObject)
-            containerName = "Blocks";
-          else
-          {
-            var layerPath = Doc.Layers[obj.Attributes.LayerIndex].FullPath;
-            string cleanLayerPath = RemoveInvalidDynamicPropChars(layerPath);
-            containerName = cleanLayerPath;
+              converted = converter.ConvertToSpeckle(o);
+
+              if (converted != null)
+              {
+                var objectLayer = Doc.Layers[o.Attributes.LayerIndex];
+                if (commitLayerObjects.ContainsKey(objectLayer.FullPath))
+                {
+                  commitLayerObjects[objectLayer.FullPath].Add(converted);
+                }
+                else
+                {
+                  commitLayerObjects.Add(objectLayer.FullPath, new List<Base>() { converted });
+                  
+                }
+                if (!commitLayers.ContainsKey(objectLayer.FullPath))
+                {
+                  commitLayers.Add(objectLayer.FullPath, objectLayer);
+                }
+              }
+              break;
+            case Layer o:
+              applicationId = o.GetUserString(ApplicationIdKey) ?? selectedId;
+              converted = converter.ConvertToSpeckle(o);
+              if (converted != null && !commitLayers.ContainsKey(o.FullPath))
+              {
+                commitLayers.Add(o.FullPath, o);
+                commitCollections.Add(o.FullPath, converted);
+              }
+              break;
+            case ViewInfo o:
+              converted = converter.ConvertToSpeckle(o);
+              if (converted != null)
+              {
+                ((List<Base>)commitObject[$"{ElementsString}"]).Add(converted); 
+              }
+              break;
           }
-        }
-        else if (isView)
-        {
-          // Extract the ViewInfo from the NamedViews table or from the Views table
-          ViewInfo view = viewIndex != -1 ? Doc.NamedViews[viewIndex] : new ViewInfo(Doc.Views.Find(new Guid(guid)).ActiveViewport);
-          converter.Report.Log(reportObj); // Log object so converter can access
-          converted = converter.ConvertToSpeckle(view);
-          if (converted == null)
-          {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
-            progress.Report.Log(reportObj);
-            continue;
-          }
-          containerName = viewIndex != -1 ? "Named Views" : "Standard Views";
         }
         else
         {
-          progress.Report.LogOperationError(new Exception($"Failed to find doc object ${guid}."));
+          progress.Report.LogOperationError(new Exception($"Failed to find doc object ${selectedId}."));
           continue;
         }
 
-        if (commitObject[$"@{containerName}"] == null)
-          commitObject[$"@{containerName}"] = new List<Base>();
-        ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
+        if (converted == null)
+        {
+          reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+          progress.Report.Log(reportObj);
+          continue;
+        }
 
         conversionProgressDict["Conversion"]++;
         progress.Update(conversionProgressDict);
@@ -1068,16 +1032,80 @@ namespace SpeckleRhino
         objCount++;
       }
 
+      #region layer handling
+      // convert layers as collections and attach all layer objects
+      foreach (var layerPath in commitLayerObjects.Keys)
+      {
+        if (commitCollections.ContainsKey(layerPath))
+        {
+          commitCollections[layerPath][$"{ElementsString}"] = commitLayerObjects[layerPath];
+        }
+        else
+        {
+          var collection = converter.ConvertToSpeckle(commitLayers[layerPath]);
+          if (collection != null)
+          {
+            collection[$"{ElementsString}"] = commitLayerObjects[layerPath];
+            commitCollections.Add(layerPath, collection);
+          }
+        }
+      }
+
+      // generate all parent paths of commit collections and create ordered list by depth descending
+      var allPaths = new HashSet<string>();
+      foreach (var key in commitLayers.Keys)
+      {
+        if (!allPaths.Contains(key)) allPaths.Add(key);
+        AddParent(commitLayers[key]);
+
+        void AddParent(Layer childLayer)
+        {
+          var parentLayer = Doc.Layers.FindId(childLayer.ParentLayerId);
+          if (parentLayer != null && !commitCollections.ContainsKey(parentLayer.FullPath))
+          {
+            var parentCollection = converter.ConvertToSpeckle(parentLayer);
+            if (parentCollection != null)
+            {
+              commitCollections.Add(parentLayer.FullPath, parentCollection);
+              allPaths.Add(parentLayer.FullPath);
+            }
+            AddParent(parentLayer);
+          }
+        }
+      }
+      var orderedPaths = allPaths.OrderByDescending(path => path.Count(c => c == ':')).ToList(); // this ensures we attach children collections first  
+
+      // attach children collections to their parents and the base commit
+      for (int i = 0; i < orderedPaths.Count; i++)
+      {
+        var path = orderedPaths[i];
+        var collection = commitCollections[path];
+        var parentIndex = path.LastIndexOf(Layer.PathSeparator);
+
+        // if there is no parent, attach to base commit layer prop directly
+        if (parentIndex == -1)
+        {
+          ((List<Base>)commitObject[$"{ElementsString}"]).Add(collection);
+          continue;
+        }
+
+        // get the parent collection, attach child, and update parent collection in commit collections
+        var parentPath = path.Substring(0, parentIndex);
+        var parent = commitCollections[parentPath];
+        ((List<Base>)parent[$"{ElementsString}"]).Add(commitCollections[path]);
+        commitCollections[parentPath] = parent;
+      }
+     
+      #endregion
+
       progress.Report.Merge(converter.Report);
 
       if (objCount == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return null;
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       progress.Max = objCount;
 
@@ -1085,50 +1113,28 @@ namespace SpeckleRhino
 
       var objectId = await Operations.Send(
         @object: commitObject,
-        cancellationToken: progress.CancellationTokenSource.Token,
+        cancellationToken: progress.CancellationToken,
         transports: transports,
-        onProgressAction: dict =>
-        {
-          progress.Update(dict);
-        },
-        onErrorAction: (s, e) =>
-        {
-          progress.Report.LogOperationError(e);
-          progress.CancellationTokenSource.Cancel();
-        },
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
         objectId = objectId,
         branchName = state.BranchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Sent {objCount} elements from Rhino.",
+        message = state.CommitMessage ?? $"Sent {objCount} elements from Rhino.",
         sourceApplication = Utils.RhinoAppName
       };
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-        return commitId;
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
-      }
-      return null;
-
-      //return state;
+      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      return commitId;
     }
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter)
@@ -1140,7 +1146,8 @@ namespace SpeckleRhino
         case "manual":
           return filter.Selection;
         case "all":
-          objs = Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()).ToList();
+          objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()));
+          objs.AddRange(Doc.Objects.Where(obj => obj.Visible).Select(obj => obj.Id.ToString()));
           objs.AddRange(Doc.StandardViews());
           objs.AddRange(Doc.NamedViews());
           break;
@@ -1161,6 +1168,8 @@ namespace SpeckleRhino
             objs.AddRange(Doc.StandardViews());
           if (filter.Selection.Contains("Named Views"))
             objs.AddRange(Doc.NamedViews());
+          if (filter.Selection.Contains("Layers"))
+            objs.AddRange(Doc.Layers.Select(o => o.Id.ToString()));
           break;
         default:
           //RaiseNotification("Filter type is not supported in this app. Why did the developer implement it in the first place?");
@@ -1187,6 +1196,7 @@ namespace SpeckleRhino
       }
       return null;
     }
+
     /// <summary>
     /// Copies a Base to an ArchivableDictionary
     /// </summary>

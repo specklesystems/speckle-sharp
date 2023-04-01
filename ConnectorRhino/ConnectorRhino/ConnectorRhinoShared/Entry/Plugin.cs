@@ -12,9 +12,13 @@ using DesktopUI2.Views;
 using Rhino;
 using Rhino.PlugIns;
 using Rhino.Runtime;
+using Serilog;
+using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Helpers;
+using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 
 [assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
 
@@ -44,37 +48,28 @@ namespace SpeckleRhino
 
     public void Init()
     {
-      try
-      {
-        if (appBuilder != null)
-          return;
-
+      if (appBuilder != null)
+        return;
 #if MAC
-        InitAvaloniaMac();
+      InitAvaloniaMac();
 #else
-        appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
+      appBuilder = BuildAvaloniaApp().SetupWithoutStarting();
 #endif
 
 
-        Bindings = new ConnectorBindingsRhino();
-        MappingBindings = new MappingBindingsRhino();
+      Bindings = new ConnectorBindingsRhino();
+      MappingBindings = new MappingBindingsRhino();
 
-        RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
-        RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
+      RhinoDoc.BeginOpenDocument += RhinoDoc_BeginOpenDocument;
+      RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
 
-        //Mapping tool selection
-        RhinoDoc.ActiveDocumentChanged += RhinoDoc_ActiveDocumentChanged;
-        RhinoDoc.SelectObjects += (sender, e) => SelectionExpired = true;
-        RhinoDoc.DeselectObjects += (sender, e) => SelectionExpired = true;
-        RhinoDoc.DeselectAllObjects += (sender, e) => SelectionExpired = true;
-        RhinoDoc.DeleteRhinoObject += (sender, e) => ExistingSchemaLogExpired = true;
-        RhinoApp.Idle += RhinoApp_Idle;
-      }
-      catch (Exception ex)
-      {
-        RhinoApp.CommandLineOut.WriteLine($"Speckle error — {ex.ToFormattedString()}");
-      }
-
+      //Mapping tool selection
+      RhinoDoc.ActiveDocumentChanged += RhinoDoc_ActiveDocumentChanged;
+      RhinoDoc.SelectObjects += (sender, e) => SelectionExpired = true;
+      RhinoDoc.DeselectObjects += (sender, e) => SelectionExpired = true;
+      RhinoDoc.DeselectAllObjects += (sender, e) => SelectionExpired = true;
+      RhinoDoc.DeleteRhinoObject += (sender, e) => ExistingSchemaLogExpired = true;
+      RhinoApp.Idle += RhinoApp_Idle;
     }
 
 
@@ -91,7 +86,6 @@ namespace SpeckleRhino
       MacOSHelpers.MainMenu = rhinoMenuPtr;
       MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), MacOSHelpers.NewObject("NSString"));
       MacOSHelpers.MenuItemSetTitle(MacOSHelpers.MenuItemGetSubmenu(MacOSHelpers.MenuItemAt(rhinoMenuPtr, 0)), titlePtr);
-
     }
 
     public static AppBuilder BuildAvaloniaApp()
@@ -131,6 +125,7 @@ namespace SpeckleRhino
           SpeckleCommandMac.CreateOrFocusSpeckle();
         } catch (Exception ex)
         {
+          SpeckleLog.Logger.Fatal(ex, "Failed to create or focus Speckle window");
           RhinoApp.CommandLineOut.WriteLine($"Speckle error - {ex.ToFormattedString()}");
         }
 #else
@@ -155,6 +150,22 @@ namespace SpeckleRhino
     /// </summary>
     protected override LoadReturnCode OnLoad(ref string errorMessage)
     {
+      try
+      {
+        var logConfig = new SpeckleLogConfiguration(logToSentry: false);
+        var hostAppName = Utils.AppName;
+        var hostAppVersion = Utils.RhinoAppName;
+#if MAC
+        logConfig.enhancedLogContext = false;
+#endif
+        SpeckleLog.Initialize(hostAppName, hostAppVersion, logConfig);
+        SpeckleLog.Logger.Information("Loading Speckle Plugin for host app {hostAppName} version {hostAppVersion}", hostAppName, hostAppVersion);
+      }
+      catch (Exception e)
+      {
+        RhinoApp.CommandLineOut.WriteLine("Failed to init speckle logger: " + e.ToFormattedString());
+        return LoadReturnCode.ErrorShowDialog;
+      }
       string processName = "";
       System.Version processVersion = null;
       HostUtils.GetCurrentProcessInfo(out processName, out processVersion);
@@ -163,14 +174,24 @@ namespace SpeckleRhino
       // https://speckle.community/t/revit-command-failure-for-external-command/3489/27
       if (!processName.Equals("rhino", StringComparison.InvariantCultureIgnoreCase))
       {
-
+        SpeckleLog.Logger.ForContext("processVersion", processVersion)
+          .Warning("Speckle does not currently support unsupported process {processName}", processName);
         errorMessage = "Speckle does not currently support Rhino.Inside";
         RhinoApp.CommandLineOut.WriteLine(errorMessage);
         return LoadReturnCode.ErrorNoDialog;
       }
 
-
-      Init();
+      try
+      {
+        Init();
+      }
+      catch (Exception ex)
+      {
+        SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle Plugin with {exceptionMessage}", ex.Message);
+        errorMessage = $"Failed to load Speckle Plugin with {ex.ToFormattedString()}";
+        RhinoApp.CommandLineOut.WriteLine(errorMessage);
+        return LoadReturnCode.ErrorShowDialog;
+      }
 
 #if !MAC
       System.Type panelType = typeof(DuiPanel);
@@ -179,39 +200,7 @@ namespace SpeckleRhino
       System.Type mappingsPanelType = typeof(MappingsPanel);
       Rhino.UI.Panels.RegisterPanel(this, mappingsPanelType, "Speckle Mapping Tool", Resources.icon);
 #endif
-      // Get the version number of our plugin, that was last used, from our settings file.
-      var plugin_version = Settings.GetString("PlugInVersion", null);
-
-      if (!string.IsNullOrEmpty(plugin_version))
-      {
-        // If the version number of the plugin that was last used does not match the
-        // version number of this plugin, proceed.
-        if (0 != string.Compare(Version, plugin_version, StringComparison.OrdinalIgnoreCase))
-        {
-          // Build a path to the user's staged RUI file.
-          var sb = new StringBuilder();
-          sb.Append(SpecklePathProvider.InstallApplicationDataPath);
-#if RHINO6
-          sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
-#elif RHINO7
-          sb.Append(@"\McNeel\Rhinoceros\7.0\UI\Plug-ins\");
-#endif
-          sb.AppendFormat("{0}.rui", Assembly.GetName().Name);
-
-          var path = sb.ToString();
-          if (File.Exists(path))
-          {
-            try
-            {
-              File.Delete(path);
-            }
-            catch { }
-          }
-
-          // Save the version number of this plugin to our settings file.
-          Settings.SetString("PlugInVersion", Version);
-        }
-      }
+      EnsureVersionSettings();
 
       // After successfully loading the plugin, if Rhino detects a plugin RUI file, it will automatically stage it, if it doesn't already exist.
 
@@ -219,6 +208,52 @@ namespace SpeckleRhino
     }
     public override PlugInLoadTime LoadTime => PlugInLoadTime.AtStartup;
 
+
+    private void EnsureVersionSettings()
+    {
+      // Get the version number of our plugin, that was last used, from our settings file.
+      var plugin_version = Settings.GetString("PlugInVersion", null);
+
+      if (string.IsNullOrEmpty(plugin_version)) return;
+
+
+      // If the version number of the plugin that was last used does not match the
+      // version number of this plugin, proceed.
+      if (0 == string.Compare(Version, plugin_version, StringComparison.OrdinalIgnoreCase)) return;
+
+
+      // Build a path to the user's staged RUI file.
+      var sb = new StringBuilder();
+      sb.Append(SpecklePathProvider.InstallApplicationDataPath);
+#if RHINO6
+          sb.Append(@"\McNeel\Rhinoceros\6.0\UI\Plug-ins\");
+#elif RHINO7
+      sb.Append(@"\McNeel\Rhinoceros\7.0\UI\Plug-ins\");
+#endif
+      sb.AppendFormat("{0}.rui", Assembly.GetName().Name);
+
+      var path = sb.ToString();
+
+      using (LogContext.PushProperty("path", path))
+      {
+        SpeckleLog.Logger.Debug("Deleting and Updating RUI settings file");
+
+        if (File.Exists(path))
+        {
+          try
+          {
+            File.Delete(path);
+          }
+          catch (Exception ex)
+          {
+            SpeckleLog.Logger.Warning(ex, "Failed to delete rui file {exceptionMessage}", ex.Message);
+          }
+        }
+      }
+
+      // Save the version number of this plugin to our settings file.
+      Settings.SetString("PlugInVersion", Version);
+    }
 
     private void RhinoApp_Idle(object sender, EventArgs e)
     {

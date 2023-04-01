@@ -49,8 +49,8 @@ namespace Objects.Geometry
 
     public Line(double x, double y, double z = 0, string units = Units.Meters, string applicationId = null)
     {
-      this.start = new Point(x, y, z);
-      this.end = null;
+      start = new Point(x, y, z);
+      end = null;
       this.applicationId = applicationId;
       this.units = units;
     }
@@ -59,7 +59,7 @@ namespace Objects.Geometry
     {
       this.start = start;
       this.end = end;
-      this.length = Point.Distance(start, end);
+      length = Point.Distance(start, end);
       this.applicationId = applicationId;
       this.units = units;
     }
@@ -68,13 +68,13 @@ namespace Objects.Geometry
     {
       if (coordinates.Count < 6)
         throw new SpeckleException("Line from coordinate array requires 6 coordinates.");
-      this.start = new Point(coordinates[0], coordinates[1], coordinates[2], units, applicationId);
-      this.end = new Point(coordinates[3], coordinates[4], coordinates[5], units, applicationId);
-      this.length = Point.Distance(start, end);
+      start = new Point(coordinates[0], coordinates[1], coordinates[2], units, applicationId);
+      end = new Point(coordinates[3], coordinates[4], coordinates[5], units, applicationId);
+      length = Point.Distance(start, end);
       this.applicationId = applicationId;
       this.units = units;
     }
-    
+
     [Obsolete("Use IList constructor")]
     public Line(IEnumerable<double> coordinatesArray, string units = Units.Meters, string applicationId = null)
     : this(coordinatesArray.ToList(), units, applicationId)
@@ -105,15 +105,18 @@ namespace Objects.Geometry
 
     public bool TransformTo(Transform transform, out Line transformed)
     {
+      start.TransformTo(transform, out Point transformedStart);
+      end.TransformTo(transform, out Point transformedEnd);
       transformed = new Line
       {
-        start = transform.ApplyToPoint(start),
-        end = transform.ApplyToPoint(end),
+        start = transformedStart,
+        end = transformedEnd,
         applicationId = applicationId,
         units = units,
-        domain = domain == null ? null : new Interval { start= domain.start, end= domain.end }
+        domain = domain == null ? null : new Interval { start = domain.start, end = domain.end }
       };
-      return true;    }
+      return true;
+    }
 
     public bool TransformTo(Transform transform, out ITransformable transformed)
     {

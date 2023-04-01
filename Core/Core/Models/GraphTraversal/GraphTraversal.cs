@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 #nullable enable
 namespace Speckle.Core.Models.GraphTraversal
@@ -10,7 +11,7 @@ namespace Speckle.Core.Models.GraphTraversal
     public readonly string? propName;
     public readonly TraversalContext? parent;
     public readonly Base current;
-    
+
     public TraversalContext(Base current, string? propName = null, TraversalContext? parent = null)
     {
       this.current = current;
@@ -18,7 +19,7 @@ namespace Speckle.Core.Models.GraphTraversal
       this.propName = propName;
     }
   }
-  
+
   public sealed class GraphTraversal
   {
     private readonly ITraversalRule[] rules;
@@ -44,16 +45,17 @@ namespace Speckle.Core.Models.GraphTraversal
         TraversalContext head = stack[headIndex];
         stack.RemoveAt(headIndex);
         yield return head;
-        
+
         Base current = head.current;
         var activeRule = GetActiveRuleOrDefault(current);
+
         foreach (string childProp in activeRule.MembersToTraverse(current))
         {
           TraverseMemberToStack(stack, current[childProp], childProp, head);
         }
       }
     }
-    
+
     private static void TraverseMemberToStack(ICollection<TraversalContext> stack, object? value, string? memberName = null, TraversalContext? parent = null)
     {
       //test
@@ -63,26 +65,26 @@ namespace Speckle.Core.Models.GraphTraversal
           stack.Add(new TraversalContext(o, memberName, parent));
           break;
         case IList list:
-        {
-          foreach (object? obj in list)
           {
-            TraverseMemberToStack(stack, obj, memberName, parent);
+            foreach (object? obj in list)
+            {
+              TraverseMemberToStack(stack, obj, memberName, parent);
+            }
+            break;
           }
-          break;
-        }
         case IDictionary dictionary:
-        {
-          foreach (object? obj in dictionary.Values)
           {
-            TraverseMemberToStack(stack, obj, memberName, parent);
+            foreach (object? obj in dictionary.Values)
+            {
+              TraverseMemberToStack(stack, obj, memberName, parent);
+            }
+            break;
           }
-          break;
-        }
       }
     }
-    
-    
-    
+
+
+
     /// <summary>
     /// Traverses supported Collections yielding <see cref="Base"/> objects.
     /// Does not traverse <see cref="Base"/>, only (potentially nested) collections.
@@ -97,31 +99,31 @@ namespace Speckle.Core.Models.GraphTraversal
           yield return o;
           break;
         case IList list:
-        {
-          foreach (object? obj in list)
           {
-            foreach (Base o in TraverseMember(obj))
-              yield return o;
+            foreach (object? obj in list)
+            {
+              foreach (Base o in TraverseMember(obj))
+                yield return o;
+            }
+            break;
           }
-          break;
-        }
         case IDictionary dictionary:
-        {
-          foreach (object? obj in dictionary.Values)
           {
-            foreach (Base o in TraverseMember(obj))
-              yield return o;
+            foreach (object? obj in dictionary.Values)
+            {
+              foreach (Base o in TraverseMember(obj))
+                yield return o;
+            }
+            break;
           }
-          break;
-        }
       }
     }
-    
+
     private ITraversalRule GetActiveRuleOrDefault(Base o)
     {
       return GetActiveRule(o) ?? DefaultRule.Instance;
     }
-    
+
     private ITraversalRule? GetActiveRule(Base o)
     {
       foreach (var rule in rules)

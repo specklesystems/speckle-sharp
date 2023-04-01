@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
     <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
     <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
@@ -69,10 +70,6 @@
       <Project>{bf1a4f95-acf7-4353-b60a-4d79c2f44651}</Project>
       <Name>PolygonMesher</Name>
     </ProjectReference>
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
-      <Project>{f6f813fc-153b-49fe-9b33-25152be85ba8}</Project>
-      <Name>Objects</Name>
-    </ProjectReference>
     <ProjectReference Include="..\DriverCSharp\DriverCSharp.csproj">
       <Project>{c091e499-597d-4077-b83f-08e069091090}</Project>
       <Name>DriverCSharp</Name>
@@ -86,15 +83,6 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.Desktop">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.ReactiveUI">
-      <Version>0.10.18</Version>
-    </PackageReference>
     <PackageReference Include="CSiAPIv1">
       <Version>1.0.0</Version>
     </PackageReference>
@@ -106,4 +94,11 @@
   </ItemGroup>
   <Import Project="..\ConnectorCSIShared\ConnectorCSIShared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+      if EXIST "$(LocalAppData)\Computers and Structures\CSIBridge\Speckle2CSiBridge" (
+      xcopy "$(TargetDir)*.*" "$(LocalAppData)\Computers and Structures\CSIBridge\Speckle2CSiBridge" /Y /I /E
+      )
+</PostBuildEvent>
+  </PropertyGroup>
 </Project>

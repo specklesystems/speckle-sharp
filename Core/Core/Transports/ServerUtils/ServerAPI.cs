@@ -49,7 +49,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
       BlobStorageFolder = blobStorageFolder;
 
-      Client = Http.GetHttpProxyClient(new HttpClientHandler()
+      Client = Http.GetHttpProxyClient(new SpeckleHttpClientHandler()
       {
         AutomaticDecompression = System.Net.DecompressionMethods.GZip,
       });
@@ -70,8 +70,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
     public async Task<string> DownloadSingleObject(string streamId, string objectId)
     {
-      if (CancellationToken.IsCancellationRequested)
-        return null;
+      CancellationToken.ThrowIfCancellationRequested();
 
       // Get root object
       var rootHttpMessage = new HttpRequestMessage()
@@ -118,8 +117,7 @@ namespace Speckle.Core.Transports.ServerUtils
     {
       // Stopwatch sw = new Stopwatch(); sw.Start();
 
-      if (CancellationToken.IsCancellationRequested)
-        return;
+      CancellationToken.ThrowIfCancellationRequested();
 
       var childrenHttpMessage = new HttpRequestMessage()
       {
@@ -147,8 +145,7 @@ namespace Speckle.Core.Transports.ServerUtils
           string line;
           while ((line = reader.ReadLine()) != null)
           {
-            if (CancellationToken.IsCancellationRequested)
-              return;
+            CancellationToken.ThrowIfCancellationRequested();
 
             var pcs = line.Split(new char[] { '\t' }, count: 2);
             onObjectCallback(pcs[0], pcs[1]);
@@ -189,8 +186,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
     private async Task<Dictionary<string, bool>> HasObjectsImpl(string streamId, List<string> objectIds)
     {
-      if (CancellationToken.IsCancellationRequested)
-        return new Dictionary<string, bool>();
+      CancellationToken.ThrowIfCancellationRequested();
 
       // Stopwatch sw = new Stopwatch(); sw.Start();
 
@@ -284,8 +280,7 @@ namespace Speckle.Core.Transports.ServerUtils
     {
       // Stopwatch sw = new Stopwatch(); sw.Start();
 
-      if (CancellationToken.IsCancellationRequested)
-        return;
+      CancellationToken.ThrowIfCancellationRequested();
 
       var message = new HttpRequestMessage()
       {
@@ -335,7 +330,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
     public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
     {
-      if (CancellationToken.IsCancellationRequested) return;
+      CancellationToken.ThrowIfCancellationRequested();
       if (blobs.Count == 0) return;
 
       var multipartFormDataContent = new MultipartFormDataContent();
@@ -361,7 +356,7 @@ namespace Speckle.Core.Transports.ServerUtils
       try
       {
         HttpResponseMessage response = null;
-        while (ShouldRetry(response))
+        while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
           response = await Client.SendAsync(message, CancellationToken);
         response.EnsureSuccessStatusCode();
 
@@ -370,18 +365,19 @@ namespace Speckle.Core.Transports.ServerUtils
       catch (Exception ex)
       {
         foreach (var stream in streams) stream.Dispose();
-        throw ex;
+        throw;
       }
     }
 
     public async Task<List<string>> HasBlobs(string streamId, List<string> blobIds)
     {
-      if (CancellationToken.IsCancellationRequested) return new List<string>();
+      CancellationToken.ThrowIfCancellationRequested();
+
       var payload = JsonConvert.SerializeObject(blobIds);
       var uri = new Uri($"/api/stream/{streamId}/blob/diff", UriKind.Relative);
 
       HttpResponseMessage response = null;
-      while (ShouldRetry(response))
+      while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
         response = await Client.PostAsync(uri, new StringContent(payload, Encoding.UTF8, "application/json"), CancellationToken);
       response.EnsureSuccessStatusCode();
 
@@ -427,6 +423,7 @@ namespace Speckle.Core.Transports.ServerUtils
 
     }
 
+    //TODO: can we get rid of this now we have polly?
     private bool ShouldRetry(HttpResponseMessage serverResponse)
     {
       if (serverResponse == null)

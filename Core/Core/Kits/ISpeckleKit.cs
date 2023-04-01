@@ -1,4 +1,5 @@
-﻿using System;
+﻿#nullable enable
+using System;
 using System.Collections.Generic;
 
 namespace Speckle.Core.Kits
@@ -39,11 +40,22 @@ namespace Speckle.Core.Kits
     string WebsiteOrEmail { get; }
 
     /// <summary>
-    /// Tries to load a converter for a specific app. 
+    /// Tries to load a converter for a specific <paramref name="app"/>. 
     /// </summary>
-    /// <param name="app">Must be one of the <see cref="Kits.Applications"/> variables.</param>
-    /// <returns>The converter for the specific app, or null.</returns>
+    /// <param name="app">The host app string for which a <see cref="ISpeckleConverter"/> is desired. see <see cref="ISpeckleConverter.GetServicedApplications"/></param>
+    /// <returns>The converter for the specific <paramref name="app"/></returns>
+    /// <exception cref="KitException">Thrown if the requested converter failed to load</exception>
     public ISpeckleConverter LoadConverter(string app);
+  }
+
+  public class KitException : Exception
+  {
+    public ISpeckleKit Kit { get; }
+
+    public KitException(string message, ISpeckleKit kit, Exception? innerException = null) : base(message, innerException)
+    {
+      Kit = kit;
+    }
 
   }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Grasshopper;
@@ -32,7 +33,7 @@ namespace ConnectorGrasshopper.Extras
 
     private void RecurseNestedLists(object data, GH_Structure<IGH_Goo> tree)
     {
-      if (data is List<object> list)
+      if (data is IList list)
       {
         for (var i = 0; i < list.Count; i++)
         {

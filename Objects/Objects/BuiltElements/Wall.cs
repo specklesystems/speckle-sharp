@@ -1,10 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
@@ -16,7 +16,7 @@ namespace Objects.BuiltElements
     [DetachProperty]
     public List<Base> elements { get; set; }
     public ICurve baseLine { get; set; }
-    
+
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
 
@@ -132,7 +132,17 @@ namespace Objects.BuiltElements.Revit
   {
     public string family { get; set; }
     public string type { get; set; }
-    public Surface surface { get; set; }
+
+    public Brep brep { get; set; }
+
+    [Obsolete("Use `Wall.brep` instead", false), SchemaIgnore]
+    public Surface surface
+    {
+      get => brep?.Surfaces.FirstOrDefault();
+      //TODO: This is a simplistic representation of a BREP, may not work in all cases.
+      set => new Brep { Surfaces = new List<Surface> { value } };
+    }
+
     public Level level { get; set; }
     public LocationLine locationLine { get; set; }
     public Base parameters { get; set; }
@@ -147,10 +157,15 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
-      
+      if (surface.Surfaces.Count == 0)
+        throw new Exception("Cannot create a RevitWall with an empty BREP");
+      if (surface.Surfaces.Count > 1)
+        throw new Exception(
+          "The provided brep has more than 1 surface. Please deconstruct/explode it to create multiple instances");
+
       this.family = family;
       this.type = type;
-      this.surface = surface?.Surfaces[0];
+      brep = surface;
       this.locationLine = locationLine;
       this.level = level;
       this.elements = elements;
@@ -224,13 +239,14 @@ namespace Objects.BuiltElements.Archicad
 {
   public class ArchicadWall : Objects.BuiltElements.Wall
   {
+    // Wall geometry
     public int? floorIndex { get; set; }
+
+    public double baseOffset { get; set; }
 
     public Point startPoint { get; set; }
 
     public Point endPoint { get; set; }
-
-    public double? arcAngle { get; set; }
 
     public string structure { get; set; }
 
@@ -238,23 +254,106 @@ namespace Objects.BuiltElements.Archicad
 
     public string wallComplexity { get; set; }
 
-    public double? thickness { get; set; }
+    public string? buildingMaterialName { get; set; }
+
+    public string? compositeName { get; set; }
+
+    public string? profileName { get; set; }
+
+    public double? arcAngle { get; set; }
+
+    public ElementShape? shape { get; set; }
+
+    public double thickness { get; set; }
 
     public double? outsideSlantAngle { get; set; }
 
-    public int? compositeIndex { get; set; }
+    public double? insideSlantAngle { get; set; }
 
-    public int? buildingMaterialIndex { get; set; }
+    public bool? polyWalllCornersCanChange { get; set; }
 
-    public int? profileIndex { get; set; }
+    // Wall and stories relation
+    public double topOffset { get; set; }
 
-    public double baseOffset { get; set; }
+    public short relativeTopStory { get; set; }
 
-    public double? topOffset { get; set; }
+    public string referenceLineLocation { get; set; }
+
+    public double? referenceLineOffset { get; set; }
+
+    public double offsetFromOutside { get; set; }
+
+    public int referenceLineStartIndex { get; set; }
+
+    public int referenceLineEndIndex { get; set; }
 
     public bool flipped { get; set; }
-    public bool hasWindow { get; set; }
+
+    // Floor Plan and Section - Floor Plan Display
+    public string showOnStories { get; set; }
+
+    public string displayOptionName { get; set; }
+
+    public string showProjectionName { get; set; }
+
+    // Floor Plan and Section - Cut Surfaces parameters
+    public short? cutLinePen { get; set; }
+
+    public string? cutLinetype { get; set; }
+
+    public short? overrideCutFillPen { get; set; }
+
+    public short? overrideCutFillBackgroundPen { get; set; }
+
+    // Floor Plan and Section - Outlines parameters
+    public short uncutLinePen { get; set; }
+
+    public string uncutLinetype { get; set; }
+
+    public short overheadLinePen { get; set; }
+
+    public string overheadLinetype { get; set; }
+
+    // Model - Override Surfaces
+    public string? referenceMaterialName { get; set; }
+
+    public int? referenceMaterialStartIndex { get; set; }
+
+    public int? referenceMaterialEndIndex { get; set; }
+
+    public string? oppositeMaterialName { get; set; }
+
+    public int? oppositeMaterialStartIndex { get; set; }
+
+    public int? oppositeMaterialEndIndex { get; set; }
+
+    public string? sideMaterialName { get; set; }
+
+    public bool materialsChained { get; set; }
+
+    public bool inheritEndSurface { get; set; }
+
+    public bool alignTexture { get; set; }
+
+    public int sequence { get; set; }
+
+    // Model - Log Details (log height, start with half log, surface of horizontal edges, log shape)
+    public double? logHeight { get; set; }
+
+    public bool? startWithHalfLog { get; set; }
+
+    public string? surfaceOfHorizontalEdges { get; set; }
+
+    public string? logShape { get; set; }
+
+    // Model - Defines the relation of wall to zones (Zone Boundary, Reduce Zone Area Only, No Effect on Zones)
+    public string wallRelationToZoneName { get; set; }
+
+    // Does it have any embedded object?
     public bool hasDoor { get; set; }
+
+    public bool hasWindow { get; set; }
+
     public ArchicadWall() { }
     public ArchicadWall(Point startPoint, Point endPoint, double height, bool flipped = false)
     {

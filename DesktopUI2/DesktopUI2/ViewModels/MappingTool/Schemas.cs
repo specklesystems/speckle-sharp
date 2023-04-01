@@ -63,7 +63,13 @@ namespace DesktopUI2.ViewModels.MappingTool
 
         //force the refresh of the dropdown after these lists have been updated
         SelectedFamily = Families?.FirstOrDefault(x => x.Name == SelectedFamily?.Name);
+        //fall back on first option
+        if (SelectedFamily == null)
+          SelectedFamily = Families?.FirstOrDefault();
+
         SelectedType = SelectedFamily?.Types?.FirstOrDefault(x => x == SelectedType);
+        if (SelectedType == null)
+          SelectedType = SelectedFamily?.Types?.FirstOrDefault();
       }
     }
 
@@ -101,6 +107,8 @@ namespace DesktopUI2.ViewModels.MappingTool
 
         //force the refresh of the dropdown after these lists have been updated
         SelectedLevel = Levels?.FirstOrDefault(x => x == SelectedLevel);
+        if (SelectedLevel == null)
+          SelectedLevel = Levels?.FirstOrDefault();
       }
     }
 
@@ -307,7 +315,7 @@ namespace DesktopUI2.ViewModels.MappingTool
   {
     public override string Name => "DirectShape";
 
-    private string _shapeName;
+    private string _shapeName = "Speckle Mapper Shape";
     [DataMember]
     public string ShapeName
     {
@@ -327,7 +335,7 @@ namespace DesktopUI2.ViewModels.MappingTool
       set => this.RaiseAndSetIfChanged(ref _categories, value);
     }
 
-    private string _selectedCategory;
+    private string _selectedCategory = RevitCategory.GenericModel.ToString();
     [DataMember]
     public string SelectedCategory
     {
@@ -351,7 +359,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public DirectShapeFreeformViewModel()
     {
-      Categories = Enum.GetValues(typeof(RevitCategory)).Cast<RevitCategory>().Select(x => x.ToString()).ToList(); ;
+      Categories = Enum.GetValues(typeof(RevitCategory)).Cast<RevitCategory>().Select(x => x.ToString()).OrderBy(x => x).ToList(); ;
     }
 
 
@@ -374,7 +382,6 @@ namespace DesktopUI2.ViewModels.MappingTool
       get
       {
         return
-          !string.IsNullOrEmpty(ShapeName) &&
           !string.IsNullOrEmpty(SelectedCategory);
       }
     }

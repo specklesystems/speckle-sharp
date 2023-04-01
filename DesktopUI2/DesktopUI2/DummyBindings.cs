@@ -96,10 +96,31 @@ namespace DesktopUI2
     {
       return new List<ISelectionFilter>
       {
-        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects and project information." },
+        new AllSelectionFilter
+        {
+          Slug="all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Selects all document objects and project information."
+        },
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="view",Name = "View", Icon = "RemoveRedEye", Description = "Hello world. This is a something something filter.", Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" } },
-        new ListSelectionFilter {Slug="cat",Name = "Category", Icon = "Category",Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.", Values = new List<string>()  { "Boats", "Rafts", "Barges" }},
+        new ListSelectionFilter
+        {
+          Slug="view",
+          Name = "View",
+          Icon = "RemoveRedEye",
+          Description = "Hello world. This is a something something filter.",
+          Values = new List<string>() { "Isometric XX", "FloorPlan_xx", "Section 021" }
+        },
+        new ListSelectionFilter
+        {
+          Slug="cat",
+          Name = "Category",
+          Icon = "Category",
+          Description = "Hello world. This is a something something filter.Hello world. This is a something something filter.",
+          Values = new List<string>()
+        { "Boats", "Rafts", "Barges", "Structural framing", "This is a very long name", "structural floors", "Spaceships", "Ninja turtles", "this is another long one" }
+        },
         new PropertySelectionFilter
         {
           Slug="param",
@@ -277,7 +298,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
           return state;
 
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
@@ -327,7 +348,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
           return state;
 
         await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
@@ -386,7 +407,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
         {
           //progress.Report.Log("Fake sending was cancelled");
           return;
@@ -430,7 +451,7 @@ namespace DesktopUI2
 
       for (int i = 1; i < 100; i += 10)
       {
-        if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+        if (progress.CancellationToken.IsCancellationRequested)
         {
           //progress.Report.Log("Fake sending was cancelled");
           return null;

@@ -18,7 +18,7 @@ namespace Objects.BuiltElements.Revit
 
     [DetachProperty]
     public List<Base> baseGeometries { get; set; }
-    
+
     [DetachProperty]
     public List<Base> displayValue { get; set; }
 

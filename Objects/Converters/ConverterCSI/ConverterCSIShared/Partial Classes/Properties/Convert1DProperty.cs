@@ -1,20 +1,38 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CSiAPIv1;
 using Objects.Structural.Properties;
-using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using System.Linq;
 using Speckle.Core.Models;
-using Objects.Structural.Geometry;
 
 namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public ApplicationObject Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
+    public bool Property1DExists(string name)
     {
+      string[] properties = new string[] { };
+      int number = 0;
+
+      // TODO: we don't need to call this every time...
+      Model.PropFrame.GetNameList(ref number, ref properties);
+      if (properties.Contains(name))
+      {
+        return true;
+      }
+      return false;
+    }
+    public string Property1DToNative(Property1D property1D, ref ApplicationObject appObj)
+    {
+      if (property1D == null)
+        return null;
+
+      if (Property1DExists(property1D.name))
+      {
+        // I don't think we want to update properties
+        appObj.Update(status: ApplicationObject.State.Skipped, createdId: property1D.name);
+        return property1D.name;
+      }
+
       var materialName = MaterialToNative(property1D.material);
 
       var catalogue = new Catalogue();
@@ -38,7 +56,7 @@ namespace Objects.Converter.CSI
         else
           appObj.Update(status: ApplicationObject.State.Failed);
 
-        return appObj;
+        return property1D.name;
       }
 
       switch (property1D.profile)
@@ -118,7 +136,8 @@ namespace Objects.Converter.CSI
         appObj.Update(status: ApplicationObject.State.Created, createdId: property1D.name);
       else
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unable to create section with profile named {property1D.name}");
-      return appObj;
+
+      return property1D.name;
     }
     public Property1D Property1DToSpeckle(string name)
     {

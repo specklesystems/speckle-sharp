@@ -1,10 +1,6 @@
 ﻿using Objects.Primitive;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Text.Json.Serialization;
 
 namespace Objects.Geometry
 {
@@ -35,13 +31,13 @@ namespace Objects.Geometry
 
     /// <inheritdoc/>
     public Box bbox { get; }
-    
+
     /// <inheritdoc/>
     public double area { get; set; }
 
     /// <inheritdoc/>
     public double volume { get; set; }
-    
+
     /// <summary>
     /// The units this object's coordinates are in.
     /// </summary>
@@ -49,7 +45,7 @@ namespace Objects.Geometry
     /// This should be one of <see cref="Speckle.Core.Kits.Units"/>
     /// </remarks>
     public string units { get; set; }
-    
+
     /// <inheritdoc/>
     public Box() { }
 

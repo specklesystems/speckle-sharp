@@ -37,11 +37,11 @@ namespace Tests
 
       // Only single leading @ allowed
       @base["@something"] = "A";
-      Assert.Throws<SpeckleException>(() => { @base["@@@something"] = "Testing"; });
+      Assert.Throws<InvalidPropNameException>(() => { @base["@@@something"] = "Testing"; });
 
       // Invalid chars:  ./
-      Assert.Throws<SpeckleException>(() => { @base["some.thing"] = "Testing"; });
-      Assert.Throws<SpeckleException>(() => { @base["some/thing"] = "Testing"; });
+      Assert.Throws<InvalidPropNameException>(() => { @base["some.thing"] = "Testing"; });
+      Assert.Throws<InvalidPropNameException>(() => { @base["some/thing"] = "Testing"; });
 
       // Trying to change a class member value will throw exceptions.
       //Assert.Throws<Exception>(() => { @base["speckle_type"] = "Testing"; });

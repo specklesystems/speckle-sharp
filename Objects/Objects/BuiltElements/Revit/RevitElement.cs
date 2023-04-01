@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
 using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements.Revit
@@ -21,7 +21,7 @@ namespace Objects.BuiltElements.Revit
 
     [DetachProperty]
     public List<Mesh> displayValue { get; set; }
-    
+
     public RevitElement() { }
   }
 }

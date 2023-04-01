@@ -3,11 +3,10 @@ using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Sentry.Reflection;
-using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.Threading.Tasks;
+using Speckle.Core.Models;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2
@@ -74,8 +73,6 @@ namespace DesktopUI2
     }
 
     #endregion
-
-
 
     #region abstract methods
 

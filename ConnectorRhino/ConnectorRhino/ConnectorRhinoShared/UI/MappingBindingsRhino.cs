@@ -74,7 +74,7 @@ namespace SpeckleRhino
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Could not get selection info: {exceptionMessage}", ex.Message);
         return new MappingSelectionInfo(new List<Schema>(), 0);
       }
     }
@@ -174,7 +174,7 @@ namespace SpeckleRhino
       }
       catch (Exception ex)
       {
-        Log.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(ex, "Could not get object schemas: {exceptionMessage}", ex.Message);
       }
 
       return result;

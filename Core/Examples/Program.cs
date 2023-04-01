@@ -9,8 +9,10 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
+using Speckle.Core.Helpers;
 using Serilog;
 using Tests;
+using Serilog.Context;
 
 /// <summary>
 /// Quick and dirty tests/examples of Speckle usage.
@@ -29,17 +31,49 @@ namespace ExampleApp
   {
     static async Task Main(string[] args)
     {
-      SpeckleLog.Initialize("Example", "123");
+      // Step 1. make sure to initialize the logger with the proper parameters
+      // note, this initialization is part of the current default setup, with sane
+      SpeckleLog.Initialize(
+        hostApplicationName: "Enterprise ",
+        hostApplicationVersion: "NCC-1701-D",
+        logConfiguration: new(Serilog.Events.LogEventLevel.Debug, logToConsole: true)
+      );
 
-      Log.Debug("Hello {world}", "World");
+      // by default, this:
+      // logs to file in the Speckle folder / Logs / hostApplicationName
+      // reports errors to sentry
+      // sends all log events above the configured level to seq
+      // logs to the stdout console (useful when debugging)
+      // note, not all props are available in the file and console log, context is not rendered there
 
+      SpeckleLog.Logger.Information(
+        "Captain's first log, stardate {stardate:.0}. This is the beginning of our journey",
+        40759.5123
+      );
+
+      var log = SpeckleLog.Logger.ForContext("currentSpeed", "warp 5").ForContext("captain", "Jean-Luc Picard");
+
+      SpeckleLog.Logger.Information(
+        "We're traveling to {destination} our current speed is {currentSpeed}",
+        "Fairpoint station"
+      );
+
+      GlobalLogContext.PushProperty("captain", "Picard");
+
+      using (LogContext.PushProperty("actingEnsign", "Wesley Crusher"))
+      {
+        var bearing = new { bearing = 25, mark = 134 };
+        SpeckleLog.Logger.Information("Picking up an anomaly, bearing {@bearing}", bearing);
+      }
       try
       {
-        throw new Exception("This thing went horribly wrong");
+        SpeckleLog.Logger.Warning("Yellow alert, shields up");
+        throw new Exception("Shields are not responding.");
       }
       catch (Exception ex)
       {
-        Log.Fatal(ex, "I caught this error for reporting.");
+        SpeckleLog.Logger.Error(ex, "Cannot raise shields, {reason}", ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Cannot raise shields, {reason}", ex.Message);
       }
 
       // await Subscriptions.SubscriptionConnection();

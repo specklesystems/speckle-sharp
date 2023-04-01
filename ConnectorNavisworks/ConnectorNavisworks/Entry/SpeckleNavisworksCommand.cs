@@ -35,6 +35,7 @@ namespace Speckle.ConnectorNavisworks.Entry
     public override Control CreateControlPane()
     {
       AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+      Setup.Init(ConnectorBindingsNavisworks.HostAppNameVersion, ConnectorBindingsNavisworks.HostAppName);
       try
       {
         InitAvalonia();
@@ -50,7 +51,6 @@ namespace Speckle.ConnectorNavisworks.Entry
       bindings.RegisterAppEvents();
       var viewModel = new MainViewModel(bindings);
 
-      Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
       Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
       var speckleHost = new ElementHost
@@ -79,7 +79,7 @@ namespace Speckle.ConnectorNavisworks.Entry
       app.UsePlatformDetect();
       app.With(new SkiaOptions { MaxGpuResourceSizeBytes = 8096000 });
       app.With(new Win32PlatformOptions
-        { AllowEglInitialization = true, EnableMultitouch = false, UseWgl = true });
+        { AllowEglInitialization = true, EnableMultitouch = false, UseWgl = false });
       app.LogToTrace();
       app.UseReactiveUI();
 

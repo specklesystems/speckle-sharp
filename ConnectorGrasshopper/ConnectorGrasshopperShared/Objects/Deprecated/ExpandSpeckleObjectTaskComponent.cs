@@ -80,7 +80,7 @@ namespace ConnectorGrasshopper.Objects
       // INFO -> All output params are dynamically generated!
     }
 
-    protected override void SolveInstance(IGH_DataAccess DA)
+    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
     {
 
       if (InPreSolve)
@@ -318,7 +318,7 @@ namespace ConnectorGrasshopper.Objects
       catch (Exception ex)
       {
         // If we reach this, something happened that we weren't expecting...
-        Log.Error(ex, ex.Message);
+        Logging.SpeckleLog.Logger.Error(ex, ex.Message);
         AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
         return null;
       }

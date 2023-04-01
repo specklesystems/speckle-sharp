@@ -71,7 +71,7 @@ namespace Speckle.Core.Kits
     public static HostApplication OpenBuildings = new HostApplication("OpenBuildings", "openbuildings");
     public static HostApplication ETABS = new HostApplication("ETABS", "etabs");
     public static HostApplication SAP2000 = new HostApplication("SAP2000", "sap2000");
-    public static HostApplication CSIBridge = new HostApplication("CSIBridge", "csibridge");
+    public static HostApplication CSiBridge = new HostApplication("CSiBridge", "csibridge");
     public static HostApplication SAFE = new HostApplication("SAFE", "safe");
     public static HostApplication TeklaStructures = new HostApplication("Tekla Structures", "teklastructures");
     public static HostApplication Dxf = new HostApplication("DXF Converter", "dxf");
@@ -87,6 +87,7 @@ namespace Speckle.Core.Kits
     public static HostApplication Python = new HostApplication("Python", "python");
     public static HostApplication NET = new HostApplication(".NET", "net");
     public static HostApplication Navisworks = new HostApplication("Navisworks", "navisworks");
+    public static HostApplication AdvanceSteel = new HostApplication("Advance Steel", "advancesteel");
     public static HostApplication Other = new HostApplication("Other", "other");
 
     /// <summary>
@@ -112,7 +113,7 @@ namespace Speckle.Core.Kits
       if (appname.Contains("openbuildings")) return OpenBuildings;
       if (appname.Contains("etabs")) return ETABS;
       if (appname.Contains("sap")) return SAP2000;
-      if (appname.Contains("csibridge")) return CSIBridge;
+      if (appname.Contains("csibridge")) return CSiBridge;
       if (appname.Contains("safe")) return SAFE;
       if (appname.Contains("teklastructures")) return TeklaStructures;
       if (appname.Contains("dxf")) return Dxf;
@@ -128,6 +129,7 @@ namespace Speckle.Core.Kits
       if (appname.Contains("python")) return Python;
       if (appname.Contains("net")) return NET;
       if (appname.Contains("navisworks")) return Navisworks;
+      if (appname.Contains("advancesteel")) return AdvanceSteel;
       return new HostApplication(appname, appname);
 
     }

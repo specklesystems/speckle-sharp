@@ -4,17 +4,26 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Reflection;
 
-using Speckle.Core.Kits;
-
 using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
 using Autodesk.AutoCAD.Colors;
+
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.ConnectorAutocadCivil.DocumentUtils;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
 using Autodesk.Aec.PropertyData.DatabaseServices;
+#endif
+
+#if ADVANCESTEEL2023
+using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+using Autodesk.AdvanceSteel.Connection;
+using Autodesk.AdvanceSteel.ConstructionTypes;
+using Autodesk.AdvanceSteel.Modelling;
 #endif
 
 namespace Speckle.ConnectorAutocadCivil
@@ -46,6 +55,10 @@ namespace Speckle.ConnectorAutocadCivil
     public static string VersionedAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
     public static string AppName = HostApplications.Civil.Name;
     public static string Slug = HostApplications.Civil.Slug;
+#elif ADVANCESTEEL2023
+    public static string VersionedAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
+    public static string AppName = HostApplications.AdvanceSteel.Name;
+    public static string Slug = HostApplications.AdvanceSteel.Slug;
 #endif
     public static string invalidChars = @"<>/\:;""?*|=,‘";
 
@@ -58,8 +71,10 @@ namespace Speckle.ConnectorAutocadCivil
     /// <returns></returns>
     /// <remarks>
     /// This is used because for some unfathomable reason, ObjectId.ToString() returns "(id)" instead of "id".
+    /// The Handle is a persisitent indentifier which is unique per drawing.
+    /// The ObjectId is a non - persitent identifier(reassigned each time the drawing is opened) which is unique per session.
     /// </remarks>
-    public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.ToString().Trim(new char[] { '(', ')' })).ToList();
+    public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.Handle.ToString().Trim(new char[] { '(', ')' })).ToList();
 
     /// <summary>
     /// Retrieve handles of visible objects in a selection
@@ -78,15 +93,27 @@ namespace Speckle.ConnectorAutocadCivil
         return handles;
 
       Document Doc = Application.DocumentManager.MdiActiveDocument;
-      using (Transaction tr = Doc.TransactionManager.StartTransaction())
+      using (TransactionContext.StartTransaction(Doc))
       {
+        Transaction tr = Doc.TransactionManager.TopTransaction;
         foreach (SelectedObject selObj in selection)
         {
           DBObject obj = tr.GetObject(selObj.ObjectId, OpenMode.ForRead);
           if (obj != null && obj.Visible())
+          {
+#if ADVANCESTEEL2023
+
+            if (CheckAdvanceSteelObject(obj))
+            {
+              ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
+              if (filerObject is FeatureObject || filerObject is PlateFoldRelation) //Don't select features objects, they are going with Advance Steel objects
+                continue;
+            }
+#endif
+
             handles.Add(obj.Handle.ToString());
+          }
         }
-        tr.Commit();
       }
 
       return handles;
@@ -404,7 +431,7 @@ namespace Speckle.ConnectorAutocadCivil
               tr.AddNewlyCreatedDBObject(regAppRecord, true);
             }
           }
-          catch(Exception e)
+          catch (Exception e)
           {
             return false;
           }
@@ -522,7 +549,7 @@ namespace Speckle.ConnectorAutocadCivil
       }
     }
     #endregion
-    
+
 
     /// <summary>
     /// Returns a descriptive string for reporting
@@ -532,7 +559,7 @@ namespace Speckle.ConnectorAutocadCivil
     public static string ObjectDescriptor(DBObject obj)
     {
       if (obj == null) return String.Empty;
-      var simpleType = obj.GetType().ToString();
+      var simpleType = obj.GetType().Name;
       return $"{simpleType}";
     }
 
@@ -597,6 +624,7 @@ namespace Speckle.ConnectorAutocadCivil
       var units = styleBase["units"] as string;
       var color = styleBase["color"] as int?;
       if (color == null) color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
+      var transparency = styleBase["opacity"] as double?;
       var lineType = styleBase["linetype"] as string;
       var lineWidth = styleBase["lineweight"] as double?;
 
@@ -604,7 +632,10 @@ namespace Speckle.ConnectorAutocadCivil
       {
         var systemColor = System.Drawing.Color.FromArgb((int)color);
         entity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
-        entity.Transparency = new Transparency(systemColor.A);
+        var alpha = transparency != null 
+          ? (byte)(transparency * 255d) //render material
+          : systemColor.A; //display style
+        entity.Transparency = new Transparency(alpha);
       }
 
       double conversionFactor = (units != null) ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters) : 1;
@@ -636,6 +667,25 @@ namespace Speckle.ConnectorAutocadCivil
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
     }
+
+#if ADVANCESTEEL2023
+
+    public static T GetFilerObjectByEntity<T>(DBObject @object) where T : ASFilerObject
+    {
+      ASObjectId idCadEntity = new ASObjectId(@object.ObjectId.OldIdPtr);
+      ASObjectId idFilerObject = Autodesk.AdvanceSteel.CADAccess.DatabaseManager.GetFilerObjectId(idCadEntity, false);
+      if (idFilerObject.IsNull())
+        return null;
+
+      return Autodesk.AdvanceSteel.CADAccess.DatabaseManager.Open(idFilerObject) as T;
+    }
+
+    public static bool CheckAdvanceSteelObject(DBObject @object)
+    {
+      return @object.ObjectId.ObjectClass.DxfName.IndexOf("AST") == 0;
+    }
+
+#endif
 
   }
 

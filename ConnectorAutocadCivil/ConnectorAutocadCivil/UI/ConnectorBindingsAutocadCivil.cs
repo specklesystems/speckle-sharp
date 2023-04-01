@@ -1,4 +1,11 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+﻿using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
@@ -13,17 +20,14 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
-using System;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Speckle.Core.Models.GraphTraversal;
+using Speckle.Core.Transports;
 using static DesktopUI2.ViewModels.MappingViewModel;
 using static Speckle.ConnectorAutocadCivil.Utils;
+
+#if ADVANCESTEEL2023
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+#endif
 
 namespace Speckle.ConnectorAutocadCivil.UI
 {
@@ -85,7 +89,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D ").Replace("AdvanceSteel", "Advance Steel "); //hack for ADSK store;
 
     public override string GetHostAppName() => Utils.Slug;
 
@@ -245,84 +249,29 @@ namespace Speckle.ConnectorAutocadCivil.UI
     }
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      if (Doc == null) throw new InvalidOperationException("No Document is open");
+      
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
-      if (converter == null)
-      {
-        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-        return null;
-      }
-
-      var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
       var stream = await state.Client.StreamGet(state.StreamId);
+      
+      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      state.LastCommit = commit;
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
-
-      if (Doc == null)
-      {
-        progress.Report.LogOperationError(new Exception($"No Document is open."));
-        progress.CancellationTokenSource.Cancel();
-      }
-
-      //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      Commit commit = null;
-      if (state.CommitId == "latest")
-      {
-        var res = await state.Client.BranchGet(progress.CancellationTokenSource.Token, state.StreamId, state.BranchName, 1);
-        commit = res.commits.items.FirstOrDefault();
-      }
-      else
-      {
-        commit = await state.Client.CommitGet(progress.CancellationTokenSource.Token, state.StreamId, state.CommitId);
-      }
-      string referencedObject = commit.referencedObject;
-      Base commitObject = null;
-
-      state.LastSourceApp = commit.sourceApplication;
-
-      try
-      {
-        commitObject = await Operations.Receive(
-          referencedObject,
-          progress.CancellationTokenSource.Token,
-          transport,
-          onProgressAction: dict => progress.Update(dict),
-          onErrorAction: (s, e) =>
-          {
-            progress.Report.LogOperationError(e);
-            progress.CancellationTokenSource.Cancel();
-          },
-          onTotalChildrenCountKnown: count => { progress.Max = count; },
-          disposeTransports: true
-          );
-
-        await state.Client.CommitReceived(new CommitReceivedInput
-        {
-          streamId = stream?.id,
-          commitId = commit?.id,
-          message = commit?.message,
-          sourceApplication = Utils.VersionedAppName
-        });
-      }
-      catch (Exception e)
-      {
-        progress.Report.OperationErrors.Add(new Exception($"Could not receive or deserialize commit: {e.Message}"));
-      }
-      if (progress.Report.OperationErrorsCount != 0 || commitObject == null)
-        return state;
+      Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
+      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.VersionedAppName);
 
       // invoke conversions on the main thread via control
       try
       {
         if (Control.InvokeRequired)
-          Control.Invoke(new ReceivingDelegate(ConvertReceiveCommit), new object[] { commitObject, converter, state, progress, stream, commit.id });
+          Control.Invoke(new ReceivingDelegate(ConvertReceiveCommit), commitObject, converter, state, progress, stream, commit.id);
         else
           ConvertReceiveCommit(commitObject, converter, state, progress, stream, commit.id);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        progress.Report.OperationErrors.Add(new Exception($"Could not convert commit: {e.Message}"));
+        throw new Exception($"Could not convert commit: {ex.Message}", ex);
       }
 
       return state;
@@ -393,7 +342,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           foreach (var commitObj in commitObjs)
           {
             // handle user cancellation
-            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            if (progress.CancellationToken.IsCancellationRequested)
               return;
 
             // convert base (or base fallback values) and store in appobj converted prop
@@ -454,7 +403,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           foreach (var commitObj in commitObjs)
           {
             // handle user cancellation
-            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            if (progress.CancellationToken.IsCancellationRequested)
               return;
 
             // find existing doc objects if they exist
@@ -501,7 +450,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
     }
-    
+
     private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
       //TODO: this implementation is almost identical to Rhino, we should try and extract as much of it as we can into Core
@@ -514,16 +463,20 @@ namespace Speckle.ConnectorAutocadCivil.UI
         else
           StoredObjects.Add(@base.id, @base);
       }
-      
+
       ApplicationObject CreateApplicationObject(Base current, string containerId)
       {
         ApplicationObject NewAppObj()
         {
-          var speckleType = current.speckle_type.Split(new [] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          var speckleType = current.speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
             .LastOrDefault();
           return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
-        
+
+        // skip if it is the base commit collection
+        if (current.speckle_type.Contains("Collection") && string.IsNullOrEmpty(containerId))
+          return null;
+
         //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
@@ -545,23 +498,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
           StoreObject(current, appObj);
           return appObj;
         }
-        
+
         return null;
       }
-      
+
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
         if (context.propName == null) return stringBuilder;
 
-        var objectLayerName = context.propName[0] == '@'
-          ? context.propName.Substring(1)
-          : context.propName;
-
+        string objectLayerName = string.Empty;
+        if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
+        {
+          objectLayerName = context.current["name"] as string;
+        }
+        else if (context.propName.ToLower() != "elements")// this is for any other property on the collection. skip elements props in layer structure.
+        {
+          objectLayerName = context.propName[0] == '@'
+            ? context.propName.Substring(1)
+            : context.propName;
+        }
         LayerIdRecurse(context.parent, stringBuilder);
-        stringBuilder.Append('$');
+        if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName)) { stringBuilder.Append('$'); }
         stringBuilder.Append(objectLayerName);
-        
+
         return stringBuilder;
       }
 
@@ -841,9 +801,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var appObj = new ApplicationObject(id, type) { Status = ApplicationObject.State.Unknown };
 
           if (converter.CanConvertToSpeckle(obj))
+          {
             appObj.Update(status: ApplicationObject.State.Created);
+          }
           else
+          {
+#if ADVANCESTEEL2023
+            UpdateASObject(appObj, obj);
+#endif
             appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
+          }
+
           progress.Report.Log(appObj);
           existingIds.Add(id);
         }
@@ -862,11 +830,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
-      if (converter == null)
-      {
-        progress.Report.LogOperationError(new SpeckleException("Could not find any Kit!"));
-        return null;
-      }
 
       var streamId = state.StreamId;
       var client = state.Client;
@@ -887,8 +850,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       if (state.SelectedObjectIds.Count == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."));
-        return null;
+        throw new InvalidOperationException(
+          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
       }
 
       var commitObject = new Base();
@@ -912,53 +875,37 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       if (convertedCount == 0)
       {
-        progress.Report.LogOperationError(new SpeckleException("Zero objects converted successfully. Send stopped.", false));
-        return null;
+        throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
-      if (progress.CancellationTokenSource.Token.IsCancellationRequested)
-        return null;
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
       var commitObjId = await Operations.Send(
         commitObject,
-        progress.CancellationTokenSource.Token,
+        progress.CancellationToken,
         transports,
         onProgressAction: dict => progress.Update(dict),
-        onErrorAction: (err, exception) =>
-        {
-          progress.Report.LogOperationError(exception);
-          progress.CancellationTokenSource.Cancel();
-        },
+        onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
-
-      if (progress.Report.OperationErrorsCount != 0)
-        return null;
-
+      
+      progress.CancellationToken.ThrowIfCancellationRequested();
+      
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
         objectId = commitObjId,
         branchName = state.BranchName,
-        message = state.CommitMessage != null ? state.CommitMessage : $"Pushed {convertedCount} elements from {Utils.AppName}.",
+        message = state.CommitMessage ?? $"Pushed {convertedCount} elements from {Utils.AppName}.",
         sourceApplication = Utils.VersionedAppName
       };
-
+      
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      try
-      {
-        var commitId = await client.CommitCreate(actualCommit);
-        state.PreviousCommitId = commitId;
-        return commitId;
-      }
-      catch (Exception e)
-      {
-        progress.Report.LogOperationError(e);
-      }
-      return null;
+      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      return commitId;
     }
 
     delegate void SendingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount);
@@ -991,10 +938,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
           // get the hash of the file name to create a more unique application id
           var fileNameHash = GetDocumentId();
 
+          string servicedApplication = converter.GetServicedApplications().First();
+
           foreach (var autocadObjectHandle in state.SelectedObjectIds)
           {
             // handle user cancellation
-            if (progress.CancellationTokenSource.Token.IsCancellationRequested)
+            if (progress.CancellationToken.IsCancellationRequested)
             {
               return;
             }
@@ -1020,7 +969,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             if (!converter.CanConvertToSpeckle(obj))
             {
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in AutoCAD/Civil3D");
+#if ADVANCESTEEL2023
+              UpdateASObject(reportObj, obj);
+#endif
+              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in {Utils.AppName}");
               progress.Report.Log(reportObj);
               continue;
             }
@@ -1072,13 +1024,14 @@ namespace Speckle.ConnectorAutocadCivil.UI
               progress.Update(conversionProgressDict);
 
               // log report object
-              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.GetType().Name}");
               progress.Report.Log(reportObj);
 
               convertedCount++;
             }
             catch (Exception e)
             {
+              //TODO: Log to serilog failed conversions
               reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
               progress.Report.Log(reportObj);
               continue;
@@ -1089,6 +1042,20 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
       }
     }
+
+#if ADVANCESTEEL2023
+    private void UpdateASObject(ApplicationObject applicationObject, DBObject obj)
+    {
+      if (!CheckAdvanceSteelObject(obj))
+        return;
+
+      ASFilerObject filerObject = GetFilerObjectByEntity<ASFilerObject>(obj);
+      if (filerObject != null)
+      {
+        applicationObject.Update(descriptor: filerObject.GetType().Name);
+      }
+    }
+#endif
 
     private List<string> GetObjectsFromFilter(ISelectionFilter filter, ISpeckleConverter converter)
     {

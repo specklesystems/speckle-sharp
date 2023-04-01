@@ -12,9 +12,9 @@ namespace Objects.Structural.CSI.Properties
     public double mass { get; set; }
     public double weight { get; set; }
     public double rotationalInertia1 { get; set; }
-    public double rotationalInertia2{ get; set; }
+    public double rotationalInertia2 { get; set; }
     public double rotationalInertia3 { get; set; }
-    public double M2PdeltaEnd1 {get;set;}
+    public double M2PdeltaEnd1 { get; set; }
     public double MP2deltaEnd2 { get; set; }
     public double MP3deltaEnd1 { get; set; }
     public double MP3deltaEnd2 { get; set; }

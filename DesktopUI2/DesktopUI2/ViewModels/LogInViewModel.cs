@@ -1,6 +1,7 @@
 ﻿using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
+using Serilog;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Splat;
@@ -11,7 +12,6 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace DesktopUI2.ViewModels
 {
@@ -64,7 +64,7 @@ namespace DesktopUI2.ViewModels
       }
       catch (Exception ex)
       {
-        Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to construct view model {viewModel} {exceptionMessage}", GetType(), ex.Message);
       }
     }
   }

@@ -503,7 +503,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
       }
     }
 
@@ -522,7 +522,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
       catch (Exception ex)
       {
-        Serilog.Log.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, ex.Message);
       }
     }
 
@@ -593,7 +593,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     #region overrides
 
     /// <summary>
-    /// 
+    ///
     /// </summary>
     /// <param name="inputAstNodes"></param>
     /// <returns></returns>

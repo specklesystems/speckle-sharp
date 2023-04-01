@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConversionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.DxfImport.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.MeshBuildHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.Previews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.SettingsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectContext3DServer.cs" />
@@ -35,6 +36,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGridLine.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertGroup.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertPipe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCombinableElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpace.cs" />

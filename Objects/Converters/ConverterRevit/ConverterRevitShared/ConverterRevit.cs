@@ -1,5 +1,6 @@
 ﻿using Autodesk.Revit.DB;
 using Objects.Organization;
+using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
@@ -75,6 +76,13 @@ namespace Objects.Converter.Revit
 
     public Dictionary<string, Phase> Phases { get; private set; } = new Dictionary<string, Phase>();
 
+    /// <summary>
+    /// Used to cache already converted family instance FamilyType deifnitions
+    /// </summary>
+    public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType>();
+    
+    public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
+
     public ReceiveMode ReceiveMode { get; set; }
 
 
@@ -116,7 +124,7 @@ namespace Objects.Converter.Revit
       switch (@object)
       {
         case DB.Document o:
-          returnObject = ModelToSpeckle(o);
+          returnObject = ModelToSpeckle(o, !o.IsFamilyDocument);
           break;
         case DB.DetailCurve o:
           returnObject = DetailCurveToSpeckle(o);
@@ -173,25 +181,25 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = NetworkToSpeckle(o, out notes); 
+          returnObject = NetworkToSpeckle(o, out notes);
           break;
         case DB.Electrical.Conduit o:
           returnObject = NetworkToSpeckle(o, out notes);
@@ -250,6 +258,9 @@ namespace Objects.Converter.Revit
         case DB.Structure.StructuralConnectionHandler o:
           returnObject = StructuralConnectionHandlerToSpeckle(o);
           break;
+        case DB.CombinableElement o:
+          returnObject = CombinableElementToSpeckle(o);
+          break;
 #if REVIT2020 || REVIT2021 || REVIT2022
         case DB.Structure.AnalyticalModelStick o:
           returnObject = AnalyticalStickToSpeckle(o);
@@ -296,8 +307,7 @@ namespace Objects.Converter.Revit
       }
 
       // log 
-      var reportObj = Report.GetReportObject(id, out int index) ? Report.ReportObjects[index] : null;
-      if (reportObj != null && notes.Count > 0)
+      if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
       return returnObject;
@@ -383,6 +393,8 @@ namespace Objects.Converter.Revit
             return FreeformElementToNativeFamily(o);
           case Geometry.Mesh o:
             return FreeformElementToNativeFamily(o);
+          case BER.FreeformElement o:
+            return FreeformElementToNative(o);
           default:
             return null;
         }
@@ -515,7 +527,7 @@ namespace Objects.Converter.Revit
           return ProfileWallToNative(o);
 
         case BER.RevitFaceWall o:
-          return FaceWallToNative(o);
+          return FaceWallToNativeV2(o);
 
         case BE.Wall o:
           return WallToNative(o);
@@ -544,6 +556,9 @@ namespace Objects.Converter.Revit
 
         case BE.View3D o:
           return ViewToNative(o);
+
+        case Other.Revit.RevitInstance o:
+          return RevitInstanceToNative(o);
 
         case BE.Room o:
           return RoomToNative(o);
@@ -593,7 +608,6 @@ namespace Objects.Converter.Revit
       return @object
       switch
       {
-
         DB.DetailCurve _ => true,
         DB.Material _ => true,
         DB.DirectShape _ => true,
@@ -631,6 +645,7 @@ namespace Objects.Converter.Revit
         DB.Grid _ => true,
         DB.ReferencePoint _ => true,
         DB.FabricationPart _ => true,
+        DB.CombinableElement _ => true,
 #if REVIT2020 || REVIT2021 || REVIT2022
         DB.Structure.AnalyticalModelStick _ => true,
         DB.Structure.AnalyticalModelSurface _ => true,
@@ -654,6 +669,7 @@ namespace Objects.Converter.Revit
           ICurve _ => true,
           Geometry.Brep _ => true,
           Geometry.Mesh _ => true,
+          BER.FreeformElement _ => true,
           _ => false
         };
       }
@@ -702,6 +718,7 @@ namespace Objects.Converter.Revit
         BE.CableTray _ => true,
         BE.Conduit _ => true,
         BE.Revit.RevitRailing _ => true,
+        Other.Revit.RevitInstance _ => true,
         BER.ParameterUpdater _ => true,
         BE.View3D _ => true,
         BE.Room _ => true,

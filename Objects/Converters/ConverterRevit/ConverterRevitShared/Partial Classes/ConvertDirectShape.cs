@@ -1,13 +1,13 @@
-﻿using Autodesk.Revit.DB;
-using Objects.Geometry;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
+using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
+using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 using Mesh = Objects.Geometry.Mesh;
@@ -45,7 +45,7 @@ namespace Objects.Converter.Revit
         }
       }
     }
-    
+
     /// <summary>
     /// The default DirectShape conversion method. Will return a Revit DirectShape with the containing geometry.
     /// </summary>
@@ -83,7 +83,7 @@ namespace Objects.Converter.Revit
             break;
           case Mesh mesh:
             if (fallback != ToNativeMeshSettingEnum.Default)
-              throw new FallbackToDxfException("DirectShape contains Mesh. Falling back to DXF import as per Settings.");            
+              throw new FallbackToDxfException("DirectShape contains Mesh. Falling back to DXF import as per Settings.");
             var rMesh = MeshToNative(mesh);
             converted.AddRange(rMesh);
             break;
@@ -160,8 +160,8 @@ namespace Objects.Converter.Revit
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
     public ApplicationObject DirectShapeToNative(Mesh mesh,
       BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
-      => DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type), new []{mesh}, cat, mesh.applicationId ?? mesh.id);
-    
+      => DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type), new[] { mesh }, cat, mesh.applicationId ?? mesh.id);
+
     public ApplicationObject DirectShapeToNative(ApplicationObject appObj, IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel, string applicationId = null)
     {
       if (meshes.Count == 0)
@@ -194,14 +194,6 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    private Mesh SolidToSpeckleMesh(Solid solid)
-    {
-      var mesh = new Mesh();
-      (mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(new List<Solid> { solid });
-      mesh.units = ModelUnits;
-      return mesh;
-    }
-
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
     {
       var cat = ((BuiltInCategory)revitAc.Category.Id.IntegerValue).ToString();
@@ -217,7 +209,7 @@ namespace Objects.Converter.Revit
             geometries.Add(MeshToSpeckle(mesh, revitAc.Document));
             break;
           case Solid solid: // TODO Should be replaced with 'BrepToSpeckle' when it works.
-            geometries.AddRange(GetMeshesFromSolids(new[] { solid }, revitAc.Document));
+            geometries.AddRange(ConvertSolidsByRenderMaterial(new[] { solid }, revitAc.Document));
             break;
         }
       }
