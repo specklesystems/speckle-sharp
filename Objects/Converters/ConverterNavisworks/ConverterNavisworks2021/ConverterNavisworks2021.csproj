@@ -4,7 +4,7 @@
 		<AssemblyName>Objects.Converter.Navisworks2021</AssemblyName>
 		<RootNamespace>Objects.Converter.Navisworks</RootNamespace>
     <Platforms>AnyCPU;x64</Platforms>
-    <OutputPath>bin\x64\Debug\$(Configuration)</OutputPath>
+    <OutputPath>bin\x64\$(Configuration)</OutputPath>
     <CopyToKitFolder>true</CopyToKitFolder>
 		<DefineConstants>$(DefineConstants);NAVMAN18</DefineConstants>
 		<TargetFramework>netstandard2.0</TargetFramework>
