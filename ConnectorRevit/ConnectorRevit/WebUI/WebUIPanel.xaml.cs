@@ -12,6 +12,7 @@ namespace Speckle.ConnectorRevit
   public partial class WebUIPanel : Page, Autodesk.Revit.UI.IDockablePaneProvider
   {
     public WebUIPanel(WebUIBindings webUIBindings, string address = "https://dashing-haupia-e8f6e3.netlify.app/")
+    //public WebUIPanel(WebUIBindings webUIBindings, string address = "http://localhost:8080")
     {
       //InitializeCef();
       InitializeComponent();
@@ -28,6 +29,15 @@ namespace Speckle.ConnectorRevit
       Browser.JavascriptObjectRepository.Register("UiBindings", webUIBindings, isAsync: true, options: BindingOptions.DefaultBinder);
 #endif
       Browser.Address = address;
+
+#if DEBUG
+      Browser.Initialized += Browser_Initialized;
+#endif
+    }
+
+    private void Browser_Initialized(object sender, System.EventArgs e)
+    {
+      Browser.ShowDevTools();
     }
 
     // Note: Dynamo ships with cefsharp too, so we need to be careful around initialising cefsharp.

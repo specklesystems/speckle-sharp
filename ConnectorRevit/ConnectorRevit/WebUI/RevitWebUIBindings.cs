@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using CefSharp;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.ConnectorRevit.Entry;
@@ -16,6 +17,7 @@ namespace Speckle.ConnectorRevit.UI
   {
     public RevitWebUIBindings()
     {
+
     }
 
     public override void SendStream(string args)
@@ -28,6 +30,9 @@ namespace Speckle.ConnectorRevit.UI
     {
       try
       {
+
+
+        NotifyUi("show-notification", "Sending...");
 
         string _fileName = WebUISpeckleRevitCommand.Bindings.GetFileName();
         var _fileStream = await CreateStream();
@@ -48,10 +53,12 @@ namespace Speckle.ConnectorRevit.UI
         }
         var Id = await Task.Run(() => WebUISpeckleRevitCommand.Bindings.SendStream(_fileStream, new ProgressViewModel()));
 
+        NotifyUi("show-notification", "Sent everything!");
       }
       catch (Exception ex)
       {
-
+        Serilog.Log.Error(ex, ex.Message);
+        NotifyUi("show-notification", "Error: " + ex.Message);
       }
     }
 
