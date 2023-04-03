@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
-using System.Text;
-using Objects.BuiltElements;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
