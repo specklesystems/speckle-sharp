@@ -1,12 +1,11 @@
-﻿<!--EXTERNAL_PROPERTIES: AppData;AppData-->
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <Title>SpeckleConverterNavisworks</Title>
         <AssemblyName>Objects.Converter.Navisworks2024</AssemblyName>
         <RootNamespace>Objects.Converter.Navisworks</RootNamespace>
         <Platforms>AnyCPU;x64</Platforms>
-        <CopyToKitFolder>true</CopyToKitFolder>
         <OutputPath>bin\x64\Debug\</OutputPath>
+        <CopyToKitFolder>true</CopyToKitFolder>
         <DefineConstants>$(DefineConstants);NAVMAN21</DefineConstants>
         <TargetFramework>netstandard2.0</TargetFramework>
     </PropertyGroup>
