@@ -132,20 +132,13 @@ namespace Objects.Converter.Revit
         }
         catch (Exception e)
         {
-
+          // ignore everything else because we're just going to rollback
         }
         finally
         {
           t.RollBack();
         }
       }
-
-      //using (var t = new Transaction(Doc, "This Transaction Will Never Get Committed"))
-      //{
-      //  t.Start();
-      //  Doc.Regenerate();
-      //  t.RollBack();
-      //}
 
       if (remainingIdsInRow == null || remainingIdsInRow.Count == orginialTableIds.Count)
         return elementApplicationIdsInRow;

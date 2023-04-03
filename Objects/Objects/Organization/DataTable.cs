@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Models;
@@ -6,6 +6,11 @@ using Speckle.Newtonsoft.Json;
 
 namespace Objects.Organization
 {
+  //public class DataTableV2 : Base
+  //{
+  //  public List<Base>
+  //}
+
   public class DataTable : Base
   {
     public DataTable() { }
@@ -18,9 +23,10 @@ namespace Objects.Organization
     }
     [DetachProperty]
     public DataStorage DataStorage { get; set; } = new DataStorage();
-    public int RowCount => Rows?.Count ?? 0;
+    public int RowCount => _rows?.Count ?? 0;
     private List<DataRow> _rows = null;
-    public IReadOnlyList<DataRow> Rows
+    // TODO: turn this into an IReadOnlyList
+    public List<DataRow> Rows
     {
       get => _rows;
       set
@@ -34,9 +40,10 @@ namespace Objects.Organization
       }
     }
 
-    public int ColumnCount => Columns?.Count ?? 0;
+    public int ColumnCount => _columns?.Count ?? 0;
     private List<DataColumn> _columns = null;
-    public IReadOnlyList<DataColumn> Columns
+    // TODO: turn this into an IReadOnlyList
+    public List<DataColumn> Columns
     {
       get => _columns;
       set
@@ -164,7 +171,37 @@ namespace Objects.Organization
 
   public class DataStorage : Base
   {
+    public int ColumnCount { get; set; } = 0;
+
+    [Chunkable()]
+    [DetachProperty]
+    public List<object> SerializedData { get => FlattenData(); set => UnflattenData(value); }
+    [JsonIgnore]
     public List<List<object>> Data { get; set; } = new List<List<object>>();
+
+    public List<object> FlattenData()
+    {
+      var flatData = new List<object>();
+
+      var firstRow = Data.FirstOrDefault();
+      if (firstRow == null)
+        return flatData;
+
+      ColumnCount = firstRow.Count;
+      foreach (var row in Data)
+      {
+        flatData.AddRange(row);
+      }
+      return flatData;
+    }
+
+    public void UnflattenData(List<object> flatData)
+    {
+      for (var i = 0; i < flatData.Count; i += ColumnCount)
+      {
+        Data.Add(flatData.Skip(i).Take(ColumnCount).ToList());
+      }
+    }
   }
 
   public class DataRow : Base
