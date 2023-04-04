@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -123,7 +123,7 @@ namespace SpeckleRhino
                   Vector3d normal = p.Normal;
                   if (normal.Unitize())
                   {
-                    if (Math.Abs(normal.Z) == 1)
+                    if (Math.Abs(Math.Abs(normal.Z) - 1) < RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
                     {
                       result.Add(new RevitFloorViewModel());
                     }
@@ -136,7 +136,7 @@ namespace SpeckleRhino
               if (e.ProfileCount > 1) break;
               var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
               if (!(crv.IsLinear() || crv.IsArc())) break;
-              if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
+              if (Math.Abs(crv.PointAtStart.Z - crv.PointAtEnd.Z) > RhinoDoc.ActiveDoc.ModelAbsoluteTolerance) break;
 
 
               //if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
