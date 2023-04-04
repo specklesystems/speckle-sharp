@@ -160,7 +160,11 @@ namespace SpeckleRhino
                 result.Add(new RevitDefaultPipeViewModel());
                 result.Add(new RevitDefaultDuctViewModel());
               }
-
+              else if (c.IsPlanar())
+              {
+                // If the curve is non-linear, but is planar, it can still be a beam.
+                result.Add(new RevitBeamViewModel());
+              }
               //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
               //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
               //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
