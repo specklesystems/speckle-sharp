@@ -40,10 +40,10 @@
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1020.30" />
-    <PackageReference Include="RhinoCommon" Version="7.27.23032.13001" IncludeAssets="compile; build">
+    <PackageReference Include="RhinoCommon" Version="7.16.22067.13001" IncludeAssets="compile; build">
        <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="RhinoWindows" Version="7.27.23032.13001" />
+    <PackageReference Include="RhinoWindows" Version="7.16.22067.13001" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
