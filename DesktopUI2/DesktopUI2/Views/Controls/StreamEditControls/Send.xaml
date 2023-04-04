@@ -26,14 +26,11 @@
       HorizontalAlignment="Stretch"
       ColumnDefinitions="auto,*"
       RowDefinitions="auto,auto">
-
-
       <TextBlock
         VerticalAlignment="Center"
         Classes="SpeckleFont"
         FontWeight="Bold"
         Text="Model (branch):" />
-
       <ComboBox
         Grid.Column="1"
         Margin="5,10,5,10"
@@ -59,8 +56,6 @@
         </ComboBox.ItemTemplate>
       </ComboBox>
 
-
-
       <!--  FILTER & SETTINGS  -->
       <Expander
         Grid.Row="1"
@@ -70,20 +65,22 @@
         Classes="Edit"
         IsExpanded="{Binding IsExpanded}">
         <Expander.Header>
-          <StackPanel Orientation="Horizontal">
+          <Grid ColumnDefinitions="auto, *">
             <TextBlock
-              Grid.Row="1"
               VerticalAlignment="Center"
               Classes="SpeckleFont"
               FontWeight="Bold"
               Text="Selection: " />
 
             <TextBlock
-              Grid.Row="1"
               Grid.Column="1"
+              Margin="5,0,0,0"
               VerticalAlignment="Center"
-              Text="{Binding SelectedFilter.Summary}" />
-          </StackPanel>
+              Text="{Binding SelectedFilter.Summary, FallbackValue='This is a very long text to see if I fit in the window'}"
+              TextTrimming="CharacterEllipsis"
+              TextWrapping="Wrap" />
+          </Grid>
+
         </Expander.Header>
 
         <StackPanel Orientation="Vertical">

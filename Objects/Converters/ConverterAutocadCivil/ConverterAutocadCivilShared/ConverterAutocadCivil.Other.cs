@@ -49,13 +49,15 @@ namespace Objects.Converter.AutocadCivil
         entity.LineWeight = GetLineWeight(style.lineweight);
         if (LineTypeDictionary.ContainsKey(style.linetype))
           entity.LinetypeId = LineTypeDictionary[style.linetype];
+        entity.Transparency = new Transparency(color.A);
       }
       else if (styleBase is RenderMaterial material) // this is the fallback value if a rendermaterial is passed instead
       {
         color = System.Drawing.Color.FromArgb(material.diffuse);
+        var alpha = (byte)(material.opacity * 255d);
+        entity.Transparency = new Transparency(alpha);
       }
       entity.Color = Color.FromRgb(color.R, color.G, color.B);
-      entity.Transparency = new Transparency(color.A);
 
       return entity;
     }
@@ -379,9 +381,8 @@ namespace Objects.Converter.AutocadCivil
       }
 
       // transform
-      var matrix = instance.transform.ConvertTo(ModelUnits).ToArray();
-      Matrix3d convertedTransform = new Matrix3d(matrix);
-
+      Matrix3d convertedTransform = TransformToNativeMatrix(instance.transform);
+      
       // add block reference
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
       var insertionPoint = Point3d.Origin.TransformBy(convertedTransform);
@@ -411,6 +412,7 @@ namespace Objects.Converter.AutocadCivil
         appObj.CreatedIds.Add(id.Handle.ToString());
       return appObj;
     }
+
     public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
       // get geometry

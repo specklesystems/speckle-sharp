@@ -56,7 +56,7 @@ namespace ConnectorGrasshopper.Accounts
       {
 
         SelectItem(0);
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
+        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "No accounts found. Please use the Speckle Manager to manage your accounts on this computer.");
         return;
       }
 

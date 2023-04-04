@@ -1,5 +1,6 @@
 ﻿using System.Net.Mime;
 using System.Text;
+using System.Web;
 using Newtonsoft.Json;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -66,7 +67,10 @@ namespace TestsIntegration
         throw new Exception($"Cannot seed user on the server {Server.url}", e);
       }
 
-      var accessCode = redirectUrl.Split("?access_code=")[1];
+      var uri = new Uri(redirectUrl);
+      var query = HttpUtility.ParseQueryString(uri.Query);
+      
+      var accessCode = query["access_code"] ?? throw new Exception("Redirect Uri has no 'access_code'.");
       var tokenBody = new Dictionary<string, string>()
       {
         ["accessCode"] = accessCode,

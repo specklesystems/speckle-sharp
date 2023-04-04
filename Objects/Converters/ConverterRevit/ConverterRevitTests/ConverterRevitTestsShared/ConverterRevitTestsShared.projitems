@@ -1,0 +1,32 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>1085f4b5-fdad-4ff8-b144-dddbd9454f55</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>ConverterRevitTestsShared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AdaptiveComponentTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BeamTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)BrepTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ColumnTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CurveTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DirectShapeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DuctTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FamilyInstanceTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)FloorTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Globals.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)OpeningTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PipeTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RoofTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RoomTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionFixture.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionTest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpeckleUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WallTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WireTests.cs" />
+  </ItemGroup>
+</Project>

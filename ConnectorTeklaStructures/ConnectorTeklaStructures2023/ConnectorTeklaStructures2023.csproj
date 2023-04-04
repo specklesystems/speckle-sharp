@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>Speckle.ConnectorTeklaStructures</RootNamespace>
+    <AssemblyName>SpeckleConnectorTeklaStructures</AssemblyName>
+    <TargetFramework>net471</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <AssemblyTitle>ConnectorTeklaStructures2023</AssemblyTitle>
+    <Product>ConnectorTeklaStructures2023</Product>
+    <DefineConstants>$(DefineConstants);TeklaStructures2023</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <PostBuildEvent Condition="'$(IsDesktopBuild)' == true AND $([MSBuild]::IsOsPlatform('Windows'))">RD /S /Q "$(TargetDir)arm64\"
+      if EXIST "C:\Program Files\Tekla Structures\2023.0\" (
+      xcopy "$(TargetDir)*.*" "C:\ProgramData\Trimble\Tekla Structures\2023.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E
+      )
+      if EXIST "C:\TeklaStructures\2023.0\" (
+      xcopy "$(TargetDir)*.*" "C:\TeklaStructures\2023.0\Environments\common\extensions\Speckle2TeklaStructures" /Y /I /E
+      )
+    </PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="..\ConnectorTeklaStructuresShared\ConnectorTeklaStructuresShared.projitems" Label="Shared" />
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Tekla.Structures" Version="2023.0.1" />
+    <PackageReference Include="Tekla.Structures.Dialog" Version="2023.0.1" />
+    <PackageReference Include="Tekla.Structures.Model" Version="2023.0.1" />
+    <PackageReference Include="Tekla.Structures.Plugins" Version="2023.0.1" />
+  </ItemGroup>
+</Project>

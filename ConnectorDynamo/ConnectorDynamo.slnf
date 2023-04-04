@@ -1,0 +1,27 @@
+{
+  "solution": {
+    "path": "..\\All.sln",
+    "projects": [
+      "ConnectorDynamo\\ConnectorDynamoExtension\\ConnectorDynamoExtension.csproj",
+      "ConnectorDynamo\\ConnectorDynamoFunctions\\ConnectorDynamoFunctions.csproj",
+      "ConnectorDynamo\\ConnectorDynamo\\ConnectorDynamo.csproj",
+      "Core\\Core\\Core.csproj",
+      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "Objects\\Converters\\ConverterDxf\\ConverterDxf\\ConverterDxf.csproj",
+      "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2021\\ConverterDynamoRevit2021.csproj",
+      "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2022\\ConverterDynamoRevit2022.csproj",
+      "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit2023\\ConverterDynamoRevit2023.csproj",
+      "Objects\\Converters\\ConverterDynamo\\ConverterDynamoRevit\\ConverterDynamoRevit.csproj",
+      "Objects\\Converters\\ConverterDynamo\\ConverterDynamoSandbox\\ConverterDynamoSandbox.csproj",
+      "Objects\\Converters\\ConverterDynamo\\ConverterDynamoShared\\ConverterDynamoShared.shproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevit2020\\ConverterRevit2020.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevit2021\\ConverterRevit2021.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevit2022\\ConverterRevit2022.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevit2023\\ConverterRevit2023.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}

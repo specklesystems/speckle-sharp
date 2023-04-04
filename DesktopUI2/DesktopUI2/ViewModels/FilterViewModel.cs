@@ -22,7 +22,9 @@ namespace DesktopUI2.ViewModels
       set
       {
         this.RaiseAndSetIfChanged(ref _filter, value);
+        isSearching = true;
         RestoreSelectedItems();
+        isSearching = false;
         this.RaisePropertyChanged("Summary");
       }
     }

@@ -5,23 +5,17 @@
     <RootNamespace>Objects</RootNamespace>
     <AssemblyName>Objects</AssemblyName>
     <PackageId>Speckle.Objects</PackageId>
-    <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
     <Product>Objects</Product>
-    <Version>2.1.1</Version>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>Objects is the default object model for Speckle</Description>
-    <PackageTags>speckle objects</PackageTags>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <Copyright>Copyright (c) AEC Systems Ltd and Speckle Contributors</Copyright>
-    <Configurations>Debug;Release</Configurations>
-    <Platforms>AnyCPU</Platforms>
+    <PackageTags>$(PackageTags), objects</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>8</LangVersion>
+    <CopyToKitFolder>true</CopyToKitFolder>
   </PropertyGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Tests"/>
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj">
       <Private>false</Private>
@@ -34,17 +28,8 @@
       <PackagePath></PackagePath>
     </None>
   </ItemGroup>
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;</DefineConstants>
   </PropertyGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\$(ProjectName)\&quot;" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).pdb&quot; &quot;$(AppData)\Speckle\Kits\$(ProjectName)\&quot;" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="mkdir -p $HOME'/.config/Speckle/Kits/$(ProjectName)'" />
-    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/$(ProjectName)/'" />
-  </Target>
 </Project>

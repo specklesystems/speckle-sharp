@@ -42,7 +42,8 @@ namespace Objects.Converter.Navisworks
     {
       // Regex pattern from speckle-sharp/Core/Core/Models/DynamicBase.cs IsPropNameValid
       return name == "Item"
-        ? "Item"
+        // Item is a reserved term for Indexed Properties: https://learn.microsoft.com/en-us/dotnet/csharp/programming-guide/indexers/using-indexers
+        ? "Item_" 
         : Regex.Replace(name, @"[\.\/]", "_");
     }
 
