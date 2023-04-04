@@ -408,9 +408,26 @@ namespace Objects.Converter.Revit
         // find self referential prop and set value to @object if it is null (happens when sent from gh)
         if (CanConvertToNative(speckleSchema))
         {
-          var prop = speckleSchema.GetInstanceMembers().Where(o => speckleSchema[o.Name] == null)?.Where(o => o.PropertyType.IsAssignableFrom(@object.GetType()))?.FirstOrDefault();
-          if (prop != null)
-            speckleSchema[prop.Name] = @object;
+          //if you can find a "MainParamProperty" get that
+          if (speckleSchema is BER.DirectShape ds)
+          { 
+            // HACK: This is an explicit exception for DirectShapes. This is the only object class that does not have a
+            // `SchemaMainParam`, which means the swap performed below would not work.
+            // In this case, we cast directly and "unwrap" the schema object manually, setting the Brep as the only
+            // item in the list.
+            ds.baseGeometries = new List<Base> { @object };
+          }
+          else
+          {
+            var prop = speckleSchema
+              .GetInstanceMembers()
+              .Where(o => speckleSchema[o.Name] == null)
+              ?.Where(o => o.PropertyType.IsInstanceOfType(@object))
+              ?.First();
+            if (prop != null)
+              speckleSchema[prop.Name] = @object;
+          }
+
           @object = speckleSchema;
         }
       }
@@ -420,7 +437,6 @@ namespace Objects.Converter.Revit
         //geometry
         case ICurve o:
           return ModelCurveToNative(o);
-
         case Geometry.Brep o:
           return DirectShapeToNative(o);
         case Geometry.Mesh mesh:
