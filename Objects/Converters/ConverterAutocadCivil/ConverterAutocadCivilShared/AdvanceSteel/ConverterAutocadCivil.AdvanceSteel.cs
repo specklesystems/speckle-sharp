@@ -1,4 +1,4 @@
-﻿#if ADVANCESTEEL2023
+#if ADVANCESTEEL2023
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -86,6 +86,7 @@ namespace Objects.Converter.AutocadCivil
         case DxfNames.BOLTMID:
         case DxfNames.SPECIALPART:
         case DxfNames.GRATING:
+        case DxfNames.SLAB:
           return true;
       }
 
@@ -113,50 +114,6 @@ namespace Objects.Converter.AutocadCivil
       SetUnits(@base);
 
       return @base;
-    }
-
-    private IAsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
-    {
-      AsteelPlate asteelPlate = new AsteelPlate();
-
-      plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
-
-      asteelPlate.outline = PolycurveToSpeckle(ptsContour);
-
-      asteelPlate.area = plate.GetPaintArea();
-
-      SetDisplayValue(asteelPlate, plate);
-
-      return asteelPlate;
-    }
-
-    private IAsteelObject FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
-    {
-      AsteelBolt asteelBolt = bolt is CircleScrewBoltPattern ? (AsteelBolt)new AsteelCircularBolt() : (AsteelBolt)new AsteelRectangularBolt();
-
-      SetDisplayValue(asteelBolt, bolt);
-
-      return asteelBolt;
-    }
-
-    private IAsteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
-    {
-      AsteelSpecialPart asteelSpecialPart = new AsteelSpecialPart();
-
-      SetDisplayValue(asteelSpecialPart, specialPart);
-
-      return asteelSpecialPart;
-    }
-
-    private IAsteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
-    {
-      AsteelGrating asteelGrating = new AsteelGrating();
-
-      SetDisplayValue(asteelGrating, grating);
-
-      SetUnits(asteelGrating);
-
-      return asteelGrating;
     }
 
     private IAsteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
