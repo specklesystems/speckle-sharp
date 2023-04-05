@@ -388,7 +388,7 @@ namespace Objects.Converter.Revit
       }
       return speckleSchema;
     }
-    
+
     public object ConvertToNative(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
@@ -408,7 +408,7 @@ namespace Objects.Converter.Revit
           //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
           var cat = GetObjectCategory(@object);
           var speckleCat = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat.ToString());
-          return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, speckleCat);
+          return TryDirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, ToNativeMeshSetting, speckleCat);
         }
         catch
         {
@@ -432,7 +432,7 @@ namespace Objects.Converter.Revit
             return null;
         }
       }
-      
+
       // Check if object has inner `SpeckleSchema` prop and swap if appropriate
       @object = SwapGeometrySchemaObject(@object);
 
@@ -442,7 +442,7 @@ namespace Objects.Converter.Revit
         case ICurve o:
           return ModelCurveToNative(o);
         case Geometry.Brep o:
-          return DirectShapeToNative(o);
+          return TryDirectShapeToNative(o, ToNativeMeshSetting);
         case Geometry.Mesh mesh:
           switch (ToNativeMeshSetting)
           {
@@ -452,7 +452,7 @@ namespace Objects.Converter.Revit
               return MeshToDxfImportFamily(mesh, Doc);
             case ToNativeMeshSettingEnum.Default:
             default:
-              return DirectShapeToNative(mesh);
+              return TryDirectShapeToNative(mesh, ToNativeMeshSettingEnum.Default);
           }
         // non revit built elems
         case BE.Alignment o:
@@ -462,7 +462,7 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return DirectShapeToNative(new ApplicationObject(o.id, o.speckle_type){ applicationId = o.applicationId }, o.displayValue);
+          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type){ applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);

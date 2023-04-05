@@ -21,12 +21,12 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="o">The direct shape to convert</param>
     /// <returns>An application placeholder object containing a DirectShape, DXF Import or Family containing DXF Import.</returns>
-    public ApplicationObject TryDirectShapeToNative(DirectShape o)
+    public ApplicationObject TryDirectShapeToNative(DirectShape o, ToNativeMeshSettingEnum fallbackSetting)
     {
       try
       {
         // Try to convert to direct shape, taking into account the current mesh settings
-        return DirectShapeToNative(o, ToNativeMeshSetting);
+        return DirectShapeToNative(o, fallbackSetting);
       }
       catch (FallbackToDxfException e)
       {
@@ -46,6 +46,40 @@ namespace Objects.Converter.Revit
       }
     }
 
+    public ApplicationObject TryDirectShapeToNative(Brep brep, ToNativeMeshSettingEnum fallbackSetting,  RevitCategory cat = RevitCategory.GenericModel)
+    {
+      DirectShape ds = new(
+        $"Brep {brep.applicationId ?? brep.id}",
+        cat,
+        new List<Base> { brep }) { applicationId = brep.applicationId, id = brep.id };
+      return TryDirectShapeToNative(ds, fallbackSetting);
+    }
+
+    public ApplicationObject TryDirectShapeToNative(Mesh mesh, ToNativeMeshSettingEnum fallbackSetting, RevitCategory cat = RevitCategory.GenericModel)
+    {
+      DirectShape ds = new(
+        $"Mesh {mesh.applicationId ?? mesh.id}",
+        cat,
+        new List<Base> { mesh }) { applicationId = mesh.applicationId, id = mesh.id };
+      return TryDirectShapeToNative(ds, fallbackSetting);
+    }
+    
+    public ApplicationObject TryDirectShapeToNative(ApplicationObject appObj, List<Mesh> meshes, ToNativeMeshSettingEnum fallbackSetting, RevitCategory cat = RevitCategory.GenericModel)
+    {
+      if (meshes.Count == 0)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Contained no meshes");
+        return appObj;
+      }
+
+      var ds = new DirectShape(
+        $"{appObj.Descriptor.Split(':').LastOrDefault() ?? "Meshes"} {appObj.applicationId}",
+        cat,
+        meshes.Cast<Base>().ToList()) { applicationId = appObj.applicationId, id = appObj.OriginalId };
+      
+      return TryDirectShapeToNative(ds, fallbackSetting);
+    }
+    
     /// <summary>
     /// The default DirectShape conversion method. Will return a Revit DirectShape with the containing geometry.
     /// </summary>
@@ -63,24 +97,23 @@ namespace Objects.Converter.Revit
       if (IsIgnore(existingDS, appObj, out appObj))
         return appObj;
 
-      var converted = new List<DB.GeometryObject>();
+      var converted = new List<GeometryObject>();
 
       speckleDs.baseGeometries.ToList().ForEach(b =>
       {
-        var notes = new List<string>();
         switch (b)
         {
           case Brep brep:
             try
             {
-              var solid = BrepToNative(brep, out notes);
+              var solid = BrepToNative(brep, out var notes);
               converted.Add(solid);
             }
             catch (Exception e)
             {
               if (fallback != ToNativeMeshSettingEnum.Default)
                 throw new FallbackToDxfException(
-                  "Failed to convert BREP to Solid. Falling back to DXF import as per settings.");
+                  "Failed to convert BREP to Solid. Falling back to DXF import as per settings.", e);
               var mesh = brep.displayValue.SelectMany(m =>
                 MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
               converted.AddRange(mesh);
@@ -93,6 +126,11 @@ namespace Objects.Converter.Revit
                 "DirectShape contains Mesh. Falling back to DXF import as per Settings.");
             var rMesh = MeshToNative(mesh);
             converted.AddRange(rMesh);
+            break;
+          case ICurve curve:
+            var rCurves = CurveToNative(curve, true);
+            for (var i = 0; i < rCurves.Size; i++)
+              converted.Add(rCurves.get_Item(i));
             break;
           default:
             appObj.Update(
@@ -126,38 +164,6 @@ namespace Objects.Converter.Revit
       SetInstanceParameters(revitDs, speckleDs);
       appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
       return appObj;
-    }
-
-
-    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationObject DirectShapeToNative(Brep brep, RevitCategory cat = RevitCategory.GenericModel)
-    {
-      var speckleDS = new DirectShape(
-        $"Brep {brep.applicationId ?? brep.id}",
-        cat,
-        new List<Base> { brep }) { applicationId = brep.applicationId, id = brep.id };
-
-      return DirectShapeToNative(speckleDS, ToNativeMeshSetting);
-    }
-
-    // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationObject DirectShapeToNative(Mesh mesh)
-      => DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type){ applicationId = mesh.applicationId}, new[] { mesh });
-
-    public ApplicationObject DirectShapeToNative(ApplicationObject appObj, IList<Mesh> meshes, RevitCategory cat = RevitCategory.GenericModel)
-    {
-      if (meshes.Count == 0)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Contained no meshes");
-        return appObj;
-      }
-
-      var speckleDS = new DirectShape(
-        $"Meshes {appObj.applicationId}",
-        cat,
-        meshes.Cast<Base>().ToList()) { applicationId = appObj.applicationId, id = appObj.OriginalId };
-
-      return DirectShapeToNative(speckleDS, ToNativeMeshSetting);
     }
 
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)
