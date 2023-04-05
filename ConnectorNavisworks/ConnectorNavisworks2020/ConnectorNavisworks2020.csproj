@@ -30,6 +30,8 @@
 		<PluginBundleTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle</PluginBundleTarget>
 		<PluginVersionContentTarget>$(AppData)\Autodesk\ApplicationPlugins\Speckle.ConnectorNavisworks.bundle\Contents\$(NavisworksBuildNumber)</PluginVersionContentTarget>
 		<Platforms>AnyCPU;x64</Platforms>
+    
+    <UseWpf>true</UseWpf>
 	</PropertyGroup>
 
 	<!-- Avalonia -->
