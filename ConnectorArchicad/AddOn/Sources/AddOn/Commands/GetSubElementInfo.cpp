@@ -11,10 +11,12 @@ using namespace FieldNames;
 
 namespace AddOnCommands {
 
+
 GS::String GetSubElementInfo::GetName () const
 {
 	return GetSubelementInfoCommandName;
 }
+
 
 GS::ObjectState GetSubElementInfo::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
@@ -48,5 +50,6 @@ GS::ObjectState GetSubElementInfo::Execute (const GS::ObjectState& parameters, G
 
 	return result;
 }
+
 
 }

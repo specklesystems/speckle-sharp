@@ -16,6 +16,7 @@ namespace Archicad
 {
   public class ArchicadObject
   {
+    public string id { get; set; }
     public string applicationId { get; set; }
 
     public Point pos { get; set; }
@@ -28,8 +29,9 @@ namespace Archicad
 
     [SchemaInfo("ArchicadObject", "Creates an Archicad object.", "Archicad", "Structure")]
 
-    public ArchicadObject(string applicationId, Point basePoint, Archicad.Model.MeshModel model)
+    public ArchicadObject(string id, string applicationId, Point basePoint, Archicad.Model.MeshModel model)
     {
+      this.id = id;
       this.applicationId = applicationId;
       this.pos = basePoint;
       this.model = model;
