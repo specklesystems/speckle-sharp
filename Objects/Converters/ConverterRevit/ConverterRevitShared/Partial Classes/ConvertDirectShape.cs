@@ -55,10 +55,13 @@ namespace Objects.Converter.Revit
     /// <exception cref="FallbackToDxfException"></exception>
     public ApplicationObject DirectShapeToNative(DirectShape speckleDs, ToNativeMeshSettingEnum fallback)
     {
-      var appObj = new ApplicationObject(speckleDs.id, speckleDs.speckle_type) { applicationId = speckleDs.applicationId };
-      var existing = CheckForExistingObject(speckleDs);
-      if (existing != null)
-        return existing;
+      var existingDS = GetExistingElementByApplicationId(speckleDs.applicationId ??= speckleDs.id) as DB.DirectShape;
+      var appObj =
+        new ApplicationObject(speckleDs.id, speckleDs.speckle_type) { applicationId = speckleDs.applicationId };
+
+      // skip if element already exists in doc & receive mode is set to ignore
+      if (IsIgnore(existingDS, appObj, out appObj))
+        return appObj;
 
       var converted = new List<DB.GeometryObject>();
 
@@ -76,22 +79,36 @@ namespace Objects.Converter.Revit
             catch (Exception e)
             {
               if (fallback != ToNativeMeshSettingEnum.Default)
-                throw new FallbackToDxfException("Failed to convert BREP to Solid. Falling back to DXF import as per settings.");
-              var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
+                throw new FallbackToDxfException(
+                  "Failed to convert BREP to Solid. Falling back to DXF import as per settings.");
+              var mesh = brep.displayValue.SelectMany(m =>
+                MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
               converted.AddRange(mesh);
             }
+
             break;
           case Mesh mesh:
             if (fallback != ToNativeMeshSettingEnum.Default)
-              throw new FallbackToDxfException("DirectShape contains Mesh. Falling back to DXF import as per Settings.");
+              throw new FallbackToDxfException(
+                "DirectShape contains Mesh. Falling back to DXF import as per Settings.");
             var rMesh = MeshToNative(mesh);
             converted.AddRange(rMesh);
             break;
           default:
-            appObj.Update(logItem: $"Incompatible geometry type: {b.GetType()} is not supported in DirectShape conversions.");
+            appObj.Update(
+              logItem: $"Incompatible geometry type: {b.GetType()} is not supported in DirectShape conversions.");
             break;
         }
       });
+
+      if (existingDS != null)
+      {
+        // Try to update the existing Direct Shape
+        existingDS.SetShape(converted);
+        appObj.Update(status: ApplicationObject.State.Updated, createdId: existingDS.UniqueId,
+          convertedItem: existingDS);
+        return appObj;
+      }
 
       BuiltInCategory bic;
       if ((int)speckleDs.category == -1)
@@ -113,56 +130,21 @@ namespace Objects.Converter.Revit
 
 
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationObject DirectShapeToNative(Brep brep, BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
+    public ApplicationObject DirectShapeToNative(Brep brep, RevitCategory cat = RevitCategory.GenericModel)
     {
-      var appObj = new ApplicationObject(brep.id, brep.speckle_type) { applicationId = brep.applicationId };
-      var existing = CheckForExistingObject(brep);
-      if (existing != null)
-        return existing;
+      var speckleDS = new DirectShape(
+        $"Brep {brep.applicationId ?? brep.id}",
+        cat,
+        new List<Base> { brep }) { applicationId = brep.applicationId, id = brep.id };
 
-      var catId = Doc.Settings.Categories.get_Item(cat).Id;
-      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
-      revitDs.ApplicationId = brep.applicationId;
-      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
-      revitDs.Name = "Brep " + brep.applicationId;
-
-      try
-      {
-        var solid = BrepToNative(brep, out List<string> notes);
-        if (notes.Count > 0) appObj.Update(log: notes);
-        if (solid == null)
-        {
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: "brep returned null");
-          return appObj;
-        }
-        revitDs.SetShape(new List<GeometryObject> { solid });
-      }
-      catch (Exception e)
-      {
-        Report.LogConversionError(new Exception(e.Message));
-        switch (ToNativeMeshSetting)
-        {
-          case ToNativeMeshSettingEnum.DxfImport:
-            return BrepToDxfImport(brep, Doc);
-          case ToNativeMeshSettingEnum.DxfImportInFamily:
-            return BrepToDxfImportFamily(brep, Doc);
-          case ToNativeMeshSettingEnum.Default:
-          default:
-            var mesh = brep.displayValue.SelectMany(m => MeshToNative(m, parentMaterial: brep["renderMaterial"] as RenderMaterial));
-            revitDs.SetShape(mesh.ToArray());
-            break;
-        }
-      }
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
-      return appObj;
+      return DirectShapeToNative(speckleDS, ToNativeMeshSetting);
     }
 
     // This is to support raw geometry being sent to Revit (eg from rhino, gh, autocad...)
-    public ApplicationObject DirectShapeToNative(Mesh mesh,
-      BuiltInCategory cat = BuiltInCategory.OST_GenericModel)
-      => DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type), new[] { mesh }, cat, mesh.applicationId ?? mesh.id);
+    public ApplicationObject DirectShapeToNative(Mesh mesh)
+      => DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type){ applicationId = mesh.applicationId}, new[] { mesh });
 
-    public ApplicationObject DirectShapeToNative(ApplicationObject appObj, IList<Mesh> meshes, BuiltInCategory cat = BuiltInCategory.OST_GenericModel, string applicationId = null)
+    public ApplicationObject DirectShapeToNative(ApplicationObject appObj, IList<Mesh> meshes, RevitCategory cat = RevitCategory.GenericModel)
     {
       if (meshes.Count == 0)
       {
@@ -170,28 +152,12 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var existing = CheckForExistingObject(meshes[0]);
-      if (existing != null)
-        return existing;
+      var speckleDS = new DirectShape(
+        $"Meshes {appObj.applicationId}",
+        cat,
+        meshes.Cast<Base>().ToList()) { applicationId = appObj.applicationId, id = appObj.OriginalId };
 
-      var converted = new List<GeometryObject>();
-      foreach (Mesh m in meshes)
-      {
-        var rMesh = MeshToNative(m);
-        converted.AddRange(rMesh);
-      }
-
-      var catId = Doc.Settings.Categories.get_Item(cat).Id;
-      applicationId ??= meshes[0].id; // if it comes from GH it doesn't have an applicationId, then use the hash id 
-
-      var revitDs = DB.DirectShape.CreateElement(Doc, catId);
-      revitDs.ApplicationId = applicationId;
-      revitDs.ApplicationDataId = Guid.NewGuid().ToString();
-      revitDs.SetShape(converted);
-      revitDs.Name = "Mesh " + applicationId;
-      appObj.applicationId = applicationId;
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitDs.UniqueId, convertedItem: revitDs);
-      return appObj;
+      return DirectShapeToNative(speckleDS, ToNativeMeshSetting);
     }
 
     private DirectShape DirectShapeToSpeckle(DB.DirectShape revitAc)

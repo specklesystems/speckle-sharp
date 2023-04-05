@@ -407,7 +407,8 @@ namespace Objects.Converter.Revit
           //dynamic property = propInfo;
           //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
           var cat = GetObjectCategory(@object);
-          return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, cat);
+          var speckleCat = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat.ToString());
+          return DirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, speckleCat);
         }
         catch
         {
@@ -451,7 +452,7 @@ namespace Objects.Converter.Revit
               return MeshToDxfImportFamily(mesh, Doc);
             case ToNativeMeshSettingEnum.Default:
             default:
-              return DirectShapeToNative(new ApplicationObject(mesh.id, mesh.speckle_type), new[] { mesh }, BuiltInCategory.OST_GenericModel, mesh.applicationId ?? mesh.id);
+              return DirectShapeToNative(mesh);
           }
         // non revit built elems
         case BE.Alignment o:
@@ -461,7 +462,7 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return DirectShapeToNative(new ApplicationObject(o.id, o.speckle_type), o.displayValue, applicationId: o.applicationId);
+          return DirectShapeToNative(new ApplicationObject(o.id, o.speckle_type){ applicationId = o.applicationId }, o.displayValue);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
