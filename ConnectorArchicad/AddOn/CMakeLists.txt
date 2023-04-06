@@ -158,10 +158,16 @@ endif ()
 set_target_properties (AddOn PROPERTIES OUTPUT_NAME ${AC_ADDON_NAME})
 if (WIN32)
 	set_target_properties (AddOn PROPERTIES SUFFIX ".apx")
+	if (DEFINED AC_EXECUTABLE_PATH)
+		set_target_properties (AddOn PROPERTIES VS_DEBUGGER_COMMAND "${AC_EXECUTABLE_PATH}")
+	endif ()
 else ()
 	set_target_properties (AddOn PROPERTIES BUNDLE TRUE)
 	set_target_properties (AddOn PROPERTIES MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_LIST_DIR}/${AddOnResourcesFolder}/RFIX.mac/Info.plist")
 	set_target_properties (AddOn PROPERTIES LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIG>")
+	if (DEFINED AC_EXECUTABLE_PATH)
+		set_target_properties (AddOn PROPERTIES XCODE_SCHEME_EXECUTABLE "${AC_EXECUTABLE_PATH}")
+	endif ()
 endif ()
 
 if (WIN32)
@@ -203,3 +209,24 @@ else ()
 	target_link_libraries (AddOn ${FrameworkFilesInFolder})
 endif ()
 add_dependencies (AddOn AddOnResources)
+
+if (WIN32)
+	if (DEFINED REGISTER_ARCHICAD_ADDON_PATH)
+		file(TO_NATIVE_PATH "${CMAKE_BINARY_DIR}/$<CONFIG>/${AC_ADDON_NAME}.apx" native_path)
+		add_custom_command (
+			TARGET AddOn
+			POST_BUILD
+			COMMAND python "${REGISTER_ARCHICAD_ADDON_PATH}" register "${native_path}" ${ARCHICAD_VERSION}
+	    )
+	endif ()
+else ()
+	if (DEFINED REGISTER_ARCHICAD_ADDON_PATH)
+		add_custom_command (
+			TARGET AddOn
+			POST_BUILD
+			COMMAND python3 "${REGISTER_ARCHICAD_ADDON_PATH}" register "${CMAKE_BINARY_DIR}/$<CONFIG>/${AC_ADDON_NAME}.bundle" ${ARCHICAD_VERSION}
+	    )
+	endif ()
+endif ()
+
+

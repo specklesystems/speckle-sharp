@@ -1,19 +1,21 @@
 #ifndef GET_WALL_DATA_HPP
 #define GET_WALL_DATA_HPP
 
-#include "BaseCommand.hpp"
+#include "GetDataCommand.hpp"
 
 
 namespace AddOnCommands {
 
 
-class GetWallData : public BaseCommand {
+class GetWallData : public GetDataCommand {
+	GS::String			GetFieldName () const override;
+	API_ElemTypeID		GetElemTypeID () const override;
+	GS::ErrCode			SerializeElementType (const API_Element& elem,
+							const API_ElementMemo& memo,
+							GS::ObjectState& os) const override;
+
 public:
-	virtual GS::String							GetName () const override;
-	virtual GS::ObjectState						Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-#ifdef ServerMainVers_2600
-	virtual bool								IsProcessWindowVisible () const override { return true; }
-#endif
+	virtual GS::String	GetName () const override;
 };
 
 

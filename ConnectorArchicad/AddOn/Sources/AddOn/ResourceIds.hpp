@@ -28,5 +28,6 @@
 #define CreateObjectCommandName                 "CreateObject";
 #define CreateSlabCommandName					"CreateSlab";
 #define CreateZoneCommandName					"CreateZone";
+#define SelectElementsCommandName				"SelectElements";
 
 #endif

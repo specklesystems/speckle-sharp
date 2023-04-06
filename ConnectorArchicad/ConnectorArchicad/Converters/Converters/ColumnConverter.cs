@@ -5,8 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
 {
@@ -14,29 +16,33 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Column);
 
-    public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var columns = new List<Objects.BuiltElements.Archicad.ArchicadColumn>();
-      foreach (var el in elements)
+      foreach (var tc in elements)
       {
-        switch (el)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadColumn archicadColumn:
             columns.Add(archicadColumn);
             break;
           case Objects.BuiltElements.Column column:
             var baseLine = (Line)column.baseLine;
-            var newColumn = new Objects.BuiltElements.Archicad.ArchicadColumn(
-              Utils.ScaleToNative(baseLine.start),
-              Math.Abs(baseLine.end.z - baseLine.start.z)
-              );
+            Objects.BuiltElements.Archicad.ArchicadColumn newColumn = new Objects.BuiltElements.Archicad.ArchicadColumn
+            {
+              id = column.id,
+              applicationId = column.applicationId,
+              origoPos = Utils.ScaleToNative(baseLine.start),
+              height = Math.Abs(Utils.ScaleToNative(baseLine.end.z, baseLine.end.units) - Utils.ScaleToNative(baseLine.start.z, baseLine.start.units))
+            };
+
             columns.Add(newColumn);
             break;
         }
       }
 
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateColumn(columns), token);
-      return result is null ? new List<string>() : result.ToList();
+      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,

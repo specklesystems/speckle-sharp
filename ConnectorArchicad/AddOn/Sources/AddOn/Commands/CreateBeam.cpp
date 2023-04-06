@@ -11,37 +11,35 @@ using namespace FieldNames;
 
 namespace AddOnCommands
 {
-static GSErrCode CreateNewBeam (API_Element& beam, API_ElementMemo* memo)
+
+
+GS::String CreateBeam::GetFieldName () const
 {
-	return ACAPI_Element_Create (&beam, memo);
+	return FieldNames::Beams;
 }
 
-
-static GSErrCode ModifyExistingBeam (API_Element& beam, API_Element& mask, API_ElementMemo* memo)
+GS::UniString CreateBeam::GetUndoableCommandName () const
 {
-	return ACAPI_Element_Change (&beam, &mask, memo,
-		APIMemoMask_BeamSegment |
-		APIMemoMask_AssemblySegmentScheme |
-		APIMemoMask_BeamHole |
-		APIMemoMask_AssemblySegmentCut,
-		true);
+	return "CreateSpeckleBeam";
 }
 
-
-static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element& element, API_Element& beamMask, API_ElementMemo* memo)
+GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
+	API_Element& element,
+	API_Element& beamMask,
+	API_ElementMemo& memo,
+	GS::UInt64& memoMask,
+	AttributeManager& /*attributeManager*/,
+	LibpartImportManager& /*libpartImportManager*/,
+	API_SubElement** /*marker = nullptr*/) const
 {
 	GSErrCode err = NoError;
 
-	// The identifier of the beam
-	GS::UniString guidString;
-	os.Get (ApplicationId, guidString);
-	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_BeamID;
 #else
 	element.header.typeID = API_BeamID;
 #endif
-	err = Utility::GetBaseElementData (element, memo);
+	err = Utility::GetBaseElementData (element, &memo);
 	if (err != NoError)
 		return err;
 
@@ -113,7 +111,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 		os.Get (Beam::nCuts, element.beam.nCuts);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, nCuts);
 
-	Utility::CreateAllCutData (os, element.beam.nCuts, element, beamMask, memo);
+	Utility::CreateAllCutData (os, element.beam.nCuts, element, beamMask, &memo);
 
 	// Reference Axis
 	if (os.Contains (Beam::anchorPoint))
@@ -138,12 +136,17 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, nProfiles);
 
 	API_BeamSegmentType defaultBeamSegment;
-	if (memo->beamSegments != nullptr) {
-		defaultBeamSegment = memo->beamSegments[0];
-		memo->beamSegments = (API_BeamSegmentType*) BMAllocatePtr ((element.beam.nSegments) * sizeof (API_BeamSegmentType), ALLOCATE_CLEAR, 0);
+	if (memo.beamSegments != nullptr) {
+		defaultBeamSegment = memo.beamSegments[0];
+		memo.beamSegments = (API_BeamSegmentType*) BMAllocatePtr ((element.beam.nSegments) * sizeof (API_BeamSegmentType), ALLOCATE_CLEAR, 0);
 	} else {
 		return Error;
 	}
+
+	memoMask = APIMemoMask_BeamSegment |
+		APIMemoMask_AssemblySegmentScheme |
+		APIMemoMask_BeamHole |
+		APIMemoMask_AssemblySegmentCut;
 
 #pragma region Segment
 	GS::ObjectState allSegments;
@@ -156,14 +159,14 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 
 		if (!currentSegment.IsEmpty ()) {
 
-			memo->beamSegments[idx] = defaultBeamSegment;
+			memo.beamSegments[idx] = defaultBeamSegment;
 			GS::ObjectState assemblySegment;
 			currentSegment.Get (Beam::BeamSegment::segmentData, assemblySegment);
-			Utility::CreateOneSegmentData (assemblySegment, memo->beamSegments[idx].assemblySegmentData, beamMask);
+			Utility::CreateOneSegmentData (assemblySegment, memo.beamSegments[idx].assemblySegmentData, beamMask);
 
 			// The left overridden material name
 			if (currentSegment.Contains (Beam::BeamSegment::LeftMaterial)) {
-				memo->beamSegments[idx].leftMaterial.overridden = true;
+				memo.beamSegments[idx].leftMaterial.overridden = true;
 
 				GS::UniString attrName;
 				currentSegment.Get (Beam::BeamSegment::LeftMaterial, attrName);
@@ -176,7 +179,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 					err = ACAPI_Attribute_Get (&attrib);
 
 					if (err == NoError)
-						memo->beamSegments[idx].leftMaterial.attributeIndex = attrib.header.index;
+						memo.beamSegments[idx].leftMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.attributeIndex);
 				}
 				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
@@ -184,7 +187,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 
 			// The top overridden material name
 			if (currentSegment.Contains (Beam::BeamSegment::TopMaterial)) {
-				memo->beamSegments[idx].topMaterial.overridden = true;
+				memo.beamSegments[idx].topMaterial.overridden = true;
 
 				GS::UniString attrName;
 				currentSegment.Get (Beam::BeamSegment::TopMaterial, attrName);
@@ -197,7 +200,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 					err = ACAPI_Attribute_Get (&attrib);
 
 					if (err == NoError)
-						memo->beamSegments[idx].topMaterial.attributeIndex = attrib.header.index;
+						memo.beamSegments[idx].topMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.attributeIndex);
 				}
 				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
@@ -205,7 +208,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 
 			// The right overridden material name
 			if (currentSegment.Contains (Beam::BeamSegment::RightMaterial)) {
-				memo->beamSegments[idx].rightMaterial.overridden = true;
+				memo.beamSegments[idx].rightMaterial.overridden = true;
 
 				GS::UniString attrName;
 				currentSegment.Get (Beam::BeamSegment::RightMaterial, attrName);
@@ -218,7 +221,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 					err = ACAPI_Attribute_Get (&attrib);
 
 					if (err == NoError)
-						memo->beamSegments[idx].rightMaterial.attributeIndex = attrib.header.index;
+						memo.beamSegments[idx].rightMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.attributeIndex);
 				}
 				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
@@ -226,7 +229,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 
 			// The bottom overridden material name
 			if (currentSegment.Contains (Beam::BeamSegment::BottomMaterial)) {
-				memo->beamSegments[idx].bottomMaterial.overridden = true;
+				memo.beamSegments[idx].bottomMaterial.overridden = true;
 
 				GS::UniString attrName;
 				currentSegment.Get (Beam::BeamSegment::BottomMaterial, attrName);
@@ -239,7 +242,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 					err = ACAPI_Attribute_Get (&attrib);
 
 					if (err == NoError)
-						memo->beamSegments[idx].bottomMaterial.attributeIndex = attrib.header.index;
+						memo.beamSegments[idx].bottomMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.attributeIndex);
 				}
 				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
@@ -247,7 +250,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 
 			// The ends overridden material name
 			if (currentSegment.Contains (Beam::BeamSegment::EndsMaterial)) {
-				memo->beamSegments[idx].endsMaterial.overridden = true;
+				memo.beamSegments[idx].endsMaterial.overridden = true;
 
 				GS::UniString attrName;
 				currentSegment.Get (Beam::BeamSegment::EndsMaterial, attrName);
@@ -260,7 +263,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 					err = ACAPI_Attribute_Get (&attrib);
 
 					if (err == NoError)
-						memo->beamSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
+						memo.beamSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.attributeIndex);
 				}
 				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
@@ -268,7 +271,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 
 			// The overridden materials are chained
 			if (currentSegment.Contains (Beam::BeamSegment::MaterialsChained))
-				currentSegment.Get (Beam::BeamSegment::MaterialsChained, memo->beamSegments[idx].materialsChained);
+				currentSegment.Get (Beam::BeamSegment::MaterialsChained, memo.beamSegments[idx].materialsChained);
 			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, materialsChained);
 		}
 	}
@@ -279,7 +282,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 		os.Get (Beam::nSchemes, element.beam.nSchemes);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, nSchemes);
 
-	Utility::CreateAllSchemeData (os, element.beam.nSchemes, element, beamMask, memo);
+	Utility::CreateAllSchemeData (os, element.beam.nSchemes, element, beamMask, &memo);
 
 	// Hole
 #pragma region Hole
@@ -292,7 +295,7 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 	}
 
 	if (holesCount > 0) {
-		memo->beamHoles = reinterpret_cast<API_Beam_Hole**> (BMAllocateHandle (holesCount * sizeof (API_Beam_Hole), ALLOCATE_CLEAR, 0));
+		memo.beamHoles = reinterpret_cast<API_Beam_Hole**> (BMAllocateHandle (holesCount * sizeof (API_Beam_Hole), ALLOCATE_CLEAR, 0));
 		for (UInt32 idx = 0; idx < holesCount; ++idx) {
 			GS::ObjectState currentHole;
 			allHoles.Get (GS::String::SPrintf (Beam::HoleName, idx + 1), currentHole);
@@ -306,26 +309,26 @@ static GSErrCode GetBeamFromObjectState (const GS::ObjectState& os, API_Element&
 					GS::Optional<API_BHoleTypeID> tmpHoleType = beamHoleTypeNames.FindValue (holeName);
 					if (tmpHoleType.HasValue ())
 						realHoleType = tmpHoleType.Get ();
-					(*memo->beamHoles)[idx].holeType = realHoleType;
+					(*memo.beamHoles)[idx].holeType = realHoleType;
 				}
 
 				if (currentHole.Contains (Beam::holeContourOn))
-					currentHole.Get (Beam::holeContourOn, (*memo->beamHoles)[idx].holeContureOn);
+					currentHole.Get (Beam::holeContourOn, (*memo.beamHoles)[idx].holeContureOn);
 
 				if (currentHole.Contains (Beam::holeId))
-					currentHole.Get (Beam::holeId, (*memo->beamHoles)[idx].holeID);
+					currentHole.Get (Beam::holeId, (*memo.beamHoles)[idx].holeID);
 
 				if (currentHole.Contains (Beam::centerx))
-					currentHole.Get (Beam::centerx, (*memo->beamHoles)[idx].centerx);
+					currentHole.Get (Beam::centerx, (*memo.beamHoles)[idx].centerx);
 
 				if (currentHole.Contains (Beam::centerz))
-					currentHole.Get (Beam::centerz, (*memo->beamHoles)[idx].centerz);
+					currentHole.Get (Beam::centerz, (*memo.beamHoles)[idx].centerz);
 
 				if (currentHole.Contains (Beam::width))
-					currentHole.Get (Beam::width, (*memo->beamHoles)[idx].width);
+					currentHole.Get (Beam::width, (*memo.beamHoles)[idx].width);
 
 				if (currentHole.Contains (Beam::height))
-					currentHole.Get (Beam::height, (*memo->beamHoles)[idx].height);
+					currentHole.Get (Beam::height, (*memo.beamHoles)[idx].height);
 			}
 		}
 	}
@@ -619,43 +622,5 @@ GS::String CreateBeam::GetName () const
 	return CreateBeamCommandName;
 }
 
-GS::ObjectState CreateBeam::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-	GS::ObjectState result;
 
-	GS::Array<GS::ObjectState> beams;
-	parameters.Get (Beams, beams);
-
-	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIds);
-
-	ACAPI_CallUndoableCommand ("CreateSpeckleBeam", [&] () -> GSErrCode {
-		for (const GS::ObjectState& beamOs : beams) {
-			API_Element beam{};
-			API_Element beamMask{};
-			API_ElementMemo memo{}; // Neccessary for beam
-
-			GSErrCode err = GetBeamFromObjectState (beamOs, beam, beamMask, &memo);
-			if (err != NoError)
-				continue;
-
-			bool beamExists = Utility::ElementExists (beam.header.guid);
-			if (beamExists) {
-				err = ModifyExistingBeam (beam, beamMask, &memo);
-			} else {
-				err = CreateNewBeam (beam, &memo);
-			}
-
-			if (err == NoError) {
-				GS::UniString elemId = APIGuidToString (beam.header.guid);
-				listAdder (elemId);
-			}
-
-			ACAPI_DisposeElemMemoHdls (&memo);
-		}
-		return NoError;
-		});
-
-	return result;
-}
-}
-
+} // namespace AddOnCommands
