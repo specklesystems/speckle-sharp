@@ -1305,7 +1305,7 @@ namespace DesktopUI2.ViewModels
             { "branches", Stream.branches?.totalCount },
             { "commits", Stream.commits?.totalCount },
             { "savedStreams", HomeViewModel.Instance.SavedStreams?.Count },
-            { "isMultiplayer", state.LastCommit.authorId != state.UserId }
+            { "isMultiplayer", state.LastCommit?.authorId != state.UserId }
           });
 
         // Show report

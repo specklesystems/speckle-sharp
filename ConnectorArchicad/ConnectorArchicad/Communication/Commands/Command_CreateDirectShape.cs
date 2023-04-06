@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Newtonsoft.Json;
+using Speckle.Core.Models;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class CreateDirectShapes : ICommand<IEnumerable<string>>
+  sealed internal class CreateDirectShapes : ICommand<IEnumerable<ApplicationObject>>
   {
     #region --- Classes ---
 
@@ -33,8 +34,8 @@ namespace Archicad.Communication.Commands
     {
       #region --- Fields ---
 
-      [JsonProperty("applicationIds")]
-      public IEnumerable<string> ApplicationIds { get; private set; }
+      [JsonProperty("applicationObjects")]
+      public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
 
       #endregion
     }
@@ -58,10 +59,10 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<IEnumerable<string>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateDirectShapes", new Parameters(Models));
-      return result.ApplicationIds;
+      return result.ApplicationObjects;
     }
 
     #endregion

@@ -2,11 +2,12 @@
 using System.Threading.Tasks;
 using Objects.BuiltElements.Archicad;
 using Speckle.Newtonsoft.Json;
+using Speckle.Core.Models;
 
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class CreateWall : ICommand<IEnumerable<string>>
+  sealed internal class CreateWall : ICommand<IEnumerable<ApplicationObject>>
   {
 
     [JsonObject(MemberSerialization.OptIn)]
@@ -27,8 +28,8 @@ namespace Archicad.Communication.Commands
     private sealed class Result
     {
 
-      [JsonProperty("applicationIds")]
-      public IEnumerable<string> ApplicationIds { get; private set; }
+      [JsonProperty("applicationObjects")]
+      public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
 
     }
 
@@ -45,10 +46,10 @@ namespace Archicad.Communication.Commands
       Datas = datas;
     }
 
-    public async Task<IEnumerable<string>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateWall", new Parameters(Datas));
-      return result == null ? null : result.ApplicationIds;
+      return result == null ? null : result.ApplicationObjects;
     }
 
   }
