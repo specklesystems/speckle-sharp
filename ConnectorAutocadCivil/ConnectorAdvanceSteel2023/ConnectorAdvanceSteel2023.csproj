@@ -5,6 +5,7 @@
     <TargetFramework>net48</TargetFramework>
     <AssemblyTitle>ConnectorAdvanceSteel2023</AssemblyTitle>
     <Product>ConnectorAdvanceSteel2023</Product>
+    <PlatformTarget>x64</PlatformTarget>
     <DefineConstants>$(DefineConstants);ADVANCESTEEL2023</DefineConstants>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <Authors>Pedro Henrique Liberato</Authors>
