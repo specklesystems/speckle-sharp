@@ -28,10 +28,10 @@ namespace Objects.Converter.Revit
         throw new NotSupportedException("Creating brand new schedules is currently not supported");
       }
 
-      foreach (var row in speckleTable.Rows)
-      {
-        Debug.WriteLine(row.Metadata.FirstOrDefault().Value);
-      }
+      //foreach (var row in speckleTable.Rows)
+      //{
+      //  Debug.WriteLine(row.Metadata.FirstOrDefault().Value);
+      //}
 
       return appObj;
     }
@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
       var section = table.GetSectionData(SectionType.Body);
       for (var columnIndex = 0; columnIndex < section.NumberOfColumns; columnIndex++)
       {
-        speckleTable.DefineColumn<string>(out var _);
+        speckleTable.DefineColumn(new Base());
       }
 
       foreach (SectionType tableSection in Enum.GetValues(typeof(SectionType)))
@@ -96,13 +96,8 @@ namespace Objects.Converter.Revit
       {
         rowData.Add(revitSchedule.GetCellText(tableSection, rowIndex, columnIndex));
       }
-      var metadata = new Dictionary<string, object>()
-      {
-        {
-          "RevitApplicationIds",
-          ElementApplicationIdsInRow(rowIndex, section, originalTableIds.ToList(), revitSchedule)
-        }
-      };
+      var metadata = new Base();
+      metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(rowIndex, section, originalTableIds.ToList(), revitSchedule);
       speckleTable.AddRow(metadata: metadata, objects: rowData.ToArray());
     }
 

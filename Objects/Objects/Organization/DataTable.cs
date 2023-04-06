@@ -13,18 +13,21 @@ namespace Objects.Organization
     //{
     //  ColumnCount = columnCount;
     //}
-    public int ColumnCount => columnMetadata.Count;
-    public List<Base> rowMetadata { get; set; }
-    public List<Base> columnMetadata { get; set; }
-    public List<List<object>> Data { get; set; }
+    public int columnCount => columnMetadata.Count;
+    public int rowCount => rowMetadata.Count;
+    public int headerRowIndex { get; set; }
+    public string name { get; set; }
+    public List<Base> rowMetadata { get; set; } = new List<Base>();
+    public List<Base> columnMetadata { get; set; } = new List<Base>();
+    public List<List<object>> data { get; set; } = new List<List<object>>();
 
     public void AddRow(Base metadata, params object[] objects)
     {
-      if (objects.Length != ColumnCount)
-        throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {ColumnCount} columns. Partial and extended table rows are not accepted by the DataTable object.");
+      if (objects.Length != columnCount)
+        throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {columnCount} columns. Partial and extended table rows are not accepted by the DataTable object.");
 
       //Data.AddRange(objects);
-      Data.Add(objects.ToList());
+      data.Add(objects.ToList());
       rowMetadata.Add(metadata);
     }
 
