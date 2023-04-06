@@ -1,0 +1,20 @@
+{
+  "solution": {
+    "path": "..\\All.sln",
+    "projects": [
+      "ConnectorAutocadCivil\\AdvanceSteelAddinRegistrator\\AdvanceSteelAddinRegistrator.csproj",
+      "ConnectorAutocadCivil\\ConnectorAdvanceSteel2023\\ConnectorAdvanceSteel2023.csproj",
+      "ConnectorAutocadCivil\\ConnectorAutocadCivil\\ConnectorAutocadCivilShared.shproj",
+      "Core\\Core\\Core.csproj",
+      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
+      "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAdvanceSteel2023\\ConverterAdvanceSteel2023.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocadCivilShared\\ConverterAutocadCivilShared.shproj",
+      "Objects\\Converters\\StructuralUtilities\\Triangle\\Triangle.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}
