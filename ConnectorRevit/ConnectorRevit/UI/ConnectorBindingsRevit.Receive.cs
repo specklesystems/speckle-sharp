@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -202,6 +202,11 @@ namespace Speckle.ConnectorRevit.UI
 
       // get the active ui view
       var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+      if (view is TableView)
+      {
+        return;
+      }
+
       var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
       // "refresh" the active view

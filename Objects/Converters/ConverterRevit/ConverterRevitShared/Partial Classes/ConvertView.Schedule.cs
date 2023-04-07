@@ -1,20 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Autodesk.Revit.DB;
-using Objects.BuiltElements;
 using Objects.Organization;
 using Speckle.Core.Models;
-using Speckle.netDxf.Tables;
-using static System.Collections.Specialized.BitVector32;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    struct RevitScheduleData
+    {
+      public int ColumnIndex;
+      public BuiltInParameter Parameter;
+    }
     private ApplicationObject DataTableToNative(DataTable speckleTable)
     {
       var docObj = GetExistingElementByApplicationId(speckleTable.applicationId);
@@ -28,9 +29,126 @@ namespace Objects.Converter.Revit
         throw new NotSupportedException("Creating brand new schedules is currently not supported");
       }
 
-      //foreach (var row in speckleTable.Rows)
+      if (!(docObj is ViewSchedule revitSchedule))
+      {
+        throw new Exception($"Existing element with UniqueId = {docObj.UniqueId} is of the type {docObj.GetType()}, not of the expected type, DB.ViewSchedule");
+      }
+
+      TableData table;
+      TableSectionData section;
+      var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id)
+          .ToElementIds();
+
+      var speckleIndexToRevitScheduleDataMap = new Dictionary<int, RevitScheduleData>();
+
+      var scheduleFieldOrder = revitSchedule.Definition.GetFieldOrder();
+
+      for (var i = 0; i < scheduleFieldOrder.Count; i++)
+      {
+        var field = revitSchedule.Definition.GetField(scheduleFieldOrder[i]);
+        var fieldInt = field.ParameterId.IntegerValue;
+        var incomingColumnIndex = speckleTable.columnMetadata
+          .FindIndex(b => b["BuiltInParameterInteger"] is long paramInt && paramInt == fieldInt);
+
+        if (incomingColumnIndex == -1)
+        {
+          continue;
+        }
+
+        var scheduleData = new RevitScheduleData
+        {
+          ColumnIndex = i,
+          Parameter = (BuiltInParameter)fieldInt
+        };
+
+        speckleIndexToRevitScheduleDataMap.Add(incomingColumnIndex, scheduleData);
+      }
+
+      foreach (SectionType tableSection in Enum.GetValues(typeof(SectionType)))
+      {
+        // the table must be recomputed here because of our hacky row deleting trick
+        table = revitSchedule.GetTableData();
+
+        section = table.GetSectionData(tableSection);
+
+        if (section == null)
+        {
+          continue;
+        }
+        var rowCount = section.NumberOfRows;
+        var columnCount = section.NumberOfColumns;
+
+        for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
+        {
+          System.Diagnostics.Debug.WriteLine($"");
+          for (var columnIndex = 0; columnIndex< columnCount; columnIndex++)
+          {
+            string existingValue = "";
+            try
+            {
+              existingValue = revitSchedule.GetCellText(tableSection, rowIndex, columnIndex);
+            }
+            catch { }
+            System.Diagnostics.Debug.Write($"{existingValue}, ");
+          }
+          System.Diagnostics.Debug.Write($"{rowIndex}");
+
+          var elementIds = ElementApplicationIdsInRow(rowIndex, section, originalTableIds, revitSchedule, tableSection);
+
+          foreach (var id in elementIds)
+          {
+            var speckleObjectRowIndex = speckleTable.rowMetadata
+              .FindIndex(b => b["RevitApplicationIds"] is IList list && list.Contains(id));
+
+            if (speckleObjectRowIndex == -1)
+            {
+              continue;
+            }
+
+            foreach (var kvp in speckleIndexToRevitScheduleDataMap)
+            {
+              var speckleObjectColumnIndex = kvp.Key;
+              var revitScheduleData = kvp.Value;
+              var existingValue = revitSchedule.GetCellText(tableSection, rowIndex, revitScheduleData.ColumnIndex);
+              var newValue = speckleTable.data[speckleObjectRowIndex][speckleObjectColumnIndex];
+              if (existingValue == newValue.ToString())
+              {
+                continue;
+              }
+
+              var element = Doc.GetElement(id);
+              if (element == null)
+                continue;
+
+              TrySetParam(element, revitScheduleData.Parameter, newValue);
+            }
+          }
+        } 
+      }
+
+      //for (var columnIndex = 0; columnIndex < speckleTable.columnCount; columnIndex++)
       //{
-      //  Debug.WriteLine(row.Metadata.FirstOrDefault().Value);
+      //  var columnMetadata = speckleTable.columnMetadata[columnIndex];
+
+      //  if (!(columnMetadata is Base @base && @base["BuiltInParameterInteger"] is long paramId))
+      //    throw new Exception("Metadata got messed up in this process");
+
+      //  var param = (BuiltInParameter)paramId;
+      //  for (var rowIndex = 0; rowIndex < speckleTable.rowCount; rowIndex++)
+      //  {
+      //    revitSchedule.GetCellText(SectionType.Body, rowIndex, columnIndex);
+      //    if (speckleTable.rowMetadata[rowIndex]["RevitApplicationIds"] is IList idList)
+      //    {
+      //      foreach (var id in idList)
+      //      {
+      //        var element = Doc.GetElement(id.ToString());
+      //        if (element == null)
+      //          continue;
+
+      //        TrySetParam(element, param, speckleTable.data[rowIndex][columnIndex]);
+      //      }
+      //    }
+      //  }
       //}
 
       return appObj;
@@ -45,12 +163,17 @@ namespace Objects.Converter.Revit
       var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id)
           .ToElementIds();
 
-      var table = revitSchedule.GetTableData();
-      var section = table.GetSectionData(SectionType.Body);
-      for (var columnIndex = 0; columnIndex < section.NumberOfColumns; columnIndex++)
+      foreach (var fieldId in revitSchedule.Definition.GetFieldOrder())
       {
-        speckleTable.DefineColumn(new Base());
+        var field = revitSchedule.Definition.GetField(fieldId);
+
+        var columnMetadata = new Base();
+        columnMetadata["BuiltInParameterInteger"] = field.ParameterId.IntegerValue;
+        speckleTable.DefineColumn(columnMetadata);
       }
+
+      TableData table;
+      TableSectionData section;
 
       foreach (SectionType tableSection in Enum.GetValues(typeof(SectionType)))
       {
@@ -80,7 +203,7 @@ namespace Objects.Converter.Revit
               rowIndex
             );
           }
-          catch (Exception ex)
+          catch (Autodesk.Revit.Exceptions.ArgumentOutOfRangeException ex)
           {
           }
         }
@@ -96,44 +219,67 @@ namespace Objects.Converter.Revit
       {
         rowData.Add(revitSchedule.GetCellText(tableSection, rowIndex, columnIndex));
       }
+
+      if (!rowData.Where(s => !string.IsNullOrEmpty(s)).Any())
+      {
+        return;
+      }
       var metadata = new Base();
-      metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(rowIndex, section, originalTableIds.ToList(), revitSchedule);
+      metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(rowIndex, section, originalTableIds, revitSchedule, tableSection);
       speckleTable.AddRow(metadata: metadata, objects: rowData.ToArray());
     }
 
-    private List<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, List<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule)
+    private List<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, ICollection<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule, SectionType tableSection)
     {
       var elementApplicationIdsInRow = new List<string>();
       List<ElementId> remainingIdsInRow = null;
 
-      using (var t = new Transaction(Doc, "This Transaction Will Never Get Committed"))
+      if (!Doc.IsModifiable)
       {
+        using var t = new Transaction(Doc, "This Transaction Will Never Get Committed");
         try
         {
           t.Start();
-
-          using var st = new SubTransaction(Doc);
-          st.Start();
           section.RemoveRow(rowNumber);
-          st.Commit();
-
           remainingIdsInRow = new FilteredElementCollector(Doc, revitSchedule.Id)
             .ToElementIds()
             .ToList();
         }
-        catch (Autodesk.Revit.Exceptions.ArgumentException e)
+        catch
         {
-          // trying to delete a necessary row. Just ignore and move on
-        }
-        catch (Exception e)
-        {
-          // ignore everything else because we're just going to rollback
+          // trying to delete a necessary row.
+          // ignore because we're just going to rollback
         }
         finally
         {
           t.RollBack();
         }
       }
+      else
+      {
+        using var t = new SubTransaction(Doc);
+        try
+        {
+          t.Start();
+          section.RemoveRow(rowNumber);
+          remainingIdsInRow = new FilteredElementCollector(Doc, revitSchedule.Id)
+            .ToElementIds()
+            .ToList();
+        }
+        catch
+        {
+          // trying to delete a necessary row.
+          // ignore because we're just going to rollback
+        }
+        finally
+        {
+          t.RollBack();
+        }
+      }
+
+      // the section must be recomputed here because of our hacky row deleting trick
+      var table = revitSchedule.GetTableData();
+      section = table.GetSectionData(tableSection);
 
       if (remainingIdsInRow == null || remainingIdsInRow.Count == orginialTableIds.Count)
         return elementApplicationIdsInRow;
