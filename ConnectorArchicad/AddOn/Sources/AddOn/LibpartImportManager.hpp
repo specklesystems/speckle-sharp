@@ -7,15 +7,17 @@
 
 class LibpartImportManager {
 private:
-	GS::HashTable<GS::UInt64, API_LibPart> cache;
+	GS::HashTable<GS::UInt64, API_LibPart>	cache;
 
-	API_Attribute defaultMaterialAttribute;
-	GS::UniString defaultMaterialName;
+	API_Attribute							defaultMaterialAttribute;
+	GS::UniString							defaultMaterialName;
 	
+	static UInt32							runningNumber;
+
 public:
 	LibpartImportManager ();
 
-	GSErrCode GetLibpart (const ModelInfo& modelInfo, AttributeManager& attributeManager, API_LibPart& libPart);
+	GSErrCode	GetLibpart (const ModelInfo& modelInfo, AttributeManager& attributeManager, API_LibPart& libPart);
 
 private:
 	GSErrCode	CreateLibraryPart (const ModelInfo& modelInfo, AttributeManager& attributeManager, API_LibPart& libPart);
