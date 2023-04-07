@@ -1,5 +1,29 @@
 #include "AttributeManager.hpp"
 
+
+AttributeManager* AttributeManager::instance = nullptr;
+
+AttributeManager* AttributeManager::GetInstance ()
+{
+	if (nullptr == instance) {
+		instance = new AttributeManager;
+	}
+	return instance;
+}
+
+
+void AttributeManager::DeleteInstance ()
+{
+	if (nullptr != instance) {
+		delete instance;
+		instance = nullptr;
+	}
+}
+
+
+AttributeManager::AttributeManager () {}
+
+
 GSErrCode AttributeManager::GetMaterial (const ModelInfo::Material& material, API_Attribute& attribute)
 {
 	GS::UniString materialName (material.GetName ());

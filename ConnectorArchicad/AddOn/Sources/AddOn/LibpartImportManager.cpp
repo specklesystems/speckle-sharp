@@ -9,13 +9,60 @@
 #include "Box3DData.h"
 
 
-UInt32 LibpartImportManager::runningNumber = 1;
+LibpartImportManager* LibpartImportManager::instance = nullptr;
 
-
-LibpartImportManager::LibpartImportManager ()
+LibpartImportManager* LibpartImportManager::GetInstance ()
 {
-	AttributeManager attributeManager;
-	attributeManager.GetDefaultMaterial (defaultMaterialAttribute, defaultMaterialName);
+	if (nullptr == instance) {
+		instance = new LibpartImportManager ();
+	}
+	return instance;
+}
+
+
+void LibpartImportManager::DeleteInstance ()
+{
+	if (nullptr != instance) {
+		delete instance;
+		instance = nullptr;
+	}
+}
+
+
+LibpartImportManager::LibpartImportManager () : runningNumber(1)
+{
+	AttributeManager::GetInstance ()->GetDefaultMaterial (defaultMaterialAttribute, defaultMaterialName);
+	GetLocation (true, libraryFolderLocation);
+}
+
+
+static GSErrCode CreateSubFolder (const GS::UniString& name, IO::Location& location)
+{
+	GSErrCode err = NoError;
+
+	if (location.IsEmpty () || name.IsEmpty ())
+		return err;
+
+	GSTimeRecord gsTimeRecord;
+	GSTime gsTime (0);
+
+	TIGetTimeRecord (gsTime, &gsTimeRecord, TI_CURRENT_TIME);
+	GS::UniString folderNamePostfix (GS::UniString::SPrintf ("%04u%02u%02u-%02u%02u%02u",
+		(UInt32) gsTimeRecord.year, (UInt32) gsTimeRecord.month, (UInt32) gsTimeRecord.day,
+		(UInt32) gsTimeRecord.hour,	(UInt32) gsTimeRecord.minute, (UInt32) gsTimeRecord.second));
+
+	IO::Name folderName (name);
+	folderName.Append ("_");
+	folderName.Append (folderNamePostfix);
+
+	IO::Folder folder (location);
+	err = folder.CreateFolder (folderName);
+	if (err != NoError)
+		return err;
+
+	location.AppendToLocal (folderName);
+
+	return err;
 }
 
 
@@ -37,7 +84,7 @@ GSErrCode LibpartImportManager::GetLibpart (const ModelInfo& modelInfo,
 }
 
 
-GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo, 
+GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 	AttributeManager& attributeManager,
 	API_LibPart& libPart)
 {
@@ -46,53 +93,52 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 	libPart.typeID = APILib_ObjectID;
 	libPart.isTemplate = false;
 	libPart.isPlaceable = true;
+	libPart.location = libraryFolderLocation;
 
 	// todo use Speckle types here
 	const GS::UnID unID = BL::BuiltInLibraryMainGuidContainer::GetInstance ().GetUnIDWithNullRevGuid (BL::BuiltInLibPartID::BuildingElementLibPartID);
 	CHCopyC (unID.ToUniString ().ToCStr (), libPart.parentUnID);
 
-	GS::ucscpy (libPart.docu_UName, GS::UniString::SPrintf ("Speckle Object %u", runningNumber++).ToUStr());
+	GS::ucscpy (libPart.docu_UName, GS::UniString::SPrintf ("Speckle Object %u", runningNumber++).ToUStr ());
 
-	err = GetLocation (libPart.location, true);
-	if (err != NoError)
-		return err;
-
+	ACAPI_Environment (APIEnv_OverwriteLibPartID, (void*) (Int32) true, nullptr);
 	err = ACAPI_LibPart_Create (&libPart);
+	ACAPI_Environment (APIEnv_OverwriteLibPartID, (void*) (Int32) false, nullptr);
 	if (err == NoError) {
-		char buffer[1000];
-
 		API_LibPartSection section;
+		GS::String line;
+		line.EnsureCapacity(1000);
 
 		// Comment script section
 		BNZeroMemory (&section, sizeof (API_LibPartSection));
 		section.sectType = API_SectComText;
 		ACAPI_LibPart_NewSection (&section);
-		sprintf (buffer, "Speckle");
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = "Speckle";
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 		ACAPI_LibPart_EndSection ();
 
 		// Keyword section
 		BNZeroMemory (&section, sizeof (API_LibPartSection));
 		section.sectType = API_SectKeywords;
 		ACAPI_LibPart_NewSection (&section);
-		sprintf (buffer, "Speckle");
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = "Speckle";
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 		ACAPI_LibPart_EndSection ();
 
 		// Copyright section
 		BNZeroMemory (&section, sizeof (API_LibPartSection));
 		section.sectType = API_SectCopyright;
 		ACAPI_LibPart_NewSection (&section);
-		sprintf (buffer, "Speckle Systems");	// Author
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = "Speckle Systems";	// Author
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 		ACAPI_LibPart_EndSection ();
 
 		// Master script section
 		BNZeroMemory (&section, sizeof (API_LibPartSection));
 		section.sectType = API_Sect1DScript;
 		ACAPI_LibPart_NewSection (&section);
-		buffer[0] = '\0';
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = "";
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 		ACAPI_LibPart_EndSection ();
 
 		// 3D script section
@@ -100,48 +146,48 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 		section.sectType = API_Sect3DScript;
 		ACAPI_LibPart_NewSection (&section);
 
-		sprintf (buffer, "!%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "! 3D Script (Generated by Speckle Connector)%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "!%s%s", GS::EOL, GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf("!%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("! 3D Script (Generated by Speckle Connector)%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("!%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		sprintf (buffer, "defaultResolution = 36%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "RESOL defaultResolution%s%s", GS::EOL, GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("defaultResolution = 36%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("RESOL defaultResolution%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		sprintf (buffer, "hiddenProfileEdge = 0%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "hiddenBodyEdge = 0%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "smoothBodyEdge = 0%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "visibleBodyEdge = 262144%s%s", GS::EOL, GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("hiddenProfileEdge = 0%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("hiddenBodyEdge = 0%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("smoothBodyEdge = 0%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("visibleBodyEdge = 262144%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		sprintf (buffer, "IF (GLOB_CONTEXT %% 10 >= 2 AND GLOB_CONTEXT %% 10 <= 4) AND showOnlyContourEdgesIn3D <> 0 THEN%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "\thiddenProfileEdge = 1%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "\thiddenBodyEdge = 1%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "\tsmoothBodyEdge = 2%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "ENDIF%s%s", GS::EOL, GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("IF (GLOB_CONTEXT %% 10 >= 2 AND GLOB_CONTEXT %% 10 <= 4) AND showOnlyContourEdgesIn3D <> 0 THEN%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("\thiddenProfileEdge = 1%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("\thiddenBodyEdge = 1%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("\tsmoothBodyEdge = 2%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("ENDIF%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		sprintf (buffer, "!%s%s", GS::EOL, GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "RESOL defaultResolution%s%s", GS::EOL, GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "XFORM map_xform[1][1], map_xform[2][1], map_xform[3][1], map_xform[4][1],%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "\tmap_xform[1][2], map_xform[2][2], map_xform[3][2], map_xform[4][2],%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "\tmap_xform[1][3], map_xform[2][3], map_xform[3][3], map_xform[4][3]%s%s", GS::EOL, GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("!%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("RESOL defaultResolution%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("XFORM map_xform[1][1], map_xform[2][1], map_xform[3][1], map_xform[4][1],%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("\tmap_xform[1][2], map_xform[2][2], map_xform[3][2], map_xform[4][2],%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("\tmap_xform[1][3], map_xform[2][3], map_xform[3][3], map_xform[4][3]%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
 		// create material
 		GS::Array<ModelInfo::Material> materials = modelInfo.GetMaterials ();
@@ -153,13 +199,13 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 		GS::Array<ModelInfo::Vertex> vertices = modelInfo.GetVertices ();
 		Box3D box = Box3D::CreateEmpty ();
 		for (UInt32 i = 0; i < vertices.GetSize (); i++) {
-			sprintf (buffer, "VERT %f, %f, %f\t!#%d%s", vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ (), i + 1, GS::EOL);
-			ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+			line = GS::String::SPrintf ("VERT %f, %f, %f\t!#%d%s", vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ (), i + 1, GS::EOL);
+			ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 			box.Extend (Point3D (vertices[i].GetX (), vertices[i].GetY (), vertices[i].GetZ ()));
 		}
 
-		sprintf (buffer, "%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
 		GS::HashTable<GS::Pair<Int32, Int32>, GS::UShort> edges = modelInfo.GetEdges ();
 
@@ -178,8 +224,8 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 				}
 			}
 
-			sprintf (buffer, "! Polygon #%d%s%sMATERIAL \"%s\"%s", polygonIndex, GS::EOL, GS::EOL, materialName.ToCStr ().Get (), GS::EOL);
-			ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+			line = GS::String::SPrintf ("! Polygon #%d%s%sMATERIAL \"%s\"%s", polygonIndex, GS::EOL, GS::EOL, materialName.ToCStr ().Get (), GS::EOL);
+			ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
 			for (UInt32 i = 0; i < pointsCount; i++) {
 				Int32 start = i;
@@ -205,47 +251,47 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 					}
 				}
 
-				sprintf (buffer, "EDGE %d, %d, -1, -1, %s\t!#%d%s", pointIds[start] + 1, pointIds[end] + 1, (smooth ? "smoothBodyEdge" : (hidden ? "hiddenBodyEdge" : "visibleBodyEdge")), edgeIndex + i, GS::EOL);
-				ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+				line = GS::String::SPrintf ("EDGE %d, %d, -1, -1, %s\t!#%d%s", pointIds[start] + 1, pointIds[end] + 1, (smooth ? "smoothBodyEdge" : (hidden ? "hiddenBodyEdge" : "visibleBodyEdge")), edgeIndex + i, GS::EOL);
+				ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 			}
 
-			sprintf (buffer, "PGON %d, 0, -1", pointsCount);
-			ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+			line = GS::String::SPrintf ("PGON %d, 0, -1", pointsCount);
+			ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
 			for (UInt32 i = 0; i < pointsCount; i++) {
-				sprintf (buffer, ", %d", edgeIndex + i);
-				ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+				line = GS::String::SPrintf (", %d", edgeIndex + i);
+				ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 			}
 
-			sprintf (buffer, "\t!#%d%s%s", polygonIndex, GS::EOL, GS::EOL);
-			ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+			line = GS::String::SPrintf ("\t!#%d%s%s", polygonIndex, GS::EOL, GS::EOL);
+			ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
 			edgeIndex += pointsCount;
 			polygonIndex++;
 		}
 
-		sprintf (buffer, "BODY 4%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("BODY 4%s%s", GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMinX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMinY (), box.GetMaxZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s", box.GetMaxX (), box.GetMaxY (), box.GetMinZ (), GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("HOTSPOT %f, %f, %f%s%s", box.GetMaxX (), box.GetMaxY (), box.GetMaxZ (), GS::EOL, GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
-		sprintf (buffer, "DEL TOP");
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = "DEL TOP";
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
 		ACAPI_LibPart_EndSection ();
 
@@ -253,18 +299,18 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 		BNZeroMemory (&section, sizeof (API_LibPartSection));
 		section.sectType = API_Sect2DScript;
 		ACAPI_LibPart_NewSection (&section);
-		sprintf (buffer, "!%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "! 2D Script (Generated by Speckle Connector)%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "!%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "PEN gs_cont_pen%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "SET FILL gs_fill_type%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
-		sprintf (buffer, "PROJECT2{2} 3, 270.0, 3+32, gs_back_pen, 0, 0, 0%s", GS::EOL);
-		ACAPI_LibPart_WriteSection (Strlen32 (buffer), buffer);
+		line = GS::String::SPrintf ("!%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("! 2D Script (Generated by Speckle Connector)%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("!%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("PEN gs_cont_pen%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("SET FILL gs_fill_type%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
+		line = GS::String::SPrintf ("PROJECT2{2} 3, 270.0, 3+32, gs_back_pen, 0, 0, 0%s", GS::EOL);
+		ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 		ACAPI_LibPart_EndSection ();
 
 		// Parameter script section
@@ -320,48 +366,32 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 			err = APIERR_MEMFULL;
 		}
 
-		if (libPart.location != nullptr) {
-			delete libPart.location;
-			libPart.location = nullptr;
-		}
-
 		// Save the constructed library part
 		if (err == NoError)
 			err = ACAPI_LibPart_Save (&libPart);
-
-		if (libPart.location != nullptr) {
-			delete libPart.location;
-			libPart.location = nullptr;
-		}
 	}
 
 	return err;
 }
 
 
-GSErrCode LibpartImportManager::GetLocation (IO::Location*& loc, bool useEmbeddedLibrary) const
+GSErrCode LibpartImportManager::GetLocation (bool useEmbeddedLibrary, IO::Location*& libraryFolderLocation) const
 {
 	GS::Array<API_LibraryInfo> libInfo;
-	loc = nullptr;
-
-	GSErrCode err = NoError;
+	libraryFolderLocation = nullptr;
 
 	if (useEmbeddedLibrary) {
 		Int32 embeddedLibraryIndex = -1;
 		// get embedded library location
 		if (ACAPI_Environment (APIEnv_GetLibrariesID, &libInfo, &embeddedLibraryIndex) == NoError && embeddedLibraryIndex >= 0) {
 			try {
-				loc = new IO::Location (libInfo[embeddedLibraryIndex].location);
+				libraryFolderLocation = new IO::Location (libInfo[embeddedLibraryIndex].location);
 			} catch (std::bad_alloc&) {
 				return APIERR_MEMFULL;
 			}
 
-			if (loc != nullptr) {
-				IO::Location ownFolderLoc (*loc);
-				ownFolderLoc.AppendToLocal (IO::Name ("Speckle Library"));
-				err = IO::fileSystem.CreateFolder (ownFolderLoc);
-				if (err == NoError || err == IO::FileSystem::TargetExists)
-					loc->AppendToLocal (IO::Name ("Speckle Library"));
+			if (libraryFolderLocation != nullptr) {
+				CreateSubFolder ("Speckle Library", *libraryFolderLocation);
 			}
 		}
 	} else {
@@ -375,7 +405,7 @@ GSErrCode LibpartImportManager::GetLocation (IO::Location*& loc, bool useEmbedde
 			if (destFolder.GetStatus () != NoError || !destFolder.IsWriteable ())
 				return APIERR_GENERAL;
 
-			loc = new IO::Location (folderLoc);
+			libraryFolderLocation = new IO::Location (folderLoc);
 
 			for (UInt32 ii = 0; ii < libInfo.GetSize (); ii++) {
 				if (folderLoc == libInfo[ii].location)
