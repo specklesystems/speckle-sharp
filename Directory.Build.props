@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="General Config">
-    <LangVersion>10</LangVersion>
+    <LangVersion>latest</LangVersion>
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
