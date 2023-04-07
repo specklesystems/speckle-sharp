@@ -9,13 +9,17 @@
     <Import_RootNamespace>ConverterAutocadCivilShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.ASGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.ASGeometry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)advancesteel\ConverterAutocadCivil.Beams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.Utils.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.AdvanceSteel.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.DxfNames.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.AdvanceSteel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.DxfNames.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Other.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Civil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Geometry.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)AdvanceSteel\" />
   </ItemGroup>
 </Project>

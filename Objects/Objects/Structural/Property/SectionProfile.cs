@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
+using System.Reflection.Metadata.Ecma335;
 
 namespace Objects.Structural.Properties.Profiles
 {
@@ -11,6 +12,8 @@ namespace Objects.Structural.Properties.Profiles
   {
     public string name { get; set; }
     public virtual ShapeType shapeType { get; set; } = ShapeType.Undefined;
+
+    public string shapeName => shapeType.ToString();
     public double area { get; set; }
     //Moment of inertia about the Major axis
     public double Iyy { get; set; }

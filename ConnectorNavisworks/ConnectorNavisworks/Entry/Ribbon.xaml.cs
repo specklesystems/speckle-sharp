@@ -106,6 +106,9 @@ namespace Speckle.ConnectorNavisworks.Entry
 #if NAVMAN20
       buildVersion = "2023";
 #endif
+#if NAVMAN21
+      buildVersion = "2024";
+#endif
 
       // Version
       if (!NavisworksApp.Version.RuntimeProductName.Contains(buildVersion))
