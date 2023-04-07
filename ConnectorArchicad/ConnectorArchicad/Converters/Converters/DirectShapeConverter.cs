@@ -7,6 +7,7 @@ using Archicad.Communication;
 using Archicad.Operations;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
 {
@@ -20,9 +21,10 @@ namespace Archicad.Converters
 
     #region --- Functions ---
 
-    public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
-      var elementModelDatas = (from directShape in elements
+      var elementModelDatas = (from tc in elements
+                               let directShape = tc.current
                                let polygons = (List<Mesh>)directShape["displayValue"] ??
                                  (directShape is Mesh mesh ? new List<Mesh>() { mesh } : null)
                                where polygons is not null
@@ -33,7 +35,8 @@ namespace Archicad.Converters
                                }).ToList();
 
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDirectShapes(elementModelDatas), token);
-      return result is null ? new List<string>() : result.ToList();
+
+      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
     public Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)

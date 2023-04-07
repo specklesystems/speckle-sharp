@@ -6,15 +6,39 @@
 #include "RealNumber.h"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
+
 using namespace FieldNames;
+
 
 namespace AddOnCommands
 {
 
-static GS::ObjectState SerializeBeamType (const API_Element& elem, const API_ElementMemo& memo)
-{
-	GS::ObjectState os;
 
+GS::String GetBeamData::GetFieldName () const
+{
+	return Beams;
+}
+
+
+API_ElemTypeID GetBeamData::GetElemTypeID () const
+{
+	return API_BeamID;
+}
+
+
+GS::UInt64 GetBeamData::GetMemoMask () const
+{
+	return APIMemoMask_BeamSegment |
+		APIMemoMask_AssemblySegmentScheme |
+		APIMemoMask_AssemblySegmentCut |
+		APIMemoMask_BeamHole;
+}
+
+
+GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
+	const API_ElementMemo& memo,
+	GS::ObjectState& os) const
+{
 	// The identifier of the beam
 	os.Add (ApplicationId, APIGuidToString (elem.beam.head.guid));
 
@@ -198,7 +222,7 @@ static GS::ObjectState SerializeBeamType (const API_Element& elem, const API_Ele
 		if (NoError == ACAPI_Attribute_Get (&attrib))
 			os.Add (Beam::CutContourLinetypeName, GS::UniString{attrib.header.name});
 	}
-	
+
 	// Override cut fill pen
 	if (elem.beam.penOverride.overrideCutFillPen) {
 		os.Add (Beam::OverrideCutFillPenIndex, elem.beam.penOverride.cutFillPen);
@@ -262,7 +286,7 @@ static GS::ObjectState SerializeBeamType (const API_Element& elem, const API_Ele
 
 	if (NoError == ACAPI_Attribute_Get (&attrib))
 		os.Add (Beam::refLtype, GS::UniString{attrib.header.name});
-	
+
 	// Floor Plan and Section - Cover Fills
 	os.Add (Beam::useCoverFill, elem.beam.useCoverFill);
 	if (elem.beam.useCoverFill) {
@@ -294,54 +318,13 @@ static GS::ObjectState SerializeBeamType (const API_Element& elem, const API_Ele
 		}
 	}
 
-	return os;
+	return NoError;
 }
 
 
 GS::String GetBeamData::GetName () const
 {
 	return GetBeamDataCommandName;
-}
-
-
-GS::ObjectState GetBeamData::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIds, ids);
-	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
-
-	GS::ObjectState result;
-	const auto& listAdder = result.AddList<GS::ObjectState> (Beams);
-	for (const API_Guid& guid : elementGuids) {
-		API_Element element{};
-		element.header.guid = guid;
-
-		GSErrCode err = ACAPI_Element_Get (&element);
-		if (err != NoError)
-			continue;
-
-		API_ElementMemo memo{};
-		ACAPI_Element_GetMemo (guid, &memo,
-			APIMemoMask_BeamSegment |
-			APIMemoMask_AssemblySegmentScheme |
-			APIMemoMask_AssemblySegmentCut |
-			APIMemoMask_BeamHole);
-		if (err != NoError)
-			continue;
-
-#ifdef ServerMainVers_2600
-		if (element.header.type.typeID != API_BeamID)
-#else
-		if (element.header.typeID != API_BeamID)
-#endif
-		{
-			continue;
-		}
-
-		listAdder (SerializeBeamType (element, memo));
-	}
-
-	return result;
 }
 
 

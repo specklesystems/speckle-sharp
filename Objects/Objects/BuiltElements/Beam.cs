@@ -201,15 +201,7 @@ namespace Objects.BuiltElements.Archicad
     public double? coverFillTransformationYAxisX { get; set; }
     public double? coverFillTransformationYAxisY { get; set; }
 
-    public ArchicadBeam() { }
-
     [SchemaInfo("ArchicadBeam", "Creates an Archicad beam by curve.", "Archicad", "Structure")]
-
-    public ArchicadBeam(Point begC, Point endC)
-    {
-      this.begC = begC;
-      this.endC = endC;
-    }
-
+    public ArchicadBeam() {}
   }
 }

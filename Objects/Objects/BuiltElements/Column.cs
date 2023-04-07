@@ -209,15 +209,7 @@ namespace Objects.BuiltElements.Archicad
     public double? coverFillTransformationYAxisX { get; set; }
     public double? coverFillTransformationYAxisY { get; set; }
 
-    public ArchicadColumn() { }
-
     [SchemaInfo("ArchicadColumn", "Creates an Archicad Column by curve.", "Archicad", "Structure")]
-
-    public ArchicadColumn(Point startPoint, double columnHeight)
-    {
-      origoPos = startPoint;
-      height = columnHeight;
-    }
-
+    public ArchicadColumn() {}
   }
 }
