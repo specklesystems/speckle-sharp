@@ -20,6 +20,7 @@
     </NoWarn>
 
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
   </PropertyGroup>
 
   <PropertyGroup Label="Package Config">
@@ -42,6 +43,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="$(SolutionDir)CodeMetricsConfig.txt"/>
+    <AdditionalFiles Include="$(RepositoryRoot)CodeMetricsConfig.txt"/>
   </ItemGroup>
 </Project>
