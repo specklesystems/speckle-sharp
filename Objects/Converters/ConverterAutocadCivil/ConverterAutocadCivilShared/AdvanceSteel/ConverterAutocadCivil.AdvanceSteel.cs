@@ -69,6 +69,8 @@ using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
 using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
 using Autodesk.AdvanceSteel.DotNetRoots.DatabaseAccess;
 using Autodesk.AdvanceSteel.Geometry;
+using static System.Net.Mime.MediaTypeNames;
+using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -109,11 +111,19 @@ namespace Objects.Converter.AutocadCivil
 
       SetUserAttributes(filerObject as AtomicElement, asteelObject);
 
+      SetAutocadProperties();
+
       Base @base = asteelObject as Base;
 
       SetUnits(@base);
 
       return @base;
+    }
+
+    private void SetAutocadProperties(DBObject @object, FilerObject filerObject, IAsteelObject asteelObject)
+    {
+      Base props = Utilities.GetApplicationProps(@object, typeof(Entity), true);
+      _text[AutocadPropName] = props;
     }
 
     private IAsteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
