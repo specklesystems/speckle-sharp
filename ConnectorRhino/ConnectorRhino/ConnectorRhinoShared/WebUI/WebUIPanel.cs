@@ -1,8 +1,8 @@
 ﻿using Eto.Drawing;
 using Eto.Forms;
 using Rhino.UI;
-using WebUI;
 
+#if RHINO7
 namespace SpeckleRhino
 {
   /// <summary>
@@ -120,3 +120,4 @@ namespace SpeckleRhino
     #endregion IPanel methods
   }
 }
+#endif

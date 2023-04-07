@@ -3,6 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Sentry.Protocol;
 
+#if RHINO7
 namespace WebUI
 {
   [ClassInterface(ClassInterfaceType.AutoDual)]
@@ -40,3 +41,4 @@ namespace WebUI
     }
   }
 }
+#endif

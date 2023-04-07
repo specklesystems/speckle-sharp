@@ -6,11 +6,12 @@ using SpeckleRhino;
 
 namespace SpeckleRhino
 {
+#if RHINO7
   public class SpeckleWebUICommand : Command
   {
     public SpeckleWebUICommand()
     {
-     Panels.RegisterPanel(PlugIn, typeof(SpeckleRhino.WebUIPanel), "Speckle - WebUI", Resources.icon);
+      Panels.RegisterPanel(PlugIn, typeof(SpeckleRhino.WebUIPanel), "Speckle - WebUI", Resources.icon);
       Instance = this;
     }
 
@@ -69,4 +70,6 @@ namespace SpeckleRhino
       return Result.Success;
     }
   }
+
+#endif
 }

@@ -8,6 +8,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using SpeckleRhino;
 
+#if RHINO7
 namespace Speckle.ConnectorRhino.UI
 {
   [ClassInterface(ClassInterfaceType.AutoDual)]
@@ -78,3 +79,4 @@ namespace Speckle.ConnectorRhino.UI
     }
   }
 }
+#endif
