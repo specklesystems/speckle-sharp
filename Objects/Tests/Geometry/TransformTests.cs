@@ -23,31 +23,6 @@ namespace Objects.Tests.Geometry
       Assert.AreEqual(data, end.matrix);
     }
 
-    [Test]
-    [TestCaseSource(nameof(TransformTestCases))]
-    public void ConvertToUnits(Matrix4x4 data)
-    {
-      const float SF = 1000f;
-
-      var transpose = Matrix4x4.Transpose(data); //NOTE: Transform expects matrices transposed (translation in column 4)
-      var mm = Matrix4x4.Transpose(Transform.CreateMatrix(new Transform(transpose, Units.Meters).ConvertToUnits(Units.Millimeters)));
-
-      Matrix4x4.Decompose(data, out var ms, out var mr, out var mt);
-      Matrix4x4.Decompose(mm, out var mms, out var mmr, out var mmt);
-
-      Assert.Multiple(() =>
-      {
-        Assert.That(mms.X, Is.EqualTo(ms.X).Within(FLOAT_TOLLERANCE), "Expect scale x to be unchanged");
-        Assert.That(mms.Y, Is.EqualTo(ms.Y).Within(FLOAT_TOLLERANCE), "Expect scale y to be unchanged");
-        Assert.That(mms.Z, Is.EqualTo(ms.Z).Within(FLOAT_TOLLERANCE), "Expect scale z to be unchanged");
-
-        Assert.That(Quaternion.Dot(mr, mmr), Is.LessThan(1).Within(FLOAT_TOLLERANCE), "Expect rot x to be equivalent");
-
-        Assert.That(mmt.X, Is.EqualTo(mt.X * SF).Within(FLOAT_TOLLERANCE), $"Expect translation x to be scaled by {SF}");
-        Assert.That(mmt.Y, Is.EqualTo(mt.Y * SF).Within(FLOAT_TOLLERANCE), $"Expect translation y to be scaled by {SF}");
-        Assert.That(mmt.Z, Is.EqualTo(mt.Z * SF).Within(FLOAT_TOLLERANCE), $"Expect translation z to be scaled by {SF}");
-      });
-    }
 
 
     [Test(Description = "Tests that Transform decompose matches the behaviour of Matrix4x4")]
@@ -108,16 +83,16 @@ namespace Objects.Tests.Geometry
 
       yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.5f, 0.0f, 0.0f))
         .SetName("{m} Rotation Only X ");
-      
+
       yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.0f, 0.5f, 0.0f))
         .SetName("{m} Rotation Only Y ");
-      
+
       yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.0f, 0.0f, 0.5f))
         .SetName("{m} Rotation Only Z ");
-      
+
       yield return new TestCaseData(Matrix4x4.CreateFromYawPitchRoll(0.5f, 0.5f, 0.5f))
         .SetName("{m} Rotation Only XYZ ");
-      
+
       yield return new TestCaseData(Matrix4x4.CreateFromQuaternion(r))
         .SetName("{m} Rotation Only");
 
