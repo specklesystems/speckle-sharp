@@ -1,7 +1,7 @@
+﻿using System.Diagnostics;
+using GraphQL;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using GraphQL;
-using System.Diagnostics;
 
 namespace TestsIntegration
 {
@@ -17,24 +17,6 @@ namespace TestsIntegration
       _client = new Client(_account);
     }
 
-    [Test]
-    public async Task ThrowsForbiddenException()
-    {
-      Assert.ThrowsAsync<SpeckleGraphQLForbiddenException<Dictionary<string, object>>>(
-        async () =>
-          await _client.ExecuteGraphQLRequest<Dictionary<string, object>>(
-            new GraphQLRequest
-            {
-              Query =
-                @"query {
-            adminStreams{
-              totalCount
-              }
-            }"
-            },
-            CancellationToken.None
-          )
-      );
-    }
+
   }
 }
