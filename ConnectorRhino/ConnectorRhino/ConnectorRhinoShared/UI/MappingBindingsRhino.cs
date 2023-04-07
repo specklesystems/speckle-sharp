@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -123,7 +123,7 @@ namespace SpeckleRhino
                   Vector3d normal = p.Normal;
                   if (normal.Unitize())
                   {
-                    if (Math.Abs(normal.Z) == 1)
+                    if (Math.Abs(Math.Abs(normal.Z) - 1) < RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
                     {
                       result.Add(new RevitFloorViewModel());
                     }
@@ -133,10 +133,12 @@ namespace SpeckleRhino
               break;
 
             case Extrusion e:
+              result.Add(new DirectShapeFreeformViewModel());
+              
               if (e.ProfileCount > 1) break;
               var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
               if (!(crv.IsLinear() || crv.IsArc())) break;
-              if (crv.PointAtStart.Z != crv.PointAtEnd.Z) break;
+              if (Math.Abs(crv.PointAtStart.Z - crv.PointAtEnd.Z) > RhinoDoc.ActiveDoc.ModelAbsoluteTolerance) break;
 
 
               //if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
@@ -160,7 +162,11 @@ namespace SpeckleRhino
                 result.Add(new RevitDefaultPipeViewModel());
                 result.Add(new RevitDefaultDuctViewModel());
               }
-
+              else if (c.IsPlanar())
+              {
+                // If the curve is non-linear, but is planar, it can still be a beam.
+                result.Add(new RevitBeamViewModel());
+              }
               //if (c.IsLinear() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);
               //if (c.IsLinear() && c.PointAtEnd.X == c.PointAtStart.X && c.PointAtEnd.Y == c.PointAtStart.Y) cats.Add(Column);
               //if (c.IsArc() && !c.IsCircle() && c.PointAtEnd.Z == c.PointAtStart.Z) cats.Add(Gridline);

@@ -11,24 +11,52 @@ using namespace FieldNames;
 
 namespace AddOnCommands
 {
-static GS::ObjectState SerializeRoomType (const API_ZoneType& zone, const API_ElementMemo& memo, const API_ElementQuantity& quantity)
+
+
+GS::String GetRoomData::GetFieldName () const
 {
-	GS::ObjectState os;
+	return Zones;
+}
+
+
+API_ElemTypeID GetRoomData::GetElemTypeID () const
+{
+	return API_ZoneID;
+}
+
+
+GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
+	const API_ElementMemo& memo,
+	GS::ObjectState& os) const
+{
+	// quantities
+	API_ElementQuantity	quantity = {};
+	API_Quantities		quantities = {};
+	API_QuantitiesMask	mask;
+
+	ACAPI_ELEMENT_QUANTITY_MASK_CLEAR (mask);
+	ACAPI_ELEMENT_QUANTITY_MASK_SET (mask, zone, area);
+	ACAPI_ELEMENT_QUANTITY_MASK_SET (mask, zone, volume);
+
+	quantities.elements = &quantity;
+	GSErrCode err = ACAPI_Element_GetQuantities (element.header.guid, nullptr, &quantities, &mask);
+	if (err != NoError)
+		return err;
 
 	// The identifier of the room
-	os.Add (ApplicationId, APIGuidToString (zone.head.guid));
-	GS::UniString roomName = zone.roomName;
-	GS::UniString roomNum = zone.roomNoStr;
+	os.Add (ApplicationId, APIGuidToString (element.zone.head.guid));
+	GS::UniString roomName = element.zone.roomName;
+	GS::UniString roomNum = element.zone.roomNoStr;
 	os.Add (Room::Name, roomName);
 	os.Add (Room::Number, roomNum);
 
 	// The index of the room's floor
-	os.Add (FloorIndex, zone.head.floorInd);
+	os.Add (FloorIndex, element.zone.head.floorInd);
 
 	// The base point of the room
-	double level = Utility::GetStoryLevel (zone.head.floorInd) + zone.roomBaseLev;
+	double level = Utility::GetStoryLevel (element.zone.head.floorInd) + element.zone.roomBaseLev;
 	os.Add (Room::BasePoint, Objects::Point3D (0, 0, level));
-	os.Add (Shape, Objects::ElementShape (zone.poly, memo, level));
+	os.Add (Shape, Objects::ElementShape (element.zone.poly, memo, level));
 
 	// double polyCoords [zone.poly.nCoords*3];
 	//
@@ -41,64 +69,19 @@ static GS::ObjectState SerializeRoomType (const API_ZoneType& zone, const API_El
 	// }
 
 	// Room Props
-	os.Add (Room::Height, zone.roomHeight);
+	os.Add (Room::Height, element.zone.roomHeight);
 	os.Add (Room::Area, quantity.zone.area);
 	os.Add (Room::Volume, quantity.zone.volume);
 
 
-	return os;
+	return NoError;
 }
+
 
 GS::String GetRoomData::GetName () const
 {
 	return GetRoomDataCommandName
 }
 
-GS::ObjectState GetRoomData::Execute (const GS::ObjectState& parameters,
-									  GS::ProcessControl& /*processControl*/) const
-{
-	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIds, ids);
-	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) {
-		return APIGuidFromString (idStr.ToCStr ());
-	});
 
-	GS::ObjectState result;
-	const auto& listAdder = result.AddList<GS::ObjectState> (Zones);
-	for (const API_Guid& guid : elementGuids) {
-		// element and memo 
-		API_Element element{};
-		API_ElementMemo elementMemo{};
-		element.header.guid = guid;
-
-		GSErrCode err = ACAPI_Element_Get (&element);
-		if (err != NoError) continue;
-
-#ifdef ServerMainVers_2600
-		if (element.header.type.typeID != API_ZoneID)
-#else
-		if (element.header.typeID != API_ZoneID)
-#endif
-			continue;
-		err = ACAPI_Element_GetMemo (guid, &elementMemo, APIMemoMask_All);
-		if (err != NoError) continue;
-
-		// quantities
-		API_ElementQuantity	quantity = {};
-		API_Quantities		quantities = {};
-		API_QuantitiesMask	mask;
-
-		ACAPI_ELEMENT_QUANTITY_MASK_CLEAR (mask);
-		ACAPI_ELEMENT_QUANTITY_MASK_SET (mask, zone, area);
-		ACAPI_ELEMENT_QUANTITY_MASK_SET (mask, zone, volume);
-
-		quantities.elements = &quantity;
-		err = ACAPI_Element_GetQuantities (guid, nullptr, &quantities, &mask);
-		if (err != NoError) continue;
-
-		listAdder (SerializeRoomType (element.zone, elementMemo, quantity));
-	}
-
-	return result;
-}
 }

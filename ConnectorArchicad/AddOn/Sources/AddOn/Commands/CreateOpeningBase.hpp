@@ -1,22 +1,13 @@
-#ifndef CREATE_OPENINGBASE_HPP
-#define CREATE_OPENINGBASE_HPP
+#ifndef CREATE_OPENING_BASE
+#define CREATE_OPENING_BASE
 
-// API
-#include "APIEnvir.h"
-#include "ACAPinc.h"
-
-#include "Objects/Point.hpp"
+#include "CreateCommand.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
-
-// GSRoot
-#include "ObjectState.hpp"
-
+#include "Objects/Point.hpp"
 using namespace FieldNames;
 
-
 namespace AddOnCommands {
-
 
 template<typename T>
 GSErrCode GetOpeningBaseFromObjectState (const GS::ObjectState& os, T& element, API_Element& mask)
@@ -118,8 +109,15 @@ GSErrCode GetOpeningBaseFromObjectState (const GS::ObjectState& os, T& element, 
 }
 
 
+class CreateOpeningBase : public CreateCommand {
+protected:
+	static bool	CheckEnvironment (const GS::ObjectState& currentDoor, API_Element& element);
+
+	GS::String	GetFieldName () const override;
+};
+
 
 } // namespace AddOnCommands
 
 
-#endif // CREATE_OPENINGBASE_HPP
+#endif // CREATE_OPENING_BASE

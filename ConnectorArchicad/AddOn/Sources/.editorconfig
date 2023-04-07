@@ -6,6 +6,7 @@ root = true
 # Visual C++ Code Style settings
 
 cpp_generate_documentation_comments = xml
+guidelines = 80 1px dotted 40ffffff, 120 1px solid 40ffffff
 
 # Visual C++ Formatting settings
 
