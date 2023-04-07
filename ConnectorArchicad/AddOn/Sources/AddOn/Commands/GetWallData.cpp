@@ -13,15 +13,30 @@ using namespace FieldNames;
 
 namespace AddOnCommands {
 
-static GS::ObjectState SerializeWallType (const API_WallType& wall, const API_ElementMemo& memo)
+
+GS::String GetWallData::GetFieldName () const
 {
-	GS::ObjectState os;
+	return Walls;
+}
+
+
+API_ElemTypeID GetWallData::GetElemTypeID () const
+{
+	return API_WallID;
+}
+
+
+GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
+	const API_ElementMemo& memo,
+	GS::ObjectState& os) const
+{
+	const API_WallType wall = element.wall;
 
 	// The identifier of the wall
 	os.Add (ApplicationId, APIGuidToString (wall.head.guid));
 
 	// Wall geometry
-	
+
 	// The index of the wall's floor
 	os.Add (FloorIndex, wall.head.floorInd);
 
@@ -280,49 +295,14 @@ static GS::ObjectState SerializeWallType (const API_WallType& wall, const API_El
 	os.Add (Wall::HasWindow, wall.hasWindow);
 
 	// End
-	return os;
+	return NoError;
 }
+
 
 GS::String GetWallData::GetName () const
 {
 	return GetWallDataCommandName;
 }
 
-GS::ObjectState GetWallData::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIds, ids);
-	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
 
-	GS::ObjectState result;
-	const auto& listAdder = result.AddList<GS::ObjectState> (Walls);
-	for (const API_Guid& guid : elementGuids) {
-		API_Element element{};
-		API_ElementMemo elementMemo{};
-
-		element.header.guid = guid;
-
-		GSErrCode err = ACAPI_Element_Get (&element);
-		if (err != NoError) {
-			continue;
-		}
-
-#ifdef ServerMainVers_2600
-		if (element.header.type.typeID != API_WallID)
-#else
-		if (element.header.typeID != API_WallID)
-#endif
-		{
-			continue;
-		}
-
-		err = ACAPI_Element_GetMemo (guid, &elementMemo);
-		if (err != NoError) continue;
-
-		listAdder (SerializeWallType (element.wall, elementMemo));
-	}
-
-	return result;
-}
-
-}
+} // namespace AddOnCommands

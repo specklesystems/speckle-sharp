@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
+using Objects.BuiltElements;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
 {
@@ -13,21 +15,26 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Floor);
 
-    public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var floors = new List<Objects.BuiltElements.Archicad.ArchicadFloor>();
-      foreach (var el in elements)
+      foreach (var tc in elements)
       {
-        switch (el)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
             floors.Add(archiFloor);
             break;
           case Objects.BuiltElements.Floor floor:
-            floors.Add(new Objects.BuiltElements.Archicad.ArchicadFloor
+
+            Objects.BuiltElements.Archicad.ArchicadFloor newFloor = new Objects.BuiltElements.Archicad.ArchicadFloor
             {
+              id = floor.id,
+              applicationId = floor.applicationId,
               shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
-            });
+            };
+
+            floors.Add(newFloor);
             break;
         }
       }
@@ -36,7 +43,7 @@ namespace Archicad.Converters
         await AsyncCommandProcessor.Execute(
           new Communication.Commands.CreateFloor(floors), token);
 
-      return result.ToList();
+      return result is null ? new List<ApplicationObject>() : result.ToList(); ;
     }
 
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,

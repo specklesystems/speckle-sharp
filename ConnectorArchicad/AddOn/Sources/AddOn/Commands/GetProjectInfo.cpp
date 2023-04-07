@@ -7,18 +7,20 @@ namespace AddOnCommands
 
 namespace FieldNames
 {
-	static const char* ProjectName = "name";
-	static const char* ProjectLocation = "location";
-	static const char* ProjectLengthUnits = "lengthUnit";
-	static const char* ProjectAreaUnits = "areaUnit";
-	static const char* ProjectVolumeUnits = "volumeUnit";
-	static const char* ProjectAngleUnits = "angleUnit";
+static const char* ProjectName = "name";
+static const char* ProjectLocation = "location";
+static const char* ProjectLengthUnits = "lengthUnit";
+static const char* ProjectAreaUnits = "areaUnit";
+static const char* ProjectVolumeUnits = "volumeUnit";
+static const char* ProjectAngleUnits = "angleUnit";
 }
+
 
 GS::String GetProjectInfo::GetName () const
 {
 	return GetProjectInfoCommandName;
 }
+
 
 GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, GS::ProcessControl& /*processControl*/) const
 {
@@ -47,5 +49,6 @@ GS::ObjectState GetProjectInfo::Execute (const GS::ObjectState& /*parameters*/, 
 
 	return os;
 }
+
 
 }

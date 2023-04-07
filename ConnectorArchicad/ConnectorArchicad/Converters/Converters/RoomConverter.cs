@@ -5,10 +5,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using DynamicData;
 using Objects;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
 {
@@ -16,31 +18,36 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Room);
 
-    public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var rooms = new List<Objects.BuiltElements.Archicad.ArchicadRoom>();
-      foreach (var el in elements)
+      foreach (var tc in elements)
       {
-        switch (el)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadRoom archiRoom:
             rooms.Add(archiRoom);
             break;
           case Objects.BuiltElements.Room room:
-            rooms.Add(new Objects.BuiltElements.Archicad.ArchicadRoom
+            Objects.BuiltElements.Archicad.ArchicadRoom newRoom = new Objects.BuiltElements.Archicad.ArchicadRoom
             {
+              id = room.id,
+              applicationId = room.applicationId,
               shape = Utils.PolycurvesToElementShape(room.outline, room.voids),
               name = room.name,
               number = room.number,
               basePoint = Utils.ScaleToNative(room.basePoint)
-            });
+            };
+
+            rooms.Add(newRoom);
+
             break;
         }
       }
 
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoom(rooms), token);
 
-      return result is null ? new List<string>() : result.ToList();
+      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
