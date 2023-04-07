@@ -2,7 +2,8 @@
 using Eto.Forms;
 using Rhino.UI;
 
-#if RHINO7
+#if RHINO7 && !MAC
+
 namespace SpeckleRhino
 {
   /// <summary>

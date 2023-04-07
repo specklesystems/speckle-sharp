@@ -6,7 +6,7 @@ using SpeckleRhino;
 
 namespace SpeckleRhino
 {
-#if RHINO7
+#if RHINO7 && !MAC
   public class SpeckleWebUICommand : Command
   {
     public SpeckleWebUICommand()

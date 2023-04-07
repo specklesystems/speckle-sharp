@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using Sentry.Protocol;
 
-#if RHINO7
+#if RHINO7 && !MAC
 namespace WebUI
 {
   [ClassInterface(ClassInterfaceType.AutoDual)]
