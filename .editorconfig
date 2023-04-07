@@ -8,7 +8,6 @@ root = true
 indent_style = space
 
 # Microsoft .NET properties
-csharp_style_var_for_built_in_types = false:suggestion
 csharp_using_directive_placement = outside_namespace:silent
 
 dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
@@ -41,9 +40,6 @@ resharper_csharp_wrap_before_invocation_rpar = false
 resharper_csharp_wrap_extends_list_style = chop_if_long
 resharper_csharp_wrap_parameters_style = chop_if_long
 resharper_force_attribute_style = join
-resharper_for_built_in_types = use_var_when_evident
-resharper_for_other_types = use_var
-resharper_for_simple_types = use_var_when_evident
 resharper_indent_nested_fixed_stmt = false
 resharper_indent_nested_foreach_stmt = true
 resharper_indent_nested_for_stmt = true
@@ -141,9 +137,9 @@ dotnet_style_prefer_conditional_expression_over_return = true:silent
 # CSharp code style settings:
 [*.cs]
 # Prefer "var" everywhere
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_style_var_elsewhere = true:suggestion
+csharp_style_var_for_built_in_types = false:suggestion
+csharp_style_var_when_type_is_apparent = false:suggestion
+csharp_style_var_elsewhere = false:suggestion
 
 # Prefer method-like constructs to have a block body
 csharp_style_expression_bodied_methods = false:suggestion
