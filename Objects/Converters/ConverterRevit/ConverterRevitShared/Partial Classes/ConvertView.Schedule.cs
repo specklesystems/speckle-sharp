@@ -120,7 +120,7 @@ namespace Objects.Converter.Revit
               if (element == null)
                 continue;
 
-              TrySetParam(element, revitScheduleData.Parameter, newValue);
+              TrySetParam(element, revitScheduleData.Parameter, newValue, "none");
             }
           }
         } 
