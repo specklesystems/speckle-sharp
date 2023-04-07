@@ -1,14 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-Speckle-sharp main Directory.Build.props file
-
-This file gets automatically imported by every project in the repo.
-The import happens before any information in the .csproj, which means that each project
-can override these properties when necessary.
-
-It is intended to hold any common information shared by all (or most) projects in the repository.
--->
 <Project>
+  <!--
+  Speckle-sharp main Directory.Build.props file
+  This file gets automatically imported by every project in the repo.
+  The import happens before any information in the .csproj, which means that each project
+  can override these properties when necessary.
+  It is intended to hold any common information shared by all (or most) projects in the repository.
+  -->
   <PropertyGroup Label="Company Info">
     <Authors>Speckle</Authors>
     <Company>Speckle</Company>
@@ -16,7 +14,7 @@ It is intended to hold any common information shared by all (or most) projects i
   </PropertyGroup>
 
   <PropertyGroup Label="General Config">
-    <LangVersion>latest</LangVersion>
+    <LangVersion>10</LangVersion>
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>

@@ -1,15 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!--
-Speckle-sharp main Directory.Build.targets file
-
-This file gets automatically imported by every project in the repo.
-The import happens AFTER any information in the .csproj, which means that each project
-cannot override anything in it, only modify properties that these targets consume.
-
-It is intended to hold any common targets and events shared by all (or most) projects in the repository.
-Such as, copying a converter to the Kit folder, or cleaning up the entire monorepo.
--->
 <Project>
+  <!--
+  Speckle-sharp main Directory.Build.targets file
+  
+  This file gets automatically imported by every project in the repo.
+  The import happens AFTER any information in the .csproj, which means that each project
+  cannot override anything in it, only modify properties that these targets consume.
+  
+  It is intended to hold any common targets and events shared by all (or most) projects in the repository.
+  Such as, copying a converter to the Kit folder, or cleaning up the entire monorepo.
+  -->
+  
   <PropertyGroup>
     <!-- Determines if the project should execute the CopyToKitFolder target. Can be overriden per-project.  -->
     <CopyToKitFolder Condition="'$(CopyToKitFolder)' == ''">false</CopyToKitFolder>
