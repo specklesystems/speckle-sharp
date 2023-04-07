@@ -1,108 +1,49 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
-  <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{58A88F1A-7489-46D2-949D-2FC3F68C8D84}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Speckle.ConnectorAutocad</RootNamespace>
-    <AssemblyName>SpeckleConnectorAutocad</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <StartAction>Program</StartAction>
-    <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2021\acad.exe</StartProgram>
-    <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
-    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
-    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
-    <PlatformTarget>x64</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;AUTOCAD2021</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;AUTOCAD2021</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Drawing" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj">
-      <Project>{3ad2c014-1eca-4a6b-bac4-30ce9a443a5b}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
-      <Project>{eab21473-7013-431c-b526-fb5ba657ae2f}</Project>
-      <Name>DesktopUI2</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.Desktop">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.ReactiveUI">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="MSBuild.AssemblyVersion">
-      <Version>1.3.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Speckle.AutoCAD.API">
-      <Version>2021.0.0.3</Version>
-    </PackageReference>
-  </ItemGroup>
-  <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- POST BUILD EVENTS START -->
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-  </PropertyGroup>
-  <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021" />
-  </Target>
-  <Target Name="AfterBuild">
-    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
-    <!--<CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />-->
-  </Target>
-  <Target Name="AfterBuildDebug">
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>Speckle.ConnectorAutocad</RootNamespace>
+        <AssemblyName>SpeckleConnectorAutocad</AssemblyName>
+        <TargetFramework>net48</TargetFramework>
+        <StartAction>Program</StartAction>
+        <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2021\acad.exe</StartProgram>
+        <PlatformTarget>x64</PlatformTarget>
+        <AssemblyTitle>ConnectorAutocad2021</AssemblyTitle>
+        <Product>ConnectorAutocad2021</Product>
+        <DefineConstants>$(DefineConstants);AUTOCAD2021</DefineConstants>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    </PropertyGroup>
+    <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
+    <Target Name="Clean">
+        <RemoveDir
+            Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021" />
+    </Target>
+    <Target Name="AfterBuildMigrated" AfterTargets="PostBuildEvent"
+        Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+        <Message Text="Calling 2022 post build" Importance="high" />
+        <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true"
+            Targets="AfterBuildDebug" />
+        <!--<CallTarget
+        Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />-->
+    </Target>
+    <Target Name="AfterBuildDebug">
+        <ItemGroup>
+            <SourceDLLs Include="$(TargetDir)\**\*.*" />
+        </ItemGroup>
+        <Copy
+            DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021\%(RecursiveDir)"
+            SourceFiles="@(SourceDLLs)" />
+    </Target>
     <ItemGroup>
-      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+        <Reference Include="PresentationCore" />
+        <Reference Include="PresentationFramework" />
+        <Reference Include="System.Data.DataSetExtensions" />
+        <Reference Include="Microsoft.CSharp" />
+        <Reference Include="System.Net.Http" />
     </ItemGroup>
-    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2021\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
-  </Target>
-  <!--<Target Name="AfterBuildRelease">
-  </Target>-->
-  <!--END-->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.2" />
+    </ItemGroup>
 </Project>

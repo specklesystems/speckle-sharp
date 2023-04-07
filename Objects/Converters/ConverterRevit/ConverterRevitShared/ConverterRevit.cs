@@ -80,7 +80,7 @@ namespace Objects.Converter.Revit
     /// Used to cache already converted family instance FamilyType deifnitions
     /// </summary>
     public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType>();
-    
+
     public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
 
     public ReceiveMode ReceiveMode { get; set; }
@@ -269,7 +269,7 @@ namespace Objects.Converter.Revit
           returnObject = AnalyticalSurfaceToSpeckle(o);
           break;
 #else
-         case DB.Structure.AnalyticalMember o:
+        case DB.Structure.AnalyticalMember o:
           returnObject = AnalyticalStickToSpeckle(o);
           break;
         case DB.Structure.AnalyticalPanel o:
@@ -306,7 +306,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      // log 
+      // log
       if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
@@ -357,6 +357,38 @@ namespace Objects.Converter.Revit
       }
     }
 
+    private Base SwapGeometrySchemaObject(Base @object)
+    {
+      // schema check
+      var speckleSchema = @object["@SpeckleSchema"] as Base;
+      if (speckleSchema == null || !CanConvertToNative(speckleSchema))
+        return @object; // Skip if no schema, or schema is non-convertible.
+
+      // Invert the "Geometry->SpeckleSchema" to be the logical "SpeckleSchema -> Geometry" order.
+      // This is caused by RhinoBIM, the MappingTool in rhino, and any Grasshopper Schema node with the option active.
+      if (speckleSchema is BER.DirectShape ds)
+      {
+        // HACK: This is an explicit exception for DirectShapes. This is the only object class that does not have a
+        // `SchemaMainParam`, which means the swap performed below would not work.
+        // In this case, we cast directly and "unwrap" the schema object manually, setting the Brep as the only
+        // item in the list.
+        ds.baseGeometries = new List<Base> { @object };
+      }
+      else
+      {
+        // find self referential prop and set value to @object if it is null (happens when sent from gh)
+        // if you can find a "MainParamProperty" get that
+        // HACK: The results of this can be inconsistent as we don't really know which is the `MainParamProperty`, that is info that is attached to the constructor input. Hence the hack above ☝🏼
+        var prop = speckleSchema
+          .GetInstanceMembers()
+          .Where(o => speckleSchema[o.Name] == null)
+          .FirstOrDefault(o => o.PropertyType.IsInstanceOfType(@object));
+        if(prop != null)
+          speckleSchema[prop.Name] = @object;
+      }
+      return speckleSchema;
+    }
+    
     public object ConvertToNative(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
@@ -364,7 +396,7 @@ namespace Objects.Converter.Revit
       if (bool.Parse(isPreview ?? "false") == true)
         return PreviewGeometry(@object);
 
-      // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures 
+      // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
       if (bool.Parse(recieveModelMesh ?? "false") == true)
       {
@@ -399,28 +431,15 @@ namespace Objects.Converter.Revit
             return null;
         }
       }
-
-      //Project Document
-      // schema check
-      var speckleSchema = @object["@SpeckleSchema"] as Base;
-      if (speckleSchema != null)
-      {
-        // find self referential prop and set value to @object if it is null (happens when sent from gh)
-        if (CanConvertToNative(speckleSchema))
-        {
-          var prop = speckleSchema.GetInstanceMembers().Where(o => speckleSchema[o.Name] == null)?.Where(o => o.PropertyType.IsAssignableFrom(@object.GetType()))?.FirstOrDefault();
-          if (prop != null)
-            speckleSchema[prop.Name] = @object;
-          @object = speckleSchema;
-        }
-      }
+      
+      // Check if object has inner `SpeckleSchema` prop and swap if appropriate
+      @object = SwapGeometrySchemaObject(@object);
 
       switch (@object)
       {
         //geometry
         case ICurve o:
           return ModelCurveToNative(o);
-
         case Geometry.Brep o:
           return DirectShapeToNative(o);
         case Geometry.Mesh mesh:
@@ -571,7 +590,7 @@ namespace Objects.Converter.Revit
 
         case BE.Space o:
           return SpaceToNative(o);
-        //Structural 
+        //Structural
         case STR.Geometry.Element1D o:
           return AnalyticalStickToNative(o);
 

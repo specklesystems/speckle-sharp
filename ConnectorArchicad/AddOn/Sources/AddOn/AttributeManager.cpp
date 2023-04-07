@@ -59,14 +59,14 @@ GSErrCode AttributeManager::GetDefaultMaterial (API_Attribute& attribute, GS::Un
 	ambientColor.red = 0x7f * 256;
 	ambientColor.green = 0x7f * 256;
 	ambientColor.blue = 0x7f * 256;
-	
+
 	GS_RGBColor	emissionColor;
 	emissionColor.red = 0x0;
 	emissionColor.green = 0x0;
 	emissionColor.blue = 0x0;
-	
+
 	name = "Default Speckle Surface";
 	ModelInfo::Material material (name, 0, ambientColor, emissionColor);
-	
+
 	return GetMaterial (material, attribute);
 }

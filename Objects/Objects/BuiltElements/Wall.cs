@@ -354,14 +354,8 @@ namespace Objects.BuiltElements.Archicad
 
     public bool hasWindow { get; set; }
 
-    public ArchicadWall() { }
-    public ArchicadWall(Point startPoint, Point endPoint, double height, bool flipped = false)
-    {
-      this.startPoint = startPoint;
-      this.endPoint = endPoint;
-      this.height = height;
-      this.flipped = flipped;
-    }
+    [SchemaInfo("ArchicadWall", "Creates an Archicad wall.", "Archicad", "Structure")]
+    public ArchicadWall() {}
   }
 
 }

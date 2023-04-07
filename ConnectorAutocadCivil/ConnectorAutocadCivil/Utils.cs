@@ -624,6 +624,7 @@ namespace Speckle.ConnectorAutocadCivil
       var units = styleBase["units"] as string;
       var color = styleBase["color"] as int?;
       if (color == null) color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
+      var transparency = styleBase["opacity"] as double?;
       var lineType = styleBase["linetype"] as string;
       var lineWidth = styleBase["lineweight"] as double?;
 
@@ -631,7 +632,10 @@ namespace Speckle.ConnectorAutocadCivil
       {
         var systemColor = System.Drawing.Color.FromArgb((int)color);
         entity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
-        entity.Transparency = new Transparency(systemColor.A);
+        var alpha = transparency != null 
+          ? (byte)(transparency * 255d) //render material
+          : systemColor.A; //display style
+        entity.Transparency = new Transparency(alpha);
       }
 
       double conversionFactor = (units != null) ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters) : 1;

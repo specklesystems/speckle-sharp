@@ -6,6 +6,7 @@
 		<AssemblyName>Objects.Converter.Navisworks2020</AssemblyName>
 		<RootNamespace>Objects.Converter.Navisworks</RootNamespace>
 		<Platforms>AnyCPU;x64</Platforms>
+        <CopyToKitFolder>true</CopyToKitFolder>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -39,10 +40,6 @@
 		<ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
 		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
 	</ItemGroup>
-
-	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' != false AND $([MSBuild]::IsOsPlatform('Windows'))">
-		<Exec Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-	</Target>
 
 	<Import Project="..\ConverterNavisworks\ConverterNavisworksShared.projitems" Label="Shared" />
 </Project>

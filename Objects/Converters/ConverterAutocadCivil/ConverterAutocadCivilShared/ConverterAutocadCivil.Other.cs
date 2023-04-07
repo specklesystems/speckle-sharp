@@ -49,13 +49,15 @@ namespace Objects.Converter.AutocadCivil
         entity.LineWeight = GetLineWeight(style.lineweight);
         if (LineTypeDictionary.ContainsKey(style.linetype))
           entity.LinetypeId = LineTypeDictionary[style.linetype];
+        entity.Transparency = new Transparency(color.A);
       }
       else if (styleBase is RenderMaterial material) // this is the fallback value if a rendermaterial is passed instead
       {
         color = System.Drawing.Color.FromArgb(material.diffuse);
+        var alpha = (byte)(material.opacity * 255d);
+        entity.Transparency = new Transparency(alpha);
       }
       entity.Color = Color.FromRgb(color.R, color.G, color.B);
-      entity.Transparency = new Transparency(color.A);
 
       return entity;
     }
