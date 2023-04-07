@@ -46,7 +46,6 @@
     <PackageReference Include="RhinoWindows" Version="7.27.23032.13001" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />

@@ -20,19 +20,19 @@ namespace Speckle.ConnectorRevit.UI
 
     }
 
-    public override void SendStream(string args)
+    public override async void ShowAccountsPopup()
     {
       throw new NotImplementedException();
     }
 
     // sample callback from web UI
-    public override async void ShowAccountsPopup()
+    public override async void SendStream()
     {
       try
       {
 
 
-        NotifyUi("show-notification", "Sending...");
+        NotifyUi("show-notification", "Creating stream & sending...");
 
         string _fileName = WebUISpeckleRevitCommand.Bindings.GetFileName();
         var _fileStream = await CreateStream();

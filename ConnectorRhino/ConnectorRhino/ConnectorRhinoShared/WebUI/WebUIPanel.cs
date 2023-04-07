@@ -1,6 +1,7 @@
 ﻿using Eto.Drawing;
 using Eto.Forms;
 using Rhino.UI;
+using WebUI;
 
 namespace SpeckleRhino
 {
@@ -24,11 +25,11 @@ namespace SpeckleRhino
     public WebUIPanel(uint documentSerialNumber)
     {
       m_document_sn = documentSerialNumber;
-      
+
       Title = GetType().Name;
-            
+
       Eto.Wpf.Forms.Controls.WebView2Loader.InstallMode = Eto.Wpf.Forms.Controls.WebView2InstallMode.Manual;
-      
+
       Eto.Wpf.Forms.Controls.WebView2Handler.GetCoreWebView2Environment = () =>
       {
         var userDataFolder = Rhino.RhinoApp.GetDataDirectory(true, true);
@@ -46,14 +47,20 @@ namespace SpeckleRhino
         {
           Microsoft.Web.WebView2.Core.CoreWebView2 coreWebView2 = webView2.CoreWebView2;
           if (coreWebView2 != null)
-            coreWebView2.AddHostObjectToScript("UiBindings", new Speckle.ConnectorRhino.UI.RhinoWebUIBindings());
+          {
+            var bindings = new Speckle.ConnectorRhino.UI.RhinoWebUIBindings();
+            bindings.CoreWebView2 = coreWebView2;
+            coreWebView2.AddHostObjectToScript("UiBindings", bindings);
+
+          }
+
         }
 
         // old method
         if (e.Uri.Scheme == "myscheme")
         {
           e.Cancel = true; // prevent navigation
-          
+
           var path = e.Uri.PathAndQuery;
           if (path == "dosomething")
           {
@@ -62,8 +69,14 @@ namespace SpeckleRhino
         }
       };
 
-      //webView.Url = new System.Uri("http://nas/dui3/button.html");
-      webView.Url = new System.Uri("https://appui.speckle.systems");
+#if DEBUG
+      webView.Url = new System.Uri("http://localhost:8080/#/");
+#else
+      webView.Url = new System.Uri("https://dashing-haupia-e8f6e3.netlify.app/");
+#endif
+
+
+      // webView.Url = new System.Uri("");
 
       var layout = new DynamicLayout { DefaultSpacing = new Size(5, 5), Padding = new Padding(10) };
       layout.AddSeparateRow(webView, null);
@@ -81,7 +94,7 @@ namespace SpeckleRhino
     }
 
     public string Title { get; }
-      
+
     #region IPanel methods
     public void PanelShown(uint documentSerialNumber, ShowPanelReason reason)
     {
