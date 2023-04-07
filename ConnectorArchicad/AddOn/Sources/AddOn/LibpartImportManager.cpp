@@ -36,6 +36,13 @@ LibpartImportManager::LibpartImportManager () : runningNumber(1)
 }
 
 
+LibpartImportManager::~LibpartImportManager ()
+{
+	if (libraryFolderLocation != nullptr)
+		delete libraryFolderLocation;
+}
+
+
 static GSErrCode CreateSubFolder (const GS::UniString& name, IO::Location& location)
 {
 	GSErrCode err = NoError;

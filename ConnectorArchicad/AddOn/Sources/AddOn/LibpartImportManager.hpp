@@ -19,6 +19,8 @@ protected:
 	LibpartImportManager ();
 
 public:
+	~LibpartImportManager ();
+	
 	LibpartImportManager (LibpartImportManager&) = delete;
 	void		operator=(const LibpartImportManager&) = delete;
 	static LibpartImportManager*	GetInstance ();
