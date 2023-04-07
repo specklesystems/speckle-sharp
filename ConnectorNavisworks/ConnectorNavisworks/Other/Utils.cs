@@ -37,7 +37,9 @@ namespace Speckle.ConnectorNavisworks
 
   public static class Utils
   {
-#if NAVMAN20
+#if NAVMAN21
+    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
+#elif NAVMAN20
     public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
 #elif NAVMAN19
     public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
