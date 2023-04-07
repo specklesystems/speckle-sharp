@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+Speckle-sharp main Directory.Build.props file
+
+This file gets automatically imported by every project in the repo.
+The import happens before any information in the .csproj, which means that each project
+can override these properties when necessary.
+
+It is intended to hold any common information shared by all (or most) projects in the repository.
+-->
 <Project>
   <PropertyGroup Label="Company Info">
     <Authors>Speckle</Authors>
@@ -19,7 +28,9 @@
       CS1998; IDE0007; CS0618
     </NoWarn>
 
+    <!-- False if running on CI, will prevent copying of files to local folders -->
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+    <!-- Expose the repository root to all projects -->
     <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
   </PropertyGroup>
 
@@ -43,6 +54,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- This file contains the configuration for some analyzer warnings, such as cyclomatic complexity threshold -->
     <AdditionalFiles Include="$(RepositoryRoot)CodeMetricsConfig.txt"/>
   </ItemGroup>
 </Project>
