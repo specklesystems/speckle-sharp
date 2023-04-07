@@ -114,8 +114,9 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 	if (err == NoError) {
 		API_LibPartSection section;
 		GS::String line;
+#ifdef ServerMainVers_2600
 		line.EnsureCapacity(1000);
-
+#endif
 		// Comment script section
 		BNZeroMemory (&section, sizeof (API_LibPartSection));
 		section.sectType = API_SectComText;

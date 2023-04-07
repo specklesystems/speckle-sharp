@@ -27,9 +27,9 @@ GS::UniString CreateDirectShape::GetUndoableCommandName () const
 
 GSErrCode CreateDirectShape::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
-	API_Element& beamMask,
+	API_Element& /*elementMask*/,
 	API_ElementMemo& memo,
-	GS::UInt64& memoMask,
+	GS::UInt64& /*memoMask*/,
 	AttributeManager& attributeManager,
 	LibpartImportManager& /*libpartImportManager*/,
 	API_SubElement** /*marker = nullptr*/) const
