@@ -1,43 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-    <PropertyGroup Label="Company Info">
-        <Authors>Speckle</Authors>
-        <Company>Speckle</Company>
-        <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-    </PropertyGroup>
+  <PropertyGroup Label="Company Info">
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+  </PropertyGroup>
 
-    <PropertyGroup Label="General Config">
-        <LangVersion>latest</LangVersion>
-        <!-- Code quality -->
-        <EnableNetAnalyzers>false</EnableNetAnalyzers>
-        <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
+  <PropertyGroup Label="General Config">
+    <LangVersion>latest</LangVersion>
+    <!-- Code quality -->
+    <EnableNetAnalyzers>true</EnableNetAnalyzers>
+    <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
 
-        <!-- Ignore some warnings for now -->
-        <NoWarn>
-            CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;CS1711;CS1734;
-            CS8618;CS8602;CS8600;
-            CS1998; IDE0007; CS0618
-        </NoWarn>
+    <!-- Ignore some warnings for now -->
+    <NoWarn>
+      CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;CS1711;CS1734;
+      CS8618;CS8602;CS8600;
+      CS1998; IDE0007; CS0618
+    </NoWarn>
 
-        <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-    </PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
 
-    <PropertyGroup Label="Package Config">
-        <!-- Version info -->
-        <Today>$([System.DateTime]::UtcNow.ToString("HHmm"))</Today>
-        <!-- Version info -->
-        <Version Condition="$(Version) == ''">2.0.999-local</Version>
-        <FileVersion Condition="$(FileVersion) == ''">2.0.999.$(Today)</FileVersion>
-        <AssemblyVersion Condition="$(AssemblyVersion) == ''">$(FileVersion)</AssemblyVersion>
+  <PropertyGroup Label="Package Config">
+    <!-- Version info -->
+    <Today>$([System.DateTime]::UtcNow.ToString("HHmm"))</Today>
+    <!-- Version info -->
+    <Version Condition="$(Version) == ''">2.0.999-local</Version>
+    <FileVersion Condition="$(FileVersion) == ''">2.0.999.$(Today)</FileVersion>
+    <AssemblyVersion Condition="$(AssemblyVersion) == ''">$(FileVersion)</AssemblyVersion>
 
-        <!-- Package info -->
-        <PackageVersion Condition="$(PackageVersion) == ''">$(Version)</PackageVersion>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <PackageTags>speckle</PackageTags>
-        <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-        <PackageIcon>logo.png</PackageIcon>
-        <!-- Repo info -->
-        <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-    </PropertyGroup>
+    <!-- Package info -->
+    <PackageVersion Condition="$(PackageVersion) == ''">$(Version)</PackageVersion>
+    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
+    <PackageTags>speckle</PackageTags>
+    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
+    <PackageIcon>logo.png</PackageIcon>
+    <!-- Repo info -->
+    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Include="$(SolutionDir)CodeMetricsConfig.txt"/>
+  </ItemGroup>
 </Project>
