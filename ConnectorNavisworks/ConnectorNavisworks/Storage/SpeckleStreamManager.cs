@@ -83,7 +83,7 @@ namespace Speckle.ConnectorNavisworks.Storage
 
             transaction.Commit();
           }
-          catch (Exception ex)
+          catch (Exception)
           {
             // ignore
           }
