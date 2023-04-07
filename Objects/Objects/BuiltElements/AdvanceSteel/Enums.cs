@@ -4,9 +4,5 @@ using System.Text;
 
 namespace Objects.BuiltElements.AdvanceSteel
 {
-  public enum AdvanceSteelBeamType
-  {
-    Beam,
-    PolyBeam
-  }
+
 }
