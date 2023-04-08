@@ -45,8 +45,8 @@ commands:
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
-            msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            ~/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
+            dotnet pack <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false
+            dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
           environment:
             WORKFLOW_NUM: << pipeline.number >>
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
@@ -562,7 +562,7 @@ workflows:
             tags:
               only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
-            - packandpublish:
+            - packandpublish-bash:
                 projectfilepath: Core/Core.sln
           context: nuget
       - build-objects:
@@ -584,7 +584,7 @@ workflows:
             tags:
               only: /^(nuget-dui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
-            - packandpublish:
+            - packandpublish-bash:
                 projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
           context: nuget
 # VS Code Extension Version: 1.4.0
