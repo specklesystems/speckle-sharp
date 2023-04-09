@@ -1,16 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
     <PropertyGroup>
         <RootNamespace>Speckle.ConnectorDynamo</RootNamespace>
         <AssemblyName>SpeckleConnectorDynamo</AssemblyName>
         <TargetFramework>net48</TargetFramework>
         <StartAction>Program</StartAction>
-        <!--these
-        four make so that the SQLite.Interop.dll is copied in the after build target-->
-        <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
-        <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-        <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-        <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
-        <PlatformTarget>x64</PlatformTarget>
         <AssemblyTitle>ConnectorDynamo</AssemblyTitle>
         <Product>ConnectorDynamo</Product>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -18,7 +11,9 @@
         <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
         <UseWpf>true</UseWpf>
         <EnableDefaultPageItems>false</EnableDefaultPageItems>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     </PropertyGroup>
+  
     <PropertyGroup>
         <PackageName>SpeckleDynamo2</PackageName>
         <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
