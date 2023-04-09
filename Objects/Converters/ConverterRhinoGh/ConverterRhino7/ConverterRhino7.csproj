@@ -25,12 +25,6 @@
                       IncludeAssets="compile;build"/>
   </ItemGroup>
 
-  <PropertyGroup>
-    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
-  </PropertyGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
       <ExcludeAssets>runtime</ExcludeAssets>

@@ -20,14 +20,7 @@
         <PackageReference Include="RhinoCommon" Version="7.4.21078.1001"
             IncludeAssets="compile;build" />
     </ItemGroup>
-
-
-    <PropertyGroup>
-        <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-        <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-        <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
-    </PropertyGroup>
-
+  
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
             <ExcludeAssets>runtime</ExcludeAssets>
