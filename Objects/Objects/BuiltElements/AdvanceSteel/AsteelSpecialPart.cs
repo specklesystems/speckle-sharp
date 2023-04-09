@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +15,8 @@ namespace Objects.BuiltElements.AdvanceSteel
     public List<Mesh> displayValue { get; set; }
 
     public Base userAttributes { get; set; }
+
+    public Base asteelProps { get; set; }
 
     //[SchemaInfo("AsteelSpecialPart", "Creates a Advance Steel special part.", "Advance Steel", "Structure")]
     public AsteelSpecialPart()

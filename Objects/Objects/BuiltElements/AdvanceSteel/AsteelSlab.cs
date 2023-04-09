@@ -14,6 +14,8 @@ namespace Objects.BuiltElements.AdvanceSteel
 
     public Base userAttributes { get; set; }
 
+    public Base asteelProps { get; set; }
+
     [SchemaInfo("AsteelSlab", "Creates a Advance Steel slab.", "Advance Steel", "Structure")]
     public AsteelSlab(Polyline outline, string units, StructuralMaterial material = null)
     {

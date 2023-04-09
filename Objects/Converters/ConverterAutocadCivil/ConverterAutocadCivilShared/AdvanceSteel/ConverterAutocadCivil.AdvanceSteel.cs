@@ -71,6 +71,9 @@ using Autodesk.AdvanceSteel.DotNetRoots.DatabaseAccess;
 using Autodesk.AdvanceSteel.Geometry;
 using static System.Net.Mime.MediaTypeNames;
 using Utilities = Speckle.Core.Models.Utilities;
+using System.Reflection;
+using Autodesk.AutoCAD.Colors;
+using MathNet.Numerics.Statistics.Mcmc;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -109,9 +112,11 @@ namespace Objects.Converter.AutocadCivil
       dynamic dynamicObject = filerObject;
       IAsteelObject asteelObject = FilerObjectToSpeckle(dynamicObject, notes);
 
-      SetUserAttributes(filerObject as AtomicElement, asteelObject);
+      SetUserAttributesToSpeckle(filerObject as AtomicElement, asteelObject);
 
-      SetAutocadProperties();
+      SetAsteelObjectPropertiesToSpeckle(asteelObject, filerObject);
+
+      //throw new System.Exception("Test");
 
       Base @base = asteelObject as Base;
 
@@ -120,10 +125,43 @@ namespace Objects.Converter.AutocadCivil
       return @base;
     }
 
-    private void SetAutocadProperties(DBObject @object, FilerObject filerObject, IAsteelObject asteelObject)
+    private void SetAsteelObjectPropertiesToSpeckle(IAsteelObject asteelObject, FilerObject filerObject)
     {
-      Base props = Utilities.GetApplicationProps(@object, typeof(Entity), true);
-      _text[AutocadPropName] = props;
+      var props = new Base();
+      asteelObject.asteelProps = props;
+
+      var type = filerObject.GetType();
+      props["class"] = type.Name;
+
+      try
+      {
+        var allProperties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
+        foreach (var propInfo in allProperties)
+        {
+          if (CheckProperty(propInfo, filerObject, out object propValue))
+            props[propInfo.Name] = propValue;
+        }
+      }
+      catch (System.Exception e)
+      {
+
+      }
+    }
+
+    private static bool CheckProperty(PropertyInfo propInfo, object o, out object value)
+    {
+      value = propInfo.GetValue(o);
+      if (value != null)
+      {
+        if (propInfo.PropertyType.IsPrimitive || propInfo.PropertyType == typeof(decimal)) return true;
+        if (propInfo.PropertyType == typeof(string) && !string.IsNullOrEmpty((string)value)) return true;
+        if (propInfo.PropertyType.BaseType.Name == "Enum") // for some reason "IsEnum" prop returns false
+        {
+          value = value.ToString();
+          return true;
+        }
+      }
+      return false;
     }
 
     private IAsteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
@@ -245,7 +283,7 @@ namespace Objects.Converter.AutocadCivil
       return DatabaseManager.Open(idFilerObject) as T;
     }
 
-    private void SetUserAttributes(AtomicElement atomicElement, IAsteelObject asteelObject)
+    private void SetUserAttributesToSpeckle(AtomicElement atomicElement, IAsteelObject asteelObject)
     {
       asteelObject.userAttributes = new Base();
       for (int i = 0; i < 10; i++)

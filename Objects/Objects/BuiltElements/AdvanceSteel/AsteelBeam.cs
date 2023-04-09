@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Objects.Geometry;
@@ -23,6 +23,8 @@ namespace Objects.BuiltElements.AdvanceSteel
     public double volume { get; set; }
     public double area { get; set; }
     public Base userAttributes { get; set; }
+
+    public Base asteelProps { get; set; }
 
     public AsteelBeam() { }
 
