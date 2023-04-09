@@ -2,9 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
-        <Version>2.1.0</Version>
         <Title>Objects.Converter.Grasshopper7</Title>
-        <Description></Description>
         <PackageId>Speckle.Objects.Converter.Grasshopper7</PackageId>
         <PackageTags>$(PackageTags) objects converter rhino grasshopper gh</PackageTags>
         <AssemblyName>Objects.Converter.Grasshopper7</AssemblyName>

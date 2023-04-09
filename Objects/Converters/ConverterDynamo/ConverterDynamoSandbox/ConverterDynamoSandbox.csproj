@@ -1,9 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
-        <Version>2.0.0</Version>
         <AssemblyName>Objects.Converter.DynamoSandbox</AssemblyName>
         <Configurations>Debug;Release</Configurations>
         <DefineConstants>$(DefineConstants)</DefineConstants>

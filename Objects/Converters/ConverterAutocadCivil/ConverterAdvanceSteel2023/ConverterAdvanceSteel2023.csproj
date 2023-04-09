@@ -9,20 +9,9 @@
 		<Authors>Speckle</Authors>
 		<Company>Speckle</Company>
 		<Product>Objects.Converter.AdvanceSteel2023</Product>
-		<Version>2.1.0</Version>
-		<PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
 		<Description>Converter for Advance Steel 2023</Description>
-		<PackageTags>speckle objects converter advancesteel</PackageTags>
-		<RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
-		<PackageIcon>logo.png</PackageIcon>
-		<PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-		<Copyright>Copyright (c) AEC Systems Ltd</Copyright>
+		<PackageTags>$(PackageTags) objects converter advancesteel</PackageTags>
     <CopyToKitFolder>true</CopyToKitFolder>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
 	</PropertyGroup>
 
   <Target Name="CopyTriangleToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
