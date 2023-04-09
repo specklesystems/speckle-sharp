@@ -33,12 +33,5 @@
         <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-        <None Include="..\..\..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-    </ItemGroup>
-
     <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
 </Project>

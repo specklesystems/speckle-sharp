@@ -44,13 +44,5 @@
 		<ProjectReference Include="..\..\StructuralUtilities\Triangle\Triangle.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<None Include="..\..\..\..\logo.png">
-			<Pack>True</Pack>
-			<PackagePath></PackagePath>
-		</None>
-	</ItemGroup>
-
 	<Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
-
 </Project>
