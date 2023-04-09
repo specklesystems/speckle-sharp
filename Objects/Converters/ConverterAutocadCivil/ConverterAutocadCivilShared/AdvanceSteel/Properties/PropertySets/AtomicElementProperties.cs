@@ -70,7 +70,11 @@ namespace Objects.Converter.AutocadCivil
     private static Point3d GetBalancePoint(AtomicElement atomicElement)
     {
       //it's necessary round the balance point because it has different returns at the last decimals 
-      atomicElement.GetBalancepoint(out var point, out var weigth);
+      if(!atomicElement.GetBalancepoint(out var point, out var weigth))
+      {
+        return Point3d.kOrigin;
+      }
+
       return new Point3d(Round(point.x), Round(point.y), Round(point.z));
     }
 
