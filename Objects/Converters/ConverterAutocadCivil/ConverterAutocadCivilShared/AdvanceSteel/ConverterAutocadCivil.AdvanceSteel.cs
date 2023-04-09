@@ -74,6 +74,8 @@ using Utilities = Speckle.Core.Models.Utilities;
 using System.Reflection;
 using Autodesk.AutoCAD.Colors;
 using MathNet.Numerics.Statistics.Mcmc;
+using Autodesk.AutoCAD.PlottingServices;
+using MathNet.Numerics.Financial;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -128,39 +130,49 @@ namespace Objects.Converter.AutocadCivil
     private void SetAsteelObjectPropertiesToSpeckle(IAsteelObject asteelObject, FilerObject filerObject)
     {
       var props = new Base();
-      asteelObject.asteelProps = props;
-
-      var type = filerObject.GetType();
-      props["class"] = type.Name;
 
       try
       {
-        var allProperties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-        foreach (var propInfo in allProperties)
+        var type = filerObject.GetType();
+   
+        var dicProperties = ASPropertiesCache.Instance.GetAllProperties(type, out var typeDescription);
+        props["advance steel type"] = typeDescription;
+
+        foreach ( var propItem in dicProperties )
         {
-          if (CheckProperty(propInfo, filerObject, out object propValue))
-            props[propInfo.Name] = propValue;
+          if (CheckProperty(propItem.Value, filerObject, out object propValue))
+            props[propItem.Key] = propValue;
         }
+
       }
       catch (System.Exception e)
       {
-
+        return;
       }
+
+      asteelObject.asteelProps = props;
+
     }
 
-    private static bool CheckProperty(PropertyInfo propInfo, object o, out object value)
+    private bool CheckProperty(ASProperty propInfo, object @object, out object value)
     {
-      value = propInfo.GetValue(o);
-      if (value != null)
+      value = propInfo.EvaluateValue(@object);
+      if (value is null) return false;
+
+      if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal)) return true;
+      if (propInfo.ValueType == typeof(string) && !string.IsNullOrEmpty((string)value)) return true;
+      if (propInfo.ValueType.IsEnum)
       {
-        if (propInfo.PropertyType.IsPrimitive || propInfo.PropertyType == typeof(decimal)) return true;
-        if (propInfo.PropertyType == typeof(string) && !string.IsNullOrEmpty((string)value)) return true;
-        if (propInfo.PropertyType.BaseType.Name == "Enum") // for some reason "IsEnum" prop returns false
-        {
-          value = value.ToString();
-          return true;
-        }
+        value = value.ToString();
+        return true;
       }
+
+      if (propInfo.ValueType == typeof(ASPoint3d))
+      {
+        value = PointToSpeckle(value as ASPoint3d);
+        return true;
+      }
+
       return false;
     }
 
