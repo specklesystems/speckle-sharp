@@ -9,7 +9,6 @@ namespace Objects.Converter.AutocadCivil
 {
   public class ASTypeData
   {
-    internal Type ASType { get; set; }
     internal string Description { get; private set; }
 
     internal Dictionary<string, ASProperty> PropertiesSpecific { get; private set; }

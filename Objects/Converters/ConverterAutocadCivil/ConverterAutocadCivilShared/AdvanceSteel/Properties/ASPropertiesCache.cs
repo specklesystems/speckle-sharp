@@ -74,7 +74,6 @@ namespace Objects.Converter.AutocadCivil
           throw new NotImplementedException($"{item.Key.ToString()} not implemented");
         }
 
-        item.Value.ASType = item.Key;
         item.Value.SetPropertiesSpecific(asProperties.BuildedPropertyList());
       }
 
