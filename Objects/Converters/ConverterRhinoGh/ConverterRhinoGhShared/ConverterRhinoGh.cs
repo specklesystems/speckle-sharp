@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -357,14 +357,29 @@ namespace Objects.Converter.RhinoGh
       {
         switch (schemaObject)
         {
+          case RevitProfileWall o:
+            var profileWallBrep = (RH.Brep)@object.Geometry;
+            var edges = profileWallBrep.DuplicateNakedEdgeCurves(true, false);
+            var profile = RH.Curve.JoinCurves(edges).First() as PolyCurve;
+            if (profile != null)
+            {
+              o.profile = PolycurveToSpeckle(profile);
+            }
+            break;
+
+          case RevitFaceWall o:
+            var faceWallBrep = (RH.Brep)@object.Geometry;
+            o.brep = BrepToSpeckle(faceWallBrep);
+            break;
+
           //NOTE: this works for BOTH the Wall.cs class and RevitWall.cs class etc :)
           case Wall o:
-            var extrusion = ((RH.Extrusion)@object.Geometry);
-            var bottomCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
-            var topCrv = extrusion.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionTopProfile, 0));
-            var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
+            var wallBrep = ((RH.Brep)@object.Geometry);
+            var bottomCrv = GetSurfaceBrepEdges(wallBrep, getBottom: true); // extract bottom edge
+            var bbox = wallBrep.GetBoundingBox(true);
+            var height = bbox.Max.Z - bbox.Min.Z;
             o.height = height;
-            o.baseLine = CurveToSpeckle(bottomCrv);
+            o.baseLine = bottomCrv.First();
             break;
 
           case Floor o:

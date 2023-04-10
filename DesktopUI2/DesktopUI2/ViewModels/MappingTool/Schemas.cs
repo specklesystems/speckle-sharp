@@ -210,8 +210,6 @@ namespace DesktopUI2.ViewModels.MappingTool
   public class RevitWallViewModel : RevitBasicViewModel
   {
     public override string Name => "Wall";
-    private bool ByProfile = false;
-    private bool ByFace = false;
 
     public override string GetSerializedSchema()
     {
@@ -222,7 +220,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
   public class RevitProfileWallViewModel : RevitBasicViewModel
   {
-    public override string Name => "Wall";
+    public override string Name => "ProfileWall";
     public override string GetSerializedSchema()
     {
       var obj = new RevitProfileWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
@@ -232,7 +230,7 @@ namespace DesktopUI2.ViewModels.MappingTool
 
   public class RevitFaceWallViewModel : RevitBasicViewModel
   {
-    public override string Name => "Wall";
+    public override string Name => "FaceWall";
 
     public override string GetSerializedSchema()
     {

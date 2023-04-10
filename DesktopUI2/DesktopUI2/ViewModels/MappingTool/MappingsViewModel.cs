@@ -1,4 +1,4 @@
-﻿using Avalonia.Controls;
+using Avalonia.Controls;
 using Avalonia.Metadata;
 using Avalonia.Styling;
 using Avalonia.VisualTree;
@@ -279,6 +279,8 @@ namespace DesktopUI2.ViewModels.MappingTool
             schema is DirectShapeFreeformViewModel ||
             schema is RevitTopographyViewModel ||
             schema is RevitDefaultWallViewModel ||
+            schema is RevitProfileWallViewModel ||
+            schema is RevitFaceWallViewModel ||
             schema is RevitDefaultBeamViewModel ||
             schema is RevitDefaultBraceViewModel ||
             schema is RevitDefaultColumnViewModel ||
@@ -298,6 +300,26 @@ namespace DesktopUI2.ViewModels.MappingTool
                   break;
                 var wallFamiliesViewModels = wallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
                 o.Families = wallFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitProfileWallViewModel o:
+                var profileWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+                if (!profileWallFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var profileWallFamiliesViewModels = profileWallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = profileWallFamiliesViewModels;
+                o.Levels = AvailableRevitLevels;
+                updatedSchemas.Add(o);
+                break;
+
+              case RevitFaceWallViewModel o:
+                var faceWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+                if (!faceWallFamilies.Any() || !AvailableRevitLevels.Any())
+                  break;
+                var faceWallFamiliesViewModels = faceWallFamilies.GroupBy(x => x.family).Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList())).ToList();
+                o.Families = faceWallFamiliesViewModels;
                 o.Levels = AvailableRevitLevels;
                 updatedSchemas.Add(o);
                 break;
