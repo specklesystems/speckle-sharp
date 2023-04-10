@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
         throw new NotSupportedException("Creating brand new schedules is currently not supported");
       }
 
-      if (!(docObj is ViewSchedule revitSchedule))
+      if (docObj is not ViewSchedule revitSchedule)
       {
         throw new Exception($"Existing element with UniqueId = {docObj.UniqueId} is of the type {docObj.GetType()}, not of the expected type, DB.ViewSchedule");
       }
@@ -163,12 +163,25 @@ namespace Objects.Converter.Revit
       var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id)
           .ToElementIds();
 
+      Element firstElement = null;
+      if (originalTableIds.Count > 0)
+      {
+        firstElement = Doc.GetElement(originalTableIds.First());
+      }
+      
+
       foreach (var fieldId in revitSchedule.Definition.GetFieldOrder())
       {
         var field = revitSchedule.Definition.GetField(fieldId);
 
         var columnMetadata = new Base();
         columnMetadata["BuiltInParameterInteger"] = field.ParameterId.IntegerValue;
+
+        if (firstElement != null)
+        {
+          var param = firstElement.get_Parameter((BuiltInParameter)field.ParameterId.IntegerValue);
+          columnMetadata["IsReadOnly"] = param.IsReadOnly;
+        }
         speckleTable.DefineColumn(columnMetadata);
       }
 
