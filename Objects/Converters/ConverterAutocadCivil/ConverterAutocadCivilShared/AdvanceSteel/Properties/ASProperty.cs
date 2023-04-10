@@ -54,7 +54,7 @@ namespace Objects.Converter.AutocadCivil
         return;
       }
 
-      throw new Exception(string.Format("'{0}' is not a property nor return method with 0 arguments nor void method with 1 argument", memberName));
+      throw new Exception($"'{memberName}' is not a property nor return method with 0 arguments nor void method with 1 argument");
     }
 
     internal ASProperty(Type objectType, string description, ASPropertyMethods propertyMethods, eUnitType? unitType = null)
@@ -104,12 +104,12 @@ namespace Objects.Converter.AutocadCivil
     {
       if (asObject == null)
       {
-        throw new System.Exception("No Advance Steel Object Found");
+        throw new System.Exception("Advance Steel object not found");
       }
 
       if (!asObject.GetType().IsSubclassOf(ObjectType) && !asObject.GetType().IsEquivalentTo(ObjectType))
       {
-        throw new System.Exception(string.Format("Not '{0}' Object", ObjectType.Name));
+        throw new System.Exception(string.Format("Not '{0}' object", ObjectType.Name));
       }
 
       try

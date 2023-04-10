@@ -9,6 +9,6 @@ namespace Objects.BuiltElements.AdvanceSteel
   {
     Base userAttributes { get; set; }
 
-    Base asteelProps { get; set; }
+    Base asteelProperties { get; set; }
   }
 }

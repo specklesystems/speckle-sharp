@@ -12,7 +12,7 @@ namespace Objects.BuiltElements.AdvanceSteel
 
     public Base userAttributes { get; set; }
 
-    public Base asteelProps { get; set; }
+    public Base asteelProperties { get; set; }
 
     //[SchemaInfo("AsteelGrating", "Creates a Advance Steel grating.", "Advance Steel", "Structure")]
     public AsteelGrating()

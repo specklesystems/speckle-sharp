@@ -24,7 +24,7 @@ namespace Objects.BuiltElements.AdvanceSteel
     public double area { get; set; }
     public Base userAttributes { get; set; }
 
-    public Base asteelProps { get; set; }
+    public Base asteelProperties { get; set; }
 
     public AsteelBeam() { }
 

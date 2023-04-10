@@ -129,19 +129,25 @@ namespace Objects.Converter.AutocadCivil
 
     private void SetAsteelObjectPropertiesToSpeckle(IAsteelObject asteelObject, FilerObject filerObject)
     {
-      var props = new Base();
+      var propsAsteelObject = new Base();
 
       try
       {
         var type = filerObject.GetType();
-   
-        var dicProperties = ASPropertiesCache.Instance.GetAllProperties(type, out var typeDescription);
-        props["advance steel type"] = typeDescription;
+        propsAsteelObject["advance steel type"] = type.Name;
 
-        foreach ( var propItem in dicProperties )
+        IEnumerable<ASTypeData> listPropertySets = ASPropertiesCache.Instance.GetPropertiesSetsByType(type);
+
+        foreach (ASTypeData typeData in listPropertySets)
         {
-          if (CheckProperty(propItem.Value, filerObject, out object propValue))
-            props[propItem.Key] = propValue;
+          var propsSpecific = new Base();
+          propsAsteelObject[$"{typeData.Description} props"] = propsSpecific;
+
+          foreach (var propItem in typeData.PropertiesSpecific)
+          {
+            if (CheckProperty(propItem.Value, filerObject, out object propValue))
+              propsSpecific[propItem.Key] = propValue;
+          }
         }
 
       }
@@ -150,7 +156,7 @@ namespace Objects.Converter.AutocadCivil
         return;
       }
 
-      asteelObject.asteelProps = props;
+      asteelObject.asteelProperties = propsAsteelObject;
 
     }
 

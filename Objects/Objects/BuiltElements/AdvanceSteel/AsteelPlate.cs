@@ -14,7 +14,7 @@ namespace Objects.BuiltElements.AdvanceSteel
 
     public Base userAttributes { get; set; }
 
-    public Base asteelProps { get; set; }
+    public Base asteelProperties { get; set; }
 
     [SchemaInfo("AsteelPlate", "Creates a Advance Steel plate.", "Advance Steel", "Structure")]
     public AsteelPlate(Polyline outline, string units, StructuralMaterial material = null)

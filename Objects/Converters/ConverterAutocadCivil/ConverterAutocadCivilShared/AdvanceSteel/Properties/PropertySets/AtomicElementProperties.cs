@@ -78,11 +78,6 @@ namespace Objects.Converter.AutocadCivil
       return new Point3d(Round(point.x), Round(point.y), Round(point.z));
     }
 
-    private static double Round(double value)
-    {
-      return Math.Round(value, 4, MidpointRounding.AwayFromZero);
-    }
-
     //private static List<Dictionary<string, object>> GetHoles(AtomicElement atomicElement)
     //{
     //  var holes = HolesUtils.GetHoles(atomicElement);

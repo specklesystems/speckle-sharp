@@ -26,17 +26,17 @@ namespace Objects.Converter.AutocadCivil
       dictionary.Add(description, new ASProperty(ObjectType, description, memberName, unitType));
     }
 
-    /// <summary>
-    /// Insert item at properties dictionary
-    /// </summary>
-    /// <param name="dictionary"></param>
-    /// <param name="description"></param>
-    /// <param name="memberName">Member name of AS Object - May be Get/Set property or Get Method(without parameter)</param>
-    /// <param name="unitType"></param>
-    protected void InsertProperty(Dictionary<string, ASProperty> dictionary, string description, string memberName, eUnitType unitType)
-    {
-      InsertProperty(dictionary, description, memberName, unitType);
-    }
+    ///// <summary>
+    ///// Insert item at properties dictionary
+    ///// </summary>
+    ///// <param name="dictionary"></param>
+    ///// <param name="description"></param>
+    ///// <param name="memberName">Member name of AS Object - May be Get/Set property or Get Method(without parameter)</param>
+    ///// <param name="unitType"></param>
+    //protected void InsertProperty(Dictionary<string, ASProperty> dictionary, string description, string memberName, eUnitType unitType)
+    //{
+    //  InsertProperty(dictionary, description, memberName, unitType);
+    //}
 
     /// <summary>
     /// Insert item at properties dictionary
@@ -52,9 +52,14 @@ namespace Objects.Converter.AutocadCivil
       dictionary.Add(description, new ASProperty(ObjectType, description, propertyMethods, unitType));
     }
 
-    protected double Round(double value)
+    protected static double Round(double value)
     {
       return Math.Round(value, 4, MidpointRounding.AwayFromZero);
+    }
+
+    protected static double DegreeToRadian(double angle)
+    {
+      return (System.Math.PI / 180.0) * angle;
     }
 
   }

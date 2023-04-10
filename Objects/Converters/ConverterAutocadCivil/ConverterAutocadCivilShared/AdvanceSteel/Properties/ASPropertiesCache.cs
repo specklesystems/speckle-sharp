@@ -36,22 +36,24 @@ namespace Objects.Converter.AutocadCivil
 
     }
 
-    private readonly Dictionary<Type, ASTypeData> ASPropertySets = new Dictionary<Type, ASTypeData>()
+    private readonly Dictionary<Type, ASTypeData> ASPropertiesSets = new Dictionary<Type, ASTypeData>()
     {
-      { typeof(AtomicElement), new ASTypeData ("Atomic Element") },
-      { typeof(PolyBeam), new ASTypeData("Poly Beam") }
+      { typeof(AtomicElement), new ASTypeData ("assembly") },
+       { typeof(Beam), new ASTypeData("beam") },
+      { typeof(PolyBeam), new ASTypeData("poly beam") }
     };
 
-    internal Dictionary<string, ASProperty> GetAllProperties(Type objectType, out string typeDescription)
+    /// <summary>
+    /// Get all properties sets that are subclasses or equivalents of the type
+    /// </summary>
+    /// <param name="objectType"></param>
+    /// <returns></returns>
+    /// <exception cref="Exception"></exception>
+    internal IEnumerable<ASTypeData> GetPropertiesSetsByType(Type objectType)
     {
-      if (!ASPropertySets.ContainsKey(objectType))
-      {
-        throw new Exception($"Properties not found for type '{objectType}'");
-      }
+      IEnumerable<ASTypeData> steelTypeDataList = ASPropertiesSets.Where(x => objectType.IsSubclassOf(x.Key) || objectType.IsEquivalentTo(x.Key)).Select(x => x.Value);
 
-      typeDescription = ASPropertySets[objectType].Description;
-
-      return ASPropertySets[objectType].PropertiesAll;
+      return steelTypeDataList;
     }
 
     #region Load dictionary
@@ -65,7 +67,7 @@ namespace Objects.Converter.AutocadCivil
       var listIASProperties = assemblyTypes.Where(x => !x.IsAbstract && x.GetInterfaces().Contains(typeof(IASProperties))).Select(x => Activator.CreateInstance(x) as IASProperties);
 
       //Set specific properties of each type
-      foreach (var item in ASPropertySets)
+      foreach (var item in ASPropertiesSets)
       {
         IASProperties asProperties = listIASProperties.FirstOrDefault(x => x.ObjectType.Equals(item.Key));
 
@@ -77,10 +79,10 @@ namespace Objects.Converter.AutocadCivil
         item.Value.SetPropertiesSpecific(asProperties.BuildedPropertyList());
       }
 
-      //Set all properties using parents classes
-      foreach (var item in ASPropertySets)
+      //Set all properties using parents classes (checking if all properties have unique name)
+      foreach (var item in ASPropertiesSets)
       {
-        IEnumerable<ASTypeData> steelTypeDataList = ASPropertySets.Where(x => item.Key.IsSubclassOf(x.Key) || item.Key.IsEquivalentTo(x.Key)).Select(x => x.Value);
+        IEnumerable<ASTypeData> steelTypeDataList = GetPropertiesSetsByType(item.Key);
         foreach (var steelTypeData in steelTypeDataList)
         {
           item.Value.AddPropertiesAll(steelTypeData.PropertiesSpecific);
@@ -91,7 +93,6 @@ namespace Objects.Converter.AutocadCivil
     }
 
     #endregion
-
   }
 }
 #endif
