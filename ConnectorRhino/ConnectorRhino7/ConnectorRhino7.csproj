@@ -44,12 +44,15 @@
        <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="RhinoWindows" Version="7.16.22067.13001" />
+    <PackageReference Include="Avalonia.Native" Version="0.10.18" GeneratePathProperty="true"/>
+    <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.4" GeneratePathProperty="true"/>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -59,12 +62,8 @@
 
   <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-
-    <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
-  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="$(PkgAvalonia_Native)/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest"/>
+    <Content Include="$(PkgSQLitePCLRaw_lib_e_sqlite3)/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
