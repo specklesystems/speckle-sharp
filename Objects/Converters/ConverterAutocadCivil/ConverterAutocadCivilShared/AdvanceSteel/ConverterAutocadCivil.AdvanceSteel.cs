@@ -67,6 +67,8 @@ using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
 using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
 using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
 using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
+using Autodesk.AdvanceSteel.DotNetRoots.DatabaseAccess;
+using Autodesk.AdvanceSteel.Geometry;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -102,113 +104,62 @@ namespace Objects.Converter.AutocadCivil
       reportObj.Update(descriptor: filerObject.GetType().Name);
 
       dynamic dynamicObject = filerObject;
-      AdvanceSteelObject advanceSteelObject = FilerObjectToSpeckle(dynamicObject, notes);
+      IAsteelObject asteelObject = FilerObjectToSpeckle(dynamicObject, notes);
 
-      SetUnits(advanceSteelObject);
-      SetUserAttributes(filerObject as AtomicElement, advanceSteelObject);
+      SetUserAttributes(filerObject as AtomicElement, asteelObject);
 
-      return advanceSteelObject;
+      Base @base = asteelObject as Base;
+
+      SetUnits(@base);
+
+      return @base;
     }
 
-    private void SetUserAttributes(AtomicElement atomicElement, AdvanceSteelObject advanceSteelObject)
+    private IAsteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
     {
-      advanceSteelObject.UserAttributes = new Dictionary<int, string>();
-      for (int i = 0; i < 10; i++)
-      {
-        string attribute = atomicElement.GetUserAttribute(i);
-
-        if (!string.IsNullOrEmpty(attribute))
-        {
-          advanceSteelObject.UserAttributes.Add(i + 1, attribute);
-        }
-      }
-    }
-
-    private AdvanceSteelObject FilerObjectToSpeckle(ASPolyBeam polyBeam, List<string> notes)
-    {
-      AdvanceSteelPolyBeam advanceSteelPolyBeam = new AdvanceSteelPolyBeam();
-
-      ASPolyline3d polyline3d = polyBeam.GetPolyline(true);
-
-      var units = ModelUnits;
-
-      advanceSteelPolyBeam.baseLine = PolycurveToSpeckle(polyline3d);
-
-      //var profile = polyBeam.GetProfType();
-
-      advanceSteelPolyBeam.area = polyBeam.GetPaintArea();
-
-      //There is a bug in some polybeams that some faces don't appears in ModelerBody (Bug_Polybeam_Speckle.dwg)
-      //https://speckle.xyz/streams/1a0090e6fc
-      SetDisplayValue(advanceSteelPolyBeam, polyBeam);
-
-      return advanceSteelPolyBeam;
-    }
-
-    private AdvanceSteelObject FilerObjectToSpeckle(ASBeam beam, List<string> notes)
-    {
-      AdvanceSteelBeam advanceSteelBeam = new AdvanceSteelBeam();
-
-      var startPoint = beam.GetPointAtStart();
-      var endPoint = beam.GetPointAtEnd();
-      var units = ModelUnits;
-
-      Point speckleStartPoint = PointToSpeckle(startPoint, units);
-      Point speckleEndPoint = PointToSpeckle(endPoint, units);
-      advanceSteelBeam.baseLine = new Line(speckleStartPoint, speckleEndPoint, units);
-
-      advanceSteelBeam.area = beam.GetPaintArea();
-
-      SetDisplayValue(advanceSteelBeam, beam);
-
-      return advanceSteelBeam;
-    }
-
-    private AdvanceSteelObject FilerObjectToSpeckle(ASPlate plate, List<string> notes)
-    {
-      AdvanceSteelPlate advanceSteelPlate = new AdvanceSteelPlate();
+      AsteelPlate asteelPlate = new AsteelPlate();
 
       plate.GetBaseContourPolygon(0, out ASPoint3d[] ptsContour);
 
-      advanceSteelPlate.outline = PolycurveToSpeckle(ptsContour);
+      asteelPlate.outline = PolycurveToSpeckle(ptsContour);
 
-      advanceSteelPlate.area = plate.GetPaintArea();
+      asteelPlate.area = plate.GetPaintArea();
 
-      SetDisplayValue(advanceSteelPlate, plate);
+      SetDisplayValue(asteelPlate, plate);
 
-      return advanceSteelPlate;
+      return asteelPlate;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
+    private IAsteelObject FilerObjectToSpeckle(ASBoltPattern bolt, List<string> notes)
     {
-      AdvanceSteelBolt advanceSteelBolt = bolt is CircleScrewBoltPattern ? (AdvanceSteelBolt)new AdvanceSteelCircularBolt() : (AdvanceSteelBolt)new AdvanceSteelRectangularBolt();
+      AsteelBolt asteelBolt = bolt is CircleScrewBoltPattern ? (AsteelBolt)new AsteelCircularBolt() : (AsteelBolt)new AsteelRectangularBolt();
 
-      SetDisplayValue(advanceSteelBolt, bolt);
+      SetDisplayValue(asteelBolt, bolt);
 
-      return advanceSteelBolt;
+      return asteelBolt;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
+    private IAsteelObject FilerObjectToSpeckle(ASSpecialPart specialPart, List<string> notes)
     {
-      AdvanceSteelSpecialPart advanceSteelSpecialPart = new AdvanceSteelSpecialPart();
+      AsteelSpecialPart asteelSpecialPart = new AsteelSpecialPart();
 
-      SetDisplayValue(advanceSteelSpecialPart, specialPart);
+      SetDisplayValue(asteelSpecialPart, specialPart);
 
-      return advanceSteelSpecialPart;
+      return asteelSpecialPart;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
+    private IAsteelObject FilerObjectToSpeckle(ASGrating grating, List<string> notes)
     {
-      AdvanceSteelGrating advanceSteelGrating = new AdvanceSteelGrating();
+      AsteelGrating asteelGrating = new AsteelGrating();
 
-      SetDisplayValue(advanceSteelGrating, grating);
+      SetDisplayValue(asteelGrating, grating);
 
-      SetUnits(advanceSteelGrating);
+      SetUnits(asteelGrating);
 
-      return advanceSteelGrating;
+      return asteelGrating;
     }
 
-    private AdvanceSteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
+    private IAsteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
     {
       throw new System.Exception("Advance Steel Object type conversion to Speckle not implemented");
     }
@@ -238,9 +189,9 @@ namespace Objects.Converter.AutocadCivil
         //Create coordinateSystemAligned with OuterContour
         var outerList = faceInfo.OuterContour.Select(x => vertices.ElementAt(x));
 
-        if(outerList.Count() < 3)
+        if (outerList.Count() < 3)
           continue;
-        
+
         CoordinateSystem coordinateSystemAligned = CreateCoordinateSystemAligned(outerList);
 
         input.Add(CreateContour(outerList, coordinateSystemAligned));
@@ -325,6 +276,20 @@ namespace Objects.Converter.AutocadCivil
         return null;
 
       return DatabaseManager.Open(idFilerObject) as T;
+    }
+
+    private void SetUserAttributes(AtomicElement atomicElement, IAsteelObject asteelObject)
+    {
+      asteelObject.userAttributes = new Base();
+      for (int i = 0; i < 10; i++)
+      {
+        string attribute = atomicElement.GetUserAttribute(i);
+
+        if (!string.IsNullOrEmpty(attribute))
+        {
+          asteelObject.userAttributes[(i + 1).ToString()] = attribute;
+        }
+      }
     }
   }
 }

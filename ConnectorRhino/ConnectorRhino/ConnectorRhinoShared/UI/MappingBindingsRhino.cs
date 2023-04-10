@@ -118,6 +118,8 @@ namespace SpeckleRhino
               break;
 
             case Extrusion e:
+              result.Add(new DirectShapeFreeformViewModel());
+              
               if (e.ProfileCount > 1) break;
               var extrusionBrp = e.ToBrep(false);
               var extrusionSurfaceSchemas = EvaluateBrepSurfaceSchemas(extrusionBrp, true);
