@@ -90,8 +90,6 @@ namespace SpeckleRhino
 
       try
       {
-
-
         var existingSchema = GetExistingObjectSchema(obj);
         if (existingSchema != null)
           result.Add(existingSchema);
@@ -115,34 +113,15 @@ namespace SpeckleRhino
               if (!result.Any(x => typeof(DirectShapeFreeformViewModel) == x.GetType()))
                 result.Add(new DirectShapeFreeformViewModel());
 
-              var srf = b.Surfaces.First();
-              if (b.Surfaces.Count == 1 && srf.IsPlanar())
-              {
-                if (srf.TryGetPlane(out Plane p))
-                {
-                  Vector3d normal = p.Normal;
-                  if (normal.Unitize())
-                  {
-                    if (Math.Abs(Math.Abs(normal.Z) - 1) < RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
-                    {
-                      result.Add(new RevitFloorViewModel());
-                    }
-                  }
-                }
-              }
+              var brepSurfaceSchemas = EvaluateBrepSurfaceSchemas(b);
+              result.AddRange(brepSurfaceSchemas);
               break;
 
             case Extrusion e:
               if (e.ProfileCount > 1) break;
-              var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
-              if (!(crv.IsLinear() || crv.IsArc())) break;
-              if (Math.Abs(crv.PointAtStart.Z - crv.PointAtEnd.Z) > RhinoDoc.ActiveDoc.ModelAbsoluteTolerance) break;
-
-
-              //if (!result.Any(x => typeof(RevitWallViewModel) == x.GetType()))
-              result.Add(new RevitWallViewModel());
-              //if (!result.Any(x => typeof(RevitDefaultWallViewModel) == x.GetType()))
-              result.Add(new RevitDefaultWallViewModel());
+              var extrusionBrp = e.ToBrep(false);
+              var extrusionSurfaceSchemas = EvaluateBrepSurfaceSchemas(extrusionBrp, true);
+              result.AddRange(extrusionSurfaceSchemas);
               break;
 
             case Curve c:
@@ -182,6 +161,77 @@ namespace SpeckleRhino
       }
 
       return result;
+    }
+
+    /// <summary>
+    /// Evaluates a brep to test for single surface, planarity, edges, and normal direction.
+    /// </summary>
+    /// <param name="b"></param>
+    public List<Schema> EvaluateBrepSurfaceSchemas(Brep b, bool isExtrusion = false)
+    {
+      var schemas = new List<Schema>();
+      if (b.Surfaces.Count != 1) return schemas;
+
+      bool IsPlanar(Surface srf, out bool isHorizontal, out bool isVertical)
+      {
+        isHorizontal = false;
+        isVertical = false;
+
+        if (srf.TryGetPlane(out Plane p))
+        {
+          Vector3d normal = p.Normal;
+          if (Math.Abs(Math.Abs(normal.Z) - 1) < RhinoDoc.ActiveDoc.ModelAbsoluteTolerance){ isHorizontal = true; }
+          else if (Math.Abs(normal.Z) < RhinoDoc.ActiveDoc.ModelAbsoluteTolerance){ isVertical = true; }
+          return true;
+        }
+
+        return false;
+      }
+
+      bool HasLinearBottomEdge(Brep brp)
+      {
+        var brpCurves = b.DuplicateNakedEdgeCurves(true, false); // see if the bottom curve is linear and parallel to worldxy
+        var bottomCrv = brpCurves.
+          Where(o => new Vector3d(o.PointAtEnd.X - o.PointAtStart.X, o.PointAtEnd.Y - o.PointAtStart.Y, o.PointAtEnd.Z - o.PointAtStart.Z).IsPerpendicularTo(Vector3d.ZAxis, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance))?.
+          Aggregate((curMin, o) => curMin == null || o.PointAtStart.Z < curMin.PointAtStart.Z ? o : curMin);
+        if (bottomCrv != null)
+        {
+          if (bottomCrv.IsLinear()) { return true; }
+          else { return false; }
+        }
+        else
+        { return false; }
+      }
+
+      var surface = b.Surfaces.First();
+      if (IsPlanar(surface, out bool isHorizontal, out bool isVertical)) // if this is a planar surface, determine if it can be a wall or floor
+      {
+        if (isHorizontal)
+        {
+          schemas.Add(new RevitFloorViewModel());
+        }
+        else if (isVertical)
+        {
+          if (isExtrusion)
+          {
+            schemas.Add(new RevitWallViewModel());
+            schemas.Add(new RevitProfileWallViewModel());
+          }
+          else
+          {
+            if (HasLinearBottomEdge(b)) { schemas.Add(new RevitWallViewModel()); }
+            else { schemas.Add(new RevitProfileWallViewModel()); }
+          }
+          schemas.Add(new RevitFaceWallViewModel());
+        }
+        else{ schemas.Add(new RevitFaceWallViewModel()); }
+      }
+      else
+      { 
+        schemas.Add(new RevitFaceWallViewModel()); 
+      }
+
+      return schemas;
     }
 
     private Schema GetExistingObjectSchema(RhinoObject obj)

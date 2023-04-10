@@ -1,4 +1,4 @@
-﻿using Avalonia.Metadata;
+using Avalonia.Metadata;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using ReactiveUI;
@@ -210,11 +210,33 @@ namespace DesktopUI2.ViewModels.MappingTool
   public class RevitWallViewModel : RevitBasicViewModel
   {
     public override string Name => "Wall";
-
+    private bool ByProfile = false;
+    private bool ByFace = false;
 
     public override string GetSerializedSchema()
     {
       var obj = new RevitWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel), 0);
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitProfileWallViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Wall";
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitProfileWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+      return Operations.Serialize(obj);
+    }
+  }
+
+  public class RevitFaceWallViewModel : RevitBasicViewModel
+  {
+    public override string Name => "Wall";
+
+    public override string GetSerializedSchema()
+    {
+      var obj = new RevitFaceWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
       return Operations.Serialize(obj);
     }
   }
