@@ -8,5 +8,10 @@
   },
   "omnisharp.enableEditorConfigSupport": true,
   "omnisharp.enableRoslynAnalyzers": true,
-  "omnisharp.defaultLaunchSolution": "SDK.slnf"
+  "omnisharp.defaultLaunchSolution": "SDK.slnf",
+  "[dotnet][xml]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.tabSize": 2
+  },
+  "xml.format.spaceBeforeEmptyCloseTag": false
 }
