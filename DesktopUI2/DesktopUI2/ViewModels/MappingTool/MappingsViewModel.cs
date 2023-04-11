@@ -279,8 +279,6 @@ namespace DesktopUI2.ViewModels.MappingTool
             schema is DirectShapeFreeformViewModel ||
             schema is RevitTopographyViewModel ||
             schema is RevitDefaultWallViewModel ||
-            schema is RevitProfileWallViewModel ||
-            schema is RevitFaceWallViewModel ||
             schema is RevitDefaultBeamViewModel ||
             schema is RevitDefaultBraceViewModel ||
             schema is RevitDefaultColumnViewModel ||

@@ -360,17 +360,18 @@ namespace Objects.Converter.RhinoGh
         switch (schemaObject)
         {
           case RevitProfileWall o:
-            var profileWallBrep = (RH.Brep)@object.Geometry;
+            var profileWallBrep = @object.Geometry is RH.Brep profileB ? profileB : ((RH.Extrusion)@object.Geometry)?.ToBrep();
+            if (profileWallBrep == null) { throw new ArgumentException("Wall geometry can only be a brep or extrusion"); }
             var edges = profileWallBrep.DuplicateNakedEdgeCurves(true, false);
-            var profile = RH.Curve.JoinCurves(edges).First() as PolyCurve;
-            if (profile != null)
-            {
-              o.profile = PolycurveToSpeckle(profile);
-            }
+            var profileCurve = RH.Curve.JoinCurves(edges);
+            if (profileCurve.Count() != 1) { throw new Exception("Surface external edges should be joined into 1 curve"); }
+            var speckleProfileCurve = CurveToSpeckle(profileCurve.First());
+            var profile = new Polycurve() { segments = new List<ICurve>() { speckleProfileCurve }, length = profileCurve.First().GetLength(), closed = profileCurve.First().IsClosed, units = ModelUnits };
+            o.profile = profile;
             break;
 
           case RevitFaceWall o:
-            var faceWallBrep = (RH.Brep)@object.Geometry;
+            var faceWallBrep = @object.Geometry is RH.Brep faceB ? faceB : ((RH.Extrusion)@object.Geometry)?.ToBrep();
             o.brep = BrepToSpeckle(faceWallBrep);
             break;
 

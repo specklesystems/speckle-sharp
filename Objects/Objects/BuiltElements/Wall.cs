@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
@@ -157,7 +157,7 @@ namespace Objects.BuiltElements.Revit
       [SchemaParamInfo("Set in here any nested elements that this wall might have.")] List<Base> elements = null,
       List<Parameter> parameters = null)
     {
-      if (surface.Surfaces.Count == 0)
+      if (surface == null || surface.Surfaces.Count == 0)
         throw new Exception("Cannot create a RevitWall with an empty BREP");
       if (surface.Surfaces.Count > 1)
         throw new Exception(

@@ -223,7 +223,7 @@ namespace DesktopUI2.ViewModels.MappingTool
     public override string Name => "ProfileWall";
     public override string GetSerializedSchema()
     {
-      var obj = new RevitProfileWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+      var obj = new RevitProfileWall() { family = SelectedFamily.Name, type = SelectedType, level = new RevitLevel(SelectedLevel) };
       return Operations.Serialize(obj);
     }
   }
@@ -234,7 +234,8 @@ namespace DesktopUI2.ViewModels.MappingTool
 
     public override string GetSerializedSchema()
     {
-      var obj = new RevitFaceWall(SelectedFamily.Name, SelectedType, null, new RevitLevel(SelectedLevel));
+      var obj = new RevitFaceWall() { family = SelectedFamily.Name, type = SelectedType, level = new RevitLevel(SelectedLevel) };
+
       return Operations.Serialize(obj);
     }
   }
