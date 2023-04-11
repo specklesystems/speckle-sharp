@@ -583,7 +583,8 @@ namespace ConnectorGrasshopper.Ops
           receiveComponent.ApiResetTask = receiveComponent.ResetApiClient(InputWrapper);
         receiveComponent.ApiResetTask.Wait();
 
-        var remoteTransport = new ServerTransport(receiveComponent.ApiClient.Account, InputWrapper?.StreamId);
+        Account acc = receiveComponent.ApiClient.Account;
+        var remoteTransport = new ServerTransport(acc, InputWrapper?.StreamId);
         remoteTransport.TransportName = "R";
 
         // Means it's a copy paste of an empty non-init component; set the record and exit fast unless ReceiveOnOpen is true.
@@ -619,10 +620,11 @@ namespace ConnectorGrasshopper.Ops
           }
 
           ReceivedCommit = myCommit;
-          Speckle.Core.Logging.Analytics.TrackEvent(receiveComponent.ApiClient.Account, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>()
+          Speckle.Core.Logging.Analytics.TrackEvent(acc, Speckle.Core.Logging.Analytics.Events.Receive, new Dictionary<string, object>
           { { "auto", receiveComponent.AutoReceive },
             { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
-            { "sourceHostAppVersion", myCommit.sourceApplication }
+            { "sourceHostAppVersion", myCommit.sourceApplication },
+            { "isMultiplayer", myCommit.authorId != acc.userInfo.id }
           });
 
           if (CancellationToken.IsCancellationRequested)

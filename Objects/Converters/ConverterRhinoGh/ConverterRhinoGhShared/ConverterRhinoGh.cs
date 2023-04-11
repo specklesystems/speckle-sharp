@@ -4,7 +4,9 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+#if GRASSHOPPER
 using Grasshopper.Kernel.Types;
+#endif
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -216,9 +218,6 @@ namespace Objects.Converter.RhinoGh
           case RH.Interval o:
             @base = IntervalToSpeckle(o);
             break;
-          case UVInterval o:
-            @base = Interval2dToSpeckle(o);
-            break;
           case RH.Line o:
             @base = LineToSpeckle(o);
             break;
@@ -272,6 +271,9 @@ namespace Objects.Converter.RhinoGh
         case DisplayMaterial o:
           @base = DisplayMaterialToSpeckle(o);
           break;
+        case UVInterval o:
+            @base = Interval2dToSpeckle(o);
+            break;
 #endif
 
 #if RHINO7
@@ -684,11 +686,11 @@ namespace Objects.Converter.RhinoGh
           case Interval o:
             rhinoObj = IntervalToNative(o);
             break;
-
+#if GRASSHOPPER
           case Interval2d o:
             rhinoObj = Interval2dToNative(o);
             break;
-
+#endif
           case Line o:
             rhinoObj = LineToNative(o);
             break;
@@ -853,7 +855,6 @@ namespace Objects.Converter.RhinoGh
         case PointCloud _:
         case Vector3d _:
         case RH.Interval _:
-        case UVInterval _:
         case RH.Line _:
         case LineCurve _:
         case Rhino.Geometry.Hatch _:
@@ -881,6 +882,7 @@ namespace Objects.Converter.RhinoGh
         // This types are ONLY supported in GH!
         case RH.Transform _:
         case DisplayMaterial _:
+        case UVInterval _:
           return true;
 #else
         // This types are NOT supported in GH!

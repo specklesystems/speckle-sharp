@@ -28,16 +28,13 @@
 
     <!-- False if running on CI, will prevent copying of files to local folders -->
     <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-    <!-- Expose the repository root to all projects -->
-    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <PropertyGroup Label="Package Config">
     <!-- Version info -->
-    <Today>$([System.DateTime]::UtcNow.ToString("HHmm"))</Today>
-    <!-- Version info -->
     <Version Condition="$(Version) == ''">2.0.999-local</Version>
-    <FileVersion Condition="$(FileVersion) == ''">2.0.999.$(Today)</FileVersion>
+    <FileVersion Condition="$(FileVersion) == ''">2.0.999.0000</FileVersion>
     <AssemblyVersion Condition="$(AssemblyVersion) == ''">$(FileVersion)</AssemblyVersion>
 
     <!-- Package info -->
@@ -46,13 +43,24 @@
     <PackageTags>speckle</PackageTags>
     <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
     <PackageIcon>logo.png</PackageIcon>
-    <!-- Repo info -->
+  </PropertyGroup>
+
+  <PropertyGroup Label="Repo Info">
     <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <!-- Expose the repository root to all projects -->
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- This file contains the configuration for some analyzer warnings, such as cyclomatic complexity threshold -->
+    <!-- This file contains the configuration for some analyzer warnings, such as cyclomatic
+    complexity threshold -->
     <AdditionalFiles Include="$(RepositoryRoot)CodeMetricsConfig.txt"/>
+    <None
+      Condition="'$(IsPackable)' == 'true'"
+      Include="$(RepositoryRoot)logo.png"
+      Pack="true"
+      PackagePath=""
+      Visible="false"/>
   </ItemGroup>
 </Project>

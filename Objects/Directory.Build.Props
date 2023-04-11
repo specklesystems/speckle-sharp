@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+    <!-- This is the Objects Kit *.Props file -->
+
+    <!-- Find Directory.Build.Props file at the root of the repo and import that first -->
+    <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))"/>
+
+    <PropertyGroup>
+        <!-- Everything inside Objects is packable unless otherwise specified -->
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+</Project>

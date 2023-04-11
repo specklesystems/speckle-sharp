@@ -280,7 +280,8 @@ namespace ConnectorGrasshopper.Ops.Deprecated
           {
             { "sync", true },
             { "sourceHostApp", HostApplications.GetHostAppFromString(myCommit.sourceApplication).Slug },
-            { "sourceHostAppVersion", myCommit.sourceApplication }
+            { "sourceHostAppVersion", myCommit.sourceApplication },
+            { "isMultiplayer", myCommit.authorId != acc.userInfo.id }
           });
 
           var TotalObjectCount = 1;
