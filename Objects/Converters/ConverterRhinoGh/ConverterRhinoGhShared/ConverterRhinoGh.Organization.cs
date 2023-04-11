@@ -2,8 +2,9 @@
 
 using Rhino;
 using Rhino.DocObjects;
+#if GRASSHOPPER
 using Grasshopper.Kernel.Types;
-
+#endif
 using Speckle.Core.Models;
 
 using Objects.Other;

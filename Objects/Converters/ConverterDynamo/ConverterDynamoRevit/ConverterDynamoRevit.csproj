@@ -32,13 +32,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="..\..\..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
         <Reference Include="RevitNodes">
             <HintPath>..\..\..\..\ConnectorDynamo\RevitNodes-2.6.1.dll</HintPath>
         </Reference>

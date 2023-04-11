@@ -22,12 +22,6 @@
   <ItemGroup>
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0"/>
   </ItemGroup>
-  
-  <ItemGroup>
-    <None Include="..\..\..\..\logo.png">
-      <Pack>True</Pack>
-    </None>
-  </ItemGroup>
 
   <Target Name="CopyTemplatesToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
     <Message Text="Copying templates to kit folder"/>
