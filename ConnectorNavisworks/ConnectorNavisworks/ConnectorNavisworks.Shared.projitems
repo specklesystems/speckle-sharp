@@ -77,9 +77,4 @@
       <Generator>XamlIntelliSenseFileGenerator</Generator>
     </Page>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\..\Core\.editorconfig">
-      <Link>.editorconfig</Link>
-    </Content>
-  </ItemGroup>
 </Project>

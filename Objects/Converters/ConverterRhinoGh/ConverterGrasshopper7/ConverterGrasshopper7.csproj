@@ -2,9 +2,7 @@
 
     <PropertyGroup>
         <TargetFramework>net48</TargetFramework>
-        <Version>2.1.0</Version>
         <Title>Objects.Converter.Grasshopper7</Title>
-        <Description></Description>
         <PackageId>Speckle.Objects.Converter.Grasshopper7</PackageId>
         <PackageTags>$(PackageTags) objects converter rhino grasshopper gh</PackageTags>
         <AssemblyName>Objects.Converter.Grasshopper7</AssemblyName>
@@ -22,14 +20,7 @@
         <PackageReference Include="RhinoCommon" Version="7.4.21078.1001"
             IncludeAssets="compile;build" />
     </ItemGroup>
-
-
-    <PropertyGroup>
-        <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-        <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-        <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
-    </PropertyGroup>
-
+  
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
             <ExcludeAssets>runtime</ExcludeAssets>
@@ -37,13 +28,6 @@
         <ProjectReference Include="..\..\..\Objects\Objects.csproj">
             <ExcludeAssets>runtime</ExcludeAssets>
         </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="..\..\..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
     </ItemGroup>
 
     <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
