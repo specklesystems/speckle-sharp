@@ -58,11 +58,11 @@ namespace Objects.Converter.AutocadCivil
 
       //Functions
 
-      InsertCustomProperty(dictionary, "balance point", nameof(AtomicElementProperties.GetBalancePoint), null);
       InsertProperty(dictionary, "mainPart position", nameof(AtomicElement.GetMainPartPositionNumber));
       InsertProperty(dictionary, "model quantity", nameof(AtomicElement.GetQuantityInModel));
       InsertProperty(dictionary, "singlePart position", nameof(AtomicElement.GetSinglePartPositionNumber));
       InsertProperty(dictionary, "features number", nameof(AtomicElement.NumFeatures));
+      InsertCustomProperty(dictionary, "balance point", nameof(AtomicElementProperties.GetBalancePoint), null);
       InsertCustomProperty(dictionary, "holes", nameof(AtomicElementProperties.GetHoles), null);
       InsertCustomProperty(dictionary, "numbering - valid single part", nameof(AtomicElementProperties.HasValidSPNumber), null);
       InsertCustomProperty(dictionary, "numbering - valid main part", nameof(AtomicElementProperties.HasValidMPNumber), null);

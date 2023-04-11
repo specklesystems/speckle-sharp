@@ -22,14 +22,14 @@ namespace Objects.Converter.AutocadCivil
 
       InsertProperty(dictionary, "profile section name", nameof(ASBeam.ProfSectionName));
       InsertProperty(dictionary, "profile section type", nameof(ASBeam.ProfSectionType));
-      InsertProperty(dictionary, "systemline length", nameof(ASBeam.SysLength));
+      InsertProperty(dictionary, "systemline length", nameof(ASBeam.SysLength), eUnitType.kDistance);
       InsertProperty(dictionary, "deviation", nameof(ASBeam.Deviation));
       InsertProperty(dictionary, "shrink value", nameof(ASBeam.ShrinkValue));
-      InsertProperty(dictionary, "angle (radians)", nameof(ASBeam.Angle), eUnitType.kAngle);
+      InsertProperty(dictionary, "angle (radians)", nameof(ASBeam.Angle));
       InsertProperty(dictionary, "profile name", nameof(ASBeam.ProfName));
       InsertProperty(dictionary, "run name", nameof(ASBeam.Runname));
       InsertProperty(dictionary, "length", nameof(ASBeam.GetLength), eUnitType.kDistance);
-      InsertProperty(dictionary, "weight (per meter)", nameof(ASBeam.GetWeightPerMeter), eUnitType.kWeightPerDistance);
+      InsertProperty(dictionary, "weight (per meter)", nameof(ASBeam.GetWeightPerMeter));
       InsertProperty(dictionary, "paint area", nameof(ASBeam.GetPaintArea), eUnitType.kArea);
       InsertProperty(dictionary, "is cross section mirrored", nameof(ASBeam.IsCrossSectionMirrored));
       InsertProperty(dictionary, "reference axis description", nameof(ASBeam.RefAxis));
@@ -42,12 +42,11 @@ namespace Objects.Converter.AutocadCivil
       InsertCustomProperty(dictionary, "weight (fast)", nameof(BeamProperties.GetWeightFast), null, eUnitType.kWeight);
       InsertCustomProperty(dictionary, "profile type code", nameof(BeamProperties.GetProfileTypeCode), null);
       InsertCustomProperty(dictionary, "profile type", nameof(BeamProperties.GetProfileType), null);
-      InsertCustomProperty(dictionary, "saw length", nameof(BeamProperties.GetSawLength), null, eUnitType.kAreaPerDistance);
-      InsertCustomProperty(dictionary, "flange angle at start", nameof(BeamProperties.GetFlangeAngleAtStart), null, eUnitType.kAngle);
-      InsertCustomProperty(dictionary, "flange angle at end", nameof(BeamProperties.GetFlangeAngleAtEnd), null, eUnitType.kAngle);
-      InsertCustomProperty(dictionary, "web angle at start", nameof(BeamProperties.GetWebAngleAtStart), null, eUnitType.kAngle);
-      InsertCustomProperty(dictionary, "web angle at end", nameof(BeamProperties.GetWebAngleAtEnd), null, eUnitType.kAngle);
-      //InsertCustomProperty(dictionary, "saw information", nameof(BeamProperties.GetSawInformationComplete), null);
+      InsertCustomProperty(dictionary, "saw length", nameof(BeamProperties.GetSawLength), null);
+      InsertCustomProperty(dictionary, "flange angle at start", nameof(BeamProperties.GetFlangeAngleAtStart), null);
+      InsertCustomProperty(dictionary, "flange angle at end", nameof(BeamProperties.GetFlangeAngleAtEnd), null);
+      InsertCustomProperty(dictionary, "web angle at start", nameof(BeamProperties.GetWebAngleAtStart), null);
+      InsertCustomProperty(dictionary, "web angle at end", nameof(BeamProperties.GetWebAngleAtEnd), null);
 
       return dictionary;
     }
@@ -133,32 +132,6 @@ namespace Objects.Converter.AutocadCivil
       GetSawInformation(beam, out var sawLength, out var flangeAngleAtStart, out var webAngleAtStart, out var flangeAngleAtEnd, out var webAngleAtEnd);
       return DegreeToRadian(webAngleAtEnd);
     }
-
-    //private static Dictionary<string, double> GetSawInformationComplete(ASBeam beam)
-    //{
-    //  Dictionary<string, double> ret = new Dictionary<string, double>();
-
-    //  double sawLength = 0;
-    //  double flangeAngleAtStart = 0;
-    //  double webAngleAtStart = 0;
-    //  double flangeAngleAtEnd = 0;
-    //  double webAngleAtEnd = 0;
-    //  ret.Add("SawLength", Utils.FromInternalDistanceUnits(sawLength, true));
-    //  ret.Add("FlangeAngleAtStart", flangeAngleAtStart);
-    //  ret.Add("WebAngleAtStart", webAngleAtStart);
-    //  ret.Add("FlangeAngleAtEnd", flangeAngleAtEnd);
-    //  ret.Add("WebAngleAtEnd", webAngleAtEnd);
-
-    //  GetSawInformation(beam, out sawLength, out flangeAngleAtStart, out webAngleAtStart, out flangeAngleAtEnd, out webAngleAtEnd);
-
-    //  ret["SawLength"] = Utils.FromInternalDistanceUnits(sawLength, true);
-    //  ret["FlangeAngleAtStart"] = Utils.FromInternalAngleUnits(DegreeToRadian(flangeAngleAtStart), true);
-    //  ret["WebAngleAtStart"] = Utils.FromInternalAngleUnits(DegreeToRadian(webAngleAtStart), true);
-    //  ret["FlangeAngleAtEnd"] = Utils.FromInternalAngleUnits(DegreeToRadian(flangeAngleAtEnd), true);
-    //  ret["WebAngleAtEnd"] = Utils.FromInternalAngleUnits(DegreeToRadian(webAngleAtEnd), true);
-
-    //  return ret;
-    //}
 
     private static void GetSawInformation(ASBeam beam, out double sawLength, out double flangeAngleAtStart, out double webAngleAtStart, out double flangeAngleAtEnd, out double webAngleAtEnd)
     {

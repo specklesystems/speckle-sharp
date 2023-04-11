@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Autodesk.AdvanceSteel.DocumentManagement;
+using Autodesk.AdvanceSteel.DotNetRoots.Units;
 using Objects.BuiltElements;
 using Speckle.Newtonsoft.Json.Linq;
 using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
@@ -114,7 +116,12 @@ namespace Objects.Converter.AutocadCivil
 
       try
       {
-        return GetObjectPropertyValue(asObject);
+        object value = GetObjectPropertyValue(asObject);
+
+        if (this.UnitType.HasValue && value is double)
+          return FromInternalUnits((double)value, this.UnitType.Value);
+        else
+          return value;
       }
       catch (Exception)
       {
@@ -143,6 +150,23 @@ namespace Objects.Converter.AutocadCivil
       {
         throw new NotImplementedException();
       }
+    }
+
+    private static double FromInternalUnits(double value, eUnitType unitType)
+    {
+      return value * GetUnitScale(unitType);
+    }
+
+    private static UnitsSet unitScale;
+
+    private static double GetUnitScale(eUnitType unitType)
+    {
+      if (unitScale == null)
+      {
+        unitScale = DocumentManager.GetCurrentDocument().CurrentDatabase.Units;
+      }
+
+      return 1 / unitScale.GetUnit(unitType).Factor;
     }
 
   }
