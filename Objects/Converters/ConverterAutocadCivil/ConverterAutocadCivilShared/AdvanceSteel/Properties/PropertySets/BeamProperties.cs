@@ -28,21 +28,18 @@ namespace Objects.Converter.AutocadCivil
       InsertProperty(dictionary, "angle (radians)", nameof(ASBeam.Angle), eUnitType.kAngle);
       InsertProperty(dictionary, "profile name", nameof(ASBeam.ProfName));
       InsertProperty(dictionary, "run name", nameof(ASBeam.Runname));
-      InsertProperty(dictionary, "Offsets", nameof(ASBeam.Offsets));
       InsertProperty(dictionary, "length", nameof(ASBeam.GetLength), eUnitType.kDistance);
       InsertProperty(dictionary, "weight (per meter)", nameof(ASBeam.GetWeightPerMeter), eUnitType.kWeightPerDistance);
       InsertProperty(dictionary, "paint area", nameof(ASBeam.GetPaintArea), eUnitType.kArea);
+      InsertProperty(dictionary, "is cross section mirrored", nameof(ASBeam.IsCrossSectionMirrored));
+      InsertProperty(dictionary, "reference axis description", nameof(ASBeam.RefAxis));
 
+      InsertCustomProperty(dictionary, "Offsets", nameof(BeamProperties.GetOffsets), null);
       InsertCustomProperty(dictionary, "start point", nameof(BeamProperties.GetPointAtStart), null);
       InsertCustomProperty(dictionary, "end point", nameof(BeamProperties.GetPointAtEnd), null);
-      InsertCustomProperty(dictionary, "is cross section mirrored", nameof(BeamProperties.IsCrossSectionMirrored), null);
-      InsertCustomProperty(dictionary, "reference axis description", nameof(BeamProperties.GetReferenceAxisDescription), null);
-      InsertCustomProperty(dictionary, "reference axis", nameof(BeamProperties.GetReferenceAxis), null);
       InsertCustomProperty(dictionary, "weight", nameof(BeamProperties.GetWeight), null, eUnitType.kWeight);
       InsertCustomProperty(dictionary, "weight (exact)", nameof(BeamProperties.GetWeightExact), null, eUnitType.kWeight);
       InsertCustomProperty(dictionary, "weight (fast)", nameof(BeamProperties.GetWeightFast), null, eUnitType.kWeight);
-      //InsertCustomProperty(dictionary, "beam points", nameof(BeamProperties.GetListPoints), null);
-      //InsertCustomProperty(dictionary, "beam line", nameof(BeamProperties.GetLine), null);
       InsertCustomProperty(dictionary, "profile type code", nameof(BeamProperties.GetProfileTypeCode), null);
       InsertCustomProperty(dictionary, "profile type", nameof(BeamProperties.GetProfileType), null);
       InsertCustomProperty(dictionary, "saw length", nameof(BeamProperties.GetSawLength), null, eUnitType.kAreaPerDistance);
@@ -65,19 +62,13 @@ namespace Objects.Converter.AutocadCivil
       return beam.GetPointAtEnd();
     }
 
-    private static bool IsCrossSectionMirrored(ASBeam beam)
+    private static Dictionary<string, double> GetOffsets(ASBeam beam)
     {
-      return beam.IsCrossSectionMirrored;
-    }
+      Dictionary<string, double> dictionary = new Dictionary<string, double>();
+      dictionary.Add("Y", beam.Offsets.x);
+      dictionary.Add("Z", beam.Offsets.y);
 
-    private static string GetReferenceAxisDescription(ASBeam beam)
-    {
-      return beam.RefAxis.ToString();
-    }
-
-    private static int GetReferenceAxis(ASBeam beam)
-    {
-      return (int)beam.RefAxis;
+      return dictionary;
     }
 
     private static double GetWeight(ASBeam beam)
@@ -102,32 +93,6 @@ namespace Objects.Converter.AutocadCivil
     {
       return Math.Round(value, 5, MidpointRounding.AwayFromZero);
     }
-
-    //private static List<DSPoint> GetListPoints(ASBeam beam)
-    //{
-    //  List<DSPoint> pointList = new List<DSPoint>();
-
-    //  if (beam is ASPolyBeam)
-    //  {
-    //    ASPolyBeam polyBeam = beam as ASPolyBeam;
-
-    //    var polyLine = polyBeam.GetPolyline(true);
-    //    foreach (var item in polyLine.Vertices)
-    //      pointList.Add(item.ToDynPoint());
-    //  }
-    //  else
-    //  {
-    //    pointList.Add(beam.GetPointAtStart().ToDynPoint());
-    //    pointList.Add(beam.GetPointAtEnd().ToDynPoint());
-    //  }
-
-    //  return pointList;
-    //}
-
-    //private static Autodesk.DesignScript.Geometry.Line GetLine(ASBeam beam)
-    //{
-    //  return Autodesk.DesignScript.Geometry.Line.ByStartPointEndPoint(beam.GetPointAtStart().ToDynPoint(), beam.GetPointAtEnd().ToDynPoint());
-    //}
 
     private static string GetProfileTypeCode(ASBeam beam)
     {

@@ -3,8 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
+using Autodesk.AdvanceSteel.CADAccess;
+using Autodesk.AdvanceSteel.Connection;
 using Autodesk.AdvanceSteel.ConstructionTypes;
 using Autodesk.AdvanceSteel.Geometry;
+using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -60,7 +63,7 @@ namespace Objects.Converter.AutocadCivil
       InsertProperty(dictionary, "model quantity", nameof(AtomicElement.GetQuantityInModel));
       InsertProperty(dictionary, "singlePart position", nameof(AtomicElement.GetSinglePartPositionNumber));
       InsertProperty(dictionary, "features number", nameof(AtomicElement.NumFeatures));
-      //InsertCustomProperty(dictionary, "Holes (Properties)", nameof(AtomicElementProperties.GetHoles), null);
+      InsertCustomProperty(dictionary, "holes", nameof(AtomicElementProperties.GetHoles), null);
       InsertCustomProperty(dictionary, "numbering - valid single part", nameof(AtomicElementProperties.HasValidSPNumber), null);
       InsertCustomProperty(dictionary, "numbering - valid main part", nameof(AtomicElementProperties.HasValidMPNumber), null);
 
@@ -78,27 +81,6 @@ namespace Objects.Converter.AutocadCivil
       return new Point3d(Round(point.x), Round(point.y), Round(point.z));
     }
 
-    //private static List<Dictionary<string, object>> GetHoles(AtomicElement atomicElement)
-    //{
-    //  var holes = HolesUtils.GetHoles(atomicElement);
-
-    //  List<Dictionary<string, object>> listHolesDetails = new List<Dictionary<string, object>>();
-
-    //  foreach (var hole in holes)
-    //  {
-    //    hole.CS.GetCoordSystem(out var point, out var vectorX, out var vectorY, out var vectorZ);
-
-    //    Dictionary<string, object> holeProperties = new Dictionary<string, object>();
-    //    holeProperties.Add("Diameter", hole.Hole.Diameter.FromInternalDistanceUnits());
-    //    holeProperties.Add("Center", point.ToDynPoint());
-    //    holeProperties.Add("Normal", vectorZ.ToDynVector());
-
-    //    listHolesDetails.Add(holeProperties);
-    //  }
-
-    //  return listHolesDetails;
-    //}
-
     private static bool HasValidSPNumber(AtomicElement atomicElement)
     {
       atomicElement.GetNumberingStatus(out bool hasValidSPNumber, out bool hasValidMPNumber);
@@ -109,6 +91,51 @@ namespace Objects.Converter.AutocadCivil
     {
       atomicElement.GetNumberingStatus(out bool hasValidSPNumber, out bool hasValidMPNumber);
       return hasValidMPNumber;
+    }
+
+    private static List<Dictionary<object, object>> GetHoles(AtomicElement atomicElement)
+    {
+      var holes = GetHolesFeatures(atomicElement);
+
+      List<Dictionary<object, object>> listHolesDetails = new List<Dictionary<object, object>>();
+
+      foreach (var hole in holes)
+      {
+        hole.CS.GetCoordSystem(out var point, out _, out _, out var vectorZ);
+
+        Dictionary<object, object> holeProperties = new Dictionary<object, object>
+        {
+          { "Diameter", hole.Hole.Diameter },
+          { "Center", point },
+          { "Normal", vectorZ }
+        };
+
+        listHolesDetails.Add(holeProperties);
+      }
+
+      return listHolesDetails;
+    }
+
+    private static List<ConnectionHoleFeature> GetHolesFeatures(AtomicElement pAtomicElement)
+    {
+      List<ConnectionHoleFeature> holes = new List<ConnectionHoleFeature>();
+
+      if (pAtomicElement == null)
+        return holes;
+
+      var features = pAtomicElement.GetFeatures(true);
+
+      foreach (ASObjectId objectIDASFeature in features)
+      {
+        FilerObject filerObject = DatabaseManager.Open(objectIDASFeature);
+        if (filerObject is ConnectionHoleFeature)
+        {
+          ConnectionHoleFeature connectionHoleFeature = (ConnectionHoleFeature)filerObject;
+          holes.Add(connectionHoleFeature);
+        }
+      }
+
+      return holes;
     }
 
   }

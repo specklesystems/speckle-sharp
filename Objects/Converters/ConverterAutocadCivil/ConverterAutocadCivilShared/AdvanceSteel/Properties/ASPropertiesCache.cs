@@ -73,10 +73,11 @@ namespace Objects.Converter.AutocadCivil
 
         if (asProperties == null)
         {
-          throw new NotImplementedException($"{item.Key.ToString()} not implemented");
+          throw new NotImplementedException($"{item.Key.Name} not implemented");
         }
 
         item.Value.SetPropertiesSpecific(asProperties.BuildedPropertyList());
+        item.Value.OrderDictionaryPropertiesAll();
       }
 
       //Set all properties using parents classes (checking if all properties have unique name)

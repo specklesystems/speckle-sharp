@@ -1,5 +1,6 @@
-﻿#if ADVANCESTEEL2023
+#if ADVANCESTEEL2023
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
@@ -241,6 +242,59 @@ namespace Objects.Converter.AutocadCivil
 
       return new Plane(PointToSpeckle(origin), VectorToSpeckle(plane.Normal), VectorToSpeckle(vectorX), VectorToSpeckle(vectorY), ModelUnits);
     }
+
+    private object ConvertValueToSpeckle(object @object, out bool converted)
+    {
+      converted = true;
+      if (@object is ASPoint3d)
+      {
+        return PointToSpeckle(@object as ASPoint3d);
+      }
+      else if (@object is ASVector3d)
+      {
+        return VectorToSpeckle(@object as ASVector3d);
+      }
+      else if (IsValueGenericList(@object))
+      {
+        IList list = @object as IList;
+        if (list.Count == 0) return null;
+
+        List<object> listReturn = new List<object>();
+        foreach (var item in list)
+          listReturn.Add(ConvertValueToSpeckle(item, out _));
+
+        return listReturn;
+      }
+      else if (IsValueGenericDictionary(@object))
+      {
+        IDictionary dictionary = @object as IDictionary;
+        if (dictionary.Count == 0) return null;
+
+        Dictionary<object, object> dictionaryReturn = new Dictionary<object, object>();
+        foreach (var key in dictionary.Keys)
+          dictionaryReturn.Add(key, ConvertValueToSpeckle(dictionary[key], out _));
+
+        return dictionaryReturn;
+      }
+      else
+      {
+        converted = false;
+        return @object;
+      }
+    }
+
+    private bool IsValueGenericList(object value)
+    {
+      var type = value.GetType();
+      return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>));
+    }
+
+    private bool IsValueGenericDictionary(object value)
+    {
+      var type = value.GetType();
+      return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Dictionary<,>));
+    }
+
 
   }
 }

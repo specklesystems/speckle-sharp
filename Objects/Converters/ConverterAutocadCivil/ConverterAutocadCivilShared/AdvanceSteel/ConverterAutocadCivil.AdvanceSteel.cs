@@ -76,6 +76,9 @@ using Autodesk.AutoCAD.Colors;
 using MathNet.Numerics.Statistics.Mcmc;
 using Autodesk.AutoCAD.PlottingServices;
 using MathNet.Numerics.Financial;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -166,20 +169,19 @@ namespace Objects.Converter.AutocadCivil
       if (value is null) return false;
 
       if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal)) return true;
-      if (propInfo.ValueType == typeof(string) && !string.IsNullOrEmpty((string)value)) return true;
+      if (propInfo.ValueType == typeof(string))
+      {
+        return !string.IsNullOrEmpty(value as string);
+      }
       if (propInfo.ValueType.IsEnum)
       {
         value = value.ToString();
         return true;
       }
 
-      if (propInfo.ValueType == typeof(ASPoint3d))
-      {
-        value = PointToSpeckle(value as ASPoint3d);
-        return true;
-      }
+      value = ConvertValueToSpeckle(value, out var converted);
 
-      return false;
+      return converted;
     }
 
     private IAsteelObject FilerObjectToSpeckle(FilerObject filerObject, List<string> notes)
