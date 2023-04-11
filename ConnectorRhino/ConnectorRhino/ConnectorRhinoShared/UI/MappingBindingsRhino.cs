@@ -222,7 +222,7 @@ namespace SpeckleRhino
           else
           {
             if (HasLinearBottomEdge(b)) { schemas.Add(new RevitWallViewModel()); }
-            else { schemas.Add(new RevitProfileWallViewModel()); }
+            schemas.Add(new RevitProfileWallViewModel());
           }
           schemas.Add(new RevitFaceWallViewModel());
         }
