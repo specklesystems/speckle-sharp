@@ -215,7 +215,8 @@ namespace Speckle.ConnectorDynamo.Functions
       Analytics.TrackEvent(client.Account, Analytics.Events.Receive, new Dictionary<string, object>()
       {
         { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication)?.Slug },
-        { "sourceHostAppVersion", commit.sourceApplication }
+        { "sourceHostAppVersion", commit.sourceApplication },
+        { "isMultiplayer", commit.authorId != client.Account.userInfo.id }
       });
 
       return new Dictionary<string, object> { { "data", data }, { "commit", commit } };
