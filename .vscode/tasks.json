@@ -1,0 +1,86 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "projectPath",
+      "description": "The path to the csproj, sln or slnf you want formatting",
+      "default": "./All.sln"
+    }
+  ],
+  "tasks": [
+    {
+      "label": "speckle.format.csharpier",
+      "command": "dotnet",
+      "type": "shell",
+      "args": ["csharpier", "${input:projectPath}/.."],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile",
+      "hide": true
+    },
+    {
+      "label": "speckle.format.style",
+      "command": "dotnet",
+      "type": "shell",
+      "args": ["format", "style", "${input:projectPath}"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile",
+      "hide": true
+    },
+    {
+      "label": "speckle.format.analyzers",
+      "command": "dotnet",
+      "type": "shell",
+      "args": ["format", "analyzers", "${input:projectPath}"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile",
+      "hide": true
+    },
+    {
+      "label": "speckle.format.resharper",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "tool",
+        "run",
+        "jb",
+        "cleanupcode",
+        "${input:projectPath}",
+        "--profile=\"Speckle: Custom Cleanup\""
+      ],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile",
+      "hide": false
+    },
+    {
+      "label": "Speckle: Format Code",
+      "dependsOn": ["speckle.format.style", "speckle.format.csharpier"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Speckle: Cleanup Code",
+      "dependsOn": [
+        "Speckle: Format Code",
+        "speckle.format.analyzers",
+        "speckle.format.resharper"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ]
+}
