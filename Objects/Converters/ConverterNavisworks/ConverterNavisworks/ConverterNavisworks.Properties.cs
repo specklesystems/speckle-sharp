@@ -14,29 +14,37 @@ public partial class ConverterNavisworks
   private static Base GetPropertiesBase(ModelItem element)
   {
     Base propertiesBase = new();
-    // GUI visible properties varies by a Global Options setting.
     PropertyCategoryCollection userVisiblePropertyCategories = element.GetUserFilteredPropertyCategories();
 
     foreach (PropertyCategory propertyCategory in userVisiblePropertyCategories)
     {
-      if (propertyCategory.DisplayName == "Geometry") continue;
-
-      DataPropertyCollection properties = propertyCategory.Properties;
-      Base propertyCategoryBase = new();
-
-      properties.ToList()
-        .ForEach(
-          property =>
-            BuildPropertyCategory(propertyCategory, property, propertyCategoryBase));
-
-      if (!propertyCategoryBase.GetMembers().Any() || propertyCategory.DisplayName == null) continue;
-
-      string propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
-
-      propertiesBase[propertyCategoryDisplayName] = propertyCategoryBase;
+      ProcessPropertyCategory(propertiesBase, propertyCategory);
     }
 
     return propertiesBase;
+  }
+
+  private static void ProcessPropertyCategory(Base propertiesBase, PropertyCategory propertyCategory)
+  {
+    if (IsCategoryToBeSkipped(propertyCategory))
+    {
+      return;
+    }
+
+    DataPropertyCollection properties = propertyCategory.Properties;
+    Base propertyCategoryBase = new();
+
+    properties.ToList().ForEach(
+      property => BuildPropertyCategory(propertyCategory, property, propertyCategoryBase));
+
+    if (!propertyCategoryBase.GetMembers().Any() || propertyCategory.DisplayName == null) return;
+    string propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
+    propertiesBase[propertyCategoryDisplayName] = propertyCategoryBase;
+  }
+
+  private static bool IsCategoryToBeSkipped(PropertyCategory propertyCategory)
+  {
+    return propertyCategory.DisplayName == "Geometry";
   }
 
   private static string SanitizePropertyName(string name)
@@ -48,63 +56,78 @@ public partial class ConverterNavisworks
       : Regex.Replace(name, @"[\.\/]", "_");
   }
 
-  private static void BuildPropertyCategory(PropertyCategory propertyCategory,
-    DataProperty property,
-    Base propertyCategoryBase)
+  private static void BuildPropertyCategory(PropertyCategory propertyCategory, DataProperty property, Base propertyCategoryBase)
   {
-    string propertyName;
+    string propertyName = GetSanitizedPropertyName(property.DisplayName);
 
+    if (propertyName == null)
+    {
+      return;
+    }
+
+    dynamic propertyValue = ConvertPropertyValue(property.Value);
+
+    UpdatePropertyCategoryBase(propertyCategoryBase, propertyName, propertyValue);
+
+    propertyCategoryBase.applicationId = propertyCategory.CombinedName.ToString();
+  }
+
+  private static string GetSanitizedPropertyName(string displayName)
+  {
     try
     {
-      propertyName = SanitizePropertyName(property.DisplayName);
+      return SanitizePropertyName(displayName);
     }
     catch (ArgumentException err)
     {
       ErrorLog($"Category Name not converted. {err.Message}");
-      return;
+      return null;
     }
+  }
 
+  private static dynamic ConvertPropertyValue(VariantData value)
+  {
     dynamic propertyValue = null;
-
-    VariantDataType type = property.Value.DataType;
-
+    
+    VariantDataType type = value.DataType;
+    
     switch (type)
     {
       case VariantDataType.Boolean:
-        propertyValue = property.Value.ToBoolean();
+        propertyValue = value.ToBoolean();
         break;
       case VariantDataType.DisplayString:
-        propertyValue = property.Value.ToDisplayString();
+        propertyValue = value.ToDisplayString();
         break;
       case VariantDataType.IdentifierString:
-        propertyValue = property.Value.ToIdentifierString();
+        propertyValue = value.ToIdentifierString();
         break;
       case VariantDataType.Int32:
-        propertyValue = property.Value.ToInt32();
+        propertyValue = value.ToInt32();
         break;
       case VariantDataType.Double:
-        propertyValue = property.Value.ToDouble();
+        propertyValue = value.ToDouble();
         break;
       case VariantDataType.DoubleAngle:
-        propertyValue = property.Value.ToDoubleAngle();
+        propertyValue = value.ToDoubleAngle();
         break;
       case VariantDataType.DoubleArea:
-        propertyValue = property.Value.ToDoubleArea();
+        propertyValue = value.ToDoubleArea();
         break;
       case VariantDataType.DoubleLength:
-        propertyValue = property.Value.ToDoubleLength();
+        propertyValue = value.ToDoubleLength();
         break;
       case VariantDataType.DoubleVolume:
-        propertyValue = property.Value.ToDoubleVolume();
+        propertyValue = value.ToDoubleVolume();
         break;
       case VariantDataType.DateTime:
-        propertyValue = property.Value.ToDateTime().ToString(CultureInfo.InvariantCulture);
+        propertyValue = value.ToDateTime().ToString(CultureInfo.InvariantCulture);
         break;
       case VariantDataType.NamedConstant:
-        propertyValue = property.Value.ToNamedConstant().DisplayName;
+        propertyValue = value.ToNamedConstant().DisplayName;
         break;
       case VariantDataType.Point3D:
-        Point3D point = property.Value.ToPoint3D();
+        Point3D point = value.ToPoint3D();
         Point pointProperty = new(point.X, point.Y, point.Z);
         propertyValue = pointProperty.ToString();
         break;
@@ -112,75 +135,84 @@ public partial class ConverterNavisworks
       case VariantDataType.Point2D:
         break;
       default:
-        propertyValue = property.Value.ToString();
+        propertyValue = value.ToString();
         break;
     }
 
-    if (propertyValue != null)
+    return propertyValue;
+  }
+
+  private static void UpdatePropertyCategoryBase(Base propertyCategoryBase, string propertyName, dynamic propertyValue)
+  {
+    if (propertyValue == null) return;
+    
+    object keyPropValue = propertyCategoryBase[propertyName];
+  
+    switch (keyPropValue)
     {
-      object keyPropValue = propertyCategoryBase[propertyName];
-
-      switch (keyPropValue)
+      case null:
+        propertyCategoryBase[propertyName] = propertyValue;
+        break;
+      case List<dynamic> list:
       {
-        case null:
-          propertyCategoryBase[propertyName] = propertyValue;
-          break;
-        case List<dynamic> list:
+        List<dynamic> arrayPropValue = list;
+  
+        if (!arrayPropValue.Contains(propertyValue)) arrayPropValue.Add(propertyValue);
+  
+        propertyCategoryBase[propertyName] = arrayPropValue;
+        break;
+      }
+      default:
+      {
+        dynamic existingValue = keyPropValue;
+  
+        if (!existingValue.Equals(propertyValue))
         {
-          List<dynamic> arrayPropValue = list;
-
-          if (!arrayPropValue.Contains(propertyValue)) arrayPropValue.Add(propertyValue);
-
-          propertyCategoryBase[propertyName] = arrayPropValue;
-          break;
-        }
-        default:
-        {
-          dynamic existingValue = keyPropValue;
-
-          if (!existingValue.Equals(propertyValue))
+          List<dynamic> arrayPropValue = new()
           {
-            List<dynamic> arrayPropValue = new()
-            {
-              existingValue,
-              propertyValue
-            };
-
-            propertyCategoryBase[propertyName] = arrayPropValue;
-          }
-
-          break;
+            existingValue,
+            propertyValue
+          };
+  
+          propertyCategoryBase[propertyName] = arrayPropValue;
         }
+  
+        break;
       }
     }
-
-    propertyCategoryBase.applicationId = propertyCategory.CombinedName.ToString();
   }
 
   private static void AddItemProperties(ModelItem element, Base @base)
   {
     @base["class"] = element.ClassName;
 
-    bool properties =
-      !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out bool result) || result;
+    bool properties = ShouldIncludeProperties();
 
     // Cascade through the Property Sets
-    @base["properties"] = properties
-      ? GetPropertiesBase(element)
-      : new Base();
+    @base["properties"] = properties ? GetPropertiesBase(element) : new Base();
 
     // If the node is a Model
     if (element.HasModel) ((Base)@base["properties"])["Model"] = GetModelProperties(element.Model);
 
-    // Internal Properties - some are matched dynamically already, some can be added from the core API
-    Base internals = (Base)((Base)@base["properties"])?["Internal"] ?? new Base();
+    // Internal Properties
+    AddInternalProperties(element, (Base)@base["properties"]);
+  }
+
+  private static bool ShouldIncludeProperties()
+  {
+    return !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out bool result) || result;
+  }
+
+  private static void AddInternalProperties(ModelItem element, Base propertiesBase)
+  {
+    Base internals = (Base)propertiesBase["Internal"] ?? new Base();
 
     internals["ClassDisplayName"] = element.ClassDisplayName ?? internals["ClassDisplayName"];
     internals["ClassName"] = element.ClassName ?? internals["ClassName"];
     internals["DisplayName"] = element.DisplayName ?? internals["DisplayName"];
     internals["InstanceGuid"] = element.InstanceGuid.ToByteArray()
-                                  .Select(x => (int)x)
-                                  .Sum() > 0
+      .Select(x => (int)x)
+      .Sum() > 0
       ? element.InstanceGuid
       : null;
     internals["Source"] = element.Model?.SourceFileName ?? internals["Source"];
@@ -190,7 +222,7 @@ public partial class ConverterNavisworks
       element.IsInsert ? "Geometry Insert" :
       element.IsLayer ? "Layer" : null;
 
-    ((Base)@base["properties"])["Internal"] = internals;
+    propertiesBase["Internal"] = internals;
   }
 
   private static Base GetModelProperties(Model elementModel)
