@@ -5,7 +5,6 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
 using Speckle.Core.Models;
-using static System.Collections.Specialized.BitVector32;
 using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
@@ -140,7 +139,7 @@ namespace Objects.Converter.Revit
 
       DefineColumnMetadata(revitSchedule, speckleTable, originalTableIds);
       PopulateDataTableRows(revitSchedule, speckleTable, originalTableIds, skippedIndicies);
-      speckleTable.headerRowIndex = Math.Min(0, GetTableHeaderIndex(revitSchedule, skippedIndicies));
+      speckleTable.headerRowIndex = Math.Max(0, GetTableHeaderIndex(revitSchedule, skippedIndicies));
 
       return speckleTable;
     }
