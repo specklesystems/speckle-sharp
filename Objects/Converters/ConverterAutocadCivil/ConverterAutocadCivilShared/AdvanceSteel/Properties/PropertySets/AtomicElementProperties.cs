@@ -8,6 +8,7 @@ using Autodesk.AdvanceSteel.Connection;
 using Autodesk.AdvanceSteel.ConstructionTypes;
 using Autodesk.AdvanceSteel.Geometry;
 using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -18,24 +19,24 @@ namespace Objects.Converter.AutocadCivil
       Dictionary<string, ASProperty> dictionary = new Dictionary<string, ASProperty>();
 
       InsertProperty(dictionary, "volume", nameof(AtomicElement.Volume));
-      InsertProperty(dictionary, "used for numbering - assembly", nameof(AtomicElement.AssemblyUsedForNumbering));
-      InsertProperty(dictionary, "used for numbering - note", nameof(AtomicElement.NoteUsedForNumbering));
-      InsertProperty(dictionary, "used for numbering - role", nameof(AtomicElement.RoleUsedForNumbering));
-      InsertProperty(dictionary, "used for BOM - single part", nameof(AtomicElement.SinglePartUsedForBOM));
-      InsertProperty(dictionary, "used for BOM - main part", nameof(AtomicElement.MainPartUsedForBOM));
-      InsertProperty(dictionary, "used for collision check - single part", nameof(AtomicElement.SinglePartUsedForCollisionCheck));
-      InsertProperty(dictionary, "used for collision check - main part", nameof(AtomicElement.MainPartUsedForCollisionCheck));
+      InsertProperty(dictionary, "numbering - assembly", nameof(AtomicElement.AssemblyUsedForNumbering));
+      InsertProperty(dictionary, "numbering - note", nameof(AtomicElement.NoteUsedForNumbering));
+      InsertProperty(dictionary, "numbering - role", nameof(AtomicElement.RoleUsedForNumbering));
+      InsertProperty(dictionary, "BOM - single part", nameof(AtomicElement.SinglePartUsedForBOM));
+      InsertProperty(dictionary, "BOM - main part", nameof(AtomicElement.MainPartUsedForBOM));
+      InsertProperty(dictionary, "collision check - single part", nameof(AtomicElement.SinglePartUsedForCollisionCheck));
+      InsertProperty(dictionary, "collision check - main part", nameof(AtomicElement.MainPartUsedForCollisionCheck));
       InsertProperty(dictionary, "structural member", nameof(AtomicElement.StructuralMember));
-      InsertProperty(dictionary, "used for numbering - holes", nameof(AtomicElement.HolesUsedForNumbering));
+      InsertProperty(dictionary, "numbering - holes", nameof(AtomicElement.HolesUsedForNumbering));
       InsertProperty(dictionary, "mainPart number", nameof(AtomicElement.MainPartNumber));
       InsertProperty(dictionary, "singlePart number", nameof(AtomicElement.SinglePartNumber));
       InsertProperty(dictionary, "preliminary part prefix", nameof(AtomicElement.PreliminaryPartPrefix));
       InsertProperty(dictionary, "preliminary part number", nameof(AtomicElement.PreliminaryPartNumber));
       InsertProperty(dictionary, "preliminary part position number", nameof(AtomicElement.PreliminaryPartPositionNumber));
-      InsertProperty(dictionary, "used for numbering - item number", nameof(AtomicElement.ItemNumberUsedForNumbering));
-      InsertProperty(dictionary, "used for numbering - dennotation", nameof(AtomicElement.DennotationUsedForNumbering));
-      InsertProperty(dictionary, "used for numbering - coating", nameof(AtomicElement.CoatingUsedForNumbering));
-      InsertProperty(dictionary, "used for numbering - material", nameof(AtomicElement.MaterialUsedForNumbering));
+      InsertProperty(dictionary, "numbering - item number", nameof(AtomicElement.ItemNumberUsedForNumbering));
+      InsertProperty(dictionary, "numbering - dennotation", nameof(AtomicElement.DennotationUsedForNumbering));
+      InsertProperty(dictionary, "numbering - coating", nameof(AtomicElement.CoatingUsedForNumbering));
+      InsertProperty(dictionary, "numbering - material", nameof(AtomicElement.MaterialUsedForNumbering));
       InsertProperty(dictionary, "unwind start factor", nameof(AtomicElement.UnwindStartFactor));
       InsertProperty(dictionary, "denotation", nameof(AtomicElement.Denotation));
       InsertProperty(dictionary, "assembly", nameof(AtomicElement.Assembly));
@@ -48,8 +49,8 @@ namespace Objects.Converter.AutocadCivil
       InsertProperty(dictionary, "is main part", nameof(AtomicElement.IsMainPart));
       InsertProperty(dictionary, "main part prefix", nameof(AtomicElement.MainPartPrefix));
       InsertProperty(dictionary, "single part prefix", nameof(AtomicElement.SinglePartPrefix));
-      InsertProperty(dictionary, "used for numbering - single part", nameof(AtomicElement.SinglePartUsedForNumbering));
-      InsertProperty(dictionary, "used for numbering - main part", nameof(AtomicElement.MainPartUsedForNumbering));
+      InsertProperty(dictionary, "numbering - single part", nameof(AtomicElement.SinglePartUsedForNumbering));
+      InsertProperty(dictionary, "numbering - main part", nameof(AtomicElement.MainPartUsedForNumbering));
       InsertProperty(dictionary, "explicit quantity", nameof(AtomicElement.ExplicitQuantity));
       InsertProperty(dictionary, "material description", nameof(AtomicElement.MaterialDescription));
       InsertProperty(dictionary, "coating description", nameof(AtomicElement.CoatingDescription));
@@ -105,9 +106,9 @@ namespace Objects.Converter.AutocadCivil
 
         Dictionary<object, object> holeProperties = new Dictionary<object, object>
         {
-          { "Diameter", hole.Hole.Diameter },
-          { "Center", point },
-          { "Normal", vectorZ }
+          { "diameter", ASProperty.FromInternalUnits(hole.Hole.Diameter, eUnitType.kDistance) },
+          { "center", point },
+          { "normal", vectorZ }
         };
 
         listHolesDetails.Add(holeProperties);

@@ -152,7 +152,7 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    private static double FromInternalUnits(double value, eUnitType unitType)
+    public static double FromInternalUnits(double value, eUnitType unitType)
     {
       return value * GetUnitScale(unitType);
     }

@@ -64,8 +64,8 @@ namespace Objects.Converter.AutocadCivil
     private static Dictionary<string, double> GetOffsets(ASBeam beam)
     {
       Dictionary<string, double> dictionary = new Dictionary<string, double>();
-      dictionary.Add("Y", beam.Offsets.x);
-      dictionary.Add("Z", beam.Offsets.y);
+      dictionary.Add("Y", ASProperty.FromInternalUnits(beam.Offsets.x, eUnitType.kDistance));
+      dictionary.Add("Z", ASProperty.FromInternalUnits(beam.Offsets.y, eUnitType.kDistance));
 
       return dictionary;
     }

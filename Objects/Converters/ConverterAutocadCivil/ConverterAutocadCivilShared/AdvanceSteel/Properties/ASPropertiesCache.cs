@@ -39,7 +39,7 @@ namespace Objects.Converter.AutocadCivil
     private readonly Dictionary<Type, ASTypeData> ASPropertiesSets = new Dictionary<Type, ASTypeData>()
     {
       { typeof(AtomicElement), new ASTypeData ("assembly") },
-       { typeof(Beam), new ASTypeData("beam") },
+      { typeof(Beam), new ASTypeData("beam") },
       { typeof(PolyBeam), new ASTypeData("poly beam") }
     };
 
