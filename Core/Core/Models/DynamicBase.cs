@@ -239,7 +239,9 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// </summary>
   /// <param name="includeMembers">Specifies which members should be included in the resulting dictionary. Can be concatenated with "|"</param>
   /// <returns>A dictionary containing the key's and values of the object.</returns>
-  public Dictionary<string, object> GetMembers(DynamicBaseMemberType includeMembers = DefaultIncludeMembers)
+  public Dictionary<string, object> GetMembers(
+    DynamicBaseMemberType includeMembers = DefaultIncludeMembers
+  )
   {
     // Initialize an empty dict
     var dic = new Dictionary<string, object>();
@@ -261,7 +263,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
         // If schemaIgnored is true and prop has schemaIgnore attr
         return !(
           !includeMembers.HasFlag(DynamicBaseMemberType.SchemaIgnored) && hasIgnored
-       || !includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete
+          || !includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete
         );
       });
       foreach (var pi in pinfos)
@@ -272,7 +274,10 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     if (includeMembers.HasFlag(DynamicBaseMemberType.SchemaComputed))
       GetType()
         .GetMethods()
-        .Where(e => e.IsDefined(typeof(SchemaComputedAttribute)) && !e.IsDefined(typeof(ObsoleteAttribute)))
+        .Where(
+          e =>
+            e.IsDefined(typeof(SchemaComputedAttribute)) && !e.IsDefined(typeof(ObsoleteAttribute))
+        )
         .ToList()
         .ForEach(e =>
         {
@@ -306,4 +311,4 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
 /// This attribute is used internally to hide the this[key]{get; set;} property from inner reflection on members.
 /// For more info see this discussion: https://speckle.community/t/why-do-i-keep-forgetting-base-objects-cant-use-item-as-a-dynamic-member/3246/5
 /// </summary>
-internal class IgnoreTheItemAttribute : Attribute {}
+internal sealed class IgnoreTheItemAttribute : Attribute { }

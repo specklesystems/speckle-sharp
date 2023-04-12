@@ -52,7 +52,8 @@ public static class OldLog
       try
       {
         var da = AccountManager.GetDefaultAccount();
-        if (da != null) id = da.GetHashedEmail();
+        if (da != null)
+          id = da.GetHashedEmail();
       }
       catch (Exception ex) { }
 

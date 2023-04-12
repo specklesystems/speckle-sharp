@@ -17,21 +17,19 @@ public class SetUp
     SpeckleLog.Initialize(
       "Core",
       "Testing",
-      new SpeckleLogConfiguration(
-        LogEventLevel.Debug,
-        true,
-        logToFile: false,
-        logToSeq: false
-      )
+      new SpeckleLogConfiguration(LogEventLevel.Debug, true, logToFile: false, logToSeq: false)
     );
     SpeckleLog.Logger.Information("Initialized logger for testing");
   }
 }
 
-public class Fixtures
+public static class Fixtures
 {
   private static SQLiteTransport AccountStorage = new(scope: "Accounts");
-  private static string accountPath = Path.Combine(SpecklePathProvider.AccountsFolderPath, "TestAccount.json");
+  private static string accountPath = Path.Combine(
+    SpecklePathProvider.AccountsFolderPath,
+    "TestAccount.json"
+  );
 
   public static void UpdateOrSaveAccount(Account account)
   {

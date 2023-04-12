@@ -73,7 +73,8 @@ public class DiskTransport : ICloneable, ITransport
       return null; // Check for cancellation
 
     var filePath = Path.Combine(RootPath, id);
-    if (File.Exists(filePath)) return File.ReadAllText(filePath, Encoding.UTF8);
+    if (File.Exists(filePath))
+      return File.ReadAllText(filePath, Encoding.UTF8);
 
     return null;
   }

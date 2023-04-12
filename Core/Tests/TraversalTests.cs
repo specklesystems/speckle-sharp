@@ -7,23 +7,24 @@ namespace Tests.Models;
 [TestFixture, TestOf(typeof(BaseExtensions))]
 public class TraversalTests
 {
-  [Test,Description("Tests that provided breaker rules are respected")]
+  [Test, Description("Tests that provided breaker rules are respected")]
   public void TestFlattenWithBreaker()
   {
     //Setup
-    Base root = new()
-    {
-      id = "root",
-      ["child"] = new Base()
+    Base root =
+      new()
       {
-        id = "traverse through me",
+        id = "root",
         ["child"] = new Base()
         {
-          id = "break on me, go no further",
-          ["child"] = new Base() { id = "should have ignored me" }
+          id = "traverse through me",
+          ["child"] = new Base()
+          {
+            id = "break on me, go no further",
+            ["child"] = new Base() { id = "should have ignored me" }
+          }
         }
-      }
-    };
+      };
 
     bool BreakRule(Base b) => b.id.Contains("break on me");
 
@@ -37,7 +38,13 @@ public class TraversalTests
     Assert.That(ret.Where(x => x.id.Contains("should have ignored me")), Is.Empty);
   }
 
-  [Test,TestCase(5, 5),TestCase(5, 10),TestCase(10, 5),Description("Tests breaking after a fixed number of items")]
+  [
+    Test,
+    TestCase(5, 5),
+    TestCase(5, 10),
+    TestCase(10, 5),
+    Description("Tests breaking after a fixed number of items")
+  ]
   public void TestBreakerFixed(int nestDepth, int flattenDepth)
   {
     //Setup
@@ -60,7 +67,11 @@ public class TraversalTests
     Assert.That(ret, Is.Unique);
   }
 
-  [Test, Timeout(2000),Description("Tests that the flatten function does not get stuck on circular references")]
+  [
+    Test,
+    Timeout(2000),
+    Description("Tests that the flatten function does not get stuck on circular references")
+  ]
   public void TestCircularReference()
   {
     //Setup
@@ -81,7 +92,7 @@ public class TraversalTests
     Assert.That(ret, Has.Count.EqualTo(3));
   }
 
-  [Test,Description("Tests that the flatten function correctly handles (non circular) duplicates")]
+  [Test, Description("Tests that the flatten function correctly handles (non circular) duplicates")]
   public void TestDuplicates()
   {
     //Setup

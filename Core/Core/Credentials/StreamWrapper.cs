@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -193,7 +193,7 @@ public class StreamWrapper
       var acc = AccountManager.GetAccounts().FirstOrDefault(acc => acc.userInfo.id == userId);
       if (acc != null)
       {
-        await ValidateWithAccount(acc);
+        await ValidateWithAccount(acc).ConfigureAwait(false);
         _Account = acc;
         return acc;
       }
@@ -203,7 +203,7 @@ public class StreamWrapper
     var defAcc = AccountManager.GetDefaultAccount();
     try
     {
-      await ValidateWithAccount(defAcc);
+      await ValidateWithAccount(defAcc).ConfigureAwait(false);
       _Account = defAcc;
       return defAcc;
     }
@@ -220,7 +220,7 @@ public class StreamWrapper
     foreach (var acc in accs)
       try
       {
-        await ValidateWithAccount(acc);
+        await ValidateWithAccount(acc).ConfigureAwait(false);
         _Account = acc;
         return acc;
       }
@@ -259,7 +259,7 @@ public class StreamWrapper
     if (ServerUrl != acc.serverInfo.url)
       throw new SpeckleException($"Account is not from server {ServerUrl}", false);
 
-    var hasInternet = await Http.UserHasInternet();
+    var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
     if (!hasInternet)
       throw new Exception("You are not connected to the internet.");
 

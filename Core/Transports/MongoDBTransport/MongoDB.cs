@@ -75,7 +75,8 @@ public class MongoDBTransport : IDisposable, ITransport
 
   public string TransportName { get; set; } = "MongoTransport";
 
-  public Dictionary<string, object> TransportContext => new() { { "name", TransportName }, { "type", GetType().Name } };
+  public Dictionary<string, object> TransportContext =>
+    new() { { "name", TransportName }, { "type", GetType().Name } };
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -106,7 +107,8 @@ public class MongoDBTransport : IDisposable, ITransport
 
     // Check if the connection is successful
     bool isMongoLive = Database.RunCommandAsync((Command<BsonDocument>)"{ping:1}").Wait(1000);
-    if (!isMongoLive) OnErrorAction(TransportName, new Exception("The Mongo database could not be reached."));
+    if (!isMongoLive)
+      OnErrorAction(TransportName, new Exception("The Mongo database could not be reached."));
   }
 
   /// <summary>
@@ -117,7 +119,8 @@ public class MongoDBTransport : IDisposable, ITransport
   {
     var documents = Collection.Find(new BsonDocument()).ToList();
     List<string> documentContents = new();
-    foreach (BsonDocument document in documents) documentContents.Add(document[Field.content.ToString()].AsString);
+    foreach (BsonDocument document in documents)
+      documentContents.Add(document[Field.content.ToString()].AsString);
     return documentContents;
   }
 
@@ -139,13 +142,15 @@ public class MongoDBTransport : IDisposable, ITransport
   /// <returns></returns>
   public async Task WriteComplete()
   {
-    await Utilities.WaitUntil(
-      () =>
-      {
-        return GetWriteCompletionStatus();
-      },
-      500
-    );
+    await Utilities
+      .WaitUntil(
+        () =>
+        {
+          return GetWriteCompletionStatus();
+        },
+        500
+      )
+      .ConfigureAwait(false);
   }
 
   /// <summary>
@@ -240,7 +245,8 @@ public class MongoDBTransport : IDisposable, ITransport
   {
     var filter = Builders<BsonDocument>.Filter.Eq(Field.hash.ToString(), hash);
     BsonDocument objectDocument = Collection.Find(filter).FirstOrDefault();
-    if (objectDocument != null) return objectDocument[Field.content.ToString()].AsString;
+    if (objectDocument != null)
+      return objectDocument[Field.content.ToString()].AsString;
 
     // pass on the duty of null checks to consumers
     return null;

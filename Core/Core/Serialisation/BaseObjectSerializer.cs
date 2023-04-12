@@ -70,11 +70,18 @@ public class BaseObjectSerializer : JsonConverter
 
   #region Read Json
 
-  public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+  public override object ReadJson(
+    JsonReader reader,
+    Type objectType,
+    object existingValue,
+    JsonSerializer serializer
+  )
   {
-    if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
-    if (reader.TokenType == JsonToken.Null) return null;
+    if (reader.TokenType == JsonToken.Null)
+      return null;
 
     // Check if we passed in an array, rather than an object.
     // TODO: Test the following branch. It's not used anywhere at the moment, and the default serializer prevents it from
@@ -86,7 +93,8 @@ public class BaseObjectSerializer : JsonConverter
 
       foreach (var val in jarr)
       {
-        if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+        if (CancellationToken.IsCancellationRequested)
+          return null; // Check for cancellation
 
         var whatever = SerializationUtilities.HandleValue(val, serializer, CancellationToken);
         list.Add(whatever as Base);
@@ -94,11 +102,13 @@ public class BaseObjectSerializer : JsonConverter
       return list;
     }
 
-    if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
     var jObject = JObject.Load(reader);
 
-    if (jObject == null) return null;
+    if (jObject == null)
+      return null;
 
     var objType = jObject.GetValue(TypeDiscriminator);
 
@@ -109,14 +119,20 @@ public class BaseObjectSerializer : JsonConverter
 
       foreach (var val in jObject)
       {
-        if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+        if (CancellationToken.IsCancellationRequested)
+          return null; // Check for cancellation
 
-        dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
+        dict[val.Key] = SerializationUtilities.HandleValue(
+          val.Value,
+          serializer,
+          CancellationToken
+        );
       }
       return dict;
     }
 
-    if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
     var discriminator = Extensions.Value<string>(objType);
 
@@ -131,14 +147,16 @@ public class BaseObjectSerializer : JsonConverter
       else
         throw new SpeckleException("Cannot resolve reference, no transport is defined.");
 
-      if (str != null && str != "")
+      if (str != null && !string.IsNullOrEmpty(str))
       {
         jObject = JObject.Parse(str);
         discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
       }
       else
       {
-        throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.");
+        throw new SpeckleException(
+          "Cannot resolve reference. The provided transport could not find it."
+        );
       }
     }
 
@@ -152,13 +170,16 @@ public class BaseObjectSerializer : JsonConverter
     jObject.Remove(TypeDiscriminator);
     jObject.Remove("__closure");
 
-    if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
     foreach (var jProperty in jObject.Properties())
     {
-      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)
+        return null; // Check for cancellation
 
-      if (used.Contains(jProperty.Name)) continue;
+      if (used.Contains(jProperty.Name))
+        continue;
 
       used.Add(jProperty.Name);
 
@@ -178,7 +199,12 @@ public class BaseObjectSerializer : JsonConverter
         }
         else
         {
-          var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken, property);
+          var val = SerializationUtilities.HandleValue(
+            jProperty.Value,
+            serializer,
+            CancellationToken,
+            property
+          );
           property.ValueProvider.SetValue(obj, val);
         }
       }
@@ -193,12 +219,14 @@ public class BaseObjectSerializer : JsonConverter
       }
     }
 
-    if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
     TotalProcessedCount++;
     OnProgressAction?.Invoke("DS", 1);
 
-    foreach (var callback in contract.OnDeserializedCallbacks) callback(obj, serializer.Context);
+    foreach (var callback in contract.OnDeserializedCallbacks)
+      callback(obj, serializer.Context);
 
     return obj;
   }
@@ -237,16 +265,18 @@ public class BaseObjectSerializer : JsonConverter
     {
       var parent = Lineage[i];
 
-      if (!RefMinDepthTracker.ContainsKey(parent)) RefMinDepthTracker[parent] = new Dictionary<string, int>();
+      if (!RefMinDepthTracker.ContainsKey(parent))
+        RefMinDepthTracker[parent] = new Dictionary<string, int>();
 
       if (!RefMinDepthTracker[parent].ContainsKey(refId))
         RefMinDepthTracker[parent][refId] = Lineage.Count - i;
-      else if (RefMinDepthTracker[parent][refId] > Lineage.Count - i) RefMinDepthTracker[parent][refId] = Lineage.Count - i;
+      else if (RefMinDepthTracker[parent][refId] > Lineage.Count - i)
+        RefMinDepthTracker[parent][refId] = Lineage.Count - i;
     }
   }
 
   private bool FirstEntry = true,
-               FirstEntryWasListOrDict = false;
+    FirstEntryWasListOrDict = false;
 
   // While this function looks complicated, it's actually quite smooth:
   // The important things to remember is that serialization goes depth first:
@@ -255,13 +285,15 @@ public class BaseObjectSerializer : JsonConverter
   public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
   {
     writer.Formatting = serializer.Formatting;
-    if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return; // Check for cancellation
 
     /////////////////////////////////////
     // Path one: nulls
     /////////////////////////////////////
 
-    if (value == null) return;
+    if (value == null)
+      return;
 
     /////////////////////////////////////
     // Path two: primitives (string, bool, int, etc)
@@ -282,7 +314,8 @@ public class BaseObjectSerializer : JsonConverter
 
     if (value is Base && !(value is ObjectReference))
     {
-      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)
+        return; // Check for cancellation
 
       var obj = value as Base;
 
@@ -295,39 +328,54 @@ public class BaseObjectSerializer : JsonConverter
       var jo = new JObject();
       var propertyNames = obj.GetDynamicMemberNames();
 
-      var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(value.GetType());
+      var contract = (JsonDynamicContract)
+        serializer.ContractResolver.ResolveContract(value.GetType());
 
       // Iterate through the object's properties, one by one, checking for ignored ones
       foreach (var prop in propertyNames)
       {
-        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+        if (CancellationToken.IsCancellationRequested)
+          return; // Check for cancellation
         // Ignore properties starting with a double underscore.
-        if (prop.StartsWith("__")) continue;
+        if (prop.StartsWith("__"))
+          continue;
 
-        if (prop == "id") continue;
+        if (prop == "id")
+          continue;
 
         var property = contract.Properties.GetClosestMatchProperty(prop);
 
         // Ignore properties decorated with [JsonIgnore].
-        if (property != null && property.Ignored) continue;
+        if (property != null && property.Ignored)
+          continue;
 
         // Ignore nulls
         object propValue = obj[prop];
-        if (propValue == null) continue;
+        if (propValue == null)
+          continue;
 
         // Check if this property is marked for detachment: either by the presence of "@" at the beginning of the name, or by the presence of a DetachProperty attribute on a typed property.
         if (property != null)
         {
-          var detachableAttributes = property.AttributeProvider.GetAttributes(typeof(DetachProperty), true);
+          var detachableAttributes = property.AttributeProvider.GetAttributes(
+            typeof(DetachProperty),
+            true
+          );
           if (detachableAttributes.Count > 0)
             DetachLineage.Add(((DetachProperty)detachableAttributes[0]).Detachable);
           else
             DetachLineage.Add(false);
 
-          var chunkableAttributes = property.AttributeProvider.GetAttributes(typeof(Chunkable), true);
+          var chunkableAttributes = property.AttributeProvider.GetAttributes(
+            typeof(Chunkable),
+            true
+          );
           if (chunkableAttributes.Count > 0)
             //DetachLineage.Add(true); // NOOPE
-            serializer.Context = new StreamingContext(StreamingContextStates.Other, chunkableAttributes[0]);
+            serializer.Context = new StreamingContext(
+              StreamingContextStates.Other,
+              chunkableAttributes[0]
+            );
           else
             //DetachLineage.Add(false);
             serializer.Context = new StreamingContext();
@@ -361,16 +409,18 @@ public class BaseObjectSerializer : JsonConverter
         // Set and store a reference, if it is marked as detachable and the transport is not null.
         if (
           WriteTransports != null
-       && WriteTransports.Count != 0
-       && propValue is Base
-       && DetachLineage[DetachLineage.Count - 1]
+          && WriteTransports.Count != 0
+          && propValue is Base
+          && DetachLineage[DetachLineage.Count - 1]
         )
         {
           var what = JToken.FromObject(propValue, serializer); // Trigger next.
 
-          if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+          if (CancellationToken.IsCancellationRequested)
+            return; // Check for cancellation
 
-          if (what == null) return; // HACK: Prevent nulls from borking our serialization on nested schema object refs. (i.e. Line has @SchemaObject, that has ref to line)
+          if (what == null)
+            return; // HACK: Prevent nulls from borking our serialization on nested schema object refs. (i.e. Line has @SchemaObject, that has ref to line)
 
           var refHash = ((JObject)what).GetValue("id").ToString();
 
@@ -391,19 +441,21 @@ public class BaseObjectSerializer : JsonConverter
 
       // Check if we actually have any transports present that would warrant a
       if (
-        WriteTransports != null && WriteTransports.Count != 0
-                                && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1])
+        WriteTransports != null
+        && WriteTransports.Count != 0
+        && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1])
       )
         jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
 
       var hash = Utilities.hashString(jo.ToString());
-      if (!jo.ContainsKey("id")) jo.Add("id", JToken.FromObject(hash));
+      if (!jo.ContainsKey("id"))
+        jo.Add("id", JToken.FromObject(hash));
       jo.WriteTo(writer);
 
       if (
         (DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1])
-     && WriteTransports != null
-     && WriteTransports.Count != 0
+        && WriteTransports != null
+        && WriteTransports.Count != 0
       )
       {
         var objString = jo.ToString(writer.Formatting);
@@ -413,7 +465,8 @@ public class BaseObjectSerializer : JsonConverter
 
         foreach (var transport in WriteTransports)
         {
-          if (CancellationToken.IsCancellationRequested) continue; // Check for cancellation
+          if (CancellationToken.IsCancellationRequested)
+            continue; // Check for cancellation
 
           transport.SaveObject(objId, objString);
         }
@@ -428,7 +481,8 @@ public class BaseObjectSerializer : JsonConverter
     // Path four: lists/arrays & dicts
     /////////////////////////////////////
 
-    if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return; // Check for cancellation
 
     var type = value.GetType();
 
@@ -438,8 +492,8 @@ public class BaseObjectSerializer : JsonConverter
     // Same goes for dictionaries.
     if (
       typeof(IEnumerable).IsAssignableFrom(type)
-   && !typeof(IDictionary).IsAssignableFrom(type)
-   && type != typeof(string)
+      && !typeof(IDictionary).IsAssignableFrom(type)
+      && type != typeof(string)
     )
     {
       if (TotalProcessedCount == 0 && FirstEntry)
@@ -453,7 +507,9 @@ public class BaseObjectSerializer : JsonConverter
       JArray arr = new();
 
       // Chunking large lists into manageable parts.
-      if (DetachLineage[DetachLineage.Count - 1] && serializer.Context.Context is Chunkable chunkInfo)
+      if (
+        DetachLineage[DetachLineage.Count - 1] && serializer.Context.Context is Chunkable chunkInfo
+      )
       {
         var maxCount = chunkInfo.MaxObjCountPerChunk;
         var i = 0;
@@ -464,7 +520,8 @@ public class BaseObjectSerializer : JsonConverter
         {
           if (i == maxCount)
           {
-            if (currChunk.data.Count != 0) chunkList.Add(currChunk);
+            if (currChunk.data.Count != 0)
+              chunkList.Add(currChunk);
 
             currChunk = new DataChunk();
             i = 0;
@@ -473,21 +530,24 @@ public class BaseObjectSerializer : JsonConverter
           i++;
         }
 
-        if (currChunk.data.Count != 0) chunkList.Add(currChunk);
+        if (currChunk.data.Count != 0)
+          chunkList.Add(currChunk);
         value = chunkList;
       }
 
       foreach (var arrValue in (IEnumerable)value)
       {
-        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+        if (CancellationToken.IsCancellationRequested)
+          return; // Check for cancellation
 
-        if (arrValue == null) continue;
+        if (arrValue == null)
+          continue;
 
         if (
           WriteTransports != null
-       && WriteTransports.Count != 0
-       && arrValue is Base
-       && DetachLineage[DetachLineage.Count - 1]
+          && WriteTransports.Count != 0
+          && arrValue is Base
+          && DetachLineage[DetachLineage.Count - 1]
         )
         {
           var what = JToken.FromObject(arrValue, serializer); // Trigger next
@@ -504,7 +564,8 @@ public class BaseObjectSerializer : JsonConverter
         }
       }
 
-      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)
+        return; // Check for cancellation
 
       arr.WriteTo(writer);
 
@@ -514,7 +575,8 @@ public class BaseObjectSerializer : JsonConverter
       return;
     }
 
-    if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return; // Check for cancellation
 
     if (typeof(IDictionary).IsAssignableFrom(type))
     {
@@ -529,16 +591,18 @@ public class BaseObjectSerializer : JsonConverter
       var dictJo = new JObject();
       foreach (DictionaryEntry kvp in dict)
       {
-        if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+        if (CancellationToken.IsCancellationRequested)
+          return; // Check for cancellation
 
-        if (kvp.Value == null) continue;
+        if (kvp.Value == null)
+          continue;
 
         JToken jToken;
         if (
           WriteTransports != null
-       && WriteTransports.Count != 0
-       && kvp.Value is Base
-       && DetachLineage[DetachLineage.Count - 1]
+          && WriteTransports.Count != 0
+          && kvp.Value is Base
+          && DetachLineage[DetachLineage.Count - 1]
         )
         {
           var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
@@ -556,7 +620,8 @@ public class BaseObjectSerializer : JsonConverter
       }
       dictJo.WriteTo(writer);
 
-      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+      if (CancellationToken.IsCancellationRequested)
+        return; // Check for cancellation
 
       if (DetachLineage.Count == 1 && FirstEntryWasListOrDict) // are we in a dictionary entry point case?
         DetachLineage.RemoveAt(0);
@@ -568,7 +633,8 @@ public class BaseObjectSerializer : JsonConverter
     // Path five: everything else (enums?)
     /////////////////////////////////////
 
-    if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+    if (CancellationToken.IsCancellationRequested)
+      return; // Check for cancellation
 
     FirstEntry = false;
     var lastCall = JToken.FromObject(value); // bypasses this converter as we do not pass in the serializer

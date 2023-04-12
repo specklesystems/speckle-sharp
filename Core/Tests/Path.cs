@@ -14,7 +14,8 @@ public class SpecklePaths
     var userPath = SpecklePathProvider.UserApplicationDataPath();
     string pattern;
 
-    if (string.IsNullOrEmpty(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData))) pattern = @"\/root";
+    if (string.IsNullOrEmpty(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData)))
+      pattern = @"\/root";
     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
     {
       pattern = @"C:\\Users\\.*\\AppData\\Roaming";

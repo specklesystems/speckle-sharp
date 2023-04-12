@@ -83,7 +83,8 @@ public partial class Client
       }
     };
 
-    var res = await ExecuteGraphQLRequest<CommentsData>(request, cancellationToken);
+    var res = await ExecuteGraphQLRequest<CommentsData>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.comments;
   }
 
@@ -125,7 +126,8 @@ public partial class Client
       Variables = new { id, streamId }
     };
 
-    var res = await ExecuteGraphQLRequest<CommentItemData>(request, cancellationToken);
+    var res = await ExecuteGraphQLRequest<CommentItemData>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.comment.screenshot;
   }
 }

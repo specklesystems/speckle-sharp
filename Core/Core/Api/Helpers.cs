@@ -32,7 +32,8 @@ public static class Helpers
   /// </summary>
   /// <returns>The location of the Speckle installation folder</returns>
   [Obsolete("Please use Helpers/SpecklePathProvider.InstallSpeckleFolderPath", true)]
-  public static string InstallSpeckleFolderPath => Path.Combine(InstallApplicationDataPath, "Speckle");
+  public static string InstallSpeckleFolderPath =>
+    Path.Combine(InstallApplicationDataPath, "Speckle");
 
   /// <summary>
   /// Returns the correct location of the Speckle folder for the current user. Usually this would be the user's %appdata%/Speckle folder.
@@ -63,7 +64,10 @@ public static class Helpers
   public static string UserApplicationDataPath =>
     !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(_speckleUserDataEnvVar))
       ? Environment.GetEnvironmentVariable(_speckleUserDataEnvVar)
-      : Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData, Environment.SpecialFolderOption.Create);
+      : Environment.GetFolderPath(
+        Environment.SpecialFolder.ApplicationData,
+        Environment.SpecialFolderOption.Create
+      );
 
   /// <summary>
   /// Helper method to Receive from a Speckle Server.
@@ -86,7 +90,7 @@ public static class Helpers
 
     try
     {
-      account ??= await sw.GetAccount();
+      account ??= await sw.GetAccount().ConfigureAwait(false);
     }
     catch (SpeckleException e)
     {
@@ -117,7 +121,7 @@ public static class Helpers
     //COMMIT URL
     else if (!string.IsNullOrEmpty(sw.CommitId))
     {
-      commit = await client.CommitGet(sw.StreamId, sw.CommitId);
+      commit = await client.CommitGet(sw.StreamId, sw.CommitId).ConfigureAwait(false);
       objectId = commit.referencedObject;
     }
     //BRANCH URL OR STREAM URL
@@ -125,7 +129,7 @@ public static class Helpers
     {
       var branchName = string.IsNullOrEmpty(sw.BranchName) ? "main" : sw.BranchName;
 
-      var branch = await client.BranchGet(sw.StreamId, branchName, 1);
+      var branch = await client.BranchGet(sw.StreamId, branchName, 1).ConfigureAwait(false);
       if (!branch.commits.items.Any())
         throw new SpeckleException($"The selected branch has no commits.");
 
@@ -143,26 +147,30 @@ public static class Helpers
       }
     );
 
-    var receiveRes = await Operations.Receive(
-      objectId,
-      transport,
-      onErrorAction: onErrorAction,
-      onProgressAction: onProgressAction,
-      onTotalChildrenCountKnown: onTotalChildrenCountKnown,
-      disposeTransports: true
-    );
+    var receiveRes = await Operations
+      .Receive(
+        objectId,
+        transport,
+        onErrorAction: onErrorAction,
+        onProgressAction: onProgressAction,
+        onTotalChildrenCountKnown: onTotalChildrenCountKnown,
+        disposeTransports: true
+      )
+      .ConfigureAwait(false);
 
     try
     {
-      await client.CommitReceived(
-        new CommitReceivedInput
-        {
-          streamId = sw.StreamId,
-          commitId = commit?.id,
-          message = commit?.message,
-          sourceApplication = "Other"
-        }
-      );
+      await client
+        .CommitReceived(
+          new CommitReceivedInput
+          {
+            streamId = sw.StreamId,
+            commitId = commit?.id,
+            message = commit?.message,
+            sourceApplication = "Other"
+          }
+        )
+        .ConfigureAwait(false);
     }
     catch
     {
@@ -195,33 +203,37 @@ public static class Helpers
   {
     var sw = new StreamWrapper(stream);
 
-    var client = new Client(account ?? await sw.GetAccount());
+    var client = new Client(account ?? await sw.GetAccount().ConfigureAwait(false));
 
     var transport = new ServerTransport(client.Account, sw.StreamId);
     var branchName = string.IsNullOrEmpty(sw.BranchName) ? "main" : sw.BranchName;
 
-    var objectId = await Operations.Send(
-      data,
-      new List<ITransport> { transport },
-      useDefaultCache,
-      onProgressAction,
-      onErrorAction,
-      true
-    );
+    var objectId = await Operations
+      .Send(
+        data,
+        new List<ITransport> { transport },
+        useDefaultCache,
+        onProgressAction,
+        onErrorAction,
+        true
+      )
+      .ConfigureAwait(false);
 
     Analytics.TrackEvent(client.Account, Analytics.Events.Send);
 
-    return await client.CommitCreate(
-      new CommitCreateInput
-      {
-        streamId = sw.StreamId,
-        branchName = branchName,
-        objectId = objectId,
-        message = message,
-        sourceApplication = sourceApplication,
-        totalChildrenCount = totalChildrenCount
-      }
-    );
+    return await client
+      .CommitCreate(
+        new CommitCreateInput
+        {
+          streamId = sw.StreamId,
+          branchName = branchName,
+          objectId = objectId,
+          message = message,
+          sourceApplication = sourceApplication,
+          totalChildrenCount = totalChildrenCount
+        }
+      )
+      .ConfigureAwait(false);
   }
 
   /// <summary>
@@ -241,14 +253,19 @@ public static class Helpers
     try
     {
       HttpClient client = Http.GetHttpProxyClient();
-      var response = await client.GetStringAsync($"{_feedsEndpoint}/{slug}.json");
+      var response = await client
+        .GetStringAsync($"{_feedsEndpoint}/{slug}.json")
+        .ConfigureAwait(false);
       var connector = JsonSerializer.Deserialize<Connector>(response);
 
       var os = Os.Win;
       if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
         os = Os.OSX;
 
-      var versions = connector.Versions.Where(x => x.Os == os).OrderByDescending(x => x.Date).ToList();
+      var versions = connector.Versions
+        .Where(x => x.Os == os)
+        .OrderByDescending(x => x.Date)
+        .ToList();
       var stables = versions.Where(x => !x.Prerelease);
       if (!stables.Any())
         return false;

@@ -17,7 +17,7 @@ public class Streams
   [OneTimeSetUp]
   public async Task Setup()
   {
-    testUserAccount = await Fixtures.SeedUser();
+    testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
     client = new Client(testUserAccount);
   }
 
@@ -29,18 +29,23 @@ public class Streams
 
     Thread.Sleep(1000); //let server catch-up
 
-    var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
+    var streamInput = new StreamCreateInput
+    {
+      description = "Hello World",
+      name = "Super Stream 01"
+    };
 
     var res = await client.StreamCreate(streamInput).ConfigureAwait(true);
     streamId = res;
     Assert.NotNull(res);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(1000); //let client catch-up
-      Assert.NotNull(StreamAddedInfo);
-      Assert.That(StreamAddedInfo.name, Is.EqualTo(streamInput.name));
-    });
+      {
+        Thread.Sleep(1000); //let client catch-up
+        Assert.NotNull(StreamAddedInfo);
+        Assert.That(StreamAddedInfo.name, Is.EqualTo(streamInput.name));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnUserStreamAdded(object sender, StreamInfo e)
@@ -64,16 +69,17 @@ public class Streams
       name = "Super Stream 01 EDITED"
     };
 
-    var res = await client.StreamUpdate(streamInput);
+    var res = await client.StreamUpdate(streamInput).ConfigureAwait(false);
 
     Assert.True(res);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(100); //let client catch-up
-      Assert.NotNull(StreamUpdatedInfo);
-      Assert.That(StreamUpdatedInfo.name, Is.EqualTo(streamInput.name));
-    });
+      {
+        Thread.Sleep(100); //let client catch-up
+        Assert.NotNull(StreamUpdatedInfo);
+        Assert.That(StreamUpdatedInfo.name, Is.EqualTo(streamInput.name));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnStreamUpdated(object sender, StreamInfo e)
@@ -90,16 +96,17 @@ public class Streams
 
     Thread.Sleep(100); //let server catch-up
 
-    var res = await client.StreamDelete(streamId);
+    var res = await client.StreamDelete(streamId).ConfigureAwait(false);
 
     Assert.True(res);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(100); //let client catch-up
-      Assert.NotNull(StreamRemovedInfo);
-      Assert.That(StreamRemovedInfo.id, Is.EqualTo(streamId));
-    });
+      {
+        Thread.Sleep(100); //let client catch-up
+        Assert.NotNull(StreamRemovedInfo);
+        Assert.That(StreamRemovedInfo.id, Is.EqualTo(streamId));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnStreamRemoved(object sender, StreamInfo e)

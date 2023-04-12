@@ -114,7 +114,7 @@ public static class Analytics
           .Where(
             nic =>
               nic.OperationalStatus == OperationalStatus.Up
-           && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
+              && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
           )
           .Select(nic => nic.GetPhysicalAddress().ToString())
           .FirstOrDefault();
@@ -150,7 +150,13 @@ public static class Analytics
     if (account == null)
       TrackEvent(eventName, customProperties, isAction);
     else
-      TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties, isAction);
+      TrackEvent(
+        account.GetHashedEmail(),
+        account.GetHashedServer(),
+        eventName,
+        customProperties,
+        isAction
+      );
   }
 
   /// <summary>
@@ -196,9 +202,13 @@ public static class Analytics
           properties.Add("type", "action");
 
         if (customProperties != null)
-          properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+          properties = properties
+            .Concat(customProperties)
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
+        string json = JsonConvert.SerializeObject(
+          new { @event = eventName.ToString(), properties }
+        );
 
         var query = new StreamContent(
           new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json)))

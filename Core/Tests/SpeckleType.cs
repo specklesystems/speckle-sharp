@@ -6,10 +6,10 @@ namespace Tests;
 [TestFixture]
 public class SpeckleTypeTests
 {
-  [Test,TestCaseSource(nameof(Cases))]
+  [Test, TestCaseSource(nameof(Cases))]
   public void SpeckleTypeIsProperlyBuilt(Base foo, string expected_type)
   {
-    Assert.AreEqual(foo.speckle_type, expected_type);
+    Assert.That(expected_type, Is.EqualTo(foo.speckle_type));
   }
 
   private static object[] Cases =
@@ -21,8 +21,8 @@ public class SpeckleTypeTests
   };
 }
 
-public class Foo : Base {}
+public class Foo : Base { }
 
-public class Bar : Foo {}
+public class Bar : Foo { }
 
-public class Baz : Bar {}
+public class Baz : Bar { }

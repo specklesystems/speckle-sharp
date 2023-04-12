@@ -12,7 +12,7 @@ public class GraphQLClientTests
   [OneTimeSetUp]
   public async Task Setup()
   {
-    _account = await Fixtures.SeedUser();
+    _account = await Fixtures.SeedUser().ConfigureAwait(false);
     _client = new Client(_account);
   }
 
@@ -21,18 +21,20 @@ public class GraphQLClientTests
   {
     Assert.ThrowsAsync<SpeckleGraphQLForbiddenException<Dictionary<string, object>>>(
       async () =>
-        await _client.ExecuteGraphQLRequest<Dictionary<string, object>>(
-          new GraphQLRequest
-          {
-            Query =
-              @"query {
+        await _client
+          .ExecuteGraphQLRequest<Dictionary<string, object>>(
+            new GraphQLRequest
+            {
+              Query =
+                @"query {
             adminStreams{
               totalCount
               }
             }"
-          },
-          CancellationToken.None
-        )
+            },
+            CancellationToken.None
+          )
+          .ConfigureAwait(false)
     );
   }
 }

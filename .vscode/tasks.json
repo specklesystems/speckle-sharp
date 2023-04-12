@@ -69,7 +69,7 @@
         "jb",
         "cleanupcode",
         "${input:projectPath}",
-        "--profile=\"Speckle: Custom Cleanup\"",
+        "--profile=\"Speckle:\\sCustom\\sCleanup\"",
         "--settings=\"All.sln.DotSettings\"",
       ],
       "group": "build",

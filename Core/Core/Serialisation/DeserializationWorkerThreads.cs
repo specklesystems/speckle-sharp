@@ -18,7 +18,8 @@ internal class DeserializationWorkerThreads : IDisposable
   private object LockFreeThreads = new();
   private BaseObjectDeserializerV2 Serializer;
 
-  private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks = new();
+  private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks =
+    new();
 
   private List<Thread> Threads = new();
 
@@ -31,7 +32,8 @@ internal class DeserializationWorkerThreads : IDisposable
 
   public void Dispose()
   {
-    lock (LockFreeThreads) FreeThreadCount -= ThreadCount;
+    lock (LockFreeThreads)
+      FreeThreadCount -= ThreadCount;
     foreach (Thread t in Threads)
       Tasks.Add((WorkerThreadTaskType.Deserialize, null, null));
     foreach (Thread t in Threads)
@@ -55,9 +57,12 @@ internal class DeserializationWorkerThreads : IDisposable
   {
     while (true)
     {
-      lock (LockFreeThreads) FreeThreadCount++;
-      (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) = Tasks.Take();
-      if (tcs == null) return;
+      lock (LockFreeThreads)
+        FreeThreadCount++;
+      (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) =
+        Tasks.Take();
+      if (tcs == null)
+        return;
 
       try
       {
@@ -85,9 +90,7 @@ internal class DeserializationWorkerThreads : IDisposable
 
     if (canStartTask)
     {
-      TaskCompletionSource<object> tcs = new(
-        TaskCreationOptions.RunContinuationsAsynchronously
-      );
+      TaskCompletionSource<object> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
       Tasks.Add((taskType, inputValue, tcs));
       return tcs.Task;
     }

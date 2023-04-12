@@ -14,7 +14,9 @@ public static class KitManager
 {
   private static string? _kitsFolder = null;
 
-  public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
+  public static readonly AssemblyName SpeckleAssemblyName = typeof(Base)
+    .GetTypeInfo()
+    .Assembly.GetName();
 
   private static Dictionary<string, ISpeckleKit> _SpeckleKits = new();
 
@@ -132,7 +134,10 @@ public static class KitManager
 
   private static void Load()
   {
-    SpeckleLog.Logger.Information("Initializing Kit Manager in {KitsFolder}", SpecklePathProvider.KitsFolderPath);
+    SpeckleLog.Logger.Information(
+      "Initializing Kit Manager in {KitsFolder}",
+      SpecklePathProvider.KitsFolderPath
+    );
 
     GetLoadedSpeckleReferencingAssemblies();
     LoadSpeckleReferencingAssemblies();
@@ -300,10 +305,12 @@ public static class AssemblyExtensions
   /// <returns>A boolean value indicating if there is a reference.</returns>
   public static bool IsReferencing(this Assembly assembly, AssemblyName referenceName)
   {
-    if (AssemblyName.ReferenceMatchesDefinition(assembly.GetName(), referenceName)) return true;
+    if (AssemblyName.ReferenceMatchesDefinition(assembly.GetName(), referenceName))
+      return true;
 
     foreach (var referencedAssemblyName in assembly.GetReferencedAssemblies())
-      if (AssemblyName.ReferenceMatchesDefinition(referencedAssemblyName, referenceName)) return true;
+      if (AssemblyName.ReferenceMatchesDefinition(referencedAssemblyName, referenceName))
+        return true;
 
     return false;
   }

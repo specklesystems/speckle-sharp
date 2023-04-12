@@ -37,17 +37,20 @@ public static class SpecklePathProvider
   /// <summary>
   /// Get the path where the Speckle applications should be installed
   /// </summary>
-  public static string InstallSpeckleFolderPath => EnsureFolderExists(InstallApplicationDataPath, _applicationName);
+  public static string InstallSpeckleFolderPath =>
+    EnsureFolderExists(InstallApplicationDataPath, _applicationName);
 
   /// <summary>
   /// Get the folder where the user's Speckle data should be stored.
   /// </summary>
-  public static string UserSpeckleFolderPath => EnsureFolderExists(UserApplicationDataPath(), _applicationName);
+  public static string UserSpeckleFolderPath =>
+    EnsureFolderExists(UserApplicationDataPath(), _applicationName);
 
   /// <summary>
   /// Get the folder where the Speckle kits should be stored.
   /// </summary>
-  public static string KitsFolderPath => EnsureFolderExists(InstallSpeckleFolderPath, _kitsFolderName);
+  public static string KitsFolderPath =>
+    EnsureFolderExists(InstallSpeckleFolderPath, _kitsFolderName);
 
   /// <summary>
   ///
@@ -57,7 +60,8 @@ public static class SpecklePathProvider
   /// <summary>
   /// Get the folder where the Speckle accounts data should be stored.
   /// </summary>
-  public static string AccountsFolderPath => EnsureFolderExists(UserSpeckleFolderPath, _accountsFolderName);
+  public static string AccountsFolderPath =>
+    EnsureFolderExists(UserSpeckleFolderPath, _accountsFolderName);
 
   /// <summary>
   /// Override the global Speckle application name.

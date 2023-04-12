@@ -13,6 +13,7 @@ namespace Speckle.Core.Credentials;
 public class Account : IEquatable<Account>
 {
   public Account() { }
+
   private string _id { get; set; } = null;
 
   public string id
@@ -49,7 +50,8 @@ public class Account : IEquatable<Account>
   {
     Uri NewUri;
 
-    if (Uri.TryCreate(server, UriKind.Absolute, out NewUri)) server = NewUri.Authority;
+    if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
+      server = NewUri.Authority;
     return server;
   }
 
@@ -83,7 +85,7 @@ public class Account : IEquatable<Account>
 
     var request = new GraphQLRequest { Query = @" query { user { name email id company } }" };
 
-    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request);
+    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request).ConfigureAwait(false);
 
     if (response.Errors != null)
       return null;
@@ -99,6 +101,16 @@ public class Account : IEquatable<Account>
   public override string ToString()
   {
     return $"Account ({userInfo.email} | {serverInfo.url})";
+  }
+
+  public override bool Equals(object obj)
+  {
+    return Equals(obj as Account);
+  }
+
+  public override int GetHashCode()
+  {
+    throw new NotImplementedException();
   }
 
   #endregion

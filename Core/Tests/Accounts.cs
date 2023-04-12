@@ -52,7 +52,7 @@ public class CredentialInfrastructure
   }
 
   private Account TestAccount1,
-                  TestAccount2;
+    TestAccount2;
 
   private Account TestAccount3;
 

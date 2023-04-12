@@ -29,7 +29,8 @@ public partial class Client
                     }"
     };
 
-    var res = await ExecuteGraphQLRequest<ServerInfoResponse>(request, cancellationToken);
+    var res = await ExecuteGraphQLRequest<ServerInfoResponse>(request, cancellationToken)
+      .ConfigureAwait(false);
 
     if (res.serverInfo.version.Contains("dev"))
       return new System.Version(999, 999, 999);

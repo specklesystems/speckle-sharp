@@ -48,7 +48,9 @@ public static class AccountManager
 
     var request = new GraphQLRequest { Query = @" query { serverInfo { name company } }" };
 
-    var response = await gqlClient.SendQueryAsync<ServerInfoResponse>(request);
+    var response = await gqlClient
+      .SendQueryAsync<ServerInfoResponse>(request)
+      .ConfigureAwait(false);
 
     if (response.Errors != null)
       return null;
@@ -77,7 +79,7 @@ public static class AccountManager
 
     var request = new GraphQLRequest { Query = @" query { user { name email id company } }" };
 
-    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request);
+    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request).ConfigureAwait(false);
 
     if (response.Errors != null)
       return null;
@@ -173,7 +175,9 @@ public static class AccountManager
     {
       var firstAccount = GetAccounts().FirstOrDefault();
       if (firstAccount == null)
-        SpeckleLog.Logger.Information("No Speckle accounts found. Visit the Speckle web app to create one.");
+        SpeckleLog.Logger.Information(
+          "No Speckle accounts found. Visit the Speckle web app to create one."
+        );
       return firstAccount;
     }
     return defaultAccount;
@@ -185,12 +189,15 @@ public static class AccountManager
   /// <returns></returns>
   public static IEnumerable<Account> GetAccounts()
   {
-    var sqlAccounts = AccountStorage.GetAllObjects().Select(x => JsonConvert.DeserializeObject<Account>(x));
+    var sqlAccounts = AccountStorage
+      .GetAllObjects()
+      .Select(x => JsonConvert.DeserializeObject<Account>(x));
     var localAccounts = GetLocalAccounts();
 
     //prevent invalid account from slipping out
     var invalidAccounts = sqlAccounts.Where(x => x.userInfo == null || x.serverInfo == null);
-    foreach (var acc in invalidAccounts) RemoveAccount(acc.id);
+    foreach (var acc in invalidAccounts)
+      RemoveAccount(acc.id);
 
     var allAccounts = sqlAccounts.Concat(localAccounts);
 
@@ -206,7 +213,8 @@ public static class AccountManager
   {
     var accounts = new List<Account>();
     var accountsDir = SpecklePathProvider.AccountsFolderPath;
-    if (!Directory.Exists(accountsDir)) return accounts;
+    if (!Directory.Exists(accountsDir))
+      return accounts;
     var files = Directory.GetFiles(accountsDir, "*.json", SearchOption.AllDirectories);
     foreach (var file in files)
       try
@@ -216,11 +224,11 @@ public static class AccountManager
 
         if (
           !string.IsNullOrEmpty(account.token)
-       && !string.IsNullOrEmpty(account.userInfo.id)
-       && !string.IsNullOrEmpty(account.userInfo.email)
-       && !string.IsNullOrEmpty(account.userInfo.name)
-       && !string.IsNullOrEmpty(account.serverInfo.url)
-       && !string.IsNullOrEmpty(account.serverInfo.name)
+          && !string.IsNullOrEmpty(account.userInfo.id)
+          && !string.IsNullOrEmpty(account.userInfo.email)
+          && !string.IsNullOrEmpty(account.userInfo.name)
+          && !string.IsNullOrEmpty(account.serverInfo.url)
+          && !string.IsNullOrEmpty(account.serverInfo.name)
         )
           accounts.Add(account);
       }
@@ -244,16 +252,23 @@ public static class AccountManager
 
       try
       {
-        var userServerInfo = await GetUserServerInfo(account.token, url);
+        var userServerInfo = await GetUserServerInfo(account.token, url).ConfigureAwait(false);
 
         //the token has expired
         //TODO: once we get a token expired exception from the server use that instead
-        if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+        if (
+          userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null
+        )
         {
-          var tokenResponse = await GetRefreshedToken(account.refreshToken, url);
-          userServerInfo = await GetUserServerInfo(tokenResponse.token, url);
+          var tokenResponse = await GetRefreshedToken(account.refreshToken, url)
+            .ConfigureAwait(false);
+          userServerInfo = await GetUserServerInfo(tokenResponse.token, url).ConfigureAwait(false);
 
-          if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+          if (
+            userServerInfo == null
+            || userServerInfo.user == null
+            || userServerInfo.serverInfo == null
+          )
             throw new SpeckleException("Could not refresh token");
 
           account.token = tokenResponse.token;
@@ -285,7 +300,8 @@ public static class AccountManager
 
     var accounts = GetAccounts();
 
-    if (accounts.Any() && !accounts.Any(x => x.isDefault)) ChangeDefaultAccount(accounts.First().id);
+    if (accounts.Any() && !accounts.Any(x => x.isDefault))
+      ChangeDefaultAccount(accounts.First().id);
   }
 
   /// <summary>
@@ -328,15 +344,25 @@ public static class AccountManager
     }
   }
 
-  private static async Task<string> _getAccessCode(string server, string challenge, TimeSpan timeout)
+  private static async Task<string> _getAccessCode(
+    string server,
+    string challenge,
+    TimeSpan timeout
+  )
   {
     _ensureGetAccessCodeFlowIsSupported();
 
-    SpeckleLog.Logger.Debug("Starting auth process for {server}/authn/verify/sca/{challenge}", server, challenge);
+    SpeckleLog.Logger.Debug(
+      "Starting auth process for {server}/authn/verify/sca/{challenge}",
+      server,
+      challenge
+    );
 
     var accessCode = "";
 
-    Process.Start(new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true });
+    Process.Start(
+      new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true }
+    );
 
     var listener = new HttpListener();
 
@@ -355,7 +381,8 @@ public static class AccountManager
       SpeckleLog.Logger.Debug("Got access code {accessCode}", accessCode);
       var message = "";
       if (accessCode != null)
-        message = "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
+        message =
+          "Success!<br/><br/>You can close this window now.<script>window.close();</script>";
       else
         message = "Oups, something went wrong...!";
 
@@ -371,7 +398,7 @@ public static class AccountManager
       listener.Close();
     });
 
-    var completedTask = await Task.WhenAny(task, Task.Delay(timeout));
+    var completedTask = await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false);
 
     //ensure the listener is closed even if the task has timed out or failed
     if (listener.IsListening)
@@ -405,12 +432,16 @@ public static class AccountManager
     return accessCode;
   }
 
-  private static async Task<Account> _createAccount(string accessCode, string challenge, string server)
+  private static async Task<Account> _createAccount(
+    string accessCode,
+    string challenge,
+    string server
+  )
   {
     try
     {
-      var tokenResponse = await GetToken(accessCode, challenge, server);
-      var userResponse = await GetUserServerInfo(tokenResponse.token, server);
+      var tokenResponse = await GetToken(accessCode, challenge, server).ConfigureAwait(false);
+      var userResponse = await GetUserServerInfo(tokenResponse.token, server).ConfigureAwait(false);
 
       var account = new Account()
       {
@@ -427,7 +458,10 @@ public static class AccountManager
     }
     catch (Exception ex)
     {
-      throw new SpeckleAccountManagerException("Failed to create account from access code and challenge", ex);
+      throw new SpeckleAccountManagerException(
+        "Failed to create account from access code and challenge",
+        ex
+      );
     }
   }
 
@@ -473,7 +507,8 @@ public static class AccountManager
   {
     _isAddingAccount = false;
     // make sure all old locks are removed
-    foreach (var id in AccountAddLockStorage.GetAllObjects()) AccountAddLockStorage.DeleteObject(id);
+    foreach (var id in AccountAddLockStorage.GetAllObjects())
+      AccountAddLockStorage.DeleteObject(id);
   }
 
   /// <summary>
@@ -498,15 +533,19 @@ public static class AccountManager
 
     try
     {
-      accessCode = await _getAccessCode(server, challenge, timeout);
+      accessCode = await _getAccessCode(server, challenge, timeout).ConfigureAwait(false);
       if (string.IsNullOrEmpty(accessCode))
         throw new SpeckleAccountManagerException("Access code is invalid");
 
-      var account = await _createAccount(accessCode, challenge, server);
+      var account = await _createAccount(accessCode, challenge, server).ConfigureAwait(false);
 
       //if the account already exists it will not be added again
       AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
-      SpeckleLog.Logger.Debug("Finished adding account {accountId} for {serverUrl}", account.id, server);
+      SpeckleLog.Logger.Debug(
+        "Finished adding account {accountId} for {serverUrl}",
+        account.id,
+        server
+      );
     }
     catch (SpeckleAccountManagerException ex)
     {
@@ -525,7 +564,11 @@ public static class AccountManager
     }
   }
 
-  private static async Task<TokenExchangeResponse> GetToken(string accessCode, string challenge, string server)
+  private static async Task<TokenExchangeResponse> GetToken(
+    string accessCode,
+    string challenge,
+    string server
+  )
   {
     try
     {
@@ -543,9 +586,11 @@ public static class AccountManager
 
       var content = new StringContent(JsonConvert.SerializeObject(body));
       content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-      var response = await client.PostAsync($"{server}/auth/token", content);
+      var response = await client.PostAsync($"{server}/auth/token", content).ConfigureAwait(false);
 
-      return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
+      return JsonConvert.DeserializeObject<TokenExchangeResponse>(
+        await response.Content.ReadAsStringAsync().ConfigureAwait(false)
+      );
     }
     catch (Exception e)
     {
@@ -553,7 +598,10 @@ public static class AccountManager
     }
   }
 
-  private static async Task<TokenExchangeResponse> GetRefreshedToken(string refreshToken, string server)
+  private static async Task<TokenExchangeResponse> GetRefreshedToken(
+    string refreshToken,
+    string server
+  )
   {
     try
     {
@@ -570,9 +618,11 @@ public static class AccountManager
 
       var content = new StringContent(JsonConvert.SerializeObject(body));
       content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-      var response = await client.PostAsync($"{server}/auth/token", content);
+      var response = await client.PostAsync($"{server}/auth/token", content).ConfigureAwait(false);
 
-      return JsonConvert.DeserializeObject<TokenExchangeResponse>(await response.Content.ReadAsStringAsync());
+      return JsonConvert.DeserializeObject<TokenExchangeResponse>(
+        await response.Content.ReadAsStringAsync().ConfigureAwait(false)
+      );
     }
     catch (Exception e)
     {

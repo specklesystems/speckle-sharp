@@ -1,18 +1,18 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Serilog;
+using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Speckle.Core.Helpers;
-using Serilog;
 using Tests;
-using Serilog.Context;
 
 /// <summary>
 /// Quick and dirty tests/examples of Speckle usage.
@@ -51,7 +51,9 @@ namespace ExampleApp
         40759.5123
       );
 
-      var log = SpeckleLog.Logger.ForContext("currentSpeed", "warp 5").ForContext("captain", "Jean-Luc Picard");
+      var log = SpeckleLog.Logger
+        .ForContext("currentSpeed", "warp 5")
+        .ForContext("captain", "Jean-Luc Picard");
 
       SpeckleLog.Logger.Information(
         "We're traveling to {destination} our current speed is {currentSpeed}",
@@ -112,7 +114,10 @@ namespace ExampleApp
     /// <param name="numVertices"></param>
     /// <param name="numObjects"></param>
     /// <returns></returns>
-    public static async Task SendReceiveManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
+    public static async Task SendReceiveManyLargeObjects(
+      int numVertices = 1000,
+      int numObjects = 10_000
+    )
     {
       var objs = new List<Base>();
 
@@ -137,41 +142,45 @@ namespace ExampleApp
       Console.WriteLine("Done generating objects.");
 
       var myClient = new Client(AccountManager.GetDefaultAccount());
-      var streamId = await myClient.StreamCreate(
-        new StreamCreateInput { name = "test", description = "this is a test" }
-      );
+      var streamId = await myClient
+        .StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" })
+        .ConfigureAwait(false);
       var myServer = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
 
       var myObject = new Base();
       myObject["items"] = objs;
 
-      var res = await Operations.Send(
-        myObject,
-        new List<ITransport>() { myServer },
-        onProgressAction: dict =>
-        {
-          Console.CursorLeft = 0;
-          Console.CursorTop = 2;
+      var res = await Operations
+        .Send(
+          myObject,
+          new List<ITransport>() { myServer },
+          onProgressAction: dict =>
+          {
+            Console.CursorLeft = 0;
+            Console.CursorTop = 2;
 
-          foreach (var kvp in dict)
-            Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
-        }
-      );
+            foreach (var kvp in dict)
+              Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+          }
+        )
+        .ConfigureAwait(false);
 
       Console.WriteLine($"Big commit id is {res}");
 
-      var receivedCommit = await Operations.Receive(
-        res,
-        remoteTransport: myServer,
-        onProgressAction: dict =>
-        {
-          Console.CursorLeft = 0;
-          Console.CursorTop = 7;
+      var receivedCommit = await Operations
+        .Receive(
+          res,
+          remoteTransport: myServer,
+          onProgressAction: dict =>
+          {
+            Console.CursorLeft = 0;
+            Console.CursorTop = 7;
 
-          foreach (var kvp in dict)
-            Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
-        }
-      );
+            foreach (var kvp in dict)
+              Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+          }
+        )
+        .ConfigureAwait(false);
 
       Console.Clear();
       Console.WriteLine($"Received big commit {res}");
@@ -185,7 +194,9 @@ namespace ExampleApp
     public static async Task SendReceiveLargeSingleObjects(int numVertices = 100_000)
     {
       Console.Clear();
-      Console.WriteLine($"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces");
+      Console.WriteLine(
+        $"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces"
+      );
       var myMesh = new Mesh();
 
       for (int i = 1; i <= numVertices; i++)
@@ -195,19 +206,21 @@ namespace ExampleApp
       }
 
       var myClient = new Client(AccountManager.GetDefaultAccount());
-      var streamId = await myClient.StreamCreate(
-        new StreamCreateInput { name = "test", description = "this is a test" }
-      );
+      var streamId = await myClient
+        .StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" })
+        .ConfigureAwait(false);
       var server = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
 
-      var res = await Operations.Send(myMesh, transports: new List<ITransport>() { server });
+      var res = await Operations
+        .Send(myMesh, transports: new List<ITransport>() { server })
+        .ConfigureAwait(false);
       ;
 
       Console.WriteLine($"Big mesh id is {res}");
 
       var cp = res;
 
-      var pullMyMesh = await Operations.Receive(res);
+      var pullMyMesh = await Operations.Receive(res).ConfigureAwait(false);
 
       Console.WriteLine("Pulled back big mesh.");
     }
@@ -236,7 +249,11 @@ namespace ExampleApp
           objects.Add(
             new Polyline
             {
-              Points = new List<Point>() { new Point(i * 3.23, i / 3 * 7, i * 3), new Point(i / 2, i / 2, i / 2) }
+              Points = new List<Point>()
+              {
+                new Point(i * 3.23, i / 3 * 7, i * 3),
+                new Point(i / 2, i / 2, i / 2)
+              }
             }
           );
           for (int j = 0; j < 54; j++)
@@ -252,7 +269,9 @@ namespace ExampleApp
       ((dynamic)myRevision)["@FTW"] = objects.GetRange(130, objects.Count - 130 - 1);
 
       var step = sw.ElapsedMilliseconds;
-      Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
+      Console.WriteLine(
+        $"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds."
+      );
 
       Console.Clear();
 
@@ -271,22 +290,26 @@ namespace ExampleApp
 
       // Let's set up some fake server transports.
       var myClient = new Client(AccountManager.GetDefaultAccount());
-      var streamId = await myClient.StreamCreate(
-        new StreamCreateInput { name = "test", description = "this is a test" }
-      );
+      var streamId = await myClient
+        .StreamCreate(new StreamCreateInput { name = "test", description = "this is a test" })
+        .ConfigureAwait(false);
       var firstServer = new ServerTransport(AccountManager.GetDefaultAccount(), streamId);
 
       var mySecondClient = new Client(AccountManager.GetDefaultAccount());
-      var secondStreamId = await myClient.StreamCreate(
-        new StreamCreateInput { name = "test2", description = "this is a second test" }
-      );
+      var secondStreamId = await myClient
+        .StreamCreate(
+          new StreamCreateInput { name = "test2", description = "this is a second test" }
+        )
+        .ConfigureAwait(false);
       var secondServer = new ServerTransport(AccountManager.GetDefaultAccount(), secondStreamId);
 
-      var res = await Operations.Send(
-        @object: myRevision,
-        transports: new List<ITransport>() { firstServer, secondServer },
-        onProgressAction: pushProgressAction
-      );
+      var res = await Operations
+        .Send(
+          @object: myRevision,
+          transports: new List<ITransport>() { firstServer, secondServer },
+          onProgressAction: pushProgressAction
+        )
+        .ConfigureAwait(false);
 
       Console.Clear();
       Console.CursorLeft = 0;
@@ -300,18 +323,20 @@ namespace ExampleApp
       Console.Clear();
 
       // Time for getting our revision object back.
-      var res2 = await Operations.Receive(
-        res,
-        remoteTransport: firstServer,
-        onProgressAction: dict =>
-        {
-          Console.CursorLeft = 0;
-          Console.CursorTop = 0;
+      var res2 = await Operations
+        .Receive(
+          res,
+          remoteTransport: firstServer,
+          onProgressAction: dict =>
+          {
+            Console.CursorLeft = 0;
+            Console.CursorTop = 0;
 
-          foreach (var kvp in dict)
-            Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
-        }
-      );
+            foreach (var kvp in dict)
+              Console.WriteLine($"<<<< {kvp.Key} progress: {kvp.Value} / {numObjects + 1}");
+          }
+        )
+        .ConfigureAwait(false);
 
       Console.Clear();
       Console.WriteLine("Got those objects back");
@@ -343,7 +368,7 @@ namespace ExampleApp
       }
 
       // waits for the buffer to be empty.
-      await transport.WriteComplete();
+      await transport.WriteComplete().ConfigureAwait(false);
 
       var stopWatchStep = stopWatch.ElapsedMilliseconds;
       var objsPerSecond = (double)numObjects / (stopWatchStep / 1000);

@@ -36,7 +36,8 @@ public partial class Client
       before,
       cursor,
       actionType,
-      limit);
+      limit
+    );
   }
 
   /// <summary>
@@ -93,7 +94,8 @@ public partial class Client
       }
     };
 
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
+      .ConfigureAwait(false);
     return res.stream.activity.items;
   }
 }

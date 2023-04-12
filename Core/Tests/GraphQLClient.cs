@@ -42,7 +42,7 @@ public class GraphQLClientTests
     );
   }
 
-  [Test,TestCaseSource(nameof(ErrorCases))]
+  [Test, TestCaseSource(nameof(ErrorCases))]
   public void TestExceptionThrowingFromGraphQLErrors(Type exType, Map extensions)
   {
     Assert.Throws(
@@ -61,7 +61,10 @@ public class GraphQLClientTests
   [Test]
   public void TestMaybeThrowsDoesntThrowForNoErrors()
   {
-    _client.MaybeThrowFromGraphQLErrors<string>(new GraphQLRequest(), new GraphQLResponse<string>());
+    _client.MaybeThrowFromGraphQLErrors<string>(
+      new GraphQLRequest(),
+      new GraphQLResponse<string>()
+    );
     // We're just checking that the prev function didn't throw
     Assert.True(true);
   }
@@ -75,17 +78,20 @@ public class GraphQLClientTests
     {
       var tokenSource = new CancellationTokenSource();
       tokenSource.Cancel();
-      await _client.ExecuteWithResiliencePolicies<string>(
-        async () =>
-          await Task.Run(
-            async () =>
-            {
-              await Task.Delay(1000);
-              return "foo";
-            },
-            tokenSource.Token
-          )
-      );
+      await _client
+        .ExecuteWithResiliencePolicies(
+          async () =>
+            await Task.Run(
+                async () =>
+                {
+                  await Task.Delay(1000).ConfigureAwait(false);
+                  return "foo";
+                },
+                tokenSource.Token
+              )
+              .ConfigureAwait(false)
+        )
+        .ConfigureAwait(false);
     });
     timer.Stop();
     var elapsed = timer.ElapsedMilliseconds;
@@ -103,18 +109,23 @@ public class GraphQLClientTests
     var expectedResult = "finally it finishes";
     var timer = new Stopwatch();
     timer.Start();
-    var result = await _client.ExecuteWithResiliencePolicies<string>(async () =>
-    {
-      counter++;
-      if (counter < maxRetryCount)
-        throw new SpeckleGraphQLInternalErrorException<string>(new GraphQLRequest(), new GraphQLResponse<string>());
-      return expectedResult;
-    });
+    var result = await _client
+      .ExecuteWithResiliencePolicies(async () =>
+      {
+        counter++;
+        if (counter < maxRetryCount)
+          throw new SpeckleGraphQLInternalErrorException<string>(
+            new GraphQLRequest(),
+            new GraphQLResponse<string>()
+          );
+        return expectedResult;
+      })
+      .ConfigureAwait(false);
     timer.Stop();
     // The baseline for wait is 1 seconds between the jittered retry
     Assert.GreaterOrEqual(timer.ElapsedMilliseconds, 5000);
-    Assert.AreEqual(maxRetryCount, counter);
+    Assert.That(counter, Is.EqualTo(maxRetryCount));
   }
 
-  private class FakeGqlResponseModel {}
+  private class FakeGqlResponseModel { }
 }

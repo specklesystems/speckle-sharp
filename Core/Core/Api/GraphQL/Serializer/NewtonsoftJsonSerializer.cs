@@ -28,7 +28,10 @@ public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
   public static JsonSerializerSettings DefaultJsonSerializerSettings =>
     new()
     {
-      ContractResolver = new CamelCasePropertyNamesContractResolver { IgnoreIsSpecifiedMembers = true },
+      ContractResolver = new CamelCasePropertyNamesContractResolver
+      {
+        IgnoreIsSpecifiedMembers = true
+      },
       MissingMemberHandling = MissingMemberHandling.Ignore,
       Converters = { new ConstantCaseEnumConverter() }
     };
@@ -46,14 +49,16 @@ public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
     return Encoding.UTF8.GetBytes(json);
   }
 
-  public Task<WebsocketMessageWrapper> DeserializeToWebsocketResponseWrapperAsync(System.IO.Stream stream)
+  public Task<WebsocketMessageWrapper> DeserializeToWebsocketResponseWrapperAsync(
+    System.IO.Stream stream
+  )
   {
     return DeserializeFromUtf8Stream<WebsocketMessageWrapper>(stream);
   }
 
-  public GraphQLWebSocketResponse<GraphQLResponse<TResponse>> DeserializeToWebsocketResponse<TResponse>(
-    byte[] bytes
-  )
+  public GraphQLWebSocketResponse<
+    GraphQLResponse<TResponse>
+  > DeserializeToWebsocketResponse<TResponse>(byte[] bytes)
   {
     return JsonConvert.DeserializeObject<GraphQLWebSocketResponse<GraphQLResponse<TResponse>>>(
       Encoding.UTF8.GetString(bytes),

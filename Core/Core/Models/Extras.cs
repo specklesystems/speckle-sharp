@@ -58,6 +58,7 @@ public class Abstract : Base
 public class DataChunk : Base
 {
   public DataChunk() { }
+
   public List<object> data { get; set; } = new();
 }
 
@@ -66,6 +67,7 @@ public class ObjectReference
   public string speckle_type = "reference";
 
   public ObjectReference() { }
+
   public string referencedId { get; set; }
 }
 
@@ -189,13 +191,18 @@ public class ApplicationObject
     if (status.HasValue)
       Status = status.Value;
     if (log != null)
-      log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
+      log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))
+        ?.ToList()
+        .ForEach(o => Log.Add(o));
     if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem))
       Log.Add(logItem);
     if (convertedItem != null && !Converted.Contains(convertedItem))
       Converted.Add(convertedItem);
     if (converted != null)
-      converted.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(o => Converted.Add(o));
+      converted
+        .Where(o => o != null && !Converted.Contains(o))
+        ?.ToList()
+        .ForEach(o => Converted.Add(o));
     if (!string.IsNullOrEmpty(container))
       Container = container;
     if (!string.IsNullOrEmpty(descriptor))

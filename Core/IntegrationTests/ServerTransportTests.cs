@@ -23,9 +23,11 @@ public class ServerTransportTests
     Directory.CreateDirectory(_basePath);
     SpecklePathProvider.OverrideApplicationDataPath(_basePath);
 
-    account = await Fixtures.SeedUser();
+    account = await Fixtures.SeedUser().ConfigureAwait(false);
     client = new Client(account);
-    streamId = client.StreamCreate(new StreamCreateInput { description = "Flobber", name = "Blobber" }).Result;
+    streamId = client
+      .StreamCreate(new StreamCreateInput { description = "Flobber", name = "Blobber" })
+      .Result;
   }
 
   [SetUp]
@@ -57,7 +59,9 @@ public class ServerTransportTests
   {
     var myObject = Fixtures.GenerateNestedObject();
 
-    var objectId = await Operations.Send(myObject, new List<ITransport> { transport });
+    var objectId = await Operations
+      .Send(myObject, new List<ITransport> { transport })
+      .ConfigureAwait(false);
 
     var test = objectId;
     Assert.IsNotNull(test);
@@ -69,12 +73,14 @@ public class ServerTransportTests
     var myObject = Fixtures.GenerateSimpleObject();
     myObject["blobs"] = Fixtures.GenerateThreeBlobs();
 
-    var sentObjectId = await Operations.Send(myObject, new List<ITransport> { transport });
+    var sentObjectId = await Operations
+      .Send(myObject, new List<ITransport> { transport })
+      .ConfigureAwait(false);
 
     // NOTE: used to debug diffing
     // await Operations.Send(myObject, new List<ITransport> { transport });
 
-    var receivedObject = await Operations.Receive(sentObjectId, transport);
+    var receivedObject = await Operations.Receive(sentObjectId, transport).ConfigureAwait(false);
 
     var allFiles = Directory
       .GetFiles(transport.BlobStorageFolder)
@@ -103,13 +109,11 @@ public class ServerTransportTests
     myObject["blobs"] = Fixtures.GenerateThreeBlobs();
 
     var memTransport = new MemoryTransport();
-    var sentObjectId = await Operations.Send(
-      myObject,
-      new List<ITransport> { transport, memTransport },
-      false
-    );
+    var sentObjectId = await Operations
+      .Send(myObject, new List<ITransport> { transport, memTransport }, false)
+      .ConfigureAwait(false);
 
-    var receivedObject = await Operations.Receive(sentObjectId, transport);
+    var receivedObject = await Operations.Receive(sentObjectId, transport).ConfigureAwait(false);
 
     var allFiles = Directory
       .GetFiles(transport.BlobStorageFolder)
@@ -138,22 +142,22 @@ public class ServerTransportTests
     myObject["blobs"] = Fixtures.GenerateThreeBlobs();
 
     var memTransport = new MemoryTransport();
-    var sentObjectId = await Operations.Send(
-      myObject,
-      new List<ITransport> { transport, memTransport },
-      false
-    );
+    var sentObjectId = await Operations
+      .Send(myObject, new List<ITransport> { transport, memTransport }, false)
+      .ConfigureAwait(false);
 
     memTransport = new MemoryTransport();
-    var receivedObject = await Operations.Receive(
-      sentObjectId,
-      transport,
-      memTransport,
-      onErrorAction: (s, e) =>
-      {
-        Console.WriteLine(s);
-      }
-    );
+    var receivedObject = await Operations
+      .Receive(
+        sentObjectId,
+        transport,
+        memTransport,
+        onErrorAction: (s, e) =>
+        {
+          Console.WriteLine(s);
+        }
+      )
+      .ConfigureAwait(false);
 
     var allFiles = Directory
       .GetFiles(transport.BlobStorageFolder)

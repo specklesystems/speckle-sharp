@@ -57,7 +57,8 @@ public class SpeckleLogConfiguration
   /// <summary>
   /// Flag to override the default Sentry DNS
   /// </summary>
-  public string sentryDns = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
+  public string sentryDns =
+    "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
   /// <summary>
   /// Default SpeckleLogConfiguration constructor.
@@ -97,7 +98,7 @@ public static class SpeckleLog
 
   public static ILogger Logger =>
     _logger
- ?? throw new SpeckleException(
+    ?? throw new SpeckleException(
       $"The logger has not been initialized. Please call {typeof(SpeckleLog).FullName}.{nameof(Initialize)}"
     );
 
@@ -270,7 +271,10 @@ public static class SpeckleLog
     string? hostApplicationVersion
   )
   {
-    GlobalLogContext.PushProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
+    GlobalLogContext.PushProperty(
+      "hostApplication",
+      $"{hostApplicationName}{hostApplicationVersion ?? ""}"
+    );
 
     SentrySdk.ConfigureScope(scope =>
     {

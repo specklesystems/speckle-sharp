@@ -19,8 +19,6 @@ public class BaseObjectDeserializerV2
   private bool Busy = false;
   private object CallbackLock = new();
 
-  private Regex ChunkPropertyNameRegex = new(@"^@\((\d*)\)");
-
   // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
   private Dictionary<string, object> DeserializedObjects;
 
@@ -78,7 +76,8 @@ public class BaseObjectDeserializerV2
         string objJson = ReadTransport.GetObject(objId);
         stopwatch.Start();
         object deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
-        lock (DeserializedObjects) DeserializedObjects[objId] = deserializedOrPromise;
+        lock (DeserializedObjects)
+          DeserializedObjects[objId] = deserializedOrPromise;
       }
 
       object ret = DeserializeTransportObject(rootObjectJson);
@@ -127,7 +126,10 @@ public class BaseObjectDeserializerV2
   private object DeserializeTransportObjectProxy(string objectJson)
   {
     // Try background work
-    Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson);
+    Task<object> bgResult = WorkerThreads.TryStartTask(
+      WorkerThreadTaskType.Deserialize,
+      objectJson
+    );
     if (bgResult != null)
       return bgResult;
 
@@ -149,7 +151,8 @@ public class BaseObjectDeserializerV2
     }
 
     object converted = ConvertJsonElement(doc1);
-    lock (CallbackLock) OnProgressAction?.Invoke("DS", 1);
+    lock (CallbackLock)
+      OnProgressAction?.Invoke("DS", 1);
     return converted;
   }
 
@@ -239,7 +242,8 @@ public class BaseObjectDeserializerV2
             {
               throw aggregateEx.InnerException;
             }
-            lock (DeserializedObjects) DeserializedObjects[objId] = deserialized;
+            lock (DeserializedObjects)
+              DeserializedObjects[objId] = deserialized;
           }
 
           if (deserialized != null)
@@ -248,7 +252,8 @@ public class BaseObjectDeserializerV2
           // This reference was not already deserialized. Do it now in sync mode
           string objectJson = ReadTransport.GetObject(objId);
           deserialized = DeserializeTransportObject(objectJson);
-          lock (DeserializedObjects) DeserializedObjects[objId] = deserialized;
+          lock (DeserializedObjects)
+            DeserializedObjects[objId] = deserialized;
           return deserialized;
         }
 
@@ -267,13 +272,20 @@ public class BaseObjectDeserializerV2
     dictObj.Remove(TypeDiscriminator);
     dictObj.Remove("__closure");
 
-    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
-    List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
+    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(
+      typeName
+    );
+    List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(
+      typeName
+    );
 
     foreach (KeyValuePair<string, object> entry in dictObj)
     {
       string lowerPropertyName = entry.Key.ToLower();
-      if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
+      if (
+        staticProperties.ContainsKey(lowerPropertyName)
+        && staticProperties[lowerPropertyName].CanWrite
+      )
       {
         PropertyInfo property = staticProperties[lowerPropertyName];
         if (entry.Value == null)
@@ -286,13 +298,21 @@ public class BaseObjectDeserializerV2
 
         Type targetValueType = property.PropertyType;
         object convertedValue;
-        bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out convertedValue);
+        bool conversionOk = ValueConverter.ConvertValue(
+          targetValueType,
+          entry.Value,
+          out convertedValue
+        );
         if (conversionOk)
           property.SetValue(baseObj, convertedValue);
         else
           // Cannot convert the value in the json to the static property type
           throw new Exception(
-            string.Format("Cannot deserialize {0} to {1}", entry.Value.GetType().FullName, targetValueType.FullName)
+            string.Format(
+              "Cannot deserialize {0} to {1}",
+              entry.Value.GetType().FullName,
+              targetValueType.FullName
+            )
           );
       }
       else
@@ -302,9 +322,11 @@ public class BaseObjectDeserializerV2
       }
     }
 
-    if (baseObj is Blob b && BlobStorageFolder != null) b.filePath = b.getLocalDestinationPath(BlobStorageFolder);
+    if (baseObj is Blob b && BlobStorageFolder != null)
+      b.filePath = b.getLocalDestinationPath(BlobStorageFolder);
 
-    foreach (MethodInfo onDeserialized in onDeserializedCallbacks) onDeserialized.Invoke(baseObj, new object[] { null });
+    foreach (MethodInfo onDeserialized in onDeserializedCallbacks)
+      onDeserialized.Invoke(baseObj, new object[] { null });
 
     return baseObj;
   }

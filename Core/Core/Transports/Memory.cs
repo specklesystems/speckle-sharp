@@ -52,7 +52,8 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public int SavedObjectCount { get; set; } = 0;
 
-  public Dictionary<string, object> TransportContext => new() { { "name", TransportName }, { "type", GetType().Name } };
+  public Dictionary<string, object> TransportContext =>
+    new() { { "name", TransportName }, { "type", GetType().Name } };
 
   public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
@@ -111,7 +112,8 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
   public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
   {
     Dictionary<string, bool> ret = new();
-    foreach (string objectId in objectIds) ret[objectId] = Objects.ContainsKey(objectId);
+    foreach (string objectId in objectIds)
+      ret[objectId] = Objects.ContainsKey(objectId);
 
     return ret;
   }

@@ -123,7 +123,8 @@ public static partial class Operations
         serializerV2.OnProgressAction = internalProgressAction;
         serializerV2.OnErrorAction = onErrorAction;
         serializerV2.CancellationToken = cancellationToken;
-        if (remoteTransport is IBlobCapableTransport t) serializerV2.BlobStorageFolder = t.BlobStorageFolder;
+        if (remoteTransport is IBlobCapableTransport t)
+          serializerV2.BlobStorageFolder = t.BlobStorageFolder;
       }
 
       // First we try and get the object from the local transport. If it's there, we assume all its children are there, and proceed with deserialisation.
@@ -141,11 +142,21 @@ public static partial class Operations
         if (partial.__closure != null)
           onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-        Base? localRes = DeserializeStringToBase(serializerVersion, objString, settings, serializerV2);
+        Base? localRes = DeserializeStringToBase(
+          serializerVersion,
+          objString,
+          settings,
+          serializerV2
+        );
 
-        if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal)
+        if (
+          (disposeTransports || !hasUserProvidedLocalTransport)
+          && localTransport is IDisposable dispLocal
+        )
           dispLocal.Dispose();
-        if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRemote)
+        if (
+          disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRemote
+        )
           dispRemote.Dispose();
 
         timer.Stop();
@@ -171,7 +182,11 @@ public static partial class Operations
           $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
         );
 
-        SpeckleLog.Logger.Error(ex, "Cannot receive object from the given transports {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(
+          ex,
+          "Cannot receive object from the given transports {exceptionMessage}",
+          ex.Message
+        );
         throw ex;
       }
 
@@ -185,10 +200,12 @@ public static partial class Operations
         "Cannot find object {objectId} in the local transport, hitting remote {transportName}.",
         remoteTransport.TransportName
       );
-      objString = await remoteTransport.CopyObjectAndChildren(objectId, localTransport, onTotalChildrenCountKnown);
+      objString = await remoteTransport
+        .CopyObjectAndChildren(objectId, localTransport, onTotalChildrenCountKnown)
+        .ConfigureAwait(false);
 
       // Wait for the local transport to finish "writing" - in this case, it signifies that the remote transport has done pushing copying objects into it. (TODO: I can see some scenarios where latency can screw things up, and we should rather wait on the remote transport).
-      await localTransport.WriteComplete();
+      await localTransport.WriteComplete().ConfigureAwait(false);
 
       // Proceed to deserialise the object, now safely knowing that all its children are present in the local (fast) transport.
 
@@ -243,7 +260,11 @@ public static partial class Operations
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
+        SpeckleLog.Logger.Error(
+          ex,
+          "A deserialization error has occurred {exceptionMessage}",
+          ex.Message
+        );
         if (serializerV2.OnErrorAction == null)
           throw;
         serializerV2.OnErrorAction.Invoke(
@@ -267,5 +288,8 @@ public static partial class Operations
 
     public SpeckleDeserializeException(string message, Exception? inner = null)
       : base(message, inner) { }
+
+    public SpeckleDeserializeException(string message)
+      : base(message) { }
   }
 }

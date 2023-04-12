@@ -13,7 +13,8 @@ public static class Crypt
       byte[] hashBytes = md5.ComputeHash(inputBytes);
 
       StringBuilder sb = new();
-      for (int i = 0; i < hashBytes.Length; i++) sb.Append(hashBytes[i].ToString("X2"));
+      for (int i = 0; i < hashBytes.Length; i++)
+        sb.Append(hashBytes[i].ToString("X2"));
       return sb.ToString();
     }
   }

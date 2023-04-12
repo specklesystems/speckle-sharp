@@ -28,7 +28,9 @@ public class MapConverter : JsonConverter<Map>
     if (rootToken is JObject)
       return (Map)ReadDictionary(rootToken, new Map());
     else
-      throw new ArgumentException("This converter can only parse when the root element is a JSON Object.");
+      throw new ArgumentException(
+        "This converter can only parse when the root element is a JSON Object."
+      );
   }
 
   private object? ReadToken(JToken? token)
@@ -39,9 +41,20 @@ public class MapConverter : JsonConverter<Map>
       JArray jArray => ReadArray(jArray).ToList(),
       JValue jValue => jValue.Value,
       JConstructor _
-        => throw new ArgumentOutOfRangeException(nameof(token.Type), "cannot deserialize a JSON constructor"),
-      JProperty _ => throw new ArgumentOutOfRangeException(nameof(token.Type), "cannot deserialize a JSON property"),
-      JContainer _ => throw new ArgumentOutOfRangeException(nameof(token.Type), "cannot deserialize a JSON comment"),
+        => throw new ArgumentOutOfRangeException(
+          nameof(token.Type),
+          "cannot deserialize a JSON constructor"
+        ),
+      JProperty _
+        => throw new ArgumentOutOfRangeException(
+          nameof(token.Type),
+          "cannot deserialize a JSON property"
+        ),
+      JContainer _
+        => throw new ArgumentOutOfRangeException(
+          nameof(token.Type),
+          "cannot deserialize a JSON comment"
+        ),
       _ => throw new ArgumentOutOfRangeException(nameof(token.Type))
     };
   }
@@ -69,6 +82,8 @@ public class MapConverter : JsonConverter<Map>
 
   private bool IsUnsupportedJTokenType(JTokenType type)
   {
-    return type == JTokenType.Constructor || type == JTokenType.Property || type == JTokenType.Comment;
+    return type == JTokenType.Constructor
+      || type == JTokenType.Property
+      || type == JTokenType.Comment;
   }
 }

@@ -10,7 +10,9 @@ namespace Tests;
 public class TestKit : ISpeckleKit
 {
   public TestKit() { }
-  public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
+
+  public IEnumerable<Type> Types =>
+    GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
   public string Description => "Simple object model for with some types for tests.";
 
@@ -62,16 +64,16 @@ public class FakeMesh : Base
 {
   public FakeMesh() { }
 
-  [DetachProperty,Chunkable]
+  [DetachProperty, Chunkable]
   public List<double> Vertices { get; set; } = new();
 
-  [DetachProperty,Chunkable(1000)]
+  [DetachProperty, Chunkable(1000)]
   public double[] ArrayOfDoubles { get; set; }
 
-  [DetachProperty,Chunkable(1000)]
+  [DetachProperty, Chunkable(1000)]
   public TableLeg[] ArrayOfLegs { get; set; }
 
-  [DetachProperty,Chunkable(2500)]
+  [DetachProperty, Chunkable(2500)]
   public List<Tabletop> Tables { get; set; } = new();
 }
 
@@ -111,6 +113,7 @@ public class DiningTable : Base
 public class Tabletop : Base
 {
   public Tabletop() { }
+
   public double length { get; set; }
   public double width { get; set; }
   public double thickness { get; set; }
@@ -119,6 +122,7 @@ public class Tabletop : Base
 public class TableLeg : Base
 {
   public TableLeg() { }
+
   public double height { get; set; }
   public double radius { get; set; }
 
@@ -129,6 +133,7 @@ public class TableLeg : Base
 public class TableLegFixture : Base
 {
   public TableLegFixture() { }
+
   public string nails { get; set; } = "MANY NAILS WOW ";
 }
 
@@ -151,6 +156,7 @@ public class Point : Base
 public class SuperPoint : Point
 {
   public SuperPoint() { }
+
   public double W { get; set; }
 }
 
@@ -168,7 +174,8 @@ public class Mesh : Base
     get => Points.SelectMany(pt => new List<double>() { pt.X, pt.Y, pt.Z }).ToList();
     set
     {
-      for (int i = 0; i < value.Count; i += 3) Points.Add(new Point(value[i], value[i + 1], value[i + 2]));
+      for (int i = 0; i < value.Count; i += 3)
+        Points.Add(new Point(value[i], value[i + 1], value[i + 2]));
     }
   }
 }
@@ -193,7 +200,8 @@ public class Polyline : Base, ICurve
     get => Points.SelectMany(pt => new List<double>() { pt.X, pt.Y, pt.Z }).ToList();
     set
     {
-      for (int i = 0; i < value.Count; i += 3) Points.Add(new Point(value[i], value[i + 1], value[i + 2]));
+      for (int i = 0; i < value.Count; i += 3)
+        Points.Add(new Point(value[i], value[i + 1], value[i + 2]));
     }
   }
 }
@@ -201,6 +209,7 @@ public class Polyline : Base, ICurve
 public class Line : Base, ICurve
 {
   public Line() { }
+
   public Point Start { get; set; }
   public Point End { get; set; }
 }
@@ -211,6 +220,7 @@ public class Line : Base, ICurve
 public class PolygonalFeline : Base
 {
   public PolygonalFeline() { }
+
   public List<ICurve> Whiskers { get; set; } = new();
 
   public Dictionary<string, ICurve> Claws { get; set; } = new();

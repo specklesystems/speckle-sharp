@@ -7,7 +7,7 @@ namespace Speckle.Core.Models;
 /// <para>If set to true the default serialiser will persist it separately, and add a reference to the property's value in the original object.</para>
 /// <para>Only applies to properties of types derived from the Base class.</para>
 /// </summary>
-public class DetachProperty : Attribute
+public sealed class DetachProperty : Attribute
 {
   /// <summary>
   /// <para>Flags an object's property as being detachable.</para>
@@ -26,6 +26,7 @@ public class DetachProperty : Attribute
   }
 
   public bool Detachable { get; set; } = true;
+  public bool _detachable { get; }
 }
 
 /// <summary>
@@ -34,7 +35,7 @@ public class DetachProperty : Attribute
 /// <para>Objects per chunk: for simple types, like numbers, use a high value (>10000); for other objects, use a more conservative number depending on their serialised size.</para>
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public class Chunkable : Attribute
+public sealed class Chunkable : Attribute
 {
   public Chunkable(int ObjectsPerChunk = 1000)
   {
@@ -42,4 +43,5 @@ public class Chunkable : Attribute
   }
 
   public int MaxObjCountPerChunk { get; set; }
+  public int ObjectsPerChunk { get; }
 }

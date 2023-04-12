@@ -16,7 +16,11 @@ public class SpeckleGraphQLException<T> : SpeckleException
   private GraphQLRequest _request;
   public GraphQLResponse<T>? Response;
 
-  public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<T>? response)
+  public SpeckleGraphQLException(
+    string message,
+    GraphQLRequest request,
+    GraphQLResponse<T>? response
+  )
     : base(message)
   {
     _request = request;
@@ -35,12 +39,26 @@ public class SpeckleGraphQLException<T> : SpeckleException
     Response?.Errors != null ? Response.Errors.Select(e => e.Message) : new string[] { };
 
   public IDictionary<string, object>? Extensions => Response?.Extensions;
+
+  public SpeckleGraphQLException() { }
+
+  public SpeckleGraphQLException(string message)
+    : base(message) { }
 }
 
 public class SpeckleGraphQLException : SpeckleGraphQLException<object>
 {
-  public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<object>? response)
+  public SpeckleGraphQLException(
+    string message,
+    GraphQLRequest request,
+    GraphQLResponse<object>? response
+  )
     : base(message, request, response) { }
+
+  public SpeckleGraphQLException() { }
+
+  public SpeckleGraphQLException(string message)
+    : base(message) { }
 }
 
 /// <summary>
@@ -52,10 +70,20 @@ public class SpeckleGraphQLForbiddenException<T> : SpeckleGraphQLException<T>
 {
   public SpeckleGraphQLForbiddenException(GraphQLRequest request, GraphQLResponse<T> response)
     : base("Your request was forbidden", request, response) { }
+
+  public SpeckleGraphQLForbiddenException() { }
+
+  public SpeckleGraphQLForbiddenException(string message)
+    : base(message) { }
 }
 
 public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T>
 {
   public SpeckleGraphQLInternalErrorException(GraphQLRequest request, GraphQLResponse<T> response)
     : base("Your request failed on the server side", request, response) { }
+
+  public SpeckleGraphQLInternalErrorException() { }
+
+  public SpeckleGraphQLInternalErrorException(string message)
+    : base(message) { }
 }

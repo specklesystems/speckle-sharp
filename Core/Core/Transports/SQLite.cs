@@ -27,7 +27,11 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
   /// </summary>
   private Timer WriteTimer;
 
-  public SQLiteTransport(string basePath = null, string applicationName = null, string scope = "Data")
+  public SQLiteTransport(
+    string basePath = null,
+    string applicationName = null,
+    string scope = "Data"
+  )
   {
     if (basePath == null)
       basePath = SpecklePathProvider.UserApplicationDataPath();
@@ -82,7 +86,8 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
 
   private SqliteConnection Connection { get; set; }
   private object ConnectionLock { get; set; }
-  public string BlobStorageFolder => SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
+  public string BlobStorageFolder =>
+    SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
 
   public void SaveBlob(Blob obj)
   {
@@ -189,7 +194,8 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
               content TEXT
             ) WITHOUT ROWID;
           ";
-      using (var command = new SqliteCommand(commandText, c)) command.ExecuteNonQuery();
+      using (var command = new SqliteCommand(commandText, c))
+        command.ExecuteNonQuery();
 
       // Insert Optimisations
 
@@ -295,13 +301,15 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
   /// <returns></returns>
   public async Task WriteComplete()
   {
-    await Utilities.WaitUntil(
-      () =>
-      {
-        return GetWriteCompletionStatus();
-      },
-      500
-    );
+    await Utilities
+      .WaitUntil(
+        () =>
+        {
+          return GetWriteCompletionStatus();
+        },
+        500
+      )
+      .ConfigureAwait(false);
   }
 
   /// <summary>
@@ -454,7 +462,12 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
     lock (ConnectionLock)
     {
       var stopwatch = Stopwatch.StartNew();
-      using (var command = new SqliteCommand("SELECT * FROM objects WHERE hash = @hash LIMIT 1 ", Connection))
+      using (
+        var command = new SqliteCommand(
+          "SELECT * FROM objects WHERE hash = @hash LIMIT 1 ",
+          Connection
+        )
+      )
       {
         command.Parameters.AddWithValue("@hash", hash);
         using (var reader = command.ExecuteReader())

@@ -57,4 +57,9 @@ public class KitException : Exception
   }
 
   public ISpeckleKit Kit { get; }
+
+  public KitException() { }
+
+  public KitException(string message)
+    : base(message) { }
 }

@@ -36,7 +36,8 @@ public static class Setup
   /// <summary>
   /// Set from the connectors, defines which current host application we're running on - includes the version.
   /// </summary>
-  internal static string VersionedHostApplication { get; private set; } = HostApplications.Other.Slug;
+  internal static string VersionedHostApplication { get; private set; } =
+    HostApplications.Other.Slug;
 
   public static void Init(string versionedHostApplication, string hostApplication)
   {
@@ -52,9 +53,12 @@ public static class Setup
     mutex = new Mutex(false, "SpeckleConnector-" + hostApplication);
 
 #if !NETSTANDARD1_5_OR_GREATER
-      //needed by older .net frameworks, eg Revit 2019
-      ServicePointManager.SecurityProtocol =
-        SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+    //needed by older .net frameworks, eg Revit 2019
+    ServicePointManager.SecurityProtocol =
+      SecurityProtocolType.Ssl3
+      | SecurityProtocolType.Tls
+      | SecurityProtocolType.Tls11
+      | SecurityProtocolType.Tls12;
 #endif
 
     SpeckleLog.Initialize(hostApplication, versionedHostApplication);

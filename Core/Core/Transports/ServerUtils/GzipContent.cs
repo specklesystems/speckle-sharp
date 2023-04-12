@@ -16,7 +16,8 @@ internal sealed class GzipContent : HttpContent
 
   public GzipContent(HttpContent content)
   {
-    if (content == null) return;
+    if (content == null)
+      return;
 
     this.content = content;
 
@@ -36,10 +37,10 @@ internal sealed class GzipContent : HttpContent
     {
       // Copy all the input content to the GZip stream.
       if (content != null)
-        await content.CopyToAsync(gzip);
+        await content.CopyToAsync(gzip).ConfigureAwait(false);
       else
-        await new StringContent(string.Empty).CopyToAsync(gzip);
-      await gzip.FlushAsync();
+        await new StringContent(string.Empty).CopyToAsync(gzip).ConfigureAwait(false);
+      await gzip.FlushAsync().ConfigureAwait(false);
     }
   }
 

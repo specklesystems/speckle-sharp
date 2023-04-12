@@ -46,7 +46,11 @@ public static class Utilities
     using (var stream = File.OpenRead(filePath))
     {
       var hash = hashAlgorithm.ComputeHash(stream);
-      return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
+      return BitConverter
+        .ToString(hash)
+        .Replace("-", "")
+        .ToLowerInvariant()
+        .Substring(0, HashLength);
     }
   }
 
@@ -59,7 +63,8 @@ public static class Utilities
       {
         var hash = sha.ComputeHash(ms.ToArray());
         StringBuilder sb = new();
-        foreach (byte b in hash) sb.Append(b.ToString("X2"));
+        foreach (byte b in hash)
+          sb.Append(b.ToString("X2"));
 
         return sb.ToString().ToLower();
       }
@@ -74,7 +79,8 @@ public static class Utilities
       byte[] hashBytes = md5.ComputeHash(inputBytes);
 
       StringBuilder sb = new();
-      for (int i = 0; i < hashBytes.Length; i++) sb.Append(hashBytes[i].ToString("X2"));
+      for (int i = 0; i < hashBytes.Length; i++)
+        sb.Append(hashBytes[i].ToString("X2"));
       return sb.ToString().ToLower();
     }
   }
@@ -82,16 +88,16 @@ public static class Utilities
   public static bool IsSimpleType(this Type type)
   {
     return type.IsPrimitive
-        || new Type[]
-           {
-             typeof(string),
-             typeof(decimal),
-             typeof(DateTime),
-             typeof(DateTimeOffset),
-             typeof(TimeSpan),
-             typeof(Guid)
-           }.Contains(type)
-        || Convert.GetTypeCode(type) != TypeCode.Object;
+      || new Type[]
+      {
+        typeof(string),
+        typeof(decimal),
+        typeof(DateTime),
+        typeof(DateTimeOffset),
+        typeof(TimeSpan),
+        typeof(Guid)
+      }.Contains(type)
+      || Convert.GetTypeCode(type) != TypeCode.Object;
   }
 
   /// <summary>
@@ -102,7 +108,12 @@ public static class Utilities
   /// <param name="getParentProps">Set to true to also retrieve simple props of direct parent type</param>
   /// <param name="ignore">Names of props to ignore</param>
   /// <returns></returns>
-  public static Base GetApplicationProps(object o, Type t, bool getParentProps = false, List<string> ignore = null)
+  public static Base GetApplicationProps(
+    object o,
+    Type t,
+    bool getParentProps = false,
+    List<string> ignore = null
+  )
   {
     var appProps = new Base();
     appProps["class"] = t.Name;
@@ -111,7 +122,9 @@ public static class Utilities
     {
       // set primitive writeable props
       foreach (
-        var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
+        var propInfo in t.GetProperties(
+          BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public
+        )
       )
       {
         if (ignore != null && ignore.Contains(propInfo.Name))
@@ -199,6 +212,7 @@ public static class Utilities
   /// <returns></returns>
   public static IEnumerable<List<T>> SplitList<T>(List<T> list, int chunkSize = 50)
   {
-    for (int i = 0; i < list.Count; i += chunkSize) yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
+    for (int i = 0; i < list.Count; i += chunkSize)
+      yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
   }
 }

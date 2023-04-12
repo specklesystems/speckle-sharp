@@ -149,27 +149,34 @@ public partial class Client : IDisposable
         }
       );
 
-    return await graphqlRetry.ExecuteAsync(func);
+    return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
-  internal async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken? cancellationToken)
+  internal async Task<T> ExecuteGraphQLRequest<T>(
+    GraphQLRequest request,
+    CancellationToken? cancellationToken
+  )
   {
     using (LogContext.Push(_createEnrichers<T>(request)))
     {
-      SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
+      SpeckleLog.Logger.Debug(
+        "Starting execution of graphql request to get {resultType}",
+        typeof(T).Name
+      );
       var timer = new Stopwatch();
       var success = false;
       timer.Start();
       try
       {
-        var result = await ExecuteWithResiliencePolicies<T>(async () =>
-        {
-          var result = await GQLClient
-            .SendMutationAsync<T>(request, cancellationToken ?? CancellationToken.None)
-            .ConfigureAwait(false);
-          MaybeThrowFromGraphQLErrors(request, result);
-          return result.Data;
-        });
+        var result = await ExecuteWithResiliencePolicies(async () =>
+          {
+            var result = await GQLClient
+              .SendMutationAsync<T>(request, cancellationToken ?? CancellationToken.None)
+              .ConfigureAwait(false);
+            MaybeThrowFromGraphQLErrors(request, result);
+            return result.Data;
+          })
+          .ConfigureAwait(false);
         success = true;
         return result;
       }
@@ -245,9 +252,9 @@ public partial class Client : IDisposable
         errors.Any(
           e =>
             e.Extensions != null
-         && (
+            && (
               e.Extensions.Contains(new KeyValuePair<string, object>("code", "FORBIDDEN"))
-           || e.Extensions.Contains(new KeyValuePair<string, object>("code", "UNAUTHENTICATED"))
+              || e.Extensions.Contains(new KeyValuePair<string, object>("code", "UNAUTHENTICATED"))
             )
         )
       )
@@ -257,7 +264,9 @@ public partial class Client : IDisposable
         errors.Any(
           e =>
             e.Extensions != null
-         && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
+            && e.Extensions.Contains(
+              new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR")
+            )
         )
       )
         throw new SpeckleGraphQLInternalErrorException<T>(request, response);
@@ -285,8 +294,11 @@ public partial class Client : IDisposable
   {
     // i know this is double  (de)serializing, but we need a recursive convert to
     // dict<str, object> here
-    var expando = JsonConvert.DeserializeObject<ExpandoObject>(JsonConvert.SerializeObject(request.Variables));
-    var variables = request.Variables != null && expando != null ? _convertExpandoToDict(expando) : null;
+    var expando = JsonConvert.DeserializeObject<ExpandoObject>(
+      JsonConvert.SerializeObject(request.Variables)
+    );
+    var variables =
+      request.Variables != null && expando != null ? _convertExpandoToDict(expando) : null;
     return new ILogEventEnricher[]
     {
       new PropertyEnricher("serverUrl", ServerUrl),

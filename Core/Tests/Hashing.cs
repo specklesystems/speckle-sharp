@@ -51,7 +51,10 @@ public class Hashing
     var h2 = polyline.GetId();
 
     var diff1 = stopWatch.ElapsedMilliseconds - stopWatchStep;
-    Assert.True(diff1 < 300, $"Hashing shouldn't take that long ({diff1} ms) for the test object used.");
+    Assert.True(
+      diff1 < 300,
+      $"Hashing shouldn't take that long ({diff1} ms) for the test object used."
+    );
     Console.WriteLine($"Big obj hash duration: {diff1} ms");
 
     var pt = new Point()
@@ -64,11 +67,16 @@ public class Hashing
     var h3 = pt.GetId();
 
     var diff2 = stopWatch.ElapsedMilliseconds - stopWatchStep;
-    Assert.True(diff2 < 10, $"Hashing shouldn't take that long  ({diff2} ms)for the point object used.");
+    Assert.True(
+      diff2 < 10,
+      $"Hashing shouldn't take that long  ({diff2} ms)for the point object used."
+    );
     Console.WriteLine($"Small obj hash duration: {diff2} ms");
   }
 
-  [Test(Description = "The hash of a decomposed object is different that that of a non-decomposed object.")]
+  [Test(
+    Description = "The hash of a decomposed object is different that that of a non-decomposed object."
+  )]
   public void DecompositionHashes()
   {
     var table = new DiningTable();

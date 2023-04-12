@@ -47,7 +47,8 @@ public sealed class GraphTraversal
       Base current = head.current;
       var activeRule = GetActiveRuleOrDefault(current);
 
-      foreach (string childProp in activeRule.MembersToTraverse(current)) TraverseMemberToStack(stack, current[childProp], childProp, head);
+      foreach (string childProp in activeRule.MembersToTraverse(current))
+        TraverseMemberToStack(stack, current[childProp], childProp, head);
     }
   }
 
@@ -66,12 +67,14 @@ public sealed class GraphTraversal
         break;
       case IList list:
       {
-        foreach (object? obj in list) TraverseMemberToStack(stack, obj, memberName, parent);
+        foreach (object? obj in list)
+          TraverseMemberToStack(stack, obj, memberName, parent);
         break;
       }
       case IDictionary dictionary:
       {
-        foreach (object? obj in dictionary.Values) TraverseMemberToStack(stack, obj, memberName, parent);
+        foreach (object? obj in dictionary.Values)
+          TraverseMemberToStack(stack, obj, memberName, parent);
         break;
       }
     }

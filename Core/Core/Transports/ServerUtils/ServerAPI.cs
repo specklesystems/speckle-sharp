@@ -22,8 +22,6 @@ public class ServerApi : IDisposable, IServerApi
   private int BATCH_SIZE_HAS_OBJECTS = 100000;
 
   private HttpClient Client;
-
-  private int DOWNLOAD_BATCH_SIZE = 1000;
   private int MAX_MULTIPART_COUNT = 5;
   private int MAX_MULTIPART_SIZE = 25_000_000;
   private int MAX_OBJECT_SIZE = 25_000_000;
@@ -31,7 +29,12 @@ public class ServerApi : IDisposable, IServerApi
   private HashSet<int> RETRY_CODES = new() { 408, 502, 503, 504 };
   private int RETRY_COUNT = 3;
 
-  public ServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
+  public ServerApi(
+    string baseUri,
+    string authorizationToken,
+    string blobStorageFolder,
+    int timeoutSeconds = 60
+  )
   {
     BaseUri = baseUri;
     CancellationToken = CancellationToken.None;
@@ -80,24 +83,26 @@ public class ServerApi : IDisposable, IServerApi
 
     HttpResponseMessage rootHttpResponse = null;
     while (ShouldRetry(rootHttpResponse))
-      rootHttpResponse = await Client.SendAsync(
-        rootHttpMessage,
-        HttpCompletionOption.ResponseContentRead,
-        CancellationToken
-      );
+      rootHttpResponse = await Client
+        .SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken)
+        .ConfigureAwait(false);
     rootHttpResponse.EnsureSuccessStatusCode();
 
-    string rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync();
+    string rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
     return rootObjectStr;
   }
 
-  public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+  public async Task DownloadObjects(
+    string streamId,
+    List<string> objectIds,
+    CbObjectDownloaded onObjectCallback
+  )
   {
     if (objectIds.Count == 0)
       return;
     if (objectIds.Count < BATCH_SIZE_GET_OBJECTS)
     {
-      await DownloadObjectsImpl(streamId, objectIds, onObjectCallback);
+      await DownloadObjectsImpl(streamId, objectIds, onObjectCallback).ConfigureAwait(false);
       return;
     }
 
@@ -106,18 +111,18 @@ public class ServerApi : IDisposable, IServerApi
     {
       if (crtRequest.Count >= BATCH_SIZE_GET_OBJECTS)
       {
-        await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback);
+        await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback).ConfigureAwait(false);
         crtRequest = new List<string>();
       }
       crtRequest.Add(id);
     }
-    await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback);
+    await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback).ConfigureAwait(false);
   }
 
   public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
   {
     if (objectIds.Count <= BATCH_SIZE_HAS_OBJECTS)
-      return await HasObjectsImpl(streamId, objectIds);
+      return await HasObjectsImpl(streamId, objectIds).ConfigureAwait(false);
 
     Dictionary<string, bool> ret = new();
     List<string> crtBatch = new(BATCH_SIZE_HAS_OBJECTS);
@@ -126,7 +131,8 @@ public class ServerApi : IDisposable, IServerApi
       crtBatch.Add(objectId);
       if (crtBatch.Count >= BATCH_SIZE_HAS_OBJECTS)
       {
-        Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch);
+        Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch)
+          .ConfigureAwait(false);
         foreach (KeyValuePair<string, bool> kv in batchResult)
           ret[kv.Key] = kv.Value;
         crtBatch = new List<string>(BATCH_SIZE_HAS_OBJECTS);
@@ -134,7 +140,8 @@ public class ServerApi : IDisposable, IServerApi
     }
     if (crtBatch.Count > 0)
     {
-      Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch);
+      Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch)
+        .ConfigureAwait(false);
       foreach (KeyValuePair<string, bool> kv in batchResult)
         ret[kv.Key] = kv.Value;
     }
@@ -189,9 +196,11 @@ public class ServerApi : IDisposable, IServerApi
     {
       List<(string, string)> multipart = multipartedObjects[i];
       int multipartSize = multipartedObjectsSize[i];
-      if (crtRequestSize + multipartSize > MAX_REQUEST_SIZE || crtRequest.Count >= MAX_MULTIPART_COUNT)
+      if (
+        crtRequestSize + multipartSize > MAX_REQUEST_SIZE || crtRequest.Count >= MAX_MULTIPART_COUNT
+      )
       {
-        await UploadObjectsImpl(streamId, crtRequest);
+        await UploadObjectsImpl(streamId, crtRequest).ConfigureAwait(false);
         OnBatchSent?.Invoke(crtObjectCount, crtRequestSize);
         crtRequest = new List<List<(string, string)>>();
         crtRequestSize = 0;
@@ -203,7 +212,7 @@ public class ServerApi : IDisposable, IServerApi
     }
     if (crtRequest.Count > 0)
     {
-      await UploadObjectsImpl(streamId, crtRequest);
+      await UploadObjectsImpl(streamId, crtRequest).ConfigureAwait(false);
       OnBatchSent?.Invoke(crtObjectCount, crtRequestSize);
     }
   }
@@ -238,7 +247,7 @@ public class ServerApi : IDisposable, IServerApi
     {
       HttpResponseMessage response = null;
       while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
-        response = await Client.SendAsync(message, CancellationToken);
+        response = await Client.SendAsync(message, CancellationToken).ConfigureAwait(false);
       response.EnsureSuccessStatusCode();
 
       foreach (var stream in streams)
@@ -252,7 +261,11 @@ public class ServerApi : IDisposable, IServerApi
     }
   }
 
-  public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
+  public async Task DownloadBlobs(
+    string streamId,
+    List<string> blobIds,
+    CbBlobdDownloaded onBlobDownloaded
+  )
   {
     foreach (var blobId in blobIds)
       try
@@ -263,18 +276,21 @@ public class ServerApi : IDisposable, IServerApi
           Method = HttpMethod.Get
         };
 
-        var response = await Client.SendAsync(blobMessage, CancellationToken);
+        var response = await Client.SendAsync(blobMessage, CancellationToken).ConfigureAwait(false);
         IEnumerable<string> cdHeaderValues;
         response.Content.Headers.TryGetValues("Content-Disposition", out cdHeaderValues);
 
         var cdHeader = cdHeaderValues.First();
-        var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
+        var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1]
+          .TrimStart('"')
+          .TrimEnd('"');
 
         string fileLocation = Path.Combine(
           BlobStorageFolder,
           $"{blobId.Substring(0, Blob.LocalHashPrefixLength)}-{fileName}"
         );
-        using (var fs = new FileStream(fileLocation, FileMode.OpenOrCreate)) await response.Content.CopyToAsync(fs);
+        using (var fs = new FileStream(fileLocation, FileMode.OpenOrCreate))
+          await response.Content.CopyToAsync(fs).ConfigureAwait(false);
 
         response.Dispose();
         onBlobDownloaded();
@@ -285,7 +301,11 @@ public class ServerApi : IDisposable, IServerApi
       }
   }
 
-  private async Task DownloadObjectsImpl(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+  private async Task DownloadObjectsImpl(
+    string streamId,
+    List<string> objectIds,
+    CbObjectDownloaded onObjectCallback
+  )
   {
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
@@ -300,19 +320,23 @@ public class ServerApi : IDisposable, IServerApi
     Dictionary<string, string> postParameters = new();
     postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
     string serializedPayload = JsonConvert.SerializeObject(postParameters);
-    childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
+    childrenHttpMessage.Content = new StringContent(
+      serializedPayload,
+      Encoding.UTF8,
+      "application/json"
+    );
     childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
     HttpResponseMessage childrenHttpResponse = null;
     while (ShouldRetry(childrenHttpResponse))
-      childrenHttpResponse = await Client.SendAsync(
-        childrenHttpMessage,
-        HttpCompletionOption.ResponseHeadersRead,
-        CancellationToken
-      );
+      childrenHttpResponse = await Client
+        .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
+        .ConfigureAwait(false);
     childrenHttpResponse.EnsureSuccessStatusCode();
 
-    Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync();
+    Stream childrenStream = await childrenHttpResponse.Content
+      .ReadAsStreamAsync()
+      .ConfigureAwait(false);
 
     using (childrenStream)
     using (var reader = new StreamReader(childrenStream, Encoding.UTF8))
@@ -330,7 +354,10 @@ public class ServerApi : IDisposable, IServerApi
     // Console.WriteLine($"ServerApi::DownloadObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
   }
 
-  private async Task<Dictionary<string, bool>> HasObjectsImpl(string streamId, List<string> objectIds)
+  private async Task<Dictionary<string, bool>> HasObjectsImpl(
+    string streamId,
+    List<string> objectIds
+  )
   {
     CancellationToken.ThrowIfCancellationRequested();
 
@@ -342,14 +369,16 @@ public class ServerApi : IDisposable, IServerApi
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
     HttpResponseMessage response = null;
     while (ShouldRetry(response))
-      response = await Client.PostAsync(
-        uri,
-        new StringContent(serializedPayload, Encoding.UTF8, "application/json"),
-        CancellationToken
-      );
+      response = await Client
+        .PostAsync(
+          uri,
+          new StringContent(serializedPayload, Encoding.UTF8, "application/json"),
+          CancellationToken
+        )
+        .ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
-    var hasObjectsJson = await response.Content.ReadAsStringAsync();
+    var hasObjectsJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     Dictionary<string, bool> hasObjects = new();
 
     JObject doc = JObject.Parse(hasObjectsJson);
@@ -361,7 +390,10 @@ public class ServerApi : IDisposable, IServerApi
     return hasObjects;
   }
 
-  private async Task UploadObjectsImpl(string streamId, List<List<(string, string)>> multipartedObjects)
+  private async Task UploadObjectsImpl(
+    string streamId,
+    List<List<(string, string)>> multipartedObjects
+  )
   {
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
@@ -383,7 +415,8 @@ public class ServerApi : IDisposable, IServerApi
       var _ctBuilder = new StringBuilder("[");
       for (int i = 0; i < mpData.Count; i++)
       {
-        if (i > 0) _ctBuilder.Append(",");
+        if (i > 0)
+          _ctBuilder.Append(",");
         _ctBuilder.Append(mpData[i].Item2);
       }
       _ctBuilder.Append("]");
@@ -403,7 +436,7 @@ public class ServerApi : IDisposable, IServerApi
     message.Content = multipart;
     HttpResponseMessage response = null;
     while (ShouldRetry(response))
-      response = await Client.SendAsync(message, CancellationToken);
+      response = await Client.SendAsync(message, CancellationToken).ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
     // Console.WriteLine($"ServerApi::UploadObjects({totalObjCount}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
@@ -418,14 +451,16 @@ public class ServerApi : IDisposable, IServerApi
 
     HttpResponseMessage response = null;
     while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
-      response = await Client.PostAsync(
-        uri,
-        new StringContent(payload, Encoding.UTF8, "application/json"),
-        CancellationToken
-      );
+      response = await Client
+        .PostAsync(
+          uri,
+          new StringContent(payload, Encoding.UTF8, "application/json"),
+          CancellationToken
+        )
+        .ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
-    var responseString = await response.Content.ReadAsStringAsync();
+    var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     var parsed = JsonConvert.DeserializeObject<List<string>>(responseString);
     return parsed;
   }

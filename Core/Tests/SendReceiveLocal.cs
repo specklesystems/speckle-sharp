@@ -10,7 +10,7 @@ namespace Tests;
 public class SendReceiveLocal
 {
   private string objId_01,
-                 commitId_02;
+    commitId_02;
 
   private int numObjects = 3001;
 
@@ -22,7 +22,10 @@ public class SendReceiveLocal
 
     myObject["@items"] = new List<Base>();
 
-    for (int i = 0; i < numObjects; i++) ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+    for (int i = 0; i < numObjects; i++)
+      ((List<Base>)myObject["@items"]).Add(
+        new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" }
+      );
 
     objId_01 = Operations.Send(myObject).Result;
 
@@ -47,7 +50,10 @@ public class SendReceiveLocal
 
     var rand = new Random();
 
-    for (int i = 0; i < numObjects; i++) ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" });
+    for (int i = 0; i < numObjects; i++)
+      ((List<Base>)myObject["@items"]).Add(
+        new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-___/---" }
+      );
 
     objId_01 = Operations.Send(myObject).Result;
 
@@ -65,14 +71,17 @@ public class SendReceiveLocal
 
     var rand = new Random();
 
-    for (int i = 0; i < 30; i++) ((List<Base>)myObject["@items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" });
+    for (int i = 0; i < 30; i++)
+      ((List<Base>)myObject["@items"]).Add(
+        new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-ugh/---" }
+      );
 
-    objId_01 = await Operations.Send(myObject);
+    objId_01 = await Operations.Send(myObject).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
 
-    var objsPulled = await Operations.Receive(objId_01);
+    var objsPulled = await Operations.Receive(objId_01).ConfigureAwait(false);
     Assert.That(((List<object>)objsPulled["@items"]).Count, Is.EqualTo(30));
   }
 
@@ -91,12 +100,15 @@ public class SendReceiveLocal
     myObject["@dictionary"] = myDic;
     myObject["@list"] = myList;
 
-    objId_01 = await Operations.Send(myObject);
+    objId_01 = await Operations.Send(myObject).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
 
-    var objsPulled = await Operations.Receive(objId_01);
-    Assert.That(((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(), Is.EqualTo(1));
+    var objsPulled = await Operations.Receive(objId_01).ConfigureAwait(false);
+    Assert.That(
+      ((List<object>)((Dictionary<string, object>)objsPulled["@dictionary"])["a"]).First(),
+      Is.EqualTo(1)
+    );
     Assert.That(((List<object>)objsPulled["@list"]).Last(), Is.EqualTo("ciao"));
   }
 
@@ -111,21 +123,27 @@ public class SendReceiveLocal
     ((dynamic)obj)["@LayerD"] = new Point[] { new(), new(12, 3, 4) };
     var rand = new Random();
 
-    for (int i = 0; i < 30; i++) ((List<Base>)((dynamic)obj).LayerA).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "foo" });
+    for (int i = 0; i < 30; i++)
+      ((List<Base>)((dynamic)obj).LayerA).Add(
+        new Point(i, i, i + rand.NextDouble()) { applicationId = i + "foo" }
+      );
 
-    for (int i = 0; i < 30; i++) ((List<Base>)((dynamic)obj).LayerB).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "bar" });
+    for (int i = 0; i < 30; i++)
+      ((List<Base>)((dynamic)obj).LayerB).Add(
+        new Point(i, i, i + rand.NextDouble()) { applicationId = i + "bar" }
+      );
 
     for (int i = 0; i < 30; i++)
       ((List<Base>)((dynamic)obj)["@LayerC"]).Add(
         new Point(i, i, i + rand.NextDouble()) { applicationId = i + "baz" }
       );
 
-    objId_01 = await Operations.Send(obj);
+    objId_01 = await Operations.Send(obj).ConfigureAwait(false);
 
     Assert.NotNull(objId_01);
     TestContext.Out.WriteLine($"Written {numObjects + 1} objects. Commit id is {objId_01}");
 
-    var objPulled = await Operations.Receive(objId_01);
+    var objPulled = await Operations.Receive(objId_01).ConfigureAwait(false);
 
     Assert.That(typeof(Base), Is.EqualTo(objPulled.GetType()));
 
@@ -151,16 +169,21 @@ public class SendReceiveLocal
     myObject["items"] = new List<Base>();
     var rand = new Random();
 
-    for (int i = 0; i < 30; i++) ((List<Base>)myObject["items"]).Add(new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" });
+    for (int i = 0; i < 30; i++)
+      ((List<Base>)myObject["items"]).Add(
+        new Point(i, i, i + rand.NextDouble()) { applicationId = i + "-fab/---" }
+      );
 
     ConcurrentDictionary<string, int> progress = null;
-    commitId_02 = await Operations.Send(
-      myObject,
-      onProgressAction: (dict) =>
-      {
-        progress = dict;
-      }
-    );
+    commitId_02 = await Operations
+      .Send(
+        myObject,
+        onProgressAction: (dict) =>
+        {
+          progress = dict;
+        }
+      )
+      .ConfigureAwait(false);
 
     Assert.NotNull(progress);
     Assert.GreaterOrEqual(progress.Keys.Count, 1);
@@ -170,35 +193,38 @@ public class SendReceiveLocal
   public async Task DownloadProgressReports()
   {
     ConcurrentDictionary<string, int> progress = null;
-    var pulledCommit = await Operations.Receive(
-      commitId_02,
-      onProgressAction: (dict) =>
-      {
-        progress = dict;
-      }
-    );
+    var pulledCommit = await Operations
+      .Receive(
+        commitId_02,
+        onProgressAction: (dict) =>
+        {
+          progress = dict;
+        }
+      )
+      .ConfigureAwait(false);
     Assert.NotNull(progress);
     Assert.GreaterOrEqual(progress.Keys.Count, 1);
   }
 
-  [Test(Description = "Should dispose of transports after a send or receive operation if so specified.")]
+  [Test(
+    Description = "Should dispose of transports after a send or receive operation if so specified."
+  )]
   public async Task ShouldDisposeTransports()
   {
     var @base = new Base();
     @base["test"] = "the best";
 
     var myLocalTransport = new SQLiteTransport();
-    var id = await Operations.Send(
-      @base,
-      new List<ITransport>() { myLocalTransport },
-      false,
-      disposeTransports: true
-    );
+    var id = await Operations
+      .Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true)
+      .ConfigureAwait(false);
 
     // Send
     try
     {
-      await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true);
+      await Operations
+        .Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true)
+        .ConfigureAwait(false);
       Assert.Fail("Send operation did not dispose of transport.");
     }
     catch (Exception)
@@ -207,11 +233,13 @@ public class SendReceiveLocal
     }
 
     myLocalTransport = myLocalTransport.Clone() as SQLiteTransport;
-    var obj = await Operations.Receive(id, null, myLocalTransport, disposeTransports: true);
+    var obj = await Operations
+      .Receive(id, null, myLocalTransport, disposeTransports: true)
+      .ConfigureAwait(false);
 
     try
     {
-      await Operations.Receive(id, null, myLocalTransport);
+      await Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);
       Assert.Fail("Receive operation did not dispose of transport.");
     }
     catch
@@ -227,11 +255,15 @@ public class SendReceiveLocal
     @base["test"] = "the best";
 
     var myLocalTransport = new SQLiteTransport();
-    var id = await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
-    await Operations.Send(@base, new List<ITransport>() { myLocalTransport }, false);
+    var id = await Operations
+      .Send(@base, new List<ITransport>() { myLocalTransport }, false)
+      .ConfigureAwait(false);
+    await Operations
+      .Send(@base, new List<ITransport>() { myLocalTransport }, false)
+      .ConfigureAwait(false);
 
-    var obj = await Operations.Receive(id, null, myLocalTransport);
-    await Operations.Receive(id, null, myLocalTransport);
+    var obj = await Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);
+    await Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);
   }
 
   //[Test]

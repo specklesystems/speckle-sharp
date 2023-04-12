@@ -30,6 +30,7 @@ public sealed class DefaultRule : ITraversalRule
   private static DefaultRule? instance;
 
   private DefaultRule() { }
+
   public static DefaultRule Instance => instance ??= new DefaultRule();
 
   public IEnumerable<string> MembersToTraverse(Base b)

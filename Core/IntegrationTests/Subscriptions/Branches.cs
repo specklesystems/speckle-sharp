@@ -17,16 +17,20 @@ public class Branches
   [OneTimeSetUp]
   public async Task Setup()
   {
-    testUserAccount = await Fixtures.SeedUser();
+    testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
     client = new Client(testUserAccount);
   }
 
   [Test, Order(0)]
   public async Task SubscribeBranchCreated()
   {
-    var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
+    var streamInput = new StreamCreateInput
+    {
+      description = "Hello World",
+      name = "Super Stream 01"
+    };
 
-    streamId = await client.StreamCreate(streamInput);
+    streamId = await client.StreamCreate(streamInput).ConfigureAwait(false);
     Assert.NotNull(streamId);
 
     client.SubscribeBranchCreated(streamId);
@@ -41,15 +45,16 @@ public class Branches
       streamId = streamId
     };
 
-    branchId = await client.BranchCreate(branchInput);
+    branchId = await client.BranchCreate(branchInput).ConfigureAwait(false);
     Assert.NotNull(branchId);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(1000); //let client catch-up
-      Assert.NotNull(BranchCreatedInfo);
-      Assert.That(BranchCreatedInfo.name, Is.EqualTo(branchInput.name));
-    });
+      {
+        Thread.Sleep(1000); //let client catch-up
+        Assert.NotNull(BranchCreatedInfo);
+        Assert.That(BranchCreatedInfo.name, Is.EqualTo(branchInput.name));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnBranchCreated(object sender, BranchInfo e)
@@ -73,15 +78,16 @@ public class Branches
       id = branchId
     };
 
-    var res = await client.BranchUpdate(branchInput);
+    var res = await client.BranchUpdate(branchInput).ConfigureAwait(false);
     Assert.True(res);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(1000); //let client catch-up
-      Assert.NotNull(BranchUpdatedInfo);
-      Assert.That(BranchUpdatedInfo.name, Is.EqualTo(branchInput.name));
-    });
+      {
+        Thread.Sleep(1000); //let client catch-up
+        Assert.NotNull(BranchUpdatedInfo);
+        Assert.That(BranchUpdatedInfo.name, Is.EqualTo(branchInput.name));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnBranchUpdated(object sender, BranchInfo e)
@@ -99,15 +105,16 @@ public class Branches
 
     var branchInput = new BranchDeleteInput { streamId = streamId, id = branchId };
 
-    var res = await client.BranchDelete(branchInput);
+    var res = await client.BranchDelete(branchInput).ConfigureAwait(false);
     Assert.True(res);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(1000); //let client catch-up
-      Assert.NotNull(BranchDeletedInfo);
-      Assert.That(BranchDeletedInfo.id, Is.EqualTo(branchId));
-    });
+      {
+        Thread.Sleep(1000); //let client catch-up
+        Assert.NotNull(BranchDeletedInfo);
+        Assert.That(BranchDeletedInfo.id, Is.EqualTo(branchId));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnBranchDeleted(object sender, BranchInfo e)

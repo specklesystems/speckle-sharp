@@ -35,7 +35,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   private ConcurrentQueue<(string, string, int)> Queue = new();
 
   private int TotalElapsed = 0,
-              PollInterval = 100;
+    PollInterval = 100;
 
   private Timer WriteTimer;
 
@@ -98,7 +98,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public void BeginWrite()
   {
-    if (!GetWriteCompletionStatus()) throw new SpeckleException("Transport is still writing.");
+    if (!GetWriteCompletionStatus())
+      throw new SpeckleException("Transport is still writing.");
     TotalSentBytes = 0;
     SavedObjectCount = 0;
   }
@@ -107,21 +108,31 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
   {
-    var payload = new Dictionary<string, string>() { { "objects", JsonConvert.SerializeObject(objectIds) } };
+    var payload = new Dictionary<string, string>()
+    {
+      { "objects", JsonConvert.SerializeObject(objectIds) }
+    };
     var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
-    var response = await Client.PostAsync(
-      uri,
-      new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"),
-      CancellationToken
-    );
+    var response = await Client
+      .PostAsync(
+        uri,
+        new StringContent(JsonConvert.SerializeObject(payload), Encoding.UTF8, "application/json"),
+        CancellationToken
+      )
+      .ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
-    var hasObjectsJson = await response.Content.ReadAsStringAsync();
+    var hasObjectsJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
     var hasObjects = JsonConvert.DeserializeObject<Dictionary<string, bool>>(hasObjectsJson);
     return hasObjects;
   }
 
-  private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
+  private void Initialize(
+    string baseUri,
+    string streamId,
+    string authorizationToken,
+    int timeoutSeconds = 60
+  )
   {
     SpeckleLog.Logger.Information("Initializing New Remote V1 Transport for {baseUri}", baseUri);
 
@@ -162,13 +173,15 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public async Task WriteComplete()
   {
-    await Utilities.WaitUntil(
-      () =>
-      {
-        return GetWriteCompletionStatus();
-      },
-      50
-    );
+    await Utilities
+      .WaitUntil(
+        () =>
+        {
+          return GetWriteCompletionStatus();
+        },
+        50
+      )
+      .ConfigureAwait(false);
   }
 
   public bool GetWriteCompletionStatus()
@@ -215,7 +228,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     var payloadBufferSize = 0;
     while (Queue.TryPeek(out queueElement) && payloadBufferSize < MAX_BUFFER_SIZE)
     {
-      if (CancellationToken.IsCancellationRequested) return (queuedBatch.Count, null);
+      if (CancellationToken.IsCancellationRequested)
+        return (queuedBatch.Count, null);
 
       Queue.TryDequeue(out queueElement);
       queuedBatch.Add(queueElement);
@@ -227,7 +241,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     Dictionary<string, bool> hasObjects = null;
     try
     {
-      hasObjects = await HasObjects(queuedBatchIds);
+      hasObjects = await HasObjects(queuedBatchIds).ConfigureAwait(false);
     }
     catch (Exception e)
     {
@@ -239,7 +253,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
     List<(string, string, int)> newBatch = new();
     foreach (var queuedItem in queuedBatch)
-      if (!hasObjects.ContainsKey(queuedItem.Item1) || !hasObjects[queuedItem.Item1]) newBatch.Add(queuedItem);
+      if (!hasObjects.ContainsKey(queuedItem.Item1) || !hasObjects[queuedItem.Item1])
+        newBatch.Add(queuedItem);
 
     return (queuedBatch.Count, newBatch);
   }
@@ -253,7 +268,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return;
     }
 
-    if (Queue.Count == 0) return;
+    if (Queue.Count == 0)
+      return;
 
     IS_WRITING = true;
     var message = new HttpRequestMessage()
@@ -276,7 +292,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         return;
       }
 
-      (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch();
+      (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch()
+        .ConfigureAwait(false);
       if (batch == null)
       {
         // Canceled or error happened (which was already reported)
@@ -295,7 +312,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       var _ctBuilder = new StringBuilder("[");
       for (int i = 0; i < batch.Count; i++)
       {
-        if (i > 0) _ctBuilder.Append(",");
+        if (i > 0)
+          _ctBuilder.Append(",");
         _ctBuilder.Append(batch[i].Item2);
         TotalSentBytes += batch[i].Item3;
       }
@@ -310,7 +328,11 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       }
       else
       {
-        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{addedMpCount}", $"batch-{addedMpCount}");
+        multipart.Add(
+          new StringContent(_ct, Encoding.UTF8),
+          $"batch-{addedMpCount}",
+          $"batch-{addedMpCount}"
+        );
       }
 
       addedMpCount++;
@@ -329,7 +351,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     if (addedMpCount > 0)
       try
       {
-        var response = await Client.SendAsync(message, CancellationToken);
+        var response = await Client.SendAsync(message, CancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
       }
       catch (Exception e)
@@ -337,7 +359,10 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         IS_WRITING = false;
         OnErrorAction?.Invoke(
           TransportName,
-          new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e)
+          new Exception(
+            $"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}",
+            e
+          )
         );
 
         Queue = new ConcurrentQueue<(string, string, int)>();
@@ -439,11 +464,9 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     HttpResponseMessage rootHttpResponse = null;
     try
     {
-      rootHttpResponse = await Client.SendAsync(
-        rootHttpMessage,
-        HttpCompletionOption.ResponseContentRead,
-        CancellationToken
-      );
+      rootHttpResponse = await Client
+        .SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken)
+        .ConfigureAwait(false);
       rootHttpResponse.EnsureSuccessStatusCode();
     }
     catch (Exception e)
@@ -452,18 +475,16 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return null;
     }
 
-    string rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync();
+    string rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync().ConfigureAwait(false);
     List<string> childrenIds = new();
     var rootPartial = JsonConvert.DeserializeObject<Placeholder>(rootObjectStr);
-    if (rootPartial.__closure != null) childrenIds = new List<string>(rootPartial.__closure.Keys);
+    if (rootPartial.__closure != null)
+      childrenIds = new List<string>(rootPartial.__closure.Keys);
     onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
 
-    var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
-    List<string> newChildrenIds = new(
-      from objId in childrenFoundMap.Keys
-      where !childrenFoundMap[objId]
-      select objId
-    );
+    var childrenFoundMap = await targetTransport.HasObjects(childrenIds).ConfigureAwait(false);
+    List<string> newChildrenIds =
+      new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
     targetTransport.BeginWrite();
 
@@ -475,7 +496,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       childrenIdBatch.Add(objectId);
       if (childrenIdBatch.Count >= DOWNLOAD_BATCH_SIZE)
       {
-        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport);
+        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport)
+          .ConfigureAwait(false);
         if (!downloadBatchResult)
           return null;
         childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
@@ -483,13 +505,14 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     }
     if (childrenIdBatch.Count > 0)
     {
-      downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport);
+      downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport)
+        .ConfigureAwait(false);
       if (!downloadBatchResult)
         return null;
     }
 
     targetTransport.SaveObject(hash, rootObjectStr);
-    await targetTransport.WriteComplete();
+    await targetTransport.WriteComplete().ConfigureAwait(false);
     return rootObjectStr;
   }
 
@@ -513,11 +536,13 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       HttpResponseMessage childrenHttpResponse = null;
       try
       {
-        childrenHttpResponse = await Client.SendAsync(
-          childrenHttpMessage,
-          HttpCompletionOption.ResponseHeadersRead,
-          CancellationToken
-        );
+        childrenHttpResponse = await Client
+          .SendAsync(
+            childrenHttpMessage,
+            HttpCompletionOption.ResponseHeadersRead,
+            CancellationToken
+          )
+          .ConfigureAwait(false);
         childrenHttpResponse.EnsureSuccessStatusCode();
       }
       catch (Exception e)
@@ -526,7 +551,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         return false;
       }
 
-      childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync();
+      childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
     }
     else
     {
@@ -567,7 +592,8 @@ internal sealed class GzipContent : HttpContent
 
   public GzipContent(HttpContent content)
   {
-    if (content == null) return;
+    if (content == null)
+      return;
 
     this.content = content;
 
@@ -586,9 +612,9 @@ internal sealed class GzipContent : HttpContent
     using (GZipStream gzip = new(stream, CompressionMode.Compress, true))
       // Copy all the input content to the GZip stream.
       if (content != null)
-        await content.CopyToAsync(gzip);
+        await content.CopyToAsync(gzip).ConfigureAwait(false);
       else
-        await new StringContent(string.Empty).CopyToAsync(gzip);
+        await new StringContent(string.Empty).CopyToAsync(gzip).ConfigureAwait(false);
   }
 
   protected override bool TryComputeLength(out long length)

@@ -16,7 +16,12 @@ namespace Speckle.Core.Transports;
 
 public class ServerTransport : ServerTransportV2
 {
-  public ServerTransport(Account account, string streamId, int timeoutSeconds = 60, string blobStorageFolder = null)
+  public ServerTransport(
+    Account account,
+    string streamId,
+    int timeoutSeconds = 60,
+    string blobStorageFolder = null
+  )
     : base(account, streamId, timeoutSeconds, blobStorageFolder) { }
 }
 
@@ -34,13 +39,19 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   private bool ShouldSendThreadRun = false;
 
-  public ServerTransportV2(Account account, string streamId, int timeoutSeconds = 60, string blobStorageFolder = null)
+  public ServerTransportV2(
+    Account account,
+    string streamId,
+    int timeoutSeconds = 60,
+    string blobStorageFolder = null
+  )
   {
     Account = account;
     CancellationToken = CancellationToken.None;
     Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
 
-    if (blobStorageFolder == null) BlobStorageFolder = SpecklePathProvider.BlobStoragePath();
+    if (blobStorageFolder == null)
+      BlobStorageFolder = SpecklePathProvider.BlobStoragePath();
     Directory.CreateDirectory(BlobStorageFolder);
   }
 
@@ -129,11 +140,14 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       api.CancellationToken = CancellationToken;
       try
       {
-        string rootObjectJson = await api.DownloadSingleObject(StreamId, id);
+        string rootObjectJson = await api.DownloadSingleObject(StreamId, id).ConfigureAwait(false);
         List<string> allIds = ParseChildrenIds(rootObjectJson);
 
         List<string> childrenIds = allIds.Where(id => !id.Contains("blob:")).ToList();
-        List<string> blobIds = allIds.Where(id => id.Contains("blob:")).Select(id => id.Remove(0, 5)).ToList();
+        List<string> blobIds = allIds
+          .Where(id => id.Contains("blob:"))
+          .Select(id => id.Remove(0, 5))
+          .ToList();
 
         onTotalChildrenCountKnown?.Invoke(allIds.Count);
 
@@ -142,32 +156,30 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
         //
 
         // Check which children are not already in the local transport
-        var childrenFoundMap = await targetTransport.HasObjects(childrenIds);
-        List<string> newChildrenIds = new(
-          from objId in childrenFoundMap.Keys
-          where !childrenFoundMap[objId]
-          select objId
-        );
+        var childrenFoundMap = await targetTransport.HasObjects(childrenIds).ConfigureAwait(false);
+        List<string> newChildrenIds =
+          new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
         targetTransport.BeginWrite();
 
         await api.DownloadObjects(
-          StreamId,
-          newChildrenIds,
-          (string id, string json) =>
-          {
-            stopwatch.Stop();
-            targetTransport.SaveObject(id, json);
-            OnProgressAction?.Invoke(TransportName, 1);
-            stopwatch.Start();
-          }
-        );
+            StreamId,
+            newChildrenIds,
+            (string id, string json) =>
+            {
+              stopwatch.Stop();
+              targetTransport.SaveObject(id, json);
+              OnProgressAction?.Invoke(TransportName, 1);
+              stopwatch.Start();
+            }
+          )
+          .ConfigureAwait(false);
 
         // pausing until writing to the target transport
         stopwatch.Stop();
         targetTransport.SaveObject(id, rootObjectJson);
 
-        await targetTransport.WriteComplete();
+        await targetTransport.WriteComplete().ConfigureAwait(false);
         targetTransport.EndWrite();
         stopwatch.Start();
 
@@ -182,17 +194,20 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
           .ToList();
 
         var newBlobIds = blobIds
-          .Where(id => !localBlobTrimmedHashes.Contains(id.Substring(0, Blob.LocalHashPrefixLength)))
+          .Where(
+            id => !localBlobTrimmedHashes.Contains(id.Substring(0, Blob.LocalHashPrefixLength))
+          )
           .ToList();
 
         await api.DownloadBlobs(
-          StreamId,
-          newBlobIds,
-          () =>
-          {
-            OnProgressAction?.Invoke(TransportName, 1);
-          }
-        );
+            StreamId,
+            newBlobIds,
+            () =>
+            {
+              OnProgressAction?.Invoke(TransportName, 1);
+            }
+          )
+          .ConfigureAwait(false);
 
         stopwatch.Stop();
         Elapsed += stopwatch.Elapsed;
@@ -208,7 +223,8 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   public string GetObject(string id)
   {
-    if (CancellationToken.IsCancellationRequested) return null;
+    if (CancellationToken.IsCancellationRequested)
+      return null;
     var stopwatch = Stopwatch.StartNew();
     var result = Api.DownloadSingleObject(StreamId, id).Result;
     stopwatch.Stop();
@@ -220,7 +236,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   {
     if (string.IsNullOrEmpty(StreamId) || objectIds == null)
       throw new Exception("Invalid parameters to HasObjects");
-    return await Api.HasObjects(StreamId, objectIds);
+    return await Api.HasObjects(StreamId, objectIds).ConfigureAwait(false);
   }
 
   public void SaveObject(string id, string serializedObject)
@@ -265,7 +281,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       lock (SendBufferLock)
         if (IsWriteComplete || ErrorState)
           return;
-      await Task.Delay(50);
+      await Task.Delay(50).ConfigureAwait(false);
     }
   }
 
@@ -278,7 +294,12 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     SendingThread = null;
   }
 
-  private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
+  private void Initialize(
+    string baseUri,
+    string streamId,
+    string authorizationToken,
+    int timeoutSeconds = 60
+  )
   {
     SpeckleLog.Logger.Information("Initializing a new Remote Transport for {baseUri}", baseUri);
 
@@ -322,7 +343,8 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     while (true)
     {
       var stopwatch = Stopwatch.StartNew();
-      if (!ShouldSendThreadRun || CancellationToken.IsCancellationRequested) return;
+      if (!ShouldSendThreadRun || CancellationToken.IsCancellationRequested)
+        return;
       List<(string, string)> buffer = null;
       lock (SendBufferLock)
         if (SendBuffer.Count > 0)
@@ -342,30 +364,40 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
       }
       try
       {
-        List<(string, string)> bufferObjects = buffer.Where(tuple => !tuple.Item1.Contains("blob")).ToList();
-        List<(string, string)> bufferBlobs = buffer.Where(tuple => tuple.Item1.Contains("blob")).ToList();
+        List<(string, string)> bufferObjects = buffer
+          .Where(tuple => !tuple.Item1.Contains("blob"))
+          .ToList();
+        List<(string, string)> bufferBlobs = buffer
+          .Where(tuple => tuple.Item1.Contains("blob"))
+          .ToList();
 
         List<string> objectIds = new(bufferObjects.Count);
 
         foreach ((string id, _) in bufferObjects)
-          if (id != "blob") objectIds.Add(id);
+          if (id != "blob")
+            objectIds.Add(id);
 
-        Dictionary<string, bool> hasObjects = await Api.HasObjects(StreamId, objectIds);
+        Dictionary<string, bool> hasObjects = await Api.HasObjects(StreamId, objectIds)
+          .ConfigureAwait(false);
         List<(string, string)> newObjects = new();
         foreach ((string id, object json) in bufferObjects)
-          if (!hasObjects[id]) newObjects.Add((id, json as string));
+          if (!hasObjects[id])
+            newObjects.Add((id, json as string));
 
         // Report the objects that are already on the server
         OnProgressAction?.Invoke(TransportName, hasObjects.Count - newObjects.Count);
 
-        await Api.UploadObjects(StreamId, newObjects);
+        await Api.UploadObjects(StreamId, newObjects).ConfigureAwait(false);
 
         if (bufferBlobs.Count != 0)
         {
-          var blobIdsToUpload = await Api.HasBlobs(StreamId, bufferBlobs);
+          var blobIdsToUpload = await Api.HasBlobs(StreamId, bufferBlobs).ConfigureAwait(false);
           var formattedIds = blobIdsToUpload.Select(id => $"blob:{id}").ToList();
-          var newBlobs = bufferBlobs.Where(tuple => formattedIds.IndexOf(tuple.Item1) != -1).ToList();
-          if (newBlobs.Count != 0) await Api.UploadBlobs(StreamId, newBlobs);
+          var newBlobs = bufferBlobs
+            .Where(tuple => formattedIds.IndexOf(tuple.Item1) != -1)
+            .ToList();
+          if (newBlobs.Count != 0)
+            await Api.UploadBlobs(StreamId, newBlobs).ConfigureAwait(false);
         }
       }
       catch (Exception ex)

@@ -63,7 +63,8 @@ public class Base : DynamicBase
 
         while (myType.Name != nameof(Base))
         {
-          if (!myType.IsAbstract) bases.Add(myType.FullName);
+          if (!myType.IsAbstract)
+            bases.Add(myType.FullName);
           myType = myType.BaseType;
         }
 
@@ -88,21 +89,26 @@ public class Base : DynamicBase
   /// </summary>
   /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
   /// <returns></returns>
-  public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
+  public string GetId(
+    bool decompose = false,
+    SerializerVersion serializerVersion = SerializerVersion.V2
+  )
   {
     if (serializerVersion == SerializerVersion.V1)
     {
       var (s, t) = Operations.GetSerializerInstance();
-      if (decompose) s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+      if (decompose)
+        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
       var obj = JsonConvert.SerializeObject(this, t);
-      return JObject.Parse(obj).GetValue("id").ToString();
+      return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
     else
     {
       var s = new BaseObjectSerializerV2();
-      if (decompose) s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+      if (decompose)
+        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
       var obj = s.Serialize(this);
-      return JObject.Parse(obj).GetValue("id").ToString();
+      return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
   }
 
@@ -118,7 +124,8 @@ public class Base : DynamicBase
 
   private static long CountDescendants(Base @base, HashSet<int> parsed)
   {
-    if (parsed.Contains(@base.GetHashCode())) return 0;
+    if (parsed.Contains(@base.GetHashCode()))
+      return 0;
 
     parsed.Add(@base.GetHashCode());
 
@@ -127,7 +134,8 @@ public class Base : DynamicBase
     foreach (var prop in typedProps.Where(p => p.CanRead))
     {
       bool isIgnored =
-        prop.IsDefined(typeof(ObsoleteAttribute), true) || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
+        prop.IsDefined(typeof(ObsoleteAttribute), true)
+        || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
       if (isIgnored)
         continue;
 
@@ -155,7 +163,8 @@ public class Base : DynamicBase
     var dynamicProps = @base.GetDynamicMembers();
     foreach (var propName in dynamicProps)
     {
-      if (!propName.StartsWith("@")) continue;
+      if (!propName.StartsWith("@"))
+        continue;
 
       // Simplfied dynamic prop chunking handling
       if (ChunkSyntax.IsMatch(propName))
@@ -235,12 +244,15 @@ public class Base : DynamicBase
 
     foreach (
       var kvp in GetMembers(
-        DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaIgnored
+        DynamicBaseMemberType.Instance
+          | DynamicBaseMemberType.Dynamic
+          | DynamicBaseMemberType.SchemaIgnored
       )
     )
     {
       var p = GetType().GetProperty(kvp.Key);
-      if (p != null && !p.CanWrite) continue;
+      if (p != null && !p.CanWrite)
+        continue;
 
       try
       {
@@ -297,7 +309,8 @@ public class Blob : Base
 
   public string GetFileHash()
   {
-    if ((hashExpired || _hash == null) && filePath != null) _hash = Utilities.hashFile(filePath);
+    if ((hashExpired || _hash == null) && filePath != null)
+      _hash = Utilities.hashFile(filePath);
 
     return _hash;
   }

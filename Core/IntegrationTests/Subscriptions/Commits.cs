@@ -23,7 +23,7 @@ public class Commits
   [OneTimeSetUp]
   public async Task Setup()
   {
-    testUserAccount = await Fixtures.SeedUser();
+    testUserAccount = await Fixtures.SeedUser().ConfigureAwait(false);
     client = new Client(testUserAccount);
     myServerTransport = new ServerTransport(testUserAccount, null);
     myServerTransport.Api.CompressPayloads = false;
@@ -33,9 +33,13 @@ public class Commits
   //[Ignore("Ironically, it fails.")]
   public async Task SubscribeCommitCreated()
   {
-    var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
+    var streamInput = new StreamCreateInput
+    {
+      description = "Hello World",
+      name = "Super Stream 01"
+    };
 
-    streamId = await client.StreamCreate(streamInput);
+    streamId = await client.StreamCreate(streamInput).ConfigureAwait(false);
     Assert.NotNull(streamId);
 
     myServerTransport.StreamId = streamId; // FML
@@ -47,7 +51,7 @@ public class Commits
       streamId = streamId
     };
 
-    var branchId = await client.BranchCreate(branchInput);
+    var branchId = await client.BranchCreate(branchInput).ConfigureAwait(false);
     Assert.NotNull(branchId);
 
     client.SubscribeCommitCreated(streamId);
@@ -62,16 +66,18 @@ public class Commits
 
     myObject["Points"] = ptsList;
 
-    var objectId = await Operations.Send(
-      myObject,
-      new List<ITransport>() { myServerTransport },
-      false,
-      onErrorAction: (name, err) =>
-      {
-        Debug.WriteLine("Err in transport");
-        Debug.WriteLine(err.Message);
-      }
-    );
+    var objectId = await Operations
+      .Send(
+        myObject,
+        new List<ITransport>() { myServerTransport },
+        false,
+        onErrorAction: (name, err) =>
+        {
+          Debug.WriteLine("Err in transport");
+          Debug.WriteLine(err.Message);
+        }
+      )
+      .ConfigureAwait(false);
 
     var commitInput = new CommitCreateInput
     {
@@ -83,15 +89,16 @@ public class Commits
       totalChildrenCount = 20
     };
 
-    commitId = await client.CommitCreate(commitInput);
+    commitId = await client.CommitCreate(commitInput).ConfigureAwait(false);
     Assert.NotNull(commitId);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(2000); //let client catch-up
-      Assert.NotNull(CommitCreatedInfo);
-      Assert.That(CommitCreatedInfo.message, Is.EqualTo(commitInput.message));
-    });
+      {
+        Thread.Sleep(2000); //let client catch-up
+        Assert.NotNull(CommitCreatedInfo);
+        Assert.That(CommitCreatedInfo.message, Is.EqualTo(commitInput.message));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnCommitCreated(object sender, CommitInfo e)
@@ -115,15 +122,16 @@ public class Commits
       id = commitId
     };
 
-    var res = await client.CommitUpdate(commitInput);
+    var res = await client.CommitUpdate(commitInput).ConfigureAwait(false);
     Assert.True(res);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(2000); //let client catch-up
-      Assert.NotNull(CommitUpdatedInfo);
-      Assert.That(CommitUpdatedInfo.message, Is.EqualTo(commitInput.message));
-    });
+      {
+        Thread.Sleep(2000); //let client catch-up
+        Assert.NotNull(CommitUpdatedInfo);
+        Assert.That(CommitUpdatedInfo.message, Is.EqualTo(commitInput.message));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnCommitUpdated(object sender, CommitInfo e)
@@ -142,15 +150,16 @@ public class Commits
 
     var commitInput = new CommitDeleteInput { streamId = streamId, id = commitId };
 
-    var res = await client.CommitDelete(commitInput);
+    var res = await client.CommitDelete(commitInput).ConfigureAwait(false);
     Assert.True(res);
 
     await Task.Run(() =>
-    {
-      Thread.Sleep(2000); //let client catch-up
-      Assert.NotNull(CommitDeletedInfo);
-      Assert.That(CommitDeletedInfo.id, Is.EqualTo(commitId));
-    });
+      {
+        Thread.Sleep(2000); //let client catch-up
+        Assert.NotNull(CommitDeletedInfo);
+        Assert.That(CommitDeletedInfo.id, Is.EqualTo(commitId));
+      })
+      .ConfigureAwait(false);
   }
 
   private void Client_OnCommitDeleted(object sender, CommitInfo e)

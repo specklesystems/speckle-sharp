@@ -6,4 +6,9 @@ public class InvalidPropNameException : SpeckleException
 {
   public InvalidPropNameException(string propName, string reason)
     : base($"Property '{propName}' is invalid: {reason}") { }
+
+  public InvalidPropNameException() { }
+
+  public InvalidPropNameException(string message)
+    : base(message) { }
 }

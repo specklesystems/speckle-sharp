@@ -62,14 +62,15 @@ public static class Http
     return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(100), 5);
   }
 
-  public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy(IEnumerable<TimeSpan>? delay = null)
+  public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy(
+    IEnumerable<TimeSpan>? delay = null
+  )
   {
     return HttpPolicyExtensions
       .HandleTransientHttpError()
       .WaitAndRetryAsync(
         delay ?? DefaultDelay(),
-        (ex, timeSpan, retryAttempt, context) =>
-        {
+        (ex, timeSpan, retryAttempt, context) => {
           //context.Remove("retryCount");
           //context.Add("retryCount", retryAttempt);
           //Log.Information(
@@ -93,15 +94,17 @@ public static class Http
   {
     //can ping cloudfare, skip further checks
     //this method should be the fastest
-    if (await Ping("1.1.1.1"))
+    if (await Ping("1.1.1.1").ConfigureAwait(false))
       return true;
 
     //lastly, try getting the default Speckle server, in case this is a sandboxed environment
     string defaultServer = AccountManager.GetDefaultServerUrl();
-    bool hasInternet = await HttpPing(defaultServer);
+    bool hasInternet = await HttpPing(defaultServer).ConfigureAwait(false);
 
     if (!hasInternet)
-      SpeckleLog.Logger.ForContext("defaultServer", defaultServer).Warning("Failed to ping internet");
+      SpeckleLog.Logger
+        .ForContext("defaultServer", defaultServer)
+        .Warning("Failed to ping internet");
 
     return hasInternet;
   }
@@ -129,21 +132,25 @@ public static class Http
           //);
         }
       );
-    var policyResult = await policy.ExecuteAndCaptureAsync(async () =>
-    {
-      Ping myPing = new();
-      var hostname =
-        Uri.CheckHostName(hostnameOrAddress) != UriHostNameType.Unknown
-          ? hostnameOrAddress
-          : new Uri(hostnameOrAddress).DnsSafeHost;
-      byte[] buffer = new byte[32];
-      int timeout = 1000;
-      PingOptions pingOptions = new();
-      PingReply reply = await myPing.SendPingAsync(hostname, timeout, buffer, pingOptions);
-      if (reply.Status != IPStatus.Success)
-        throw new Exception($"The ping operation failed with status {reply.Status}");
-      return true;
-    });
+    var policyResult = await policy
+      .ExecuteAndCaptureAsync(async () =>
+      {
+        Ping myPing = new();
+        var hostname =
+          Uri.CheckHostName(hostnameOrAddress) != UriHostNameType.Unknown
+            ? hostnameOrAddress
+            : new Uri(hostnameOrAddress).DnsSafeHost;
+        byte[] buffer = new byte[32];
+        int timeout = 1000;
+        PingOptions pingOptions = new();
+        PingReply reply = await myPing
+          .SendPingAsync(hostname, timeout, buffer, pingOptions)
+          .ConfigureAwait(false);
+        if (reply.Status != IPStatus.Success)
+          throw new Exception($"The ping operation failed with status {reply.Status}");
+        return true;
+      })
+      .ConfigureAwait(false);
     if (policyResult.Outcome == OutcomeType.Successful)
       return true;
     SpeckleLog.Logger.Warning(
@@ -165,7 +172,7 @@ public static class Http
     try
     {
       var _httpClient = GetHttpProxyClient();
-      var response = await _httpClient.GetAsync(address);
+      var response = await _httpClient.GetAsync(address).ConfigureAwait(false);
       return response.IsSuccessStatusCode;
     }
     catch (Exception ex)
@@ -206,7 +213,10 @@ public class SpeckleHttpClientHandler : HttpClientHandler
     using (LogContext.PushProperty("targetUrl", request.RequestUri))
     using (LogContext.PushProperty("httpMethod", request.Method))
     {
-      SpeckleLog.Logger.Debug("Starting execution of http request to {targetUrl}", request.RequestUri);
+      SpeckleLog.Logger.Debug(
+        "Starting execution of http request to {targetUrl}",
+        request.RequestUri
+      );
       var timer = new Stopwatch();
       timer.Start();
       context.Add("retryCount", 0);
@@ -218,7 +228,8 @@ public class SpeckleHttpClientHandler : HttpClientHandler
             return base.SendAsync(request, cancellationToken);
           },
           context
-        );
+        )
+        .ConfigureAwait(false);
       timer.Stop();
       var status = policyResult.Outcome == OutcomeType.Successful ? "succeeded" : "failed";
       context.TryGetValue("retryCount", out var retryCount);

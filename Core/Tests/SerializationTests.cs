@@ -20,7 +20,8 @@ public class Serialization
     Assert.That(table.GetId(), Is.EqualTo(test.GetId()));
 
     var polyline = new Polyline();
-    for (int i = 0; i < 100; i++) polyline.Points.Add(new Point() { X = i * 2, Y = i % 2 });
+    for (int i = 0; i < 100; i++)
+      polyline.Points.Add(new Point() { X = i * 2, Y = i % 2 });
 
     var strPoly = Operations.Serialize(polyline);
     var dePoly = Operations.Deserialize(strPoly);
@@ -33,7 +34,8 @@ public class Serialization
   {
     // TODO
     var dict = new Dictionary<string, Base>();
-    for (int i = 0; i < 10; i++) dict[$"key{i}"] = new Point(i, i, i);
+    for (int i = 0; i < 10; i++)
+      dict[$"key{i}"] = new Point(i, i, i);
 
     var result = Operations.Serialize(dict);
     var test = Operations.DeserializeDictionary(result);
@@ -72,7 +74,11 @@ public class Serialization
       if (i % 2 == 0)
       {
         cat.Whiskers.Add(
-          new Line { Start = new Point(i / 2, i / 2, i / 2), End = new Point(i + 3.14, i + 3.14, i + 3.14) }
+          new Line
+          {
+            Start = new Point(i / 2, i / 2, i / 2),
+            End = new Point(i + 3.14, i + 3.14, i + 3.14)
+          }
         );
       }
       else
@@ -84,7 +90,11 @@ public class Serialization
         cat.Whiskers.Add(brokenWhisker);
       }
 
-      cat.Fur[i] = new Line { Start = new Point(i, i, i), End = new Point(i + 3.14, i + 3.14, i + 3.14) };
+      cat.Fur[i] = new Line
+      {
+        Start = new Point(i, i, i),
+        End = new Point(i + 3.14, i + 3.14, i + 3.14)
+      };
     }
 
     var result = Operations.Serialize(cat);
@@ -117,7 +127,8 @@ public class Serialization
     var point = new Point();
     var test = new List<Base>();
 
-    for (var i = 0; i < 100; i++) test.Add(new SuperPoint { W = i });
+    for (var i = 0; i < 100; i++)
+      test.Add(new SuperPoint { W = i });
 
     point["test"] = test;
 
@@ -132,13 +143,16 @@ public class Serialization
   public void ChunkSerialisation()
   {
     var baseBasedChunk = new DataChunk();
-    for (var i = 0; i < 200; i++) baseBasedChunk.data.Add(new SuperPoint { W = i });
+    for (var i = 0; i < 200; i++)
+      baseBasedChunk.data.Add(new SuperPoint { W = i });
 
     var stringBasedChunk = new DataChunk();
-    for (var i = 0; i < 200; i++) stringBasedChunk.data.Add(i + "_hai");
+    for (var i = 0; i < 200; i++)
+      stringBasedChunk.data.Add(i + "_hai");
 
     var doubleBasedChunk = new DataChunk();
-    for (var i = 0; i < 200; i++) doubleBasedChunk.data.Add(i + 0.33);
+    for (var i = 0; i < 200; i++)
+      doubleBasedChunk.data.Add(i + 0.33);
 
     var baseChunkString = Operations.Serialize(baseBasedChunk);
     var stringChunkString = Operations.Serialize(stringBasedChunk);
@@ -196,15 +210,18 @@ public class Serialization
 
     // Note: nested empty lists should be preserved.
     test["nestedList"] = new List<object>() { new List<object>() { new List<object>() } };
-    test["@nestedDetachableList"] = new List<object>() { new List<object>() { new List<object>() } };
+    test["@nestedDetachableList"] = new List<object>()
+    {
+      new List<object>() { new List<object>() }
+    };
 
     var serialised = Operations.Serialize(test);
     var isCorrect =
       serialised.Contains("\"@(5)emptyChunks\":[]")
-   && serialised.Contains("\"emptyList\":[]")
-   && serialised.Contains("\"@emptyDetachableList\":[]")
-   && serialised.Contains("\"nestedList\":[[[]]]")
-   && serialised.Contains("\"@nestedDetachableList\":[[[]]]");
+      && serialised.Contains("\"emptyList\":[]")
+      && serialised.Contains("\"@emptyDetachableList\":[]")
+      && serialised.Contains("\"nestedList\":[[[]]]")
+      && serialised.Contains("\"@nestedDetachableList\":[[[]]]");
 
     Assert.That(isCorrect, Is.EqualTo(true));
   }
