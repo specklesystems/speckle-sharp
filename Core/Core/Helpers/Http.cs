@@ -70,8 +70,7 @@ namespace Speckle.Core.Helpers
         .HandleTransientHttpError()
         .WaitAndRetryAsync(
           delay ?? DefaultDelay(),
-          onRetry: (ex, timeSpan, retryAttempt, context) =>
-          {
+          onRetry: (ex, timeSpan, retryAttempt, context) => {
             //context.Remove("retryCount");
             //context.Add("retryCount", retryAttempt);
             //Log.Information(
@@ -102,7 +101,9 @@ namespace Speckle.Core.Helpers
       bool hasInternet = await HttpPing(defaultServer);
 
       if (!hasInternet)
-        SpeckleLog.Logger.ForContext("defaultServer", defaultServer).Warning("Failed to ping internet");
+        SpeckleLog.Logger
+          .ForContext("defaultServer", defaultServer)
+          .Warning("Failed to ping internet");
 
       return hasInternet;
     }
@@ -120,8 +121,7 @@ namespace Speckle.Core.Helpers
         .Or<SocketException>()
         .WaitAndRetryAsync(
           DefaultDelay(),
-          (ex, timeSpan, retryAttempt, context) =>
-          {
+          (ex, timeSpan, retryAttempt, context) => {
             //Log.Information(
             //  ex,
             //  "The http request failed with {exceptionType} exception retrying after {cooldown} milliseconds. This is retry attempt {retryAttempt}",
@@ -190,7 +190,8 @@ namespace Speckle.Core.Helpers
   {
     private IEnumerable<TimeSpan> _delay;
 
-    public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null) : base()
+    public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
+      : base()
     {
       _delay = delay ?? Http.DefaultDelay();
     }
@@ -207,7 +208,10 @@ namespace Speckle.Core.Helpers
       using (LogContext.PushProperty("targetUrl", request.RequestUri))
       using (LogContext.PushProperty("httpMethod", request.Method))
       {
-        SpeckleLog.Logger.Debug("Starting execution of http request to {targetUrl}", request.RequestUri);
+        SpeckleLog.Logger.Debug(
+          "Starting execution of http request to {targetUrl}",
+          request.RequestUri
+        );
         var timer = new Stopwatch();
         timer.Start();
         context.Add("retryCount", 0);
@@ -223,17 +227,18 @@ namespace Speckle.Core.Helpers
         timer.Stop();
         var status = policyResult.Outcome == OutcomeType.Successful ? "succeeded" : "failed";
         context.TryGetValue("retryCount", out var retryCount);
-        SpeckleLog.Logger.ForContext("ExceptionType", policyResult.FinalException?.GetType())
+        SpeckleLog.Logger
+          .ForContext("ExceptionType", policyResult.FinalException?.GetType())
           .Information(
-          "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
-          request.RequestUri.Scheme,
-          request.RequestUri.Host,
-          request.RequestUri.PathAndQuery,
-          status,
-          policyResult.Result?.StatusCode,
-          timer.Elapsed.TotalSeconds,
-          retryCount ?? 0
-        );
+            "Execution of http request to {httpScheme}://{hostUrl}/{relativeUrl} {resultStatus} with {httpStatusCode} after {elapsed} seconds and {retryCount} retries",
+            request.RequestUri.Scheme,
+            request.RequestUri.Host,
+            request.RequestUri.PathAndQuery,
+            status,
+            policyResult.Result?.StatusCode,
+            timer.Elapsed.TotalSeconds,
+            retryCount ?? 0
+          );
         if (policyResult.Outcome == OutcomeType.Successful)
           return policyResult.Result!;
 

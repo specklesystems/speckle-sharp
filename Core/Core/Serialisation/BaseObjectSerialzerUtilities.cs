@@ -21,8 +21,10 @@ namespace Speckle.Core.Serialisation
     #region Getting Types
 
     private static Dictionary<string, Type> cachedTypes = new Dictionary<string, Type>();
-    private static Dictionary<string, Dictionary<string, PropertyInfo>> typeProperties = new Dictionary<string, Dictionary<string, PropertyInfo>>();
-    private static Dictionary<string, List<MethodInfo>> onDeserializedCallbacks = new Dictionary<string, List<MethodInfo>>();
+    private static Dictionary<string, Dictionary<string, PropertyInfo>> typeProperties =
+      new Dictionary<string, Dictionary<string, PropertyInfo>>();
+    private static Dictionary<string, List<MethodInfo>> onDeserializedCallbacks =
+      new Dictionary<string, List<MethodInfo>>();
 
     internal static Type GetType(string objFullType)
     {
@@ -44,7 +46,7 @@ namespace Speckle.Core.Serialisation
       var objectTypes = objFullType.Split(':').Reverse();
       foreach (var typeName in objectTypes)
       {
-        //TODO: rather than getting the type from the first loaded kit that has it, maybe 
+        //TODO: rather than getting the type from the first loaded kit that has it, maybe
         //we get it from a specific Kit
         var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
         if (type != null)
@@ -83,10 +85,14 @@ namespace Speckle.Core.Serialisation
         {
           List<MethodInfo> ret = new List<MethodInfo>();
           Type type = GetType(objFullType);
-          MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+          MethodInfo[] methods = type.GetMethods(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
+          );
           foreach (MethodInfo method in methods)
           {
-            List<OnDeserializedAttribute> onDeserializedAttributes = method.GetCustomAttributes<OnDeserializedAttribute>(true).ToList();
+            List<OnDeserializedAttribute> onDeserializedAttributes = method
+              .GetCustomAttributes<OnDeserializedAttribute>(true)
+              .ToList();
             if (onDeserializedAttributes.Count > 0)
               ret.Add(method);
           }
@@ -118,7 +124,13 @@ namespace Speckle.Core.Serialisation
 
     #region Value handling
 
-    internal static object HandleValue(JToken value, JsonSerializer serializer, CancellationToken CancellationToken, JsonProperty jsonProperty = null, string TypeDiscriminator = "speckle_type")
+    internal static object HandleValue(
+      JToken value,
+      JsonSerializer serializer,
+      CancellationToken CancellationToken,
+      JsonProperty jsonProperty = null,
+      string TypeDiscriminator = "speckle_type"
+    )
     {
       if (CancellationToken.IsCancellationRequested)
       {
@@ -145,7 +157,9 @@ namespace Speckle.Core.Serialisation
           return null; // Check for cancellation
         }
 
-        if (jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null)
+        if (
+          jsonProperty != null && jsonProperty.PropertyType.GetConstructor(Type.EmptyTypes) != null
+        )
         {
           var arr = Activator.CreateInstance(jsonProperty.PropertyType);
 
@@ -170,15 +184,30 @@ namespace Speckle.Core.Serialisation
             {
               foreach (var dataItem in chunk.data)
               {
-                if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
+                if (
+                  hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface
+                )
                 {
-                  if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(dataItem.GetType()))
+                  if (
+                    jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(
+                      dataItem.GetType()
+                    )
+                  )
                   {
                     addMethod.Invoke(arr, new object[] { dataItem });
                   }
                   else
                   {
-                    addMethod.Invoke(arr, new object[] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                    addMethod.Invoke(
+                      arr,
+                      new object[]
+                      {
+                        Convert.ChangeType(
+                          dataItem,
+                          jsonProperty.PropertyType.GenericTypeArguments[0]
+                        )
+                      }
+                    );
                   }
                 }
                 else
@@ -187,15 +216,25 @@ namespace Speckle.Core.Serialisation
                 }
               }
             }
-            else if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
+            else if (
+              hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface
+            )
             {
-              if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
+              if (
+                jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType())
+              )
               {
                 addMethod.Invoke(arr, new object[] { item });
               }
               else
               {
-                addMethod.Invoke(arr, new object[] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) });
+                addMethod.Invoke(
+                  arr,
+                  new object[]
+                  {
+                    Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0])
+                  }
+                );
               }
             }
             else
@@ -207,13 +246,14 @@ namespace Speckle.Core.Serialisation
         }
         else if (jsonProperty != null)
         {
-
           if (CancellationToken.IsCancellationRequested)
           {
             return null; // Check for cancellation
           }
 
-          var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
+          var arr = Activator.CreateInstance(
+            typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType())
+          );
 
           foreach (var val in ((JArray)value))
           {
@@ -234,7 +274,9 @@ namespace Speckle.Core.Serialisation
               {
                 if (!jsonProperty.PropertyType.GetElementType().IsInterface)
                 {
-                  ((IList)arr).Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()));
+                  ((IList)arr).Add(
+                    Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType())
+                  );
                 }
                 else
                 {
@@ -246,7 +288,9 @@ namespace Speckle.Core.Serialisation
             {
               if (!jsonProperty.PropertyType.GetElementType().IsInterface)
               {
-                ((IList)arr).Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()));
+                ((IList)arr).Add(
+                  Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType())
+                );
               }
               else
               {
@@ -254,7 +298,10 @@ namespace Speckle.Core.Serialisation
               }
             }
           }
-          var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((IList)arr).Count);
+          var actualArr = Array.CreateInstance(
+            jsonProperty.PropertyType.GetElementType(),
+            ((IList)arr).Count
+          );
           ((IList)arr).CopyTo(actualArr, 0);
           return actualArr;
         }
@@ -305,7 +352,10 @@ namespace Speckle.Core.Serialisation
           return value.ToObject<Base>(serializer);
         }
 
-        var dict = jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new Dictionary<string, object>();
+        var dict =
+          jsonProperty != null
+            ? Activator.CreateInstance(jsonProperty.PropertyType)
+            : new Dictionary<string, object>();
         foreach (var prop in ((JObject)value))
         {
           if (CancellationToken.IsCancellationRequested)
@@ -317,7 +367,8 @@ namespace Speckle.Core.Serialisation
           if (jsonProperty != null)
           {
             key = Convert.ChangeType(prop.Key, jsonProperty.PropertyType.GetGenericArguments()[0]);
-          } ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer, CancellationToken);
+          }
+          ((IDictionary)dict)[key] = HandleValue(prop.Value, serializer, CancellationToken);
         }
         return dict;
       }
@@ -330,7 +381,11 @@ namespace Speckle.Core.Serialisation
 
     private static Dictionary<string, Type> cachedAbstractTypes = new Dictionary<string, Type>();
 
-    internal static object HandleAbstractOriginalValue(JToken jToken, string assemblyQualifiedName, JsonSerializer serializer)
+    internal static object HandleAbstractOriginalValue(
+      JToken jToken,
+      string assemblyQualifiedName,
+      JsonSerializer serializer
+    )
     {
       if (cachedAbstractTypes.ContainsKey(assemblyQualifiedName))
       {
@@ -339,7 +394,9 @@ namespace Speckle.Core.Serialisation
 
       var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
 
-      var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
+      var myAssembly = AppDomain.CurrentDomain
+        .GetAssemblies()
+        .FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
       if (myAssembly == null)
       {
         throw new SpeckleException("Could not load abstract object's assembly.");
@@ -361,14 +418,17 @@ namespace Speckle.Core.Serialisation
 
   internal static class CallSiteCache
   {
-    // Adapted from the answer to 
+    // Adapted from the answer to
     // https://stackoverflow.com/questions/12057516/c-sharp-dynamicobject-dynamic-properties
     // by jbtule, https://stackoverflow.com/users/637783/jbtule
     // And also
     // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
     // by Marc Gravell, https://github.com/mgravell
 
-    private static readonly Dictionary<string, CallSite<Func<CallSite, object, object, object>>> setters = new Dictionary<string, CallSite<Func<CallSite, object, object, object>>>();
+    private static readonly Dictionary<
+      string,
+      CallSite<Func<CallSite, object, object, object>>
+    > setters = new Dictionary<string, CallSite<Func<CallSite, object, object, object>>>();
 
     public static void SetValue(string propertyName, object target, object value)
     {
@@ -380,14 +440,19 @@ namespace Speckle.Core.Serialisation
         {
           if (!setters.TryGetValue(propertyName, out site))
           {
-            var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(CSharpBinderFlags.None,
-              propertyName, typeof(CallSiteCache),
+            var binder = Microsoft.CSharp.RuntimeBinder.Binder.SetMember(
+              CSharpBinderFlags.None,
+              propertyName,
+              typeof(CallSiteCache),
               new List<CSharpArgumentInfo>
               {
-              CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
-              CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
-              });
-            setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+                CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null),
+                CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
+              }
+            );
+            setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(
+              binder
+            );
           }
         }
 

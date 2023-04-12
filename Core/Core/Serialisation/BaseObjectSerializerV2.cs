@@ -13,12 +13,16 @@ using Speckle.Newtonsoft.Json;
 
 namespace Speckle.Core.Serialisation
 {
-
   public class BaseObjectSerializerV2
   {
     public struct PropertyAttributeInfo
     {
-      public PropertyAttributeInfo(bool isDetachable, bool isChunkable, int chunkSize, JsonPropertyAttribute jsonPropertyAttribute)
+      public PropertyAttributeInfo(
+        bool isDetachable,
+        bool isChunkable,
+        int chunkSize,
+        JsonPropertyAttribute jsonPropertyAttribute
+      )
       {
         IsDetachable = isDetachable || isChunkable;
         IsChunkable = isChunkable;
@@ -40,7 +44,7 @@ namespace Speckle.Core.Serialisation
     public CancellationToken CancellationToken { get; set; }
 
     /// <summary>
-    /// The sync transport. This transport will be used synchronously. 
+    /// The sync transport. This transport will be used synchronously.
     /// </summary>
     public List<ITransport> WriteTransports { get; set; } = new List<ITransport>();
 
@@ -50,7 +54,8 @@ namespace Speckle.Core.Serialisation
 
     private Regex ChunkPropertyNameRegex = new Regex(@"^@\((\d*)\)");
 
-    private Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> TypedPropertiesCache = new Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>>();
+    private Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> TypedPropertiesCache =
+      new Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>>();
     private List<Dictionary<string, int>> ParentClosures = new List<Dictionary<string, int>>();
     private bool Busy = false;
 
@@ -60,20 +65,20 @@ namespace Speckle.Core.Serialisation
     public TimeSpan Elapsed => _stopwatch.Elapsed;
     private Stopwatch _stopwatch = new Stopwatch();
 
-    public BaseObjectSerializerV2()
-    {
-
-    }
+    public BaseObjectSerializerV2() { }
 
     public string Serialize(Base baseObj)
     {
       if (Busy)
-        throw new Exception("A serializer instance can serialize only 1 object at a time. Consider creating multiple serializer instances");
+        throw new Exception(
+          "A serializer instance can serialize only 1 object at a time. Consider creating multiple serializer instances"
+        );
       try
       {
         _stopwatch.Start();
         Busy = true;
-        Dictionary<string, object> converted = PreserializeObject(baseObj, true) as Dictionary<string, object>;
+        Dictionary<string, object> converted =
+          PreserializeObject(baseObj, true) as Dictionary<string, object>;
         String serialized = Dict2Json(converted);
         StoreObject(converted["id"] as string, serialized);
         return serialized;
@@ -89,7 +94,11 @@ namespace Speckle.Core.Serialisation
 
     // `Preserialize` means transforming all objects into the final form that will appear in json, with basic .net objects
     // (primitives, lists and dictionaries with string keys)
-    public object PreserializeObject(object obj, bool computeClosures = false, PropertyAttributeInfo inheritedDetachInfo = default(PropertyAttributeInfo))
+    public object PreserializeObject(
+      object obj,
+      bool computeClosures = false,
+      PropertyAttributeInfo inheritedDetachInfo = default(PropertyAttributeInfo)
+    )
     {
       // handle null objects and also check for cancelation
       if (obj == null || CancellationToken.IsCancellationRequested)
@@ -111,7 +120,10 @@ namespace Speckle.Core.Serialisation
         Dictionary<string, object> ret = new Dictionary<string, object>(d.Count);
         foreach (DictionaryEntry kvp in d)
         {
-          object converted = PreserializeObject(kvp.Value, inheritedDetachInfo: inheritedDetachInfo);
+          object converted = PreserializeObject(
+            kvp.Value,
+            inheritedDetachInfo: inheritedDetachInfo
+          );
           if (converted != null)
             ret[kvp.Key.ToString()] = converted;
         }
@@ -160,17 +172,33 @@ namespace Speckle.Core.Serialisation
       {
         return new List<float>()
         {
-          m.M11, m.M12, m.M13, m.M14,
-          m.M21, m.M22, m.M23, m.M24,
-          m.M31, m.M32, m.M33, m.M34,
-          m.M41, m.M42, m.M43, m.M44
+          m.M11,
+          m.M12,
+          m.M13,
+          m.M14,
+          m.M21,
+          m.M22,
+          m.M23,
+          m.M24,
+          m.M31,
+          m.M32,
+          m.M33,
+          m.M34,
+          m.M41,
+          m.M42,
+          m.M43,
+          m.M44
         };
       }
 
       throw new Exception("Unsupported value in serialization: " + type.ToString());
     }
 
-    public object PreserializeBase(Base baseObj, bool computeClosures = false, PropertyAttributeInfo inheritedDetachInfo = default(PropertyAttributeInfo))
+    public object PreserializeBase(
+      Base baseObj,
+      bool computeClosures = false,
+      PropertyAttributeInfo inheritedDetachInfo = default(PropertyAttributeInfo)
+    )
     {
       // handle circular references
       if (ParentObjects.Contains(baseObj))
@@ -182,11 +210,14 @@ namespace Speckle.Core.Serialisation
       if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
         ParentClosures.Add(closure);
 
-      List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(baseObj);
+      List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(
+        baseObj
+      );
       IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
 
       // propertyName -> (originalValue, isDetachable, isChunkable, chunkSize)
-      Dictionary<string, (object, PropertyAttributeInfo)> allProperties = new Dictionary<string, (object, PropertyAttributeInfo)>();
+      Dictionary<string, (object, PropertyAttributeInfo)> allProperties =
+        new Dictionary<string, (object, PropertyAttributeInfo)>();
 
       // Construct `allProperties`: Add typed properties
       foreach ((PropertyInfo propertyInfo, PropertyAttributeInfo detachInfo) in typedProperties)
@@ -210,7 +241,10 @@ namespace Speckle.Core.Serialisation
           var match = ChunkPropertyNameRegex.Match(propName);
           isChunkable = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
         }
-        allProperties[propName] = (baseValue, new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, null));
+        allProperties[propName] = (
+          baseValue,
+          new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, null)
+        );
       }
 
       // Convert all properties
@@ -218,7 +252,11 @@ namespace Speckle.Core.Serialisation
       {
         object convertedValue = PreserializeBasePropertyValue(prop.Value.Item1, prop.Value.Item2);
 
-        if (convertedValue == null && prop.Value.Item2.JsonPropertyInfo != null && prop.Value.Item2.JsonPropertyInfo.NullValueHandling == NullValueHandling.Ignore)
+        if (
+          convertedValue == null
+          && prop.Value.Item2.JsonPropertyInfo != null
+          && prop.Value.Item2.JsonPropertyInfo.NullValueHandling == NullValueHandling.Ignore
+        )
           continue;
 
         convertedBase[prop.Key] = convertedValue;
@@ -251,7 +289,10 @@ namespace Speckle.Core.Serialisation
       {
         string json = Dict2Json(convertedBase);
         StoreObject(convertedBase["id"] as string, json);
-        ObjectReference objRef = new ObjectReference() { referencedId = convertedBase["id"] as string };
+        ObjectReference objRef = new ObjectReference()
+        {
+          referencedId = convertedBase["id"] as string
+        };
         object objRefConverted = PreserializeObject(objRef);
         UpdateParentClosures(convertedBase["id"] as string);
         OnProgressAction?.Invoke("S", 1);
@@ -263,7 +304,10 @@ namespace Speckle.Core.Serialisation
 
     private object PreserializeBasePropertyValue(object baseValue, PropertyAttributeInfo detachInfo)
     {
-      bool computeClosuresForChild = (detachInfo.IsDetachable || detachInfo.IsChunkable) && WriteTransports != null && WriteTransports.Count > 0;
+      bool computeClosuresForChild =
+        (detachInfo.IsDetachable || detachInfo.IsChunkable)
+        && WriteTransports != null
+        && WriteTransports.Count > 0;
 
       // If there are no WriteTransports, keep everything attached.
       if (WriteTransports == null || WriteTransports.Count == 0)
@@ -286,7 +330,10 @@ namespace Speckle.Core.Serialisation
         }
         if (crtChunk.data.Count > 0)
           chunks.Add(crtChunk);
-        return PreserializeObject(chunks, inheritedDetachInfo: new PropertyAttributeInfo(true, false, 0, null));
+        return PreserializeObject(
+          chunks,
+          inheritedDetachInfo: new PropertyAttributeInfo(true, false, 0, null)
+        );
       }
 
       return PreserializeObject(baseValue, inheritedDetachInfo: detachInfo);
@@ -299,7 +346,10 @@ namespace Speckle.Core.Serialisation
         int childDepth = ParentClosures.Count - parentLevel;
         if (!ParentClosures[parentLevel].ContainsKey(objectId))
           ParentClosures[parentLevel][objectId] = childDepth;
-        ParentClosures[parentLevel][objectId] = Math.Min(ParentClosures[parentLevel][objectId], childDepth);
+        ParentClosures[parentLevel][objectId] = Math.Min(
+          ParentClosures[parentLevel][objectId],
+          childDepth
+        );
       }
     }
 
@@ -347,7 +397,9 @@ namespace Speckle.Core.Serialisation
 
       _stopwatch.Start();
       if (!hasBlobTransport)
-        throw new Exception("Object tree contains a Blob (file), but the serialiser has no blob saving capable transports.");
+        throw new Exception(
+          "Object tree contains a Blob (file), but the serialiser has no blob saving capable transports."
+        );
     }
 
     // (propertyInfo, isDetachable, isChunkable, chunkSize, JsonPropertyAttribute)
@@ -359,7 +411,8 @@ namespace Speckle.Core.Serialisation
       if (TypedPropertiesCache.ContainsKey(type.FullName))
         return TypedPropertiesCache[type.FullName];
 
-      List<(PropertyInfo, PropertyAttributeInfo)> ret = new List<(PropertyInfo, PropertyAttributeInfo)>();
+      List<(PropertyInfo, PropertyAttributeInfo)> ret =
+        new List<(PropertyInfo, PropertyAttributeInfo)>();
 
       foreach (PropertyInfo typedProperty in typedProperties)
       {
@@ -380,13 +433,23 @@ namespace Speckle.Core.Serialisation
 
         object baseValue = typedProperty.GetValue(baseObj);
 
-        List<DetachProperty> detachableAttributes = typedProperty.GetCustomAttributes<DetachProperty>(true).ToList();
-        List<Chunkable> chunkableAttributes = typedProperty.GetCustomAttributes<Chunkable>(true).ToList();
+        List<DetachProperty> detachableAttributes = typedProperty
+          .GetCustomAttributes<DetachProperty>(true)
+          .ToList();
+        List<Chunkable> chunkableAttributes = typedProperty
+          .GetCustomAttributes<Chunkable>(true)
+          .ToList();
         bool isDetachable = detachableAttributes.Count > 0 && detachableAttributes[0].Detachable;
         bool isChunkable = chunkableAttributes.Count > 0;
         int chunkSize = isChunkable ? chunkableAttributes[0].MaxObjCountPerChunk : 1000;
-        JsonPropertyAttribute jsonPropertyAttribute = typedProperty.GetCustomAttribute<JsonPropertyAttribute>();
-        ret.Add((typedProperty, new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, jsonPropertyAttribute)));
+        JsonPropertyAttribute jsonPropertyAttribute =
+          typedProperty.GetCustomAttribute<JsonPropertyAttribute>();
+        ret.Add(
+          (
+            typedProperty,
+            new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, jsonPropertyAttribute)
+          )
+        );
       }
 
       TypedPropertiesCache[type.FullName] = ret;

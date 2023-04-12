@@ -23,7 +23,7 @@ namespace Speckle.Core.Serialisation
     public CancellationToken CancellationToken { get; set; }
 
     /// <summary>
-    /// The sync transport. This transport will be used synchronously. 
+    /// The sync transport. This transport will be used synchronously.
     /// </summary>
     public ITransport ReadTransport { get; set; }
 
@@ -35,6 +35,7 @@ namespace Speckle.Core.Serialisation
 
     private DeserializationWorkerThreads WorkerThreads;
     private bool Busy = false;
+
     // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
     private Dictionary<string, object> DeserializedObjects;
     private object CallbackLock = new object();
@@ -44,10 +45,7 @@ namespace Speckle.Core.Serialisation
     public string BlobStorageFolder { get; set; }
     public TimeSpan Elapsed { get; private set; }
 
-    public BaseObjectDeserializerV2()
-    {
-
-    }
+    public BaseObjectDeserializerV2() { }
 
     /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
     /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
@@ -56,7 +54,9 @@ namespace Speckle.Core.Serialisation
     public Base Deserialize(string rootObjectJson)
     {
       if (Busy)
-        throw new InvalidOperationException("A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances");
+        throw new InvalidOperationException(
+          "A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances"
+        );
 
       try
       {
@@ -86,11 +86,12 @@ namespace Speckle.Core.Serialisation
 
         stopwatch.Stop();
         Elapsed += stopwatch.Elapsed;
-        if (ret is Base b) return b;
-
-        else throw new Exception(
-          $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
-        );
+        if (ret is Base b)
+          return b;
+        else
+          throw new Exception(
+            $"Expected {nameof(rootObjectJson)} to be deserialized to type {nameof(Base)} but was {ret}"
+          );
       }
       finally
       {
@@ -127,7 +128,10 @@ namespace Speckle.Core.Serialisation
     private object DeserializeTransportObjectProxy(String objectJson)
     {
       // Try background work
-      Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson);
+      Task<object> bgResult = WorkerThreads.TryStartTask(
+        WorkerThreadTaskType.Deserialize,
+        objectJson
+      );
       if (bgResult != null)
         return bgResult;
 
@@ -138,7 +142,7 @@ namespace Speckle.Core.Serialisation
     public object DeserializeTransportObject(String objectJson)
     {
       // Apparently this automatically parses DateTimes in strings if it matches the format:
-      // JObject doc1 = JObject.Parse(objectJson); 
+      // JObject doc1 = JObject.Parse(objectJson);
 
       // This is equivalent code that doesn't parse datetimes:
       JObject doc1;
@@ -147,7 +151,6 @@ namespace Speckle.Core.Serialisation
         reader.DateParseHandling = DateParseHandling.None;
         doc1 = JObject.Load(reader);
       }
-
 
       object converted = ConvertJsonElement(doc1);
       lock (CallbackLock)
@@ -177,7 +180,14 @@ namespace Speckle.Core.Serialisation
           catch (OverflowException ex)
           {
             var v = (object)(double)doc;
-            SpeckleLog.Logger.Debug(ex, "Json property {tokenType} failed to deserialize {value} to {targetType}, will be deserialized as {fallbackType}", doc.Type, v, typeof(long), typeof(double));
+            SpeckleLog.Logger.Debug(
+              ex,
+              "Json property {tokenType} failed to deserialize {value} to {targetType}, will be deserialized as {fallbackType}",
+              doc.Type,
+              v,
+              typeof(long),
+              typeof(double)
+            );
             return v;
           }
         case JTokenType.Float:
@@ -193,7 +203,8 @@ namespace Speckle.Core.Serialisation
           foreach (JToken value in docAsArray)
           {
             object convertedValue = ConvertJsonElement(value);
-            retListCount += (convertedValue is DataChunk) ? ((DataChunk)convertedValue).data.Count : 1;
+            retListCount +=
+              (convertedValue is DataChunk) ? ((DataChunk)convertedValue).data.Count : 1;
             jsonList.Add(convertedValue);
           }
 
@@ -221,7 +232,9 @@ namespace Speckle.Core.Serialisation
           if (!dict.ContainsKey(TypeDiscriminator))
             return dict;
 
-          if ((dict[TypeDiscriminator] as String) == "reference" && dict.ContainsKey("referencedId"))
+          if (
+            (dict[TypeDiscriminator] as String) == "reference" && dict.ContainsKey("referencedId")
+          )
           {
             string objId = dict["referencedId"] as String;
             object deserialized = null;
@@ -274,13 +287,20 @@ namespace Speckle.Core.Serialisation
       dictObj.Remove(TypeDiscriminator);
       dictObj.Remove("__closure");
 
-      Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
-      List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
+      Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(
+        typeName
+      );
+      List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(
+        typeName
+      );
 
       foreach (KeyValuePair<string, object> entry in dictObj)
       {
         string lowerPropertyName = entry.Key.ToLower();
-        if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
+        if (
+          staticProperties.ContainsKey(lowerPropertyName)
+          && staticProperties[lowerPropertyName].CanWrite
+        )
         {
           PropertyInfo property = staticProperties[lowerPropertyName];
           if (entry.Value == null)
@@ -293,7 +313,11 @@ namespace Speckle.Core.Serialisation
 
           Type targetValueType = property.PropertyType;
           object convertedValue;
-          bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out convertedValue);
+          bool conversionOk = ValueConverter.ConvertValue(
+            targetValueType,
+            entry.Value,
+            out convertedValue
+          );
           if (conversionOk)
           {
             property.SetValue(baseObj, convertedValue);
@@ -301,7 +325,13 @@ namespace Speckle.Core.Serialisation
           else
           {
             // Cannot convert the value in the json to the static property type
-            throw new Exception(String.Format("Cannot deserialize {0} to {1}", entry.Value.GetType().FullName, targetValueType.FullName));
+            throw new Exception(
+              String.Format(
+                "Cannot deserialize {0} to {1}",
+                entry.Value.GetType().FullName,
+                targetValueType.FullName
+              )
+            );
           }
         }
         else

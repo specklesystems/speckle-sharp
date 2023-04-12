@@ -2,7 +2,6 @@
 
 namespace Speckle.Core.Kits
 {
-
   [AttributeUsage(AttributeTargets.Constructor, Inherited = false, AllowMultiple = false)]
   public class SchemaInfo : Attribute
   {
@@ -10,7 +9,10 @@ namespace Speckle.Core.Kits
     private string _name;
     private string _category;
     private string _subcategory;
-    public virtual string Subcategory { get => _subcategory; }
+    public virtual string Subcategory
+    {
+      get => _subcategory;
+    }
     public virtual string Category
     {
       get => _category;
@@ -26,7 +28,8 @@ namespace Speckle.Core.Kits
       get { return _name; }
     }
 
-    public SchemaInfo(string name, string description) : this(name, description, null, null) { }
+    public SchemaInfo(string name, string description)
+      : this(name, description, null, null) { }
 
     public SchemaInfo(string name, string description, string category, string subcategory)
     {
@@ -38,9 +41,7 @@ namespace Speckle.Core.Kits
   }
 
   [AttributeUsage(AttributeTargets.Constructor)]
-  public class SchemaDeprecated : Attribute
-  {
-  }
+  public class SchemaDeprecated : Attribute { }
 
   [AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
   public class SchemaParamInfo : Attribute
@@ -64,25 +65,22 @@ namespace Speckle.Core.Kits
   [AttributeUsage(AttributeTargets.Parameter)]
   public class SchemaMainParam : Attribute
   {
-    public SchemaMainParam()
-    {
-    }
+    public SchemaMainParam() { }
   }
 
-  // TODO: this could be nuked, as it's only used to hide props on Base, 
+  // TODO: this could be nuked, as it's only used to hide props on Base,
   // which we might want to expose anyways...
   /// <summary>
   /// Used to ignore properties from expand objects etc
   /// </summary>
   [AttributeUsage(AttributeTargets.Property)]
-  public class SchemaIgnore : Attribute
-  {
-  }
+  public class SchemaIgnore : Attribute { }
 
   [AttributeUsage(AttributeTargets.Method)]
   public class SchemaComputedAttribute : Attribute
   {
     public virtual string Name { get; }
+
     public SchemaComputedAttribute(string name)
     {
       Name = name;

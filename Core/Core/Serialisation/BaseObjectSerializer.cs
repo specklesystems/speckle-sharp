@@ -15,11 +15,10 @@ namespace Speckle.Core.Serialisation
 {
   /// <summary>
   /// Json converter that handles base speckle objects. Enables detachment &
-  /// simultaneous transport (persistence) of objects. 
+  /// simultaneous transport (persistence) of objects.
   /// </summary>
   public class BaseObjectSerializer : JsonConverter
   {
-
     /// <summary>
     /// Property that describes the type of the object.
     /// </summary>
@@ -28,7 +27,7 @@ namespace Speckle.Core.Serialisation
     public CancellationToken CancellationToken { get; set; }
 
     /// <summary>
-    /// The sync transport. This transport will be used synchronously. 
+    /// The sync transport. This transport will be used synchronously.
     /// </summary>
     public ITransport ReadTransport { get; set; }
 
@@ -87,9 +86,13 @@ namespace Speckle.Core.Serialisation
 
     #region Read Json
 
-    public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+    public override object ReadJson(
+      JsonReader reader,
+      Type objectType,
+      object existingValue,
+      JsonSerializer serializer
+    )
     {
-
       if (CancellationToken.IsCancellationRequested)
       {
         return null; // Check for cancellation
@@ -147,7 +150,11 @@ namespace Speckle.Core.Serialisation
             return null; // Check for cancellation
           }
 
-          dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
+          dict[val.Key] = SerializationUtilities.HandleValue(
+            val.Value,
+            serializer,
+            CancellationToken
+          );
         }
         return dict;
       }
@@ -181,7 +188,9 @@ namespace Speckle.Core.Serialisation
         }
         else
         {
-          throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.");
+          throw new SpeckleException(
+            "Cannot resolve reference. The provided transport could not find it."
+          );
         }
       }
 
@@ -219,22 +228,34 @@ namespace Speckle.Core.Serialisation
 
         if (property != null && property.Writable)
         {
-
           if (type == typeof(Abstract) && property.PropertyName == "base")
           {
-            var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(jProperty.Value, ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string, serializer);
+            var propertyValue = SerializationUtilities.HandleAbstractOriginalValue(
+              jProperty.Value,
+              ((JValue)jObject.GetValue("assemblyQualifiedName")).Value as string,
+              serializer
+            );
             property.ValueProvider.SetValue(obj, propertyValue);
           }
           else
           {
-            var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken, property);
+            var val = SerializationUtilities.HandleValue(
+              jProperty.Value,
+              serializer,
+              CancellationToken,
+              property
+            );
             property.ValueProvider.SetValue(obj, val);
           }
         }
         else
         {
           // dynamic properties
-          CallSiteCache.SetValue(jProperty.Name, obj, SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken));
+          CallSiteCache.SetValue(
+            jProperty.Name,
+            obj,
+            SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken)
+          );
         }
       }
 
@@ -259,7 +280,7 @@ namespace Speckle.Core.Serialisation
     #region Write Json
 
     // Keeps track of the actual tree structure of the objects being serialised.
-    // These tree references will thereafter be stored in the __tree prop. 
+    // These tree references will thereafter be stored in the __tree prop.
     private void TrackReferenceInTree(string refId)
     {
       // Help with creating closure table entries.
@@ -283,12 +304,13 @@ namespace Speckle.Core.Serialisation
       }
     }
 
-    private bool FirstEntry = true, FirstEntryWasListOrDict = false;
+    private bool FirstEntry = true,
+      FirstEntryWasListOrDict = false;
 
     // While this function looks complicated, it's actually quite smooth:
     // The important things to remember is that serialization goes depth first:
     // The first object to get fully serialised is the first nested one, with
-    // the parent object being last. 
+    // the parent object being last.
     public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
     {
       writer.Formatting = serializer.Formatting;
@@ -341,7 +363,8 @@ namespace Speckle.Core.Serialisation
         var jo = new JObject();
         var propertyNames = obj.GetDynamicMemberNames();
 
-        var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(value.GetType());
+        var contract = (JsonDynamicContract)
+          serializer.ContractResolver.ResolveContract(value.GetType());
 
         // Iterate through the object's properties, one by one, checking for ignored ones
         foreach (var prop in propertyNames)
@@ -379,7 +402,10 @@ namespace Speckle.Core.Serialisation
           // Check if this property is marked for detachment: either by the presence of "@" at the beginning of the name, or by the presence of a DetachProperty attribute on a typed property.
           if (property != null)
           {
-            var detachableAttributes = property.AttributeProvider.GetAttributes(typeof(DetachProperty), true);
+            var detachableAttributes = property.AttributeProvider.GetAttributes(
+              typeof(DetachProperty),
+              true
+            );
             if (detachableAttributes.Count > 0)
             {
               DetachLineage.Add(((DetachProperty)detachableAttributes[0]).Detachable);
@@ -389,11 +415,17 @@ namespace Speckle.Core.Serialisation
               DetachLineage.Add(false);
             }
 
-            var chunkableAttributes = property.AttributeProvider.GetAttributes(typeof(Chunkable), true);
+            var chunkableAttributes = property.AttributeProvider.GetAttributes(
+              typeof(Chunkable),
+              true
+            );
             if (chunkableAttributes.Count > 0)
             {
               //DetachLineage.Add(true); // NOOPE
-              serializer.Context = new StreamingContext(StreamingContextStates.Other, chunkableAttributes[0]);
+              serializer.Context = new StreamingContext(
+                StreamingContextStates.Other,
+                chunkableAttributes[0]
+              );
             }
             else
             {
@@ -412,8 +444,10 @@ namespace Speckle.Core.Serialisation
               int chunkSize;
               var match = chunkSyntax.Match(prop);
               int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
-              serializer.Context = new StreamingContext(StreamingContextStates.Other,
-                chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable());
+              serializer.Context = new StreamingContext(
+                StreamingContextStates.Other,
+                chunkSize > 0 ? new Chunkable(chunkSize) : new Chunkable()
+              );
             }
             else
             {
@@ -426,7 +460,12 @@ namespace Speckle.Core.Serialisation
           }
 
           // Set and store a reference, if it is marked as detachable and the transport is not null.
-          if (WriteTransports != null && WriteTransports.Count != 0 && propValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (
+            WriteTransports != null
+            && WriteTransports.Count != 0
+            && propValue is Base
+            && DetachLineage[DetachLineage.Count - 1]
+          )
           {
             var what = JToken.FromObject(propValue, serializer); // Trigger next.
 
@@ -457,8 +496,11 @@ namespace Speckle.Core.Serialisation
           serializer.Context = new StreamingContext();
         }
 
-        // Check if we actually have any transports present that would warrant a 
-        if ((WriteTransports != null && WriteTransports.Count != 0) && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1]))
+        // Check if we actually have any transports present that would warrant a
+        if (
+          (WriteTransports != null && WriteTransports.Count != 0)
+          && RefMinDepthTracker.ContainsKey(Lineage[Lineage.Count - 1])
+        )
         {
           jo.Add("__closure", JToken.FromObject(RefMinDepthTracker[Lineage[Lineage.Count - 1]]));
         }
@@ -470,7 +512,11 @@ namespace Speckle.Core.Serialisation
         }
         jo.WriteTo(writer);
 
-        if ((DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1]) && WriteTransports != null && WriteTransports.Count != 0)
+        if (
+          (DetachLineage.Count == 0 || DetachLineage[DetachLineage.Count - 1])
+          && WriteTransports != null
+          && WriteTransports.Count != 0
+        )
         {
           var objString = jo.ToString(writer.Formatting);
           var objId = jo["id"].Value<string>();
@@ -508,9 +554,12 @@ namespace Speckle.Core.Serialisation
       // This handles a broader case in which we are, essentially, checking only for object[] or List<object> / Dictionary<string, object> cases.
       // A much faster approach is to check for List<primitive>, where primitive = string, number, etc. and directly serialize it in full.
       // Same goes for dictionaries.
-      if (typeof(IEnumerable).IsAssignableFrom(type) && !typeof(IDictionary).IsAssignableFrom(type) && type != typeof(string))
+      if (
+        typeof(IEnumerable).IsAssignableFrom(type)
+        && !typeof(IDictionary).IsAssignableFrom(type)
+        && type != typeof(string)
+      )
       {
-
         if (TotalProcessedCount == 0 && FirstEntry)
         {
           FirstEntry = false;
@@ -522,7 +571,10 @@ namespace Speckle.Core.Serialisation
         JArray arr = new JArray();
 
         // Chunking large lists into manageable parts.
-        if (DetachLineage[DetachLineage.Count - 1] && serializer.Context.Context is Chunkable chunkInfo)
+        if (
+          DetachLineage[DetachLineage.Count - 1]
+          && serializer.Context.Context is Chunkable chunkInfo
+        )
         {
           var maxCount = chunkInfo.MaxObjCountPerChunk;
           var i = 0;
@@ -550,7 +602,6 @@ namespace Speckle.Core.Serialisation
             chunkList.Add(currChunk);
           }
           value = chunkList;
-
         }
 
         foreach (var arrValue in ((IEnumerable)value))
@@ -565,7 +616,12 @@ namespace Speckle.Core.Serialisation
             continue;
           }
 
-          if (WriteTransports != null && WriteTransports.Count != 0 && arrValue is Base && DetachLineage[DetachLineage.Count - 1])
+          if (
+            WriteTransports != null
+            && WriteTransports.Count != 0
+            && arrValue is Base
+            && DetachLineage[DetachLineage.Count - 1]
+          )
           {
             var what = JToken.FromObject(arrValue, serializer); // Trigger next
 
@@ -625,7 +681,12 @@ namespace Speckle.Core.Serialisation
           }
 
           JToken jToken;
-          if (WriteTransports != null && WriteTransports.Count != 0 && kvp.Value is Base && DetachLineage[DetachLineage.Count - 1])
+          if (
+            WriteTransports != null
+            && WriteTransports.Count != 0
+            && kvp.Value is Base
+            && DetachLineage[DetachLineage.Count - 1]
+          )
           {
             var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
             var refHash = ((JObject)what).GetValue("id").ToString();
@@ -670,7 +731,5 @@ namespace Speckle.Core.Serialisation
     }
 
     #endregion
-
   }
-
 }

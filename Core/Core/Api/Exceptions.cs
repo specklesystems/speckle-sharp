@@ -24,7 +24,8 @@ namespace Speckle.Core.Api
       string message,
       GraphQLRequest request,
       GraphQLResponse<T>? response
-    ) : base(message)
+    )
+      : base(message)
     {
       _request = request;
       Response = response;
@@ -35,7 +36,8 @@ namespace Speckle.Core.Api
       Exception inner,
       GraphQLRequest request,
       GraphQLResponse<T>? response
-    ) : base(message, inner) { }
+    )
+      : base(message, inner) { }
   }
 
   public class SpeckleGraphQLException : SpeckleGraphQLException<object>
@@ -44,7 +46,8 @@ namespace Speckle.Core.Api
       string message,
       GraphQLRequest request,
       GraphQLResponse<object>? response
-    ) : base(message, request, response) { }
+    )
+      : base(message, request, response) { }
   }
 
   /// <summary>

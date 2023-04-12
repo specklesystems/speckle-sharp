@@ -31,6 +31,7 @@ namespace Speckle.Core.Models.GraphTraversal
     public static DefaultRule Instance => instance ??= new DefaultRule();
 
     private DefaultRule() { }
+
     public IEnumerable<string> MembersToTraverse(Base b) => Enumerable.Empty<string>();
 
     public bool DoesRuleHold(Base o) => true;

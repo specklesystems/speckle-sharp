@@ -45,14 +45,13 @@ namespace Speckle.Core.Credentials
         }
 
         // If we reach here and there is no stream id, it means that the stream is invalid for some reason.
-        return !string.IsNullOrEmpty(StreamId) ? StreamWrapperType.Stream : StreamWrapperType.Undefined;
-
+        return !string.IsNullOrEmpty(StreamId)
+          ? StreamWrapperType.Stream
+          : StreamWrapperType.Undefined;
       }
     }
 
-    public StreamWrapper()
-    {
-    }
+    public StreamWrapper() { }
 
     /// <summary>
     /// Creates a StreamWrapper from a stream url or a stream id
@@ -103,7 +102,8 @@ namespace Speckle.Core.Credentials
       if (account == null)
       {
         throw new SpeckleException(
-          $"You do not have any account. Please create one or add it to the Speckle Manager.");
+          $"You do not have any account. Please create one or add it to the Speckle Manager."
+        );
       }
 
       ServerUrl = account.serverInfo.url;
@@ -184,13 +184,12 @@ namespace Speckle.Core.Credentials
 
       var queryDictionary = System.Web.HttpUtility.ParseQueryString(uri.Query);
       UserId = queryDictionary["u"];
-
     }
 
     private Account _Account;
 
     /// <summary>
-    /// Gets a valid account for this stream wrapper. 
+    /// Gets a valid account for this stream wrapper.
     /// <para>Note: this method ensures that the stream exists and/or that the user has an account which has access to that stream. If used in a sync manner, make sure it's not blocking.</para>
     /// </summary>
     /// <exception cref="Exception">Throws exception if account fetching failed. This could be due to non-existent account or stream.</exception>
@@ -267,17 +266,20 @@ namespace Speckle.Core.Credentials
       _Account = acc;
       UserId = _Account.userInfo.id;
     }
+
     public bool Equals(StreamWrapper wrapper)
     {
-      if (wrapper == null) return false;
-      if (Type != wrapper.Type) return false;
-      return Type == wrapper.Type &&
-             ServerUrl == wrapper.ServerUrl &&
-             UserId == wrapper.UserId &&
-             StreamId == wrapper.StreamId &&
-             (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName) ||
-             (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId) ||
-             (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
+      if (wrapper == null)
+        return false;
+      if (Type != wrapper.Type)
+        return false;
+      return Type == wrapper.Type
+          && ServerUrl == wrapper.ServerUrl
+          && UserId == wrapper.UserId
+          && StreamId == wrapper.StreamId
+          && (Type == StreamWrapperType.Branch && BranchName == wrapper.BranchName)
+        || (Type == StreamWrapperType.Object && ObjectId == wrapper.ObjectId)
+        || (Type == StreamWrapperType.Commit && CommitId == wrapper.CommitId);
     }
 
     public async Task ValidateWithAccount(Account acc)
@@ -300,7 +302,9 @@ namespace Speckle.Core.Credentials
       catch
       {
         throw new SpeckleException(
-          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.", false);
+          $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.",
+          false
+        );
       }
 
       // Check if the branch exists
@@ -309,7 +313,9 @@ namespace Speckle.Core.Credentials
         var branch = await client.BranchGet(StreamId, BranchName, 1).ConfigureAwait(false);
         if (branch == null)
           throw new SpeckleException(
-            $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}", false);
+            $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}",
+            false
+          );
       }
     }
 

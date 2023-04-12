@@ -20,7 +20,6 @@ namespace Speckle.Core.Kits
     /// </summary>
     public ReceiveMode ReceiveMode { get; set; }
 
-
     /// <summary>
     /// Converts a native object to a Speckle one
     /// </summary>
@@ -92,7 +91,6 @@ namespace Speckle.Core.Kits
     /// </summary>
     /// <param name="settings">The object representing the settings for your converter.</param>
     public void SetConverterSettings(object settings);
-
   }
 
   // NOTE: Do not change the order of the existing ones
@@ -105,10 +103,12 @@ namespace Speckle.Core.Kits
     /// Attemts updating previously received objects by ID, deletes previously received objects that do not exist anymore and creates new ones
     /// </summary>
     Update,
+
     /// <summary>
     /// Always creates new objects
     /// </summary>
     Create,
+
     /// <summary>
     /// Ignores updating previously received objects and does not attempt updating or deleting them, creates new objects
     /// </summary>

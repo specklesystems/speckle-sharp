@@ -10,12 +10,12 @@ namespace Speckle.Core.Models
 {
   public static class Utilities
   {
-
     public static int HashLength { get; } = 32;
 
     public enum HashingFuctions
     {
-      SHA256, MD5
+      SHA256,
+      MD5
     }
 
     /// <summary>
@@ -33,7 +33,6 @@ namespace Speckle.Core.Models
         case HashingFuctions.MD5:
         default:
           return Utilities.md5(input).Substring(0, HashLength);
-
       }
     }
 
@@ -46,7 +45,11 @@ namespace Speckle.Core.Models
       using (var stream = File.OpenRead(filePath))
       {
         var hash = hashAlgorithm.ComputeHash(stream);
-        return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
+        return BitConverter
+          .ToString(hash)
+          .Replace("-", "")
+          .ToLowerInvariant()
+          .Substring(0, HashLength);
       }
     }
 
@@ -87,17 +90,17 @@ namespace Speckle.Core.Models
 
     public static bool IsSimpleType(this Type type)
     {
-      return
-        type.IsPrimitive ||
-        new Type[] {
-        typeof(string),
-        typeof(decimal),
-        typeof(DateTime),
-        typeof(DateTimeOffset),
-        typeof(TimeSpan),
-        typeof(Guid)
-        }.Contains(type) ||
-        Convert.GetTypeCode(type) != TypeCode.Object;
+      return type.IsPrimitive
+        || new Type[]
+        {
+          typeof(string),
+          typeof(decimal),
+          typeof(DateTime),
+          typeof(DateTimeOffset),
+          typeof(TimeSpan),
+          typeof(Guid)
+        }.Contains(type)
+        || Convert.GetTypeCode(type) != TypeCode.Object;
     }
 
     /// <summary>
@@ -108,44 +111,59 @@ namespace Speckle.Core.Models
     /// <param name="getParentProps">Set to true to also retrieve simple props of direct parent type</param>
     /// <param name="ignore">Names of props to ignore</param>
     /// <returns></returns>
-    public static Base GetApplicationProps(object o, Type t, bool getParentProps = false, List<string> ignore = null)
+    public static Base GetApplicationProps(
+      object o,
+      Type t,
+      bool getParentProps = false,
+      List<string> ignore = null
+    )
     {
       var appProps = new Base();
       appProps["class"] = t.Name;
 
       try
       {
-        // set primitive writeable props 
-        foreach (var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+        // set primitive writeable props
+        foreach (
+          var propInfo in t.GetProperties(
+            BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public
+          )
+        )
         {
-          if (ignore != null && ignore.Contains(propInfo.Name)) continue;
+          if (ignore != null && ignore.Contains(propInfo.Name))
+            continue;
           if (IsMeaningfulProp(propInfo, o, out object propValue))
             appProps[propInfo.Name] = propValue;
         }
         if (getParentProps)
         {
-          foreach (var propInfo in t.BaseType.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
+          foreach (
+            var propInfo in t.BaseType.GetProperties(
+              BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public
+            )
+          )
           {
-            if (ignore != null && ignore.Contains(propInfo.Name)) continue;
+            if (ignore != null && ignore.Contains(propInfo.Name))
+              continue;
             if (IsMeaningfulProp(propInfo, o, out object propValue))
               appProps[propInfo.Name] = propValue;
           }
         }
       }
-      catch (Exception e)
-      {
-
-      }
+      catch (Exception e) { }
 
       return appProps;
     }
+
     private static bool IsMeaningfulProp(PropertyInfo propInfo, object o, out object value)
     {
       value = propInfo.GetValue(o);
       if (propInfo.GetSetMethod() != null && value != null)
       {
-        if (propInfo.PropertyType.IsPrimitive || propInfo.PropertyType == typeof(decimal)) return true;
-        if (propInfo.PropertyType == typeof(string) && !string.IsNullOrEmpty((string)value)) return true;
+        if (propInfo.PropertyType.IsPrimitive || propInfo.PropertyType == typeof(decimal))
+          return true;
+        if (propInfo.PropertyType == typeof(string) && !string.IsNullOrEmpty((string)value))
+          return true;
         if (propInfo.PropertyType.BaseType.Name == "Enum") // for some reason "IsEnum" prop returns false
         {
           value = value.ToString();
@@ -180,9 +198,13 @@ namespace Speckle.Core.Models
           {
             try
             {
-              t.InvokeMember(propInfo.Name,
-              BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty,
-              Type.DefaultBinder, o, new object[] { value });
+              t.InvokeMember(
+                propInfo.Name,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty,
+                Type.DefaultBinder,
+                o,
+                new object[] { value }
+              );
             }
             catch { }
           }
@@ -204,7 +226,5 @@ namespace Speckle.Core.Models
         yield return list.GetRange(i, Math.Min(chunkSize, list.Count - i));
       }
     }
-
   }
-
 }

@@ -22,7 +22,8 @@ namespace Speckle.Core.Transports
       string streamId,
       int timeoutSeconds = 60,
       string blobStorageFolder = null
-    ) : base(account, streamId, timeoutSeconds, blobStorageFolder) { }
+    )
+      : base(account, streamId, timeoutSeconds, blobStorageFolder) { }
   }
 
   public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapableTransport

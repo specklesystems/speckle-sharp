@@ -18,9 +18,14 @@ namespace Speckle.Core.Api.GraphQL.Serializer
       else
       {
         var enumString = ((Enum)value).ToString("G");
-        var memberName = value.GetType()
-            .GetMember(enumString, BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public)
-            .FirstOrDefault()?.Name;
+        var memberName = value
+          .GetType()
+          .GetMember(
+            enumString,
+            BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public
+          )
+          .FirstOrDefault()
+          ?.Name;
         if (string.IsNullOrEmpty(memberName))
         {
           if (!AllowIntegerValues)

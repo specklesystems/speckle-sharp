@@ -16,12 +16,25 @@ namespace Speckle.Core.Kits
     public const string Miles = "mi";
     public const string None = "none";
 
-    private static List<string> SupportedUnits = new List<string>() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, USFeet, Yards, Miles, None };
+    private static List<string> SupportedUnits = new List<string>()
+    {
+      Millimeters,
+      Centimeters,
+      Meters,
+      Kilometers,
+      Inches,
+      Feet,
+      USFeet,
+      Yards,
+      Miles,
+      None
+    };
 
     public static bool IsUnitSupported(string unit) => SupportedUnits.Contains(unit);
 
     // public const string USInches = "us_in"; the smelliest ones, can add later if people scream "USA #1"
     public const string USFeet = "us_ft"; // it happened, absolutely gross
+
     // public const string USYards = "us_yd"; the smelliest ones, can add later if people scream "USA #1"
     // public const string USMiles = "us_mi"; the smelliest ones, can add later if people scream "USA #1"
 
@@ -232,7 +245,8 @@ namespace Speckle.Core.Kits
 
     public static string GetUnitsFromString(string unit)
     {
-      if (unit == null) return null;
+      if (unit == null)
+        return null;
       switch (unit.ToLower())
       {
         case "mm":
@@ -286,14 +300,22 @@ namespace Speckle.Core.Kits
     {
       switch (unit)
       {
-        case Millimeters: return 1;
-        case Centimeters: return 2;
-        case Meters: return 3;
-        case Kilometers: return 4;
-        case Inches: return 5;
-        case Feet: return 6;
-        case Yards: return 7;
-        case Miles: return 8;
+        case Millimeters:
+          return 1;
+        case Centimeters:
+          return 2;
+        case Meters:
+          return 3;
+        case Kilometers:
+          return 4;
+        case Inches:
+          return 5;
+        case Feet:
+          return 6;
+        case Yards:
+          return 7;
+        case Miles:
+          return 8;
       }
 
       return 0;
@@ -303,14 +325,22 @@ namespace Speckle.Core.Kits
     {
       switch (unit)
       {
-        case 1: return Millimeters;
-        case 2: return Centimeters;
-        case 3: return Meters;
-        case 4: return Kilometers;
-        case 5: return Inches;
-        case 6: return Feet;
-        case 7: return Yards;
-        case 8: return Miles;
+        case 1:
+          return Millimeters;
+        case 2:
+          return Centimeters;
+        case 3:
+          return Meters;
+        case 4:
+          return Kilometers;
+        case 5:
+          return Inches;
+        case 6:
+          return Feet;
+        case 7:
+          return Yards;
+        case 8:
+          return Miles;
       }
 
       return None;

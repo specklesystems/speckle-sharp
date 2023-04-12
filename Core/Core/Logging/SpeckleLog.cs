@@ -43,7 +43,8 @@ namespace Speckle.Core.Logging
     /// <summary>
     /// Flag to override the default Sentry DNS
     /// </summary>
-    public string sentryDns = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
+    public string sentryDns =
+      "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
     /// <summary>
     /// Flag to enable File sink
@@ -93,8 +94,11 @@ namespace Speckle.Core.Logging
   {
     private static ILogger? _logger;
 
-    public static ILogger Logger => _logger ?? throw new SpeckleException(
-      $"The logger has not been initialized. Please call {typeof(SpeckleLog).FullName}.{nameof(Initialize)}");
+    public static ILogger Logger =>
+      _logger
+      ?? throw new SpeckleException(
+        $"The logger has not been initialized. Please call {typeof(SpeckleLog).FullName}.{nameof(Initialize)}"
+      );
     private static bool _initialized = false;
 
     /// <summary>
@@ -123,7 +127,8 @@ namespace Speckle.Core.Logging
       _addHostOsInfoToGlobalContext();
       _addHostApplicationDataToGlobalContext(hostApplicationName, hostApplicationVersion);
 
-      Logger.ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
+      Logger
+        .ForContext("userApplicationDataPath", SpecklePathProvider.UserApplicationDataPath())
         .ForContext("installApplicationDataPath", SpecklePathProvider.InstallApplicationDataPath)
         .ForContext("speckleLogConfiguration", logConfiguration)
         .Information(
@@ -160,10 +165,10 @@ namespace Speckle.Core.Logging
         .Enrich.FromGlobalLogContext();
 
       if (logConfiguration.enhancedLogContext)
-        serilogLogConfiguration = serilogLogConfiguration.Enrich.WithClientAgent()
-                               .Enrich.WithClientIp()
-                               .Enrich.WithExceptionDetails();
-
+        serilogLogConfiguration = serilogLogConfiguration.Enrich
+          .WithClientAgent()
+          .Enrich.WithClientIp()
+          .Enrich.WithExceptionDetails();
 
       if (logConfiguration.logToFile && canLogToFile)
         serilogLogConfiguration = serilogLogConfiguration.WriteTo.File(
@@ -206,7 +211,6 @@ namespace Speckle.Core.Logging
         });
       }
 
-
       var logger = serilogLogConfiguration.CreateLogger();
       if (logConfiguration.logToFile && !canLogToFile)
         logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
@@ -247,14 +251,17 @@ namespace Speckle.Core.Logging
 
     private static string _deterimineHostOsSlug()
     {
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return "Windows";
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return "MacOS";
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return "Linux";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        return "Windows";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        return "MacOS";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        return "Linux";
       return RuntimeInformation.OSDescription;
     }
+
     private static void _addHostOsInfoToGlobalContext()
     {
-
       var osVersion = Environment.OSVersion;
       var osArchitecture = RuntimeInformation.ProcessArchitecture.ToString();
       GlobalLogContext.PushProperty("hostOs", _deterimineHostOsSlug());

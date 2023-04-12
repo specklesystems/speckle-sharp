@@ -19,9 +19,7 @@ namespace Speckle.Core.Credentials
         if (_id == null)
         {
           if (serverInfo == null || userInfo == null)
-            throw new SpeckleException(
-              "Incomplete account info: cannot generate id."
-            );
+            throw new SpeckleException("Incomplete account info: cannot generate id.");
           _id = Speckle.Core.Models.Utilities
             .hashString(userInfo.email + serverInfo.url, Models.Utilities.HashingFuctions.MD5)
             .ToUpper();

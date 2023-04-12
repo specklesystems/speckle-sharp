@@ -42,21 +42,27 @@ namespace Speckle.Core.Transports.ServerUtils
     /// </summary>
     public Action<int, int> OnBatchSent { get; set; }
 
-    public ServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
+    public ServerApi(
+      string baseUri,
+      string authorizationToken,
+      string blobStorageFolder,
+      int timeoutSeconds = 60
+    )
     {
       BaseUri = baseUri;
       CancellationToken = CancellationToken.None;
 
       BlobStorageFolder = blobStorageFolder;
 
-      Client = Http.GetHttpProxyClient(new SpeckleHttpClientHandler()
-      {
-        AutomaticDecompression = System.Net.DecompressionMethods.GZip,
-      });
+      Client = Http.GetHttpProxyClient(
+        new SpeckleHttpClientHandler()
+        {
+          AutomaticDecompression = System.Net.DecompressionMethods.GZip,
+        }
+      );
 
       Client.BaseAddress = new Uri(baseUri);
       Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
-
 
       if (authorizationToken.ToLowerInvariant().Contains("bearer"))
       {
@@ -81,16 +87,23 @@ namespace Speckle.Core.Transports.ServerUtils
 
       HttpResponseMessage rootHttpResponse = null;
       while (ShouldRetry(rootHttpResponse))
-        rootHttpResponse = await Client.SendAsync(rootHttpMessage, HttpCompletionOption.ResponseContentRead, CancellationToken);
+        rootHttpResponse = await Client.SendAsync(
+          rootHttpMessage,
+          HttpCompletionOption.ResponseContentRead,
+          CancellationToken
+        );
       rootHttpResponse.EnsureSuccessStatusCode();
 
       String rootObjectStr = await rootHttpResponse.Content.ReadAsStringAsync();
       return rootObjectStr;
     }
 
-    public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+    public async Task DownloadObjects(
+      string streamId,
+      List<string> objectIds,
+      CbObjectDownloaded onObjectCallback
+    )
     {
-
       if (objectIds.Count == 0)
         return;
       if (objectIds.Count < BATCH_SIZE_GET_OBJECTS)
@@ -110,10 +123,13 @@ namespace Speckle.Core.Transports.ServerUtils
         crtRequest.Add(id);
       }
       await DownloadObjectsImpl(streamId, crtRequest, onObjectCallback);
-
     }
 
-    private async Task DownloadObjectsImpl(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
+    private async Task DownloadObjectsImpl(
+      string streamId,
+      List<string> objectIds,
+      CbObjectDownloaded onObjectCallback
+    )
     {
       // Stopwatch sw = new Stopwatch(); sw.Start();
 
@@ -128,12 +144,20 @@ namespace Speckle.Core.Transports.ServerUtils
       Dictionary<string, string> postParameters = new Dictionary<string, string>();
       postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
       string serializedPayload = JsonConvert.SerializeObject(postParameters);
-      childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
+      childrenHttpMessage.Content = new StringContent(
+        serializedPayload,
+        Encoding.UTF8,
+        "application/json"
+      );
       childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
       HttpResponseMessage childrenHttpResponse = null;
       while (ShouldRetry(childrenHttpResponse))
-        childrenHttpResponse = await Client.SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken);
+        childrenHttpResponse = await Client.SendAsync(
+          childrenHttpMessage,
+          HttpCompletionOption.ResponseHeadersRead,
+          CancellationToken
+        );
       childrenHttpResponse.EnsureSuccessStatusCode();
 
       Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync();
@@ -154,7 +178,6 @@ namespace Speckle.Core.Transports.ServerUtils
       }
 
       // Console.WriteLine($"ServerApi::DownloadObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
-
     }
 
     public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
@@ -184,7 +207,10 @@ namespace Speckle.Core.Transports.ServerUtils
       return ret;
     }
 
-    private async Task<Dictionary<string, bool>> HasObjectsImpl(string streamId, List<string> objectIds)
+    private async Task<Dictionary<string, bool>> HasObjectsImpl(
+      string streamId,
+      List<string> objectIds
+    )
     {
       CancellationToken.ThrowIfCancellationRequested();
 
@@ -196,7 +222,11 @@ namespace Speckle.Core.Transports.ServerUtils
       var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
       HttpResponseMessage response = null;
       while (ShouldRetry(response))
-        response = await Client.PostAsync(uri, new StringContent(serializedPayload, Encoding.UTF8, "application/json"), CancellationToken);
+        response = await Client.PostAsync(
+          uri,
+          new StringContent(serializedPayload, Encoding.UTF8, "application/json"),
+          CancellationToken
+        );
       response.EnsureSuccessStatusCode();
 
       var hasObjectsJson = await response.Content.ReadAsStringAsync();
@@ -227,7 +257,9 @@ namespace Speckle.Core.Transports.ServerUtils
       {
         int objSize = Encoding.UTF8.GetByteCount(json);
         if (objSize > MAX_OBJECT_SIZE)
-          throw new Exception($"Object too large (size {objSize}, max size {MAX_OBJECT_SIZE}). Consider using detached/chunked properties");
+          throw new Exception(
+            $"Object too large (size {objSize}, max size {MAX_OBJECT_SIZE}). Consider using detached/chunked properties"
+          );
 
         if (crtMultipartSize + objSize <= MAX_MULTIPART_SIZE)
         {
@@ -257,7 +289,10 @@ namespace Speckle.Core.Transports.ServerUtils
       {
         List<(string, string)> multipart = multipartedObjects[i];
         int multipartSize = multipartedObjectsSize[i];
-        if (crtRequestSize + multipartSize > MAX_REQUEST_SIZE || crtRequest.Count >= MAX_MULTIPART_COUNT)
+        if (
+          crtRequestSize + multipartSize > MAX_REQUEST_SIZE
+          || crtRequest.Count >= MAX_MULTIPART_COUNT
+        )
         {
           await UploadObjectsImpl(streamId, crtRequest);
           OnBatchSent?.Invoke(crtObjectCount, crtRequestSize);
@@ -276,7 +311,10 @@ namespace Speckle.Core.Transports.ServerUtils
       }
     }
 
-    private async Task UploadObjectsImpl(string streamId, List<List<(string, string)>> multipartedObjects)
+    private async Task UploadObjectsImpl(
+      string streamId,
+      List<List<(string, string)>> multipartedObjects
+    )
     {
       // Stopwatch sw = new Stopwatch(); sw.Start();
 
@@ -310,14 +348,15 @@ namespace Speckle.Core.Transports.ServerUtils
         if (CompressPayloads)
         {
           var content = new GzipContent(new StringContent(_ct, Encoding.UTF8));
-          content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/gzip");
+          content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(
+            "application/gzip"
+          );
           multipart.Add(content, $"batch-{mpId}", $"batch-{mpId}");
         }
         else
         {
           multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{mpId}", $"batch-{mpId}");
         }
-
       }
       message.Content = multipart;
       HttpResponseMessage response = null;
@@ -331,7 +370,8 @@ namespace Speckle.Core.Transports.ServerUtils
     public async Task UploadBlobs(string streamId, List<(string, string)> blobs)
     {
       CancellationToken.ThrowIfCancellationRequested();
-      if (blobs.Count == 0) return;
+      if (blobs.Count == 0)
+        return;
 
       var multipartFormDataContent = new MultipartFormDataContent();
       var streams = new List<Stream>();
@@ -360,11 +400,13 @@ namespace Speckle.Core.Transports.ServerUtils
           response = await Client.SendAsync(message, CancellationToken);
         response.EnsureSuccessStatusCode();
 
-        foreach (var stream in streams) stream.Dispose();
+        foreach (var stream in streams)
+          stream.Dispose();
       }
       catch (Exception ex)
       {
-        foreach (var stream in streams) stream.Dispose();
+        foreach (var stream in streams)
+          stream.Dispose();
         throw;
       }
     }
@@ -378,7 +420,11 @@ namespace Speckle.Core.Transports.ServerUtils
 
       HttpResponseMessage response = null;
       while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
-        response = await Client.PostAsync(uri, new StringContent(payload, Encoding.UTF8, "application/json"), CancellationToken);
+        response = await Client.PostAsync(
+          uri,
+          new StringContent(payload, Encoding.UTF8, "application/json"),
+          CancellationToken
+        );
       response.EnsureSuccessStatusCode();
 
       var responseString = await response.Content.ReadAsStringAsync();
@@ -386,9 +432,12 @@ namespace Speckle.Core.Transports.ServerUtils
       return parsed;
     }
 
-    public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
+    public async Task DownloadBlobs(
+      string streamId,
+      List<string> blobIds,
+      CbBlobdDownloaded onBlobDownloaded
+    )
     {
-
       foreach (var blobId in blobIds)
       {
         try
@@ -404,9 +453,14 @@ namespace Speckle.Core.Transports.ServerUtils
           response.Content.Headers.TryGetValues("Content-Disposition", out cdHeaderValues);
 
           var cdHeader = cdHeaderValues.First();
-          var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
+          var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1]
+            .TrimStart('"')
+            .TrimEnd('"');
 
-          string fileLocation = Path.Combine(BlobStorageFolder, $"{blobId.Substring(0, Blob.LocalHashPrefixLength)}-{fileName}");
+          string fileLocation = Path.Combine(
+            BlobStorageFolder,
+            $"{blobId.Substring(0, Blob.LocalHashPrefixLength)}-{fileName}"
+          );
           using (var fs = new FileStream(fileLocation, FileMode.OpenOrCreate))
           {
             await response.Content.CopyToAsync(fs);
@@ -420,7 +474,6 @@ namespace Speckle.Core.Transports.ServerUtils
           throw new Exception($"Failed to download blob {blobId}", ex);
         }
       }
-
     }
 
     //TODO: can we get rid of this now we have polly?
@@ -453,5 +506,4 @@ namespace Speckle.Core.Transports.ServerUtils
       public string fileName { get; set; }
     }
   }
-
 }

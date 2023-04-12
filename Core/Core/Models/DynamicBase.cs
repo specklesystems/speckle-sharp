@@ -10,7 +10,6 @@ using Speckle.Core.Logging;
 
 namespace Speckle.Core.Models
 {
-
   /// <summary>
   /// Base class implementing a bunch of nice dynamic object methods, like adding and removing props dynamically. Makes c# feel like json.
   /// <para>Orginally adapted from Rick Strahl 🤘</para>
@@ -23,10 +22,7 @@ namespace Speckle.Core.Models
     /// </summary>
     private Dictionary<string, object> properties = new Dictionary<string, object>();
 
-    public DynamicBase()
-    {
-
-    }
+    public DynamicBase() { }
 
     /// <summary>
     /// Gets properties via the dot syntax.
@@ -57,8 +53,10 @@ namespace Speckle.Core.Models
 
     // Rule for multiple leading @.
     private static Regex manyLeadingAtChars = new Regex(@"^@{2,}");
+
     // Rule for invalid chars.
     private static Regex invalidChars = new Regex(@"[\.\/]");
+
     public bool IsPropNameValid(string name, out string reason)
     {
       // Existing members
@@ -70,9 +68,15 @@ namespace Speckle.Core.Models
       {
         (!(string.IsNullOrEmpty(name) || name == "@"), "Found empty prop name"),
         // Checks for multiple leading @
-        (!manyLeadingAtChars.IsMatch(name), "Only one leading '@' char is allowed. This signals the property value should be detached."),
+        (
+          !manyLeadingAtChars.IsMatch(name),
+          "Only one leading '@' char is allowed. This signals the property value should be detached."
+        ),
         // Checks for invalid chars
-        (!invalidChars.IsMatch(name), $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./"),
+        (
+          !invalidChars.IsMatch(name),
+          $"Prop with name '{name}' contains invalid characters. The following characters are not allowed: ./"
+        ),
         // Checks if you are trying to change a member property
         //(!members.Contains(name), "Modifying the value of instance member properties is not allowed.")
       };
@@ -81,7 +85,8 @@ namespace Speckle.Core.Models
       // Prop name is valid if none of the checks are true
       var isValid = checks.TrueForAll(v =>
       {
-        if (!v.Item1) r = v.Item2;
+        if (!v.Item1)
+          r = v.Item2;
         return v.Item1;
       });
 
@@ -113,7 +118,8 @@ namespace Speckle.Core.Models
       }
       set
       {
-        if (!IsPropNameValid(key, out string reason)) throw new InvalidPropNameException(key, reason);
+        if (!IsPropNameValid(key, out string reason))
+          throw new InvalidPropNameException(key, reason);
 
         if (properties.ContainsKey(key))
         {
@@ -140,13 +146,16 @@ namespace Speckle.Core.Models
       }
     }
 
-    private static Dictionary<Type, List<PropertyInfo>> propInfoCache = new Dictionary<Type, List<PropertyInfo>>();
+    private static Dictionary<Type, List<PropertyInfo>> propInfoCache =
+      new Dictionary<Type, List<PropertyInfo>>();
 
     private static void PopulatePropInfoCache(Type type)
     {
       if (!propInfoCache.ContainsKey(type))
       {
-        propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public).Where(p => !p.IsDefined(typeof(IgnoreTheItemAttribute), true)).ToList();
+        propInfoCache[type] = type.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+          .Where(p => !p.IsDefined(typeof(IgnoreTheItemAttribute), true))
+          .ToList();
       }
     }
 
@@ -160,8 +169,10 @@ namespace Speckle.Core.Models
       var pinfos = propInfoCache[GetType()];
 
       var names = new List<string>(properties.Count + pinfos.Count);
-      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
-      foreach (var kvp in properties) names.Add(kvp.Key);
+      foreach (var pinfo in pinfos)
+        names.Add(pinfo.Name);
+      foreach (var kvp in properties)
+        names.Add(kvp.Key);
 
       return names;
     }
@@ -179,7 +190,8 @@ namespace Speckle.Core.Models
       var pinfos = propInfoCache[t];
 
       var names = new List<string>(pinfos.Count);
-      foreach (var pinfo in pinfos) names.Add(pinfo.Name);
+      foreach (var pinfo in pinfos)
+        names.Add(pinfo.Name);
 
       return names;
     }
@@ -198,7 +210,8 @@ namespace Speckle.Core.Models
       var names = new List<PropertyInfo>(pinfos.Count);
 
       foreach (var pinfo in pinfos)
-        if (pinfo.Name != "Item") names.Add(pinfo);
+        if (pinfo.Name != "Item")
+          names.Add(pinfo);
 
       return names;
     }
@@ -213,14 +226,17 @@ namespace Speckle.Core.Models
     /// <summary>
     /// Default <see cref="DynamicBaseMemberType"/> value for <see cref="GetMembers"/>
     /// </summary>
-    public const DynamicBaseMemberType DefaultIncludeMembers = DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic;
+    public const DynamicBaseMemberType DefaultIncludeMembers =
+      DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic;
 
     /// <summary>
-    ///  Gets the typed and dynamic properties. 
+    ///  Gets the typed and dynamic properties.
     /// </summary>
     /// <param name="includeMembers">Specifies which members should be included in the resulting dictionary. Can be concatenated with "|"</param>
     /// <returns>A dictionary containing the key's and values of the object.</returns>
-    public Dictionary<string, object> GetMembers(DynamicBaseMemberType includeMembers = DefaultIncludeMembers)
+    public Dictionary<string, object> GetMembers(
+      DynamicBaseMemberType includeMembers = DefaultIncludeMembers
+    )
     {
       // Initialize an empty dict
       var dic = new Dictionary<string, object>();
@@ -240,8 +256,10 @@ namespace Speckle.Core.Models
           // If obsolete is false and prop has obsolete attr
           // OR
           // If schemaIgnored is true and prop has schemaIgnore attr
-          return !((!includeMembers.HasFlag(DynamicBaseMemberType.SchemaIgnored) && hasIgnored) ||
-                   (!includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete));
+          return !(
+            (!includeMembers.HasFlag(DynamicBaseMemberType.SchemaIgnored) && hasIgnored)
+            || (!includeMembers.HasFlag(DynamicBaseMemberType.Obsolete) && hasObsolete)
+          );
         });
         foreach (var pi in pinfos)
         {
@@ -253,11 +271,14 @@ namespace Speckle.Core.Models
       if (includeMembers.HasFlag(DynamicBaseMemberType.SchemaComputed))
       {
         GetType()
-         .GetMethods()
-         .Where(e => e.IsDefined(typeof(SchemaComputedAttribute)) && !e.IsDefined(typeof(ObsoleteAttribute)))
-         .ToList()
-         .ForEach(
-          e =>
+          .GetMethods()
+          .Where(
+            e =>
+              e.IsDefined(typeof(SchemaComputedAttribute))
+              && !e.IsDefined(typeof(ObsoleteAttribute))
+          )
+          .ToList()
+          .ForEach(e =>
           {
             var attr = e.GetCustomAttribute<SchemaComputedAttribute>();
             try
@@ -269,8 +290,7 @@ namespace Speckle.Core.Models
               SpeckleLog.Logger.Warning(ex, "Failed to get computed member: {name}", attr.Name);
               dic[attr.Name] = null;
             }
-          }
-          );
+          });
       }
 
       return dic;
@@ -292,5 +312,4 @@ namespace Speckle.Core.Models
   /// For more info see this discussion: https://speckle.community/t/why-do-i-keep-forgetting-base-objects-cant-use-item-as-a-dynamic-member/3246/5
   /// </summary>
   internal class IgnoreTheItemAttribute : Attribute { }
-
 }

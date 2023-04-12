@@ -2,12 +2,12 @@
 
 namespace Speckle.Core.Credentials
 {
-
   public class UserServerInfoResponse
   {
     public UserInfo user { get; set; }
     public ServerInfo serverInfo { get; set; }
   }
+
   public class UserInfoResponse
   {
     public UserInfo user { get; set; }
@@ -40,5 +40,4 @@ namespace Speckle.Core.Credentials
   {
     public int totalCount { get; set; }
   }
-
 }

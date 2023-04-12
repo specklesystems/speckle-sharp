@@ -5,7 +5,6 @@ using System.Linq;
 #nullable enable
 namespace Speckle.Core.Models.GraphTraversal
 {
-
   public sealed class TraversalContext
   {
     public readonly string? propName;
@@ -56,7 +55,12 @@ namespace Speckle.Core.Models.GraphTraversal
       }
     }
 
-    private static void TraverseMemberToStack(ICollection<TraversalContext> stack, object? value, string? memberName = null, TraversalContext? parent = null)
+    private static void TraverseMemberToStack(
+      ICollection<TraversalContext> stack,
+      object? value,
+      string? memberName = null,
+      TraversalContext? parent = null
+    )
     {
       //test
       switch (value)
@@ -65,25 +69,23 @@ namespace Speckle.Core.Models.GraphTraversal
           stack.Add(new TraversalContext(o, memberName, parent));
           break;
         case IList list:
+        {
+          foreach (object? obj in list)
           {
-            foreach (object? obj in list)
-            {
-              TraverseMemberToStack(stack, obj, memberName, parent);
-            }
-            break;
+            TraverseMemberToStack(stack, obj, memberName, parent);
           }
+          break;
+        }
         case IDictionary dictionary:
+        {
+          foreach (object? obj in dictionary.Values)
           {
-            foreach (object? obj in dictionary.Values)
-            {
-              TraverseMemberToStack(stack, obj, memberName, parent);
-            }
-            break;
+            TraverseMemberToStack(stack, obj, memberName, parent);
           }
+          break;
+        }
       }
     }
-
-
 
     /// <summary>
     /// Traverses supported Collections yielding <see cref="Base"/> objects.
@@ -99,23 +101,23 @@ namespace Speckle.Core.Models.GraphTraversal
           yield return o;
           break;
         case IList list:
+        {
+          foreach (object? obj in list)
           {
-            foreach (object? obj in list)
-            {
-              foreach (Base o in TraverseMember(obj))
-                yield return o;
-            }
-            break;
+            foreach (Base o in TraverseMember(obj))
+              yield return o;
           }
+          break;
+        }
         case IDictionary dictionary:
+        {
+          foreach (object? obj in dictionary.Values)
           {
-            foreach (object? obj in dictionary.Values)
-            {
-              foreach (Base o in TraverseMember(obj))
-                yield return o;
-            }
-            break;
+            foreach (Base o in TraverseMember(obj))
+              yield return o;
           }
+          break;
+        }
       }
     }
 
@@ -128,7 +130,8 @@ namespace Speckle.Core.Models.GraphTraversal
     {
       foreach (var rule in rules)
       {
-        if (rule.DoesRuleHold(o)) return rule;
+        if (rule.DoesRuleHold(o))
+          return rule;
       }
 
       return null;

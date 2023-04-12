@@ -176,7 +176,9 @@ namespace Speckle.Core.Credentials
       {
         var firstAccount = GetAccounts().FirstOrDefault();
         if (firstAccount == null)
-          SpeckleLog.Logger.Information("No Speckle accounts found. Visit the Speckle web app to create one.");
+          SpeckleLog.Logger.Information(
+            "No Speckle accounts found. Visit the Speckle web app to create one."
+          );
         return firstAccount;
       }
       return defaultAccount;
@@ -490,7 +492,10 @@ namespace Speckle.Core.Credentials
       {
         var lockArray = l.Split('@');
         var lockName = lockArray.Length == 2 ? lockArray[0] : "the other app";
-        var lockTime = lockArray.Length == 2 ? DateTime.ParseExact(lockArray[1], "o", null) : DateTime.ParseExact(lockArray[0], "o", null);
+        var lockTime =
+          lockArray.Length == 2
+            ? DateTime.ParseExact(lockArray[1], "o", null)
+            : DateTime.ParseExact(lockArray[0], "o", null);
 
         if (lockTime > now)
         {
@@ -500,7 +505,6 @@ namespace Speckle.Core.Credentials
           );
         }
       }
-
 
       var lockId = Setup.HostApplication + "@" + DateTime.Now.Add(timespan).ToString("o");
 
@@ -551,7 +555,11 @@ namespace Speckle.Core.Credentials
 
         //if the account already exists it will not be added again
         AccountStorage.SaveObject(account.id, JsonConvert.SerializeObject(account));
-        SpeckleLog.Logger.Debug("Finished adding account {accountId} for {serverUrl}", account.id, server);
+        SpeckleLog.Logger.Debug(
+          "Finished adding account {accountId} for {serverUrl}",
+          account.id,
+          server
+        );
       }
       catch (SpeckleAccountManagerException ex)
       {

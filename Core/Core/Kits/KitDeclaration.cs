@@ -11,7 +11,8 @@ namespace Speckle.Core.Kits
   /// </summary>
   public class CoreKit : ISpeckleKit
   {
-    public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
+    public IEnumerable<Type> Types =>
+      GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
     public string Description => "Base Speckle models for revisions, streams, etc.";
 
@@ -21,7 +22,10 @@ namespace Speckle.Core.Kits
 
     public string WebsiteOrEmail => "hello@speckle.systems";
 
-    public IEnumerable<string> Converters { get => new List<string>(); }
+    public IEnumerable<string> Converters
+    {
+      get => new List<string>();
+    }
 
     public CoreKit() { }
 

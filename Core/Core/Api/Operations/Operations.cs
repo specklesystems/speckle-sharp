@@ -16,7 +16,7 @@ namespace Speckle.Core.Api
   {
     /// <summary>
     /// Convenience method to instantiate an instance of the default object serializer and settings pre-populated with it.
-    /// </summary>    
+    /// </summary>
     public static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
     {
       var serializer = new BaseObjectSerializer();
@@ -38,16 +38,21 @@ namespace Speckle.Core.Api
     /// <param name="localProgressDict"></param>
     /// <param name="onProgressAction"></param>
     /// <returns></returns>
-    private static Action<string, int> GetInternalProgressAction(ConcurrentDictionary<string, int> localProgressDict, Action<ConcurrentDictionary<string, int>> onProgressAction = null)
+    private static Action<string, int> GetInternalProgressAction(
+      ConcurrentDictionary<string, int> localProgressDict,
+      Action<ConcurrentDictionary<string, int>> onProgressAction = null
+    )
     {
-      return new Action<string, int>((name, processed) =>
-      {
-        if (localProgressDict.ContainsKey(name))
-          localProgressDict[name] += processed;
-        else
-          localProgressDict[name] = processed;
-        onProgressAction?.Invoke(localProgressDict);
-      });
+      return new Action<string, int>(
+        (name, processed) =>
+        {
+          if (localProgressDict.ContainsKey(name))
+            localProgressDict[name] += processed;
+          else
+            localProgressDict[name] = processed;
+          onProgressAction?.Invoke(localProgressDict);
+        }
+      );
     }
   }
 }

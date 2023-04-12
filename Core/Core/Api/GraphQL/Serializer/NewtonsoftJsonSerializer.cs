@@ -13,18 +13,24 @@ namespace Speckle.Core.Api.GraphQL.Serializer
 {
   public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
   {
-    public static JsonSerializerSettings DefaultJsonSerializerSettings => new JsonSerializerSettings
-    {
-      ContractResolver = new CamelCasePropertyNamesContractResolver { IgnoreIsSpecifiedMembers = true },
-      MissingMemberHandling = MissingMemberHandling.Ignore,
-      Converters = { new ConstantCaseEnumConverter() }
-    };
+    public static JsonSerializerSettings DefaultJsonSerializerSettings =>
+      new JsonSerializerSettings
+      {
+        ContractResolver = new CamelCasePropertyNamesContractResolver
+        {
+          IgnoreIsSpecifiedMembers = true
+        },
+        MissingMemberHandling = MissingMemberHandling.Ignore,
+        Converters = { new ConstantCaseEnumConverter() }
+      };
 
     public JsonSerializerSettings JsonSerializerSettings { get; }
 
-    public NewtonsoftJsonSerializer() : this(DefaultJsonSerializerSettings) { }
+    public NewtonsoftJsonSerializer()
+      : this(DefaultJsonSerializerSettings) { }
 
-    public NewtonsoftJsonSerializer(Action<JsonSerializerSettings> configure) : this(configure.AndReturn(DefaultJsonSerializerSettings)) { }
+    public NewtonsoftJsonSerializer(Action<JsonSerializerSettings> configure)
+      : this(configure.AndReturn(DefaultJsonSerializerSettings)) { }
 
     public NewtonsoftJsonSerializer(JsonSerializerSettings jsonSerializerSettings)
     {
@@ -33,9 +39,11 @@ namespace Speckle.Core.Api.GraphQL.Serializer
     }
 
     // deserialize extensions to Dictionary<string, object>
-    private void ConfigureMandatorySerializerOptions() => JsonSerializerSettings.Converters.Insert(0, new MapConverter());
+    private void ConfigureMandatorySerializerOptions() =>
+      JsonSerializerSettings.Converters.Insert(0, new MapConverter());
 
-    public string SerializeToString(GraphQLRequest request) => JsonConvert.SerializeObject(request, JsonSerializerSettings);
+    public string SerializeToString(GraphQLRequest request) =>
+      JsonConvert.SerializeObject(request, JsonSerializerSettings);
 
     public byte[] SerializeToBytes(GraphQLWebSocketRequest request)
     {
@@ -43,13 +51,22 @@ namespace Speckle.Core.Api.GraphQL.Serializer
       return Encoding.UTF8.GetBytes(json);
     }
 
-    public Task<WebsocketMessageWrapper> DeserializeToWebsocketResponseWrapperAsync(System.IO.Stream stream) => DeserializeFromUtf8Stream<WebsocketMessageWrapper>(stream);
+    public Task<WebsocketMessageWrapper> DeserializeToWebsocketResponseWrapperAsync(
+      System.IO.Stream stream
+    ) => DeserializeFromUtf8Stream<WebsocketMessageWrapper>(stream);
 
-    public GraphQLWebSocketResponse<GraphQLResponse<TResponse>> DeserializeToWebsocketResponse<TResponse>(byte[] bytes) =>
-        JsonConvert.DeserializeObject<GraphQLWebSocketResponse<GraphQLResponse<TResponse>>>(Encoding.UTF8.GetString(bytes),
-            JsonSerializerSettings);
+    public GraphQLWebSocketResponse<
+      GraphQLResponse<TResponse>
+    > DeserializeToWebsocketResponse<TResponse>(byte[] bytes) =>
+      JsonConvert.DeserializeObject<GraphQLWebSocketResponse<GraphQLResponse<TResponse>>>(
+        Encoding.UTF8.GetString(bytes),
+        JsonSerializerSettings
+      );
 
-    public Task<GraphQLResponse<TResponse>> DeserializeFromUtf8StreamAsync<TResponse>(System.IO.Stream stream, CancellationToken cancellationToken) => DeserializeFromUtf8Stream<GraphQLResponse<TResponse>>(stream);
+    public Task<GraphQLResponse<TResponse>> DeserializeFromUtf8StreamAsync<TResponse>(
+      System.IO.Stream stream,
+      CancellationToken cancellationToken
+    ) => DeserializeFromUtf8Stream<GraphQLResponse<TResponse>>(stream);
 
     private Task<T> DeserializeFromUtf8Stream<T>(System.IO.Stream stream)
     {

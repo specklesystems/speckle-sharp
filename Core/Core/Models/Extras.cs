@@ -27,7 +27,8 @@ namespace Speckle.Core.Models
     /// </summary>
     public object @base
     {
-      get => _base; set
+      get => _base;
+      set
       {
         _base = value;
         assemblyQualifiedName = value.GetType().AssemblyQualifiedName;
@@ -48,7 +49,6 @@ namespace Speckle.Core.Models
       @base = _original;
       assemblyQualifiedName = @base.GetType().AssemblyQualifiedName;
     }
-
   }
 
   /// <summary>
@@ -59,6 +59,7 @@ namespace Speckle.Core.Models
   public class DataChunk : Base
   {
     public List<object> data { get; set; } = new List<object>();
+
     public DataChunk() { }
   }
 
@@ -75,22 +76,25 @@ namespace Speckle.Core.Models
     public int current { get; set; }
     public int total { get; set; }
     public string scope { get; set; }
+
     public ProgressEventArgs(int current, int total, string scope)
     {
-      this.current = current; this.total = total; this.scope = scope;
+      this.current = current;
+      this.total = total;
+      this.scope = scope;
     }
   }
 
   /// <summary>
   /// A simple wrapper to keep track of the relationship between speckle objects and their host-application siblings in cases where the
-  /// <see cref="Base.applicationId"/> cannot correspond with the <see cref="ApplicationObject.CreatedIds"/> (ie, on receiving operations). 
+  /// <see cref="Base.applicationId"/> cannot correspond with the <see cref="ApplicationObject.CreatedIds"/> (ie, on receiving operations).
   /// </summary>
   public class ApplicationObject
   {
     public enum State
     {
       Created, // Speckle object created on send, or native objects created on receive
-      Skipped, // Speckle or Application object is not going to be sent or received 
+      Skipped, // Speckle or Application object is not going to be sent or received
       Updated, // Application object is replacing an existing object in the application
       Failed, // Tried to convert & send or convert & bake but something went wrong
       Removed, //Removed object from application
@@ -165,23 +169,51 @@ namespace Speckle.Core.Models
       Status = State.Unknown;
     }
 
-    public void Update(string createdId = null, List<string> createdIds = null, State? status = null, string container = null, List<string> log = null, string logItem = null, List<object> converted = null, object convertedItem = null, string descriptor = null)
+    public void Update(
+      string createdId = null,
+      List<string> createdIds = null,
+      State? status = null,
+      string container = null,
+      List<string> log = null,
+      string logItem = null,
+      List<object> converted = null,
+      object convertedItem = null,
+      string descriptor = null
+    )
     {
-      if (createdIds != null) createdIds.Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))?.ToList().ForEach(o => CreatedIds.Add(o));
-      if (createdId != null && !CreatedIds.Contains(createdId)) CreatedIds.Add(createdId);
-      if (status.HasValue) Status = status.Value;
-      if (log != null) log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))?.ToList().ForEach(o => Log.Add(o));
-      if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem)) Log.Add(logItem);
-      if (convertedItem != null && !Converted.Contains(convertedItem)) Converted.Add(convertedItem);
-      if (converted != null) converted.Where(o => o != null && !Converted.Contains(o))?.ToList().ForEach(o => Converted.Add(o));
-      if (!string.IsNullOrEmpty(container)) Container = container;
-      if (!string.IsNullOrEmpty(descriptor)) Descriptor = descriptor;
+      if (createdIds != null)
+        createdIds
+          .Where(o => !string.IsNullOrEmpty(o) && !CreatedIds.Contains(o))
+          ?.ToList()
+          .ForEach(o => CreatedIds.Add(o));
+      if (createdId != null && !CreatedIds.Contains(createdId))
+        CreatedIds.Add(createdId);
+      if (status.HasValue)
+        Status = status.Value;
+      if (log != null)
+        log.Where(o => !string.IsNullOrEmpty(o) && !Log.Contains(o))
+          ?.ToList()
+          .ForEach(o => Log.Add(o));
+      if (!string.IsNullOrEmpty(logItem) && !Log.Contains(logItem))
+        Log.Add(logItem);
+      if (convertedItem != null && !Converted.Contains(convertedItem))
+        Converted.Add(convertedItem);
+      if (converted != null)
+        converted
+          .Where(o => o != null && !Converted.Contains(o))
+          ?.ToList()
+          .ForEach(o => Converted.Add(o));
+      if (!string.IsNullOrEmpty(container))
+        Container = container;
+      if (!string.IsNullOrEmpty(descriptor))
+        Descriptor = descriptor;
     }
   }
 
   public class ProgressReport
   {
-    public Dictionary<string, ApplicationObject> ReportObjects { get; set; } = new Dictionary<string, ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ReportObjects { get; set; } =
+      new Dictionary<string, ApplicationObject>();
     public List<string> SelectedReportObjects { get; set; } = new List<string>();
 
     public void Log(ApplicationObject obj)
@@ -195,13 +227,20 @@ namespace Speckle.Core.Models
     {
       if (ReportObjects.TryGetValue(obj.OriginalId, out ApplicationObject reportObject))
       {
-        reportObject.Update(createdIds: obj.CreatedIds, container: obj.Container, converted: obj.Converted, log: obj.Log, descriptor: obj.Descriptor);
+        reportObject.Update(
+          createdIds: obj.CreatedIds,
+          container: obj.Container,
+          converted: obj.Converted,
+          log: obj.Log,
+          descriptor: obj.Descriptor
+        );
 
         if (obj.Status != ApplicationObject.State.Unknown)
           reportObject.Update(status: obj.Status);
         return reportObject;
       }
-      else return null;
+      else
+        return null;
     }
 
     [Obsolete("Use TryGetValue or Dictionary indexing", true)]
@@ -316,7 +355,8 @@ namespace Speckle.Core.Models
       foreach (var item in ReportObjects.Values)
       {
         var ids = new List<string> { item.OriginalId };
-        if (item.Fallback.Count > 0) ids.AddRange(item.Fallback.Select(o => o.OriginalId));
+        if (item.Fallback.Count > 0)
+          ids.AddRange(item.Fallback.Select(o => o.OriginalId));
 
         if (item.Status == ApplicationObject.State.Unknown)
           if (report.ReportObjects.TryGetValue(item.OriginalId, out var reportObject))

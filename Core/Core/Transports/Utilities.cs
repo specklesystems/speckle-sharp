@@ -9,7 +9,7 @@ namespace Speckle.Core.Transports
   public static class Utilities
   {
     /// <summary>
-    /// Waits until the provided function returns true. 
+    /// Waits until the provided function returns true.
     /// </summary>
     /// <param name="condition"></param>
     /// <param name="frequency"></param>
@@ -25,12 +25,10 @@ namespace Speckle.Core.Transports
         }
       });
 
-      if (waitTask != await Task.WhenAny(waitTask,
-              Task.Delay(timeout)))
+      if (waitTask != await Task.WhenAny(waitTask, Task.Delay(timeout)))
       {
         throw new SpeckleException("Process timed out", new TimeoutException());
       }
     }
-
   }
 }

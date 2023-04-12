@@ -8,7 +8,6 @@ namespace Speckle.Core.Models.GraphTraversal
 {
   public static class DefaultTraversal
   {
-
     /// <summary>
     /// Traverses until finds a convertable object (or fallback) then traverses members
     /// </summary>
@@ -16,8 +15,8 @@ namespace Speckle.Core.Models.GraphTraversal
     /// <returns></returns>
     public static GraphTraversal CreateTraverseFunc(ISpeckleConverter converter)
     {
-
-      var convertableRule = TraversalRule.NewTraversalRule()
+      var convertableRule = TraversalRule
+        .NewTraversalRule()
         .When(converter.CanConvertToNative)
         .When(HasDisplayValue)
         .ContinueTraversing(b =>
@@ -29,11 +28,13 @@ namespace Speckle.Core.Models.GraphTraversal
           return membersToTraverse;
         });
 
-      var ignoreResultsRule = TraversalRule.NewTraversalRule()
+      var ignoreResultsRule = TraversalRule
+        .NewTraversalRule()
         .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
         .ContinueTraversing(None);
 
-      var defaultRule = TraversalRule.NewTraversalRule()
+      var defaultRule = TraversalRule
+        .NewTraversalRule()
         .When(_ => true)
         .ContinueTraversing(Members());
 
@@ -47,30 +48,35 @@ namespace Speckle.Core.Models.GraphTraversal
     /// <returns></returns>
     public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
     {
-      var convertableRule = TraversalRule.NewTraversalRule()
+      var convertableRule = TraversalRule
+        .NewTraversalRule()
         .When(converter.CanConvertToNative)
         .ContinueTraversing(None);
 
-      var displayValueRule = TraversalRule.NewTraversalRule()
+      var displayValueRule = TraversalRule
+        .NewTraversalRule()
         .When(HasDisplayValue)
-        .ContinueTraversing(b => b.GetDynamicMembers()
-          .Concat(displayValueAliases)
-          .Except(elementsAliases)
-          .Except(ignoreProps)
+        .ContinueTraversing(
+          b =>
+            b.GetDynamicMembers()
+              .Concat(displayValueAliases)
+              .Except(elementsAliases)
+              .Except(ignoreProps)
         );
 
-      //WORKAROUND: ideally, traversal rules would not have Objects specific rules.  
-      var ignoreResultsRule = TraversalRule.NewTraversalRule()
+      //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
+      var ignoreResultsRule = TraversalRule
+        .NewTraversalRule()
         .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
         .ContinueTraversing(None);
 
-      var defaultRule = TraversalRule.NewTraversalRule()
+      var defaultRule = TraversalRule
+        .NewTraversalRule()
         .When(_ => true)
         .ContinueTraversing(Members());
 
       return new GraphTraversal(convertableRule, displayValueRule, ignoreResultsRule, defaultRule);
     }
-
 
     /// <summary>
     /// Traverses until finds a convertable object (or fallback) then traverses members
@@ -79,38 +85,57 @@ namespace Speckle.Core.Models.GraphTraversal
     /// <returns></returns>
     public static GraphTraversal CreateBIMTraverseFunc(ISpeckleConverter converter)
     {
-      var bimElementRule = TraversalRule.NewTraversalRule()
+      var bimElementRule = TraversalRule
+        .NewTraversalRule()
         .When(converter.CanConvertToNative)
         .ContinueTraversing(ElementsAliases);
 
-      //WORKAROUND: ideally, traversal rules would not have Objects specific rules.  
-      var ignoreResultsRule = TraversalRule.NewTraversalRule()
+      //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
+      var ignoreResultsRule = TraversalRule
+        .NewTraversalRule()
         .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
         .ContinueTraversing(None);
 
-      var defaultRule = TraversalRule.NewTraversalRule()
+      var defaultRule = TraversalRule
+        .NewTraversalRule()
         .When(_ => true)
         .ContinueTraversing(Members());
 
       return new GraphTraversal(bimElementRule, ignoreResultsRule, defaultRule);
     }
 
-
     //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
     #region Helper Functions
 
     internal static readonly string[] elementsAliases = { "elements", "@elements" };
+
     internal static IEnumerable<string> ElementsAliases(Base _) => elementsAliases;
 
     internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
-    internal static readonly string[] ignoreProps = new[] { "@blockDefinition" }.Concat(displayValueAliases).ToArray();
+    internal static readonly string[] ignoreProps = new[] { "@blockDefinition" }
+      .Concat(displayValueAliases)
+      .ToArray();
+
     internal static IEnumerable<string> DisplayValueAliases(Base _) => displayValueAliases;
+
     internal static IEnumerable<string> None(Base _) => Enumerable.Empty<string>();
-    internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers) => x => x.GetMembers(includeMembers).Keys;
+
+    internal static SelectMembers Members(
+      DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers
+    ) => x => x.GetMembers(includeMembers).Keys;
+
     internal static SelectMembers DynamicMembers() => x => x.GetDynamicMembers();
-    internal static SelectMembers Concat(params SelectMembers[] selectProps) => x => selectProps.SelectMany(i => i.Invoke(x));
-    internal static SelectMembers Except(SelectMembers selectProps, IEnumerable<string> excludeProps) => x => selectProps.Invoke(x).Except(excludeProps);
+
+    internal static SelectMembers Concat(params SelectMembers[] selectProps) =>
+      x => selectProps.SelectMany(i => i.Invoke(x));
+
+    internal static SelectMembers Except(
+      SelectMembers selectProps,
+      IEnumerable<string> excludeProps
+    ) => x => selectProps.Invoke(x).Except(excludeProps);
+
     internal static bool HasElements(Base x) => elementsAliases.Any(m => x[m] != null);
+
     internal static bool HasDisplayValue(Base x) => displayValueAliases.Any(m => x[m] != null);
 
     #endregion

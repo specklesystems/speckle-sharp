@@ -33,7 +33,8 @@ namespace Speckle.Core.Models.GraphTraversal
     {
       foreach (var condition in conditions)
       {
-        if (condition.Invoke(o)) return true;
+        if (condition.Invoke(o))
+          return true;
       }
       return false;
     }
@@ -55,7 +56,6 @@ namespace Speckle.Core.Models.GraphTraversal
       return this;
     }
   }
-
 
   #region Builder interfaces/delegates
   public delegate bool WhenCondition(Base o);

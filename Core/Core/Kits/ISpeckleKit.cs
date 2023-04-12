@@ -40,7 +40,7 @@ namespace Speckle.Core.Kits
     string WebsiteOrEmail { get; }
 
     /// <summary>
-    /// Tries to load a converter for a specific <paramref name="app"/>. 
+    /// Tries to load a converter for a specific <paramref name="app"/>.
     /// </summary>
     /// <param name="app">The host app string for which a <see cref="ISpeckleConverter"/> is desired. see <see cref="ISpeckleConverter.GetServicedApplications"/></param>
     /// <returns>The converter for the specific <paramref name="app"/></returns>
@@ -52,10 +52,10 @@ namespace Speckle.Core.Kits
   {
     public ISpeckleKit Kit { get; }
 
-    public KitException(string message, ISpeckleKit kit, Exception? innerException = null) : base(message, innerException)
+    public KitException(string message, ISpeckleKit kit, Exception? innerException = null)
+      : base(message, innerException)
     {
       Kit = kit;
     }
-
   }
 }

@@ -20,7 +20,8 @@ namespace Speckle.Core.Serialisation
 
     private object LockFreeThreads = new object();
     private int FreeThreadCount = 0;
-    private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks = new BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)>();
+    private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks =
+      new BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)>();
 
     public DeserializationWorkerThreads(BaseObjectDeserializerV2 serializer)
     {
@@ -36,7 +37,6 @@ namespace Speckle.Core.Serialisation
         Threads.Add(t);
         t.Start();
       }
-
     }
 
     private void ThreadMain()
@@ -47,7 +47,8 @@ namespace Speckle.Core.Serialisation
         {
           FreeThreadCount++;
         }
-        (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) = Tasks.Take();
+        (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) =
+          Tasks.Take();
         if (tcs == null)
         {
           return;
@@ -95,7 +96,9 @@ namespace Speckle.Core.Serialisation
 
       if (canStartTask)
       {
-        TaskCompletionSource<object> tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource<object> tcs = new TaskCompletionSource<object>(
+          TaskCreationOptions.RunContinuationsAsynchronously
+        );
         Tasks.Add((taskType, inputValue, tcs));
         return tcs.Task;
       }
@@ -103,7 +106,6 @@ namespace Speckle.Core.Serialisation
       {
         return null;
       }
-
     }
   }
 }

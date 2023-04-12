@@ -117,7 +117,8 @@ namespace Speckle.Core.Api
     public int favoritesCount { get; set; }
 
     public List<Collaborator> collaborators { get; set; }
-    public List<PendingStreamCollaborator> pendingCollaborators { get; set; } = new List<PendingStreamCollaborator>();
+    public List<PendingStreamCollaborator> pendingCollaborators { get; set; } =
+      new List<PendingStreamCollaborator>();
     public Branches branches { get; set; }
 
     /// <summary>
@@ -162,6 +163,7 @@ namespace Speckle.Core.Api
   {
     public List<PendingStreamCollaborator> streamInvites { get; set; }
   }
+
   public class PendingStreamCollaborator
   {
     public string id { get; set; }
@@ -291,7 +293,6 @@ namespace Speckle.Core.Api
     {
       return $"Other user profile: ({name} | {id})";
     }
-
   }
 
   public class User : UserBase
@@ -304,7 +305,6 @@ namespace Speckle.Core.Api
       return $"User ({email} | {name} | {id})";
     }
   }
-
 
   public class Resource
   {
@@ -332,7 +332,6 @@ namespace Speckle.Core.Api
     public User user { get; set; }
   }
 
-
   /// <summary>
   /// GraphQL DTO model for active user data
   /// </summary>
@@ -343,7 +342,6 @@ namespace Speckle.Core.Api
     /// </summary>
     public User activeUser { get; set; }
   }
-
 
   /// <summary>
   /// GraphQL DTO model for limited user data. Mostly referring to other user's profile.
@@ -434,6 +432,7 @@ namespace Speckle.Core.Api
   public partial class ContentContent
   {
     public string Type { get; set; }
+
     //public Mark[] Marks { get; set; }
     public string Text { get; set; }
   }
@@ -479,7 +478,12 @@ namespace Speckle.Core.Api
     public string DateTimeAgo => Helpers.TimeAgo(Date);
     public bool Prerelease { get; set; } = false;
 
-    public Version(string number, string url, Os os = Os.Win, Architecture architecture = Architecture.Any)
+    public Version(
+      string number,
+      string url,
+      Os os = Os.Win,
+      Architecture architecture = Architecture.Any
+    )
     {
       Number = number;
       Url = url;
@@ -512,7 +516,6 @@ namespace Speckle.Core.Api
     Arm, //1
     Intel //2
   }
-
 
   //GHOST API
   public class Meta

@@ -1,28 +1,28 @@
 ﻿# nullable enable
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Diagnostics;
+using System.Dynamic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.WebSockets;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
+using GraphQL;
 using GraphQL.Client.Http;
+using Polly;
+using Polly.Contrib.WaitAndRetry;
+using Serilog;
+using Serilog.Context;
+using Serilog.Core;
+using Serilog.Core.Enrichers;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
-using GraphQL;
-using Polly;
-using Serilog;
-using Polly.Contrib.WaitAndRetry;
-using System.Threading;
-using System.Linq;
-using System.Collections.Generic;
-using System.Diagnostics;
-using Serilog.Context;
-using Serilog.Core;
-using Serilog.Core.Enrichers;
-using System.Dynamic;
 
 namespace Speckle.Core.Api
 {
@@ -144,7 +144,8 @@ namespace Speckle.Core.Api
           onRetry: (ex, timeout, context) =>
           {
             var graphqlEx = ex as SpeckleGraphQLException<T>;
-            SpeckleLog.Logger.ForContext("graphqlExtensions", graphqlEx.Extensions)
+            SpeckleLog.Logger
+              .ForContext("graphqlExtensions", graphqlEx.Extensions)
               .ForContext("graphqlErrorMessages", graphqlEx.ErrorMessages)
               .Warning(
                 ex,
@@ -166,7 +167,10 @@ namespace Speckle.Core.Api
     {
       using (LogContext.Push(_createEnrichers<T>(request)))
       {
-        SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
+        SpeckleLog.Logger.Debug(
+          "Starting execution of graphql request to get {resultType}",
+          typeof(T).Name
+        );
         var timer = new Stopwatch();
         var success = false;
         timer.Start();
@@ -196,7 +200,8 @@ namespace Speckle.Core.Api
         // anything else related to graphql gets logged
         catch (SpeckleGraphQLException<T> gqlException)
         {
-          SpeckleLog.Logger.ForContext("graphqlResponse", gqlException.Response)
+          SpeckleLog.Logger
+            .ForContext("graphqlResponse", gqlException.Response)
             .ForContext("graphqlExtensions", gqlException.Extensions)
             .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
             .Warning(
@@ -339,7 +344,8 @@ namespace Speckle.Core.Api
                 }
                 else
                 {
-                  SpeckleLog.Logger.ForContext("graphqlResponse", response)
+                  SpeckleLog.Logger
+                    .ForContext("graphqlResponse", response)
                     .Error(
                       "Cannot execute graphql callback for {resultType}, the response has no data.",
                       typeof(T).Name
@@ -354,7 +360,8 @@ namespace Speckle.Core.Api
               // anything else related to graphql gets logged
               catch (SpeckleGraphQLException<T> gqlException)
               {
-                SpeckleLog.Logger.ForContext("graphqlResponse", gqlException.Response)
+                SpeckleLog.Logger
+                  .ForContext("graphqlResponse", gqlException.Response)
                   .ForContext("graphqlExtensions", gqlException.Extensions)
                   .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
                   .Warning(

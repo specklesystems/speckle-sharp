@@ -14,7 +14,6 @@ using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Models
 {
-
   /// <summary>
   /// Base class for all Speckle object definitions. Provides unified hashing, type extraction and serialisation.
   /// <para>When developing a speckle kit, use this class as a parent class.</para>
@@ -29,10 +28,7 @@ namespace Speckle.Core.Models
     /// A speckle object's id is an unique hash based on its properties. <b>NOTE: this field will be null unless the object was deserialised from a source. Use the <see cref="GetId(bool)"/> function to get it.</b>
     /// </summary>
     [SchemaIgnore]
-    public virtual string id
-    {
-      get; set;
-    }
+    public virtual string id { get; set; }
 
     /// <summary>
     /// Gets the id (a unique hash) of this object. ⚠️ This method fully serializes the object, which in the case of large objects (with many sub-objects), has a tangible cost. Avoid using it!
@@ -41,7 +37,10 @@ namespace Speckle.Core.Models
     /// </summary>
     /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
     /// <returns></returns>
-    public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
+    public string GetId(
+      bool decompose = false,
+      SerializerVersion serializerVersion = SerializerVersion.V2
+    )
     {
       if (serializerVersion == SerializerVersion.V1)
       {
@@ -76,6 +75,7 @@ namespace Speckle.Core.Models
     }
 
     private static readonly Regex ChunkSyntax = new Regex(@"^@\((\d*)\)"); //TODO: this same regex is duplicated a few times across the code base, we could consolidate them
+
     private static long CountDescendants(Base @base, HashSet<int> parsed)
     {
       if (parsed.Contains(@base.GetHashCode()))
@@ -89,8 +89,11 @@ namespace Speckle.Core.Models
       var typedProps = @base.GetInstanceMembers();
       foreach (var prop in typedProps.Where(p => p.CanRead))
       {
-        bool isIgnored = prop.IsDefined(typeof(ObsoleteAttribute), true) || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
-        if (isIgnored) continue;
+        bool isIgnored =
+          prop.IsDefined(typeof(ObsoleteAttribute), true)
+          || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
+        if (isIgnored)
+          continue;
 
         var detachAttribute = prop.GetCustomAttribute<DetachProperty>(true);
         var chunkAttribute = prop.GetCustomAttribute<Chunkable>(true);
@@ -151,38 +154,38 @@ namespace Speckle.Core.Models
           count += CountDescendants(b, parsed);
           return count;
         case IDictionary d:
+        {
+          foreach (DictionaryEntry kvp in d)
           {
-            foreach (DictionaryEntry kvp in d)
+            if (kvp.Value is Base)
             {
-              if (kvp.Value is Base)
-              {
-                count++;
-                count += CountDescendants(kvp.Value as Base, parsed);
-              }
-              else
-              {
-                count += HandleObjectCount(kvp.Value, parsed);
-              }
+              count++;
+              count += CountDescendants(kvp.Value as Base, parsed);
             }
-            return count;
+            else
+            {
+              count += HandleObjectCount(kvp.Value, parsed);
+            }
           }
+          return count;
+        }
         case IEnumerable e when !(value is string):
+        {
+          foreach (var arrValue in e)
           {
-            foreach (var arrValue in e)
+            if (arrValue is Base)
             {
-              if (arrValue is Base)
-              {
-                count++;
-                count += CountDescendants(arrValue as Base, parsed);
-              }
-              else
-              {
-                count += HandleObjectCount(arrValue, parsed);
-              }
+              count++;
+              count += CountDescendants(arrValue as Base, parsed);
             }
-
-            return count;
+            else
+            {
+              count += HandleObjectCount(arrValue, parsed);
+            }
           }
+
+          return count;
+        }
         default:
           return count;
       }
@@ -200,11 +203,13 @@ namespace Speckle.Core.Models
       myDuplicate.id = id;
       myDuplicate.applicationId = applicationId;
 
-      foreach (var kvp in GetMembers(
-                 DynamicBaseMemberType.Instance
-                 | DynamicBaseMemberType.Dynamic
-                 | DynamicBaseMemberType.SchemaIgnored)
-               )
+      foreach (
+        var kvp in GetMembers(
+          DynamicBaseMemberType.Instance
+            | DynamicBaseMemberType.Dynamic
+            | DynamicBaseMemberType.SchemaIgnored
+        )
+      )
       {
         var p = GetType().GetProperty(kvp.Key);
         if (p != null && !p.CanWrite)
@@ -226,7 +231,7 @@ namespace Speckle.Core.Models
     }
 
     /// <summary>
-    /// This property will only be populated if the object is retreieved from storage. Use <see cref="GetTotalChildrenCount"/> otherwise. 
+    /// This property will only be populated if the object is retreieved from storage. Use <see cref="GetTotalChildrenCount"/> otherwise.
     /// </summary>
     [SchemaIgnore]
     public virtual long totalChildrenCount { get; set; }
@@ -236,7 +241,6 @@ namespace Speckle.Core.Models
     /// </summary>
     [SchemaIgnore]
     public string applicationId { get; set; }
-
 
     private string __type;
 
@@ -278,7 +282,6 @@ namespace Speckle.Core.Models
     }
   }
 
-
   public class Blob : Base
   {
     private string _hash;
@@ -290,7 +293,8 @@ namespace Speckle.Core.Models
       get => _filePath;
       set
       {
-        if (originalPath is null) originalPath = value;
+        if (originalPath is null)
+          originalPath = value;
         _filePath = value;
         hashExpired = true;
       }
@@ -307,7 +311,11 @@ namespace Speckle.Core.Models
     /// <summary>
     /// For blobs, the id is the same as the file hash. Please note, when deserialising, the id will be set from the original hash generated on sending.
     /// </summary>
-    public override string id { get => GetFileHash(); set => base.id = value; }
+    public override string id
+    {
+      get => GetFileHash();
+      set => base.id = value;
+    }
 
     public string GetFileHash()
     {

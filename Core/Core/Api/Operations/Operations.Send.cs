@@ -179,11 +179,13 @@ namespace Speckle.Core.Api
         }
 
         var idToken = JObject.Parse(obj).GetValue("id");
-        if (idToken == null) throw new SpeckleException("Failed to get id of serialized object");
+        if (idToken == null)
+          throw new SpeckleException("Failed to get id of serialized object");
         var hash = idToken.ToString();
 
         sendTimer.Stop();
-        SpeckleLog.Logger.ForContext(
+        SpeckleLog.Logger
+          .ForContext(
             "transportElapsedBreakdown",
             transports.ToDictionary(t => t.TransportName, t => t.Elapsed)
           )

@@ -57,10 +57,7 @@ namespace Speckle.Core.Logging
             id = da.GetHashedEmail();
           }
         }
-        catch (Exception ex)
-        {
-        }
-
+        catch (Exception ex) { }
 
         SentrySdk.ConfigureScope(scope =>
         {
@@ -76,14 +73,17 @@ namespace Speckle.Core.Logging
       }
     }
 
-
     /// <summary>
     /// Captures an Exception and makes sure Sentry is initialized
     /// </summary>
     /// <param name="e"></param>
     /// <param name="level"></param>
     /// <param name="extra"></param>
-    public static void CaptureException(Exception e, SentryLevel level = SentryLevel.Info, List<KeyValuePair<string, object>> extra = null)
+    public static void CaptureException(
+      Exception e,
+      SentryLevel level = SentryLevel.Info,
+      List<KeyValuePair<string, object>> extra = null
+    )
     {
       Initialize();
 
@@ -91,12 +91,15 @@ namespace Speckle.Core.Logging
       if (level == SentryLevel.Info)
         return;
 
-      SentrySdk.CaptureException(e, scope =>
-      {
-        scope.Level = level;
-        if (extra != null)
-          scope.SetExtras(extra);
-      });
+      SentrySdk.CaptureException(
+        e,
+        scope =>
+        {
+          scope.Level = level;
+          if (extra != null)
+            scope.SetExtras(extra);
+        }
+      );
     }
 
     /// <summary>

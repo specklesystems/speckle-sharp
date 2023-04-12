@@ -36,41 +36,48 @@ namespace Speckle.Core.Logging
       /// Event triggered when data is sent to a Speckle Server
       /// </summary>
       Send,
+
       /// <summary>
       /// Event triggered when data is received from a Speckle Server
       /// </summary>
       Receive,
+
       /// <summary>
       /// Event triggered when a node is executed in a visual programming environment, it should contain the name of the action and the host application
       /// </summary>
       NodeRun,
+
       /// <summary>
       /// Event triggered when an action is executed in Desktop UI, it should contain the name of the action and the host application
       /// </summary>
       DUIAction,
+
       /// <summary>
       /// Event triggered when a node is first created in a visual programming environment, it should contain the name of the action and the host application
       /// </summary>
       NodeCreate,
+
       /// <summary>
       /// Event triggered when the import/export alert is launched or closed
       /// </summary>
       ImportExportAlert,
+
       /// <summary>
       /// Event triggered when the connector is registered
       /// </summary>
       Registered,
+
       /// <summary>
       /// Event triggered by the Mapping Tool
       /// </summary>
       MappingsAction
     };
 
-
     /// <summary>
     /// Cached email
     /// </summary>
     private static string LastEmail { get; set; }
+
     /// <summary>
     /// Cached server URL
     /// </summary>
@@ -85,7 +92,11 @@ namespace Speckle.Core.Logging
     /// <param name="eventName">Name of the even</param>
     /// <param name="customProperties">Additional parameters to pass in to event</param>
     /// <param name="isAction">True if it's an action performed by a logged user</param>
-    public static void TrackEvent(Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
+    public static void TrackEvent(
+      Events eventName,
+      Dictionary<string, object> customProperties = null,
+      bool isAction = true
+    )
     {
       string email = "";
       string server = "";
@@ -101,11 +112,14 @@ namespace Speckle.Core.Logging
         if (acc == null)
         {
           var macAddr = NetworkInterface
-          .GetAllNetworkInterfaces()
-          .Where(nic => nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback)
-          .Select(nic => nic.GetPhysicalAddress().ToString())
-          .FirstOrDefault();
-
+            .GetAllNetworkInterfaces()
+            .Where(
+              nic =>
+                nic.OperationalStatus == OperationalStatus.Up
+                && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
+            )
+            .Select(nic => nic.GetPhysicalAddress().ToString())
+            .FirstOrDefault();
 
           email = macAddr;
           server = "no-account-server";
@@ -116,8 +130,6 @@ namespace Speckle.Core.Logging
           email = acc.GetHashedEmail();
           server = acc.GetHashedServer();
         }
-
-
       }
 
       TrackEvent(email, server, eventName, customProperties, isAction);
@@ -130,12 +142,23 @@ namespace Speckle.Core.Logging
     /// <param name="eventName">Name of the event</param>
     /// <param name="customProperties">Additional parameters to pass to the event</param>
     /// <param name="isAction">True if it's an action performed by a logged user</param>
-    public static void TrackEvent(Account account, Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
+    public static void TrackEvent(
+      Account account,
+      Events eventName,
+      Dictionary<string, object> customProperties = null,
+      bool isAction = true
+    )
     {
       if (account == null)
         TrackEvent(eventName, customProperties, isAction);
       else
-        TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties, isAction);
+        TrackEvent(
+          account.GetHashedEmail(),
+          account.GetHashedServer(),
+          eventName,
+          customProperties,
+          isAction
+        );
     }
 
     /// <summary>
@@ -146,7 +169,13 @@ namespace Speckle.Core.Logging
     /// <param name="eventName">Name of the event</param>
     /// <param name="customProperties">Additional parameters to pass to the event</param>
     /// <param name="isAction">True if it's an action performed by a logged user</param>
-    private static void TrackEvent(string hashedEmail, string hashedServer, Events eventName, Dictionary<string, object> customProperties = null, bool isAction = true)
+    private static void TrackEvent(
+      string hashedEmail,
+      string hashedServer,
+      Events eventName,
+      Dictionary<string, object> customProperties = null,
+      bool isAction = true
+    )
     {
       LastEmail = hashedEmail;
       LastServer = hashedServer;
@@ -158,7 +187,6 @@ namespace Speckle.Core.Logging
 
       Task.Run(() =>
       {
-
         try
         {
           var properties = new Dictionary<string, object>()
@@ -168,39 +196,40 @@ namespace Speckle.Core.Logging
             { "token", MixpanelToken },
             { "hostApp", Setup.HostApplication },
             { "hostAppVersion", Setup.VersionedHostApplication },
-            { "core_version", Assembly.GetExecutingAssembly().GetName().Version.ToString()},
-            { "$os",  GetOs() },
-
+            { "core_version", Assembly.GetExecutingAssembly().GetName().Version.ToString() },
+            { "$os", GetOs() },
           };
 
           if (isAction)
             properties.Add("type", "action");
 
           if (customProperties != null)
-            properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+            properties = properties
+              .Concat(customProperties)
+              .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
+          string json = JsonConvert.SerializeObject(
+            new { @event = eventName.ToString(), properties }
+          );
 
-          string json = JsonConvert.SerializeObject(new
-          {
-            @event = eventName.ToString(),
-            properties
-          });
-
-          var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
+          var query = new StreamContent(
+            new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json)))
+          );
           HttpClient client = Http.GetHttpProxyClient();
-          client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+          client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("text/plain")
+          );
           query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
           client.PostAsync(MixpanelServer + "/track?ip=1", query);
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.ForContext("eventName", eventName.ToString())
+          SpeckleLog.Logger
+            .ForContext("eventName", eventName.ToString())
             .ForContext("isAction", isAction)
             .Warning(ex, "Analytics event failed {exceptionMessage}", ex.Message);
         }
-
       });
-
     }
 
     internal static void AddConnectorToProfile(string hashedEmail, string connector)
@@ -213,23 +242,30 @@ namespace Speckle.Core.Logging
           {
             { "$token", MixpanelToken },
             { "$distinct_id", hashedEmail },
-            { "$union",  new Dictionary<string, object>()
+            {
+              "$union",
+              new Dictionary<string, object>()
               {
-                 {"Connectors", new List<string>{ connector } },
+                {
+                  "Connectors",
+                  new List<string> { connector }
+                },
               }
             },
-            { "set",  new Dictionary<string, object>()
-              {
-                 {"Identified", true },
-              }
+            {
+              "set",
+              new Dictionary<string, object>() { { "Identified", true }, }
             }
           };
           string json = JsonConvert.SerializeObject(data);
 
-
-          var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
+          var query = new StreamContent(
+            new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json)))
+          );
           HttpClient client = Http.GetHttpProxyClient();
-          client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
+          client.DefaultRequestHeaders.Accept.Add(
+            new MediaTypeWithQualityHeaderValue("text/plain")
+          );
           query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
           client.PostAsync(MixpanelServer + "/engage#profile-union", query);
         }
@@ -237,21 +273,18 @@ namespace Speckle.Core.Logging
         {
           // POKEMON: Gotta catch 'em all!
         }
-
       });
     }
 
-
-
-
-
     private static string GetOs()
     {
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return "Windows";
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) return "Mac OS X";
-      if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux)) return "Linux";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        return "Windows";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        return "Mac OS X";
+      if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        return "Linux";
       return "Unknown";
     }
-
   }
 }

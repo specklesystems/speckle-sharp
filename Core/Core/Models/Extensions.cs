@@ -23,25 +23,32 @@ namespace Speckle.Core.Models.Extensions
     /// <param name="recursionBreaker">Optional predicate function to determine whether to break (or continue) traversal of a <see cref="Base"/> object's children.</param>
     /// <returns>A flat List of <see cref="Base"/> objects.</returns>
     /// <seealso cref="Traverse"/>
-    public static IEnumerable<Base> Flatten(this Base root, BaseRecursionBreaker recursionBreaker = null)
+    public static IEnumerable<Base> Flatten(
+      this Base root,
+      BaseRecursionBreaker recursionBreaker = null
+    )
     {
       recursionBreaker ??= b => false;
 
       var cache = new HashSet<string>();
-      var traversal = Traverse(root, b =>
-      {
-        if (!cache.Add(b.id)) return true;
+      var traversal = Traverse(
+        root,
+        b =>
+        {
+          if (!cache.Add(b.id))
+            return true;
 
-        return recursionBreaker.Invoke(b);
-      });
+          return recursionBreaker.Invoke(b);
+        }
+      );
 
       foreach (var b in traversal)
       {
-        if (!cache.Contains(b.id)) yield return b;
+        if (!cache.Contains(b.id))
+          yield return b;
         //Recursion break will be called after the above
       }
     }
-
 
     /// <summary>
     /// Depth-first traversal of the specified <paramref name="root"/> object and all of its children as a deferred Enumerable, with a <paramref name="recursionBreaker"/> function to break the traversal.
@@ -59,7 +66,8 @@ namespace Speckle.Core.Models.Extensions
         Base current = stack.Pop();
         yield return current;
 
-        if (recursionBreaker(current)) continue;
+        if (recursionBreaker(current))
+          continue;
 
         foreach (string child in current.GetDynamicMemberNames())
         {
@@ -69,23 +77,23 @@ namespace Speckle.Core.Models.Extensions
               stack.Push(o);
               break;
             case IDictionary dictionary:
+            {
+              foreach (object obj in dictionary.Keys)
               {
-                foreach (object obj in dictionary.Keys)
-                {
-                  if (obj is Base b)
-                    stack.Push(b);
-                }
-                break;
+                if (obj is Base b)
+                  stack.Push(b);
               }
+              break;
+            }
             case IList collection:
+            {
+              foreach (object obj in collection)
               {
-                foreach (object obj in collection)
-                {
-                  if (obj is Base b)
-                    stack.Push(b);
-                }
-                break;
+                if (obj is Base b)
+                  stack.Push(b);
               }
+              break;
+            }
           }
         }
       }

@@ -2,7 +2,6 @@
 
 namespace Speckle.Core.Models
 {
-
   /// <summary>
   /// <para>Flags an object's property as being detachable.</para>
   /// <para>If set to true the default serialiser will persist it separately, and add a reference to the property's value in the original object.</para>

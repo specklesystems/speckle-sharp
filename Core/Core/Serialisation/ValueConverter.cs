@@ -3,11 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+
 namespace Speckle.Core.Serialisation
 {
   internal static class ValueConverter
   {
-
     public static bool ConvertValue(Type type, object value, out object convertedValue)
     {
       // TODO: Document list of supported values in the SDK. (and grow it as needed)
@@ -36,7 +36,8 @@ namespace Speckle.Core.Serialisation
       #region Enum
       if (type.IsEnum)
       {
-        if (valueType != typeof(long)) return false;
+        if (valueType != typeof(long))
+          return false;
         convertedValue = Enum.ToObject(type, (long)value);
         return true;
       }
@@ -45,42 +46,95 @@ namespace Speckle.Core.Serialisation
       switch (type.Name)
       {
         case "Nullable`1":
-          if (value == null) { convertedValue = null; return true; }
+          if (value == null)
+          {
+            convertedValue = null;
+            return true;
+          }
           return ConvertValue(type.GenericTypeArguments[0], value, out convertedValue);
         #region Numbers
         case "Int64":
-          if (valueType == typeof(long)) { convertedValue = (long)value; return true; }
-          else return false;
+          if (valueType == typeof(long))
+          {
+            convertedValue = (long)value;
+            return true;
+          }
+          else
+            return false;
         case "Int32":
-          if (valueType == typeof(long)) { convertedValue = (Int32)(long)value; return true; }
-          else return false;
+          if (valueType == typeof(long))
+          {
+            convertedValue = (Int32)(long)value;
+            return true;
+          }
+          else
+            return false;
         case "Int16":
-          if (valueType == typeof(long)) { convertedValue = (Int16)(long)value; return true; }
-          else return false;
+          if (valueType == typeof(long))
+          {
+            convertedValue = (Int16)(long)value;
+            return true;
+          }
+          else
+            return false;
         case "UInt64":
-          if (valueType == typeof(long)) { convertedValue = (UInt64)(long)value; return true; }
-          else return false;
+          if (valueType == typeof(long))
+          {
+            convertedValue = (UInt64)(long)value;
+            return true;
+          }
+          else
+            return false;
         case "UInt32":
-          if (valueType == typeof(long)) { convertedValue = (UInt32)(long)value; return true; }
-          else return false;
+          if (valueType == typeof(long))
+          {
+            convertedValue = (UInt32)(long)value;
+            return true;
+          }
+          else
+            return false;
         case "UInt16":
-          if (valueType == typeof(long)) { convertedValue = (UInt16)(long)value; return true; }
-          else return false;
+          if (valueType == typeof(long))
+          {
+            convertedValue = (UInt16)(long)value;
+            return true;
+          }
+          else
+            return false;
         case "Double":
-          if (valueType == typeof(double)) { convertedValue = (Double)(double)value; return true; }
-          if (valueType == typeof(long)) { convertedValue = (Double)(long)value; return true; }
-          else return false;
+          if (valueType == typeof(double))
+          {
+            convertedValue = (Double)(double)value;
+            return true;
+          }
+          if (valueType == typeof(long))
+          {
+            convertedValue = (Double)(long)value;
+            return true;
+          }
+          else
+            return false;
         case "Single":
-          if (valueType == typeof(double)) { convertedValue = (Single)(double)value; return true; }
-          if (valueType == typeof(long)) { convertedValue = (Single)(long)value; return true; }
-          else return false;
-          #endregion
+          if (valueType == typeof(double))
+          {
+            convertedValue = (Single)(double)value;
+            return true;
+          }
+          if (valueType == typeof(long))
+          {
+            convertedValue = (Single)(long)value;
+            return true;
+          }
+          else
+            return false;
+        #endregion
       }
 
       // Handle List<?>
       if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
       {
-        if (!isList) return false;
+        if (!isList)
+          return false;
         Type listElementType = type.GenericTypeArguments[0];
         IList ret = Activator.CreateInstance(type, new object[] { valueList.Count }) as IList;
         foreach (object inputListElement in valueList)
@@ -120,7 +174,8 @@ namespace Speckle.Core.Serialisation
       // Handle arrays
       if (type.IsArray)
       {
-        if (!isList) return false;
+        if (!isList)
+          return false;
         Type arrayElementType = type.GetElementType();
         Array ret = Activator.CreateInstance(type, new object[] { valueList.Count }) as Array;
         for (int i = 0; i < valueList.Count; i++)
@@ -150,7 +205,11 @@ namespace Speckle.Core.Serialisation
 
       if (type == typeof(DateTime) && valueType == typeof(string))
       {
-        convertedValue = DateTime.ParseExact((string)value, "o", System.Globalization.CultureInfo.InvariantCulture);
+        convertedValue = DateTime.ParseExact(
+          (string)value,
+          "o",
+          System.Globalization.CultureInfo.InvariantCulture
+        );
         return true;
       }
 
@@ -159,11 +218,23 @@ namespace Speckle.Core.Serialisation
         var l = (value as List<object>).ToList();
         float I(int index) => Convert.ToSingle(l[index]);
         convertedValue = new Matrix4x4(
-          I(0), I(1), I(2), I(3),
-          I(4), I(5), I(6), I(7),
-          I(8), I(9), I(10), I(11),
-          I(12), I(13), I(14), I(15)
-          );
+          I(0),
+          I(1),
+          I(2),
+          I(3),
+          I(4),
+          I(5),
+          I(6),
+          I(7),
+          I(8),
+          I(9),
+          I(10),
+          I(11),
+          I(12),
+          I(13),
+          I(14),
+          I(15)
+        );
         return true;
       }
 

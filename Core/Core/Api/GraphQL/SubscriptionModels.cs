@@ -2,14 +2,13 @@
 
 namespace Speckle.Core.Api.SubscriptionModels
 {
-  #region streams 
+  #region streams
   public class StreamInfo
   {
     public string id { get; set; }
     public string name { get; set; }
     public string description { get; set; }
     public string sharedBy { get; set; }
-
   }
 
   public class UserStreamAddedResult
@@ -71,7 +70,6 @@ namespace Speckle.Core.Api.SubscriptionModels
 
     [Obsolete("Please use the parents property. This property will be removed in later versions")]
     public string[] previousCommitIds { get; set; }
-
   }
 
   public class CommitCreatedResult

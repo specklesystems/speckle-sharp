@@ -67,7 +67,7 @@ namespace Speckle.Core.Kits
       get
       {
         Initialize();
-        return _SpeckleKits.Values.Where(v => v != null); //NOTE: null check here should be unnecessary 
+        return _SpeckleKits.Values.Where(v => v != null); //NOTE: null check here should be unnecessary
       }
     }
 
@@ -117,7 +117,8 @@ namespace Speckle.Core.Kits
       {
         SpeckleLog.Logger.Error("{objectType} is already initialised", typeof(KitManager));
         throw new SpeckleException(
-          "The kit manager has already been initialised. Make sure you call this method earlier in your code!");
+          "The kit manager has already been initialised. Make sure you call this method earlier in your code!"
+        );
       }
 
       KitsFolder = kitFolderLocation;
@@ -171,10 +172,13 @@ namespace Speckle.Core.Kits
         foreach (var reference in assemblyToCheck.GetReferencedAssemblies())
         {
           // filtering out system dlls
-          if (reference.FullName.StartsWith("System.")) continue;
-          if (reference.FullName.StartsWith("Microsoft.")) continue;
+          if (reference.FullName.StartsWith("System."))
+            continue;
+          if (reference.FullName.StartsWith("Microsoft."))
+            continue;
 
-          if (loadedAssemblies.Contains(reference.FullName)) continue;
+          if (loadedAssemblies.Contains(reference.FullName))
+            continue;
 
           Assembly assembly;
           try
@@ -202,12 +206,16 @@ namespace Speckle.Core.Kits
 
       foreach (var assembly in assemblies)
       {
-        if (assembly.IsDynamic || assembly.ReflectionOnly) continue;
-        if (!assembly.IsReferencing(SpeckleAssemblyName)) continue;
-        if (_SpeckleKits.ContainsKey(assembly.FullName)) continue;
+        if (assembly.IsDynamic || assembly.ReflectionOnly)
+          continue;
+        if (!assembly.IsReferencing(SpeckleAssemblyName))
+          continue;
+        if (_SpeckleKits.ContainsKey(assembly.FullName))
+          continue;
 
         var kitClass = GetKitClass(assembly);
-        if (kitClass == null) continue;
+        if (kitClass == null)
+          continue;
 
         if (Activator.CreateInstance(kitClass) is ISpeckleKit speckleKit)
           _SpeckleKits.Add(assembly.FullName, speckleKit);
@@ -257,8 +265,7 @@ namespace Speckle.Core.Kits
           .GetTypes()
           .FirstOrDefault(type =>
           {
-            return type.GetInterfaces()
-                .Any(iface => iface.Name == nameof(ISpeckleKit));
+            return type.GetInterfaces().Any(iface => iface.Name == nameof(ISpeckleKit));
           });
 
         return kitClass;

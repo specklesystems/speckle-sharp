@@ -107,7 +107,6 @@ namespace Speckle.Core.Api
         var localProgressDict = new ConcurrentDictionary<string, int>();
         var internalProgressAction = GetInternalProgressAction(localProgressDict, onProgressAction);
 
-
         localTransport.OnErrorAction = onErrorAction;
         localTransport.OnProgressAction = internalProgressAction;
         localTransport.CancellationToken = cancellationToken;
@@ -139,11 +138,19 @@ namespace Speckle.Core.Api
         {
           // Shoot out the total children count
           var partial = JsonConvert.DeserializeObject<Placeholder>(objString);
-          if (partial == null) throw new SpeckleDeserializeException($"Failed to deserialize {nameof(objString)} into {nameof(Placeholder)}");
+          if (partial == null)
+            throw new SpeckleDeserializeException(
+              $"Failed to deserialize {nameof(objString)} into {nameof(Placeholder)}"
+            );
           if (partial.__closure != null)
             onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-          Base? localRes = DeserializeStringToBase(serializerVersion, objString, settings, serializerV2);
+          Base? localRes = DeserializeStringToBase(
+            serializerVersion,
+            objString,
+            settings,
+            serializerV2
+          );
 
           if (
             (disposeTransports || !hasUserProvidedLocalTransport)
@@ -158,7 +165,8 @@ namespace Speckle.Core.Api
             dispRemote.Dispose();
 
           timer.Stop();
-          SpeckleLog.Logger.ForContext("deserializerElapsed", serializerV2?.Elapsed)
+          SpeckleLog.Logger
+            .ForContext("deserializerElapsed", serializerV2?.Elapsed)
             .ForContext(
               "transportElapsedBreakdown",
               new ITransport?[] { localTransport, remoteTransport }
@@ -216,7 +224,8 @@ namespace Speckle.Core.Api
         if (disposeTransports && remoteTransport is IDisposable dr)
           dr.Dispose();
 
-        SpeckleLog.Logger.ForContext("deserializerElapsed", serializerV2.Elapsed)
+        SpeckleLog.Logger
+          .ForContext("deserializerElapsed", serializerV2.Elapsed)
           .ForContext(
             "transportElapsedBreakdown",
             new ITransport?[] { localTransport, remoteTransport }
@@ -237,12 +246,14 @@ namespace Speckle.Core.Api
         // Note: if properly implemented, there is no hard distinction between what is a local or remote transport; it's still just a transport. So, for example, if you want to receive an object without actually writing it first to a local transport, you can just pass a Server/S3 transport as a local transport.
         // This is not reccommended, but shows what you can do. Another tidbit: the local transport does not need to be disk-bound; it can easily be an in memory transport. In memory transports are the fastest ones, but they're of limited use for more
       }
-
-
     }
 
-    private static Base? DeserializeStringToBase(SerializerVersion serializerVersion, string objString, JsonSerializerSettings? settings,
-      BaseObjectDeserializerV2? serializerV2)
+    private static Base? DeserializeStringToBase(
+      SerializerVersion serializerVersion,
+      string objString,
+      JsonSerializerSettings? settings,
+      BaseObjectDeserializerV2? serializerV2
+    )
     {
       Base? localRes;
       if (serializerVersion == SerializerVersion.V1)
@@ -259,7 +270,11 @@ namespace Speckle.Core.Api
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
+          SpeckleLog.Logger.Error(
+            ex,
+            "A deserialization error has occurred {exceptionMessage}",
+            ex.Message
+          );
           if (serializerV2.OnErrorAction == null)
             throw;
           serializerV2.OnErrorAction.Invoke(
@@ -282,7 +297,8 @@ namespace Speckle.Core.Api
     {
       public SpeckleDeserializeException() { }
 
-      public SpeckleDeserializeException(string message, Exception? inner = null) : base(message, inner) { }
+      public SpeckleDeserializeException(string message, Exception? inner = null)
+        : base(message, inner) { }
     }
   }
 }
