@@ -1,6 +1,6 @@
-﻿using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
 using System;
+using Speckle.Core.Transports;
+using Speckle.Newtonsoft.Json;
 
 namespace DesktopUI2.Models
 {
@@ -49,6 +49,7 @@ namespace DesktopUI2.Models
     public bool DarkTheme { set; get; }
     public bool OneClickMode { set; get; } = true;
     public bool ShowImportExportAlert { set; get; } = true;
+    public bool UseFe2 { set; get; } = false;
   }
 
 

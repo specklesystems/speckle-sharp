@@ -113,6 +113,15 @@ namespace DesktopUI2.ViewModels
       }
     }
 
+    public bool UseFe2
+    {
+      get
+      {
+        var config = ConfigManager.Load();
+        return config.UseFe2;
+      }
+    }
+
     private bool _isRemovingStream;
     public bool IsRemovingStream
     {
@@ -492,22 +501,43 @@ namespace DesktopUI2.ViewModels
     {
       get
       {
-        //sender
-        if (!IsReceiver)
+        var config = ConfigManager.Load();
+        if (config.UseFe2)
         {
-          if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+          //sender
+          if (!IsReceiver)
+          {
+            if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
+              return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+          }
+          //receiver
+          else
+          {
+            if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
+              return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}@{SelectedCommit.id}";
+            if (SelectedBranch != null)
+              return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+          }
+          return $"{StreamState.ServerUrl.TrimEnd('/')}/projects/{StreamState.StreamId}";
         }
-        //receiver
         else
         {
-          if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
-          if (SelectedBranch != null)
-            return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+          //sender
+          if (!IsReceiver)
+          {
+            if (SelectedBranch != null && SelectedBranch.Branch.name != "main")
+              return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+          }
+          //receiver
+          else
+          {
+            if (SelectedCommit != null && SelectedCommit.id != ConnectorHelpers.LatestCommitString)
+              return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/commits/{SelectedCommit.id}";
+            if (SelectedBranch != null)
+              return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}/branches/{Uri.EscapeDataString(SelectedBranch.Branch.name)}";
+          }
+          return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
         }
-        return $"{StreamState.ServerUrl.TrimEnd('/')}/streams/{StreamState.StreamId}";
-
       }
     }
 
@@ -1197,7 +1227,17 @@ namespace DesktopUI2.ViewModels
         {
           Title = "👌 Data sent",
           Message = $"Sent to '{Stream.name}', view it online",
-          OnClick = () => OpenUrl($"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}"),
+          OnClick = () =>
+          {
+            var url = $"{StreamState.ServerUrl}/streams/{StreamState.StreamId}/commits/{commitId}";
+            var config = ConfigManager.Load();
+            if (config.UseFe2)
+            {
+              url = $"{StreamState.ServerUrl}/projects/{StreamState.StreamId}/models/{SelectedBranch.Branch.id}";
+            }
+            OpenUrl(url);
+          }
+          ,
           Type = NotificationType.Success,
           Expiration = TimeSpan.FromSeconds(10)
         });
