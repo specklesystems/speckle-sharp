@@ -11,7 +11,7 @@ namespace Objects.Converter.Navisworks;
 
 public partial class ConverterNavisworks
 {
-  private static Base GetPropertiesBase(ModelItem element, Base @base)
+  private static Base GetPropertiesBase(ModelItem element)
   {
     Base propertiesBase = new();
     // GUI visible properties varies by a Global Options setting.
@@ -166,7 +166,7 @@ public partial class ConverterNavisworks
 
     // Cascade through the Property Sets
     @base["properties"] = properties
-      ? GetPropertiesBase(element, @base)
+      ? GetPropertiesBase(element)
       : new Base();
 
     // If the node is a Model
@@ -180,8 +180,7 @@ public partial class ConverterNavisworks
     internals["DisplayName"] = element.DisplayName ?? internals["DisplayName"];
     internals["InstanceGuid"] = element.InstanceGuid.ToByteArray()
                                   .Select(x => (int)x)
-                                  .Sum() >
-                                0
+                                  .Sum() > 0
       ? element.InstanceGuid
       : null;
     internals["Source"] = element.Model?.SourceFileName ?? internals["Source"];
