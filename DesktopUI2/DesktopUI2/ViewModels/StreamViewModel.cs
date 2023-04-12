@@ -1,3 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using Avalonia.Controls;
 using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Selection;
@@ -20,15 +29,6 @@ using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Splat;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
-using System.Windows.Input;
 using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
@@ -717,10 +717,12 @@ namespace DesktopUI2.ViewModels
       }
       Report = report;
 
-      if (HasReportItems) // activate report tab
-      {
-        SelectedTab = 4;
-      }
+      //do not switch to report tab automatically
+      //if (HasReportItems) 
+      //{
+      //  // activate report tab
+      //  SelectedTab = 4;
+      //}
 
       // report filter selection
       ReportSelectionModel = new SelectionModel<string>();
