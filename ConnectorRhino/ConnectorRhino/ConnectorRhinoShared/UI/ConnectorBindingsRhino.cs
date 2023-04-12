@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -40,7 +40,6 @@ namespace SpeckleRhino
     private static string UserStrings = "userStrings";
     private static string UserDictionary = "userDictionary";
     private static string ApplicationIdKey = "applicationId";
-    private static string LayersString = "Layers";
     private static string ElementsString = "elements";
 
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
@@ -129,7 +128,7 @@ namespace SpeckleRhino
     public override string GetFileName() => Doc?.Name;
 
     //improve this to add to log??
-    private void LogUnsupportedObjects(List<RhinoObject> objs, ISpeckleConverter converter)
+    private static void LogUnsupportedObjects(List<RhinoObject> objs, ISpeckleConverter converter)
     {
       var reportLog = new Dictionary<string, int>();
       foreach (var obj in objs)
@@ -296,7 +295,7 @@ namespace SpeckleRhino
           if (previewObj.Converted == null || previewObj.Converted.Count == 0)
           {
             var convertedFallback = previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0);
-            if (convertedFallback != null && convertedFallback.Count() > 0)
+            if (convertedFallback != null && convertedFallback.Any())
               previewObj.Update(status: ApplicationObject.State.Created, logItem: $"Creating with {convertedFallback.Count()} fallback values");
             else
               previewObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
@@ -425,7 +424,7 @@ namespace SpeckleRhino
               var convertedFallback =
                 previewObj.Fallback.Where(o => o.Converted != null || o.Converted.Count > 0).ToList();
               if (convertedFallback.Any())
-                previewObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
+                previewObj.Update(logItem: $"Creating with {convertedFallback.Count} fallback values");
               else
                 previewObj.Update(status: ApplicationObject.State.Failed,
                   logItem: $"Couldn't convert object or any fallback values");
@@ -509,7 +508,7 @@ namespace SpeckleRhino
               }
             }
           }
-          if (toRemove.Count() > 0) isUpdate = true;
+          if (toRemove.Count > 0) isUpdate = true;
 
           // find layer and bake
           previewObj.CreatedIds.Clear(); // clear created ids before bake because these may be speckle ids from the preview
@@ -611,7 +610,7 @@ namespace SpeckleRhino
         }
 
         // skip if it is the base commit collection
-        if (current.speckle_type.Contains("Collection") && string.IsNullOrEmpty(containerId))
+        if (current is Collection && string.IsNullOrEmpty(containerId))
           return null;
 
         //Handle convertable objects
@@ -646,9 +645,9 @@ namespace SpeckleRhino
         if (context.propName == null) return stringBuilder; // this was probably the base commit collection
 
         string objectLayerName = string.Empty;
-        if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
+        if (context.propName.ToLower() == "elements" && context.current is Collection collection)
         {
-          objectLayerName = context.current["name"] as string;
+          objectLayerName = collection.name;
         }
         else if (context.propName.ToLower() != "elements")// this is for any other property on the collection. skip elements props in layer structure.
         {
@@ -675,7 +674,7 @@ namespace SpeckleRhino
     }
 
     // conversion and bake
-    private List<object> ConvertObject(Base obj, ISpeckleConverter converter)
+    private static List<object> ConvertObject(Base obj, ISpeckleConverter converter)
     {
       var convertedList = new List<object>();
 
@@ -936,7 +935,7 @@ namespace SpeckleRhino
       // store converted commit objects and layers by layer paths
       var commitLayerObjects = new Dictionary<string, List<Base>>();
       var commitLayers = new Dictionary<string, Layer>();
-      var commitCollections = new Dictionary<string, Base>();
+      var commitCollections = new Dictionary<string, Collection>();
 
       // convert all commit objs
       foreach (var selectedId in state.SelectedObjectIds)
@@ -984,11 +983,11 @@ namespace SpeckleRhino
               break;
             case Layer o:
               applicationId = o.GetUserString(ApplicationIdKey) ?? selectedId;
-              converted = converter.ConvertToSpeckle(o);
-              if (converted != null && !commitLayers.ContainsKey(o.FullPath))
+              var collection = converter.ConvertToSpeckle(o) as Collection;
+              if (collection != null && !commitLayers.ContainsKey(o.FullPath))
               {
                 commitLayers.Add(o.FullPath, o);
-                commitCollections.Add(o.FullPath, converted);
+                commitCollections.Add(o.FullPath, collection);
               }
               break;
             case ViewInfo o:
@@ -1042,7 +1041,7 @@ namespace SpeckleRhino
         }
         else
         {
-          var collection = converter.ConvertToSpeckle(commitLayers[layerPath]);
+          var collection = converter.ConvertToSpeckle(commitLayers[layerPath]) as Collection;
           if (collection != null)
           {
             collection[$"{ElementsString}"] = commitLayerObjects[layerPath];
@@ -1063,7 +1062,7 @@ namespace SpeckleRhino
           var parentLayer = Doc.Layers.FindId(childLayer.ParentLayerId);
           if (parentLayer != null && !commitCollections.ContainsKey(parentLayer.FullPath))
           {
-            var parentCollection = converter.ConvertToSpeckle(parentLayer);
+            var parentCollection = converter.ConvertToSpeckle(parentLayer) as Collection;
             if (parentCollection != null)
             {
               commitCollections.Add(parentLayer.FullPath, parentCollection);
@@ -1179,7 +1178,7 @@ namespace SpeckleRhino
       return objs;
     }
 
-    private string GetStringFromBaseProp(Base @base, string propName)
+    private static string GetStringFromBaseProp(Base @base, string propName)
     {
       var val = @base[propName];
       if (val == null) return null;
@@ -1253,7 +1252,7 @@ namespace SpeckleRhino
       }
     }
 
-    private string RemoveInvalidDynamicPropChars(string str)
+    private static string RemoveInvalidDynamicPropChars(string str)
     {
       // remove ./
       return Regex.Replace(str, @"[./]", "-");
