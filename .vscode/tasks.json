@@ -36,6 +36,18 @@
       "hide": true
     },
     {
+      "label": "speckle.format.whitespace",
+      "command": "dotnet",
+      "type": "shell",
+      "args": ["format", "whitespace", "${input:projectPath}"],
+      "group": "build",
+      "presentation": {
+        "reveal": "silent"
+      },
+      "problemMatcher": "$msCompile",
+      "hide": true
+    },
+    {
       "label": "speckle.format.analyzers",
       "command": "dotnet",
       "type": "shell",
@@ -57,18 +69,20 @@
         "jb",
         "cleanupcode",
         "${input:projectPath}",
-        "--profile=\"Speckle: Custom Cleanup\""
+        "--profile=\"Speckle: Custom Cleanup\"",
+        "--settings=\"All.sln.DotSettings\"",
       ],
       "group": "build",
-      "presentation": {
-        "reveal": "silent"
-      },
       "problemMatcher": "$msCompile",
       "hide": false
     },
     {
       "label": "Speckle: Format Code",
-      "dependsOn": ["speckle.format.style", "speckle.format.csharpier"],
+      "dependsOn": [
+        "speckle.format.whitespace",
+        "speckle.format.style",
+        "speckle.format.csharpier",
+      ],
       "dependsOrder": "sequence",
       "problemMatcher": []
     },
@@ -77,7 +91,7 @@
       "dependsOn": [
         "Speckle: Format Code",
         "speckle.format.analyzers",
-        "speckle.format.resharper"
+        "speckle.format.resharper",
       ],
       "dependsOrder": "sequence",
       "problemMatcher": []

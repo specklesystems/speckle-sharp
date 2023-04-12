@@ -15,7 +15,9 @@ namespace ExampleApp
 
       Console.WriteLine("Client created...");
 
-      Console.WriteLine("Subscribing to stream created. On first created event will subscribe to that stream's updates.");
+      Console.WriteLine(
+        "Subscribing to stream created. On first created event will subscribe to that stream's updates."
+      );
 
       myClient.SubscribeUserStreamAdded();
 
@@ -27,7 +29,8 @@ namespace ExampleApp
         {
           first = false;
           myClient.SubscribeStreamUpdated(e.id);
-          myClient.OnStreamUpdated += MyClient_OnStreamUpdated; ;
+          myClient.OnStreamUpdated += MyClient_OnStreamUpdated;
+          ;
         }
 
         Console.WriteLine("UserStreamCreated Fired");

@@ -112,10 +112,7 @@ namespace ExampleApp
     /// <param name="numVertices"></param>
     /// <param name="numObjects"></param>
     /// <returns></returns>
-    public static async Task SendReceiveManyLargeObjects(
-      int numVertices = 1000,
-      int numObjects = 10_000
-    )
+    public static async Task SendReceiveManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
     {
       var objs = new List<Base>();
 
@@ -188,9 +185,7 @@ namespace ExampleApp
     public static async Task SendReceiveLargeSingleObjects(int numVertices = 100_000)
     {
       Console.Clear();
-      Console.WriteLine(
-        $"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces"
-      );
+      Console.WriteLine($"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces");
       var myMesh = new Mesh();
 
       for (int i = 1; i <= numVertices; i++)
@@ -241,11 +236,7 @@ namespace ExampleApp
           objects.Add(
             new Polyline
             {
-              Points = new List<Point>()
-              {
-                new Point(i * 3.23, i / 3 * 7, i * 3),
-                new Point(i / 2, i / 2, i / 2)
-              }
+              Points = new List<Point>() { new Point(i * 3.23, i / 3 * 7, i * 3), new Point(i / 2, i / 2, i / 2) }
             }
           );
           for (int j = 0; j < 54; j++)
@@ -261,9 +252,7 @@ namespace ExampleApp
       ((dynamic)myRevision)["@FTW"] = objects.GetRange(130, objects.Count - 130 - 1);
 
       var step = sw.ElapsedMilliseconds;
-      Console.WriteLine(
-        $"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds."
-      );
+      Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
       Console.Clear();
 
