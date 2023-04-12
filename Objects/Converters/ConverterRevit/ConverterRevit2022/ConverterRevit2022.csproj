@@ -19,12 +19,6 @@
     <ProjectReference Include="..\..\..\Objects\Objects.csproj"/>
     <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj"/>
   </ItemGroup>
-  
-  <ItemGroup>
-    <None Include="..\..\..\..\logo.png">
-      <Pack>True</Pack>
-    </None>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Speckle.Revit.API" Version="2022.0.2.1"/>

@@ -7,6 +7,12 @@
       "commands": [
         "t4"
       ]
+    },
+    "jetbrains.resharper.globaltools": {
+      "version": "2023.1.0",
+      "commands": [
+        "jb"
+      ]
     }
   }
 }

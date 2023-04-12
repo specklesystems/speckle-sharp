@@ -1,26 +1,91 @@
-# EditorConfig is awesome:http://EditorConfig.org
-
-# top-most EditorConfig file
 root = true
-
 # Don't use tabs for indentation.
 [*]
 indent_style = space
+
+# Microsoft .NET properties
+csharp_using_directive_placement = outside_namespace:silent
+
+dotnet_style_parentheses_in_arithmetic_binary_operators = never_if_unnecessary:none
+dotnet_style_parentheses_in_other_binary_operators = never_if_unnecessary:none
+dotnet_style_parentheses_in_relational_binary_operators = never_if_unnecessary:none
+
+# ReSharper properties
+resharper_align_linq_query = false
+resharper_align_multiline_calls_chain = true
+resharper_align_multiline_extends_list = true
+resharper_align_multiline_for_stmt = true
+resharper_align_multiline_parameter = true
+resharper_align_multiple_declaration = true
+resharper_align_multline_type_parameter_constrains = true
+resharper_align_multline_type_parameter_list = true
+resharper_braces_for_dowhile = not_required
+resharper_braces_for_fixed = not_required
+resharper_braces_for_lock = not_required
+resharper_braces_for_using = not_required
+resharper_csharp_align_multiline_calls_chain = false
+resharper_csharp_align_multiline_extends_list = false
+resharper_csharp_align_multiline_parameter = false
+resharper_csharp_int_align_comments = false
+resharper_csharp_outdent_commas = true
+resharper_csharp_outdent_dots = false
+resharper_csharp_wrap_after_declaration_lpar = false
+resharper_csharp_wrap_after_invocation_lpar = true
+resharper_csharp_wrap_arguments_style = chop_if_long
+resharper_csharp_wrap_before_invocation_rpar = false
+resharper_csharp_wrap_extends_list_style = chop_if_long
+resharper_csharp_wrap_parameters_style = chop_if_long
+resharper_force_attribute_style = join
+resharper_indent_nested_fixed_stmt = false
+resharper_indent_nested_foreach_stmt = true
+resharper_indent_nested_for_stmt = true
+resharper_indent_nested_lock_stmt = false
+resharper_indent_nested_usings_stmt = false
+resharper_indent_nested_while_stmt = true
+resharper_int_align = false
+resharper_int_align_nested_ternary = false
+resharper_int_align_switch_expressions = false
+resharper_keep_existing_declaration_block_arrangement = true
+resharper_keep_existing_declaration_parens_arrangement = false
+resharper_keep_existing_embedded_block_arrangement = true
+resharper_keep_existing_enum_arrangement = true
+resharper_keep_existing_expr_member_arrangement = false
+resharper_keep_existing_initializer_arrangement = false
+resharper_local_function_body = expression_body
+resharper_max_attribute_length_for_same_line = 20
+resharper_max_formal_parameters_on_line = 5
+resharper_max_initializer_elements_on_line = 0
+resharper_max_invocation_arguments_on_line = 5
+resharper_outdent_binary_ops = true
+resharper_outdent_dots = false
+resharper_place_constructor_initializer_on_same_line = false
+resharper_place_simple_initializer_on_single_line = false
+resharper_prefer_explicit_discard_declaration = false
+resharper_wrap_after_declaration_lpar = false
+resharper_wrap_before_invocation_rpar = false
+resharper_wrap_chained_binary_expressions = chop_if_long
+resharper_wrap_chained_binary_patterns = chop_if_long
+resharper_wrap_chained_method_calls = chop_if_long
+resharper_xmldoc_indent_text = ZeroIndent
+
+# Standard properties
+insert_final_newline = true
+
 # (Please don't specify an indent_size here; that has too many unintended consequences.)
 
 # Code files
 [*.{cs,csx,vb,vbx}]
 indent_size = 2
-insert_final_newline = true
 charset = utf-8
 
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_size = 2
-
+space_after_last_pi_attribute = false
 # Xml config files
 [*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
 indent_size = 2
+space_after_last_pi_attribute = false
 
 # JSON files
 [*.json]
@@ -69,13 +134,13 @@ dotnet_style_prefer_conditional_expression_over_return = true:silent
 # CSharp code style settings:
 [*.cs]
 # Prefer "var" everywhere
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-csharp_style_var_elsewhere = true:suggestion
+csharp_style_var_elsewhere = false:none
+csharp_style_var_for_built_in_types = false:none
+csharp_style_var_when_type_is_apparent = false:none
 
 # Prefer method-like constructs to have a block body
-csharp_style_expression_bodied_methods = true:suggestion
-csharp_style_expression_bodied_constructors = true:suggestion
+csharp_style_expression_bodied_methods = false:suggestion
+csharp_style_expression_bodied_constructors = false:suggestion
 csharp_style_expression_bodied_operators = true:suggestion
 
 # Prefer property-like constructs to have an expression-body
@@ -114,3 +179,30 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 # Wrapping preferences
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
+
+# Analyzer settings
+
+# Maintainability rules
+dotnet_diagnostic.ca1501.severity = warning
+dotnet_diagnostic.ca1502.severity = warning
+dotnet_diagnostic.ca1505.severity = warning
+dotnet_diagnostic.ca1506.severity = warning
+dotnet_diagnostic.ca1507.severity = warning
+dotnet_diagnostic.ca1508.severity = warning
+dotnet_diagnostic.ca1509.severity = warning
+
+# Misc
+dotnet_diagnostic.ca1051.severity = none # Do not declare visible instance fields
+dotnet_diagnostic.ca1062.severity = none # Public method must check all parameters for null
+dotnet_diagnostic.ca1707.severity = none # Remove underscores in names
+
+
+dotnet_analyzer_diagnostic.category-globalization.severity = none
+dotnet_analyzer_diagnostic.category-security.severity = none
+dotnet_analyzer_diagnostic.category-interoperability.severity = none
+dotnet_analyzer_diagnostic.category-singlefile.severity = none
+
+[*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,cc,cginc,compute,cp,cpp,cs,cshtml,cu,cuh,cxx,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,vb,xaml,xamlx,xoml,xsd}]
+indent_style = space
+indent_size = 2
+tab_width = 2

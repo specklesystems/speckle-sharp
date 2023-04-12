@@ -133,6 +133,8 @@ namespace SpeckleRhino
               break;
 
             case Extrusion e:
+              result.Add(new DirectShapeFreeformViewModel());
+              
               if (e.ProfileCount > 1) break;
               var crv = e.Profile3d(new ComponentIndex(ComponentIndexType.ExtrusionBottomProfile, 0));
               if (!(crv.IsLinear() || crv.IsArc())) break;

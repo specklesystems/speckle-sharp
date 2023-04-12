@@ -1,26 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Speckle.Transports.MongoDB</PackageId>
+    <Product>MongoDBTransport</Product>
+    <Description>A MongoDB transport for Speckle</Description>
+    <PackageTags>$(PackageTags) mongodb transport</PackageTags>
+    <IsPackable>true</IsPackable>
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>Speckle.Transports.MongoDB</PackageId>
-        <Product>MongoDBTransport</Product>
-        <Description>A MongoDB transport for Speckle</Description>
-        <PackageTags>$(PackageTags) mongodb transport</PackageTags>
-    </PropertyGroup>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="MongoDB.Driver" Version="2.19.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="2.19.0"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\Core\Core.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="..\..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-    </ItemGroup>
-
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core.csproj"/>
+  </ItemGroup>
 </Project>

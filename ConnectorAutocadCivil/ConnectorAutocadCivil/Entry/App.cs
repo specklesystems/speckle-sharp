@@ -1,4 +1,4 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.Windows;
 using Speckle.ConnectorAutocadCivil.UI;
 using System;
@@ -14,6 +14,10 @@ using Forms = System.Windows.Forms;
 using Autodesk.AdvanceSteel.Runtime;
 #else
 using Autodesk.AutoCAD.Runtime;
+#endif
+
+#if ADVANCESTEEL2023
+[assembly: ExtensionApplication(typeof(Speckle.ConnectorAutocadCivil.Entry.App))]
 #endif
 
 namespace Speckle.ConnectorAutocadCivil.Entry

@@ -97,7 +97,7 @@ namespace Objects.Converter.Revit
       int skippedBreps = breps.Count;
       breps.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
+        var ds = TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
         {
           ids.Add(ds.Id);
@@ -108,7 +108,7 @@ namespace Objects.Converter.Revit
       int skippedMeshes = meshes.Count;
       meshes.ForEach(o =>
       {
-        var ds = DirectShapeToNative(o).Converted.FirstOrDefault() as DB.DirectShape;
+        var ds = TryDirectShapeToNative(o, ToNativeMeshSettingEnum.Default).Converted.FirstOrDefault() as DB.DirectShape;
         if (ds != null)
         {
           ids.Add(ds.Id);
