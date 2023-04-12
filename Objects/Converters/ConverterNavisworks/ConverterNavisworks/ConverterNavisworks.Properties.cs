@@ -11,7 +11,7 @@ namespace Objects.Converter.Navisworks;
 
 public partial class ConverterNavisworks
 {
-  internal static Base GetPropertiesBase(ModelItem element, Base @base)
+  private static Base GetPropertiesBase(ModelItem element, Base @base)
   {
     Base propertiesBase = new();
     // GUI visible properties varies by a Global Options setting.
@@ -155,5 +155,62 @@ public partial class ConverterNavisworks
     }
 
     propertyCategoryBase.applicationId = propertyCategory.CombinedName.ToString();
+  }
+
+  private static void AddItemProperties(ModelItem element, Base @base)
+  {
+    @base["class"] = element.ClassName;
+
+    bool properties =
+      !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out bool result) || result;
+
+    // Cascade through the Property Sets
+    @base["properties"] = properties
+      ? GetPropertiesBase(element, @base)
+      : new Base();
+
+    // If the node is a Model
+    if (element.HasModel) ((Base)@base["properties"])["Model"] = GetModelProperties(element.Model);
+
+    // Internal Properties - some are matched dynamically already, some can be added from the core API
+    Base internals = (Base)((Base)@base["properties"])?["Internal"] ?? new Base();
+
+    internals["ClassDisplayName"] = element.ClassDisplayName ?? internals["ClassDisplayName"];
+    internals["ClassName"] = element.ClassName ?? internals["ClassName"];
+    internals["DisplayName"] = element.DisplayName ?? internals["DisplayName"];
+    internals["InstanceGuid"] = element.InstanceGuid.ToByteArray()
+                                  .Select(x => (int)x)
+                                  .Sum() >
+                                0
+      ? element.InstanceGuid
+      : null;
+    internals["Source"] = element.Model?.SourceFileName ?? internals["Source"];
+    internals["Source Guid"] = element.Model?.SourceGuid ?? internals["Source Guid"];
+    internals["NodeType"] = element.IsCollection ? "Collection" :
+      element.IsComposite ? "Composite Object" :
+      element.IsInsert ? "Geometry Insert" :
+      element.IsLayer ? "Layer" : null;
+
+    ((Base)@base["properties"])["Internal"] = internals;
+  }
+
+  private static Base GetModelProperties(Model elementModel)
+  {
+    Base model = new()
+    {
+      ["Creator"] = elementModel.Creator,
+      ["Filename"] = elementModel.FileName,
+      ["Source Filename"] = elementModel.SourceFileName,
+      ["Units"] = elementModel.Units.ToString(),
+      ["Transform"] = elementModel.Transform.ToString(),
+      ["Guid"] = elementModel.Guid.ToString()
+    };
+
+    if (elementModel.HasFrontVector) model["Front Vector"] = elementModel.FrontVector.ToString();
+    if (elementModel.HasNorthVector) model["North Vector"] = elementModel.NorthVector.ToString();
+    if (elementModel.HasRightVector) model["Right Vector"] = elementModel.RightVector.ToString();
+    if (elementModel.HasUpVector) model["Up Vector"] = elementModel.UpVector.ToString();
+
+    return model;
   }
 }
