@@ -240,17 +240,16 @@ namespace Objects.Converter.Revit
 
         case OG.Polyline poly:
           var polylinePonts = new List<double>();
-          var originalPolylinePoints = poly.ToList();
+          var originalPolylinePoints = poly.points;
           var polyConversionFactor = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, poly.units);
           for (var i = 0; i < originalPolylinePoints.Count; i++)
           {
-            if (i % 3 == 2)
-              polylinePonts.Add(z * polyConversionFactor);
-            else
-              polylinePonts.Add(originalPolylinePoints[i]);
+            polylinePonts.Add(originalPolylinePoints[i].x);
+            polylinePonts.Add(originalPolylinePoints[i].y);
+            polylinePonts.Add(originalPolylinePoints[i].z * polyConversionFactor);
           }
-          var newPolyline = OG.Polyline.FromList(polylinePonts);
-          newPolyline.units = poly.units;
+          var newPolyline = new Polyline(polylinePonts, poly.units);
+          newPolyline.closed = poly.closed;
           return newPolyline;
 
         case OG.Polycurve plc:
