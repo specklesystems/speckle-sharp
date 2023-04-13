@@ -297,13 +297,13 @@ namespace Objects.Converter.AutocadCivil
       }
     }
 
-    private bool IsValueGenericList(object value)
+    private static bool IsValueGenericList(object value)
     {
       var type = value.GetType();
       return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(List<>));
     }
 
-    private bool IsValueGenericDictionary(object value)
+    private static bool IsValueGenericDictionary(object value)
     {
       var type = value.GetType();
       return type.IsGenericType && (type.GetGenericTypeDefinition() == typeof(Dictionary<,>));
@@ -319,7 +319,7 @@ namespace Objects.Converter.AutocadCivil
       return valueScaled;
     }
 
-    private double RoundWeight(double value)
+    private static double RoundWeight(double value)
     {
       return Math.Round(value, 5, MidpointRounding.AwayFromZero);
     }
