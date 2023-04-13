@@ -8,6 +8,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
+using OO = Objects.Other;
 
 namespace Objects.Converter.Revit
 {
@@ -219,7 +220,66 @@ namespace Objects.Converter.Revit
             line.units
             );
 
-        //case OG.Arc arc:
+        case OG.Arc arc:
+          var normalUnit = arc.plane.normal.Unit();
+          var normalAsPoint = new OG.Point(normalUnit.x, normalUnit.y, normalUnit.z);
+          var arcConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, arc.units);
+
+          if (normalAsPoint.DistanceTo(new OG.Point(0, 0, 1)) < TOLERANCE)
+          {
+            var translation = new OG.Vector(0, 0, (z * arcConversionFactor) - arc.startPoint.z) { units = ModelUnits };
+            var transform = new OO.Transform(new OG.Vector(1, 0, 0), new OG.Vector(0, 1, 0), new OG.Vector(0, 0, 1), translation);
+            _ = arc.TransformTo(transform, out OG.Arc newArc);
+            return newArc;
+          }
+          else
+          {
+            // sneakily replace the users arc with a curve 🤫.
+            // TODO: set knots in curve or apply more complex transforms to arc because this replacement is decent but not perfect
+
+            var newPlane = new OG.Plane(
+              new OG.Point(arc.plane.origin.x, arc.plane.origin.y, arc.plane.origin.z),
+              arc.plane.normal,
+              arc.plane.xdir,
+              arc.plane.ydir
+            );
+            var firstHalfArc = new OG.Arc(newPlane, arc.midPoint, arc.startPoint, arc.angleRadians / 2, units: arc.units);
+            var secondHalfArc = new OG.Arc(newPlane, arc.endPoint, arc.midPoint, arc.angleRadians / 2, units: arc.units);
+            var arcCurvePoints = new List<double>
+            {
+              arc.startPoint.x,
+              arc.startPoint.y,
+              z * arcConversionFactor,
+              firstHalfArc.midPoint.x,
+              firstHalfArc.midPoint.y,
+              z * arcConversionFactor,
+              arc.midPoint.x,
+              arc.midPoint.y,
+              z * arcConversionFactor,
+              secondHalfArc.midPoint.x,
+              secondHalfArc.midPoint.y,
+              z * arcConversionFactor,
+              arc.endPoint.x,
+              arc.endPoint.y,
+              z * arcConversionFactor
+            };
+
+            var newArcCurve = new OG.Curve
+            {
+              points = arcCurvePoints,
+              weights = new List<double>(Enumerable.Repeat(1.0, arcCurvePoints.Count)),
+              //knots = nurbs.knots,
+              //degree = nurbs.degree,
+              rational = false,
+              closed = false,
+              //newCurve.domain 
+              //newCurve.length
+              units = arc.units
+            };
+
+            return newArcCurve;
+          }
+
         //case OG.Circle circle:
         //case OG.Ellipse ellipse:
         //case OG.Spiral spiral:
@@ -234,23 +294,32 @@ namespace Objects.Converter.Revit
             else
               curvePoints.Add(nurbs.points[i]);
           }
-          var newCurve = OG.Curve.FromList(curvePoints);
-          newCurve.units = nurbs.units;
+          var newCurve = new OG.Curve
+          {
+            points = curvePoints,
+            weights = nurbs.weights,
+            knots = nurbs.knots,
+            degree = nurbs.degree,
+            rational = nurbs.rational,
+            closed = nurbs.closed,
+            //newCurve.domain 
+            //newCurve.length
+            units = nurbs.units
+          };
           return newCurve;
 
         case OG.Polyline poly:
           var polylinePonts = new List<double>();
-          var originalPolylinePoints = poly.ToList();
-          var polyConversionFactor = z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, poly.units);
+          var originalPolylinePoints = poly.GetPoints();
+          var polyConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, poly.units);
           for (var i = 0; i < originalPolylinePoints.Count; i++)
           {
-            if (i % 3 == 2)
-              polylinePonts.Add(z * polyConversionFactor);
-            else
-              polylinePonts.Add(originalPolylinePoints[i]);
+            polylinePonts.Add(originalPolylinePoints[i].x);
+            polylinePonts.Add(originalPolylinePoints[i].y);
+            polylinePonts.Add(z * polyConversionFactor);
           }
-          var newPolyline = OG.Polyline.FromList(polylinePonts);
-          newPolyline.units = poly.units;
+          var newPolyline = new Polyline(polylinePonts, poly.units);
+          newPolyline.closed = poly.closed;
           return newPolyline;
 
         case OG.Polycurve plc:
@@ -259,7 +328,7 @@ namespace Objects.Converter.Revit
             newPolycurve.segments.Add(GetFlattenedCurve(seg, z));
           return newPolycurve;
       }
-      throw new Exception($"Trying to flatten unsupported curve type, {curve.GetType()}");
+      throw new NotSupportedException($"Trying to flatten unsupported curve type, {curve.GetType()}");
     }
   }
 }
