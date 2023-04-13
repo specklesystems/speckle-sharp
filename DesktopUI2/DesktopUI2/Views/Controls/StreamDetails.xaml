@@ -22,7 +22,7 @@
       VerticalAlignment="Center"
       Classes="StreamCard"
       Kind="Users"
-      ToolTip.Tip="Number of collaborators on this stream" />
+      ToolTip.Tip="Number of collaborators" />
     <TextBlock
       Grid.Column="1"
       Classes="Overline"
@@ -33,7 +33,7 @@
       VerticalAlignment="Center"
       Classes="StreamCard"
       Kind="Comments"
-      ToolTip.Tip="Number of comments on this stream" />
+      ToolTip.Tip="Number of comments" />
     <TextBlock
       Grid.Column="3"
       Classes="Overline"
@@ -44,7 +44,7 @@
       VerticalAlignment="Center"
       Classes="StreamCard"
       Kind="Hearts"
-      ToolTip.Tip="Number of people who favorited this stream" />
+      ToolTip.Tip="Number of people who favorited" />
     <TextBlock
       Grid.Column="5"
       Classes="Overline"

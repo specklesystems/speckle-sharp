@@ -1,4 +1,14 @@
-﻿using Avalonia;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Reactive;
+using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Media;
@@ -19,16 +29,6 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Splat;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Reactive;
-using System.Runtime.InteropServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Stream = Speckle.Core.Api.Stream;
 
 namespace DesktopUI2.ViewModels
@@ -148,13 +148,27 @@ namespace DesktopUI2.ViewModels
 
     public bool HasSavedStreams => SavedStreams != null && SavedStreams.Any();
     public bool HasStreams => FilteredStreams != null && FilteredStreams.Any();
+    public bool UseFe2
+    {
+      get
+      {
+        var config = ConfigManager.Load();
+        return config.UseFe2;
+      }
+    }
+
 
     public string StreamsText
     {
       get
       {
         if (string.IsNullOrEmpty(SearchQuery))
+        {
+          if (UseFe2)
+            return "ALL YOUR PROJECTS:";
           return "ALL YOUR STREAMS:";
+        }
+
 
         if (SearchQuery.Length <= 2)
           return "TYPE SOME MORE TO SEARCH...";
@@ -614,6 +628,8 @@ namespace DesktopUI2.ViewModels
         menu.Items.Add(new MenuItemViewModel(RefreshCommand, "Refresh streams & accounts", MaterialIconKind.Refresh));
         menu.Items.Add(new MenuItemViewModel(ToggleDarkThemeCommand, "Toggle dark/light theme", MaterialIconKind.SunMoonStars));
 
+        menu.Items.Add(new MenuItemViewModel(ToggleFe2Command, "Toggle NEW Frontend support", MaterialIconKind.NewBox));
+
 #if DEBUG
         menu.Items.Add(new MenuItemViewModel(TestCommand, "Test stuff", MaterialIconKind.Bomb));
 #endif
@@ -688,8 +704,16 @@ namespace DesktopUI2.ViewModels
     }
     public void ViewOnlineCommand(object parameter)
     {
+
       var streamAcc = parameter as StreamAccountWrapper;
-      Process.Start(new ProcessStartInfo($"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/streams/{streamAcc.Stream.id}") { UseShellExecute = true });
+      var url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/streams/{streamAcc.Stream.id}";
+
+      if (UseFe2)
+      {
+        url = $"{streamAcc.Account.serverInfo.url.TrimEnd('/')}/projects/{streamAcc.Stream.id}";
+      }
+
+      Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
       Analytics.TrackEvent(streamAcc.Account, Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Stream View" } });
     }
 
@@ -855,6 +879,18 @@ namespace DesktopUI2.ViewModels
       var config = ConfigManager.Load();
       config.DarkTheme = isDark;
       ConfigManager.Save(config);
+    }
+
+
+    public void ToggleFe2Command()
+    {
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Toggle Fe2" } });
+
+      var config = ConfigManager.Load();
+      config.UseFe2 = !config.UseFe2;
+      ConfigManager.Save(config);
+
+      this.RaisePropertyChanged("UseFe2");
     }
 
 

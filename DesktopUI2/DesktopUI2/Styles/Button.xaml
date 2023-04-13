@@ -2,6 +2,7 @@
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles">
   <Design.PreviewWith>
@@ -63,6 +64,10 @@
   </Style>
 
   <Style Selector="Button.Send">
+
+    <Style.Resources>
+      <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
+    </Style.Resources>
     <Setter Property="Template">
       <ControlTemplate>
         <Grid Margin="4">
@@ -71,7 +76,7 @@
             Command="{Binding SendCommand, FallbackValue={x:Null}}"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-            ToolTip.Tip="Send to this stream and saves it">
+            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Send to this stream'}">
             <Button.Content>
               <icons:MaterialIcon
                 Name="send"
@@ -135,7 +140,7 @@
             CornerRadius="40"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-            ToolTip.Tip="Send to this stream and saves it">
+            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Send to this stream'}">
             <Button.Content>
               <StackPanel Orientation="Horizontal" Spacing="12">
 
@@ -228,7 +233,7 @@
             Command="{Binding ReceiveCommand}"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}}"
-            ToolTip.Tip="Receive from this stream and saves it">
+            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Receive from this stream'}">
             <Button.Content>
               <icons:MaterialIcon
                 Name="receive"
@@ -296,7 +301,7 @@
             CornerRadius="40"
             IsDefault="True"
             IsEnabled="{Binding Progress.IsProgressing, Converter={x:Static BoolConverters.Not}, FallbackValue=True}"
-            ToolTip.Tip="Receives from this stream and saves it">
+            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Receive from this stream'}">
             <Button.Content>
               <StackPanel Orientation="Horizontal" Spacing="12">
 
