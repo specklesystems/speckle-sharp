@@ -39,7 +39,7 @@ rhino:
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       build-config: Release Mac
-      installername: SpeckleGhInstall
+      installername: SpeckleGHInstall
       installer: true
       slug: grasshopper
       requires:
