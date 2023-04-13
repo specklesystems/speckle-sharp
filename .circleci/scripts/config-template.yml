@@ -78,7 +78,7 @@ commands:
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-sdk:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - cached-checkout
       - run:
@@ -95,7 +95,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     docker:
-      - image: "mcr.microsoft.com/dotnet/sdk:7.0" # dotnet
+      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet
       # Node, redis, postgres and speckle-server images for test server
       - image: "cimg/node:16.15"
       - image: "cimg/redis:7.0.5"
@@ -210,7 +210,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   deploy-connector-new:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0
+      - image: mcr.microsoft.com/dotnet/6.0
     parameters:
       slug:
         type: string
