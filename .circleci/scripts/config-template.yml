@@ -415,7 +415,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: git clone git@github.com:specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
       - run:
           name: Checkout branch
-          command: git checkout ${CIRCLE_BRANCH} || git checkout main
+          command: |
+            cd speckle-sharp-ci-tools
+            git checkout ${CIRCLE_BRANCH} || git checkout main
       - persist_to_workspace:
           root: ./
           paths:
