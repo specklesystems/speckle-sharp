@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <TargetFramework>net48</TargetFramework>
@@ -14,7 +14,7 @@
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
 
     <!--NOTE-->
-  <!--
+    <!--
     Since Rhino uses mono we build for win-x64 also on mac
     BUT we then have to manually copy the dylib for Avalonia and Microsoft.Data.Sqlite
     They are loaded from the nuget mac folder
@@ -22,48 +22,54 @@
     -->
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <UseWpf>true</UseWpf>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\**\*" />
+    <EmbeddedResource Include="EmbeddedResources\**\*"/>
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaXaml Remove="Properties\**" />
-    <Compile Remove="Properties\**" />
-    <EmbeddedResource Remove="Properties\**" />
-    <None Remove="Properties\**" />
+    <AvaloniaXaml Remove="Properties\**"/>
+    <Compile Remove="Properties\**"/>
+    <EmbeddedResource Remove="Properties\**"/>
+    <None Remove="Properties\**"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+    <PackageReference Include="Avalonia" Version="0.10.18"/>
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.18"/>
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18"/>
     <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build">
-       <PrivateAssets>all</PrivateAssets>
+      <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference
+      Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj"/>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj"/>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System.Xaml" />
+    <Reference Include="PresentationCore"/>
+    <Reference Include="PresentationFramework"/>
+    <Reference Include="System.Xaml"/>
   </ItemGroup>
 
   <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib"
+      CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
-    <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
+  <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest" />
+    <None
+      Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib"
+      CopyToOutputDirectory="PreserveNewest"/>
   </ItemGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
@@ -90,12 +96,16 @@
     <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
   </PropertyGroup>
 
-  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')" />
+  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems"
+    Label="Shared"
+    Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')"/>
   <ItemGroup>
-    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
+    <Compile
+      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
+    <Compile
+      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
     </Compile>
   </ItemGroup>
