@@ -32,6 +32,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Revit", "Revit", "{42A86931-7497-4A34-B2FD-060231CD0A8F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2021", "ConnectorRevit\ConnectorRevit2021\ConnectorRevit2021.csproj", "{27A79ACA-7EA8-4406-8BB8-216578CC3AB7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D1D0F986-12BE-4FD5-8925-C96B1F86427D} = {D1D0F986-12BE-4FD5-8925-C96B1F86427D}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorRevitShared", "ConnectorRevit\ConnectorRevit\ConnectorRevitShared.shproj", "{5FD0D810-03E9-4FD2-93E4-B1B51E5D82C5}"
 EndProject
@@ -70,6 +73,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2021", "Objects\Converters\ConverterAutocadCivil\ConverterCivil2021\ConverterCivil2021.csproj", "{D9F443B5-C55B-4AD8-9C70-BC3D2BE781BE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2020", "ConnectorRevit\ConnectorRevit2020\ConnectorRevit2020.csproj", "{8A53B084-20D8-48F6-9591-9D53CFA74130}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C21A6553-B4EC-4EC3-B82A-C7A83CFFB809} = {C21A6553-B4EC-4EC3-B82A-C7A83CFFB809}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2022", "ConnectorAutocadCivil\ConnectorAutocad2022\ConnectorAutocad2022.csproj", "{FF1793E1-77F5-4A92-B3F2-6D8B104E479B}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -122,6 +128,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2020", "Objects\Converters\ConverterRevit\ConverterRevit2020\ConverterRevit2020.csproj", "{C21A6553-B4EC-4EC3-B82A-C7A83CFFB809}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2022", "ConnectorRevit\ConnectorRevit2022\ConnectorRevit2022.csproj", "{DFDFDBB8-018B-4DCB-A012-54227ABF53A7}"
+	ProjectSection(ProjectDependencies) = postProject
+		{76937388-BC9E-4083-9D6E-59CC627E3804} = {76937388-BC9E-4083-9D6E-59CC627E3804}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TeklaStructures", "TeklaStructures", "{18C8730C-0173-4987-9416-46F86EC20541}"
 EndProject
@@ -180,6 +189,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DriverPluginCSharp", "ConnectorCSI\DriverPluginCSharp\DriverPluginCSharp.csproj", "{C59939F6-D383-44E3-A7EF-4E160E3DFB73}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2023", "ConnectorRevit\ConnectorRevit2023\ConnectorRevit2023.csproj", "{586A5A37-93F6-427E-8DF8-C10DB4D6822A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{CC790553-8088-41A9-83CD-B29F7141F408} = {CC790553-8088-41A9-83CD-B29F7141F408}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ArchiCAD", "ArchiCAD", "{DF1B3505-793C-4073-975B-04C81CC3CDC4}"
 EndProject

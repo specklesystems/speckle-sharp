@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "../All.sln",
+    "path": "..\\All.sln",
     "projects": [
       "ConnectorRevit\\ConnectorRevit2020\\ConnectorRevit2020.csproj",
       "ConnectorRevit\\ConnectorRevit2021\\ConnectorRevit2021.csproj",

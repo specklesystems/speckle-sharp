@@ -11,21 +11,20 @@
     <CopyToKitFolder>true</CopyToKitFolder>
   </PropertyGroup>
 
-  <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared"/>
+  <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj"/>
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj"/>
-    <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj"/>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Speckle.Revit.API" Version="2023.0.0"/>
+    <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" />
   </ItemGroup>
 
   <Target Name="CopyTemplatesToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
-    <Message Text="Copying templates to kit folder"/>
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
-          Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates\2023&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\2023\&quot;"/>
+    <Message Text="Copying templates to kit folder" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates\2023&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\2023\&quot;" />
   </Target>
 </Project>
