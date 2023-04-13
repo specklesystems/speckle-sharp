@@ -158,6 +158,12 @@ namespace Objects.Converter.Revit
       foreach (var fieldId in revitSchedule.Definition.GetFieldOrder())
       {
         var field = revitSchedule.Definition.GetField(fieldId);
+
+        if (field.IsHidden)
+        {
+          continue;
+        }
+
         var builtInParameter = (BuiltInParameter)field.ParameterId.IntegerValue;
 
         var columnMetadata = new Base();
