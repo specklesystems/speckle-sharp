@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0</TargetFrameworks>
+        <TargetFramework>netstandard2.0</TargetFramework>
         <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
         <RootNamespace>Speckle.Core</RootNamespace>
         <PackageId>Speckle.Core</PackageId>
@@ -11,6 +11,7 @@
         <Description>Core is the .NET SDK for Speckle</Description>
         <PackageTags>$(PackageTags) core</PackageTags>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
@@ -23,6 +24,7 @@
     <PropertyGroup Condition="'$(SolutionName)'=='Objects' Or '$(SolutionName)'=='DesktopUI'">
         <IsPackable>false</IsPackable>
     </PropertyGroup>
+  
     <ItemGroup>
         <PackageReference Include="GraphQL.Client" Version="5.1.1" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
@@ -37,31 +39,7 @@
         <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
         <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
         <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
-        <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2">
-            <Aliases></Aliases>
-        </PackageReference>
+        <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2"/>
         <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.3" />
-    </ItemGroup>
-    <ItemGroup>
-        <Folder Include="Serialisation\" />
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Remove="Core\Commit.cs" />
-        <Compile Remove="Core\Stream.cs" />
-        <Compile Remove="Core\Classes.cs" />
-        <Compile Remove="Core\Account.cs" />
-        <Compile Remove="Core\User.cs" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Remove="Microsoft.Data.Sqlite" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-    </ItemGroup>
-    <ItemGroup>
-        <Reference Include="System.Web" />
     </ItemGroup>
 </Project>

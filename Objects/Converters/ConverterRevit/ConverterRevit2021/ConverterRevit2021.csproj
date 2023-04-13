@@ -23,12 +23,6 @@
     <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj"/>
   </ItemGroup>
 
-  <ItemGroup>
-    <None Include="..\..\..\..\logo.png">
-      <Pack>True</Pack>
-    </None>
-  </ItemGroup>
-
   <Target Name="CopyTemplatesToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
     <Message Text="Copying templates to kit folder"/>
     <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"

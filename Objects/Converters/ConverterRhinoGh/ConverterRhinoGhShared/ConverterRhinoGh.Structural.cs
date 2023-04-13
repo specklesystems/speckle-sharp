@@ -1,4 +1,6 @@
-﻿using Grasshopper.Kernel.Types;
+﻿#if GRASSHOPPER
+using Grasshopper.Kernel.Types;
+#endif
 using Objects.Geometry;
 using Objects.Primitive;
 using Rhino.Geometry;

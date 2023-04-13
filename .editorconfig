@@ -1,8 +1,4 @@
 root = true
-# EditorConfig is awesome:http://EditorConfig.org
-
-# top-most EditorConfig file
-
 # Don't use tabs for indentation.
 [*]
 indent_style = space
@@ -85,10 +81,11 @@ charset = utf-8
 # Xml project files
 [*.{csproj,vbproj,vcxproj,vcxproj.filters,proj,projitems,shproj}]
 indent_size = 2
-
+space_after_last_pi_attribute = false
 # Xml config files
 [*.{props,targets,ruleset,config,nuspec,resx,vsixmanifest,vsct}]
 indent_size = 2
+space_after_last_pi_attribute = false
 
 # JSON files
 [*.json]
@@ -183,12 +180,6 @@ csharp_space_between_method_call_empty_parameter_list_parentheses = false
 csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 
-
-[*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,cc,cginc,compute,cp,cpp,cs,cshtml,cu,cuh,cxx,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,vb,xaml,xamlx,xoml,xsd}]
-indent_style = space
-indent_size = 2
-tab_width = 2
-
 # Analyzer settings
 
 # Maintainability rules
@@ -210,3 +201,8 @@ dotnet_analyzer_diagnostic.category-globalization.severity = none
 dotnet_analyzer_diagnostic.category-security.severity = none
 dotnet_analyzer_diagnostic.category-interoperability.severity = none
 dotnet_analyzer_diagnostic.category-singlefile.severity = none
+
+[*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,cc,cginc,compute,cp,cpp,cs,cshtml,cu,cuh,cxx,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,vb,xaml,xamlx,xoml,xsd}]
+indent_style = space
+indent_size = 2
+tab_width = 2
