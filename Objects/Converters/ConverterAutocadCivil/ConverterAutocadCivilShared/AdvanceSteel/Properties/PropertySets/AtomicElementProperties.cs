@@ -64,7 +64,7 @@ namespace Objects.Converter.AutocadCivil
       InsertProperty(dictionary, "singlePart position", nameof(AtomicElement.GetSinglePartPositionNumber));
       InsertProperty(dictionary, "features number", nameof(AtomicElement.NumFeatures));
       InsertCustomProperty(dictionary, "balance point", nameof(AtomicElementProperties.GetBalancePoint), null);
-      InsertCustomProperty(dictionary, "holes", nameof(AtomicElementProperties.GetHoles), null);
+      InsertCustomProperty(dictionary, "holes", nameof(AtomicElementProperties.GetHoles), null, eUnitType.kDistance);
       InsertCustomProperty(dictionary, "numbering - valid single part", nameof(AtomicElementProperties.HasValidSPNumber), null);
       InsertCustomProperty(dictionary, "numbering - valid main part", nameof(AtomicElementProperties.HasValidMPNumber), null);
 
@@ -106,7 +106,7 @@ namespace Objects.Converter.AutocadCivil
 
         Dictionary<object, object> holeProperties = new Dictionary<object, object>
         {
-          { "diameter", ASProperty.FromInternalUnits(hole.Hole.Diameter, eUnitType.kDistance) },
+          { "diameter", hole.Hole.Diameter},
           { "center", point },
           { "normal", vectorZ }
         };

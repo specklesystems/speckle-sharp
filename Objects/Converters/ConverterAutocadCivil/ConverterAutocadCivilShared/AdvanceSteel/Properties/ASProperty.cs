@@ -23,7 +23,7 @@ namespace Objects.Converter.AutocadCivil
     private bool Read { get; set; }
     private bool Write { get; set; }
 
-    private eUnitType? UnitType { get; set; }
+    public eUnitType? UnitType { get; private set; }
 
 
     internal ASProperty(Type objectASType, string description, string memberName, eUnitType? unitType = null)
@@ -117,11 +117,7 @@ namespace Objects.Converter.AutocadCivil
       try
       {
         object value = GetObjectPropertyValue(asObject);
-
-        if (this.UnitType.HasValue && value is double)
-          return FromInternalUnits((double)value, this.UnitType.Value);
-        else
-          return value;
+        return value;
       }
       catch (Exception)
       {
@@ -150,23 +146,6 @@ namespace Objects.Converter.AutocadCivil
       {
         throw new NotImplementedException();
       }
-    }
-
-    public static double FromInternalUnits(double value, eUnitType unitType)
-    {
-      return value * GetUnitScale(unitType);
-    }
-
-    private static UnitsSet unitScale;
-
-    private static double GetUnitScale(eUnitType unitType)
-    {
-      if (unitScale == null)
-      {
-        unitScale = DocumentManager.GetCurrentDocument().CurrentDatabase.Units;
-      }
-
-      return 1 / unitScale.GetUnit(unitType).Factor;
     }
 
   }

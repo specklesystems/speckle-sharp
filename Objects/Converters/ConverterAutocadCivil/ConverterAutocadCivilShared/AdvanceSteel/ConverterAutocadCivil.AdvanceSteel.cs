@@ -80,6 +80,8 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Speckle.Newtonsoft.Json.Linq;
 
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
+
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
@@ -127,6 +129,8 @@ namespace Objects.Converter.AutocadCivil
 
       SetUnits(@base);
 
+      @base["weight unit"] = UnitWeight;
+
       return @base;
     }
 
@@ -168,18 +172,28 @@ namespace Objects.Converter.AutocadCivil
       value = propInfo.EvaluateValue(@object);
       if (value is null) return false;
 
-      if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal)) return true;
+      if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal))
+      {
+        if(propInfo.UnitType.HasValue && value is double)
+        {
+          value = FromInternalUnits((double)value, propInfo.UnitType.Value);
+        }
+
+        return true;
+      }
+
       if (propInfo.ValueType == typeof(string))
       {
         return !string.IsNullOrEmpty(value as string);
       }
+
       if (propInfo.ValueType.IsEnum)
       {
         value = value.ToString();
         return true;
       }
-
-      value = ConvertValueToSpeckle(value, out var converted);
+      
+      value = ConvertValueToSpeckle(value, propInfo.UnitType, out var converted);
 
       return converted;
     }

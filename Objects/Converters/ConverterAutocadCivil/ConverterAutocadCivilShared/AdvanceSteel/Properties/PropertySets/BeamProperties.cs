@@ -34,7 +34,7 @@ namespace Objects.Converter.AutocadCivil
       InsertProperty(dictionary, "is cross section mirrored", nameof(ASBeam.IsCrossSectionMirrored));
       InsertProperty(dictionary, "reference axis description", nameof(ASBeam.RefAxis));
 
-      InsertCustomProperty(dictionary, "Offsets", nameof(BeamProperties.GetOffsets), null);
+      InsertCustomProperty(dictionary, "offsets", nameof(BeamProperties.GetOffsets), null, eUnitType.kDistance);
       InsertCustomProperty(dictionary, "start point", nameof(BeamProperties.GetPointAtStart), null);
       InsertCustomProperty(dictionary, "end point", nameof(BeamProperties.GetPointAtEnd), null);
       InsertCustomProperty(dictionary, "weight", nameof(BeamProperties.GetWeight), null, eUnitType.kWeight);
@@ -63,9 +63,11 @@ namespace Objects.Converter.AutocadCivil
 
     private static Dictionary<string, double> GetOffsets(ASBeam beam)
     {
-      Dictionary<string, double> dictionary = new Dictionary<string, double>();
-      dictionary.Add("Y", ASProperty.FromInternalUnits(beam.Offsets.x, eUnitType.kDistance));
-      dictionary.Add("Z", ASProperty.FromInternalUnits(beam.Offsets.y, eUnitType.kDistance));
+      Dictionary<string, double> dictionary = new Dictionary<string, double>
+      {
+        { "Y", beam.Offsets.x },
+        { "Z", beam.Offsets.y }
+      };
 
       return dictionary;
     }
@@ -73,24 +75,19 @@ namespace Objects.Converter.AutocadCivil
     private static double GetWeight(ASBeam beam)
     {
       //1 yields the weight, 2 the exact weight
-      return RoundWeight(beam.GetWeight(1));
+      return beam.GetWeight(1);
     }
 
     private static double GetWeightExact(ASBeam beam)
     {
       //1 yields the weight, 2 the exact weight
-      return RoundWeight(beam.GetWeight(2));
+      return beam.GetWeight(2);
     }
 
     private static double GetWeightFast(ASBeam beam)
     {
       //3 the fast weight
-      return RoundWeight(beam.GetWeight(3));
-    }
-
-    private static double RoundWeight(double value)
-    {
-      return Math.Round(value, 5, MidpointRounding.AwayFromZero);
+      return beam.GetWeight(3);
     }
 
     private static string GetProfileTypeCode(ASBeam beam)

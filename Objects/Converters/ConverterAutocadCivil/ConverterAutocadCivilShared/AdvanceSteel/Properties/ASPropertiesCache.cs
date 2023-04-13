@@ -40,6 +40,7 @@ namespace Objects.Converter.AutocadCivil
     {
       { typeof(AtomicElement), new ASTypeData ("assembly") },
       { typeof(Beam), new ASTypeData("beam") },
+      { typeof(MainAlias), new ASTypeData("manufacturing") },
       { typeof(PolyBeam), new ASTypeData("poly beam") }
     };
 
