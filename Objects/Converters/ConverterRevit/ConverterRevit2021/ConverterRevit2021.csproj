@@ -11,21 +11,20 @@
     <CopyToKitFolder>true</CopyToKitFolder>
   </PropertyGroup>
 
-  <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared"/>
+  <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
 
   <ItemGroup>
-    <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0" ExcludeAssets="runtime"/>
+    <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj"/>
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj"/>
-    <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj"/>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
   </ItemGroup>
 
   <Target Name="CopyTemplatesToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
-    <Message Text="Copying templates to kit folder"/>
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
-          Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates\2021&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\2021\&quot;"/>
+    <Message Text="Copying templates to kit folder" />
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(MSBuildProjectDirectory)\..\Templates\2021&quot; &quot;$(AppData)\Speckle\Kits\Objects\Templates\Revit\2021\&quot;" />
   </Target>
 </Project>

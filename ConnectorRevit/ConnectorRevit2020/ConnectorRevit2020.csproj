@@ -4,7 +4,6 @@
     <AssemblyName>SpeckleConnectorRevit</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2020\Revit.exe</StartProgram>
     <RevitFolderName>SpeckleRevit2</RevitFolderName>
     <RevitVersion>2020</RevitVersion>
     <AssemblyTitle>ConnectorRevit</AssemblyTitle>
@@ -28,7 +27,7 @@
     <PackageReference Include="Avalonia" Version="0.10.18" />
     <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
     <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-    <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime"/>
+    <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" />
     <PackageReference Include="Revit.Async" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
@@ -44,7 +43,7 @@
   <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
     <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
-  </Target >
+  </Target>
   <Target Name="AfterBuildDebug">
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
