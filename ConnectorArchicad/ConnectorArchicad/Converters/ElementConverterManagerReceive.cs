@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Objects.Converter.Archicad;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -25,11 +26,11 @@ namespace Archicad
       Dictionary<Type, IEnumerable<TraversalContext>> receivedObjects;
 
       receivedObjects = flattenObjects.GroupBy(tc => tc.current.GetType()).ToDictionary(group => group.Key, group => group.Cast<TraversalContext>());
-      Console.WriteLine(string.Format("Conversion started (element types: {0})", receivedObjects.Count));
+      SpeckleLog.Logger.Debug("Conversion started (element types: {0})", receivedObjects.Count);
 
       foreach (var (elementType, tc) in receivedObjects)
       {
-        Console.WriteLine(string.Format("{0}: {1}", elementType, tc.Count<TraversalContext>()));
+        SpeckleLog.Logger.Debug("{0}: {1}", elementType, tc.Count<TraversalContext>());
 
         List<Base> elements = tc.Select(tc => tc.current).ToList<Base>();
         var convertedElements = await ConvertOneTypeToNative(elementType, tc, converter.ConversionOptions, progress.CancellationTokenSource.Token);
@@ -50,7 +51,7 @@ namespace Archicad
         }
       }
 
-      Console.WriteLine("Conversion done.");
+      SpeckleLog.Logger.Debug("Conversion done.");
 
       return true;
     }

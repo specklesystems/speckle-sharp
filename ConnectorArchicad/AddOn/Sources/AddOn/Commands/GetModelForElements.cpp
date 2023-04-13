@@ -192,7 +192,7 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& applicationId)
 }
 
 
-static ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer & modelViewer, const API_Guid & applicationId)
+static ModelInfo CalculateModelOfElement (const Modeler::Model3DViewer& modelViewer, const API_Guid& applicationId)
 {
 	ModelInfo modelInfo;
 	const Modeler::Attributes::Viewer& attributes (modelViewer.GetConstAttributesPtr ());
@@ -247,7 +247,7 @@ GS::String GetModelForElements::GetName () const
 }
 
 
-GS::ObjectState GetModelForElements::Execute (const GS::ObjectState & parameters, GS::ProcessControl& /*processControl*/) const
+GS::ObjectState GetModelForElements::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
 	parameters.Get (ApplicationIds, ids);

@@ -9,3 +9,6 @@
 /* [  1] */		"ALPHA Speckle Connector ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
 }
 
+'STR#'  32700 "Messages for conversion log" {
+/* [  1] */		"Could not create library part: %s"
+}
