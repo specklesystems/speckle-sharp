@@ -18,13 +18,12 @@ rhino:
       requires:
         - build-desktopui
       context: innosetup
-  - build-connector-mac:
+  - build-connector-dotnet-mac:
       name: rhino-build-mac
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       installername: SpeckleRhinoInstall
       build-config: Release Mac
-      build-with-mono: false
       slug: rhino
       requires:
         - build-desktopui
@@ -35,7 +34,7 @@ rhino:
         Objects/Converters/ConverterRhinoGh/ConverterGrasshopper7/bin/Release/net48/Objects.Converter.Grasshopper7.dll
         Objects/Converters/ConverterRhinoGh/ConverterGrasshopper6/bin/Release/netstandard2.0/Objects.Converter.Grasshopper6.dll
         "
-  - build-connector-mac:
+  - build-connector-dotnet-mac:
       name: grasshopper-build-mac
       slnname: ConnectorRhino
       projname: ConnectorRhino7

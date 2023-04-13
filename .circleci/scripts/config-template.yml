@@ -398,6 +398,93 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 paths:
                   - speckle-sharp-ci-tools/Installers
 
+  build-connector-dotnet-mac:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:7.0
+    parameters:
+      slnname:
+        type: string
+      projname:
+        type: string
+        default: ""
+      slug:
+        type: string
+        default: ""
+      installer:
+        type: boolean
+        default: false
+      converter-files:
+        type: string
+        default: ""
+      installername:
+        type: string
+        default: ""
+      build-config:
+        type: string
+        default: Release
+    steps:
+      - cached-checkout
+      - attach_workspace:
+          at: ./
+      - run:
+          name: Set environment variables
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+      - run:
+          name: Build
+          command: |
+            dotnet build << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -v q --self-contained /p:WarningLevel=0 /p:Version=$SEMVER
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+      - run:
+          name: Zip Objects Kit files
+          command: |
+            zip -j Objects.zip << parameters.converter-files >>
+      - run:
+          name: Zip Connector files
+          command: |
+            cd << parameters.slnname >>/<< parameters.projname >>/bin/
+            zip -r <<parameters.slug>>.zip ./
+      - run:
+          name: Copy files to installer
+          command: |
+            mkdir -p speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles/
+            cp Objects.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+            cp << parameters.slnname >>/<< parameters.projname >>/bin/<<parameters.slug>>.zip speckle-sharp-ci-tools/Mac/<<parameters.installername>>/.installationFiles
+      # Create installer
+      - run:
+          name: Exit if External PR
+          command: if [ "$CIRCLE_PR_REPONAME" ]; then circleci-agent step halt; fi
+      - run:
+          name: Build Mac installer
+          command: dotnet publish speckle-sharp-ci-tools/Mac/<<parameters.installername>>/<<parameters.installername>>.sln -r osx-x64 -c Release
+      - run:
+          name: Zip installer
+          command: |
+            cd speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/
+            zip -r <<parameters.slug>>.zip ./
+      - store_artifacts:
+          path: speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip
+      - run:
+          name: Copy to installer location
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
+      - when:
+          condition: << pipeline.git.tag >>
+          steps:
+            - persist_to_workspace:
+                root: ./
+                paths:
+                  - speckle-sharp-ci-tools/Installers
+
   get-ci-tools: # Clones our ci tools and persists them to the workspace
     docker:
       - image: cimg/base:2021.01
