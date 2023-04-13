@@ -37,9 +37,9 @@ namespace Objects.Converter.AutocadCivil
       InsertCustomProperty(dictionary, "offsets", nameof(BeamProperties.GetOffsets), null, eUnitType.kDistance);
       InsertCustomProperty(dictionary, "start point", nameof(BeamProperties.GetPointAtStart), null);
       InsertCustomProperty(dictionary, "end point", nameof(BeamProperties.GetPointAtEnd), null);
-      InsertCustomProperty(dictionary, "weight", nameof(BeamProperties.GetWeight), null, eUnitType.kWeight);
-      InsertCustomProperty(dictionary, "weight (exact)", nameof(BeamProperties.GetWeightExact), null, eUnitType.kWeight);
-      InsertCustomProperty(dictionary, "weight (fast)", nameof(BeamProperties.GetWeightFast), null, eUnitType.kWeight);
+      InsertCustomProperty(dictionary, "weight", nameof(BeamProperties.GetWeightExact), null, eUnitType.kWeight);
+      //InsertCustomProperty(dictionary, "weight (exact)", nameof(BeamProperties.GetWeightExact), null, eUnitType.kWeight);
+      //InsertCustomProperty(dictionary, "weight (fast)", nameof(BeamProperties.GetWeightFast), null, eUnitType.kWeight);
       InsertCustomProperty(dictionary, "profile type code", nameof(BeamProperties.GetProfileTypeCode), null);
       InsertCustomProperty(dictionary, "profile type", nameof(BeamProperties.GetProfileType), null);
       InsertCustomProperty(dictionary, "saw length", nameof(BeamProperties.GetSawLength), null);
@@ -72,11 +72,11 @@ namespace Objects.Converter.AutocadCivil
       return dictionary;
     }
 
-    private static double GetWeight(ASBeam beam)
-    {
-      //1 yields the weight, 2 the exact weight
-      return beam.GetWeight(1);
-    }
+    //private static double GetWeight(ASBeam beam)
+    //{
+    //  //1 yields the weight, 2 the exact weight
+    //  return beam.GetWeight(1);
+    //}
 
     private static double GetWeightExact(ASBeam beam)
     {
@@ -84,11 +84,11 @@ namespace Objects.Converter.AutocadCivil
       return beam.GetWeight(2);
     }
 
-    private static double GetWeightFast(ASBeam beam)
-    {
-      //3 the fast weight
-      return beam.GetWeight(3);
-    }
+    //private static double GetWeightFast(ASBeam beam)
+    //{
+    //  //3 the fast weight
+    //  return beam.GetWeight(3);
+    //}
 
     private static string GetProfileTypeCode(ASBeam beam)
     {
