@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,141 +9,157 @@ using Speckle.Core.Helpers;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
 
-namespace DiskTransport
+namespace DiskTransport;
+
+/// <summary>
+/// Writes speckle objects to disk.
+/// </summary>
+public class DiskTransport : ICloneable, ITransport
 {
-  /// <summary>
-  /// Writes speckle objects to disk.
-  /// </summary>
-  public class DiskTransport : ICloneable, ITransport
+  public DiskTransport(string basePath = null)
   {
-    public string TransportName { get; set; } = "Disk";
-    public Dictionary<string, object> TransportContext =>
-      new Dictionary<string, object>
-      {
-        { "name", TransportName },
-        { "type", this.GetType().Name },
-        { "basePath", RootPath },
-      };
+    if (basePath == null)
+      basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
 
-    public CancellationToken CancellationToken { get; set; }
+    RootPath = Path.Combine(basePath);
 
-    public Action<string, int> OnProgressAction { get; set; }
+    Directory.CreateDirectory(RootPath);
+  }
 
-    public Action<string, Exception> OnErrorAction { get; set; }
+  public string RootPath { get; set; }
 
-    public string RootPath { get; set; }
-
-    public int SavedObjectCount { get; private set; } = 0;
-
-    public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
-
-    public DiskTransport(string basePath = null)
+  public object Clone()
+  {
+    return new DiskTransport()
     {
-      if (basePath == null)
-        basePath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "DiskTransportFiles");
+      RootPath = RootPath,
+      CancellationToken = CancellationToken,
+      OnErrorAction = OnErrorAction,
+      OnProgressAction = OnProgressAction,
+      TransportName = TransportName
+    };
+  }
 
-      RootPath = Path.Combine(basePath);
+  public string TransportName { get; set; } = "Disk";
 
-      Directory.CreateDirectory(RootPath);
-    }
-
-    public void BeginWrite()
+  public Dictionary<string, object> TransportContext =>
+    new()
     {
-      SavedObjectCount = 0;
-    }
+      { "name", TransportName },
+      { "type", GetType().Name },
+      { "basePath", RootPath }
+    };
 
-    public void EndWrite() { }
+  public CancellationToken CancellationToken { get; set; }
 
-    public string GetObject(string id)
-    {
-      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+  public Action<string, int> OnProgressAction { get; set; }
 
-      var filePath = Path.Combine(RootPath, id);
-      if (File.Exists(filePath))
-      {
-        return File.ReadAllText(filePath, Encoding.UTF8);
-      }
+  public Action<string, Exception> OnErrorAction { get; set; }
 
-      return null;
-    }
+  public int SavedObjectCount { get; private set; } = 0;
 
-    public void SaveObject(string id, string serializedObject)
-    {
-      var stopwatch = Stopwatch.StartNew();
-      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+  public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
-      var filePath = Path.Combine(RootPath, id);
-      if (File.Exists(filePath)) return;
+  public void BeginWrite()
+  {
+    SavedObjectCount = 0;
+  }
 
-      File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
-      SavedObjectCount++;
-      OnProgressAction?.Invoke(TransportName, SavedObjectCount);
-      stopwatch.Stop();
-      Elapsed += stopwatch.Elapsed;
-    }
+  public void EndWrite() { }
 
-    public void SaveObject(string id, ITransport sourceTransport)
-    {
-      if (CancellationToken.IsCancellationRequested) return; // Check for cancellation
+  public string GetObject(string id)
+  {
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
-      var serializedObject = sourceTransport.GetObject(id);
-      SaveObject(id, serializedObject);
-    }
+    var filePath = Path.Combine(RootPath, id);
+    if (File.Exists(filePath))
+      return File.ReadAllText(filePath, Encoding.UTF8);
 
-    public async Task WriteComplete()
-    {
+    return null;
+  }
+
+  public void SaveObject(string id, string serializedObject)
+  {
+    var stopwatch = Stopwatch.StartNew();
+    if (CancellationToken.IsCancellationRequested)
+      return; // Check for cancellation
+
+    var filePath = Path.Combine(RootPath, id);
+    if (File.Exists(filePath))
       return;
-    }
 
-    public async Task<string> CopyObjectAndChildren(string id, ITransport targetTransport, Action<int> onTotalChildrenCountKnown = null)
-    {
-      if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+    File.WriteAllText(filePath, serializedObject, Encoding.UTF8);
+    SavedObjectCount++;
+    OnProgressAction?.Invoke(TransportName, SavedObjectCount);
+    stopwatch.Stop();
+    Elapsed += stopwatch.Elapsed;
+  }
 
-      var parent = GetObject(id);
+  public void SaveObject(string id, ITransport sourceTransport)
+  {
+    if (CancellationToken.IsCancellationRequested)
+      return; // Check for cancellation
 
-      targetTransport.SaveObject(id, parent);
+    var serializedObject = sourceTransport.GetObject(id);
+    SaveObject(id, serializedObject);
+  }
 
-      var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
+  public async Task WriteComplete()
+  {
+    return;
+  }
 
-      if (partial.__closure == null || partial.__closure.Count == 0) return parent;
+  public async Task<string> CopyObjectAndChildren(
+    string id,
+    ITransport targetTransport,
+    Action<int> onTotalChildrenCountKnown = null
+  )
+  {
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
-      int i = 0;
-      foreach (var kvp in partial.__closure)
-      {
-        if (CancellationToken.IsCancellationRequested) return null; // Check for cancellation
+    var parent = GetObject(id);
 
-        var child = GetObject(kvp.Key);
-        targetTransport.SaveObject(kvp.Key, child);
-        OnProgressAction?.Invoke($"{TransportName}", i++);
-      }
+    targetTransport.SaveObject(id, parent);
 
+    var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
+
+    if (partial.__closure == null || partial.__closure.Count == 0)
       return parent;
+
+    int i = 0;
+    foreach (var kvp in partial.__closure)
+    {
+      if (CancellationToken.IsCancellationRequested)
+        return null; // Check for cancellation
+
+      var child = GetObject(kvp.Key);
+      targetTransport.SaveObject(kvp.Key, child);
+      OnProgressAction?.Invoke($"{TransportName}", i++);
     }
 
-    public override string ToString()
-    {
-      return $"Disk Transport @{RootPath}";
-    }
+    return parent;
+  }
 
-    public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  {
+    Dictionary<string, bool> ret = new();
+    foreach (string objectId in objectIds)
     {
-      Dictionary<string, bool> ret = new Dictionary<string, bool>();
-      foreach (string objectId in objectIds)
-      {
-        var filePath = Path.Combine(RootPath, objectId);
-        ret[objectId] = File.Exists(filePath);
-      }
-      return ret;
+      var filePath = Path.Combine(RootPath, objectId);
+      ret[objectId] = File.Exists(filePath);
     }
+    return ret;
+  }
 
-    public object Clone()
-    {
-      return new DiskTransport() { RootPath = RootPath, CancellationToken = CancellationToken, OnErrorAction = OnErrorAction, OnProgressAction = OnProgressAction, TransportName = TransportName };
-    }
+  public override string ToString()
+  {
+    return $"Disk Transport @{RootPath}";
+  }
 
-    class Placeholder
-    {
-      public Dictionary<string, int> __closure { get; set; } = new Dictionary<string, int>();
-    }
+  private class Placeholder
+  {
+    public Dictionary<string, int> __closure { get; set; } = new();
   }
 }
