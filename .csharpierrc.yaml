@@ -1,0 +1,7 @@
+printWidth: 120
+useTabs: false
+tabWidth: 2
+preprocessorSymbolSets:
+    - ""
+    - "DEBUG"
+    - "DEBUG,CODE_STYLE"

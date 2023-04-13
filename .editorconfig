@@ -29,9 +29,10 @@ resharper_csharp_align_multiline_parameter = false
 resharper_csharp_int_align_comments = false
 resharper_csharp_outdent_commas = true
 resharper_csharp_outdent_dots = false
-resharper_csharp_wrap_after_declaration_lpar = false
+resharper_csharp_wrap_after_declaration_lpar = true
 resharper_csharp_wrap_after_invocation_lpar = true
 resharper_csharp_wrap_arguments_style = chop_if_long
+resharper_csharp_wrap_before_declaration_rpar = true
 resharper_csharp_wrap_before_invocation_rpar = false
 resharper_csharp_wrap_extends_list_style = chop_if_long
 resharper_csharp_wrap_parameters_style = chop_if_long
@@ -49,7 +50,7 @@ resharper_keep_existing_declaration_block_arrangement = true
 resharper_keep_existing_declaration_parens_arrangement = false
 resharper_keep_existing_embedded_block_arrangement = true
 resharper_keep_existing_enum_arrangement = true
-resharper_keep_existing_expr_member_arrangement = false
+resharper_keep_existing_expr_member_arrangement = true
 resharper_keep_existing_initializer_arrangement = false
 resharper_local_function_body = expression_body
 resharper_max_attribute_length_for_same_line = 20
@@ -59,7 +60,7 @@ resharper_max_invocation_arguments_on_line = 5
 resharper_outdent_binary_ops = true
 resharper_outdent_dots = false
 resharper_place_constructor_initializer_on_same_line = false
-resharper_place_simple_initializer_on_single_line = false
+resharper_place_simple_initializer_on_single_line = true
 resharper_prefer_explicit_discard_declaration = false
 resharper_wrap_after_declaration_lpar = false
 resharper_wrap_before_invocation_rpar = false
@@ -181,6 +182,7 @@ csharp_preserve_single_line_statements = true
 csharp_preserve_single_line_blocks = true
 
 # Analyzer settings
+dotnet_diagnostic.ide0055.severity = none
 
 # Maintainability rules
 dotnet_diagnostic.ca1501.severity = warning
