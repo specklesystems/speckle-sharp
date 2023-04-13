@@ -67,7 +67,7 @@ commands:
         type: string
     steps:
       - run:
-          name: << parameters.name >>
+          name: << parameters.title >>
           command: dotnet test << parameters.project >>
             -c Release
             -v q
