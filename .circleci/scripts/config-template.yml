@@ -437,7 +437,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Build
           command: |
-            dotnet build << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -v q --self-contained /p:WarningLevel=0 /p:Version=$SEMVER
+            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c Release -v q --self-contained /p:WarningLevel=0 /p:Version=$SEMVER
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
