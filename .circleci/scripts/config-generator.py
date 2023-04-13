@@ -129,7 +129,7 @@ def createConfigFile(deploy: bool, outputPath: str, external_build: bool):
                     if "requires" not in jobAttrs.keys():
                         jobAttrs["requires"] = []
                     # Require objects to build for all connectors
-                    jobAttrs["requires"] += ["build-core"]
+                    jobAttrs["requires"] += ["build-sdk"]
 
                     # Add name to all jobs
                     name = f"{slug}-build"

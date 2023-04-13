@@ -34,7 +34,6 @@ rhino:
       projname: ConnectorRhino7
       build-config: Release Mac
       installername: SpeckleGHInstall
-      installer: true
       slug: grasshopper
       converter-files: "
         Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll

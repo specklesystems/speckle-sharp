@@ -14,12 +14,12 @@ workflows:
     jobs:
       - get-ci-tools:
           context: github-dev-bot
-      - build-core:
+      - build-sdk:
           requires:
             - get-ci-tools
   nuget:
     jobs:
-      - build-core:
+      - build-sdk:
           name: nuget-deploy-core
           filters:
             branches:
@@ -27,8 +27,7 @@ workflows:
             tags:
               only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
           post-steps:
-            - packandpublish:
-                projectfilepath: SDK.slnf
+            - packandpublish
           context: nuget
 
 commands:
@@ -44,10 +43,8 @@ commands:
           key: *source-cache
           paths:
             - ".git"
+
   packandpublish:
-    parameters:
-      projectfilepath:
-        type: string
     steps:
       - run:
           name: Build nuget packages
@@ -55,7 +52,7 @@ commands:
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
-            dotnet build <<parameters.projectfilepath>> -p:Version=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -t:pack
+            dotnet pack All.sln -p:Version=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -67,27 +64,27 @@ commands:
       project:
         type: string
     steps:
-      - run:
-          name: Core Unit Tests
-          command: dotnet test << parameters.project >>
-            -c Release
-            -v q
-            --logger:"junit;LogFileName={assembly}.results.xml"
-            --results-directory=TestResults
-            --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - run: dotnet test << parameters.project >>
+          -c Release
+          -v q
+          --logger:"junit;LogFileName={assembly}.results.xml"
+          --results-directory=TestResults
+          --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
-  build-core:
+  build-sdk:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - cached-checkout
       - run:
           name: Build SDK Projects
-          command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0
+          command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false
       - run-tests:
+          name: Core Unit Tests
           project: Core/Tests/TestsUnit.csproj
       - run-tests:
+          name: Objects Unit Tests
           project: Objects/Tests/Tests.csproj
       - store_test_results:
           path: TestResults
@@ -167,7 +164,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
                   $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$semver
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
       - unless:
@@ -180,7 +177,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
                   $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
-                  dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:AssemblyVersionNumber=$version /p:AssemblyInformationalVersion=$semver /p:Version=$semver
+                  dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:Version=$semver
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -384,9 +381,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       slug:
         type: string
         default: ""
-      installer:
-        type: boolean
-        default: false
       converter-files:
         type: string
         default: ""
@@ -411,7 +405,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c Release -v q -p:WarningLevel=0 -p:Version=$SEMVER
+            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c Release -v q -p:WarningLevel=0 -p:Version=$SEMVER -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
