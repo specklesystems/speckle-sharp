@@ -7,21 +7,31 @@ orbs:
   wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
 
+# The main workflows for our monorepo pipeline.
+
+workflows:
+  build:
+    jobs:
+      - get-ci-tools:
+          context: github-dev-bot
+      - build-core:
+          requires:
+            - get-ci-tools
+  nuget:
+    jobs:
+      - build-core:
+          name: nuget-deploy-core
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
+          post-steps:
+            - packandpublish:
+                projectfilepath: SDK.slnf
+          context: nuget
+
 commands:
-  packandpublish:
-    parameters:
-      projectfilepath:
-        type: string
-    steps:
-      - run:
-          name: Publish nuget package
-          command: |
-            $tag = if([string]::IsNullOrEmpty($env:CIRCLE_TAG)) { "2.0.999.$($env:WORKFLOW_NUM)" } else { $env:CIRCLE_TAG }
-            $version = $tag.Split("/")[1]  
-            msbuild <<parameters.projectfilepath>> /p:Version="$version" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $env:NUGET_APIKEY -n --skip-duplicate
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
   cached-checkout:
     steps:
       - restore_cache:
@@ -34,21 +44,38 @@ commands:
           key: *source-cache
           paths:
             - ".git"
-  packandpublish-bash:
+  packandpublish:
     parameters:
       projectfilepath:
         type: string
     steps:
       - run:
-          name: Publish nuget package
+          name: Build nuget packages
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
             VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
-            msbuild <<parameters.projectfilepath>> /p:Version="$VERSION" /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false -t:pack
-            ~/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
+            dotnet build <<parameters.projectfilepath>> -p:Version=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -t:pack
           environment:
             WORKFLOW_NUM: << pipeline.number >>
+      - run:
+          name: Push nuget packages
+          command: dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
+
+  run-tests:
+    parameters:
+      project:
+        type: string
+    steps:
+      - run:
+          name: Core Unit Tests
+          command: dotnet test << parameters.project >>
+            -c Release
+            -v q
+            --logger:"junit;LogFileName={assembly}.results.xml"
+            --results-directory=TestResults
+            --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-core:
     docker:
@@ -56,13 +83,18 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - cached-checkout
       - run:
-          name: Build Core
-          command: dotnet build Core/Core.sln -c Release -v q
+          name: Build SDK Projects
+          command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel:0
+      - run-tests:
+          project: Core/Tests/TestsUnit.csproj
+      - run-tests:
+          project: Objects/Tests/Tests.csproj
+      - store_test_results:
+          path: TestResults
 
   test-core:
     docker:
       - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet
-      # - image: "mcr.microsoft.com/dotnet/core/sdk:2.1-focal" # dotnet core 2.1 sdk (for netstandard support on build)
       # Node, redis, postgres and speckle-server images for test server
       - image: "cimg/node:16.15"
       - image: "cimg/redis:7.0.5"
@@ -92,48 +124,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
     steps:
       - cached-checkout
-      - run:
-          name: Unit Test
-          command: dotnet test Core/Tests/TestsUnit.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-      - run:
-          name: Integration Tests # The integration tests are runinng on our test sevrer
-          command: dotnet test Core/IntegrationTests/TestsIntegration.csproj -c Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
-      - store_artifacts:
-          path: TestResults
-
-      #- codecov/upload
-
-  build-objects:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
-    steps:
-      - cached-checkout
-      - run:
-          name: Restore Objects
-          command: | # Restore only the projects we're about to build.
-            dotnet restore Objects/Objects/Objects.csproj
-            dotnet restore Objects/Tests/Tests.csproj
-      - run:
-          name: Build Objects
-          command: dotnet build --no-restore Objects/Objects/Objects.csproj -c Release /p:WarningLevel=0 /p:IsDesktopBuild=false
-      - run:
-          name: Test Objects
-          command: dotnet test Objects/Tests/Tests.csproj --no-restore -c
-            Release -v q --logger:"junit;LogFileName={assembly}.results.xml" --results-directory=TestResults
-            --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - run-tests:
+          project: Core/IntegrationTests/TestsIntegration.csproj
       - store_test_results:
           path: TestResults
-      - store_artifacts:
-          path: TestResults
-
-  build-desktopui:
-    docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
-    steps:
-      - cached-checkout
-      - run:
-          name: Build DesktopUI2
-          command: dotnet build DesktopUI2/DesktopUI2/DesktopUI2.csproj -c Release -v q
 
   build-connector: # Reusable job for basic connectors
     executor:
@@ -204,15 +198,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           shell: cmd.exe #does not work in powershell
           environment:
             SLUG: << parameters.slug >>
-      # - when:
-      #     condition:
-      #       equal: [teklastructures, << parameters.slug >>] # Tekla Structures has it's own "plugin packager", so we do this instead of the ISS step
-      #     steps:
-      #       - run:
-      #           name: Build TSEP
-      #           command: speckle-sharp-ci-tools/TSEPBuilder/TeklaExtensionPackage.BatchBuilder.exe -I "$($env:CIRCLE_WORKING_DIRECTORY)\ConnectorTeklaStructures\ConnectorTeklaStructures2021\ManifestGenerator.xml" -O "$($env:CIRCLE_WORKING_DIRECTORY)\speckle-sharp-ci-tools\Installers\<<parameters.slug>>\<<parameters.dllname>>.tsep"
-      #       - store_artifacts:
-      #           path: speckle-sharp-ci-tools/Installers/<<parameters.slug>>/
       - when:
           condition: << pipeline.git.tag >>
           steps:
@@ -346,17 +331,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
-            #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-x64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
-            #      $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-arm64 --self-contained /p:WarningLevel=0 /p:Version=$TAG
-            #      $HOME/.dotnet/dotnet msbuild << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -t:BundleApp -p:Configuration=Release -p:RuntimeIdentifier=osx-arm64 -p:SelfContained=true /p:WarningLevel=0 -p:Version=$TAG
-            # see: https://www.kenmuse.com/blog/notarizing-dotnet-console-apps-for-macos/
-            # merges the binaries inside the arm64 .app and then moves it up to the top level folder
-            # need to update dotnet to avoid an issue while lipo-ing the universal binaries
-            #- run:
-            #    name: Lipo Merge Binaries
-            #    command: |
-            #      lipo -create -output "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-arm64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>" "./<< parameters.slnname >>/<< parameters.slnname >>/bin/Release/net6.0/osx-x64/publish/<< parameters.bundlename >>/Contents/MacOS/<< parameters.projname >>"
-            # Compress build files
             - run:
                 name: Zip Connector files
                 command: |
@@ -502,7 +476,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           command: |
             mkdir ~/.ssh
             ssh-keyscan github.com >> ~/.ssh/known_hosts
-      - run: # Could not get ssh to work, so using a personal token
+      - run:
           name: Clone
           command: git clone git@github.com:specklesystems/speckle-sharp-ci-tools.git speckle-sharp-ci-tools
       - run:
@@ -578,7 +552,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Install cmake
           command: |
-            brew install cmake
+            HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install cmake
       - run:
           name: Get Archicad devkit
           command: |
@@ -621,6 +595,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Proceed to deploy
           command: echo "This step is just here to wait for all build jobs before proceeding to deploy each of them individually. If a job fails, no connector will be deployed."
+
   notify-deploy:
     docker:
       - image: cimg/base:2021.01
@@ -631,57 +606,3 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             ":tada: a new version of Speckle-Sharp connectors was build
             successfully!"
           failure_message: ":red_circle: oh no! Speckle-Sharp connectors build has failed!"
-# The main workflows for our monorepo pipeline.
-# There should be at least one workflow per project in the monorepo. Each workflow should be run only when a boolean parameter is passed that corresponds to the pattern 'run_{PROJECT_NAME}'.
-# These parameters are set by the 'selective-ci' job.
-workflows:
-  build:
-    jobs:
-      - get-ci-tools:
-          context: github-dev-bot
-      - build-core:
-          requires:
-            - get-ci-tools
-      - build-objects:
-          requires:
-            - build-core
-      - build-desktopui:
-          requires:
-            - build-core
-  nuget:
-    jobs:
-      # CORE Nuget Publish
-      - build-core:
-          name: nuget-deploy-core
-          filters:
-            branches:
-              ignore: /.*/ # For testing only: /ci\/.*/
-            tags:
-              only: /^(nuget-core|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
-          post-steps:
-            - packandpublish:
-                projectfilepath: Core/Core.sln
-          context: nuget
-      - build-objects:
-          name: nuget-deploy-objects
-          filters:
-            branches:
-              ignore: /.*/ # For testing only: /ci\/.*/
-            tags:
-              only: /^(nuget-objects|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
-          post-steps:
-            - packandpublish-bash:
-                projectfilepath: Objects/Objects.sln
-          context: nuget
-      - build-desktopui:
-          name: nuget-deploy-desktopui
-          filters:
-            branches:
-              ignore: /.*/ # For testing only: /ci\/.*/
-            tags:
-              only: /^(nuget-dui|nugets)\/([0-9]+)\.([0-9]+)\.([0-9]+)(?:-\w{1,10})?$/
-          post-steps:
-            - packandpublish:
-                projectfilepath: DesktopUI2/DesktopUI2/DesktopUI2.csproj
-          context: nuget
-# VS Code Extension Version: 1.4.0

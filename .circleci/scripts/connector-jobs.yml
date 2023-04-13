@@ -8,15 +8,11 @@ rhino:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: rhino
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorRhino
       dllname: SpeckleConnectorRhino.rhp
       slug: grasshopper
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector-dotnet-mac:
       name: rhino-build-mac
@@ -25,8 +21,6 @@ rhino:
       installername: SpeckleRhinoInstall
       build-config: Release Mac
       slug: rhino
-      requires:
-        - build-desktopui
       converter-files: "
         Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
         Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
@@ -42,8 +36,6 @@ rhino:
       installername: SpeckleGHInstall
       installer: true
       slug: grasshopper
-      requires:
-        - build-desktopui
       converter-files: "
         Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.dll
         Objects/Converters/ConverterRhinoGh/ConverterRhino7/bin/Release/net48/Objects.Converter.Rhino7.dll
@@ -63,8 +55,6 @@ revit:
       slnname: ConnectorRevit
       dllname: SpeckleConnectorRevit.dll
       slug: revit
-      requires:
-        - build-desktopui
       context: innosetup
 
 autocadcivil:
@@ -72,15 +62,11 @@ autocadcivil:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: autocad
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorAutocadCivil
       dllname: SpeckleConnectorAutocad.dll
       slug: civil3d
-      requires:
-        - build-desktopui
       context: innosetup
 
 bentley:
@@ -88,22 +74,16 @@ bentley:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorMicroStation.dll
       slug: microstation
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenBuildings.dll
       slug: openbuildings
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorBentley
       dllname: SpeckleConnectorOpenRail.dll
       slug: openrail
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorBentley
@@ -116,37 +96,27 @@ teklastructures:
       slnname: ConnectorTeklaStructures
       dllname: SpeckleConnectorTeklaStructures.dll
       slug: teklastructures
-      requires:
-        - build-desktopui
       context: innosetup
 csi:
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: etabs
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: sap2000
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: safe
-      requires:
-        - build-desktopui
       context: innosetup
   - build-connector:
       slnname: ConnectorCSI
       dllname: SpeckleConnectorCSI.dll
       slug: csibridge
-      requires:
-        - build-desktopui
       context: innosetup
 
 archicad:
@@ -166,7 +136,6 @@ archicad:
       requires:
         - build-archicad-add-on-25
         - build-archicad-add-on-26
-        - build-desktopui
       slnname: ConnectorArchicad
       projname: ConnectorArchicad
       dllname: ConnectorArchicad.dll
@@ -192,7 +161,6 @@ archicad:
       requires:
         - build-archicad-add-on-25-mac
         - build-archicad-add-on-26-mac
-        - build-desktopui
       slnname: ConnectorArchicad
       projname: ConnectorArchicad
       slug: archicad
@@ -204,6 +172,4 @@ navisworks:
       slnname: ConnectorNavisworks
       dllname: SpeckleConnectorNavisworks.dll
       slug: navisworks
-      requires:
-        - build-desktopui
       context: innosetup
