@@ -39,7 +39,6 @@ rhino:
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       build-config: Release Mac
-      build-with-mono: false
       installername: SpeckleGhInstall
       installer: true
       slug: grasshopper
