@@ -63,18 +63,22 @@ commands:
     parameters:
       project:
         type: string
+      name:
+        type: string
     steps:
-      - run: dotnet test << parameters.project >>
-          -c Release
-          -v q
-          --logger:"junit;LogFileName={assembly}.results.xml"
-          --results-directory=TestResults
-          --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
+      - run:
+          name: << parameters.name >>
+          command: dotnet test << parameters.project >>
+            -c Release
+            -v q
+            --logger:"junit;LogFileName={assembly}.results.xml"
+            --results-directory=TestResults
+            --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
 
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-sdk:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+      - image: mcr.microsoft.com/dotnet/sdk:7.0
     steps:
       - cached-checkout
       - run:
@@ -91,7 +95,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     docker:
-      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet
+      - image: "mcr.microsoft.com/dotnet/sdk:7.0" # dotnet
       # Node, redis, postgres and speckle-server images for test server
       - image: "cimg/node:16.15"
       - image: "cimg/redis:7.0.5"
@@ -122,6 +126,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - cached-checkout
       - run-tests:
+          name: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
       - store_test_results:
           path: TestResults
@@ -205,7 +210,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   deploy-connector-new:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+      - image: mcr.microsoft.com/dotnet/sdk:7.0
     parameters:
       slug:
         type: string
