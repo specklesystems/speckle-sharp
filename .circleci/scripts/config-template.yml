@@ -429,15 +429,15 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Set environment variables
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Build
           command: |
-            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c Release -v q -p:WarningLevel=0 -p:Version=$SEMVER
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c Release -v q -p:WarningLevel=0 p:Version=$SEMVER
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
