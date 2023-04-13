@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 
@@ -147,22 +148,46 @@ namespace Objects.Converter.Revit
     private void DefineColumnMetadata(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds)
     {
       Element firstElement = null;
+      Element firstType = null;
       if (originalTableIds.Count > 0)
       {
         firstElement = Doc.GetElement(originalTableIds.First());
+        firstType = Doc.GetElement(firstElement.GetTypeId());
       }
 
       foreach (var fieldId in revitSchedule.Definition.GetFieldOrder())
       {
         var field = revitSchedule.Definition.GetField(fieldId);
+        var builtInParameter = (BuiltInParameter)field.ParameterId.IntegerValue;
 
         var columnMetadata = new Base();
         columnMetadata["BuiltInParameterInteger"] = field.ParameterId.IntegerValue;
+        columnMetadata["FieldType"] = field.FieldType.ToString();
 
-        if (firstElement != null)
+        Parameter param;
+        if (field.FieldType == ScheduleFieldType.ElementType)
         {
-          var param = firstElement.get_Parameter((BuiltInParameter)field.ParameterId.IntegerValue);
-          columnMetadata["IsReadOnly"] = param.IsReadOnly;
+          if (firstType != null)
+          {
+            param = firstType.get_Parameter(builtInParameter);
+            columnMetadata["IsReadOnly"] = param?.IsReadOnly;
+          }
+        }
+        else if (field.FieldType == ScheduleFieldType.Instance)
+        {
+          if (firstElement != null)
+          {
+            param = firstElement.get_Parameter(builtInParameter);
+            columnMetadata["IsReadOnly"] = param?.IsReadOnly;
+          }
+        }
+        else
+        {
+          var scheduleCategory = (BuiltInCategory)revitSchedule.Definition.CategoryId.IntegerValue;
+          SpeckleLog.Logger.Warning("Schedule of category, {scheduleCategory}, contains field of type {builtInParameter} which has an unsupported field type, {fieldType}",
+            scheduleCategory,
+            builtInParameter,
+            field.FieldType.ToString());
         }
         speckleTable.DefineColumn(columnMetadata);
       }
@@ -296,7 +321,16 @@ namespace Objects.Converter.Revit
       }
       var metadata = new Base();
       metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(rowIndex, section, originalTableIds, revitSchedule, tableSection);
-      speckleTable.AddRow(metadata: metadata, objects: rowData.ToArray());
+
+      try
+      {
+        speckleTable.AddRow(metadata: metadata, objects: rowData.ToArray());
+      }
+      catch (ArgumentException)
+      {
+        // trying to add an invalid row. Just don't add it and continue to the next
+        return false;
+      }
 
       return true;
     }
