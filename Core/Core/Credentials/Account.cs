@@ -105,15 +105,12 @@ public class Account : IEquatable<Account>
     return $"Account ({userInfo.email} | {serverInfo.url})";
   }
 
+#pragma warning disable CS0659 //TODO: Disabled to prevent GetHashCode from being added by the cleanup.
   public override bool Equals(object obj)
   {
     return obj is Account acc && Equals(acc);
   }
-
-  public override int GetHashCode()
-  {
-    throw new NotImplementedException();
-  }
+#pragma warning restore CS0659
 
   #endregion
 }
