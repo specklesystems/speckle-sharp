@@ -84,7 +84,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - cached-checkout
       - run:
           name: Build SDK Projects
-          command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel:0
+          command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0
       - run-tests:
           project: Core/Tests/TestsUnit.csproj
       - run-tests:
