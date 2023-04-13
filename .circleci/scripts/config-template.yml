@@ -441,6 +441,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
+          name: Install Zip
+          command: |
+            apt-get update -y
+            apt-get install zip -y
+      - run:
           name: Zip Objects Kit files
           command: |
             zip -j Objects.zip << parameters.converter-files >>
