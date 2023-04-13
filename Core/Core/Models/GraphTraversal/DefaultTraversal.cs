@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.Serialization;
 using Speckle.Core.Kits;
 
 #nullable enable
@@ -10,8 +9,11 @@ namespace Speckle.Core.Models.GraphTraversal
   {
 
     /// <summary>
-    /// Traverses until finds a convertable object (or fallback) then traverses members
+    /// Default traversal rule that ideally should be used by all connectors
     /// </summary>
+    /// <remarks>
+    /// Treats convertable objects <see cref="ISpeckleConverter.CanConvertToNative"/> and objects with displayValues as "convertable" such that only elements and dynamic props will be traversed
+    /// </remarks>
     /// <param name="converter"></param>
     /// <returns></returns>
     public static GraphTraversal CreateTraverseFunc(ISpeckleConverter converter)
@@ -23,7 +25,6 @@ namespace Speckle.Core.Models.GraphTraversal
         .ContinueTraversing(b =>
         {
           var membersToTraverse = b.GetDynamicMembers()
-            .Concat(displayValueAliases)
             .Concat(elementsAliases)
             .Except(ignoreProps);
           return membersToTraverse;
@@ -43,6 +44,11 @@ namespace Speckle.Core.Models.GraphTraversal
     /// <summary>
     /// Traverses until finds a convertable object then HALTS deeper traversal
     /// </summary>
+    /// <remarks>
+    /// Current <see cref="Objects.Converter.Revit.ConverterRevit"/> does traversal,
+    /// so this traversal is a shallow traversal for directly convertable objects,
+    /// and a deep traversal for all other types
+    /// </remarks>
     /// <param name="converter"></param>
     /// <returns></returns>
     public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
@@ -53,11 +59,14 @@ namespace Speckle.Core.Models.GraphTraversal
 
       var displayValueRule = TraversalRule.NewTraversalRule()
         .When(HasDisplayValue)
-        .ContinueTraversing(b => b.GetDynamicMembers()
-          .Concat(displayValueAliases)
-          .Except(elementsAliases)
-          .Except(ignoreProps)
-        );
+        .ContinueTraversing(b =>
+        {
+          var membersToTraverse = b.GetDynamicMembers()
+            .Concat(elementsAliases)
+            .Except(ignoreProps)
+            .Concat(displayValueAliases);
+          return membersToTraverse;
+        });
 
       //WORKAROUND: ideally, traversal rules would not have Objects specific rules.  
       var ignoreResultsRule = TraversalRule.NewTraversalRule()
