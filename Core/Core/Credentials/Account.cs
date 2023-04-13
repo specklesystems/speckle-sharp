@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -95,7 +95,9 @@ public class Account : IEquatable<Account>
 
   public bool Equals(Account other)
   {
-    return other.userInfo.email == userInfo.email && other.serverInfo.url == serverInfo.url;
+    return other is not null
+      && other.userInfo.email == userInfo.email
+      && other.serverInfo.url == serverInfo.url;
   }
 
   public override string ToString()
@@ -105,7 +107,7 @@ public class Account : IEquatable<Account>
 
   public override bool Equals(object obj)
   {
-    return Equals(obj as Account);
+    return obj is Account acc && Equals(acc);
   }
 
   public override int GetHashCode()

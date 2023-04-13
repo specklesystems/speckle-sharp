@@ -1,4 +1,4 @@
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using NUnit.Framework;
 using Serilog.Events;
 using Speckle.Core.Credentials;
@@ -23,7 +23,7 @@ public class SetUp
   }
 }
 
-public static class Fixtures
+public abstract class Fixtures
 {
   private static SQLiteTransport AccountStorage = new(scope: "Accounts");
   private static string accountPath = Path.Combine(
@@ -34,7 +34,8 @@ public static class Fixtures
   public static void UpdateOrSaveAccount(Account account)
   {
     AccountStorage.DeleteObject(account.id);
-    AccountStorage.SaveObjectSync(account.id, JsonConvert.SerializeObject(account));
+    string serializedObject = JsonConvert.SerializeObject(account);
+    AccountStorage.SaveObjectSync(account.id, serializedObject);
   }
 
   public static void SaveLocalAccount(Account account)
