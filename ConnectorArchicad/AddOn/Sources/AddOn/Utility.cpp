@@ -513,7 +513,11 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 }
 
 
-GSErrCode CreateAllSchemeData (const GS::ObjectState & os, GS::UInt32 & numberOfCuts, API_Element & element, API_Element & mask, API_ElementMemo * memo)
+GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
+	GS::UInt32& numberOfCuts,
+	API_Element& element,
+	API_Element& mask,
+	API_ElementMemo* memo)
 {
 	GSErrCode err = NoError;
 	API_AssemblySegmentSchemeData defaultSegmentScheme;
@@ -555,7 +559,7 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState & os, GS::UInt32 & numberOf
 }
 
 
-GSErrCode GetVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::UniString & visibilityString)
+GSErrCode GetVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::UniString& visibilityString)
 {
 	if (isAutoOnStoryVisibility) {
 		visibilityString = AllRelevantStoriesValueName;
@@ -581,7 +585,11 @@ GSErrCode GetVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visib
 }
 
 
-GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::ObjectState & os, const char* fieldName, bool exportVisibilityValues /*= false*/)
+GSErrCode ExportVisibility (bool isAutoOnStoryVisibility,
+	API_StoryVisibility visibility,
+	GS::ObjectState& os,
+	const char* fieldName,
+	bool exportVisibilityValues /*= false*/)
 {
 	GS::UniString visibilityString;
 	if (NoError != GetVisibility (isAutoOnStoryVisibility, visibility, visibilityString))
@@ -606,7 +614,7 @@ GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility vi
 }
 
 
-GSErrCode SetVisibility (const GS::UniString & visibilityString, bool& isAutoOnStoryVisibility, API_StoryVisibility & visibility)
+GSErrCode SetVisibility (const GS::UniString& visibilityString, bool& isAutoOnStoryVisibility, API_StoryVisibility& visibility)
 {
 	isAutoOnStoryVisibility = false;
 	visibility.showOnHome = true;
@@ -673,7 +681,10 @@ GSErrCode SetVisibility (const GS::UniString & visibilityString, bool& isAutoOnS
 }
 
 
-GSErrCode ImportVisibility (const GS::ObjectState & os, const char* fieldName, bool& isAutoOnStoryVisibility, API_StoryVisibility & visibility)
+GSErrCode ImportVisibility (const GS::ObjectState& os,
+	const char* fieldName,
+	bool& isAutoOnStoryVisibility,
+	API_StoryVisibility& visibility)
 {
 	if (os.Contains (ShowOnStories)) {
 		GS::UniString visibilityString;
@@ -697,7 +708,9 @@ GSErrCode ImportVisibility (const GS::ObjectState & os, const char* fieldName, b
 }
 
 
-GSErrCode ExportCoverFillTransformation (bool coverFillOrientationComesFrom3D, API_CoverFillTransformationTypeID coverFillTransformationType, GS::ObjectState & os)
+GSErrCode ExportCoverFillTransformation (bool coverFillOrientationComesFrom3D,
+	API_CoverFillTransformationTypeID coverFillTransformationType,
+	GS::ObjectState& os)
 {
 	if (coverFillOrientationComesFrom3D) {
 		os.Add (CoverFillTransformationType, ThreeDDistortionValueName);
@@ -713,7 +726,9 @@ GSErrCode ExportCoverFillTransformation (bool coverFillOrientationComesFrom3D, A
 }
 
 
-GSErrCode ImportCoverFillTransformation (const GS::ObjectState & os, bool& coverFillOrientationComesFrom3D, API_CoverFillTransformationTypeID & coverFillTransformationType)
+GSErrCode ImportCoverFillTransformation (const GS::ObjectState& os, 
+	bool& coverFillOrientationComesFrom3D, 
+	API_CoverFillTransformationTypeID& coverFillTransformationType)
 {
 	coverFillOrientationComesFrom3D = false;
 	coverFillTransformationType = API_CoverFillTransformationType_Global;
@@ -740,7 +755,7 @@ GSErrCode ImportCoverFillTransformation (const GS::ObjectState & os, bool& cover
 }
 
 
-GSErrCode ExportHatchOrientation (API_HatchOrientationTypeID hatchOrientationType, GS::ObjectState & os)
+GSErrCode ExportHatchOrientation (API_HatchOrientationTypeID hatchOrientationType, GS::ObjectState& os)
 {
 	if (hatchOrientationType == API_HatchGlobal) {
 		os.Add (HatchOrientationType, LinkToProjectOriginValueName);
@@ -754,7 +769,7 @@ GSErrCode ExportHatchOrientation (API_HatchOrientationTypeID hatchOrientationTyp
 }
 
 
-GSErrCode ImportHatchOrientation (const GS::ObjectState & os, API_HatchOrientationTypeID & hatchOrientationType)
+GSErrCode ImportHatchOrientation (const GS::ObjectState& os, API_HatchOrientationTypeID& hatchOrientationType)
 {
 	hatchOrientationType = API_HatchGlobal;
 
@@ -773,5 +788,6 @@ GSErrCode ImportHatchOrientation (const GS::ObjectState & os, API_HatchOrientati
 
 	return NoError;
 }
+
 
 }

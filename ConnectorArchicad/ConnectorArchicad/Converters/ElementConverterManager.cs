@@ -5,9 +5,11 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
+using Avalonia.Controls;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.ViewModels;
 using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Beam = Objects.BuiltElements.Beam;
@@ -59,8 +61,12 @@ namespace Archicad
       SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken);  // Gets all selected objects
       SelectedObjects = SortSelectedObjects();
 
+      SpeckleLog.Logger.Debug("Conversion started (element types: {0})", SelectedObjects.Count);
+
       foreach (var (element, guids) in SelectedObjects) // For all kind of selected objects (like window, door, wall, etc.)
       {
+        SpeckleLog.Logger.Debug("{0}: {1}", element, guids.Count());
+
         var objects = await ConvertOneTypeToSpeckle(guids, ElementTypeProvider.GetTypeByName(element), progress.CancellationToken);  // Deserialize all objects with hiven type
         if (objects.Count() > 0)
         {
@@ -72,6 +78,8 @@ namespace Archicad
               progress.Report.ReportObjects.Add(objects[i].applicationId, new ApplicationObject("", ""));
         }
       }
+
+      SpeckleLog.Logger.Debug("Conversion done");
 
       return objectToCommit;
     }
@@ -151,12 +159,11 @@ namespace Archicad
 
       foreach (var convertedObject in convertedObjects)
       {
-        var subElementsAsBases = await ConvertSubElementsToSpeckle(convertedObject.applicationId, token);
+        var subElementsAsBases = await ConvertSubElementsToSpeckle(convertedObject, token);
         if (subElementsAsBases.Count() > 0)
         {
           convertedObject["elements"] = subElementsAsBases;
         }
-
       }
 
       return convertedObjects;
@@ -168,11 +175,14 @@ namespace Archicad
       return retval;
     }
 
-    public async Task<List<Base>?> ConvertSubElementsToSpeckle(string applicationId, CancellationToken token)
+    public async Task<List<Base>?> ConvertSubElementsToSpeckle(Base convertedObject, CancellationToken token)
     {
       var subElementsAsBases = new List<Base>();
 
-      var subElements = await GetAllSubElements(applicationId);
+      if (convertedObject is not Objects.BuiltElements.Archicad.ArchicadWall)
+        return subElementsAsBases;
+
+      var subElements = await GetAllSubElements(convertedObject.applicationId);
       if (subElements.Count() == 0)
         return subElementsAsBases;
 
