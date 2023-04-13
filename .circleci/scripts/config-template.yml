@@ -63,7 +63,7 @@ commands:
     parameters:
       project:
         type: string
-      name:
+      title:
         type: string
     steps:
       - run:
@@ -85,10 +85,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Build SDK Projects
           command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false
       - run-tests:
-          name: Core Unit Tests
+          title: Core Unit Tests
           project: Core/Tests/TestsUnit.csproj
       - run-tests:
-          name: Objects Unit Tests
+          title: Objects Unit Tests
           project: Objects/Tests/Tests.csproj
       - store_test_results:
           path: TestResults
@@ -126,7 +126,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - cached-checkout
       - run-tests:
-          name: Core Integration Tests
+          title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
       - store_test_results:
           path: TestResults
