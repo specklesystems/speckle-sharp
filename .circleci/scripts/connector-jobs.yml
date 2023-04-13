@@ -24,7 +24,7 @@ rhino:
       projname: ConnectorRhino7
       installername: SpeckleRhinoInstall
       build-config: Release Mac
-      build-with-msbuild: false
+      build-with-mono: false
       slug: rhino
       requires:
         - build-desktopui
@@ -40,7 +40,7 @@ rhino:
       slnname: ConnectorRhino
       projname: ConnectorRhino7
       build-config: Release Mac
-      build-with-msbuild: false
+      build-with-mono: false
       installername: SpeckleGhInstall
       installer: true
       slug: grasshopper
