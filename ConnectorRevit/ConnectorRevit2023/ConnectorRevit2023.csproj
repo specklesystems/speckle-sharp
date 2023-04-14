@@ -1,10 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
     <RootNamespace>Speckle.ConnectorRevit</RootNamespace>
     <AssemblyName>SpeckleConnectorRevit</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2023\Revit.exe</StartProgram>
     <RevitFolderName>SpeckleRevit2</RevitFolderName>
     <RevitVersion>2023</RevitVersion>
     <AssemblyTitle>ConnectorRevit</AssemblyTitle>

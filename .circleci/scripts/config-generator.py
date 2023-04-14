@@ -129,10 +129,8 @@ def createConfigFile(deploy: bool, outputPath: str, external_build: bool):
                     if "requires" not in jobAttrs.keys():
                         jobAttrs["requires"] = []
                     # Require objects to build for all connectors
-                    jobAttrs["requires"] += ["build-objects"]
-                    if build_core:
-                        # Require core tests too if core needs rebuilding.
-                        jobAttrs["requires"] += ["test-core"]
+                    jobAttrs["requires"] += ["build-sdk"]
+
                     # Add name to all jobs
                     name = f"{slug}-build"
                     if "name" not in jobAttrs.keys():
@@ -148,7 +146,9 @@ def createConfigFile(deploy: bool, outputPath: str, external_build: bool):
 
             # Append connector jobs to main workflow jobs
             main_workflow["jobs"] += connector_jobs[connector]
-
+    if build_core:
+        # Require core tests too if core needs rebuilding.
+        jobs_before_deploy.append("test-core")
     # Modify jobs for deployment
     if deploy:
         deploy_job = {}
