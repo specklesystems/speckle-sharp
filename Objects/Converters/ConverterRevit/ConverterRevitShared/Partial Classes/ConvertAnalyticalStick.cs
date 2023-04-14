@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -257,7 +257,7 @@ namespace Objects.Converter.Revit
       speckleElement1D.property = prop;
 
       GetAllRevitParamsAndIds(speckleElement1D, revitStick);
-      speckleElement1D.displayValue = GetElementDisplayMesh(revitStick.Document.GetElement(revitStick.GetElementId()));
+      speckleElement1D.displayValue = GetElementDisplayValue(revitStick.Document.GetElement(revitStick.GetElementId()));
       return speckleElement1D;
     }
 
@@ -328,7 +328,7 @@ namespace Objects.Converter.Revit
       {
         var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitStick.Id);
         var physicalElement = Doc.GetElement(physicalElementId);
-        speckleElement1D.displayValue = GetElementDisplayMesh(physicalElement);
+        speckleElement1D.displayValue = GetElementDisplayValue(physicalElement);
       }
 
       return speckleElement1D;

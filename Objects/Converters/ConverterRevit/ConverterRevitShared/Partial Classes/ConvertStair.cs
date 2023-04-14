@@ -1,4 +1,4 @@
-﻿
+
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -34,7 +34,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleStair, revitStair, new List<string> { "STAIRS_BASE_LEVEL_PARAM", "STAIRS_TOP_LEVEL_PARAM" });
 
-      speckleStair.displayValue = GetElementDisplayMesh(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleStair.displayValue = GetElementDisplayValue(revitStair, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       return speckleStair;
     }

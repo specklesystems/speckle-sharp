@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements.Revit;
 using System.Collections.Generic;
@@ -16,8 +16,7 @@ namespace Objects.Converter.Revit
       var speckleTopRail = new RevitTopRail
       {
         type = topRailType.Name,
-        displayValue = GetElementDisplayMesh(revitTopRail,
-                new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false })
+        displayValue = GetElementDisplayValue(revitTopRail, new Options() { DetailLevel = ViewDetailLevel.Fine })
       };
 
       GetAllRevitParamsAndIds(speckleTopRail, revitTopRail, new List<string> { });

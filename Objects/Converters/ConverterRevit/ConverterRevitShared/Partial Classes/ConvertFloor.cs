@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -165,7 +165,7 @@ namespace Objects.Converter.Revit
         }
       }
 
-      speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleFloor.displayValue = GetElementDisplayValue(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       GetHostedElements(speckleFloor, revitFloor, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);

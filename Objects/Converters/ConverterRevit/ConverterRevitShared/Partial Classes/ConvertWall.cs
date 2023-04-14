@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -188,7 +188,7 @@ namespace Objects.Converter.Revit
         }
 
         speckleWall.displayValue = GetElementDisplayValue(revitWall,
-          new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+          new Options() { DetailLevel = ViewDetailLevel.Fine });
       }
       else
       {
@@ -229,15 +229,15 @@ namespace Objects.Converter.Revit
     {
       var grid = wall.CurtainGrid;
 
-      var solidPanels = new List<Solid>();
-      var solidMullions = new List<Solid>();
+      var meshPanels = new List<Mesh>();
+      var meshMullions = new List<Mesh>();
       foreach (ElementId panelId in grid.GetPanelIds())
       {
         //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
         if (SubelementIds.Contains(panelId))
           continue;
         SubelementIds.Add(panelId);
-        solidPanels.AddRange(GetElementSolids(wall.Document.GetElement(panelId)));
+        meshPanels.AddRange(GetElementDisplayValue(wall.Document.GetElement(panelId)));
       }
       foreach (ElementId mullionId in grid.GetMullionIds())
       {
@@ -245,11 +245,8 @@ namespace Objects.Converter.Revit
         if (SubelementIds.Contains(mullionId))
           continue;
         SubelementIds.Add(mullionId);
-        solidMullions.AddRange(GetElementSolids(wall.Document.GetElement(mullionId)));
+        meshMullions.AddRange(GetElementDisplayValue(wall.Document.GetElement(mullionId)));
       }
-
-      var meshPanels = ConvertSolidsByRenderMaterial(solidPanels, wall.Document);
-      var meshMullions = ConvertSolidsByRenderMaterial(solidMullions, wall.Document);
 
       return (meshPanels, meshMullions);
     }

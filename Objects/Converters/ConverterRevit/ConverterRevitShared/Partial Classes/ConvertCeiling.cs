@@ -1,4 +1,4 @@
-﻿
+
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
       GetHostedElements(speckleCeiling, revitCeiling, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);
 
-      speckleCeiling.displayValue = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleCeiling.displayValue = GetElementDisplayValue(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       return speckleCeiling;
     }

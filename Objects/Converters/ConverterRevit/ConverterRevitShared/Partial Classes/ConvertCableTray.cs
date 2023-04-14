@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -78,7 +78,7 @@ namespace Objects.Converter.Revit
         width = GetParamValue<double>(revitCableTray, BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM),
         length = GetParamValue<double>(revitCableTray, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitCableTray, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitCableTray)
+        displayValue = GetElementDisplayValue(revitCableTray, SolidDisplayValueOptions)
       };
 
       GetAllRevitParamsAndIds(speckleCableTray, revitCableTray,

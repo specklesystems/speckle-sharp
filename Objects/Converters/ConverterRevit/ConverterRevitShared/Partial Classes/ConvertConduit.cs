@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -78,7 +78,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitConduit, BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM),
         length = GetParamValue<double>(revitConduit, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitConduit, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitConduit)
+        displayValue = GetElementDisplayValue(revitConduit, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true })
       };
 
       GetAllRevitParamsAndIds(speckleConduit, revitConduit,

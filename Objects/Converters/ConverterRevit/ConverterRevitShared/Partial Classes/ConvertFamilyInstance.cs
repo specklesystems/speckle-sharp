@@ -1,7 +1,6 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
 
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
@@ -336,7 +335,7 @@ namespace Objects.Converter.Revit
       if (revitFi.Location is LocationPoint locationPoint)
         speckleFi.rotation = locationPoint.Rotation;
 
-      speckleFi.displayValue = GetElementMesh(revitFi);
+      speckleFi.displayValue = GetElementDisplayValue(revitFi, SolidDisplayValueOptions);
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitFi);
 
@@ -716,7 +715,7 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var meshes = GetElementDisplayValue(instance, new Options() { DetailLevel = ViewDetailLevel.Fine }, true); // previous point-based family instnace conversion was using GetElementMesh(revitFi);
+        var meshes = GetElementDisplayValue(instance, new Options() { DetailLevel = ViewDetailLevel.Fine }, true);
         symbol.displayValue = meshes;
       }
       catch (Exception e)

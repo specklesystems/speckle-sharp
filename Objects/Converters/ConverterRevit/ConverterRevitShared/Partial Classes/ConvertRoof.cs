@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -223,7 +223,7 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleRoof, revitRoof,
         new List<string> { "ROOF_CONSTRAINT_LEVEL_PARAM", "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM", "ROOF_SLOPE" });
 
-      speckleRoof.displayValue = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleRoof.displayValue = GetElementDisplayValue(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       GetHostedElements(speckleRoof, revitRoof, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);

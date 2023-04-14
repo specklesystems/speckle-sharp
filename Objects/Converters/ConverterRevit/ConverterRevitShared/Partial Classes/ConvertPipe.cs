@@ -1,11 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Autodesk.Revit.DB;
-using Objects.BuiltElements.Revit;
-using Speckle.Core.Models;
-using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
+
+using Speckle.Core.Models;
+
+using Objects.BuiltElements.Revit;
+using Curve = Objects.Geometry.Curve;
 using Line = Objects.Geometry.Line;
 using Polyline = Objects.Geometry.Polyline;
 
@@ -36,7 +39,7 @@ namespace Objects.Converter.Revit
       var systemFamily = speckleRevitPipe?.systemType ?? "";
       var system = systemTypes.FirstOrDefault(x => x.Name == speckleRevitPipe?.systemName) ??
                    systemTypes.FirstOrDefault(x => x.Name == systemFamily);
-      if (system == null)
+      if (system is null)
       {
         system = systemTypes.FirstOrDefault();
         appObj.Update(logItem: $"Pipe type {systemFamily} not found; replaced with {system.Name}");
@@ -140,7 +143,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitPipe)
+        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
@@ -184,7 +187,7 @@ namespace Objects.Converter.Revit
         startTangent = VectorToSpeckle(revitPipe.StartTangent, revitPipe.Document),
         endTangent = VectorToSpeckle(revitPipe.EndTangent, revitPipe.Document),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitPipe)
+        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
