@@ -1,46 +1,48 @@
-using Avalonia;
+using System;
+using System.Collections.Generic;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 using DesktopUI2.Models;
 using Speckle.Core.Logging;
-using System;
-using System.Collections.Generic;
 
-namespace DesktopUI2.Views.Windows.Dialogs
+namespace DesktopUI2.Views.Windows.Dialogs;
+
+public class ImportExportAlert : Window
 {
-  public partial class ImportExportAlert : Window
+  public ImportExportAlert()
   {
-    public Action LaunchAction { get; set; }
-    public ImportExportAlert()
-    {
-      InitializeComponent();
-    }
+    InitializeComponent();
+  }
 
-    private void InitializeComponent()
-    {
-      AvaloniaXamlLoader.Load(this);
-    }
+  public Action LaunchAction { get; set; }
 
-    public void Close_Click(object sender, RoutedEventArgs e)
-    {
-      this.Close();
-    }
+  private void InitializeComponent()
+  {
+    AvaloniaXamlLoader.Load(this);
+  }
 
-    public void OpenSpeckle_Click(object sender, RoutedEventArgs e)
-    {
-      Analytics.TrackEvent(Analytics.Events.ImportExportAlert, new Dictionary<string, object>() { { "name", "Open Speckle" } });
-      LaunchAction.Invoke();
-      this.Close();
-    }
+  public void Close_Click(object sender, RoutedEventArgs e)
+  {
+    Close();
+  }
 
-    public void DontShow_Click(object sender, RoutedEventArgs e)
-    {
-      Analytics.TrackEvent(Analytics.Events.ImportExportAlert, new Dictionary<string, object>() { { "name", "Disable" } });
-      var config = ConfigManager.Load();
-      config.ShowImportExportAlert = false;
-      ConfigManager.Save(config);
-      this.Close();
-    }
+  public void OpenSpeckle_Click(object sender, RoutedEventArgs e)
+  {
+    Analytics.TrackEvent(
+      Analytics.Events.ImportExportAlert,
+      new Dictionary<string, object> { { "name", "Open Speckle" } }
+    );
+    LaunchAction.Invoke();
+    Close();
+  }
+
+  public void DontShow_Click(object sender, RoutedEventArgs e)
+  {
+    Analytics.TrackEvent(Analytics.Events.ImportExportAlert, new Dictionary<string, object> { { "name", "Disable" } });
+    var config = ConfigManager.Load();
+    config.ShowImportExportAlert = false;
+    ConfigManager.Save(config);
+    Close();
   }
 }
