@@ -1,4 +1,4 @@
-﻿#if ADVANCESTEEL2023
+#if ADVANCESTEEL2023
 
 using System.Collections.Generic;
 using System;
@@ -18,6 +18,8 @@ namespace Objects.Converter.AutocadCivil
     public const string SPECIALPART = "ASTSPECIALPART";
 
     public const string GRATING = "ASTGRATING";
+
+    public const string SLAB = "ASTSLAB";
   }
 
 }
