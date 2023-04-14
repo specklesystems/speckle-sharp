@@ -24,9 +24,7 @@ public class Account : IEquatable<Account>
       {
         if (serverInfo == null || userInfo == null)
           throw new SpeckleException("Incomplete account info: cannot generate id.");
-        _id = Utilities
-          .hashString(userInfo.email + serverInfo.url, Utilities.HashingFuctions.MD5)
-          .ToUpper();
+        _id = Utilities.hashString(userInfo.email + serverInfo.url, Utilities.HashingFuctions.MD5).ToUpper();
       }
       return _id;
     }
@@ -100,9 +98,7 @@ public class Account : IEquatable<Account>
 
   public bool Equals(Account other)
   {
-    return other is not null
-      && other.userInfo.email == userInfo.email
-      && other.serverInfo.url == serverInfo.url;
+    return other is not null && other.userInfo.email == userInfo.email && other.serverInfo.url == serverInfo.url;
   }
 
   public override bool Equals(object obj)

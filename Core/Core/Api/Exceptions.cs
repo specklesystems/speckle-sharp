@@ -16,23 +16,14 @@ public class SpeckleGraphQLException<T> : SpeckleException
   private GraphQLRequest _request;
   public GraphQLResponse<T>? Response;
 
-  public SpeckleGraphQLException(
-    string message,
-    GraphQLRequest request,
-    GraphQLResponse<T>? response
-  )
+  public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<T>? response)
     : base(message)
   {
     _request = request;
     Response = response;
   }
 
-  public SpeckleGraphQLException(
-    string message,
-    Exception inner,
-    GraphQLRequest request,
-    GraphQLResponse<T>? response
-  )
+  public SpeckleGraphQLException(string message, Exception inner, GraphQLRequest request, GraphQLResponse<T>? response)
     : base(message, inner) { }
 
   public SpeckleGraphQLException() { }
@@ -51,11 +42,7 @@ public class SpeckleGraphQLException<T> : SpeckleException
 
 public class SpeckleGraphQLException : SpeckleGraphQLException<object>
 {
-  public SpeckleGraphQLException(
-    string message,
-    GraphQLRequest request,
-    GraphQLResponse<object>? response
-  )
+  public SpeckleGraphQLException(string message, GraphQLRequest request, GraphQLResponse<object>? response)
     : base(message, request, response) { }
 
   public SpeckleGraphQLException() { }

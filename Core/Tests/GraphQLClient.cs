@@ -36,10 +36,7 @@ public class GraphQLClientTests
       typeof(SpeckleGraphQLInternalErrorException<FakeGqlResponseModel>),
       new Map { { "code", "INTERNAL_SERVER_ERROR" } }
     );
-    yield return new TestCaseData(
-      typeof(SpeckleGraphQLException<FakeGqlResponseModel>),
-      new Map { { "foo", "bar" } }
-    );
+    yield return new TestCaseData(typeof(SpeckleGraphQLException<FakeGqlResponseModel>), new Map { { "foo", "bar" } });
   }
 
   [Test, TestCaseSource(nameof(ErrorCases))]
@@ -111,10 +108,7 @@ public class GraphQLClientTests
       {
         counter++;
         if (counter < maxRetryCount)
-          throw new SpeckleGraphQLInternalErrorException<string>(
-            new GraphQLRequest(),
-            new GraphQLResponse<string>()
-          );
+          throw new SpeckleGraphQLInternalErrorException<string>(new GraphQLRequest(), new GraphQLResponse<string>());
         return expectedResult;
       })
       .ConfigureAwait(false);

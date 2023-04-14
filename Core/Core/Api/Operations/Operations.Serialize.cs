@@ -52,9 +52,7 @@ public static partial class Operations
   /// </summary>
   /// <param name="objects"></param>
   /// <returns></returns>
-  [Obsolete(
-    "Please use the Serialize(Base @object) function. This function will be removed in later versions."
-  )]
+  [Obsolete("Please use the Serialize(Base @object) function. This function will be removed in later versions.")]
   public static string Serialize(List<Base> objects)
   {
     var (_, settings) = GetSerializerInstance();
@@ -66,9 +64,7 @@ public static partial class Operations
   /// </summary>
   /// <param name="objects"></param>
   /// <returns></returns>
-  [Obsolete(
-    "Please use the Serialize(Base @object) function. This function will be removed in later versions."
-  )]
+  [Obsolete("Please use the Serialize(Base @object) function. This function will be removed in later versions.")]
   public static string Serialize(Dictionary<string, Base> objects)
   {
     var (_, settings) = GetSerializerInstance();
@@ -114,9 +110,7 @@ public static partial class Operations
   /// </summary>
   /// <param name="objectArr"></param>
   /// <returns></returns>
-  [Obsolete(
-    "Please use the Deserialize(Base @object) function. This function will be removed in later versions."
-  )]
+  [Obsolete("Please use the Deserialize(Base @object) function. This function will be removed in later versions.")]
   public static List<Base> DeserializeArray(
     string objectArr,
     SerializerVersion serializerVersion = SerializerVersion.V2
@@ -141,9 +135,7 @@ public static partial class Operations
   /// </summary>
   /// <param name="dictionary"></param>
   /// <returns></returns>
-  [Obsolete(
-    "Please use the Deserialize(Base @object) function. This function will be removed in later versions."
-  )]
+  [Obsolete("Please use the Deserialize(Base @object) function. This function will be removed in later versions.")]
   public static Dictionary<string, object> DeserializeDictionary(string dictionary)
   {
     var (_, settings) = GetSerializerInstance();

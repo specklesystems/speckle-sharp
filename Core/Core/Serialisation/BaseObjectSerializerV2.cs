@@ -31,8 +31,7 @@ public class BaseObjectSerializerV2
   /// </summary>
   public string TypeDiscriminator = "speckle_type";
 
-  private Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> TypedPropertiesCache =
-    new();
+  private Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> TypedPropertiesCache = new();
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -58,8 +57,7 @@ public class BaseObjectSerializerV2
     {
       _stopwatch.Start();
       Busy = true;
-      Dictionary<string, object> converted =
-        PreserializeObject(baseObj, true) as Dictionary<string, object>;
+      Dictionary<string, object> converted = PreserializeObject(baseObj, true) as Dictionary<string, object>;
       string serialized = Dict2Json(converted);
       StoreObject(converted["id"] as string, serialized);
       return serialized;
@@ -176,9 +174,7 @@ public class BaseObjectSerializerV2
     if (computeClosures || inheritedDetachInfo.IsDetachable || baseObj is Blob)
       ParentClosures.Add(closure);
 
-    List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(
-      baseObj
-    );
+    List<(PropertyInfo, PropertyAttributeInfo)> typedProperties = GetTypedPropertiesWithCache(baseObj);
     IEnumerable<string> dynamicProperties = baseObj.GetDynamicMembers();
 
     // propertyName -> (originalValue, isDetachable, isChunkable, chunkSize)
@@ -206,10 +202,7 @@ public class BaseObjectSerializerV2
         var match = ChunkPropertyNameRegex.Match(propName);
         isChunkable = int.TryParse(match.Groups[match.Groups.Count - 1].Value, out chunkSize);
       }
-      allProperties[propName] = (
-        baseValue,
-        new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, null)
-      );
+      allProperties[propName] = (baseValue, new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, null));
     }
 
     // Convert all properties
@@ -263,9 +256,7 @@ public class BaseObjectSerializerV2
   private object PreserializeBasePropertyValue(object baseValue, PropertyAttributeInfo detachInfo)
   {
     bool computeClosuresForChild =
-      (detachInfo.IsDetachable || detachInfo.IsChunkable)
-      && WriteTransports != null
-      && WriteTransports.Count > 0;
+      (detachInfo.IsDetachable || detachInfo.IsChunkable) && WriteTransports != null && WriteTransports.Count > 0;
 
     // If there are no WriteTransports, keep everything attached.
     if (WriteTransports == null || WriteTransports.Count == 0)
@@ -288,10 +279,7 @@ public class BaseObjectSerializerV2
       }
       if (crtChunk.data.Count > 0)
         chunks.Add(crtChunk);
-      return PreserializeObject(
-        chunks,
-        inheritedDetachInfo: new PropertyAttributeInfo(true, false, 0, null)
-      );
+      return PreserializeObject(chunks, inheritedDetachInfo: new PropertyAttributeInfo(true, false, 0, null));
     }
 
     return PreserializeObject(baseValue, inheritedDetachInfo: detachInfo);
@@ -304,10 +292,7 @@ public class BaseObjectSerializerV2
       int childDepth = ParentClosures.Count - parentLevel;
       if (!ParentClosures[parentLevel].ContainsKey(objectId))
         ParentClosures[parentLevel][objectId] = childDepth;
-      ParentClosures[parentLevel][objectId] = Math.Min(
-        ParentClosures[parentLevel][objectId],
-        childDepth
-      );
+      ParentClosures[parentLevel][objectId] = Math.Min(ParentClosures[parentLevel][objectId], childDepth);
     }
   }
 
@@ -386,23 +371,13 @@ public class BaseObjectSerializerV2
 
       object baseValue = typedProperty.GetValue(baseObj);
 
-      List<DetachProperty> detachableAttributes = typedProperty
-        .GetCustomAttributes<DetachProperty>(true)
-        .ToList();
-      List<Chunkable> chunkableAttributes = typedProperty
-        .GetCustomAttributes<Chunkable>(true)
-        .ToList();
+      List<DetachProperty> detachableAttributes = typedProperty.GetCustomAttributes<DetachProperty>(true).ToList();
+      List<Chunkable> chunkableAttributes = typedProperty.GetCustomAttributes<Chunkable>(true).ToList();
       bool isDetachable = detachableAttributes.Count > 0 && detachableAttributes[0].Detachable;
       bool isChunkable = chunkableAttributes.Count > 0;
       int chunkSize = isChunkable ? chunkableAttributes[0].MaxObjCountPerChunk : 1000;
-      JsonPropertyAttribute jsonPropertyAttribute =
-        typedProperty.GetCustomAttribute<JsonPropertyAttribute>();
-      ret.Add(
-        (
-          typedProperty,
-          new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, jsonPropertyAttribute)
-        )
-      );
+      JsonPropertyAttribute jsonPropertyAttribute = typedProperty.GetCustomAttribute<JsonPropertyAttribute>();
+      ret.Add((typedProperty, new PropertyAttributeInfo(isDetachable, isChunkable, chunkSize, jsonPropertyAttribute)));
     }
 
     TypedPropertiesCache[type.FullName] = ret;

@@ -57,8 +57,7 @@ public class SpeckleLogConfiguration
   /// <summary>
   /// Flag to override the default Sentry DNS
   /// </summary>
-  public string sentryDns =
-    "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
+  public string sentryDns = "https://f29ec716d14d4121bb2a71c4f3ef7786@o436188.ingest.sentry.io/5396846";
 
   /// <summary>
   /// Default SpeckleLogConfiguration constructor.
@@ -266,15 +265,9 @@ public static class SpeckleLog
     GlobalLogContext.PushProperty("hostOsArchitecture", osArchitecture);
   }
 
-  private static void _addHostApplicationDataToGlobalContext(
-    string hostApplicationName,
-    string? hostApplicationVersion
-  )
+  private static void _addHostApplicationDataToGlobalContext(string hostApplicationName, string? hostApplicationVersion)
   {
-    GlobalLogContext.PushProperty(
-      "hostApplication",
-      $"{hostApplicationName}{hostApplicationVersion ?? ""}"
-    );
+    GlobalLogContext.PushProperty("hostApplication", $"{hostApplicationName}{hostApplicationVersion ?? ""}");
 
     SentrySdk.ConfigureScope(scope =>
     {

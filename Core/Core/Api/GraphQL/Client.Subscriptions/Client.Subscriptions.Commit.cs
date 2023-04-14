@@ -19,10 +19,7 @@ public partial class Client
   /// <returns></returns>
   public void SubscribeCommitCreated(string streamId)
   {
-    var request = new GraphQLRequest
-    {
-      Query = $@"subscription {{ commitCreated (streamId: ""{streamId}"") }}"
-    };
+    var request = new GraphQLRequest { Query = $@"subscription {{ commitCreated (streamId: ""{streamId}"") }}" };
 
     CommitCreatedSubscription = SubscribeTo<CommitCreatedResult>(
       request,
@@ -49,8 +46,7 @@ public partial class Client
   {
     var request = new GraphQLRequest
     {
-      Query =
-        $@"subscription {{ commitUpdated (streamId: ""{streamId}"", commitId: ""{commitId}"") }}"
+      Query = $@"subscription {{ commitUpdated (streamId: ""{streamId}"", commitId: ""{commitId}"") }}"
     };
 
     var res = GQLClient.CreateSubscriptionStream<CommitUpdatedResult>(request);
@@ -77,10 +73,7 @@ public partial class Client
   /// <returns></returns>
   public void SubscribeCommitDeleted(string streamId)
   {
-    var request = new GraphQLRequest
-    {
-      Query = $@"subscription {{ commitDeleted (streamId: ""{streamId}"") }}"
-    };
+    var request = new GraphQLRequest { Query = $@"subscription {{ commitDeleted (streamId: ""{streamId}"") }}" };
     CommitDeletedSubscription = SubscribeTo<CommitDeletedResult>(
       request,
       (sender, result) => OnCommitDeleted?.Invoke(sender, result.commitDeleted)

@@ -23,6 +23,7 @@ public class BrepFace : Base
 
   [JsonIgnore]
   public Brep Brep { get; set; }
+
   public int SurfaceIndex { get; set; }
   public List<int> LoopIndices { get; set; }
   public int OuterLoopIndex { get; set; }

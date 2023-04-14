@@ -467,12 +467,7 @@ public class Connector
 
 public class Version
 {
-  public Version(
-    string number,
-    string url,
-    Os os = Os.Win,
-    Architecture architecture = Architecture.Any
-  )
+  public Version(string number, string url, Os os = Os.Win, Architecture architecture = Architecture.Any)
   {
     Number = number;
     Url = url;

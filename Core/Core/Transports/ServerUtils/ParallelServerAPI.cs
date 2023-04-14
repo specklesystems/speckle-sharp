@@ -48,9 +48,7 @@ public class ParallelServerApi : IDisposable, IServerApi
 
     BlobStorageFolder = blobStorageFolder;
 
-    Tasks = new BlockingCollection<(ServerApiOperation, object, TaskCompletionSource<object>)>(
-      numBufferedOperations
-    );
+    Tasks = new BlockingCollection<(ServerApiOperation, object, TaskCompletionSource<object>)>(numBufferedOperations);
   }
 
   public CancellationToken CancellationToken { get; set; }
@@ -80,17 +78,13 @@ public class ParallelServerApi : IDisposable, IServerApi
     {
       if (splitObjectsIds.Count <= i || splitObjectsIds[i].Count == 0)
         continue;
-      Task<object> op = QueueOperation(
-        ServerApiOperation.HasObjects,
-        (streamId, splitObjectsIds[i])
-      );
+      Task<object> op = QueueOperation(ServerApiOperation.HasObjects, (streamId, splitObjectsIds[i]));
       tasks.Add(op);
     }
     Dictionary<string, bool> ret = new();
     foreach (Task<object> task in tasks)
     {
-      Dictionary<string, bool> taskResult =
-        await task.ConfigureAwait(false) as Dictionary<string, bool>;
+      Dictionary<string, bool> taskResult = await task.ConfigureAwait(false) as Dictionary<string, bool>;
       foreach (KeyValuePair<string, bool> kv in taskResult)
         ret[kv.Key] = kv.Value;
     }
@@ -106,11 +100,7 @@ public class ParallelServerApi : IDisposable, IServerApi
     return result as string;
   }
 
-  public async Task DownloadObjects(
-    string streamId,
-    List<string> objectIds,
-    CbObjectDownloaded onObjectCallback
-  )
+  public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
   {
     // Stopwatch sw = new Stopwatch(); sw.Start(); // TODO: remove
 
@@ -164,10 +154,7 @@ public class ParallelServerApi : IDisposable, IServerApi
     {
       if (splitObjects.Count <= i || splitObjects[i].Count == 0)
         continue;
-      Task<object> op = QueueOperation(
-        ServerApiOperation.UploadObjects,
-        (streamId, splitObjects[i])
-      );
+      Task<object> op = QueueOperation(ServerApiOperation.UploadObjects, (streamId, splitObjects[i]));
       tasks.Add(op);
     }
     await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
@@ -181,17 +168,10 @@ public class ParallelServerApi : IDisposable, IServerApi
     await op.ConfigureAwait(false);
   }
 
-  public async Task DownloadBlobs(
-    string streamId,
-    List<string> blobIds,
-    CbBlobdDownloaded onBlobDownloaded
-  )
+  public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
   {
     EnsureStarted();
-    Task<object> op = QueueOperation(
-      ServerApiOperation.DownloadBlobs,
-      (streamId, blobIds, onBlobDownloaded)
-    );
+    Task<object> op = QueueOperation(ServerApiOperation.DownloadBlobs, (streamId, blobIds, onBlobDownloaded));
     await op.ConfigureAwait(false);
   }
 
@@ -246,8 +226,7 @@ public class ParallelServerApi : IDisposable, IServerApi
 
       while (true)
       {
-        (ServerApiOperation operation, object inputValue, TaskCompletionSource<object> tcs) =
-          Tasks.Take();
+        (ServerApiOperation operation, object inputValue, TaskCompletionSource<object> tcs) = Tasks.Take();
         if (tcs == null)
           return;
 
@@ -276,27 +255,18 @@ public class ParallelServerApi : IDisposable, IServerApi
               tcs.SetResult(hoResult);
               break;
             case ServerApiOperation.UploadObjects:
-              (string uoStreamId, List<(string, string)> uoObjects) = ((
-                string,
-                List<(string, string)>
-              ))inputValue;
+              (string uoStreamId, List<(string, string)> uoObjects) = ((string, List<(string, string)>))inputValue;
               serialApi.UploadObjects(uoStreamId, uoObjects).Wait();
               // TODO: pass errors?
               tcs.SetResult(null);
               break;
             case ServerApiOperation.UploadBlobs:
-              (string ubStreamId, List<(string, string)> ubBlobs) = ((
-                string,
-                List<(string, string)>
-              ))inputValue;
+              (string ubStreamId, List<(string, string)> ubBlobs) = ((string, List<(string, string)>))inputValue;
               serialApi.UploadBlobs(ubStreamId, ubBlobs).Wait();
               tcs.SetResult(null);
               break;
             case ServerApiOperation.HasBlobs:
-              (string hbStreamId, List<(string, string)> hBlobs) = ((
-                string,
-                List<(string, string)>
-              ))inputValue;
+              (string hbStreamId, List<(string, string)> hBlobs) = ((string, List<(string, string)>))inputValue;
               var hasBlobResult = serialApi
                 .HasBlobs(hbStreamId, hBlobs.Select(b => b.Item1.Split(':')[1]).ToList())
                 .Result;

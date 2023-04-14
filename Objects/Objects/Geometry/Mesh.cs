@@ -148,7 +148,7 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   /// Gets a texture coordinate as a <see cref="(T1, T2)"/> by <paramref name="index"/>
   /// </summary>
   /// <param name="index">The index of the texture coordinate</param>
-  /// <returns>Texture coordinate as a <see cref="ValueTuple{T1,T2}"/></returns>
+  /// <returns>Texture coordinate as a <see cref="(T1, T2)"/></returns>
   public (double, double) GetTextureCoordinate(int index)
   {
     index *= 2;

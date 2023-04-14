@@ -43,9 +43,7 @@ internal class Program
       40759.5123
     );
 
-    var log = SpeckleLog.Logger
-      .ForContext("currentSpeed", "warp 5")
-      .ForContext("captain", "Jean-Luc Picard");
+    var log = SpeckleLog.Logger.ForContext("currentSpeed", "warp 5").ForContext("captain", "Jean-Luc Picard");
 
     SpeckleLog.Logger.Information(
       "We're traveling to {destination} our current speed is {currentSpeed}",
@@ -104,10 +102,7 @@ internal class Program
   /// <param name="numVertices"></param>
   /// <param name="numObjects"></param>
   /// <returns></returns>
-  public static async Task SendReceiveManyLargeObjects(
-    int numVertices = 1000,
-    int numObjects = 10_000
-  )
+  public static async Task SendReceiveManyLargeObjects(int numVertices = 1000, int numObjects = 10_000)
   {
     var objs = new List<Base>();
 
@@ -184,9 +179,7 @@ internal class Program
   public static async Task SendReceiveLargeSingleObjects(int numVertices = 100_000)
   {
     Console.Clear();
-    Console.WriteLine(
-      $"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces"
-    );
+    Console.WriteLine($"Big mesh time! ({numVertices} vertices, and some {numVertices * 1.5} faces");
     var myMesh = new Mesh();
 
     for (int i = 1; i <= numVertices; i++)
@@ -249,9 +242,7 @@ internal class Program
     ((dynamic)myRevision)["@FTW"] = objects.GetRange(130, objects.Count - 130 - 1);
 
     var step = sw.ElapsedMilliseconds;
-    Console.WriteLine(
-      $"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds."
-    );
+    Console.WriteLine($"Finished generating {numObjects} objs in ${sw.ElapsedMilliseconds / 1000f} seconds.");
 
     Console.Clear();
 
@@ -280,11 +271,7 @@ internal class Program
     var secondServer = new ServerTransport(AccountManager.GetDefaultAccount(), secondStreamId);
 
     var res = await Operations
-      .Send(
-        myRevision,
-        new List<ITransport> { firstServer, secondServer },
-        onProgressAction: pushProgressAction
-      )
+      .Send(myRevision, new List<ITransport> { firstServer, secondServer }, onProgressAction: pushProgressAction)
       .ConfigureAwait(false);
 
     Console.Clear();

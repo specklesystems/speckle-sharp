@@ -34,10 +34,7 @@ public static class DefaultTraversal
       .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
       .ContinueTraversing(None);
 
-    var defaultRule = TraversalRule
-      .NewTraversalRule()
-      .When(_ => true)
-      .ContinueTraversing(Members());
+    var defaultRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
 
     return new GraphTraversal(convertableRule, ignoreResultsRule, defaultRule);
   }
@@ -54,10 +51,7 @@ public static class DefaultTraversal
   /// <returns></returns>
   public static GraphTraversal CreateRevitTraversalFunc(ISpeckleConverter converter)
   {
-    var convertableRule = TraversalRule
-      .NewTraversalRule()
-      .When(converter.CanConvertToNative)
-      .ContinueTraversing(None);
+    var convertableRule = TraversalRule.NewTraversalRule().When(converter.CanConvertToNative).ContinueTraversing(None);
 
     var displayValueRule = TraversalRule
       .NewTraversalRule()
@@ -79,10 +73,7 @@ public static class DefaultTraversal
       .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
       .ContinueTraversing(None);
 
-    var defaultRule = TraversalRule
-      .NewTraversalRule()
-      .When(_ => true)
-      .ContinueTraversing(Members());
+    var defaultRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
 
     return new GraphTraversal(convertableRule, displayValueRule, ignoreResultsRule, defaultRule);
   }
@@ -105,10 +96,7 @@ public static class DefaultTraversal
       .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
       .ContinueTraversing(None);
 
-    var defaultRule = TraversalRule
-      .NewTraversalRule()
-      .When(_ => true)
-      .ContinueTraversing(Members());
+    var defaultRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
 
     return new GraphTraversal(bimElementRule, ignoreResultsRule, defaultRule);
   }
@@ -126,9 +114,7 @@ public static class DefaultTraversal
 
   internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
 
-  internal static readonly string[] ignoreProps = new[] { "@blockDefinition" }
-    .Concat(displayValueAliases)
-    .ToArray();
+  internal static readonly string[] ignoreProps = new[] { "@blockDefinition" }.Concat(displayValueAliases).ToArray();
 
   internal static IEnumerable<string> DisplayValueAliases(Base _)
   {
@@ -140,9 +126,7 @@ public static class DefaultTraversal
     return Enumerable.Empty<string>();
   }
 
-  internal static SelectMembers Members(
-    DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers
-  )
+  internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
   {
     return x => x.GetMembers(includeMembers).Keys;
   }

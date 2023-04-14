@@ -36,6 +36,7 @@ public class BrepTrim : Base
 
   [JsonIgnore]
   public Brep Brep { get; set; }
+
   public int EdgeIndex { get; set; }
   public int StartIndex { get; set; }
   public int EndIndex { get; set; }

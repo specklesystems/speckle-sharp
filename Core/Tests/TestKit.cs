@@ -9,8 +9,7 @@ namespace Tests;
 /// </summary>
 public class TestKit : ISpeckleKit
 {
-  public IEnumerable<Type> Types =>
-    GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
+  public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
   public string Description => "Simple object model for with some types for tests.";
 

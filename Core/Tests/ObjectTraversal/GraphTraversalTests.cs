@@ -8,10 +8,7 @@ namespace TestsUnit.ObjectTraversal;
 [TestFixture, TestOf(typeof(GraphTraversal))]
 public class GraphTraversalTests
 {
-  private static IEnumerable<TraversalContext> Traverse(
-    Base testCase,
-    params ITraversalRule[] rules
-  )
+  private static IEnumerable<TraversalContext> Traverse(Base testCase, params ITraversalRule[] rules)
   {
     var sut = new GraphTraversal(rules);
     return sut.Traverse(testCase);
@@ -24,10 +21,7 @@ public class GraphTraversalTests
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(
-        x =>
-          x.GetMembers(DynamicBaseMemberType.All)
-            .Where(p => p.Value is IList)
-            .Select(kvp => kvp.Key)
+        x => x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IList).Select(kvp => kvp.Key)
       );
 
     var expectTraverse = new Base { id = "List Member" };
@@ -59,10 +53,7 @@ public class GraphTraversalTests
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(
-        x =>
-          x.GetMembers(DynamicBaseMemberType.All)
-            .Where(p => p.Value is IDictionary)
-            .Select(kvp => kvp.Key)
+        x => x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IDictionary).Select(kvp => kvp.Key)
       );
 
     var expectTraverse = new Base { id = "Dict Member" };

@@ -15,9 +15,7 @@ public static class Subscriptions
 
     Console.WriteLine("Client created...");
 
-    Console.WriteLine(
-      "Subscribing to stream created. On first created event will subscribe to that stream's updates."
-    );
+    Console.WriteLine("Subscribing to stream created. On first created event will subscribe to that stream's updates.");
 
     myClient.SubscribeUserStreamAdded();
 

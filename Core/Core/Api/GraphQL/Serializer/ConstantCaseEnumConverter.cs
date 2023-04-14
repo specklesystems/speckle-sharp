@@ -20,10 +20,7 @@ public class ConstantCaseEnumConverter : StringEnumConverter
       var enumString = ((Enum)value).ToString("G");
       var memberName = value
         .GetType()
-        .GetMember(
-          enumString,
-          BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public
-        )
+        .GetMember(enumString, BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public)
         .FirstOrDefault()
         ?.Name;
       if (string.IsNullOrEmpty(memberName))

@@ -12,9 +12,7 @@ namespace Tests.Models;
 /// </summary>
 [
   TestFixture,
-  Description(
-    "For certain types, changing property from one type to another should be implicitly backwards compatible"
-  )
+  Description("For certain types, changing property from one type to another should be implicitly backwards compatible")
 ]
 public class SerializerNonBreakingChanges : PrimitiveTestFixture
 {
@@ -142,9 +140,7 @@ public class SerializerBreakingChanges : PrimitiveTestFixture
 
   [
     Test,
-    Description(
-      "Deserialization of a JTokenType.Float to a .NET short/int/long should throw exception"
-    ),
+    Description("Deserialization of a JTokenType.Float to a .NET short/int/long should throw exception"),
     TestCaseSource(nameof(Float64TestCases)),
     TestCase(1e+30)
   ]
@@ -245,21 +241,9 @@ public abstract class PrimitiveTestFixture
   public static int[] Int32TestCases = { int.MinValue, int.MaxValue };
   public static long[] Int64TestCases = { long.MaxValue, long.MinValue };
 
-  public static double[] Float64TestCases =
-  {
-    default,
-    double.Epsilon,
-    double.MaxValue,
-    double.MinValue
-  };
+  public static double[] Float64TestCases = { default, double.Epsilon, double.MaxValue, double.MinValue };
 
-  public static float[] Float32TestCases =
-  {
-    default,
-    float.Epsilon,
-    float.MaxValue,
-    float.MinValue
-  };
+  public static float[] Float32TestCases = { default, float.Epsilon, float.MaxValue, float.MinValue };
 
   public static Half[] Float16TestCases = { default, Half.Epsilon, Half.MaxValue, Half.MinValue };
   public static float[] FloatIntegralTestCases = { 0, 1, int.MaxValue, int.MinValue };

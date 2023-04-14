@@ -26,11 +26,7 @@ public partial class Client
   /// <param name="streamId">Id of the stream to get the object from</param>
   /// <param name="objectId">Id of the object to get</param>
   /// <returns></returns>
-  public async Task<SpeckleObject> ObjectGet(
-    CancellationToken cancellationToken,
-    string streamId,
-    string objectId
-  )
+  public async Task<SpeckleObject> ObjectGet(CancellationToken cancellationToken, string streamId, string objectId)
   {
     var request = new GraphQLRequest
     {
@@ -48,8 +44,7 @@ public partial class Client
       Variables = new { streamId, objectId }
     };
 
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.@object;
   }
 
@@ -71,11 +66,7 @@ public partial class Client
   /// <param name="streamId"></param>
   /// <param name="objectId"></param>
   /// <returns></returns>
-  public async Task<SpeckleObject> ObjectCountGet(
-    CancellationToken cancellationToken,
-    string streamId,
-    string objectId
-  )
+  public async Task<SpeckleObject> ObjectCountGet(CancellationToken cancellationToken, string streamId, string objectId)
   {
     var request = new GraphQLRequest
     {
@@ -90,8 +81,7 @@ public partial class Client
       Variables = new { streamId, objectId }
     };
 
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.@object;
   }
 }
