@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -496,6 +496,17 @@ namespace Objects.Converter.Revit
             break;
 
           case StorageType.Integer:
+            if (value is string s)
+            {
+              if (s.ToLower() == "no")
+              {
+                value = 0;
+              }
+              else if (s.ToLower() == "yes")
+              {
+                value = 1;
+              }
+            }
             rp.Set(Convert.ToInt32(value));
             break;
 

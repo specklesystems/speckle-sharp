@@ -43,10 +43,18 @@ namespace Objects.Converter.Revit
       var speckleIndexToRevitScheduleDataMap = new Dictionary<int, RevitScheduleData>();
 
       var scheduleFieldOrder = revitSchedule.Definition.GetFieldOrder();
-
+      var numHiddenFields = 0;
       for (var i = 0; i < scheduleFieldOrder.Count; i++)
       {
         var field = revitSchedule.Definition.GetField(scheduleFieldOrder[i]);
+
+        // we cannot get the values for hidden fields, so we need to subtract one from the index that is passed to 
+        // tableView.GetCellText.
+        if (field.IsHidden) 
+        { 
+          numHiddenFields++;
+          continue; 
+        }
         var fieldInt = field.ParameterId.IntegerValue;
         var incomingColumnIndex = speckleTable.columnMetadata
           .FindIndex(b => b["BuiltInParameterInteger"] is long paramInt && paramInt == fieldInt);
@@ -58,7 +66,7 @@ namespace Objects.Converter.Revit
 
         var scheduleData = new RevitScheduleData
         {
-          ColumnIndex = i,
+          ColumnIndex = i - numHiddenFields,
           Parameter = (BuiltInParameter)fieldInt
         };
 
@@ -81,16 +89,6 @@ namespace Objects.Converter.Revit
 
         for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
         {
-          for (var columnIndex = 0; columnIndex< columnCount; columnIndex++)
-          {
-            string existingValue = "";
-            try
-            {
-              existingValue = revitSchedule.GetCellText(tableSection, rowIndex, columnIndex);
-            }
-            catch { }
-          }
-
           var elementIds = ElementApplicationIdsInRow(rowIndex, section, originalTableIds, revitSchedule, tableSection);
 
           foreach (var id in elementIds)
