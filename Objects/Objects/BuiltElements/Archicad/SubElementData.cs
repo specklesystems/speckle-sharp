@@ -1,13 +1,7 @@
-﻿using Speckle.Core.Models;
-using Objects.Geometry;
-using System.Collections.Generic;
+namespace Objects.BuiltElements.Archicad;
 
-
-namespace Objects.BuiltElements.Archicad
+public sealed class SubElementData
 {
-  public sealed class SubElementData
-  {
-    public string applicationId { get; set; }
-    public string elementType { get; set; }
-  }
+  public string applicationId { get; set; }
+  public string elementType { get; set; }
 }

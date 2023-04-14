@@ -1,11 +1,8 @@
-﻿using Speckle.Core.Models;
-using Speckle.Core.Kits;
-using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Text;
 using Objects.BuiltElements.Revit;
 using Objects.Utils;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 namespace Objects.Other
 {
@@ -14,10 +11,6 @@ namespace Objects.Other
   /// </summary>
   public class Material : Base
   {
-
-    public string name { get; set; }
-
-
     public Material() { }
 
     [SchemaInfo("RevitMaterial", "Creates a Speckle material", "BIM", "Architecture")]
@@ -25,17 +18,40 @@ namespace Objects.Other
     {
       this.name = name;
     }
+
+    public string name { get; set; }
   }
 }
 
 namespace Objects.Other.Revit
 {
-
   /// <summary>
   /// Material in Revit defininf all revit properties from Autodesk.Revit.DB.Material
   /// </summary>
   public class RevitMaterial : Material
   {
+    public RevitMaterial() { }
+
+    [SchemaInfo("RevitMaterial", "Creates a Speckle material", "Revit", "Architecture")]
+    public RevitMaterial(
+      string name,
+      string category,
+      string materialclass,
+      int shiny,
+      int smooth,
+      int transparent,
+      List<Parameter> parameters = null
+    )
+    {
+      this.parameters = parameters.ToBase();
+      this.name = name;
+      materialCategory = category;
+      materialClass = materialclass;
+      shininess = shiny;
+      smoothness = smooth;
+      transparency = transparent;
+    }
+
     public string materialCategory { get; set; }
     public string materialClass { get; set; }
 
@@ -44,22 +60,5 @@ namespace Objects.Other.Revit
     public int transparency { get; set; }
 
     public Base parameters { get; set; }
-
-    public RevitMaterial() { }
-
-    [SchemaInfo("RevitMaterial", "Creates a Speckle material", "Revit", "Architecture")]
-    public RevitMaterial(string name, string category, string materialclass, int shiny, int smooth, int transparent,
-  List<Parameter> parameters = null)
-    {
-      this.parameters = parameters.ToBase();
-      this.name = name;
-      this.materialCategory = category;
-      this.materialClass = materialclass;
-      this.shininess = shiny;
-      this.smoothness = smooth;
-      this.transparency = transparent;
-    }
   }
 }
-
-

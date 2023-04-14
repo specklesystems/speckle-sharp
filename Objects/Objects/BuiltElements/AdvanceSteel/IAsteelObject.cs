@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Speckle.Core.Models;
 
-namespace Objects.BuiltElements.AdvanceSteel
+namespace Objects.BuiltElements.AdvanceSteel;
+
+public interface IAsteelObject
 {
-  public interface IAsteelObject
-  {
-    Base userAttributes { get; set; }
-  }
+  Base userAttributes { get; set; }
 }
