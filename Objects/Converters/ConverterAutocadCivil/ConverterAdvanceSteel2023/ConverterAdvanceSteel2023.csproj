@@ -25,12 +25,12 @@
 		<PackageReference Include="MathNet.Spatial" Version="0.6.0" />
 		<PackageReference Include="PH.AdvanceSteel.API" Version="2023.0.3" />
 		<PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" />
+		<PackageReference Include="Triangle" Version="0.0.6-Beta3" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
 		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-		<ProjectReference Include="..\..\StructuralUtilities\Triangle\Triangle.csproj" />
 	</ItemGroup>
 
 	<Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
