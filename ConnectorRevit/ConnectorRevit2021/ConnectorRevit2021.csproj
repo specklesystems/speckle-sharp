@@ -4,7 +4,6 @@
     <AssemblyName>SpeckleConnectorRevit</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2021\Revit.exe</StartProgram>
     <RevitFolderName>SpeckleRevit2</RevitFolderName>
     <RevitVersion>2021</RevitVersion>
     <AssemblyTitle>ConnectorRevit</AssemblyTitle>
