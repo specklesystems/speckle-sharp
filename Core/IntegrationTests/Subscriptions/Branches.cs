@@ -24,11 +24,7 @@ public class Branches
   [Test, Order(0)]
   public async Task SubscribeBranchCreated()
   {
-    var streamInput = new StreamCreateInput
-    {
-      description = "Hello World",
-      name = "Super Stream 01"
-    };
+    var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
 
     streamId = await client.StreamCreate(streamInput).ConfigureAwait(false);
     Assert.NotNull(streamId);

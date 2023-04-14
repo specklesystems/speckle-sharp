@@ -113,8 +113,7 @@ public static class Analytics
           .GetAllNetworkInterfaces()
           .Where(
             nic =>
-              nic.OperationalStatus == OperationalStatus.Up
-              && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
+              nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
           )
           .Select(nic => nic.GetPhysicalAddress().ToString())
           .FirstOrDefault();
@@ -150,13 +149,7 @@ public static class Analytics
     if (account == null)
       TrackEvent(eventName, customProperties, isAction);
     else
-      TrackEvent(
-        account.GetHashedEmail(),
-        account.GetHashedServer(),
-        eventName,
-        customProperties,
-        isAction
-      );
+      TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties, isAction);
   }
 
   /// <summary>
@@ -202,17 +195,11 @@ public static class Analytics
           properties.Add("type", "action");
 
         if (customProperties != null)
-          properties = properties
-            .Concat(customProperties)
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+          properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        string json = JsonConvert.SerializeObject(
-          new { @event = eventName.ToString(), properties }
-        );
+        string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
 
-        var query = new StreamContent(
-          new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json)))
-        );
+        var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
         HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -255,9 +242,7 @@ public static class Analytics
         };
         string json = JsonConvert.SerializeObject(data);
 
-        var query = new StreamContent(
-          new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json)))
-        );
+        var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
         HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");

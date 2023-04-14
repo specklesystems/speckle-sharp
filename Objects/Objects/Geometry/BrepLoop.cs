@@ -22,6 +22,7 @@ public class BrepLoop : Base
 
   [JsonIgnore]
   public Brep Brep { get; set; }
+
   public int FaceIndex { get; set; }
   public List<int> TrimIndices { get; set; }
   public BrepLoopType Type { get; set; }

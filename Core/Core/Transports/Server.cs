@@ -108,10 +108,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
   {
-    var payload = new Dictionary<string, string>
-    {
-      { "objects", JsonConvert.SerializeObject(objectIds) }
-    };
+    var payload = new Dictionary<string, string> { { "objects", JsonConvert.SerializeObject(objectIds) } };
     var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
     var response = await Client
       .PostAsync(
@@ -127,12 +124,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     return hasObjects;
   }
 
-  private void Initialize(
-    string baseUri,
-    string streamId,
-    string authorizationToken,
-    int timeoutSeconds = 60
-  )
+  private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
   {
     SpeckleLog.Logger.Information("Initializing New Remote V1 Transport for {baseUri}", baseUri);
 
@@ -292,8 +284,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         return;
       }
 
-      (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch()
-        .ConfigureAwait(false);
+      (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch().ConfigureAwait(false);
       if (batch == null)
       {
         // Canceled or error happened (which was already reported)
@@ -328,11 +319,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       }
       else
       {
-        multipart.Add(
-          new StringContent(_ct, Encoding.UTF8),
-          $"batch-{addedMpCount}",
-          $"batch-{addedMpCount}"
-        );
+        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{addedMpCount}", $"batch-{addedMpCount}");
       }
 
       addedMpCount++;
@@ -359,10 +346,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         IS_WRITING = false;
         OnErrorAction?.Invoke(
           TransportName,
-          new Exception(
-            $"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}",
-            e
-          )
+          new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e)
         );
 
         Queue = new ConcurrentQueue<(string, string, int)>();
@@ -483,8 +467,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
 
     var childrenFoundMap = await targetTransport.HasObjects(childrenIds).ConfigureAwait(false);
-    List<string> newChildrenIds =
-      new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
+    List<string> newChildrenIds = new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
     targetTransport.BeginWrite();
 
@@ -496,8 +479,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       childrenIdBatch.Add(objectId);
       if (childrenIdBatch.Count >= DOWNLOAD_BATCH_SIZE)
       {
-        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport)
-          .ConfigureAwait(false);
+        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport).ConfigureAwait(false);
         if (!downloadBatchResult)
           return null;
         childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
@@ -505,8 +487,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     }
     if (childrenIdBatch.Count > 0)
     {
-      downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport)
-        .ConfigureAwait(false);
+      downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport).ConfigureAwait(false);
       if (!downloadBatchResult)
         return null;
     }
@@ -537,11 +518,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       try
       {
         childrenHttpResponse = await Client
-          .SendAsync(
-            childrenHttpMessage,
-            HttpCompletionOption.ResponseHeadersRead,
-            CancellationToken
-          )
+          .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
           .ConfigureAwait(false);
         childrenHttpResponse.EnsureSuccessStatusCode();
       }

@@ -110,7 +110,7 @@ public class Point : Base, IHasBoundingBox, ITransformable<Point>
   /// <returns>A list of coordinates {x, y, z} </returns>
   public List<double> ToList()
   {
-    return new List<double>() { x, y, z };
+    return new List<double> { x, y, z };
   }
 
   /// <summary>

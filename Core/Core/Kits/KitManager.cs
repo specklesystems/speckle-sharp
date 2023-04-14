@@ -14,9 +14,7 @@ public static class KitManager
 {
   private static string? _kitsFolder;
 
-  public static readonly AssemblyName SpeckleAssemblyName = typeof(Base)
-    .GetTypeInfo()
-    .Assembly.GetName();
+  public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
 
   private static Dictionary<string, ISpeckleKit> _SpeckleKits = new();
 
@@ -134,10 +132,7 @@ public static class KitManager
 
   private static void Load()
   {
-    SpeckleLog.Logger.Information(
-      "Initializing Kit Manager in {KitsFolder}",
-      SpecklePathProvider.KitsFolderPath
-    );
+    SpeckleLog.Logger.Information("Initializing Kit Manager in {KitsFolder}", SpecklePathProvider.KitsFolderPath);
 
     GetLoadedSpeckleReferencingAssemblies();
     LoadSpeckleReferencingAssemblies();

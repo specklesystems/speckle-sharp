@@ -44,10 +44,7 @@ public partial class Client
   /// <param name="id">streamId</param>
   public void SubscribeStreamUpdated(string id)
   {
-    var request = new GraphQLRequest
-    {
-      Query = $@"subscription {{ streamUpdated( streamId: ""{id}"") }}"
-    };
+    var request = new GraphQLRequest { Query = $@"subscription {{ streamUpdated( streamId: ""{id}"") }}" };
     StreamUpdatedSubscription = SubscribeTo<StreamUpdatedResult>(
       request,
       (sender, result) => OnStreamUpdated?.Invoke(sender, result.streamUpdated)

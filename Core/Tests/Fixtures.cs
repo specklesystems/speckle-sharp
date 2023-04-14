@@ -13,11 +13,7 @@ public class SetUp
   [OneTimeSetUp]
   public void BeforeAll()
   {
-    SpeckleLog.Initialize(
-      "Core",
-      "Testing",
-      new SpeckleLogConfiguration(logToFile: false, logToSeq: false)
-    );
+    SpeckleLog.Initialize("Core", "Testing", new SpeckleLogConfiguration(logToFile: false, logToSeq: false));
     SpeckleLog.Logger.Information("Initialized logger for testing");
   }
 }
@@ -26,10 +22,7 @@ public abstract class Fixtures
 {
   private static SQLiteTransport AccountStorage = new(scope: "Accounts");
 
-  private static string accountPath = Path.Combine(
-    SpecklePathProvider.AccountsFolderPath,
-    "TestAccount.json"
-  );
+  private static string accountPath = Path.Combine(SpecklePathProvider.AccountsFolderPath, "TestAccount.json");
 
   public static void UpdateOrSaveAccount(Account account)
   {

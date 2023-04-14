@@ -46,11 +46,7 @@ public static class Utilities
     using (var stream = File.OpenRead(filePath))
     {
       var hash = hashAlgorithm.ComputeHash(stream);
-      return BitConverter
-        .ToString(hash)
-        .Replace("-", "")
-        .ToLowerInvariant()
-        .Substring(0, HashLength);
+      return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
     }
   }
 
@@ -108,12 +104,7 @@ public static class Utilities
   /// <param name="getParentProps">Set to true to also retrieve simple props of direct parent type</param>
   /// <param name="ignore">Names of props to ignore</param>
   /// <returns></returns>
-  public static Base GetApplicationProps(
-    object o,
-    Type t,
-    bool getParentProps = false,
-    List<string> ignore = null
-  )
+  public static Base GetApplicationProps(object o, Type t, bool getParentProps = false, List<string> ignore = null)
   {
     var appProps = new Base();
     appProps["class"] = t.Name;
@@ -121,11 +112,7 @@ public static class Utilities
     try
     {
       // set primitive writeable props
-      foreach (
-        var propInfo in t.GetProperties(
-          BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public
-        )
-      )
+      foreach (var propInfo in t.GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public))
       {
         if (ignore != null && ignore.Contains(propInfo.Name))
           continue;

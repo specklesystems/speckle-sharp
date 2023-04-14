@@ -74,9 +74,7 @@ public class StreamWrapper
         return StreamWrapperType.Branch;
 
       // If we reach here and there is no stream id, it means that the stream is invalid for some reason.
-      return !string.IsNullOrEmpty(StreamId)
-        ? StreamWrapperType.Stream
-        : StreamWrapperType.Undefined;
+      return !string.IsNullOrEmpty(StreamId) ? StreamWrapperType.Stream : StreamWrapperType.Undefined;
     }
   }
 
@@ -85,9 +83,7 @@ public class StreamWrapper
     Account account = AccountManager.GetDefaultAccount();
 
     if (account == null)
-      throw new SpeckleException(
-        "You do not have any account. Please create one or add it to the Speckle Manager."
-      );
+      throw new SpeckleException("You do not have any account. Please create one or add it to the Speckle Manager.");
 
     ServerUrl = account.serverInfo.url;
     UserId = account.userInfo.id;

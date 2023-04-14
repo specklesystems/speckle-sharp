@@ -167,10 +167,7 @@ public static partial class Operations
 
       if (cancellationToken.IsCancellationRequested)
       {
-        SpeckleLog.Logger.Information(
-          "Send operation cancelled after {elapsed}",
-          sendTimer.Elapsed.TotalSeconds
-        );
+        SpeckleLog.Logger.Information("Send operation cancelled after {elapsed}", sendTimer.Elapsed.TotalSeconds);
         cancellationToken.ThrowIfCancellationRequested();
       }
 
@@ -181,14 +178,8 @@ public static partial class Operations
 
       sendTimer.Stop();
       SpeckleLog.Logger
-        .ForContext(
-          "transportElapsedBreakdown",
-          transports.ToDictionary(t => t.TransportName, t => t.Elapsed)
-        )
-        .ForContext(
-          "note",
-          "the elapsed summary doesn't need to add up to the total elapsed... Threading magic..."
-        )
+        .ForContext("transportElapsedBreakdown", transports.ToDictionary(t => t.TransportName, t => t.Elapsed))
+        .ForContext("note", "the elapsed summary doesn't need to add up to the total elapsed... Threading magic...")
         .ForContext("serializerElapsed", serializerV2?.Elapsed)
         .Information(
           "Finished sending {objectCount} objects after {elapsed}, result {objectId}",

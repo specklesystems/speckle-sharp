@@ -74,11 +74,7 @@ public class Serialization
       if (i % 2 == 0)
       {
         cat.Whiskers.Add(
-          new Line
-          {
-            Start = new Point(i / 2, i / 2, i / 2),
-            End = new Point(i + 3.14, i + 3.14, i + 3.14)
-          }
+          new Line { Start = new Point(i / 2, i / 2, i / 2), End = new Point(i + 3.14, i + 3.14, i + 3.14) }
         );
       }
       else
@@ -90,11 +86,7 @@ public class Serialization
         cat.Whiskers.Add(brokenWhisker);
       }
 
-      cat.Fur[i] = new Line
-      {
-        Start = new Point(i, i, i),
-        End = new Point(i + 3.14, i + 3.14, i + 3.14)
-      };
+      cat.Fur[i] = new Line { Start = new Point(i, i, i), End = new Point(i + 3.14, i + 3.14, i + 3.14) };
     }
 
     var result = Operations.Serialize(cat);

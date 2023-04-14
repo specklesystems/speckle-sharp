@@ -21,17 +21,23 @@ public class GenericTests
   {
     return AvailableTypesInKit().Where(t => !t.IsAbstract);
   }
-  
-  [Test(Description = "Checks that all objects inside the Default Kit have empty constructors.")]
-  [TestCaseSource(nameof(NonAbstractTypesInKit))]
+
+  [
+    Test(Description = "Checks that all objects inside the Default Kit have empty constructors."),
+    TestCaseSource(nameof(NonAbstractTypesInKit))
+  ]
   public void ObjectHasEmptyConstructor(Type t)
   {
     var constructor = t.GetConstructor(Type.EmptyTypes);
     Assert.That(constructor, Is.Not.Null);
   }
 
-  [Test(Description = "Checks that all methods with the 'SchemaComputed' attribute inside the Default Kit have no parameters.")]
-  [TestCaseSource(nameof(AvailableTypesInKit))]
+  [
+    Test(
+      Description = "Checks that all methods with the 'SchemaComputed' attribute inside the Default Kit have no parameters."
+    ),
+    TestCaseSource(nameof(AvailableTypesInKit))
+  ]
   public void SchemaComputedMethod_CanBeCalledWithNoParameters(Type t)
   {
     t.GetMethods()

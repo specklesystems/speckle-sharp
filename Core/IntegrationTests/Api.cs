@@ -143,9 +143,7 @@ public class Api
 
     Assert.ThrowsAsync<ArgumentException>(
       async () =>
-        await myClient
-          .StreamInviteCreate(new StreamInviteCreateInput { streamId = streamId })
-          .ConfigureAwait(false)
+        await myClient.StreamInviteCreate(new StreamInviteCreateInput { streamId = streamId }).ConfigureAwait(false)
     );
   }
 
@@ -162,9 +160,7 @@ public class Api
   {
     var invites = await secondClient.GetAllPendingInvites().ConfigureAwait(false);
 
-    var res = await secondClient
-      .StreamInviteUse(invites[0].streamId, invites[0].token)
-      .ConfigureAwait(false);
+    var res = await secondClient.StreamInviteUse(invites[0].streamId, invites[0].token).ConfigureAwait(false);
 
     Assert.IsTrue(res);
   }
@@ -191,11 +187,7 @@ public class Api
   {
     var res = await myClient
       .StreamRevokePermission(
-        new StreamRevokePermissionInput
-        {
-          streamId = streamId,
-          userId = secondUserAccount.userInfo.id
-        }
+        new StreamRevokePermissionInput { streamId = streamId, userId = secondUserAccount.userInfo.id }
       )
       .ConfigureAwait(false);
 

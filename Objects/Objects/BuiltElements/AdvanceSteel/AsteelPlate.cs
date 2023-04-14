@@ -18,7 +18,7 @@ public class AsteelPlate : Area, IDisplayValue<List<Mesh>>, IHasArea, IHasVolume
   }
 
   public AsteelPlate() { }
-  
+
   [SchemaInfo("AsteelPlate", "Creates a Advance Steel plate.", "Advance Steel", "Structure")]
   public AsteelPlate(Polyline outline, string units, StructuralMaterial material = null)
   {

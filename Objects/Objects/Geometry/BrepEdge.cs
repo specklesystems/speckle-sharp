@@ -34,6 +34,7 @@ public class BrepEdge : Base
 
   [JsonIgnore]
   public Brep Brep { get; set; }
+
   public int Curve3dIndex { get; set; }
   public int[] TrimIndices { get; set; }
   public int StartIndex { get; set; }

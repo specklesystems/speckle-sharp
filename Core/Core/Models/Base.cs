@@ -89,10 +89,7 @@ public class Base : DynamicBase
   /// </summary>
   /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
   /// <returns></returns>
-  public string GetId(
-    bool decompose = false,
-    SerializerVersion serializerVersion = SerializerVersion.V2
-  )
+  public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
   {
     if (serializerVersion == SerializerVersion.V1)
     {
@@ -134,8 +131,7 @@ public class Base : DynamicBase
     foreach (var prop in typedProps.Where(p => p.CanRead))
     {
       bool isIgnored =
-        prop.IsDefined(typeof(ObsoleteAttribute), true)
-        || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
+        prop.IsDefined(typeof(ObsoleteAttribute), true) || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
       if (isIgnored)
         continue;
 
@@ -241,9 +237,7 @@ public class Base : DynamicBase
 
     foreach (
       var kvp in GetMembers(
-        DynamicBaseMemberType.Instance
-          | DynamicBaseMemberType.Dynamic
-          | DynamicBaseMemberType.SchemaIgnored
+        DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaIgnored
       )
     )
     {

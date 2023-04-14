@@ -52,8 +52,7 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public int SavedObjectCount { get; set; }
 
-  public Dictionary<string, object> TransportContext =>
-    new() { { "name", TransportName }, { "type", GetType().Name } };
+  public Dictionary<string, object> TransportContext => new() { { "name", TransportName }, { "type", GetType().Name } };
 
   public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 

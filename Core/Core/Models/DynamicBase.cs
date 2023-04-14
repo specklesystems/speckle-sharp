@@ -237,9 +237,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// </summary>
   /// <param name="includeMembers">Specifies which members should be included in the resulting dictionary. Can be concatenated with "|"</param>
   /// <returns>A dictionary containing the key's and values of the object.</returns>
-  public Dictionary<string, object> GetMembers(
-    DynamicBaseMemberType includeMembers = DefaultIncludeMembers
-  )
+  public Dictionary<string, object> GetMembers(DynamicBaseMemberType includeMembers = DefaultIncludeMembers)
   {
     // Initialize an empty dict
     var dic = new Dictionary<string, object>();
@@ -272,10 +270,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
     if (includeMembers.HasFlag(DynamicBaseMemberType.SchemaComputed))
       GetType()
         .GetMethods()
-        .Where(
-          e =>
-            e.IsDefined(typeof(SchemaComputedAttribute)) && !e.IsDefined(typeof(ObsoleteAttribute))
-        )
+        .Where(e => e.IsDefined(typeof(SchemaComputedAttribute)) && !e.IsDefined(typeof(ObsoleteAttribute)))
         .ToList()
         .ForEach(e =>
         {

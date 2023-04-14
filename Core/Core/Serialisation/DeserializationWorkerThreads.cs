@@ -18,8 +18,7 @@ internal class DeserializationWorkerThreads : IDisposable
   private object LockFreeThreads = new();
   private BaseObjectDeserializerV2 Serializer;
 
-  private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks =
-    new();
+  private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks = new();
 
   private List<Thread> Threads = new();
 
@@ -59,8 +58,7 @@ internal class DeserializationWorkerThreads : IDisposable
     {
       lock (LockFreeThreads)
         FreeThreadCount++;
-      (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) =
-        Tasks.Take();
+      (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) = Tasks.Take();
       if (tcs == null)
         return;
 

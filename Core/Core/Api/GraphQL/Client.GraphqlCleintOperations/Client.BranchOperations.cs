@@ -17,11 +17,7 @@ public partial class Client
   /// <param name="branchesLimit">Max number of branches to retrieve</param>
   /// <param name="commitsLimit">Max number of commits to retrieve</param>
   /// <returns></returns>
-  public Task<List<Branch>> StreamGetBranches(
-    string streamId,
-    int branchesLimit = 10,
-    int commitsLimit = 10
-  )
+  public Task<List<Branch>> StreamGetBranches(string streamId, int branchesLimit = 10, int commitsLimit = 10)
   {
     return StreamGetBranches(CancellationToken.None, streamId, branchesLimit, commitsLimit);
   }
@@ -73,8 +69,7 @@ public partial class Client
                     }}",
       Variables = new { streamId }
     };
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.branches.items;
   }
 
@@ -93,20 +88,15 @@ public partial class Client
   /// </summary>
   /// <param name="branchInput"></param>
   /// <returns>The branch id.</returns>
-  public async Task<string> BranchCreate(
-    CancellationToken cancellationToken,
-    BranchCreateInput branchInput
-  )
+  public async Task<string> BranchCreate(CancellationToken cancellationToken, BranchCreateInput branchInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation branchCreate($myBranch: BranchCreateInput!){ branchCreate(branch: $myBranch)}",
+      Query = @"mutation branchCreate($myBranch: BranchCreateInput!){ branchCreate(branch: $myBranch)}",
       Variables = new { myBranch = branchInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (string)res["branchCreate"];
   }
 
@@ -166,8 +156,7 @@ public partial class Client
       Variables = new { streamId, branchName }
     };
 
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.branch;
   }
 
@@ -186,20 +175,15 @@ public partial class Client
   /// </summary>
   /// <param name="branchInput"></param>
   /// <returns>The stream's id.</returns>
-  public async Task<bool> BranchUpdate(
-    CancellationToken cancellationToken,
-    BranchUpdateInput branchInput
-  )
+  public async Task<bool> BranchUpdate(CancellationToken cancellationToken, BranchUpdateInput branchInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation branchUpdate($myBranch: BranchUpdateInput!){ branchUpdate(branch: $myBranch)}",
+      Query = @"mutation branchUpdate($myBranch: BranchUpdateInput!){ branchUpdate(branch: $myBranch)}",
       Variables = new { myBranch = branchInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["branchUpdate"];
   }
 
@@ -218,20 +202,15 @@ public partial class Client
   /// </summary>
   /// <param name="branchInput"></param>
   /// <returns></returns>
-  public async Task<bool> BranchDelete(
-    CancellationToken cancellationToken,
-    BranchDeleteInput branchInput
-  )
+  public async Task<bool> BranchDelete(CancellationToken cancellationToken, BranchDeleteInput branchInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation branchDelete($myBranch: BranchDeleteInput!){ branchDelete(branch: $myBranch)}",
+      Query = @"mutation branchDelete($myBranch: BranchDeleteInput!){ branchDelete(branch: $myBranch)}",
       Variables = new { myBranch = branchInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["branchDelete"];
   }
 }
