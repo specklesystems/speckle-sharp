@@ -1,6 +1,5 @@
-﻿using Newtonsoft.Json;
+using Newtonsoft.Json;
 using NUnit.Framework;
-using Serilog.Events;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -17,7 +16,7 @@ public class SetUp
     SpeckleLog.Initialize(
       "Core",
       "Testing",
-      new SpeckleLogConfiguration(LogEventLevel.Debug, true, logToFile: false, logToSeq: false)
+      new SpeckleLogConfiguration(logToFile: false, logToSeq: false)
     );
     SpeckleLog.Logger.Information("Initialized logger for testing");
   }
@@ -26,6 +25,7 @@ public class SetUp
 public abstract class Fixtures
 {
   private static SQLiteTransport AccountStorage = new(scope: "Accounts");
+
   private static string accountPath = Path.Combine(
     SpecklePathProvider.AccountsFolderPath,
     "TestAccount.json"

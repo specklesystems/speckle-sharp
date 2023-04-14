@@ -32,7 +32,7 @@ public partial class Client : IDisposable
   public Client(Account account)
   {
     if (account == null)
-      throw new SpeckleException($"Provided account is null.");
+      throw new SpeckleException("Provided account is null.");
 
     Account = account;
 
@@ -54,7 +54,7 @@ public partial class Client : IDisposable
       {
         EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
         UseWebSocketForQueriesAndMutations = false,
-        ConfigureWebSocketConnectionInitPayload = (opts) =>
+        ConfigureWebSocketConnectionInitPayload = opts =>
         {
           return new { Authorization = $"Bearer {account.token}" };
         },
@@ -71,7 +71,7 @@ public partial class Client : IDisposable
           $"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}"
         );
       else
-        Console.WriteLine($"Exception in websocket receive stream: {e.ToString()}");
+        Console.WriteLine($"Exception in websocket receive stream: {e}");
     });
   }
 
@@ -319,7 +319,7 @@ public partial class Client : IDisposable
           {
             try
             {
-              MaybeThrowFromGraphQLErrors<T>(request, response);
+              MaybeThrowFromGraphQLErrors(request, response);
 
               if (response.Data != null)
                 callback(this, response.Data);

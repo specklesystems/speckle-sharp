@@ -29,15 +29,15 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 {
   private object ElapsedLock = new();
 
-  private bool ErrorState = false;
-  private bool IsWriteComplete = false;
+  private bool ErrorState;
+  private bool IsWriteComplete;
 
   // TODO: make send buffer more flexible to accept blobs too
   private List<(string, string)> SendBuffer = new();
   private object SendBufferLock = new();
-  private Thread SendingThread = null;
+  private Thread SendingThread;
 
-  private bool ShouldSendThreadRun = false;
+  private bool ShouldSendThreadRun;
 
   public ServerTransportV2(
     Account account,
@@ -55,7 +55,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
     Directory.CreateDirectory(BlobStorageFolder);
   }
 
-  public int TotalSentBytes { get; set; } = 0;
+  public int TotalSentBytes { get; set; }
 
   public Account Account { get; set; }
   public string BaseUri { get; private set; }
@@ -117,7 +117,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public CancellationToken CancellationToken { get; set; }
   public Action<string, int> OnProgressAction { get; set; }
   public Action<string, Exception> OnErrorAction { get; set; }
-  public int SavedObjectCount { get; private set; } = 0;
+  public int SavedObjectCount { get; private set; }
   public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
   public async Task<string> CopyObjectAndChildren(
@@ -165,7 +165,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
         await api.DownloadObjects(
             StreamId,
             newChildrenIds,
-            (string id, string json) =>
+            (id, json) =>
             {
               stopwatch.Stop();
               targetTransport.SaveObject(id, json);
@@ -268,7 +268,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
     ErrorState = false;
     ShouldSendThreadRun = true;
-    SendingThread = new Thread(new ThreadStart(SendingThreadMain));
+    SendingThread = new Thread(SendingThreadMain);
     SendingThread.Name = "ServerTransportSender";
     SendingThread.IsBackground = true;
     SendingThread.Start();

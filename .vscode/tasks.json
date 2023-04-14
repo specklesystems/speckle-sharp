@@ -4,10 +4,15 @@
   "version": "2.0.0",
   "inputs": [
     {
-      "type": "promptString",
       "id": "projectPath",
-      "description": "The path to the csproj, sln or slnf you want formatting",
-      "default": "./All.sln"
+      "type": "command",
+      "command": "extension.commandvariable.file.pickFile",
+      "args": {
+        "include": "**/*.{sln,slnf}",
+        "key": "projPath",
+        "keyRemember": "projPath",
+        "display": "fileName"
+      }
     }
   ],
   "tasks": [
@@ -17,11 +22,12 @@
       "type": "shell",
       "args": ["csharpier", "${input:projectPath}/.."],
       "group": "build",
-      "presentation": {
-        "reveal": "silent"
-      },
       "problemMatcher": "$msCompile",
-      "hide": true
+      "hide": true,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
     },
     {
       "label": "speckle.format.style",
@@ -29,11 +35,12 @@
       "type": "shell",
       "args": ["format", "style", "${input:projectPath}"],
       "group": "build",
-      "presentation": {
-        "reveal": "silent"
-      },
       "problemMatcher": "$msCompile",
-      "hide": true
+      "hide": true,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
     },
     {
       "label": "speckle.format.whitespace",
@@ -41,11 +48,12 @@
       "type": "shell",
       "args": ["format", "whitespace", "${input:projectPath}"],
       "group": "build",
-      "presentation": {
-        "reveal": "silent"
-      },
       "problemMatcher": "$msCompile",
-      "hide": true
+      "hide": true,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
     },
     {
       "label": "speckle.format.analyzers",
@@ -53,11 +61,12 @@
       "type": "shell",
       "args": ["format", "analyzers", "${input:projectPath}"],
       "group": "build",
-      "presentation": {
-        "reveal": "silent"
-      },
       "problemMatcher": "$msCompile",
-      "hide": true
+      "hide": false,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
     },
     {
       "label": "speckle.format.resharper",
@@ -69,19 +78,23 @@
         "jb",
         "cleanupcode",
         "${input:projectPath}",
-        "--profile=\"Speckle:\\sCustom\\sCleanup\"",
-        "--settings=\"All.sln.DotSettings\"",
+        "--profile=\"Speckle:Cleanup\"",
+        "--settings=\"All.sln.DotSettings\""
       ],
       "group": "build",
-      "problemMatcher": "$msCompile",
-      "hide": false
+      "problemMatcher": [],
+      "hide": false,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
     },
     {
       "label": "Speckle: Format Code",
       "dependsOn": [
         "speckle.format.whitespace",
         "speckle.format.style",
-        "speckle.format.csharpier",
+        "speckle.format.csharpier"
       ],
       "dependsOrder": "sequence",
       "problemMatcher": []
@@ -89,9 +102,11 @@
     {
       "label": "Speckle: Cleanup Code",
       "dependsOn": [
-        "Speckle: Format Code",
+        "speckle.format.whitespace",
+        "speckle.format.style",
         "speckle.format.analyzers",
         "speckle.format.resharper",
+        "speckle.format.csharpier"
       ],
       "dependsOrder": "sequence",
       "problemMatcher": []

@@ -1,3 +1,4 @@
+using System;
 using Speckle.Core.Logging;
 
 namespace Speckle.Core.Models;
@@ -11,4 +12,7 @@ public class InvalidPropNameException : SpeckleException
 
   public InvalidPropNameException(string message)
     : base(message) { }
+
+  public InvalidPropNameException(string message, Exception innerException)
+    : base(message, innerException) { }
 }

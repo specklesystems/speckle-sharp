@@ -230,8 +230,6 @@ public class BaseTests
 
   public class SampleObject : Base
   {
-    public SampleObject() { }
-
     [Chunkable, DetachProperty]
     public List<double> list { get; set; } = new();
 
@@ -243,7 +241,7 @@ public class BaseTests
 
     public SampleProp attachedProp { get; set; }
 
-    public string @crazyProp { get; set; }
+    public string crazyProp { get; set; }
 
     [SchemaIgnore]
     public string IgnoredSchemaProp { get; set; }

@@ -56,10 +56,13 @@ public class KitException : Exception
     Kit = kit;
   }
 
-  public ISpeckleKit Kit { get; }
-
   public KitException() { }
 
   public KitException(string message)
     : base(message) { }
+
+  public KitException(string message, Exception innerException)
+    : base(message, innerException) { }
+
+  public ISpeckleKit Kit { get; }
 }

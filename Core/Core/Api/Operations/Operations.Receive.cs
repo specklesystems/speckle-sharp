@@ -164,7 +164,7 @@ public static partial class Operations
           .ForContext("deserializerElapsed", serializerV2?.Elapsed)
           .ForContext(
             "transportElapsedBreakdown",
-            new ITransport?[] { localTransport, remoteTransport }
+            new[] { localTransport, remoteTransport }
               .Where(t => t != null)
               .ToDictionary(t => t!.TransportName, t => t!.Elapsed)
           )
@@ -176,7 +176,8 @@ public static partial class Operations
           );
         return localRes;
       }
-      else if (remoteTransport == null)
+
+      if (remoteTransport == null)
       {
         var ex = new SpeckleException(
           $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
@@ -219,7 +220,7 @@ public static partial class Operations
         .ForContext("deserializerElapsed", serializerV2.Elapsed)
         .ForContext(
           "transportElapsedBreakdown",
-          new ITransport?[] { localTransport, remoteTransport }
+          new[] { localTransport, remoteTransport }
             .Where(t => t != null)
             .ToDictionary(t => t.TransportName, t => t.Elapsed)
         )
@@ -269,7 +270,7 @@ public static partial class Operations
           throw;
         serializerV2.OnErrorAction.Invoke(
           $"A deserialization error has occurred: {ex.Message}",
-          new SpeckleDeserializeException($"A deserialization error has occurred", ex)
+          new SpeckleDeserializeException("A deserialization error has occurred", ex)
         );
         localRes = null;
       }

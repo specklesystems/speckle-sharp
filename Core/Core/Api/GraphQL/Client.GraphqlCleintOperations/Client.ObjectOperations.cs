@@ -35,16 +35,16 @@ public partial class Client
     var request = new GraphQLRequest
     {
       Query =
-        $@"query Stream($streamId: String!, $objectId: String!) {{
-                      stream(id: $streamId) {{
-                        object(id: $objectId){{
+        @"query Stream($streamId: String!, $objectId: String!) {
+                      stream(id: $streamId) {
+                        object(id: $objectId){
                           id
                           applicationId
                           createdAt
                           totalChildrenCount
-                        }}                       
-                      }}
-                    }}",
+                        }                       
+                      }
+                    }",
       Variables = new { streamId, objectId }
     };
 
@@ -80,13 +80,13 @@ public partial class Client
     var request = new GraphQLRequest
     {
       Query =
-        $@"query Stream($streamId: String!, $objectId: String!) {{
-                      stream(id: $streamId) {{
-                        object(id: $objectId){{
+        @"query Stream($streamId: String!, $objectId: String!) {
+                      stream(id: $streamId) {
+                        object(id: $objectId){
                           totalChildrenCount
-                        }}                       
-                      }}
-                    }}",
+                        }                       
+                      }
+                    }",
       Variables = new { streamId, objectId }
     };
 

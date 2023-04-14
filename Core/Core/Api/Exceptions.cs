@@ -35,15 +35,18 @@ public class SpeckleGraphQLException<T> : SpeckleException
   )
     : base(message, inner) { }
 
-  public IEnumerable<string> ErrorMessages =>
-    Response?.Errors != null ? Response.Errors.Select(e => e.Message) : new string[] { };
-
-  public IDictionary<string, object>? Extensions => Response?.Extensions;
-
   public SpeckleGraphQLException() { }
 
   public SpeckleGraphQLException(string message)
     : base(message) { }
+
+  public SpeckleGraphQLException(string message, Exception innerException)
+    : base(message, innerException) { }
+
+  public IEnumerable<string> ErrorMessages =>
+    Response?.Errors != null ? Response.Errors.Select(e => e.Message) : new string[] { };
+
+  public IDictionary<string, object>? Extensions => Response?.Extensions;
 }
 
 public class SpeckleGraphQLException : SpeckleGraphQLException<object>
@@ -59,6 +62,9 @@ public class SpeckleGraphQLException : SpeckleGraphQLException<object>
 
   public SpeckleGraphQLException(string message)
     : base(message) { }
+
+  public SpeckleGraphQLException(string message, Exception innerException)
+    : base(message, innerException) { }
 }
 
 /// <summary>
@@ -75,6 +81,9 @@ public class SpeckleGraphQLForbiddenException<T> : SpeckleGraphQLException<T>
 
   public SpeckleGraphQLForbiddenException(string message)
     : base(message) { }
+
+  public SpeckleGraphQLForbiddenException(string message, Exception innerException)
+    : base(message, innerException) { }
 }
 
 public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T>
@@ -86,4 +95,7 @@ public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T
 
   public SpeckleGraphQLInternalErrorException(string message)
     : base(message) { }
+
+  public SpeckleGraphQLInternalErrorException(string message, Exception innerException)
+    : base(message, innerException) { }
 }

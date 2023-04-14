@@ -134,12 +134,12 @@ public class BaseObjectSerializer : JsonConverter
     if (CancellationToken.IsCancellationRequested)
       return null; // Check for cancellation
 
-    var discriminator = Extensions.Value<string>(objType);
+    var discriminator = objType.Value<string>();
 
     // Check for references.
     if (discriminator == "reference")
     {
-      var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
+      var id = jObject.GetValue("referencedId").Value<string>();
       string str = "";
 
       if (ReadTransport != null)
@@ -150,7 +150,7 @@ public class BaseObjectSerializer : JsonConverter
       if (str != null && !string.IsNullOrEmpty(str))
       {
         jObject = JObject.Parse(str);
-        discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
+        discriminator = jObject.GetValue(TypeDiscriminator).Value<string>();
       }
       else
       {
@@ -250,7 +250,7 @@ public class BaseObjectSerializer : JsonConverter
   /// </summary>
   private Dictionary<string, Dictionary<string, int>> RefMinDepthTracker { get; set; }
 
-  public int TotalProcessedCount = 0;
+  public int TotalProcessedCount;
 
   #endregion
 
@@ -276,7 +276,7 @@ public class BaseObjectSerializer : JsonConverter
   }
 
   private bool FirstEntry = true,
-    FirstEntryWasListOrDict = false;
+    FirstEntryWasListOrDict;
 
   // While this function looks complicated, it's actually quite smooth:
   // The important things to remember is that serialization goes depth first:
@@ -424,7 +424,7 @@ public class BaseObjectSerializer : JsonConverter
 
           var refHash = ((JObject)what).GetValue("id").ToString();
 
-          var reference = new ObjectReference() { referencedId = refHash };
+          var reference = new ObjectReference { referencedId = refHash };
           TrackReferenceInTree(refHash);
           jo.Add(prop, JToken.FromObject(reference));
         }
@@ -554,7 +554,7 @@ public class BaseObjectSerializer : JsonConverter
 
           var refHash = ((JObject)what).GetValue("id").ToString();
 
-          var reference = new ObjectReference() { referencedId = refHash };
+          var reference = new ObjectReference { referencedId = refHash };
           TrackReferenceInTree(refHash);
           arr.Add(JToken.FromObject(reference));
         }
@@ -608,7 +608,7 @@ public class BaseObjectSerializer : JsonConverter
           var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
           var refHash = ((JObject)what).GetValue("id").ToString();
 
-          var reference = new ObjectReference() { referencedId = refHash };
+          var reference = new ObjectReference { referencedId = refHash };
           TrackReferenceInTree(refHash);
           jToken = JToken.FromObject(reference);
         }

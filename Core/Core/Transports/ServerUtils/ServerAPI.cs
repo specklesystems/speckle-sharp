@@ -42,7 +42,7 @@ public class ServerApi : IDisposable, IServerApi
     BlobStorageFolder = blobStorageFolder;
 
     Client = Http.GetHttpProxyClient(
-      new SpeckleHttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip }
+      new SpeckleHttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip }
     );
 
     Client.BaseAddress = new Uri(baseUri);
@@ -54,7 +54,7 @@ public class ServerApi : IDisposable, IServerApi
       Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
   }
 
-  private int RetriedCount { get; set; } = 0;
+  private int RetriedCount { get; set; }
   public CancellationToken CancellationToken { get; set; }
   public bool CompressPayloads { get; set; } = true;
 
@@ -75,7 +75,7 @@ public class ServerApi : IDisposable, IServerApi
     CancellationToken.ThrowIfCancellationRequested();
 
     // Get root object
-    var rootHttpMessage = new HttpRequestMessage()
+    var rootHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}/{objectId}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -236,7 +236,7 @@ public class ServerApi : IDisposable, IServerApi
       multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
     }
 
-    var message = new HttpRequestMessage()
+    var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/stream/{streamId}/blob", UriKind.Relative),
       Method = HttpMethod.Post,
@@ -270,7 +270,7 @@ public class ServerApi : IDisposable, IServerApi
     foreach (var blobId in blobIds)
       try
       {
-        var blobMessage = new HttpRequestMessage()
+        var blobMessage = new HttpRequestMessage
         {
           RequestUri = new Uri($"api/stream/{streamId}/blob/{blobId}", UriKind.Relative),
           Method = HttpMethod.Get
@@ -311,7 +311,7 @@ public class ServerApi : IDisposable, IServerApi
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var childrenHttpMessage = new HttpRequestMessage()
+    var childrenHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/getobjects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -346,7 +346,7 @@ public class ServerApi : IDisposable, IServerApi
       {
         CancellationToken.ThrowIfCancellationRequested();
 
-        var pcs = line.Split(new char[] { '\t' }, 2);
+        var pcs = line.Split(new[] { '\t' }, 2);
         onObjectCallback(pcs[0], pcs[1]);
       }
     }
@@ -364,7 +364,7 @@ public class ServerApi : IDisposable, IServerApi
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
     string objectsPostParameter = JsonConvert.SerializeObject(objectIds);
-    var payload = new Dictionary<string, string>() { { "objects", objectsPostParameter } };
+    var payload = new Dictionary<string, string> { { "objects", objectsPostParameter } };
     string serializedPayload = JsonConvert.SerializeObject(payload);
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
     HttpResponseMessage response = null;
@@ -399,7 +399,7 @@ public class ServerApi : IDisposable, IServerApi
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var message = new HttpRequestMessage()
+    var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post

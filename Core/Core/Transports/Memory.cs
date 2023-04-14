@@ -23,7 +23,7 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public object Clone()
   {
-    return new MemoryTransport()
+    return new MemoryTransport
     {
       TransportName = TransportName,
       OnErrorAction = OnErrorAction,
@@ -50,7 +50,7 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public Action<string, Exception> OnErrorAction { get; set; }
 
-  public int SavedObjectCount { get; set; } = 0;
+  public int SavedObjectCount { get; set; }
 
   public Dictionary<string, object> TransportContext =>
     new() { { "name", TransportName }, { "type", GetType().Name } };

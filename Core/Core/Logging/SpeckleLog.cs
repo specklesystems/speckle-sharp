@@ -94,7 +94,7 @@ public class SpeckleLogConfiguration
 public static class SpeckleLog
 {
   private static ILogger? _logger;
-  private static bool _initialized = false;
+  private static bool _initialized;
 
   public static ILogger Logger =>
     _logger

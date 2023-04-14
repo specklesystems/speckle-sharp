@@ -36,8 +36,7 @@ internal static class SerializationUtilities
     {
       if (jsonProperty != null)
         return value.ToObject(jsonProperty.PropertyType);
-      else
-        return ((JValue)value).Value;
+      return ((JValue)value).Value;
     }
 
     // Lists
@@ -73,11 +72,11 @@ internal static class SerializationUtilities
                     dataItem.GetType()
                   )
                 )
-                  addMethod.Invoke(arr, new object[] { dataItem });
+                  addMethod.Invoke(arr, new[] { dataItem });
                 else
                   addMethod.Invoke(
                     arr,
-                    new object[]
+                    new[]
                     {
                       Convert.ChangeType(
                         dataItem,
@@ -88,17 +87,17 @@ internal static class SerializationUtilities
               }
               else
               {
-                addMethod.Invoke(arr, new object[] { dataItem });
+                addMethod.Invoke(arr, new[] { dataItem });
               }
           }
           else if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
           {
             if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
-              addMethod.Invoke(arr, new object[] { item });
+              addMethod.Invoke(arr, new[] { item });
             else
               addMethod.Invoke(
                 arr,
-                new object[]
+                new[]
                 {
                   Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0])
                 }
@@ -106,12 +105,13 @@ internal static class SerializationUtilities
           }
           else
           {
-            addMethod.Invoke(arr, new object[] { item });
+            addMethod.Invoke(arr, new[] { item });
           }
         }
         return arr;
       }
-      else if (jsonProperty != null)
+
+      if (jsonProperty != null)
       {
         if (CancellationToken.IsCancellationRequested)
           return null; // Check for cancellation

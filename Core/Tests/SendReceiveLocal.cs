@@ -178,7 +178,7 @@ public class SendReceiveLocal
     commitId_02 = await Operations
       .Send(
         myObject,
-        onProgressAction: (dict) =>
+        onProgressAction: dict =>
         {
           progress = dict;
         }
@@ -196,7 +196,7 @@ public class SendReceiveLocal
     var pulledCommit = await Operations
       .Receive(
         commitId_02,
-        onProgressAction: (dict) =>
+        onProgressAction: dict =>
         {
           progress = dict;
         }
@@ -216,14 +216,14 @@ public class SendReceiveLocal
 
     var myLocalTransport = new SQLiteTransport();
     var id = await Operations
-      .Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true)
+      .Send(@base, new List<ITransport> { myLocalTransport }, false, disposeTransports: true)
       .ConfigureAwait(false);
 
     // Send
     try
     {
       await Operations
-        .Send(@base, new List<ITransport>() { myLocalTransport }, false, disposeTransports: true)
+        .Send(@base, new List<ITransport> { myLocalTransport }, false, disposeTransports: true)
         .ConfigureAwait(false);
       Assert.Fail("Send operation did not dispose of transport.");
     }
@@ -256,10 +256,10 @@ public class SendReceiveLocal
 
     var myLocalTransport = new SQLiteTransport();
     var id = await Operations
-      .Send(@base, new List<ITransport>() { myLocalTransport }, false)
+      .Send(@base, new List<ITransport> { myLocalTransport }, false)
       .ConfigureAwait(false);
     await Operations
-      .Send(@base, new List<ITransport>() { myLocalTransport }, false)
+      .Send(@base, new List<ITransport> { myLocalTransport }, false)
       .ConfigureAwait(false);
 
     var obj = await Operations.Receive(id, null, myLocalTransport).ConfigureAwait(false);

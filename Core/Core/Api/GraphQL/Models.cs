@@ -428,7 +428,7 @@ public class CommentItem
   public List<Resource> resources { get; set; }
 }
 
-public partial class ContentContent
+public class ContentContent
 {
   public string Type { get; set; }
 
@@ -491,7 +491,7 @@ public class Version
   [JsonIgnore]
   public string DateTimeAgo => Helpers.TimeAgo(Date);
 
-  public bool Prerelease { get; set; } = false;
+  public bool Prerelease { get; set; }
 }
 
 /// <summary>

@@ -21,7 +21,7 @@ public static partial class Operations
   }
 
   /// <summary>
-  /// Serializes a given object. Note: if you want to save and persist an object to Speckle Transport or Server, please use any of the "Send" methods. See <see cref="Send(Base, List{Transports.ITransport}, bool, Action{System.Collections.Concurrent.ConcurrentDictionary{string, int}}, Action{string, Exception})"/>.
+  /// Serializes a given object. Note: if you want to save and persist an object to Speckle Transport or Server, please use any of the "Send" methods. See <see cref="Send(Base, System.Collections.Generic.List{Speckle.Core.Transports.ITransport}, bool, System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}(System.Collections.Concurrent.ConcurrentDictionary{string,int}), Action{string, Exception})"/>.
   /// </summary>
   /// <param name="object"></param>
   /// <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
@@ -76,7 +76,7 @@ public static partial class Operations
   }
 
   /// <summary>
-  /// Deserializes a given object. Note: if you want to pull an object from a Speckle Transport or Server, please use any of the <see cref="Receive(string, Transports.ITransport, Transports.ITransport, Action{System.Collections.Concurrent.ConcurrentDictionary{string, int}})"/>.
+  /// Deserializes a given object. Note: if you want to pull an object from a Speckle Transport or Server, please use any of the <see cref="Receive(string, Transports.ITransport, Transports.ITransport, System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}(System.Collections.Concurrent.ConcurrentDictionary{string,int}))"/>.
   /// </summary>
   /// <param name="object">The json string representation of a speckle object that you want to deserialise.</param>
   /// <returns></returns>
@@ -86,7 +86,7 @@ public static partial class Operations
   }
 
   /// <summary>
-  /// Deserializes a given object. Note: if you want to pull an object from a Speckle Transport or Server, please use any of the <see cref="Receive(string, Transports.ITransport, Transports.ITransport, Action{System.Collections.Concurrent.ConcurrentDictionary{string, int}})"/>.
+  /// Deserializes a given object. Note: if you want to pull an object from a Speckle Transport or Server, please use any of the <see cref="Receive(string, Transports.ITransport, Transports.ITransport, System.Action{System.Collections.Concurrent.ConcurrentDictionary{string,int}}(System.Collections.Concurrent.ConcurrentDictionary{string,int}))"/>.
   /// </summary>
   /// <param name="object">The json string representation of a speckle object that you want to deserialise.</param>
   /// <param name="cancellationToken">Propagates notification that operations should be canceled.</param>
@@ -103,12 +103,10 @@ public static partial class Operations
       serializer.CancellationToken = cancellationToken;
       return JsonConvert.DeserializeObject<Base>(@object, settings);
     }
-    else
-    {
-      var deserializer = new BaseObjectDeserializerV2();
-      deserializer.CancellationToken = cancellationToken;
-      return deserializer.Deserialize(@object);
-    }
+
+    var deserializer = new BaseObjectDeserializerV2();
+    deserializer.CancellationToken = cancellationToken;
+    return deserializer.Deserialize(@object);
   }
 
   /// <summary>
@@ -129,16 +127,13 @@ public static partial class Operations
       var (_, settings) = GetSerializerInstance();
       return JsonConvert.DeserializeObject<List<Base>>(objectArr, settings);
     }
-    else
-    {
-      var deserializer = new BaseObjectDeserializerV2();
-      List<object> deserialized =
-        deserializer.DeserializeTransportObject(objectArr) as List<object>;
-      List<Base> ret = new();
-      foreach (object obj in deserialized)
-        ret.Add((Base)obj);
-      return ret;
-    }
+
+    var deserializer = new BaseObjectDeserializerV2();
+    List<object> deserialized = deserializer.DeserializeTransportObject(objectArr) as List<object>;
+    List<Base> ret = new();
+    foreach (object obj in deserialized)
+      ret.Add((Base)obj);
+    return ret;
   }
 
   /// <summary>

@@ -98,10 +98,10 @@ public static class Helpers
         throw e;
 
       //Fallback to a non authed account
-      account = new Account()
+      account = new Account
       {
         token = "",
-        serverInfo = new ServerInfo() { url = sw.ServerUrl },
+        serverInfo = new ServerInfo { url = sw.ServerUrl },
         userInfo = new UserInfo()
       };
     }
@@ -131,7 +131,7 @@ public static class Helpers
 
       var branch = await client.BranchGet(sw.StreamId, branchName, 1).ConfigureAwait(false);
       if (!branch.commits.items.Any())
-        throw new SpeckleException($"The selected branch has no commits.");
+        throw new SpeckleException("The selected branch has no commits.");
 
       commit = branch.commits.items[0];
       objectId = branch.commits.items[0].referencedObject;
@@ -140,7 +140,7 @@ public static class Helpers
     Analytics.TrackEvent(
       client.Account,
       Analytics.Events.Receive,
-      new Dictionary<string, object>()
+      new Dictionary<string, object>
       {
         { "sourceHostApp", HostApplications.GetHostAppFromString(commit.sourceApplication).Slug },
         { "sourceHostAppVersion", commit.sourceApplication }

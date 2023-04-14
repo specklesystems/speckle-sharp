@@ -69,7 +69,7 @@ public class Commits
     var objectId = await Operations
       .Send(
         myObject,
-        new List<ITransport>() { myServerTransport },
+        new List<ITransport> { myServerTransport },
         false,
         onErrorAction: (name, err) =>
         {

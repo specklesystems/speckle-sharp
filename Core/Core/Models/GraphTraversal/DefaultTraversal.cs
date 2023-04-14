@@ -115,6 +115,7 @@ public static class DefaultTraversal
   }
 
   internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+
   internal static readonly string[] ignoreProps = new[] { "@blockDefinition" }
     .Concat(displayValueAliases)
     .ToArray();

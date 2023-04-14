@@ -485,20 +485,20 @@ public partial class Client
     var request = new GraphQLRequest
     {
       Query =
-        $@"query Stream($id: String!) {{
-                      stream(id: $id) {{
+        @"query Stream($id: String!) {
+                      stream(id: $id) {
                         id
-                        pendingCollaborators {{
+                        pendingCollaborators {
                           id
                           inviteId
                           title
                           role
-                          user {{
+                          user {
                             avatar
-                          }}
-                        }}
-                      }}
-                    }}",
+                          }
+                        }
+                      }
+                    }",
       Variables = new { id }
     };
     var res = await GQLClient

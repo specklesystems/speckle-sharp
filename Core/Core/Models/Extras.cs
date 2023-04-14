@@ -57,16 +57,12 @@ public class Abstract : Base
 /// <typeparam name="T"></typeparam>
 public class DataChunk : Base
 {
-  public DataChunk() { }
-
   public List<object> data { get; set; } = new();
 }
 
 public class ObjectReference
 {
   public string speckle_type = "reference";
-
-  public ObjectReference() { }
 
   public string referencedId { get; set; }
 }
@@ -239,10 +235,8 @@ public class ProgressReport
         reportObject.Update(status: obj.Status);
       return reportObject;
     }
-    else
-    {
-      return null;
-    }
+
+    return null;
   }
 
   [Obsolete("Use TryGetValue or Dictionary indexing", true)]

@@ -35,8 +35,6 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// </summary>
   private Dictionary<string, object> properties = new();
 
-  public DynamicBase() { }
-
   /// <summary>
   /// Sets and gets properties using the key accessor pattern. E.g.:
   /// <para><pre>((dynamic)myObject)["superProperty"] = 42;</pre></para>

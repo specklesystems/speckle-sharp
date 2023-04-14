@@ -196,7 +196,6 @@ public class SpeckleHttpClientHandler : HttpClientHandler
   private IEnumerable<TimeSpan> _delay;
 
   public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
-    : base()
   {
     _delay = delay ?? Http.DefaultDelay();
   }

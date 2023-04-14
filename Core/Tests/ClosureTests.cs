@@ -35,7 +35,7 @@ public class Closures
 
     var transport = new MemoryTransport();
 
-    var result = Operations.Send(d1, new List<ITransport>() { transport }, false).Result;
+    var result = Operations.Send(d1, new List<ITransport> { transport }, false).Result;
 
     var test = Operations.Receive(result, localTransport: transport).Result;
 
@@ -89,7 +89,7 @@ public class Closures
     var dictionary = new Dictionary<string, object>();
     for (int i = 0; i < 10; i++)
     {
-      var smolBase = new Base() { applicationId = i.ToString() };
+      var smolBase = new Base { applicationId = i.ToString() };
       dictionary[$"key {i}"] = smolBase;
     }
 
@@ -107,7 +107,7 @@ public class Closures
     Assert.That(tableKidsCount, Is.EqualTo(10));
 
     // Explicitely test for recurisve references!
-    var recursiveRef = new Base() { applicationId = "random" };
+    var recursiveRef = new Base { applicationId = "random" };
     recursiveRef["@recursive"] = recursiveRef;
 
     var supriseCount = recursiveRef.GetTotalChildrenCount();
