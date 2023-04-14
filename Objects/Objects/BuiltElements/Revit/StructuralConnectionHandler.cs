@@ -1,20 +1,18 @@
-﻿using Objects.Geometry;
-using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.Text;
+using Objects.Geometry;
+using Speckle.Core.Models;
 
-namespace Objects.BuiltElements.Revit
+namespace Objects.BuiltElements.Revit;
+
+public class StructuralConnectionHandler : Base, IDisplayValue<List<Mesh>>
 {
-  public class StructuralConnectionHandler : Base, IDisplayValue<List<Mesh>>
-  {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Point basePoint { get; set; }
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-    [DetachProperty]
-    public List<Base> connectedElements { get; set; }
-    public StructuralConnectionHandler() { }
-  }
+  public string family { get; set; }
+  public string type { get; set; }
+  public Point basePoint { get; set; }
+
+  [DetachProperty]
+  public List<Base> connectedElements { get; set; }
+
+  [DetachProperty]
+  public List<Mesh> displayValue { get; set; }
 }
