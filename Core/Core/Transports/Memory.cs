@@ -1,134 +1,130 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
 using Speckle.Core.Logging;
 
-namespace Speckle.Core.Transports
+namespace Speckle.Core.Transports;
+
+/// <summary>
+/// An in memory storage of speckle objects.
+/// </summary>
+public class MemoryTransport : ITransport, IDisposable, ICloneable
 {
-  /// <summary>
-  /// An in memory storage of speckle objects.
-  /// </summary>
-  public class MemoryTransport : ITransport, IDisposable, ICloneable
+  public Dictionary<string, string> Objects;
+
+  public MemoryTransport()
   {
-    public Dictionary<string, string> Objects;
+    SpeckleLog.Logger.Debug("Creating a new Memory Transport");
 
-    public CancellationToken CancellationToken { get; set; }
+    Objects = new Dictionary<string, string>();
+  }
 
-    public string TransportName { get; set; } = "Memory";
-
-    public Action<string, int> OnProgressAction { get; set; }
-
-    public Action<string, Exception> OnErrorAction { get; set; }
-
-    public int SavedObjectCount { get; set; } = 0;
-
-    public Dictionary<string, object> TransportContext =>
-      new Dictionary<string, object> { { "name", TransportName }, { "type", this.GetType().Name } };
-
-    public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
-
-    public MemoryTransport()
+  public object Clone()
+  {
+    return new MemoryTransport()
     {
-      SpeckleLog.Logger.Debug("Creating a new Memory Transport");
+      TransportName = TransportName,
+      OnErrorAction = OnErrorAction,
+      OnProgressAction = OnProgressAction,
+      CancellationToken = CancellationToken,
+      Objects = Objects,
+      SavedObjectCount = SavedObjectCount
+    };
+  }
 
-      Objects = new Dictionary<string, string>();
-    }
+  public void Dispose()
+  {
+    Objects = null;
+    OnErrorAction = null;
+    OnProgressAction = null;
+    SavedObjectCount = 0;
+  }
 
-    public void BeginWrite()
-    {
-      SavedObjectCount = 0;
-    }
+  public CancellationToken CancellationToken { get; set; }
 
-    public void EndWrite() { }
+  public string TransportName { get; set; } = "Memory";
 
-    public void SaveObject(string hash, string serializedObject)
-    {
-      var stopwatch = Stopwatch.StartNew();
-      if (CancellationToken.IsCancellationRequested)
-        return; // Check for cancellation
+  public Action<string, int> OnProgressAction { get; set; }
 
-      Objects[hash] = serializedObject;
+  public Action<string, Exception> OnErrorAction { get; set; }
 
-      SavedObjectCount++;
-      OnProgressAction?.Invoke(TransportName, 1);
-      stopwatch.Stop();
-      Elapsed += stopwatch.Elapsed;
-    }
+  public int SavedObjectCount { get; set; } = 0;
 
-    public void SaveObject(string id, ITransport sourceTransport)
-    {
-      throw new NotImplementedException();
-    }
+  public Dictionary<string, object> TransportContext =>
+    new() { { "name", TransportName }, { "type", GetType().Name } };
 
-    public string GetObject(string hash)
-    {
-      if (CancellationToken.IsCancellationRequested)
-        return null; // Check for cancellation
+  public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
-      var stopwatch = Stopwatch.StartNew();
-      var ret = Objects.ContainsKey(hash) ? Objects[hash] : null;
-      stopwatch.Stop();
-      Elapsed += stopwatch.Elapsed;
-      return ret;
-    }
+  public void BeginWrite()
+  {
+    SavedObjectCount = 0;
+  }
 
-    public Task<string> CopyObjectAndChildren(
-      string id,
-      ITransport targetTransport,
-      Action<int> onTotalChildrenCountKnown = null
-    )
-    {
-      throw new NotImplementedException();
-    }
+  public void EndWrite() { }
 
-    public bool GetWriteCompletionStatus()
-    {
-      return true; // can safely assume it's always true, as ops are atomic?
-    }
+  public void SaveObject(string hash, string serializedObject)
+  {
+    var stopwatch = Stopwatch.StartNew();
+    if (CancellationToken.IsCancellationRequested)
+      return; // Check for cancellation
 
-    public Task WriteComplete()
-    {
-      return Utilities.WaitUntil(() => true);
-    }
+    Objects[hash] = serializedObject;
 
-    public override string ToString()
-    {
-      return $"Memory Transport {TransportName}";
-    }
+    SavedObjectCount++;
+    OnProgressAction?.Invoke(TransportName, 1);
+    stopwatch.Stop();
+    Elapsed += stopwatch.Elapsed;
+  }
 
-    public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
-    {
-      Dictionary<string, bool> ret = new Dictionary<string, bool>();
-      foreach (string objectId in objectIds)
-      {
-        ret[objectId] = Objects.ContainsKey(objectId);
-      }
+  public void SaveObject(string id, ITransport sourceTransport)
+  {
+    throw new NotImplementedException();
+  }
 
-      return ret;
-    }
+  public string GetObject(string hash)
+  {
+    if (CancellationToken.IsCancellationRequested)
+      return null; // Check for cancellation
 
-    public void Dispose()
-    {
-      Objects = null;
-      OnErrorAction = null;
-      OnProgressAction = null;
-      SavedObjectCount = 0;
-    }
+    var stopwatch = Stopwatch.StartNew();
+    var ret = Objects.ContainsKey(hash) ? Objects[hash] : null;
+    stopwatch.Stop();
+    Elapsed += stopwatch.Elapsed;
+    return ret;
+  }
 
-    public object Clone()
-    {
-      return new MemoryTransport()
-      {
-        TransportName = TransportName,
-        OnErrorAction = OnErrorAction,
-        OnProgressAction = OnProgressAction,
-        CancellationToken = CancellationToken,
-        Objects = Objects,
-        SavedObjectCount = SavedObjectCount
-      };
-    }
+  public Task<string> CopyObjectAndChildren(
+    string id,
+    ITransport targetTransport,
+    Action<int> onTotalChildrenCountKnown = null
+  )
+  {
+    throw new NotImplementedException();
+  }
+
+  public Task WriteComplete()
+  {
+    return Utilities.WaitUntil(() => true);
+  }
+
+  public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
+  {
+    Dictionary<string, bool> ret = new();
+    foreach (string objectId in objectIds)
+      ret[objectId] = Objects.ContainsKey(objectId);
+
+    return ret;
+  }
+
+  public bool GetWriteCompletionStatus()
+  {
+    return true; // can safely assume it's always true, as ops are atomic?
+  }
+
+  public override string ToString()
+  {
+    return $"Memory Transport {TransportName}";
   }
 }

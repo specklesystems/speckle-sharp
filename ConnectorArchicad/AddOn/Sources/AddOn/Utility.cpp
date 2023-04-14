@@ -32,19 +32,68 @@ bool ElementExists (const API_Guid& guid)
 }
 
 
-GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo)
+GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo /*= nullptr*/, API_SubElement** marker /*= nullptr*/)
 {
-	GSErrCode err;
+	GSErrCode err = NoError;
 	API_Guid guid = element.header.guid;
+#ifdef ServerMainVers_2600
+	API_ElemTypeID type = element.header.type.typeID;
+#else
+	API_ElemTypeID type = element.header.typeID;
+#endif
+
+	if (type == API_ZombieElemID)
+		return Error;
 
 	bool elemExists = ElementExists (guid);
 	if (elemExists) {
+		// type changed
+		if (type != GetElementType (guid))
+			return Error;
+
 		err = ACAPI_Element_Get (&element);
 		if (err == NoError && memo != nullptr) {
 			err = ACAPI_Element_GetMemo (guid, memo);
 		}
 	} else {
-		err = ACAPI_Element_GetDefaults (&element, memo);
+		if (marker != nullptr) {
+			BNZeroMemory (*marker, sizeof (API_SubElement));
+			(*marker)->subType = APISubElement_MainMarker;
+
+			err = ACAPI_Element_GetDefaultsExt (&element, memo, 1UL, *marker);
+			if (err != NoError)
+				return err;
+
+			API_LibPart libPart;
+			BNZeroMemory (&libPart, sizeof (API_LibPart));
+
+#ifdef ServerMainVers_2600
+			err = ACAPI_Goodies_GetMarkerParent (element.header.type, libPart);
+#else
+			err = ACAPI_Goodies (APIAny_GetMarkerParentID, &element.header.typeID, &libPart);
+#endif
+			if (err != NoError)
+				return err;
+
+			err = ACAPI_LibPart_Search (&libPart, false, true);
+			if (libPart.location != nullptr)
+				delete libPart.location;
+
+			if (err != NoError)
+				return err;
+
+			double a = .0, b = .0;
+			Int32 addParNum = 0;
+			API_AddParType** markAddPars;
+			err = ACAPI_LibPart_GetParams (libPart.index, &a, &b, &addParNum, &markAddPars);
+			if (err != NoError)
+				return err;
+
+			(*marker)->memo.params = markAddPars;
+		} else {
+			err = ACAPI_Element_GetDefaults (&element, memo);
+		}
+
 		element.header.guid = guid;	// keep guid for creation
 	}
 
@@ -464,7 +513,11 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 }
 
 
-GSErrCode CreateAllSchemeData (const GS::ObjectState& os, GS::UInt32& numberOfCuts, API_Element& element, API_Element& mask, API_ElementMemo* memo)
+GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
+	GS::UInt32& numberOfCuts,
+	API_Element& element,
+	API_Element& mask,
+	API_ElementMemo* memo)
 {
 	GSErrCode err = NoError;
 	API_AssemblySegmentSchemeData defaultSegmentScheme;
@@ -527,12 +580,16 @@ GSErrCode GetVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visib
 	} else {
 		visibilityString = CustomStoriesValueName;
 	}
-	
+
 	return NoError;
 }
 
 
-GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::ObjectState& os, const char* fieldName, bool exportVisibilityValues /*= false*/)
+GSErrCode ExportVisibility (bool isAutoOnStoryVisibility,
+	API_StoryVisibility visibility,
+	GS::ObjectState& os,
+	const char* fieldName,
+	bool exportVisibilityValues /*= false*/)
 {
 	GS::UniString visibilityString;
 	if (NoError != GetVisibility (isAutoOnStoryVisibility, visibility, visibilityString))
@@ -541,7 +598,7 @@ GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility vi
 	if (!exportVisibilityValues) {
 		os.Add (fieldName, visibilityString);
 	}
-	
+
 	if (visibilityString == CustomStoriesValueName || exportVisibilityValues) {
 		GS::ObjectState customVisibilityOs;
 
@@ -624,7 +681,10 @@ GSErrCode SetVisibility (const GS::UniString& visibilityString, bool& isAutoOnSt
 }
 
 
-GSErrCode ImportVisibility (const GS::ObjectState& os, const char* fieldName, bool& isAutoOnStoryVisibility, API_StoryVisibility& visibility)
+GSErrCode ImportVisibility (const GS::ObjectState& os,
+	const char* fieldName,
+	bool& isAutoOnStoryVisibility,
+	API_StoryVisibility& visibility)
 {
 	if (os.Contains (ShowOnStories)) {
 		GS::UniString visibilityString;
@@ -648,7 +708,9 @@ GSErrCode ImportVisibility (const GS::ObjectState& os, const char* fieldName, bo
 }
 
 
-GSErrCode ExportCoverFillTransformation (bool coverFillOrientationComesFrom3D, API_CoverFillTransformationTypeID coverFillTransformationType, GS::ObjectState& os)
+GSErrCode ExportCoverFillTransformation (bool coverFillOrientationComesFrom3D,
+	API_CoverFillTransformationTypeID coverFillTransformationType,
+	GS::ObjectState& os)
 {
 	if (coverFillOrientationComesFrom3D) {
 		os.Add (CoverFillTransformationType, ThreeDDistortionValueName);
@@ -664,7 +726,9 @@ GSErrCode ExportCoverFillTransformation (bool coverFillOrientationComesFrom3D, A
 }
 
 
-GSErrCode ImportCoverFillTransformation (const GS::ObjectState& os, bool& coverFillOrientationComesFrom3D, API_CoverFillTransformationTypeID& coverFillTransformationType)
+GSErrCode ImportCoverFillTransformation (const GS::ObjectState& os, 
+	bool& coverFillOrientationComesFrom3D, 
+	API_CoverFillTransformationTypeID& coverFillTransformationType)
 {
 	coverFillOrientationComesFrom3D = false;
 	coverFillTransformationType = API_CoverFillTransformationType_Global;
@@ -724,5 +788,6 @@ GSErrCode ImportHatchOrientation (const GS::ObjectState& os, API_HatchOrientatio
 
 	return NoError;
 }
+
 
 }

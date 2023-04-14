@@ -2,5 +2,16 @@
   "python.formatting.provider": "black",
   "python.linting.pylintEnabled": false,
   "python.linting.banditEnabled": true,
-  "python.linting.enabled": true
+  "python.linting.enabled": true,
+  "files.associations": {
+    "*.slnf": "json"
+  },
+  "omnisharp.enableEditorConfigSupport": true,
+  "omnisharp.enableRoslynAnalyzers": true,
+  "omnisharp.defaultLaunchSolution": "SDK.slnf",
+  "[dotnet][xml]": {
+    "editor.defaultFormatter": "ms-dotnettools.csharp",
+    "editor.tabSize": 2
+  },
+  "xml.format.spaceBeforeEmptyCloseTag": false
 }

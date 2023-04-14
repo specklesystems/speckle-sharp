@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
 {
@@ -15,15 +17,16 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Archicad.ArchicadDoor);
 
-    public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var doors = new List<Objects.BuiltElements.Archicad.ArchicadDoor>();
-      foreach (var el in elements)
+      foreach (var tc in elements)
       {
-        switch (el)
+        switch (tc.current)
         {
-          case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoors:
-            doors.Add(archicadDoors);
+          case Objects.BuiltElements.Archicad.ArchicadDoor archicadDoor:
+            archicadDoor.parentApplicationId = tc.parent.current.id;
+            doors.Add(archicadDoor);
             break;
             //case Objects.BuiltElements.Opening window:
             //  var baseLine = (Line)wall.baseLine;
@@ -38,7 +41,7 @@ namespace Archicad.Converters
 
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token);
 
-      return result is null ? new List<string>() : result.ToList();
+      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,

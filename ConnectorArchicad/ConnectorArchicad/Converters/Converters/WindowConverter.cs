@@ -5,9 +5,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
+using Objects.BuiltElements.Archicad;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad.Converters
 {
@@ -15,14 +17,15 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Archicad.ArchicadWindow);
 
-    public async Task<List<string>> ConvertToArchicad(IEnumerable<Base> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var windows = new List<Objects.BuiltElements.Archicad.ArchicadWindow>();
-      foreach (var el in elements)
+      foreach (var tc in elements)
       {
-        switch (el)
+        switch (tc.current)
         {
           case Objects.BuiltElements.Archicad.ArchicadWindow archicadWindow:
+            archicadWindow.parentApplicationId = tc.parent.current.id;
             windows.Add(archicadWindow);
             break;
             //case Objects.BuiltElements.Opening window:
@@ -37,7 +40,7 @@ namespace Archicad.Converters
       }
       var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWindow(windows), token);
 
-      return result is null ? new List<string>() : result.ToList();
+      return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
     public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,

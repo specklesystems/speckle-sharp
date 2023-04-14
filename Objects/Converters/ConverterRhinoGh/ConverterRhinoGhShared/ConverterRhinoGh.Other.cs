@@ -268,7 +268,7 @@ namespace Objects.Converter.RhinoGh
     // blocks
     public Rhino.Geometry.Transform TransformToNative(Transform transform)
     {
-      var matrix = transform.ConvertTo(ModelUnits).ToArray();
+      var matrix = transform.ConvertToUnits(ModelUnits);
       var _transform = Rhino.Geometry.Transform.Identity;
       double homogeneousDivisor = matrix[15]; // rhino doesn't seem to handle transform matrices where the translation vector last value is a divisor instead of 1, so make sure last value is set to 1
       int count = 0;
@@ -401,7 +401,7 @@ namespace Objects.Converter.RhinoGh
         var attribute = new ObjectAttributes();
 
         // layer
-        var geoLayer = item.Value;
+        var geoLayer = item.Key["layer"] is string s ?  s : item.Value; // blocks sent from rhino will have a layer prop dynamically attached
         var layerName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
         int index = 1;
         if (layerName != null)

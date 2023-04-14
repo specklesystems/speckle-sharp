@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -21,6 +21,10 @@ using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorAutocadCivil.UI;
+
+#if ADVANCESTEEL2023
+[assembly: CommandClass(typeof(Speckle.ConnectorAutocadCivil.Entry.SpeckleAutocadCommand))]
+#endif
 
 namespace Speckle.ConnectorAutocadCivil.Entry
 {

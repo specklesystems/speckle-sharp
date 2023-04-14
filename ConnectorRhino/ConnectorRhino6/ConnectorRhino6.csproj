@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
 
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
@@ -13,33 +13,35 @@
     <RootNamespace>SpeckleRhino</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <Version>2.0.0-dev</Version>
-    <LangVersion>8</LangVersion>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <UseWpf>true</UseWpf>
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\**\*" />
+    <EmbeddedResource Include="EmbeddedResources\**\*"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+    <PackageReference Include="Avalonia" Version="0.10.18"/>
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.18"/>
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18"/>
     <PackageReference Include="RhinoCommon" Version="6.28.20199.17141">
     </PackageReference>
     <PackageReference Include="RhinoWindows" Version="6.28.20199.17141">
     </PackageReference>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper6\ConnectorGrasshopper6.csproj" />
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference
+      Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper6\ConnectorGrasshopper6.csproj"/>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj"/>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System.Xaml" />
+    <Reference Include="PresentationCore"/>
+    <Reference Include="PresentationFramework"/>
+    <Reference Include="System.Xaml"/>
   </ItemGroup>
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
     <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
@@ -48,7 +50,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <DefineConstants>TRACE;RHINO6</DefineConstants>
-  
+
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
     <DefineConstants>TRACE;RHINO6;MAC</DefineConstants>
@@ -59,12 +61,16 @@
   <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
     <DefineConstants>TRACE;RHINO6;MAC</DefineConstants>
   </PropertyGroup>
-  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')" />
+  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems"
+    Label="Shared"
+    Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')"/>
   <ItemGroup>
-    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
+    <Compile
+      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
+    <Compile
+      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
       <DesignTime>True</DesignTime>
     </Compile>
   </ItemGroup>

@@ -7,7 +7,9 @@ using System.Collections.Specialized;
 using Rhino;
 using Rhino.DocObjects;
 using Rhino.Collections;
+#if GRASSHOPPER
 using Grasshopper.Kernel.Types;
+#endif
 
 using Speckle.Core.Kits;
 using Speckle.Core.Models;

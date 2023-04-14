@@ -1,63 +1,36 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
-    <Version>2.0.0</Version>
-    <AssemblyName>Objects.Converter.DynamoSandbox</AssemblyName>
-    <Configurations>Debug;Release</Configurations>
-    <DefineConstants>$(DefineConstants)</DefineConstants>
-    <PackageId>Speckle.Objects.Converter.DynamoSandbox</PackageId>
-    <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
-    <Product>Objects.Converter.DynamoSandbox</Product>
-    <Version>2.1.0</Version>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Description>Converter for DynamoSandbox</Description>
-    <PackageTags>speckle objects converter dynamo sandbox</PackageTags>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
+        <AssemblyName>Objects.Converter.DynamoSandbox</AssemblyName>
+        <Configurations>Debug;Release</Configurations>
+        <DefineConstants>$(DefineConstants)</DefineConstants>
+        <PackageId>Speckle.Objects.Converter.DynamoSandbox</PackageId>
+        <Product>Objects.Converter.DynamoSandbox</Product>
+        <Description>Converter for DynamoSandbox</Description>
+        <PackageTags>$(PackageTags) objects converter dynamo sandbox</PackageTags>
+        <CopyToKitFolder>true</CopyToKitFolder>
+    </PropertyGroup>
 
 
-  <ItemGroup>
-    <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471" />
-    <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471" />
+        <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-    <Company>Speckle</Company>
-    <Authors>Speckle</Authors>
-    <PackageProjectUrl>https://github.com/specklesystems/speckle-sharp</PackageProjectUrl>
-  </PropertyGroup>
-
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;)" />
-  </Target>
-
-  <ItemGroup>
-    <None Include="..\..\..\..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
-  <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
+    <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
 </Project>

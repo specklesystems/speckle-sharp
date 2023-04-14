@@ -115,18 +115,14 @@ namespace Archicad.Launcher
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
+      if (commitObject is not null)
+        await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
+
+      await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
+
       if (commitObject == null) throw new SpeckleException("Failed to receive specified");
 
-      ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
-
-      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, conversionOptions, progress.CancellationToken);
-
       return state;
-    }
-
-    public override void SelectClientObjects(List<string> args, bool deselect = false)
-    {
-      // TODO!
     }
 
     public override bool CanPreviewSend => false;

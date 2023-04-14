@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+#if GRASSHOPPER
 using Grasshopper.Kernel.Types;
+#endif
 using Objects.Geometry;
 using Objects.Primitive;
 using Objects.Utils;
@@ -124,7 +126,7 @@ namespace Objects.Converter.RhinoGh
         ScaleToNative((double)interval.start, units), 
         ScaleToNative((double)interval.end, units));
     }
-
+#if GRASSHOPPER
     // Interval2d
     public Interval2d Interval2dToSpeckle(UVInterval interval)
     {
@@ -135,7 +137,7 @@ namespace Objects.Converter.RhinoGh
     {
       return new UVInterval(IntervalToNative(interval.u), IntervalToNative(interval.v));
     }
-
+#endif
     // Plane
     public Plane PlaneToSpeckle(RH.Plane plane, string units = null)
     {
@@ -522,6 +524,7 @@ namespace Objects.Converter.RhinoGh
         curve.TryGetEllipse(pln, out var getObj, tolerance);
         var ellipse = EllipseToSpeckle(getObj, u);
         ellipse.domain = IntervalToSpeckle(curve.Domain);
+        return ellipse;
       }
 
       if (curve.IsLinear(tolerance) || curve.IsPolyline()) // defaults to polyline

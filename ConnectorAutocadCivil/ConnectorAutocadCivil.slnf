@@ -1,0 +1,28 @@
+{
+  "solution": {
+    "path": "..\\All.sln",
+    "projects": [
+      "ConnectorAutocadCivil\\ConnectorAutocad2021\\ConnectorAutocad2021.csproj",
+      "ConnectorAutocadCivil\\ConnectorAutocad2022\\ConnectorAutocad2022.csproj",
+      "ConnectorAutocadCivil\\ConnectorAutocad2023\\ConnectorAutocad2023.csproj",
+      "ConnectorAutocadCivil\\ConnectorAutocadCivil\\ConnectorAutocadCivilShared.shproj",
+      "ConnectorAutocadCivil\\ConnectorCivil2021\\ConnectorCivil2021.csproj",
+      "ConnectorAutocadCivil\\ConnectorCivil2022\\ConnectorCivil2022.csproj",
+      "ConnectorAutocadCivil\\ConnectorCivil2023\\ConnectorCivil2023.csproj",
+      "Core\\Core\\Core.csproj",
+      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
+      "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2021\\ConverterAutocad2021.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2022\\ConverterAutocad2022.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2023\\ConverterAutocad2023.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocadCivilShared\\ConverterAutocadCivilShared.shproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterCivil2021\\ConverterCivil2021.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterCivil2022\\ConverterCivil2022.csproj",
+      "Objects\\Converters\\ConverterAutocadCivil\\ConverterCivil2023\\ConverterCivil2023.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}

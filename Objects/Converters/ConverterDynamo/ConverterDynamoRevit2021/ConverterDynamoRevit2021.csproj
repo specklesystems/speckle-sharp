@@ -1,73 +1,46 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
-    <Version>2.0.0</Version>
-    <AssemblyName>Objects.Converter.DynamoRevit2021</AssemblyName>
-    <Configurations>Debug;Release</Configurations>
-    <DefineConstants>$(DefineConstants);REVIT;REVIT2021</DefineConstants>
-    <PackageId>Speckle.Objects.Converter.DynamoRevit</PackageId>
-    <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
-    <Product>Objects.Converter.DynamoRevit</Product>
-    <Version>2.1.0</Version>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Description>Converter for Dynamo 2.6 for Revit 2021</Description>
-    <PackageTags>speckle objects converter dynamo revit</PackageTags>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-    <LangVersion>8.0</LangVersion>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <RootNamespace>Objects.Converter.Dynamo</RootNamespace>
+        <AssemblyName>Objects.Converter.DynamoRevit2021</AssemblyName>
+        <Configurations>Debug;Release</Configurations>
+        <DefineConstants>$(DefineConstants);REVIT;REVIT2021</DefineConstants>
+        <PackageId>Speckle.Objects.Converter.DynamoRevit</PackageId>
+        <Product>Objects.Converter.DynamoRevit</Product>
+        <Description>Converter for Dynamo 2.6 for Revit 2021</Description>
+        <PackageTags>$(PackageTags) objects converter dynamo revit</PackageTags>
+        <CopyToKitFolder>true</CopyToKitFolder>
+    </PropertyGroup>
 
-<!-- Revit 2021 uses Dynamo 2.6 -->
-  <ItemGroup>
-    <PackageReference Include="DynamoVisualProgramming.Core" Version="2.6.1.8786">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.6.1.8786" />
-    <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.6.1.8786">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
+    <!-- Revit 2021 uses Dynamo 2.6 -->
+    <ItemGroup>
+        <PackageReference Include="DynamoVisualProgramming.Core" Version="2.6.1.8786">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.6.1.8786" />
+        <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.6.1.8786">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+        <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0">
+            <PrivateAssets>all</PrivateAssets>
+        </PackageReference>
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-    <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+        <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-    <Authors>Speckle</Authors>
-    <Company>SpeckleSpeckle</Company>
-    <PackageProjectUrl>https://github.com/specklesystems/speckle-sharp</PackageProjectUrl>
-  </PropertyGroup>
+    <ItemGroup>
+        <Reference Include="RevitNodes">
+            <HintPath>..\..\..\..\ConnectorDynamo\RevitNodes-2.6.1.dll</HintPath>
+        </Reference>
+    </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-    <Exec Command="if '$(IsDesktopBuild)' == true OR  $(IsDesktopBuild) == '' (&#xA;&#xA;&#xD;&#xA;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;&#xD;&#xA;)" />
-  </Target>
+    <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
 
-  <ItemGroup>
-    <None Include="..\..\..\..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="RevitNodes">
-      <HintPath>..\..\..\..\ConnectorDynamo\RevitNodes-2.6.1.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <Import Project="..\ConverterDynamoShared\ConverterDynamoShared.projitems" Label="Shared" />
-
-  <Import Project="..\..\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
+    <Import Project="..\..\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems"
+        Label="Shared" />
 </Project>

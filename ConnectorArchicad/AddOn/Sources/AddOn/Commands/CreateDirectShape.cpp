@@ -1,6 +1,7 @@
 #include "CreateDirectShape.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
+#include "Utility.hpp"
 #include "ModelInfo.hpp"
 #include "FieldNames.hpp"
 #include "OnExit.hpp"
@@ -8,59 +9,50 @@
 using namespace FieldNames;
 
 
-namespace AddOnCommands {
-
-
-static GSErrCode FindAndDeleteOldElement (const API_Guid& applicationId)
+namespace AddOnCommands
 {
-	API_Elem_Head head{};
-	head.guid = applicationId;
 
-	GSErrCode err = ACAPI_Element_GetHeader (&head);
-	if (err == APIERR_BADID) {
-		return NoError;
-	}
 
-	if (err != NoError) {
-		return APIERR_CANCEL;
-	}
-
-#ifdef ServerMainVers_2600
-	if (head.type.typeID != API_MorphID) {
-#else
-	if (head.typeID != API_MorphID) {
-#endif
-		return APIERR_CANCEL;
-	}
-
-	return ACAPI_Element_Delete ({applicationId});
+GS::String CreateDirectShape::GetFieldName () const
+{
+	return FieldNames::DirectShapes;
 }
 
 
-static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, const ModelInfo& modelInfo, AttributeManager& attributeManager)
+GS::UniString CreateDirectShape::GetUndoableCommandName () const
 {
-	GSErrCode err = FindAndDeleteOldElement (applicationId);
-	if (err != NoError) {
-		return GS::NoValue;
-	}
+	return "CreateSpeckleDirectShape";
+}
 
-	API_Element element = {};
+
+GSErrCode CreateDirectShape::GetElementFromObjectState (const GS::ObjectState& os,
+	API_Element& element,
+	API_Element& /*elementMask*/,
+	API_ElementMemo& memo,
+	GS::UInt64& /*memoMask*/,
+	AttributeManager& attributeManager,
+	LibpartImportManager& /*libpartImportManager*/,
+	API_SubElement** /*marker = nullptr*/) const
+{
+	GSErrCode err = NoError;
+
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_MorphID;
 #else
 	element.header.typeID = API_MorphID;
 #endif
-	err = ACAPI_Element_GetDefaults (&element, nullptr);
-	if (err != NoError) {
-		return GS::NoValue;
-	}
-	element.header.guid = applicationId;
+	err = Utility::GetBaseElementData (element, &memo);
+	if (err != NoError)
+		return err;
+
+	// get the mesh
+	ModelInfo modelInfo;
+	os.Get (Model::Model, modelInfo);
 
 	void* bodyData = nullptr;
 	ACAPI_Body_Create (nullptr, nullptr, &bodyData);
-	if (bodyData == nullptr) {
-		return GS::NoValue;
-	}
+	if (bodyData == nullptr)
+		return Error;
 
 	const GS::Array<ModelInfo::Vertex>& vertices = modelInfo.GetVertices ();
 	GS::Array<UInt32> bodyVertices;
@@ -70,7 +62,7 @@ static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, con
 		bodyVertices.Push (bodyVertex);
 	}
 
-	for (const auto& polygon : modelInfo.GetPolygons()) {
+	for (const auto& polygon : modelInfo.GetPolygons ()) {
 		UInt32 bodyPolygon = 0;
 		Int32 bodyEdge = 0;
 
@@ -94,72 +86,21 @@ static GS::Optional<API_Guid> CreateElement (const API_Guid & applicationId, con
 				overrideMaterial.overridden = true;
 			}
 		}
-	
+
 		ACAPI_Body_AddPolygon (bodyData, polygonEdges, 0, overrideMaterial, bodyPolygon);
 	}
 
-	API_ElementMemo memo = {};
-	GS::OnExit memoDisposer ([&memo] { ACAPI_DisposeElemMemoHdls (&memo); });
-
 	ACAPI_Body_Finish (bodyData, &memo.morphBody, &memo.morphMaterialMapTable);
 	ACAPI_Body_Dispose (&bodyData);
-
-	// create the morph element
-	err = ACAPI_Element_Create (&element, &memo);
-	if (err != NoError) {
-		return GS::NoValue;
-	}
-
-	return element.header.guid;
-}
-
-
-static GS::Optional<API_Guid> CreateElement (const GS::ObjectState & elementModelOs)
-{
-	try {
-		GS::UniString id;
-		elementModelOs.Get (ApplicationId, id);
-
-		// get the mesh
-		ModelInfo modelInfo;
-		elementModelOs.Get (Model::Model, modelInfo);
-
-		AttributeManager attributeManager;
-		return CreateElement (APIGuidFromString (id.ToCStr ()), modelInfo, attributeManager);
-	} catch (...) {
-		return GS::NoValue;
-	}
+	
+	return NoError;
 }
 
 
 GS::String CreateDirectShape::GetName () const
 {
-	return CreateDirectShapesCommandName;
+	return CreateDirectShapeCommandName;
 }
 
 
-GS::ObjectState CreateDirectShape::Execute (const GS::ObjectState & parameters, GS::ProcessControl& /*processControl*/) const
-{
-	GS::Array<GS::UniString> applicationIds;
-
-	GS::Array<GS::ObjectState> models;
-	parameters.Get (Models, models);
-
-	ACAPI_CallUndoableCommand ("CreateSpeckleMorphs", [&] () -> GSErrCode {
-
-		for (const auto& model : models) {
-			const auto result = CreateElement (model);
-			if (result.HasValue ()) {
-				applicationIds.Push (APIGuidToString (result.Get ()));
-			}
-		}
-
-		return NoError;
-		});
-
-	return GS::ObjectState (ApplicationIds, applicationIds);
-}
-
-
-
-}
+} // namespace AddOnCommands

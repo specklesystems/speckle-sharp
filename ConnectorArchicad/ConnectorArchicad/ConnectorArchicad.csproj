@@ -4,9 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <Company>Speckle</Company>
     <Product>ConnectorArchicad</Product>
-    <Version>2.0.0-dev</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
@@ -23,8 +21,5 @@
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
     <ProjectReference Include="..\..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-  </PropertyGroup>
 
 </Project>
