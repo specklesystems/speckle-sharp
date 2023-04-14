@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMappingsCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleWebUICommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
@@ -21,6 +22,9 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)UI\MappingBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebUI\WebUIPanel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebUI\WebUIBindings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WebUI\RhinoWebUIBindings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MacOSHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandMac.cs" />

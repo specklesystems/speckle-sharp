@@ -87,8 +87,20 @@ namespace Speckle.ConnectorRevit.Entry
       manager.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
       manager.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
 
+#if (REVIT2022 || REVIT2023)
+      //WebUI
+      var webUISpeckleButton = specklePanel.AddItem(new PushButtonData("Speckle 2 (WebUI)", "Revit Connector (WebUI)", typeof(App).Assembly.Location, typeof(WebUISpeckleRevitCommand).FullName)) as PushButton;
 
-
+      if (webUISpeckleButton != null)
+      {
+        webUISpeckleButton.Image = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo16.png", path);
+        webUISpeckleButton.LargeImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        webUISpeckleButton.ToolTipImage = LoadPngImgSource("Speckle.ConnectorRevit.Assets.logo32.png", path);
+        webUISpeckleButton.ToolTip = "Speckle Connector for Revit";
+        webUISpeckleButton.AvailabilityClassName = typeof(CmdAvailabilityViews).FullName;
+        webUISpeckleButton.SetContextualHelp(new ContextualHelp(ContextualHelpType.Url, "https://speckle.systems"));
+      }
+#endif
 
       return Result.Succeeded;
     }
@@ -96,7 +108,7 @@ namespace Speckle.ConnectorRevit.Entry
     private void ControlledApplication_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
     {
       try
-      {        
+      {
         // We need to hook into the AssemblyResolve event before doing anything else
         // or we'll run into unresolved issues loading dependencies
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
@@ -111,11 +123,16 @@ namespace Speckle.ConnectorRevit.Entry
         SpeckleRevitCommand.Bindings = bindings;
         SchedulerCommand.Bindings = bindings;
 
+
+
         //This is also called in DUI, adding it here to know how often the connector is loaded and used
         Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 
         SpeckleRevitCommand.RegisterPane();
-
+#if (REVIT2022 || REVIT2023)
+        WebUISpeckleRevitCommand.Bindings = bindings;
+        WebUISpeckleRevitCommand.RegisterPane();
+#endif
         //AppInstance.ViewActivated += new EventHandler<ViewActivatedEventArgs>(Application_ViewActivated);
       }
       catch (Exception ex)
