@@ -1,15 +1,16 @@
-﻿using DesktopUI2.Views;
-using ReactiveUI;
-using Serilog;
-using Speckle.Core.Api;
-using Speckle.Core.Logging;
-using Splat;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using DesktopUI2.Models;
+using DesktopUI2.Views;
+using ReactiveUI;
+using Serilog;
+using Speckle.Core.Api;
+using Speckle.Core.Logging;
+using Splat;
 
 namespace DesktopUI2.ViewModels
 {
@@ -113,8 +114,15 @@ namespace DesktopUI2.ViewModels
       if (Comment.resources.Count > 1)
         overlay = "&overlay=" + string.Join(",", Comment.resources.Skip(1).Select(x => x.resourceId));
 
+      var url = $"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}";
+      var config = ConfigManager.Load();
+      if (config.UseFe2)
+      {
+        url = $"{_client.Account.serverInfo.url}/projects/{StreamId}/";
+      }
 
-      Process.Start(new ProcessStartInfo($"{_client.Account.serverInfo.url}/streams/{StreamId}/{r0.resourceType}s/{r0.resourceId}?cId={Comment.id}{overlay}") { UseShellExecute = true });
+
+      Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Comment View" } });
     }
   }
