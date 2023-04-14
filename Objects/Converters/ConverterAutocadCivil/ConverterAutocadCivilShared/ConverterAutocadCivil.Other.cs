@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -732,18 +732,18 @@ namespace Objects.Converter.AutocadCivil
       var _text = new Text();
 
       // not realistically feasible to extract outline curves for displayvalue currently
-      _text.height = text.TextHeight;
+      _text.height = text.Height == 0 ? text.ActualHeight : text.Height;
       var center = (text.Bounds != null) ? GetTextCenter(text.Bounds.Value) : text.Location;
       _text.plane = PlaneToSpeckle( new Plane(center, text.Normal));
       _text.rotation = text.Rotation;    
-      _text.value = text.Contents;
+      _text.value = text.Text;
       _text.richText = text.ContentsRTF;
       _text.units = ModelUnits;
 
       // autocad props
       var excludeProps = new List<string>()
       {
-        "TextHeight",
+        "Height",
         "Rotation",
         "Contents",
         "ContentsRTF"
