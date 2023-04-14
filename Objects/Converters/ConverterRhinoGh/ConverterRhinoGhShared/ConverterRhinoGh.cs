@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.IO;
@@ -26,7 +26,6 @@ using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
 using Brep = Objects.Geometry.Brep;
 using Circle = Objects.Geometry.Circle;
-using Collection = Objects.Organization.Collection;
 using Curve = Objects.Geometry.Curve;
 using Dimension = Objects.Other.Dimension;
 using DirectShape = Objects.BuiltElements.Revit.DirectShape;

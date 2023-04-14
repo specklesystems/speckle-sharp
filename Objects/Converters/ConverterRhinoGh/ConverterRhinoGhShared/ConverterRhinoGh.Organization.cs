@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 using Rhino;
 using Rhino.DocObjects;
@@ -8,7 +8,6 @@ using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;
 
 using Objects.Other;
-using Collection = Objects.Organization.Collection;
 
 namespace Objects.Converter.RhinoGh
 {
