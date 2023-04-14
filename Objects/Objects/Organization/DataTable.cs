@@ -21,14 +21,21 @@ namespace Objects.Organization
     public List<Base> columnMetadata { get; set; } = new List<Base>();
     public List<List<object>> data { get; set; } = new List<List<object>>();
 
-    public void AddRow(Base metadata, params object[] objects)
+    public void AddRow(Base metadata, int index = -1, params object[] objects)
     {
       if (objects.Length != columnCount)
         throw new ArgumentException($"\"AddRow\" method was passed {objects.Length} objects, but the DataTable has {columnCount} columns. Partial and extended table rows are not accepted by the DataTable object.");
 
-      //Data.AddRange(objects);
-      data.Add(objects.ToList());
-      rowMetadata.Add(metadata);
+      if (index < 0 || index >= data.Count)
+      {
+        data.Add(objects.ToList());
+        rowMetadata.Add(metadata);
+      }
+      else
+      {
+        data.Insert(index, objects.ToList());
+        rowMetadata.Insert(index, metadata);
+      }
     }
 
     public void DefineColumn(Base metadata)

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using Objects.Organization;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -48,7 +49,7 @@ namespace Objects.Converter.Revit
       {
         var field = revitSchedule.Definition.GetField(scheduleFieldOrder[i]);
 
-        // we cannot get the values for hidden fields, so we need to subtract one from the index that is passed to 
+        // we cannot get the values for hidden fields, so we need to subtract one from the index that is passed to
         // tableView.GetCellText.
         if (field.IsHidden) 
         { 
@@ -135,15 +136,27 @@ namespace Objects.Converter.Revit
           .ToElementIds();
 
       var skippedIndicies = new Dictionary<SectionType, List<int>>();
+      var columnHeaders = new List<string>();
 
-      DefineColumnMetadata(revitSchedule, speckleTable, originalTableIds);
+      DefineColumnMetadata(revitSchedule, speckleTable, originalTableIds, columnHeaders);
       PopulateDataTableRows(revitSchedule, speckleTable, originalTableIds, skippedIndicies);
+
       speckleTable.headerRowIndex = Math.Max(0, GetTableHeaderIndex(revitSchedule, skippedIndicies));
+
+      if (!revitSchedule.Definition.ShowHeaders)
+      {
+        AddHeaderRow(speckleTable, columnHeaders);
+      }
 
       return speckleTable;
     }
 
-    private void DefineColumnMetadata(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds)
+    private void AddHeaderRow(DataTable speckleTable, List<string> headers)
+    {
+      speckleTable.AddRow(metadata: new Base(), index: speckleTable.headerRowIndex, headers.ToArray());
+    }
+
+    private void DefineColumnMetadata(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, List<string> columnHeaderList)
     {
       Element firstElement = null;
       Element firstType = null;
@@ -161,6 +174,9 @@ namespace Objects.Converter.Revit
         {
           continue;
         }
+
+        // add column header to list for potential future use
+        columnHeaderList.Add(field.ColumnHeading);
 
         var builtInParameter = (BuiltInParameter)field.ParameterId.IntegerValue;
 
@@ -246,20 +262,32 @@ namespace Objects.Converter.Revit
 
     private int GetTableHeaderIndex(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies)
     {
-      var masterRowIndex = 0;
-      int numRowsToTry = 6;
       var hasHeaders = revitSchedule.Definition.ShowHeaders;
 
       // TODO: figure out what to do if the table doesn't have headers
       if (!hasHeaders)
       {
-        return -1;
+        return ExecuteInTemporaryTransaction(() =>
+        {
+          revitSchedule.Definition.ShowHeaders = true;
+          return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies);
+        });
       }
 
+      return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies);
+    }
+
+    private static int GetHeaderIndexFromScheduleWithHeaders(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies)
+    {
+      var masterRowIndex = 0;
+      int numRowsToTry = 6;
+
+      var scheduleFieldOrder = revitSchedule.Definition.GetFieldOrder();
+      var firstColumnHeading = GetFirstVisibleColumnHeading(revitSchedule, scheduleFieldOrder);
+
+      var table = revitSchedule.GetTableData();
       foreach (SectionType tableSection in Enum.GetValues(typeof(SectionType)))
       {
-        // the table must be recomputed here because of our hacky row deleting trick
-        var table = revitSchedule.GetTableData();
         var section = table.GetSectionData(tableSection);
 
         if (section == null)
@@ -267,26 +295,22 @@ namespace Objects.Converter.Revit
           continue;
         }
         var rowCount = section.NumberOfRows;
-        var columnCount = section.NumberOfColumns;
 
-        var originalColumn0 = GetFirstNValues(revitSchedule, tableSection, Math.Min(rowCount, numRowsToTry));
-        var modifiedColumn0 = ExecuteInTemporaryTransaction(() =>
-        {
-          revitSchedule.Definition.ShowHeaders = false;
-          var table = revitSchedule.GetTableData();
-          var section = table.GetSectionData(tableSection);
-          var rowCount = section.NumberOfRows;
-          return GetFirstNValues(revitSchedule, tableSection, Math.Min(rowCount, numRowsToTry));
-        });
+        var firstNValues = GetFirstNValues(
+          revitSchedule,
+          tableSection,
+          Math.Min(rowCount, numRowsToTry),
+          0);
 
-        for (var i = 0; i < modifiedColumn0.Count; i++)
+        var columnIndex = 0;
+        foreach (var tableValue in firstNValues)
         {
-          if (originalColumn0[i] != modifiedColumn0[i])
+          if (tableValue == firstColumnHeading)
           {
             return masterRowIndex;
           }
 
-          if (!skippedIndicies.TryGetValue(tableSection, out var indicies) || !indicies.Contains(i))
+          if (!skippedIndicies.TryGetValue(tableSection, out var indicies) || !indicies.Contains(columnIndex))
           {
             // this "skippedIndicies" dict contains the indicies that contain only empty values
             // these values were skipped when adding them to the DataTable, so the indicies of the revitSchedule
@@ -295,20 +319,36 @@ namespace Objects.Converter.Revit
             // therefore we only want to increment the masterRowIndex if this row was added to the Speckle DataTable
             masterRowIndex++;
           }
+          columnIndex++;
         }
       }
 
       return -1;
     }
 
-    private static List<string> GetFirstNValues(ViewSchedule revitSchedule, SectionType tableSection, int rowCount)
+    private static string GetFirstVisibleColumnHeading(ViewSchedule revitSchedule, IList<ScheduleFieldId> scheduleFieldOrder)
     {
-      var firstNValues = new List<string>();
+      for (var i = 0; i < scheduleFieldOrder.Count; i++)
+      {
+        var field = revitSchedule.Definition.GetField(scheduleFieldOrder[i]);
+
+        if (field.IsHidden)
+        {
+          continue;
+        }
+
+        return field.ColumnHeading;
+      }
+
+      return null;
+    }
+
+    private static IEnumerable<string> GetFirstNValues(ViewSchedule revitSchedule, SectionType tableSection, int rowCount, int columnIndex)
+    {
       for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
       {
-        firstNValues.Add(revitSchedule.GetCellText(tableSection, rowIndex, 0));
+        yield return revitSchedule.GetCellText(tableSection, rowIndex, columnIndex);
       }
-      return firstNValues;
     }
 
     private bool AddRowToSpeckleTable(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, SectionType tableSection, TableSectionData section, int columnCount, int rowIndex)
@@ -406,27 +446,5 @@ namespace Objects.Converter.Revit
 
       return result;
     }
-
-    //private TResult LoopThroughViewSchedule<TResult>(ViewSchedule revitSchedule, Func<(bool,TResult)> function)
-    //{
-    //  foreach (SectionType tableSection in Enum.GetValues(typeof(SectionType)))
-    //  {
-    //    // the table must be recomputed here because of our hacky row deleting trick
-    //    var table = revitSchedule.GetTableData();
-    //    var section = table.GetSectionData(tableSection);
-
-    //    if (section == null)
-    //    {
-    //      continue;
-    //    }
-    //    var rowCount = section.NumberOfRows;
-    //    var columnCount = section.NumberOfColumns;
-
-    //    for (var rowIndex = 0; rowIndex < rowCount; rowIndex++)
-    //    {
-
-    //    }
-    //  }
-    //}
   }
 }
