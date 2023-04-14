@@ -98,7 +98,7 @@ public class Base : DynamicBase
     {
       var (s, t) = Operations.GetSerializerInstance();
       if (decompose)
-        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
       var obj = JsonConvert.SerializeObject(this, t);
       return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
@@ -106,7 +106,7 @@ public class Base : DynamicBase
     {
       var s = new BaseObjectSerializerV2();
       if (decompose)
-        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
       var obj = s.Serialize(this);
       return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
@@ -153,10 +153,7 @@ public class Base : DynamicBase
         // Simplified chunking count handling.
         var asList = value as IList;
         if (asList != null)
-        {
           count += asList.Count / chunkAttribute.MaxObjCountPerChunk;
-          continue;
-        }
       }
     }
 

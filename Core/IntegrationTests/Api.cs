@@ -290,7 +290,7 @@ public class Api
     objectId = await Operations
       .Send(
         myObject,
-        new List<ITransport>() { myServerTransport },
+        new List<ITransport> { myServerTransport },
         false,
         disposeTransports: true,
         onErrorAction: (s, e) =>
@@ -328,7 +328,7 @@ public class Api
           message = "Fabber Fabbo",
           sourceApplication = "Tests",
           totalChildrenCount = 100,
-          parents = new List<string>() { commitId }
+          parents = new List<string> { commitId }
         }
       )
       .ConfigureAwait(false);

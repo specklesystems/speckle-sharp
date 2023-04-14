@@ -68,7 +68,7 @@ public class SerializerNonBreakingChanges : PrimitiveTestFixture
   {
     new double[] { },
     new double[] { 0, 1, int.MaxValue, int.MinValue },
-    new double[] { default, double.Epsilon, double.MaxValue, double.MinValue }
+    new[] { default, double.Epsilon, double.MaxValue, double.MinValue }
   };
 
   [Test, TestCaseSource(nameof(ArrayTestCases))]
@@ -132,7 +132,7 @@ public class SerializerBreakingChanges : PrimitiveTestFixture
   [Test, TestCaseSource(nameof(MyEnums))]
   public void StringToEnum_ShouldThrow(MyEnum testCase)
   {
-    var from = new StringValueMock() { value = testCase.ToString() };
+    var from = new StringValueMock { value = testCase.ToString() };
 
     Assert.Throws<Exception>(() =>
     {
@@ -252,6 +252,7 @@ public abstract class PrimitiveTestFixture
     double.MaxValue,
     double.MinValue
   };
+
   public static float[] Float32TestCases =
   {
     default,
@@ -259,6 +260,7 @@ public abstract class PrimitiveTestFixture
     float.MaxValue,
     float.MinValue
   };
+
   public static Half[] Float16TestCases = { default, Half.Epsilon, Half.MaxValue, Half.MinValue };
   public static float[] FloatIntegralTestCases = { 0, 1, int.MaxValue, int.MinValue };
 

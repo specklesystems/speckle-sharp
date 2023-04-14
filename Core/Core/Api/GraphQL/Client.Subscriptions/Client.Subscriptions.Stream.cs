@@ -71,7 +71,7 @@ public partial class Client
   /// <param name="id"></param>
   public void SubscribeUserStreamRemoved()
   {
-    var request = new GraphQLRequest { Query = $@"subscription {{ userStreamRemoved }}" };
+    var request = new GraphQLRequest { Query = @"subscription { userStreamRemoved }" };
 
     UserStreamRemovedSubscription = SubscribeTo<UserStreamRemovedResult>(
       request,

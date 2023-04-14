@@ -39,8 +39,8 @@ public class SpeckleException : Exception
   )
     : base(message, inner) { }
 
-  public List<KeyValuePair<string, object>> GraphQLErrors { get; set; }
-
   public SpeckleException(string message)
     : base(message) { }
+
+  public List<KeyValuePair<string, object>> GraphQLErrors { get; set; }
 }

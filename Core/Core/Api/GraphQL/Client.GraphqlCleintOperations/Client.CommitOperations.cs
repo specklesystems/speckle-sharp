@@ -37,9 +37,9 @@ public partial class Client
     var request = new GraphQLRequest
     {
       Query =
-        $@"query Stream($streamId: String!, $commitId: String!) {{
-                      stream(id: $streamId) {{
-                        commit(id: $commitId){{
+        @"query Stream($streamId: String!, $commitId: String!) {
+                      stream(id: $streamId) {
+                        commit(id: $commitId){
                           id,
                           message,
                           sourceApplication,
@@ -49,9 +49,9 @@ public partial class Client
                           createdAt,
                           parents,
                           authorName
-                        }}                       
-                      }}
-                    }}",
+                        }                       
+                      }
+                    }",
       Variables = new { streamId, commitId }
     };
 

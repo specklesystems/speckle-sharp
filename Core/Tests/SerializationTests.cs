@@ -21,7 +21,7 @@ public class Serialization
 
     var polyline = new Polyline();
     for (int i = 0; i < 100; i++)
-      polyline.Points.Add(new Point() { X = i * 2, Y = i % 2 });
+      polyline.Points.Add(new Point { X = i * 2, Y = i % 2 });
 
     var strPoly = Operations.Serialize(polyline);
     var dePoly = Operations.Deserialize(strPoly);
@@ -61,7 +61,7 @@ public class Serialization
   {
     var cat = new PolygonalFeline();
 
-    cat.Tail = new Line() { Start = new Point(0, 0, 0), End = new Point(42, 42, 42) };
+    cat.Tail = new Line { Start = new Point(0, 0, 0), End = new Point(42, 42, 42) };
 
     for (int i = 0; i < 10; i++)
     {
@@ -107,7 +107,7 @@ public class Serialization
   [Test]
   public void InheritanceTests()
   {
-    var superPoint = new SuperPoint()
+    var superPoint = new SuperPoint
     {
       X = 10,
       Y = 10,
@@ -209,11 +209,8 @@ public class Serialization
     test["@emptyDetachableList"] = new List<object>();
 
     // Note: nested empty lists should be preserved.
-    test["nestedList"] = new List<object>() { new List<object>() { new List<object>() } };
-    test["@nestedDetachableList"] = new List<object>()
-    {
-      new List<object>() { new List<object>() }
-    };
+    test["nestedList"] = new List<object> { new List<object> { new List<object>() } };
+    test["@nestedDetachableList"] = new List<object> { new List<object> { new List<object>() } };
 
     var serialised = Operations.Serialize(test);
     var isCorrect =

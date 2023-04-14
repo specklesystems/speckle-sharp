@@ -88,7 +88,7 @@ public static class Utilities
   public static bool IsSimpleType(this Type type)
   {
     return type.IsPrimitive
-      || new Type[]
+      || new[]
       {
         typeof(string),
         typeof(decimal),
@@ -196,7 +196,7 @@ public static class Utilities
               BindingFlags.Instance | BindingFlags.Public | BindingFlags.SetProperty,
               Type.DefaultBinder,
               o,
-              new object[] { value }
+              new[] { value }
             );
           }
           catch { }

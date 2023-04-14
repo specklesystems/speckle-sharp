@@ -48,7 +48,7 @@ public class GraphQLClientTests
     Assert.Throws(
       exType,
       () =>
-        _client.MaybeThrowFromGraphQLErrors<FakeGqlResponseModel>(
+        _client.MaybeThrowFromGraphQLErrors(
           new GraphQLRequest(),
           new GraphQLResponse<FakeGqlResponseModel>
           {
@@ -61,10 +61,7 @@ public class GraphQLClientTests
   [Test]
   public void TestMaybeThrowsDoesntThrowForNoErrors()
   {
-    _client.MaybeThrowFromGraphQLErrors<string>(
-      new GraphQLRequest(),
-      new GraphQLResponse<string>()
-    );
+    _client.MaybeThrowFromGraphQLErrors(new GraphQLRequest(), new GraphQLResponse<string>());
     // We're just checking that the prev function didn't throw
     Assert.True(true);
   }

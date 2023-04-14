@@ -10,8 +10,6 @@ namespace Speckle.Core.Kits;
 /// </summary>
 public class CoreKit : ISpeckleKit
 {
-  public CoreKit() { }
-
   public IEnumerable<Type> Types =>
     GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 

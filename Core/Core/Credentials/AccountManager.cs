@@ -28,7 +28,7 @@ namespace Speckle.Core.Credentials;
 public static class AccountManager
 {
   private static SQLiteTransport AccountStorage = new(scope: "Accounts");
-  private static bool _isAddingAccount = false;
+  private static bool _isAddingAccount;
   private static SQLiteTransport AccountAddLockStorage = new(scope: "AccountAddFlow");
 
   /// <summary>
@@ -41,7 +41,7 @@ public static class AccountManager
     using var httpClient = Http.GetHttpProxyClient();
 
     using var gqlClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") },
+      new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
       new NewtonsoftJsonSerializer(),
       httpClient
     );
@@ -72,7 +72,7 @@ public static class AccountManager
     httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
     using var gqlClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(server), "/graphql") },
+      new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
       new NewtonsoftJsonSerializer(),
       httpClient
     );
@@ -148,7 +148,7 @@ public static class AccountManager
       Uri url = null;
       Uri.TryCreate(customServerUrl, UriKind.Absolute, out url);
       if (url != null)
-        defaultServerUrl = customServerUrl.TrimEnd(new[] { '/' });
+        defaultServerUrl = customServerUrl.TrimEnd('/');
     }
 
     return defaultServerUrl;
@@ -332,7 +332,7 @@ public static class AccountManager
         localUrl
       );
     }
-    return localUrl.TrimEnd(new[] { '/' });
+    return localUrl.TrimEnd('/');
   }
 
   private static void _ensureGetAccessCodeFlowIsSupported()
@@ -443,7 +443,7 @@ public static class AccountManager
       var tokenResponse = await GetToken(accessCode, challenge, server).ConfigureAwait(false);
       var userResponse = await GetUserServerInfo(tokenResponse.token, server).ConfigureAwait(false);
 
-      var account = new Account()
+      var account = new Account
       {
         token = tokenResponse.token,
         refreshToken = tokenResponse.refreshToken,
@@ -500,7 +500,6 @@ public static class AccountManager
     // for ease of deletion and retrieval
     AccountAddLockStorage.SaveObjectSync(lockId, lockId);
     _isAddingAccount = true;
-    return;
   }
 
   private static void _unlockAccountAddFlow()
@@ -580,8 +579,8 @@ public static class AccountManager
       {
         appId = "sca",
         appSecret = "sca",
-        accessCode = accessCode,
-        challenge = challenge
+        accessCode,
+        challenge
       };
 
       var content = new StringContent(JsonConvert.SerializeObject(body));
@@ -613,7 +612,7 @@ public static class AccountManager
       {
         appId = "sca",
         appSecret = "sca",
-        refreshToken = refreshToken
+        refreshToken
       };
 
       var content = new StringContent(JsonConvert.SerializeObject(body));

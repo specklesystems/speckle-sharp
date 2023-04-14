@@ -66,7 +66,7 @@ public static class Analytics
     /// Event triggered by the Mapping Tool
     /// </summary>
     MappingsAction
-  };
+  }
 
   private const string MixpanelToken = "acd87c5a50b56df91a795e999812a3a4";
   private const string MixpanelServer = "https://analytics.speckle.systems";
@@ -187,7 +187,7 @@ public static class Analytics
     {
       try
       {
-        var properties = new Dictionary<string, object>()
+        var properties = new Dictionary<string, object>
         {
           { "distinct_id", hashedEmail },
           { "server_id", hashedServer },
@@ -234,13 +234,13 @@ public static class Analytics
     {
       try
       {
-        var data = new Dictionary<string, object>()
+        var data = new Dictionary<string, object>
         {
           { "$token", MixpanelToken },
           { "$distinct_id", hashedEmail },
           {
             "$union",
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
               {
                 "Connectors",
@@ -250,7 +250,7 @@ public static class Analytics
           },
           {
             "set",
-            new Dictionary<string, object>() { { "Identified", true } }
+            new Dictionary<string, object> { { "Identified", true } }
           }
         };
         string json = JsonConvert.SerializeObject(data);

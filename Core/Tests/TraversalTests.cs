@@ -15,13 +15,13 @@ public class TraversalTests
       new()
       {
         id = "root",
-        ["child"] = new Base()
+        ["child"] = new Base
         {
           id = "traverse through me",
-          ["child"] = new Base()
+          ["child"] = new Base
           {
             id = "break on me, go no further",
-            ["child"] = new Base() { id = "should have ignored me" }
+            ["child"] = new Base { id = "should have ignored me" }
           }
         }
       };

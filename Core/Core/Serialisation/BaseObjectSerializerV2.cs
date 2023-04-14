@@ -19,7 +19,7 @@ namespace Speckle.Core.Serialisation;
 public class BaseObjectSerializerV2
 {
   private Stopwatch _stopwatch = new();
-  private bool Busy = false;
+  private bool Busy;
 
   private Regex ChunkPropertyNameRegex = new(@"^@\((\d*)\)");
   private List<Dictionary<string, int>> ParentClosures = new();
@@ -33,8 +33,6 @@ public class BaseObjectSerializerV2
 
   private Dictionary<string, List<(PropertyInfo, PropertyAttributeInfo)>> TypedPropertiesCache =
     new();
-
-  public BaseObjectSerializerV2() { }
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -139,7 +137,7 @@ public class BaseObjectSerializerV2
     if (obj is DateTime t)
       return t.ToString("o", CultureInfo.InvariantCulture);
     if (obj is Matrix4x4 m)
-      return new List<float>()
+      return new List<float>
       {
         m.M11,
         m.M12,
@@ -159,7 +157,7 @@ public class BaseObjectSerializerV2
         m.M44
       };
 
-    throw new Exception("Unsupported value in serialization: " + type.ToString());
+    throw new Exception("Unsupported value in serialization: " + type);
   }
 
   public object PreserializeBase(

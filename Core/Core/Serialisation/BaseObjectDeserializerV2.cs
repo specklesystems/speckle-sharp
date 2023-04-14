@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
@@ -16,7 +15,7 @@ namespace Speckle.Core.Serialisation;
 
 public class BaseObjectDeserializerV2
 {
-  private bool Busy = false;
+  private bool Busy;
   private object CallbackLock = new();
 
   // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
@@ -30,8 +29,6 @@ public class BaseObjectDeserializerV2
   public string TypeDiscriminator = "speckle_type";
 
   private DeserializationWorkerThreads WorkerThreads;
-
-  public BaseObjectDeserializerV2() { }
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -259,7 +256,7 @@ public class BaseObjectDeserializerV2
 
         return Dict2Base(dict);
       default:
-        throw new Exception("Json value not supported: " + doc.Type.ToString());
+        throw new Exception("Json value not supported: " + doc.Type);
     }
   }
 

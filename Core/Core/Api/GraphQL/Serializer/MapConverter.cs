@@ -27,10 +27,9 @@ public class MapConverter : JsonConverter<Map>
     var rootToken = JToken.ReadFrom(reader);
     if (rootToken is JObject)
       return (Map)ReadDictionary(rootToken, new Map());
-    else
-      throw new ArgumentException(
-        "This converter can only parse when the root element is a JSON Object."
-      );
+    throw new ArgumentException(
+      "This converter can only parse when the root element is a JSON Object."
+    );
   }
 
   private object? ReadToken(JToken? token)

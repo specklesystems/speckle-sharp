@@ -13,7 +13,7 @@ public static class Setup
 {
   public static Mutex mutex;
 
-  private static bool initialized = false;
+  private static bool initialized;
 
   static Setup()
   {

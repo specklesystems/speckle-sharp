@@ -16,7 +16,7 @@ namespace Speckle.Core.Transports;
 
 public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapableTransport
 {
-  private bool IS_WRITING = false;
+  private bool IS_WRITING;
   private int MAX_TRANSACTION_SIZE = 1000;
   private int PollInterval = 500;
 
@@ -62,7 +62,7 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
     {
       Initialize();
 
-      WriteTimer = new Timer()
+      WriteTimer = new Timer
       {
         AutoReset = true,
         Enabled = false,
@@ -86,6 +86,7 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
 
   private SqliteConnection Connection { get; set; }
   private object ConnectionLock { get; set; }
+
   public string BlobStorageFolder =>
     SpecklePathProvider.BlobStoragePath(Path.Combine(_basePath, _applicationName));
 
@@ -278,7 +279,7 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
     using (var c = new SqliteConnection(ConnectionString))
     {
       c.Open();
-      var commandText = $"REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
+      var commandText = "REPLACE INTO objects(hash, content) VALUES(@hash, @content)";
       using (var command = new SqliteCommand(commandText, c))
       {
         command.Parameters.AddWithValue("@hash", hash);
@@ -355,7 +356,7 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
       c.Open();
       using (var t = c.BeginTransaction())
       {
-        var commandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+        var commandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
 
         while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
           using (var command = new SqliteCommand(commandText, c, t))
@@ -431,7 +432,7 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
       using (var c = new SqliteConnection(ConnectionString))
       {
         c.Open();
-        var commandText = $"INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+        var commandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
         using (var command = new SqliteCommand(commandText, c))
         {
           command.Parameters.AddWithValue("@hash", hash);

@@ -146,7 +146,7 @@
       xcopy /e /i /y "$(TargetDir)*.*" "$(PluginVersionContentTarget)\"
     </PostBuildEvent>
 
-    <PostBuildEvent Condition=" '$(Configuration)' == 'Release' AND '$(IsDesktopBuild)' == true">
+    <PostBuildEvent Condition=" '$(Configuration)' == 'Release'">
       echo RELEASE copy from $(TargetDir) to $(SolutionDir)Release\Release\$(NavisworksVersion)\"
       xcopy /e /i /y "$(TargetDir)*.*" "$(SolutionDir)Release\Release$(NavisworksVersion)\"
     </PostBuildEvent>

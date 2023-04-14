@@ -14,7 +14,7 @@ namespace Speckle.Core.Logging;
 /// </summary>
 public static class OldLog
 {
-  private static bool _initialized = false;
+  private static bool _initialized;
 
   /// <summary>
   /// Initializes Sentry
@@ -40,7 +40,7 @@ public static class OldLog
         o.Dsn = dsn;
         o.Environment = env;
         o.Debug = debug;
-        o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version.ToString();
+        o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version;
         o.StackTraceMode = StackTraceMode.Enhanced;
         o.AttachStacktrace = true;
         o.AddExceptionFilterForType<HttpRequestException>();

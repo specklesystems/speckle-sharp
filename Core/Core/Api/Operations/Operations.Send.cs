@@ -81,7 +81,7 @@ public static partial class Operations
       );
 
     if (useDefaultCache)
-      transports.Insert(0, new SQLiteTransport() { TransportName = "LC" });
+      transports.Insert(0, new SQLiteTransport { TransportName = "LC" });
 
     var transportContext = transports.ToDictionary(t => t.TransportName, t => t.TransportContext);
 
