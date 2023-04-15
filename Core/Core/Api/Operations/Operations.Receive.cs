@@ -142,21 +142,11 @@ public static partial class Operations
         if (partial.__closure != null)
           onTotalChildrenCountKnown?.Invoke(partial.__closure.Count);
 
-        Base? localRes = DeserializeStringToBase(
-          serializerVersion,
-          objString,
-          settings,
-          serializerV2
-        );
+        Base? localRes = DeserializeStringToBase(serializerVersion, objString, settings, serializerV2);
 
-        if (
-          (disposeTransports || !hasUserProvidedLocalTransport)
-          && localTransport is IDisposable dispLocal
-        )
+        if ((disposeTransports || !hasUserProvidedLocalTransport) && localTransport is IDisposable dispLocal)
           dispLocal.Dispose();
-        if (
-          disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRemote
-        )
+        if (disposeTransports && remoteTransport != null && remoteTransport is IDisposable dispRemote)
           dispRemote.Dispose();
 
         timer.Stop();
@@ -164,7 +154,7 @@ public static partial class Operations
           .ForContext("deserializerElapsed", serializerV2?.Elapsed)
           .ForContext(
             "transportElapsedBreakdown",
-            new ITransport?[] { localTransport, remoteTransport }
+            new[] { localTransport, remoteTransport }
               .Where(t => t != null)
               .ToDictionary(t => t!.TransportName, t => t!.Elapsed)
           )
@@ -176,17 +166,14 @@ public static partial class Operations
           );
         return localRes;
       }
-      else if (remoteTransport == null)
+
+      if (remoteTransport == null)
       {
         var ex = new SpeckleException(
           $"Could not find specified object using the local transport {localTransport.TransportName}, and you didn't provide a fallback remote from which to pull it."
         );
 
-        SpeckleLog.Logger.Error(
-          ex,
-          "Cannot receive object from the given transports {exceptionMessage}",
-          ex.Message
-        );
+        SpeckleLog.Logger.Error(ex, "Cannot receive object from the given transports {exceptionMessage}", ex.Message);
         throw ex;
       }
 
@@ -219,7 +206,7 @@ public static partial class Operations
         .ForContext("deserializerElapsed", serializerV2.Elapsed)
         .ForContext(
           "transportElapsedBreakdown",
-          new ITransport?[] { localTransport, remoteTransport }
+          new[] { localTransport, remoteTransport }
             .Where(t => t != null)
             .ToDictionary(t => t.TransportName, t => t.Elapsed)
         )
@@ -260,16 +247,12 @@ public static partial class Operations
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(
-          ex,
-          "A deserialization error has occurred {exceptionMessage}",
-          ex.Message
-        );
+        SpeckleLog.Logger.Error(ex, "A deserialization error has occurred {exceptionMessage}", ex.Message);
         if (serializerV2.OnErrorAction == null)
           throw;
         serializerV2.OnErrorAction.Invoke(
           $"A deserialization error has occurred: {ex.Message}",
-          new SpeckleDeserializeException($"A deserialization error has occurred", ex)
+          new SpeckleDeserializeException("A deserialization error has occurred", ex)
         );
         localRes = null;
       }

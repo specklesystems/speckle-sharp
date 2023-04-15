@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.BuiltElements;
@@ -7,14 +7,18 @@ using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using Plane = Objects.Geometry.Plane;
-using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Other
 {
-
   public abstract class Instance : Base
   {
+    protected Instance(Transform transform)
+    {
+      this.transform = transform ?? new Transform();
+    }
+
+    protected Instance() { }
+
     /// <summary>
     /// The column-dominant 4x4 transform of this instance.
     /// </summary>
@@ -29,29 +33,25 @@ namespace Objects.Other
     /// The units of this Instance, should be the same as the instance transform units
     /// </summary>
     public string units { get; set; }
-
-    protected Instance(Transform transform)
-    {
-      this.transform = transform ?? new Transform();
-    }
-
-    public Instance() { }
   }
 
   /// <summary>
   /// Generic instance class
   /// </summary>
-  public abstract class Instance<T> : Instance where T : Base
+  public abstract class Instance<T> : Instance
+    where T : Base
   {
-    [JsonIgnore]
-    public T typedDefinition { get; set; }
-
-    protected Instance(T definition, Transform transform) : base(transform)
+    protected Instance(T definition, Transform transform)
+      : base(transform)
     {
       typedDefinition = definition;
     }
 
-    public Instance() : base(new Transform()) { }
+    protected Instance()
+      : base(new Transform()) { }
+
+    [JsonIgnore]
+    public T typedDefinition { get; set; }
 
     [DetachProperty]
     public override Base definition
@@ -63,21 +63,18 @@ namespace Objects.Other
           typedDefinition = type;
       }
     }
-
   }
 
   /// <summary>
-  /// Block instance class 
+  /// Block instance class
   /// </summary>
   public class BlockInstance : Instance<BlockDefinition>
   {
-    [DetachProperty, Obsolete("Use definition property", true), JsonIgnore]
-    public BlockDefinition blockDefinition { get => typedDefinition; set => typedDefinition = value; }
-
     public BlockInstance() { }
 
     [SchemaInfo("Block Instance", "A Speckle Block Instance")]
-    public BlockInstance(BlockDefinition blockDefinition, Transform transform) : base(blockDefinition, transform)
+    public BlockInstance(BlockDefinition blockDefinition, Transform transform)
+      : base(blockDefinition, transform)
     {
       // OLD: TODO: need to verify
       // Add base translation to transform. This assumes the transform is based on the world origin,
@@ -85,27 +82,38 @@ namespace Objects.Other
       //this.transform = transform * blockDefinition.GetBasePointTransform();
     }
 
+    [DetachProperty, Obsolete("Use definition property", true), JsonIgnore]
+    public BlockDefinition blockDefinition
+    {
+      get => typedDefinition;
+      set => typedDefinition = value;
+    }
+
     [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
     {
-      return typedDefinition.geometry.SelectMany(b =>
-      {
-        switch (b)
+      return typedDefinition.geometry
+        .SelectMany(b =>
         {
-          case BlockInstance bi:
-            return bi.GetTransformedGeometry()?.Select(b =>
-            {
-              ITransformable childTransformed = null;
-              b?.TransformTo(transform, out childTransformed);
-              return childTransformed;
-            });
-          case ITransformable bt:
-            var res = bt.TransformTo(transform, out var transformed);
-            return new List<ITransformable> { res ? transformed : null };
-          default:
-            return new List<ITransformable>();
-        }
-      }).Where(b => b != null).ToList();
+          switch (b)
+          {
+            case BlockInstance bi:
+              return bi.GetTransformedGeometry()
+                ?.Select(b =>
+                {
+                  ITransformable childTransformed = null;
+                  b?.TransformTo(transform, out childTransformed);
+                  return childTransformed;
+                });
+            case ITransformable bt:
+              var res = bt.TransformTo(transform, out var transformed);
+              return new List<ITransformable> { res ? transformed : null };
+            default:
+              return new List<ITransformable>();
+          }
+        })
+        .Where(b => b != null)
+        .ToList();
     }
 
     /// <summary>
@@ -117,7 +125,13 @@ namespace Objects.Other
     public Plane GetInsertionPlane()
     {
       // TODO: UPDATE!
-      var plane = new Plane(typedDefinition.basePoint ?? new Point(0, 0, 0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
+      var plane = new Plane(
+        typedDefinition.basePoint ?? new Point(0, 0, 0, units),
+        new Vector(0, 0, 1, units),
+        new Vector(1, 0, 0, units),
+        new Vector(0, 1, 0, units),
+        units
+      );
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
@@ -140,43 +154,41 @@ namespace Objects.Other.Revit
     {
       var allChildren = typedDefinition.elements ?? new List<Base>();
       if (typedDefinition.displayValue.Any())
-      {
         allChildren.AddRange(typedDefinition.displayValue);
-      }
 
       // get transformed definition objs
-      var transformed = allChildren.SelectMany(b =>
-      {
-        switch (b)
+      var transformed = allChildren
+        .SelectMany(b =>
         {
-          case RevitInstance ri:
-            return ri.GetTransformedGeometry()?.Select(b =>
-            {
-              ITransformable childTransformed = null;
-              b?.TransformTo(transform, out childTransformed);
-              return childTransformed;
-            });
-          case ITransformable bt:
-            var res = bt.TransformTo(transform, out var transformed);
-            return new List<ITransformable> { res ? transformed : null };
-          default:
-            return new List<ITransformable>();
-        }
-      }).Where(b => b != null).ToList();
+          switch (b)
+          {
+            case RevitInstance ri:
+              return ri.GetTransformedGeometry()
+                ?.Select(b =>
+                {
+                  ITransformable childTransformed = null;
+                  b?.TransformTo(transform, out childTransformed);
+                  return childTransformed;
+                });
+            case ITransformable bt:
+              var res = bt.TransformTo(transform, out var transformed);
+              return new List<ITransformable> { res ? transformed : null };
+            default:
+              return new List<ITransformable>();
+          }
+        })
+        .Where(b => b != null)
+        .ToList();
 
       // add any dynamically attached elements on this instance
       var elements = this["elements"] as List<object>;
       if (elements != null)
-      {
         foreach (var element in elements)
         {
           var display = ((Base)element)["displayValue"] as List<object>;
           if (display != null)
-          {
             transformed.AddRange(display.Cast<ITransformable>());
-          }
         }
-      }
 
       return transformed;
     }
@@ -190,11 +202,15 @@ namespace Objects.Other.Revit
     public Plane GetInsertionPlane()
     {
       // TODO: Check for Revit in GH/DYN
-      var plane = new Plane(new Point(0, 0, 0, units), new Vector(0, 0, 1, units), new Vector(1, 0, 0, units), new Vector(0, 1, 0, units), units);
+      var plane = new Plane(
+        new Point(0, 0, 0, units),
+        new Vector(0, 0, 1, units),
+        new Vector(1, 0, 0, units),
+        new Vector(0, 1, 0, units),
+        units
+      );
       plane.TransformTo(transform, out Plane tPlane);
       return tPlane;
     }
-
-    public RevitInstance() { }
   }
 }

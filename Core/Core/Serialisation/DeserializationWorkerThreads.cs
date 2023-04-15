@@ -13,13 +13,12 @@ internal enum WorkerThreadTaskType
 
 internal class DeserializationWorkerThreads : IDisposable
 {
-  private int FreeThreadCount = 0;
+  private int FreeThreadCount;
 
   private object LockFreeThreads = new();
   private BaseObjectDeserializerV2 Serializer;
 
-  private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks =
-    new();
+  private BlockingCollection<(WorkerThreadTaskType, object, TaskCompletionSource<object>)> Tasks = new();
 
   private List<Thread> Threads = new();
 
@@ -46,7 +45,7 @@ internal class DeserializationWorkerThreads : IDisposable
   {
     for (int i = 0; i < ThreadCount; i++)
     {
-      Thread t = new(new ThreadStart(ThreadMain));
+      Thread t = new(ThreadMain);
       t.IsBackground = true;
       Threads.Add(t);
       t.Start();
@@ -59,8 +58,7 @@ internal class DeserializationWorkerThreads : IDisposable
     {
       lock (LockFreeThreads)
         FreeThreadCount++;
-      (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) =
-        Tasks.Take();
+      (WorkerThreadTaskType taskType, object inputValue, TaskCompletionSource<object> tcs) = Tasks.Take();
       if (tcs == null)
         return;
 
@@ -94,9 +92,7 @@ internal class DeserializationWorkerThreads : IDisposable
       Tasks.Add((taskType, inputValue, tcs));
       return tcs.Task;
     }
-    else
-    {
-      return null;
-    }
+
+    return null;
   }
 }

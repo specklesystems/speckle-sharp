@@ -28,11 +28,7 @@ public partial class Client
   /// <param name="id">Id of the stream to get</param>
   /// <param name="branchesLimit">Max number of branches to retrieve</param>
   /// <returns></returns>
-  public async Task<Stream> StreamGet(
-    CancellationToken cancellationToken,
-    string id,
-    int branchesLimit = 10
-  )
+  public async Task<Stream> StreamGet(CancellationToken cancellationToken, string id, int branchesLimit = 10)
   {
     var request = new GraphQLRequest
     {
@@ -71,9 +67,7 @@ public partial class Client
                     }}",
       Variables = new { id }
     };
-    return (
-      await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)
-    ).stream;
+    return (await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)).stream;
   }
 
   /// <summary>
@@ -133,8 +127,7 @@ public partial class Client
                     }}"
     };
 
-    var res = await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false);
 
     if (res?.activeUser == null)
       throw new SpeckleException(
@@ -153,10 +146,7 @@ public partial class Client
   /// </summary>
   /// <param name="limit">Max number of streams to return</param>
   /// <returns></returns>
-  public async Task<List<Stream>> FavoriteStreamsGet(
-    CancellationToken cancellationToken,
-    int limit = 10
-  )
+  public async Task<List<Stream>> FavoriteStreamsGet(CancellationToken cancellationToken, int limit = 10)
   {
     var request = new GraphQLRequest
     {
@@ -197,9 +187,7 @@ public partial class Client
                       }}
                     }}"
     };
-    return (
-      await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false)
-    )
+    return (await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false))
       .activeUser
       .favoriteStreams
       .items;
@@ -222,11 +210,7 @@ public partial class Client
   /// <param name="query">String query to search for</param>
   /// <param name="limit">Max number of streams to return</param>
   /// <returns></returns>
-  public async Task<List<Stream>> StreamSearch(
-    CancellationToken cancellationToken,
-    string query,
-    int limit = 10
-  )
+  public async Task<List<Stream>> StreamSearch(CancellationToken cancellationToken, string query, int limit = 10)
   {
     var request = new GraphQLRequest
     {
@@ -256,14 +240,8 @@ public partial class Client
       Variables = new { query, limit }
     };
 
-    var res = await GQLClient
-      .SendMutationAsync<StreamsData>(request, cancellationToken)
-      .ConfigureAwait(false);
-    return (
-      await ExecuteGraphQLRequest<StreamsData>(request, cancellationToken).ConfigureAwait(false)
-    )
-      .streams
-      .items;
+    var res = await GQLClient.SendMutationAsync<StreamsData>(request, cancellationToken).ConfigureAwait(false);
+    return (await ExecuteGraphQLRequest<StreamsData>(request, cancellationToken).ConfigureAwait(false)).streams.items;
   }
 
   /// <summary>
@@ -281,19 +259,14 @@ public partial class Client
   /// </summary>
   /// <param name="streamInput"></param>
   /// <returns>The stream's id.</returns>
-  public async Task<string> StreamCreate(
-    CancellationToken cancellationToken,
-    StreamCreateInput streamInput
-  )
+  public async Task<string> StreamCreate(CancellationToken cancellationToken, StreamCreateInput streamInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation streamCreate($myStream: StreamCreateInput!) { streamCreate(stream: $myStream) }",
+      Query = @"mutation streamCreate($myStream: StreamCreateInput!) { streamCreate(stream: $myStream) }",
       Variables = new { myStream = streamInput }
     };
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (string)res["streamCreate"];
   }
 
@@ -313,20 +286,15 @@ public partial class Client
   /// <param name="cancellationToken"></param>
   /// <param name="streamInput">Note: the id field needs to be a valid stream id.</param>
   /// <returns>The stream's id.</returns>
-  public async Task<bool> StreamUpdate(
-    CancellationToken cancellationToken,
-    StreamUpdateInput streamInput
-  )
+  public async Task<bool> StreamUpdate(CancellationToken cancellationToken, StreamUpdateInput streamInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation streamUpdate($myStream: StreamUpdateInput!) { streamUpdate(stream:$myStream) }",
+      Query = @"mutation streamUpdate($myStream: StreamUpdateInput!) { streamUpdate(stream:$myStream) }",
       Variables = new { myStream = streamInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
     return (bool)res["streamUpdate"];
   }
@@ -354,8 +322,7 @@ public partial class Client
       Query = @"mutation streamDelete($id: String!) { streamDelete(id:$id) }",
       Variables = new { id }
     };
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamDelete"];
   }
 
@@ -392,8 +359,7 @@ public partial class Client
       Variables = new { permissionParams = permissionInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamGrantPermission"];
   }
 
@@ -427,8 +393,7 @@ public partial class Client
       Variables = new { permissionParams = permissionInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamRevokePermission"];
   }
 
@@ -454,8 +419,7 @@ public partial class Client
       Variables = new { permissionParams = updatePermissionInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamUpdatePermission"];
   }
 
@@ -477,36 +441,29 @@ public partial class Client
   /// <param name="id">Id of the stream to get</param>
   /// <param name="branchesLimit">Max number of branches to retrieve</param>
   /// <returns></returns>
-  public async Task<Stream> StreamGetPendingCollaborators(
-    CancellationToken cancellationToken,
-    string id
-  )
+  public async Task<Stream> StreamGetPendingCollaborators(CancellationToken cancellationToken, string id)
   {
     var request = new GraphQLRequest
     {
       Query =
-        $@"query Stream($id: String!) {{
-                      stream(id: $id) {{
+        @"query Stream($id: String!) {
+                      stream(id: $id) {
                         id
-                        pendingCollaborators {{
+                        pendingCollaborators {
                           id
                           inviteId
                           title
                           role
-                          user {{
+                          user {
                             avatar
-                          }}
-                        }}
-                      }}
-                    }}",
+                          }
+                        }
+                      }
+                    }",
       Variables = new { id }
     };
-    var res = await GQLClient
-      .SendMutationAsync<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
-    return (
-      await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)
-    ).stream;
+    var res = await GQLClient.SendMutationAsync<StreamData>(request, cancellationToken).ConfigureAwait(false);
+    return (await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)).stream;
   }
 
   /// <summary>
@@ -531,9 +488,7 @@ public partial class Client
   )
   {
     if ((inviteCreateInput.email == null) & (inviteCreateInput.userId == null))
-      throw new ArgumentException(
-        "You must provide either an email or a user id to create a stream invite"
-      );
+      throw new ArgumentException("You must provide either an email or a user id to create a stream invite");
     var request = new GraphQLRequest
     {
       Query =
@@ -544,8 +499,7 @@ public partial class Client
       Variables = new { input = inviteCreateInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamInviteCreate"];
   }
 
@@ -572,8 +526,7 @@ public partial class Client
       Variables = new { streamId, inviteId }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamInviteCancel"];
   }
 
@@ -584,9 +537,7 @@ public partial class Client
   /// <returns>true if invites are supported</returns>
   /// <exception cref="SpeckleException">if Speckle Server version is less than v2.6.4</exception>
   [Obsolete("We're not supporting 2.6.4 version any more", true)]
-  public async Task<bool> _CheckStreamInvitesSupported(
-    CancellationToken cancellationToken = default
-  )
+  public async Task<bool> _CheckStreamInvitesSupported(CancellationToken cancellationToken = default)
   {
     var version = ServerVersion ?? await GetServerVersion(cancellationToken).ConfigureAwait(false);
     if (version < new System.Version("2.6.4"))
@@ -625,14 +576,11 @@ public partial class Client
       }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["streamInviteUse"];
   }
 
-  public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(
-    CancellationToken cancellationToken = default
-  )
+  public async Task<List<PendingStreamCollaborator>> GetAllPendingInvites(CancellationToken cancellationToken = default)
   {
     var request = new GraphQLRequest
     {
@@ -657,8 +605,7 @@ public partial class Client
             }"
     };
 
-    var res = await ExecuteGraphQLRequest<StreamInvitesResponse>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamInvitesResponse>(request, cancellationToken).ConfigureAwait(false);
     return res.streamInvites;
   }
 }

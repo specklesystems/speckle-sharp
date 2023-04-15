@@ -23,7 +23,7 @@ public enum Field
 // Explore storing partially serialized Speckle objects with dynamically generated fields instead of just a content string?
 public class MongoDBTransport : IDisposable, ITransport
 {
-  private bool IS_WRITING = false;
+  private bool IS_WRITING;
   private int MAX_TRANSACTION_SIZE = 1000;
   private int PollInterval = 500;
 
@@ -51,7 +51,7 @@ public class MongoDBTransport : IDisposable, ITransport
 
     Initialize();
 
-    WriteTimer = new Timer()
+    WriteTimer = new Timer
     {
       AutoReset = true,
       Enabled = false,
@@ -75,8 +75,7 @@ public class MongoDBTransport : IDisposable, ITransport
 
   public string TransportName { get; set; } = "MongoTransport";
 
-  public Dictionary<string, object> TransportContext =>
-    new() { { "name", TransportName }, { "type", GetType().Name } };
+  public Dictionary<string, object> TransportContext => new() { { "name", TransportName }, { "type", GetType().Name } };
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -224,11 +223,7 @@ public class MongoDBTransport : IDisposable, ITransport
   /// <param name="serializedObject"></param>
   public void SaveObjectSync(string hash, string serializedObject)
   {
-    var document = new BsonDocument
-    {
-      { Field.hash.ToString(), hash },
-      { Field.content.ToString(), serializedObject }
-    };
+    var document = new BsonDocument { { Field.hash.ToString(), hash }, { Field.content.ToString(), serializedObject } };
     Collection.InsertOne(document);
   }
 

@@ -66,7 +66,7 @@ public static class Analytics
     /// Event triggered by the Mapping Tool
     /// </summary>
     MappingsAction
-  };
+  }
 
   private const string MixpanelToken = "acd87c5a50b56df91a795e999812a3a4";
   private const string MixpanelServer = "https://analytics.speckle.systems";
@@ -113,8 +113,7 @@ public static class Analytics
           .GetAllNetworkInterfaces()
           .Where(
             nic =>
-              nic.OperationalStatus == OperationalStatus.Up
-              && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
+              nic.OperationalStatus == OperationalStatus.Up && nic.NetworkInterfaceType != NetworkInterfaceType.Loopback
           )
           .Select(nic => nic.GetPhysicalAddress().ToString())
           .FirstOrDefault();
@@ -150,13 +149,7 @@ public static class Analytics
     if (account == null)
       TrackEvent(eventName, customProperties, isAction);
     else
-      TrackEvent(
-        account.GetHashedEmail(),
-        account.GetHashedServer(),
-        eventName,
-        customProperties,
-        isAction
-      );
+      TrackEvent(account.GetHashedEmail(), account.GetHashedServer(), eventName, customProperties, isAction);
   }
 
   /// <summary>
@@ -187,7 +180,7 @@ public static class Analytics
     {
       try
       {
-        var properties = new Dictionary<string, object>()
+        var properties = new Dictionary<string, object>
         {
           { "distinct_id", hashedEmail },
           { "server_id", hashedServer },
@@ -202,17 +195,11 @@ public static class Analytics
           properties.Add("type", "action");
 
         if (customProperties != null)
-          properties = properties
-            .Concat(customProperties)
-            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+          properties = properties.Concat(customProperties).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
-        string json = JsonConvert.SerializeObject(
-          new { @event = eventName.ToString(), properties }
-        );
+        string json = JsonConvert.SerializeObject(new { @event = eventName.ToString(), properties });
 
-        var query = new StreamContent(
-          new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json)))
-        );
+        var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
         HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
@@ -234,13 +221,13 @@ public static class Analytics
     {
       try
       {
-        var data = new Dictionary<string, object>()
+        var data = new Dictionary<string, object>
         {
           { "$token", MixpanelToken },
           { "$distinct_id", hashedEmail },
           {
             "$union",
-            new Dictionary<string, object>()
+            new Dictionary<string, object>
             {
               {
                 "Connectors",
@@ -250,14 +237,12 @@ public static class Analytics
           },
           {
             "set",
-            new Dictionary<string, object>() { { "Identified", true } }
+            new Dictionary<string, object> { { "Identified", true } }
           }
         };
         string json = JsonConvert.SerializeObject(data);
 
-        var query = new StreamContent(
-          new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json)))
-        );
+        var query = new StreamContent(new MemoryStream(Encoding.UTF8.GetBytes("data=" + HttpUtility.UrlEncode(json))));
         HttpClient client = Http.GetHttpProxyClient();
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");

@@ -12,17 +12,15 @@ namespace Speckle.Core.Kits;
 
 public static class KitManager
 {
-  private static string? _kitsFolder = null;
+  private static string? _kitsFolder;
 
-  public static readonly AssemblyName SpeckleAssemblyName = typeof(Base)
-    .GetTypeInfo()
-    .Assembly.GetName();
+  public static readonly AssemblyName SpeckleAssemblyName = typeof(Base).GetTypeInfo().Assembly.GetName();
 
   private static Dictionary<string, ISpeckleKit> _SpeckleKits = new();
 
   private static List<Type> _AvailableTypes = new();
 
-  private static bool _initialized = false;
+  private static bool _initialized;
 
   /// <summary>
   /// Local installations store kits in C:\Users\USERNAME\AppData\Roaming\Speckle\Kits
@@ -134,10 +132,7 @@ public static class KitManager
 
   private static void Load()
   {
-    SpeckleLog.Logger.Information(
-      "Initializing Kit Manager in {KitsFolder}",
-      SpecklePathProvider.KitsFolderPath
-    );
+    SpeckleLog.Logger.Information("Initializing Kit Manager in {KitsFolder}", SpecklePathProvider.KitsFolderPath);
 
     GetLoadedSpeckleReferencingAssemblies();
     LoadSpeckleReferencingAssemblies();

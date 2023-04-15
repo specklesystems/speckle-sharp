@@ -428,7 +428,7 @@ public class CommentItem
   public List<Resource> resources { get; set; }
 }
 
-public partial class ContentContent
+public class ContentContent
 {
   public string Type { get; set; }
 
@@ -467,12 +467,7 @@ public class Connector
 
 public class Version
 {
-  public Version(
-    string number,
-    string url,
-    Os os = Os.Win,
-    Architecture architecture = Architecture.Any
-  )
+  public Version(string number, string url, Os os = Os.Win, Architecture architecture = Architecture.Any)
   {
     Number = number;
     Url = url;
@@ -491,7 +486,7 @@ public class Version
   [JsonIgnore]
   public string DateTimeAgo => Helpers.TimeAgo(Date);
 
-  public bool Prerelease { get; set; } = false;
+  public bool Prerelease { get; set; }
 }
 
 /// <summary>

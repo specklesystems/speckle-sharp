@@ -8,10 +8,7 @@ namespace TestsUnit.ObjectTraversal;
 [TestFixture, TestOf(typeof(GraphTraversal))]
 public class GraphTraversalTests
 {
-  private static IEnumerable<TraversalContext> Traverse(
-    Base testCase,
-    params ITraversalRule[] rules
-  )
+  private static IEnumerable<TraversalContext> Traverse(Base testCase, params ITraversalRule[] rules)
   {
     var sut = new GraphTraversal(rules);
     return sut.Traverse(testCase);
@@ -24,20 +21,17 @@ public class GraphTraversalTests
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(
-        x =>
-          x.GetMembers(DynamicBaseMemberType.All)
-            .Where(p => p.Value is IList)
-            .Select(kvp => kvp.Key)
+        x => x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IList).Select(kvp => kvp.Key)
       );
 
-    var expectTraverse = new Base() { id = "List Member" };
-    var expectIgnored = new Base() { id = "Not List Member" };
+    var expectTraverse = new Base { id = "List Member" };
+    var expectIgnored = new Base { id = "Not List Member" };
 
     TraversalMock testCase =
       new()
       {
-        ListChildren = new List<Base>() { expectTraverse },
-        DictChildren = new Dictionary<string, Base>() { ["myprop"] = expectIgnored },
+        ListChildren = new List<Base> { expectTraverse },
+        DictChildren = new Dictionary<string, Base> { ["myprop"] = expectIgnored },
         Child = expectIgnored
       };
 
@@ -59,20 +53,17 @@ public class GraphTraversalTests
       .NewTraversalRule()
       .When(_ => true)
       .ContinueTraversing(
-        x =>
-          x.GetMembers(DynamicBaseMemberType.All)
-            .Where(p => p.Value is IDictionary)
-            .Select(kvp => kvp.Key)
+        x => x.GetMembers(DynamicBaseMemberType.All).Where(p => p.Value is IDictionary).Select(kvp => kvp.Key)
       );
 
-    var expectTraverse = new Base() { id = "Dict Member" };
-    var expectIgnored = new Base() { id = "Not Dict Member" };
+    var expectTraverse = new Base { id = "Dict Member" };
+    var expectIgnored = new Base { id = "Not Dict Member" };
 
     TraversalMock testCase =
       new()
       {
-        ListChildren = new List<Base>() { expectIgnored },
-        DictChildren = new Dictionary<string, Base>() { ["myprop"] = expectTraverse },
+        ListChildren = new List<Base> { expectIgnored },
+        DictChildren = new Dictionary<string, Base> { ["myprop"] = expectTraverse },
         Child = expectIgnored
       };
 
@@ -95,8 +86,8 @@ public class GraphTraversalTests
       .When(_ => true)
       .ContinueTraversing(x => x.GetMembers(DynamicBaseMemberType.Dynamic).Select(kvp => kvp.Key));
 
-    var expectTraverse = new Base() { id = "List Member" };
-    var expectIgnored = new Base() { id = "Not List Member" };
+    var expectTraverse = new Base { id = "List Member" };
+    var expectIgnored = new Base { id = "Not List Member" };
 
     TraversalMock testCase =
       new()
@@ -120,8 +111,8 @@ public class GraphTraversalTests
   [Test]
   public void Traverse_ExclusiveRule()
   {
-    var expectTraverse = new Base() { id = "List Member" };
-    var expectIgnored = new Base() { id = "Not List Member" };
+    var expectTraverse = new Base { id = "List Member" };
+    var expectIgnored = new Base { id = "Not List Member" };
 
     var traverseListsRule = TraversalRule
       .NewTraversalRule()

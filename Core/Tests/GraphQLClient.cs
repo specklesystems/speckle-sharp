@@ -36,10 +36,7 @@ public class GraphQLClientTests
       typeof(SpeckleGraphQLInternalErrorException<FakeGqlResponseModel>),
       new Map { { "code", "INTERNAL_SERVER_ERROR" } }
     );
-    yield return new TestCaseData(
-      typeof(SpeckleGraphQLException<FakeGqlResponseModel>),
-      new Map { { "foo", "bar" } }
-    );
+    yield return new TestCaseData(typeof(SpeckleGraphQLException<FakeGqlResponseModel>), new Map { { "foo", "bar" } });
   }
 
   [Test, TestCaseSource(nameof(ErrorCases))]
@@ -48,7 +45,7 @@ public class GraphQLClientTests
     Assert.Throws(
       exType,
       () =>
-        _client.MaybeThrowFromGraphQLErrors<FakeGqlResponseModel>(
+        _client.MaybeThrowFromGraphQLErrors(
           new GraphQLRequest(),
           new GraphQLResponse<FakeGqlResponseModel>
           {
@@ -61,10 +58,7 @@ public class GraphQLClientTests
   [Test]
   public void TestMaybeThrowsDoesntThrowForNoErrors()
   {
-    _client.MaybeThrowFromGraphQLErrors<string>(
-      new GraphQLRequest(),
-      new GraphQLResponse<string>()
-    );
+    _client.MaybeThrowFromGraphQLErrors(new GraphQLRequest(), new GraphQLResponse<string>());
     // We're just checking that the prev function didn't throw
     Assert.True(true);
   }
@@ -114,10 +108,7 @@ public class GraphQLClientTests
       {
         counter++;
         if (counter < maxRetryCount)
-          throw new SpeckleGraphQLInternalErrorException<string>(
-            new GraphQLRequest(),
-            new GraphQLResponse<string>()
-          );
+          throw new SpeckleGraphQLInternalErrorException<string>(new GraphQLRequest(), new GraphQLResponse<string>());
         return expectedResult;
       })
       .ConfigureAwait(false);

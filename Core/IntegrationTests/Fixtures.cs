@@ -2,7 +2,6 @@ using System.Net.Mime;
 using System.Text;
 using System.Web;
 using Newtonsoft.Json;
-using Serilog.Events;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
@@ -16,19 +15,14 @@ public class SetUp
   [OneTimeSetUp]
   public void BeforeAll()
   {
-    SpeckleLog.Initialize(
-      "Core",
-      "Testing",
-      new SpeckleLogConfiguration(LogEventLevel.Debug, true, logToFile: false, logToSeq: false)
-    );
+    SpeckleLog.Initialize("Core", "Testing", new SpeckleLogConfiguration(logToFile: false, logToSeq: false));
     SpeckleLog.Logger.Information("Initialized logger for testing");
   }
 }
 
 public static class Fixtures
 {
-  public static readonly ServerInfo Server =
-    new() { url = "http://localhost:3000", name = "Docker Server" };
+  public static readonly ServerInfo Server = new() { url = "http://localhost:3000", name = "Docker Server" };
 
   public static async Task<Account> SeedUser()
   {
@@ -38,7 +32,7 @@ public static class Fixtures
     user["password"] = "12ABC3456789DEF0GHO";
     user["name"] = $"{seed.Substring(0, 5)} Name";
 
-    var httpClient = new HttpClient(new HttpClientHandler() { AllowAutoRedirect = false });
+    var httpClient = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
     httpClient.BaseAddress = new Uri(Server.url);
 
     string redirectUrl;
@@ -48,11 +42,7 @@ public static class Fixtures
         .PostAsync(
           "/auth/local/register?challenge=challengingchallenge",
           // $"{Server.url}/auth/local/register?challenge=challengingchallenge",
-          new StringContent(
-            JsonConvert.SerializeObject(user),
-            Encoding.UTF8,
-            MediaTypeNames.Application.Json
-          )
+          new StringContent(JsonConvert.SerializeObject(user), Encoding.UTF8, MediaTypeNames.Application.Json)
         )
         .ConfigureAwait(false);
       redirectUrl = response.Headers.Location.AbsoluteUri;
@@ -65,9 +55,8 @@ public static class Fixtures
     var uri = new Uri(redirectUrl);
     var query = HttpUtility.ParseQueryString(uri.Query);
 
-    var accessCode =
-      query["access_code"] ?? throw new Exception("Redirect Uri has no 'access_code'.");
-    var tokenBody = new Dictionary<string, string>()
+    var accessCode = query["access_code"] ?? throw new Exception("Redirect Uri has no 'access_code'.");
+    var tokenBody = new Dictionary<string, string>
     {
       ["accessCode"] = accessCode,
       ["appId"] = "spklwebapp",
@@ -78,11 +67,7 @@ public static class Fixtures
     var tokenResponse = await httpClient
       .PostAsync(
         "/auth/token",
-        new StringContent(
-          JsonConvert.SerializeObject(tokenBody),
-          Encoding.UTF8,
-          MediaTypeNames.Application.Json
-        )
+        new StringContent(JsonConvert.SerializeObject(tokenBody), Encoding.UTF8, MediaTypeNames.Application.Json)
       )
       .ConfigureAwait(false);
     var deserialised = JsonConvert.DeserializeObject<Dictionary<string, string>>(
@@ -132,12 +117,7 @@ public static class Fixtures
 
   public static Blob[] GenerateThreeBlobs()
   {
-    return new Blob[]
-    {
-      GenerateBlob("blob 1 data"),
-      GenerateBlob("blob 2 data"),
-      GenerateBlob("blob 3 data")
-    };
+    return new[] { GenerateBlob("blob 1 data"), GenerateBlob("blob 2 data"), GenerateBlob("blob 3 data") };
   }
 
   private static Blob GenerateBlob(string content)

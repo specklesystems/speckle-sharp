@@ -15,6 +15,7 @@
 
   <PropertyGroup Label="General Config">
     <LangVersion>latest</LangVersion>
+    <PlatformTarget>x64</PlatformTarget>
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
@@ -24,6 +25,7 @@
       CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;CS1711;CS1734;
       CS8618;CS8602;CS8600;
       CS1998; IDE0007; CS0618
+      CA1054
     </NoWarn>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->

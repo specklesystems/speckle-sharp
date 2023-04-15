@@ -70,12 +70,7 @@ public class BaseObjectSerializer : JsonConverter
 
   #region Read Json
 
-  public override object ReadJson(
-    JsonReader reader,
-    Type objectType,
-    object existingValue,
-    JsonSerializer serializer
-  )
+  public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
   {
     if (CancellationToken.IsCancellationRequested)
       return null; // Check for cancellation
@@ -122,11 +117,7 @@ public class BaseObjectSerializer : JsonConverter
         if (CancellationToken.IsCancellationRequested)
           return null; // Check for cancellation
 
-        dict[val.Key] = SerializationUtilities.HandleValue(
-          val.Value,
-          serializer,
-          CancellationToken
-        );
+        dict[val.Key] = SerializationUtilities.HandleValue(val.Value, serializer, CancellationToken);
       }
       return dict;
     }
@@ -134,12 +125,12 @@ public class BaseObjectSerializer : JsonConverter
     if (CancellationToken.IsCancellationRequested)
       return null; // Check for cancellation
 
-    var discriminator = Extensions.Value<string>(objType);
+    var discriminator = objType.Value<string>();
 
     // Check for references.
     if (discriminator == "reference")
     {
-      var id = Extensions.Value<string>(jObject.GetValue("referencedId"));
+      var id = jObject.GetValue("referencedId").Value<string>();
       string str = "";
 
       if (ReadTransport != null)
@@ -150,13 +141,11 @@ public class BaseObjectSerializer : JsonConverter
       if (str != null && !string.IsNullOrEmpty(str))
       {
         jObject = JObject.Parse(str);
-        discriminator = Extensions.Value<string>(jObject.GetValue(TypeDiscriminator));
+        discriminator = jObject.GetValue(TypeDiscriminator).Value<string>();
       }
       else
       {
-        throw new SpeckleException(
-          "Cannot resolve reference. The provided transport could not find it."
-        );
+        throw new SpeckleException("Cannot resolve reference. The provided transport could not find it.");
       }
     }
 
@@ -199,12 +188,7 @@ public class BaseObjectSerializer : JsonConverter
         }
         else
         {
-          var val = SerializationUtilities.HandleValue(
-            jProperty.Value,
-            serializer,
-            CancellationToken,
-            property
-          );
+          var val = SerializationUtilities.HandleValue(jProperty.Value, serializer, CancellationToken, property);
           property.ValueProvider.SetValue(obj, val);
         }
       }
@@ -250,7 +234,7 @@ public class BaseObjectSerializer : JsonConverter
   /// </summary>
   private Dictionary<string, Dictionary<string, int>> RefMinDepthTracker { get; set; }
 
-  public int TotalProcessedCount = 0;
+  public int TotalProcessedCount;
 
   #endregion
 
@@ -276,7 +260,7 @@ public class BaseObjectSerializer : JsonConverter
   }
 
   private bool FirstEntry = true,
-    FirstEntryWasListOrDict = false;
+    FirstEntryWasListOrDict;
 
   // While this function looks complicated, it's actually quite smooth:
   // The important things to remember is that serialization goes depth first:
@@ -328,8 +312,7 @@ public class BaseObjectSerializer : JsonConverter
       var jo = new JObject();
       var propertyNames = obj.GetDynamicMemberNames();
 
-      var contract = (JsonDynamicContract)
-        serializer.ContractResolver.ResolveContract(value.GetType());
+      var contract = (JsonDynamicContract)serializer.ContractResolver.ResolveContract(value.GetType());
 
       // Iterate through the object's properties, one by one, checking for ignored ones
       foreach (var prop in propertyNames)
@@ -357,25 +340,16 @@ public class BaseObjectSerializer : JsonConverter
         // Check if this property is marked for detachment: either by the presence of "@" at the beginning of the name, or by the presence of a DetachProperty attribute on a typed property.
         if (property != null)
         {
-          var detachableAttributes = property.AttributeProvider.GetAttributes(
-            typeof(DetachProperty),
-            true
-          );
+          var detachableAttributes = property.AttributeProvider.GetAttributes(typeof(DetachProperty), true);
           if (detachableAttributes.Count > 0)
             DetachLineage.Add(((DetachProperty)detachableAttributes[0]).Detachable);
           else
             DetachLineage.Add(false);
 
-          var chunkableAttributes = property.AttributeProvider.GetAttributes(
-            typeof(Chunkable),
-            true
-          );
+          var chunkableAttributes = property.AttributeProvider.GetAttributes(typeof(Chunkable), true);
           if (chunkableAttributes.Count > 0)
             //DetachLineage.Add(true); // NOOPE
-            serializer.Context = new StreamingContext(
-              StreamingContextStates.Other,
-              chunkableAttributes[0]
-            );
+            serializer.Context = new StreamingContext(StreamingContextStates.Other, chunkableAttributes[0]);
           else
             //DetachLineage.Add(false);
             serializer.Context = new StreamingContext();
@@ -424,7 +398,7 @@ public class BaseObjectSerializer : JsonConverter
 
           var refHash = ((JObject)what).GetValue("id").ToString();
 
-          var reference = new ObjectReference() { referencedId = refHash };
+          var reference = new ObjectReference { referencedId = refHash };
           TrackReferenceInTree(refHash);
           jo.Add(prop, JToken.FromObject(reference));
         }
@@ -507,9 +481,7 @@ public class BaseObjectSerializer : JsonConverter
       JArray arr = new();
 
       // Chunking large lists into manageable parts.
-      if (
-        DetachLineage[DetachLineage.Count - 1] && serializer.Context.Context is Chunkable chunkInfo
-      )
+      if (DetachLineage[DetachLineage.Count - 1] && serializer.Context.Context is Chunkable chunkInfo)
       {
         var maxCount = chunkInfo.MaxObjCountPerChunk;
         var i = 0;
@@ -554,7 +526,7 @@ public class BaseObjectSerializer : JsonConverter
 
           var refHash = ((JObject)what).GetValue("id").ToString();
 
-          var reference = new ObjectReference() { referencedId = refHash };
+          var reference = new ObjectReference { referencedId = refHash };
           TrackReferenceInTree(refHash);
           arr.Add(JToken.FromObject(reference));
         }
@@ -608,7 +580,7 @@ public class BaseObjectSerializer : JsonConverter
           var what = JToken.FromObject(kvp.Value, serializer); // Trigger next
           var refHash = ((JObject)what).GetValue("id").ToString();
 
-          var reference = new ObjectReference() { referencedId = refHash };
+          var reference = new ObjectReference { referencedId = refHash };
           TrackReferenceInTree(refHash);
           jToken = JToken.FromObject(reference);
         }

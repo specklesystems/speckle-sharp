@@ -30,7 +30,7 @@ public class DiskTransport : ICloneable, ITransport
 
   public object Clone()
   {
-    return new DiskTransport()
+    return new DiskTransport
     {
       RootPath = RootPath,
       CancellationToken = CancellationToken,
@@ -56,7 +56,7 @@ public class DiskTransport : ICloneable, ITransport
 
   public Action<string, Exception> OnErrorAction { get; set; }
 
-  public int SavedObjectCount { get; private set; } = 0;
+  public int SavedObjectCount { get; private set; }
 
   public TimeSpan Elapsed { get; set; } = TimeSpan.Zero;
 
@@ -105,10 +105,7 @@ public class DiskTransport : ICloneable, ITransport
     SaveObject(id, serializedObject);
   }
 
-  public async Task WriteComplete()
-  {
-    return;
-  }
+  public async Task WriteComplete() { }
 
   public async Task<string> CopyObjectAndChildren(
     string id,

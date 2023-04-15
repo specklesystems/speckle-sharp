@@ -62,9 +62,7 @@ public static class Http
     return Backoff.DecorrelatedJitterBackoffV2(TimeSpan.FromMilliseconds(100), 5);
   }
 
-  public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy(
-    IEnumerable<TimeSpan>? delay = null
-  )
+  public static AsyncRetryPolicy<HttpResponseMessage> HttpAsyncPolicy(IEnumerable<TimeSpan>? delay = null)
   {
     return HttpPolicyExtensions
       .HandleTransientHttpError()
@@ -102,9 +100,7 @@ public static class Http
     bool hasInternet = await HttpPing(defaultServer).ConfigureAwait(false);
 
     if (!hasInternet)
-      SpeckleLog.Logger
-        .ForContext("defaultServer", defaultServer)
-        .Warning("Failed to ping internet");
+      SpeckleLog.Logger.ForContext("defaultServer", defaultServer).Warning("Failed to ping internet");
 
     return hasInternet;
   }
@@ -143,9 +139,7 @@ public static class Http
         byte[] buffer = new byte[32];
         int timeout = 1000;
         PingOptions pingOptions = new();
-        PingReply reply = await myPing
-          .SendPingAsync(hostname, timeout, buffer, pingOptions)
-          .ConfigureAwait(false);
+        PingReply reply = await myPing.SendPingAsync(hostname, timeout, buffer, pingOptions).ConfigureAwait(false);
         if (reply.Status != IPStatus.Success)
           throw new Exception($"The ping operation failed with status {reply.Status}");
         return true;
@@ -196,7 +190,6 @@ public class SpeckleHttpClientHandler : HttpClientHandler
   private IEnumerable<TimeSpan> _delay;
 
   public SpeckleHttpClientHandler(IEnumerable<TimeSpan>? delay = null)
-    : base()
   {
     _delay = delay ?? Http.DefaultDelay();
   }
@@ -213,10 +206,7 @@ public class SpeckleHttpClientHandler : HttpClientHandler
     using (LogContext.PushProperty("targetUrl", request.RequestUri))
     using (LogContext.PushProperty("httpMethod", request.Method))
     {
-      SpeckleLog.Logger.Debug(
-        "Starting execution of http request to {targetUrl}",
-        request.RequestUri
-      );
+      SpeckleLog.Logger.Debug("Starting execution of http request to {targetUrl}", request.RequestUri);
       var timer = new Stopwatch();
       timer.Start();
       context.Add("retryCount", 0);

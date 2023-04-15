@@ -20,7 +20,7 @@ public static partial class Operations
   public static (BaseObjectSerializer, JsonSerializerSettings) GetSerializerInstance()
   {
     var serializer = new BaseObjectSerializer();
-    var settings = new JsonSerializerSettings()
+    var settings = new JsonSerializerSettings
     {
       NullValueHandling = NullValueHandling.Ignore,
       ContractResolver = new CamelCasePropertyNamesContractResolver(),
@@ -43,15 +43,13 @@ public static partial class Operations
     Action<ConcurrentDictionary<string, int>> onProgressAction = null
   )
   {
-    return new Action<string, int>(
-      (name, processed) =>
-      {
-        if (localProgressDict.ContainsKey(name))
-          localProgressDict[name] += processed;
-        else
-          localProgressDict[name] = processed;
-        onProgressAction?.Invoke(localProgressDict);
-      }
-    );
+    return (name, processed) =>
+    {
+      if (localProgressDict.ContainsKey(name))
+        localProgressDict[name] += processed;
+      else
+        localProgressDict[name] = processed;
+      onProgressAction?.Invoke(localProgressDict);
+    };
   }
 }

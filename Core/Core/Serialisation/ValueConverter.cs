@@ -61,64 +61,52 @@ internal static class ValueConverter
           convertedValue = (long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
       case "Int32":
         if (valueType == typeof(long))
         {
           convertedValue = (int)(long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
       case "Int16":
         if (valueType == typeof(long))
         {
           convertedValue = (short)(long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
       case "UInt64":
         if (valueType == typeof(long))
         {
           convertedValue = (ulong)(long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
       case "UInt32":
         if (valueType == typeof(long))
         {
           convertedValue = (uint)(long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
       case "UInt16":
         if (valueType == typeof(long))
         {
           convertedValue = (ushort)(long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
       case "Double":
         if (valueType == typeof(double))
         {
-          convertedValue = (double)(double)value;
+          convertedValue = (double)value;
           return true;
         }
         if (valueType == typeof(long))
@@ -126,10 +114,8 @@ internal static class ValueConverter
           convertedValue = (double)(long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
       case "Single":
         if (valueType == typeof(double))
         {
@@ -141,10 +127,8 @@ internal static class ValueConverter
           convertedValue = (float)(long)value;
           return true;
         }
-        else
-        {
-          return false;
-        }
+
+        return false;
 
       #endregion
     }
@@ -155,7 +139,7 @@ internal static class ValueConverter
       if (!isList)
         return false;
       Type listElementType = type.GenericTypeArguments[0];
-      IList ret = Activator.CreateInstance(type, new object[] { valueList.Count }) as IList;
+      IList ret = Activator.CreateInstance(type, valueList.Count) as IList;
       foreach (object inputListElement in valueList)
       {
         object convertedListElement;
@@ -196,7 +180,7 @@ internal static class ValueConverter
       if (!isList)
         return false;
       Type arrayElementType = type.GetElementType();
-      Array ret = Activator.CreateInstance(type, new object[] { valueList.Count }) as Array;
+      Array ret = Activator.CreateInstance(type, valueList.Count) as Array;
       for (int i = 0; i < valueList.Count; i++)
       {
         object inputListElement = valueList[i];

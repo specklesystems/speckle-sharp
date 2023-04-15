@@ -19,19 +19,7 @@ public static class Units
   public const string USFeet = "us_ft"; // it happened, absolutely gross
 
   private static List<string> SupportedUnits =
-    new()
-    {
-      Millimeters,
-      Centimeters,
-      Meters,
-      Kilometers,
-      Inches,
-      Feet,
-      USFeet,
-      Yards,
-      Miles,
-      None
-    };
+    new() { Millimeters, Centimeters, Meters, Kilometers, Inches, Feet, USFeet, Yards, Miles, None };
 
   public static bool IsUnitSupported(string unit)
   {

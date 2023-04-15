@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -10,11 +10,11 @@ using Speckle.Core.Models;
 
 namespace Speckle.Core.Credentials;
 
+#pragma warning disable CS0659 CA1067 //TODO: Disabled to prevent GetHashCode from being added by the cleanup.
+
 public class Account : IEquatable<Account>
 {
-  public Account() { }
-
-  private string _id { get; set; } = null;
+  private string _id { get; set; }
 
   public string id
   {
@@ -24,9 +24,7 @@ public class Account : IEquatable<Account>
       {
         if (serverInfo == null || userInfo == null)
           throw new SpeckleException("Incomplete account info: cannot generate id.");
-        _id = Utilities
-          .hashString(userInfo.email + serverInfo.url, Utilities.HashingFuctions.MD5)
-          .ToUpper();
+        _id = Utilities.hashString(userInfo.email + serverInfo.url, Utilities.HashingFuctions.MD5).ToUpper();
       }
       return _id;
     }
@@ -78,7 +76,7 @@ public class Account : IEquatable<Account>
     httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
     using var gqlClient = new GraphQLHttpClient(
-      new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") },
+      new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") },
       new NewtonsoftJsonSerializer(),
       httpClient
     );
@@ -93,24 +91,21 @@ public class Account : IEquatable<Account>
     return response.Data.user;
   }
 
-  public bool Equals(Account other)
-  {
-    return other is not null
-      && other.userInfo.email == userInfo.email
-      && other.serverInfo.url == serverInfo.url;
-  }
-
   public override string ToString()
   {
     return $"Account ({userInfo.email} | {serverInfo.url})";
   }
 
-#pragma warning disable CS0659 //TODO: Disabled to prevent GetHashCode from being added by the cleanup.
+  public bool Equals(Account other)
+  {
+    return other is not null && other.userInfo.email == userInfo.email && other.serverInfo.url == serverInfo.url;
+  }
+
   public override bool Equals(object obj)
   {
     return obj is Account acc && Equals(acc);
   }
-#pragma warning restore CS0659
 
   #endregion
 }
+#pragma warning restore CS0659 CA1067
