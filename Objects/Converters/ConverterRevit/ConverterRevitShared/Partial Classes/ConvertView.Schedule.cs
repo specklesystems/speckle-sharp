@@ -133,7 +133,7 @@ namespace Objects.Converter.Revit
       DefineColumnMetadata(revitSchedule, speckleTable, originalTableIds, columnHeaders);
       PopulateDataTableRows(revitSchedule, speckleTable, originalTableIds, skippedIndicies);
 
-      speckleTable.headerRowIndex = Math.Max(0, GetTableHeaderIndex(revitSchedule, skippedIndicies));
+      speckleTable.headerRowIndex = Math.Max(0, GetTableHeaderIndex(revitSchedule, skippedIndicies, columnHeaders.FirstOrDefault()));
 
       if (!revitSchedule.Definition.ShowHeaders)
       {
@@ -247,7 +247,7 @@ namespace Objects.Converter.Revit
       }, revitSchedule, parametersToPass);
     }
 
-    private int GetTableHeaderIndex(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies)
+    private int GetTableHeaderIndex(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies, string firstColumnHeader)
     {
       var hasHeaders = revitSchedule.Definition.ShowHeaders;
 
@@ -257,20 +257,18 @@ namespace Objects.Converter.Revit
         return ExecuteInTemporaryTransaction(() =>
         {
           revitSchedule.Definition.ShowHeaders = true;
-          return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies);
+          return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies, firstColumnHeader);
         });
       }
 
-      return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies);
+      return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies, firstColumnHeader);
     }
 
-    private static int GetHeaderIndexFromScheduleWithHeaders(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies)
+    private static int GetHeaderIndexFromScheduleWithHeaders(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies, string firstColumnHeader)
     {
-      var firstColumnHeading = GetFirstVisibleColumnHeading(revitSchedule);
-
       var parametersToPass = new ScheduleRowParameters()
       {
-        firstColumnHeading= firstColumnHeading,
+        firstColumnHeading= firstColumnHeader,
         skippedIndicies = skippedIndicies
       };
 
@@ -283,14 +281,6 @@ namespace Objects.Converter.Revit
         }
         return (loopStatus.Return, parameters.masterRowIndex);
       }, revitSchedule, parametersToPass);
-    }
-
-    private static string GetFirstVisibleColumnHeading(ViewSchedule revitSchedule)
-    {
-      return ForEachColumnInSchedule((parameters) =>
-      {
-        return (loopStatus.Return, parameters.field.ColumnHeading);
-      }, revitSchedule, null, new ScheduleColumnParameters());
     }
 
     private bool AddRowToSpeckleTable(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, SectionType tableSection, TableSectionData section, int columnCount, int rowIndex)
