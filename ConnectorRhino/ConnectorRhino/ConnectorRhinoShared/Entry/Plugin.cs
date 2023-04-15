@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Resources;
 using System.Runtime.InteropServices;
 using System.Text;
 using Avalonia;
@@ -20,6 +21,7 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
 [assembly: Guid("8dd5f30b-a13d-4a24-abdc-3e05c8c87143")]
+[assembly: NeutralResourcesLanguage("en")]
 
 namespace SpeckleRhino;
 
