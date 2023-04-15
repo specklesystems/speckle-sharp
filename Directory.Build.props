@@ -19,6 +19,7 @@
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
 
     <!-- Ignore some warnings for now -->
     <NoWarn>

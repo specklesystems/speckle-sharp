@@ -17,6 +17,7 @@ using Objects.Primitive;
 using Objects.Structural.Geometry;
 using Rhino;
 using Rhino.Collections;
+using Rhino.Display;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -267,7 +268,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
-            @base = BrepToSpeckle(o.ToBrep(new SubDToBrepOptions()),null, displayMesh, material);
+            @base = BrepToSpeckle(o.ToBrep(new RH.SubDToBrepOptions()),null, displayMesh, material);
           else
             @base = MeshToSpeckle(o);
           break;
@@ -573,7 +574,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
-            schemaBase = displayMesh != null ? MeshToTopography(displayMesh) : BrepToTopography(o.ToBrep(new SubDToBrepOptions()));
+            schemaBase = displayMesh != null ? MeshToTopography(displayMesh) : BrepToTopography(o.ToBrep(new RH.SubDToBrepOptions()));
           else
             schemaBase = MeshToTopography(o);
           break;

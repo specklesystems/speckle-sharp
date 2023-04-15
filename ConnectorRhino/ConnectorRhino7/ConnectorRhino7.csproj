@@ -23,35 +23,30 @@
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWpf>true</UseWpf>
+    <DefineConstants>$(DefinesConstants);RHINO7</DefineConstants>
   </PropertyGroup>
+  
+  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
+    <DefineConstants>$(DefinesConstants);MAC</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared"/>
 
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\**\*"/>
   </ItemGroup>
 
   <ItemGroup>
-    <AvaloniaXaml Remove="Properties\**"/>
-    <Compile Remove="Properties\**"/>
-    <EmbeddedResource Remove="Properties\**"/>
-    <None Remove="Properties\**"/>
+    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" PrivateAssets="all"/>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18"/>
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18"/>
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18"/>
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference
-      Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj"/>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj"/>
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj"/>
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
   </ItemGroup>
+  
   <ItemGroup>
     <Reference Include="PresentationCore"/>
     <Reference Include="PresentationFramework"/>
@@ -62,51 +57,21 @@
   <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
     <None
       Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib"
-      CopyToOutputDirectory="PreserveNewest"/>
-  </ItemGroup>
-
-  <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
-  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
+      CopyToOutputDirectory="PreserveNewest"
+      Visible="false"
+    />
     <None
       Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib"
-      CopyToOutputDirectory="PreserveNewest"/>
+      CopyToOutputDirectory="PreserveNewest"
+      Visible="false"/>
   </ItemGroup>
-
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
-    <StartAction>Program</StartAction>
-    <PostBuildEvent>
-      Copy "$(TargetPath)" "$(TargetDir)$(TargetName).rhp"
-      Erase "$(TargetPath)"
-      Erase "$(TargetDir)RhinoCommon.dll"
-      Erase "$(TargetDir)Rhino.UI.dll"
-    </PostBuildEvent>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>TRACE;RHINO7</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
-    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>TRACE;RHINO7</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
-    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
-  </PropertyGroup>
-
-  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems"
-    Label="Shared"
-    Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')"/>
+  
   <ItemGroup>
     <Compile
-      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-    </Compile>
+      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs" 
+      DesignTime="True"/>
     <Compile
-      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-    </Compile>
+      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs" 
+      DesignTime="True"/>
   </ItemGroup>
 </Project>

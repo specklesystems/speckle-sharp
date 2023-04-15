@@ -641,8 +641,8 @@ public partial class ConverterRhinoGh
     {
       var u = units ?? ModelUnits;
 
-      var vertices = new List<Point3d>();
-      var subDVertices = new List<SubDVertex>();
+      var vertices = new List<RH.Point3d>();
+      var subDVertices = new List<RH.SubDVertex>();
       for(int i = 0 ; i < mesh.Vertices.Count; i++)
       {
         vertices.Add(mesh.Vertices.Find(i).ControlNetPoint);
