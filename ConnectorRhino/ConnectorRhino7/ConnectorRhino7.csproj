@@ -23,10 +23,10 @@
     <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWpf>true</UseWpf>
-    <DefineConstants>$(DefinesConstants);RHINO7</DefineConstants>
+    <DefineConstants>$(DefineConstants);RHINO7</DefineConstants>
   </PropertyGroup>
   
-  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
+  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
     <DefineConstants>$(DefinesConstants);MAC</DefineConstants>
   </PropertyGroup>
 
