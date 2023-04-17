@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <Target Name="husky" BeforeTargets="Restore"
-    Condition="'$(IsDesktopBuild)' != 0">
+    Condition="'$(IsDesktopBuild)' == true">
     <Exec
       Command="dotnet tool restore"
       StandardOutputImportance="Low"
