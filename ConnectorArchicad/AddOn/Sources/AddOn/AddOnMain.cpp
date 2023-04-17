@@ -29,6 +29,7 @@
 #include "Commands/CreateZone.hpp"
 #include "Commands/CreateDirectShape.hpp"
 #include "Commands/SelectElements.hpp"
+#include "Commands/FinishReceiveTransaction.hpp"
 
 
 #define CHECKERROR(f) { GSErrCode err = (f); if (err != NoError) { return err; } }
@@ -198,6 +199,7 @@ static GSErrCode RegisterAddOnCommands ()
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateZone> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::CreateDirectShape> ()));
 	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::SelectElements> ()));
+	CHECKERROR (ACAPI_Install_AddOnCommandHandler (NewOwned<AddOnCommands::FinishReceiveTransaction> ()));
 
 	return NoError;
 }

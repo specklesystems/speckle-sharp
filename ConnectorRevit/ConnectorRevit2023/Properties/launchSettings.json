@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "ConverterRevit2023": {
+    "ConnectorRevit2023": {
       "commandName": "Executable",
       "executablePath": "C:\\Program Files\\Autodesk\\Revit 2023\\Revit.exe"
     }

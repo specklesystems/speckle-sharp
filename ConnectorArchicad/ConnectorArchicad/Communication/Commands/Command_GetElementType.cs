@@ -1,8 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
+using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
+using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
@@ -49,7 +50,6 @@ namespace Archicad.Communication.Commands
 
       [JsonProperty("elementType")]
       public string ElementType { get; private set; }
-
     }
 
     #endregion
@@ -73,8 +73,13 @@ namespace Archicad.Communication.Commands
 
     public async Task<Dictionary<string, IEnumerable<string>>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementTypes", new Parameters(ApplicationIds));
-      return result.ElementTypes.GroupBy(row => row.ElementType).ToDictionary(group => group.Key, group => group.Select(x => x.ApplicationId));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetElementTypes",
+        new Parameters(ApplicationIds)
+      );
+      return result.ElementTypes
+        .GroupBy(row => row.ElementType)
+        .ToDictionary(group => group.Key, group => group.Select(x => x.ApplicationId));
     }
 
     #endregion

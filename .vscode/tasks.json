@@ -1,0 +1,128 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "inputs": [
+    {
+      "id": "projectPath",
+      "type": "command",
+      "command": "extension.commandvariable.file.pickFile",
+      "args": {
+        "include": "**/*.{sln,slnf}",
+        "key": "projPath",
+        "keyRemember": "projPath",
+        "display": "fileName"
+      }
+    }
+  ],
+  "tasks": [
+    {
+      "label": "speckle.format.csharpier",
+      "command": "dotnet",
+      "type": "shell",
+      "args": ["csharpier", "${input:projectPath}/.."],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "hide": true,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "speckle.format.style",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "format",
+        "style",
+        "${input:projectPath}",
+        "--exclude=Objects/Converters/StructuralUtilities/Triangle"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "hide": true,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "speckle.format.whitespace",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "format",
+        "whitespace",
+        "${input:projectPath}",
+        "--exclude=Objects/Converters/StructuralUtilities/Triangle"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "hide": true,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "speckle.format.analyzers",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "format",
+        "analyzers",
+        "${input:projectPath}",
+        "--exclude=Objects/Converters/StructuralUtilities/Triangle"
+      ],
+      "group": "build",
+      "problemMatcher": "$msCompile",
+      "hide": false,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "speckle.format.resharper",
+      "command": "dotnet",
+      "type": "shell",
+      "args": [
+        "tool",
+        "run",
+        "jb",
+        "cleanupcode",
+        "${input:projectPath}",
+        "--profile=\"Speckle:Cleanup\"",
+        "--settings=\"All.sln.DotSettings\"",
+        "--exclude=Objects/Converters/StructuralUtilities/Triangle",
+        "--properties:WarningLevel=0"
+      ],
+      "group": "build",
+      "problemMatcher": [],
+      "hide": false,
+      "presentation": {
+        "focus": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Speckle: Format Code",
+      "dependsOn": ["speckle.format.style", "speckle.format.csharpier"],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    },
+    {
+      "label": "Speckle: Cleanup Code",
+      "dependsOn": [
+        "speckle.format.whitespace",
+        "speckle.format.style",
+        "speckle.format.analyzers",
+        "speckle.format.resharper",
+        "speckle.format.csharpier"
+      ],
+      "dependsOrder": "sequence",
+      "problemMatcher": []
+    }
+  ]
+}

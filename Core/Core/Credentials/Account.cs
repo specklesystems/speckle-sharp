@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -6,103 +6,106 @@ using Speckle.Core.Api;
 using Speckle.Core.Api.GraphQL.Serializer;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
 
-namespace Speckle.Core.Credentials
+namespace Speckle.Core.Credentials;
+
+#pragma warning disable CS0659 CA1067 //TODO: Disabled to prevent GetHashCode from being added by the cleanup.
+
+public class Account : IEquatable<Account>
 {
-  public class Account : IEquatable<Account>
+  private string _id { get; set; }
+
+  public string id
   {
-    private string _id { get; set; } = null;
-    public string id
+    get
     {
-      get
+      if (_id == null)
       {
-        if (_id == null)
-        {
-          if (serverInfo == null || userInfo == null)
-            throw new SpeckleException(
-              "Incomplete account info: cannot generate id."
-            );
-          _id = Speckle.Core.Models.Utilities
-            .hashString(userInfo.email + serverInfo.url, Models.Utilities.HashingFuctions.MD5)
-            .ToUpper();
-        }
-        return _id;
+        if (serverInfo == null || userInfo == null)
+          throw new SpeckleException("Incomplete account info: cannot generate id.");
+        _id = Utilities.hashString(userInfo.email + serverInfo.url, Utilities.HashingFuctions.MD5).ToUpper();
       }
-      set { _id = value; }
+      return _id;
     }
-    public string token { get; set; }
-
-    public string refreshToken { get; set; }
-
-    public bool isDefault { get; set; } = false;
-    public bool isOnline { get; set; } = true;
-
-    public ServerInfo serverInfo { get; set; }
-
-    public UserInfo userInfo { get; set; }
-
-    public Account() { }
-
-    #region public methods
-
-    public string GetHashedEmail()
-    {
-      string email = userInfo?.email ?? "unknown";
-      return "@" + Crypt.Hash(email);
-    }
-
-    public string GetHashedServer()
-    {
-      string url = serverInfo?.url ?? "https://speckle.xyz/";
-      return Crypt.Hash(CleanURL(url));
-    }
-
-    public async Task<UserInfo> Validate()
-    {
-      using var httpClient = Http.GetHttpProxyClient();
-
-      httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-
-      using var gqlClient = new GraphQLHttpClient(
-        new GraphQLHttpClientOptions() { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") },
-        new NewtonsoftJsonSerializer(),
-        httpClient
-      );
-
-      var request = new GraphQLRequest { Query = @" query { user { name email id company } }" };
-
-      var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request);
-
-      if (response.Errors != null)
-        return null;
-
-      return response.Data.user;
-    }
-
-    public bool Equals(Account other)
-    {
-      return other.userInfo.email == userInfo.email && other.serverInfo.url == serverInfo.url;
-    }
-
-    public override string ToString()
-    {
-      return $"Account ({userInfo.email} | {serverInfo.url})";
-    }
-
-    #endregion
-
-    #region private methods
-    private static string CleanURL(string server)
-    {
-      Uri NewUri;
-
-      if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
-      {
-        server = NewUri.Authority;
-      }
-      return server;
-    }
-
-    #endregion
+    set => _id = value;
   }
+
+  public string token { get; set; }
+
+  public string refreshToken { get; set; }
+
+  public bool isDefault { get; set; } = false;
+  public bool isOnline { get; set; } = true;
+
+  public ServerInfo serverInfo { get; set; }
+
+  public UserInfo userInfo { get; set; }
+
+  #region private methods
+
+  private static string CleanURL(string server)
+  {
+    Uri NewUri;
+
+    if (Uri.TryCreate(server, UriKind.Absolute, out NewUri))
+      server = NewUri.Authority;
+    return server;
+  }
+
+  #endregion
+
+  #region public methods
+
+  public string GetHashedEmail()
+  {
+    string email = userInfo?.email ?? "unknown";
+    return "@" + Crypt.Hash(email);
+  }
+
+  public string GetHashedServer()
+  {
+    string url = serverInfo?.url ?? "https://speckle.xyz/";
+    return Crypt.Hash(CleanURL(url));
+  }
+
+  public async Task<UserInfo> Validate()
+  {
+    using var httpClient = Http.GetHttpProxyClient();
+
+    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+
+    using var gqlClient = new GraphQLHttpClient(
+      new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") },
+      new NewtonsoftJsonSerializer(),
+      httpClient
+    );
+
+    var request = new GraphQLRequest { Query = @" query { user { name email id company } }" };
+
+    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request).ConfigureAwait(false);
+
+    if (response.Errors != null)
+      return null;
+
+    return response.Data.user;
+  }
+
+  public override string ToString()
+  {
+    return $"Account ({userInfo.email} | {serverInfo.url})";
+  }
+
+  public bool Equals(Account other)
+  {
+    return other is not null && other.userInfo.email == userInfo.email && other.serverInfo.url == serverInfo.url;
+  }
+
+  public override bool Equals(object obj)
+  {
+    return obj is Account acc && Equals(acc);
+  }
+
+  #endregion
 }
+#pragma warning restore CS0659 CA1067

@@ -6,37 +6,56 @@ using System.Threading.Tasks;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Objects.Converter.Archicad;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
 namespace Archicad
 {
   public sealed partial class ElementConverterManager
-  {   
-    public async Task<List<ApplicationObject>> ConvertOneTypeToNative(Type elementType, IEnumerable<TraversalContext> elements, ConversionOptions conversionOptions, CancellationToken token)
+  {
+    public async Task<List<ApplicationObject>> ConvertOneTypeToNative(
+      Type elementType,
+      IEnumerable<TraversalContext> elements,
+      ConversionOptions conversionOptions,
+      CancellationToken token
+    )
     {
       var elementConverter = GetConverterForElement(elementType, conversionOptions, true);
 
       return await elementConverter.ConvertToArchicad(elements, token);
     }
 
-    private async Task<bool> ConvertReceivedObjects(List<TraversalContext> flattenObjects, ConverterArchicad converter, ProgressViewModel progress)
+    private async Task<bool> ConvertReceivedObjects(
+      List<TraversalContext> flattenObjects,
+      ConverterArchicad converter,
+      ProgressViewModel progress
+    )
     {
       Dictionary<Type, IEnumerable<TraversalContext>> receivedObjects;
 
-      receivedObjects = flattenObjects.GroupBy(tc => tc.current.GetType()).ToDictionary(group => group.Key, group => group.Cast<TraversalContext>());
-      Console.WriteLine(string.Format("Conversion started (element types: {0})", receivedObjects.Count));
+      receivedObjects = flattenObjects
+        .GroupBy(tc => tc.current.GetType())
+        .ToDictionary(group => group.Key, group => group.Cast<TraversalContext>());
+      SpeckleLog.Logger.Debug("Conversion started (element types: {0})", receivedObjects.Count);
 
       foreach (var (elementType, tc) in receivedObjects)
       {
-        Console.WriteLine(string.Format("{0}: {1}", elementType, tc.Count<TraversalContext>()));
+        SpeckleLog.Logger.Debug("{0}: {1}", elementType, tc.Count<TraversalContext>());
 
         List<Base> elements = tc.Select(tc => tc.current).ToList<Base>();
-        var convertedElements = await ConvertOneTypeToNative(elementType, tc, converter.ConversionOptions, progress.CancellationTokenSource.Token);
+        var convertedElements = await ConvertOneTypeToNative(
+          elementType,
+          tc,
+          converter.ConversionOptions,
+          progress.CancellationTokenSource.Token
+        );
 
         if (convertedElements != null)
         {
-          var dict = convertedElements.Where(obj => (!string.IsNullOrEmpty(obj.OriginalId))).ToDictionary(obj => obj.OriginalId, obj => obj);
+          var dict = convertedElements
+            .Where(obj => (!string.IsNullOrEmpty(obj.OriginalId)))
+            .ToDictionary(obj => obj.OriginalId, obj => obj);
           foreach (var contextObject in converter.ContextObjects)
           {
             if (dict.ContainsKey(contextObject.OriginalId))
@@ -50,7 +69,7 @@ namespace Archicad
         }
       }
 
-      Console.WriteLine("Conversion done.");
+      SpeckleLog.Logger.Debug("Conversion done.");
 
       return true;
     }
@@ -59,7 +78,9 @@ namespace Archicad
     {
       ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
 
-      Objects.Converter.Archicad.ConverterArchicad converter = new Objects.Converter.Archicad.ConverterArchicad(conversionOptions);
+      Objects.Converter.Archicad.ConverterArchicad converter = new Objects.Converter.Archicad.ConverterArchicad(
+        conversionOptions
+      );
       List<TraversalContext> flattenObjects = FlattenCommitObject(commitObject, converter);
 
       converter.SetContextObjects(flattenObjects);
@@ -72,7 +93,10 @@ namespace Archicad
       return await ConvertReceivedObjects(flattenObjects, converter, progress);
     }
 
-    private List<TraversalContext> FlattenCommitObject(Base commitObject, Objects.Converter.Archicad.ConverterArchicad converter)
+    private List<TraversalContext> FlattenCommitObject(
+      Base commitObject,
+      Objects.Converter.Archicad.ConverterArchicad converter
+    )
     {
       // to filter out already traversed objects (e.g. the same Mesh in displayValue and in topRail member of the Railing)
       HashSet<string> traversedObjects = new HashSet<string>();
@@ -92,7 +116,8 @@ namespace Archicad
 
       var traverseFunction = DefaultTraversal.CreateBIMTraverseFunc(converter);
 
-      var objectsToConvert = traverseFunction.Traverse(commitObject)
+      var objectsToConvert = traverseFunction
+        .Traverse(commitObject)
         .Select(tc => Store(tc, converter))
         .Where(tc => tc != null)
         .ToList();

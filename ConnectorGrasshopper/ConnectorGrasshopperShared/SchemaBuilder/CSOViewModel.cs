@@ -1,35 +1,30 @@
-﻿using System;
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using Eto.Forms;
 
-namespace ConnectorGrasshopper
+namespace ConnectorGrasshopper;
+
+public class CSOViewModel : INotifyPropertyChanged
 {
-  public class CSOViewModel : INotifyPropertyChanged
+  private TreeGridItem selectedItem;
+
+  public TreeGridItem SelectedItem
   {
-
-    TreeGridItem selectedItem;
-    public TreeGridItem SelectedItem
+    get => selectedItem;
+    set
     {
-      get
+      if (selectedItem != value)
       {
-        return selectedItem;
-      }
-      set
-      {
-        if (selectedItem != value)
-        {
-          selectedItem = value;
-          OnPropertyChanged();
-        }
+        selectedItem = value;
+        OnPropertyChanged();
       }
     }
+  }
 
+  public event PropertyChangedEventHandler PropertyChanged;
 
-    void OnPropertyChanged([CallerMemberName] string memberName = null)
-    {
-      PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(memberName));
-    }
-    public event PropertyChangedEventHandler PropertyChanged;
+  private void OnPropertyChanged([CallerMemberName] string memberName = null)
+  {
+    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(memberName));
   }
 }

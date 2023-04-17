@@ -1,45 +1,21 @@
-﻿#if ADVANCESTEEL2023
+#if ADVANCESTEEL2023
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Drawing;
 
 using Autodesk.AutoCAD.Geometry;
 using AcadGeo = Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.DatabaseServices;
-using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
-using Speckle.Core.Models;
-
-using Objects.Utils;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
-using Brep = Objects.Geometry.Brep;
-using BrepEdge = Objects.Geometry.BrepEdge;
-using BrepFace = Objects.Geometry.BrepFace;
-using BrepLoop = Objects.Geometry.BrepLoop;
-using BrepLoopType = Objects.Geometry.BrepLoopType;
-using BrepTrim = Objects.Geometry.BrepTrim;
-using Circle = Objects.Geometry.Circle;
-using ControlPoint = Objects.Geometry.ControlPoint;
-using Curve = Objects.Geometry.Curve;
-using Ellipse = Objects.Geometry.Ellipse;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
-using Mesh = Objects.Geometry.Mesh;
 using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
-using Polyline = Objects.Geometry.Polyline;
-using Spiral = Objects.Geometry.Spiral;
-using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using Speckle.Core.Kits;
-using Objects.Geometry;
 
 using MathNet.Spatial.Euclidean;
-using Objects.Primitive;
 
 using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
 using ASCurve3d = Autodesk.AdvanceSteel.Geometry.Curve3d;

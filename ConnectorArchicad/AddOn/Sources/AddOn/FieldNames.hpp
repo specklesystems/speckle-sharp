@@ -30,17 +30,19 @@ static const char* CreatedIds = "CreatedIds";
 static const char* FloorIndex = "floorIndex";
 static const char* Shape = "shape";
 
-static const char* Walls = "walls";
-static const char* Windows = "windows";
-static const char* SubelementModels = "subelementModels";
-static const char* Doors = "doors";
 static const char* Beams = "beams";
 static const char* Columns = "columns";
+static const char* DirectShapes = "directShapes";
+static const char* Doors = "doors";
 static const char* Objects = "objects";
-static const char* Slabs = "slabs";
-static const char* Zones = "zones";
 static const char* Roofs = "roofs";
+static const char* Slabs = "slabs";
+static const char* Walls = "walls";
+static const char* Windows = "windows";
+static const char* Zones = "zones";
+
 static const char* Models = "models";
+static const char* SubelementModels = "subelementModels";
 
 static const char* ShowOnStories = "showOnStories";
 static const char* VisibilityContData = "visibilityCont";

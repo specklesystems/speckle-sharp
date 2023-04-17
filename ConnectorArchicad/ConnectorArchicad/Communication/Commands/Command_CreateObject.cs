@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Objects.BuiltElements.Archicad;
-using Speckle.Newtonsoft.Json;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
+using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
@@ -39,6 +39,5 @@ namespace Archicad.Communication.Commands
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects));
       return result == null ? null : result.ApplicationObjects;
     }
-
   }
 }

@@ -43,8 +43,6 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 
 	ACAPI_CallUndoableCommand (GetUndoableCommandName (), [&] () -> GSErrCode {
 		LibraryHelper helper (false);
-		LibpartImportManager libpartImportManager;
-		AttributeManager attributeManager;
 
 		GS::Array<GS::ObjectState> applicationObjects;
 
@@ -91,7 +89,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 				}
 			}
 
-			GSErrCode err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, attributeManager, libpartImportManager, &marker);
+			GSErrCode err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, *AttributeManager::GetInstance (), *LibpartImportManager::GetInstance (), &marker);
 			if (err == NoError) {
 				if (elementExists) {
 					err = ModifyExistingElement (element, elementMask, memo, memoMask);
