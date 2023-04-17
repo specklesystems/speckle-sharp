@@ -37,8 +37,6 @@ public class ConnectorBindingsRhino : ConnectorBindings
   private static string UserStrings = "userStrings";
   private static string UserDictionary = "userDictionary";
   private static string ApplicationIdKey = "applicationId";
-  private static string LayersString = "Layers";
-  private static string ElementsString = "elements";
   public Dictionary<string, Base> StoredObjectParams = new(); // these are to store any parameters found on parent objects to add to fallback objects
 
   public Dictionary<string, Base> StoredObjects = new();
@@ -1112,17 +1110,17 @@ public class ConnectorBindingsRhino : ConnectorBindings
             break;
           case Layer o:
             applicationId = o.GetUserString(ApplicationIdKey) ?? selectedId;
-            converted = converter.ConvertToSpeckle(o) as Collection;
-            if (converted != null && !commitLayers.ContainsKey(o.FullPath))
+            converted = converter.ConvertToSpeckle(o);
+            if (converted is Collection layerCollection && !commitLayers.ContainsKey(o.FullPath))
             {
               commitLayers.Add(o.FullPath, o);
-              commitCollections.Add(o.FullPath, converted);
+              commitCollections.Add(o.FullPath, layerCollection);
             }
             break;
           case ViewInfo o:
             converted = converter.ConvertToSpeckle(o);
             if (converted != null)
-              ((List<Base>)commitObject[$"{ElementsString}"]).Add(converted);
+              commitObject.elements.Add(converted);
             break;
         }
       }
