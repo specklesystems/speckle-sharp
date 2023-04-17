@@ -358,13 +358,27 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       switch (schemaObject)
       {
         case RevitProfileWall o:
-          var profileWallBrep = @object.Geometry is RH.Brep profileB ? profileB : ((RH.Extrusion)@object.Geometry)?.ToBrep();
-          if (profileWallBrep == null) { throw new ArgumentException("Wall geometry can only be a brep or extrusion"); }
+          var profileWallBrep = @object.Geometry is RH.Brep profileB
+            ? profileB
+            : ((RH.Extrusion)@object.Geometry)?.ToBrep();
+          if (profileWallBrep == null)
+          {
+            throw new ArgumentException("Wall geometry can only be a brep or extrusion");
+          }
           var edges = profileWallBrep.DuplicateNakedEdgeCurves(true, false);
           var profileCurve = RH.Curve.JoinCurves(edges);
-          if (profileCurve.Count() != 1) { throw new Exception("Surface external edges should be joined into 1 curve"); }
+          if (profileCurve.Count() != 1)
+          {
+            throw new Exception("Surface external edges should be joined into 1 curve");
+          }
           var speckleProfileCurve = CurveToSpeckle(profileCurve.First());
-          var profile = new Polycurve() { segments = new List<ICurve>() { speckleProfileCurve }, length = profileCurve.First().GetLength(), closed = profileCurve.First().IsClosed, units = ModelUnits };
+          var profile = new Polycurve()
+          {
+            segments = new List<ICurve>() { speckleProfileCurve },
+            length = profileCurve.First().GetLength(),
+            closed = profileCurve.First().IsClosed,
+            units = ModelUnits
+          };
           o.profile = profile;
           break;
 
