@@ -26,39 +26,36 @@ namespace Objects.Converter.Navisworks
       Points = new List<PointD>();
     }
 
-    public PrimitiveProcessor(bool elevationMode) : this()
+    public PrimitiveProcessor(bool elevationMode)
+      : this()
     {
       ElevationMode = elevationMode;
     }
 
-
     public List<double> Coords { get; set; }
-
 
     public List<int> Faces { get; set; }
 
-
     public List<TriangleD> Triangles { get; set; }
-
 
     public List<LineD> Lines { get; set; }
 
-
     public List<PointD> Points { get; set; }
-
 
     public double[] LocalToWorldTransformation { get; set; }
 
-
     public bool ElevationMode { get; set; }
-
 
     public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
     {
-      var vD1 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-        ElevationMode);
-      var vD2 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
-        ElevationMode);
+      var vD1 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
+        ElevationMode
+      );
+      var vD2 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
+        ElevationMode
+      );
 
       var line = new LineD();
       try
@@ -75,8 +72,10 @@ namespace Objects.Converter.Navisworks
 
     public void Point(InwSimpleVertex v1)
     {
-      var vD1 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-        ElevationMode);
+      var vD1 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
+        ElevationMode
+      );
 
       Points.Add(new PointD(vD1));
     }
@@ -88,12 +87,18 @@ namespace Objects.Converter.Navisworks
 
     public void Triangle(InwSimpleVertex v1, InwSimpleVertex v2, InwSimpleVertex v3)
     {
-      var vD1 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-        ElevationMode);
-      var vD2 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
-        ElevationMode);
-      var vD3 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v3), LocalToWorldTransformation),
-        ElevationMode);
+      var vD1 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
+        ElevationMode
+      );
+      var vD2 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
+        ElevationMode
+      );
+      var vD3 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v3), LocalToWorldTransformation),
+        ElevationMode
+      );
 
       var indexPointer = Faces.Count;
       Faces.Add(3);
@@ -105,9 +110,7 @@ namespace Objects.Converter.Navisworks
 
     private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode)
     {
-      return elevationMode
-        ? v
-        : new Vector3D(v.X, -v.Z, v.Y);
+      return elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
     }
 
     private static Vector3D ApplyTransformation(Vector3 vector3, IReadOnlyList<double> matrix)
@@ -123,14 +126,9 @@ namespace Objects.Converter.Navisworks
     private static Vector3 VectorFromVertex(InwSimpleVertex v)
     {
       var arrayV = (Array)v.coord;
-      return new Vector3(
-        (float)arrayV.GetValue(1),
-        (float)arrayV.GetValue(2),
-        (float)arrayV.GetValue(3)
-      );
+      return new Vector3((float)arrayV.GetValue(1), (float)arrayV.GetValue(2), (float)arrayV.GetValue(3));
     }
   }
-
 
   public class NavisworksGeometry
   {
@@ -145,24 +143,17 @@ namespace Objects.Converter.Navisworks
       Selection = ComBridge.ToInwOpSelection(modelItemCollection);
     }
 
-
     public InwOpSelection Selection { get; set; }
-
 
     public ModelItem ModelItem { get; set; }
 
-
     public Stack<InwOaFragment3> ModelFragments { get; set; }
-
 
     public Base Geometry { get; internal set; }
 
-
     public Base Base { get; internal set; }
 
-
     public bool ElevationMode { get; set; } = false;
-
 
     public List<PrimitiveProcessor> GetUniqueGeometryFragments()
     {
@@ -174,8 +165,10 @@ namespace Objects.Converter.Navisworks
 
         foreach (var fragment in ModelFragments)
         {
-          if (!IsSameFragmentPath(((Array)fragment.path.ArrayData).ToArray<int>(),
-                ((Array)path.ArrayData).ToArray<int>())) continue;
+          if (
+            !IsSameFragmentPath(((Array)fragment.path.ArrayData).ToArray<int>(), ((Array)path.ArrayData).ToArray<int>())
+          )
+            continue;
 
           var localToWorldTransform = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
           processor.LocalToWorldTransformation = ConvertArrayToDouble((Array)localToWorldTransform.Matrix);
@@ -195,7 +188,8 @@ namespace Objects.Converter.Navisworks
 
     public static double[] ConvertArrayToDouble(Array arr)
     {
-      if (arr.Rank != 1) throw new ArgumentException();
+      if (arr.Rank != 1)
+        throw new ArgumentException();
 
       var doubleArray = new double[arr.GetLength(0)];
       for (var ix = arr.GetLowerBound(0); ix <= arr.GetUpperBound(0); ++ix)
@@ -217,12 +211,9 @@ namespace Objects.Converter.Navisworks
       Vertex3 = v3;
     }
 
-
     public Vector3D Vertex1 { get; set; }
 
-
     public Vector3D Vertex2 { get; set; }
-
 
     public Vector3D Vertex3 { get; set; }
   }
@@ -244,9 +235,7 @@ namespace Objects.Converter.Navisworks
       Vertex2 = v2;
     }
 
-
     public Vector3D Vertex1 { get; set; }
-
 
     public Vector3D Vertex2 { get; set; }
   }
@@ -261,24 +250,18 @@ namespace Objects.Converter.Navisworks
       Vertex1 = vertex1;
     }
 
-
     public Vector3D Vertex1 { get; set; }
   }
-
 
   public partial class ConverterNavisworks
   {
     public static Vector3D TransformVector3D { get; set; }
 
-
     public Vector SettingOutPoint { get; set; }
-
 
     public Vector TransformVector { get; set; }
 
-
     public BoundingBox3D ModelBoundingBox { get; set; }
-
 
     /// <summary>
     ///   ElevationMode is the indicator that the model is being handled as an XY ground plane
@@ -338,11 +321,10 @@ namespace Objects.Converter.Navisworks
     /// <returns>Boolean value indicating match success</returns>
     private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9)
     {
-      return Math.Abs(vectorA.X - vectorB.X) < tolerance &&
-             Math.Abs(vectorA.Y - vectorB.Y) < tolerance &&
-             Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
+      return Math.Abs(vectorA.X - vectorB.X) < tolerance
+        && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
+        && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
     }
-
 
     public static void PopulateModelFragments(NavisworksGeometry geometry)
     {
@@ -359,7 +341,8 @@ namespace Objects.Converter.Navisworks
           var a2 = ((Array)path.ArrayData).ToArray<int>();
           var isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
 
-          if (isSame) geometry.ModelFragments.Push(fragment);
+          if (isSame)
+            geometry.ModelFragments.Push(fragment);
 
           GC.KeepAlive(fragments);
         }
@@ -367,7 +350,6 @@ namespace Objects.Converter.Navisworks
         GC.KeepAlive(paths);
       }
     }
-
 
     public static List<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
     {
@@ -418,7 +400,8 @@ namespace Objects.Converter.Navisworks
         if (lines != null)
         {
           var lineCount = lines.Count;
-          if (lineCount <= 0) continue;
+          if (lineCount <= 0)
+            continue;
           for (var i = 0; i < lines.Count; i++)
           {
             var lineD = lines[i];
@@ -449,7 +432,8 @@ namespace Objects.Converter.Navisworks
 
     private void SetTransformVector3D()
     {
-      if (TransformVector3D != null) return;
+      if (TransformVector3D != null)
+        return;
 
       Vector3D transform;
 
@@ -480,7 +464,9 @@ namespace Objects.Converter.Navisworks
     {
       return new List<double>
       {
-        (vertex1.X + move.X) * scale, (vertex1.Y + move.Y) * scale, (vertex1.Z + move.Z) * scale
+        (vertex1.X + move.X) * scale,
+        (vertex1.Y + move.Y) * scale,
+        (vertex1.Z + move.Z) * scale
       };
     }
   }
@@ -488,10 +474,5 @@ namespace Objects.Converter.Navisworks
 
 namespace Objects.Organization
 {
-  public class Geometry : Base
-  {
-    public Geometry()
-    {
-    }
-  }
+  public class Geometry : Base { }
 }

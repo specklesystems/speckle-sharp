@@ -26,7 +26,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 {
   private int DOWNLOAD_BATCH_SIZE = 1000;
 
-  private bool IS_WRITING = false;
+  private bool IS_WRITING;
 
   private int MAX_BUFFER_SIZE = 1_000_000;
 
@@ -34,7 +34,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   private ConcurrentQueue<(string, string, int)> Queue = new();
 
-  private int TotalElapsed = 0,
+  private int TotalElapsed,
     PollInterval = 100;
 
   private Timer WriteTimer;
@@ -53,7 +53,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public bool CompressPayloads { get; set; } = true;
 
-  public int TotalSentBytes { get; set; } = 0;
+  public int TotalSentBytes { get; set; }
 
   public Account Account { get; set; }
 
@@ -87,7 +87,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public CancellationToken CancellationToken { get; set; }
 
-  public int SavedObjectCount { get; private set; } = 0;
+  public int SavedObjectCount { get; private set; }
 
   public Action<string, int> OnProgressAction { get; set; }
 
@@ -108,10 +108,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public async Task<Dictionary<string, bool>> HasObjects(List<string> objectIds)
   {
-    var payload = new Dictionary<string, string>()
-    {
-      { "objects", JsonConvert.SerializeObject(objectIds) }
-    };
+    var payload = new Dictionary<string, string> { { "objects", JsonConvert.SerializeObject(objectIds) } };
     var uri = new Uri($"/api/diff/{StreamId}", UriKind.Relative);
     var response = await Client
       .PostAsync(
@@ -127,12 +124,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     return hasObjects;
   }
 
-  private void Initialize(
-    string baseUri,
-    string streamId,
-    string authorizationToken,
-    int timeoutSeconds = 60
-  )
+  private void Initialize(string baseUri, string streamId, string authorizationToken, int timeoutSeconds = 60)
   {
     SpeckleLog.Logger.Information("Initializing New Remote V1 Transport for {baseUri}", baseUri);
 
@@ -140,7 +132,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     StreamId = streamId;
 
     Client = Http.GetHttpProxyClient(
-      new SpeckleHttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip }
+      new SpeckleHttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip }
     );
 
     Client.BaseAddress = new Uri(baseUri);
@@ -150,7 +142,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       Client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
     else
       Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
-    WriteTimer = new Timer()
+    WriteTimer = new Timer
     {
       AutoReset = true,
       Enabled = false,
@@ -272,7 +264,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return;
 
     IS_WRITING = true;
-    var message = new HttpRequestMessage()
+    var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{StreamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -292,8 +284,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         return;
       }
 
-      (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch()
-        .ConfigureAwait(false);
+      (int consumedQueuedObjects, List<(string, string, int)> batch) = await ConsumeNewBatch().ConfigureAwait(false);
       if (batch == null)
       {
         // Canceled or error happened (which was already reported)
@@ -328,11 +319,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       }
       else
       {
-        multipart.Add(
-          new StringContent(_ct, Encoding.UTF8),
-          $"batch-{addedMpCount}",
-          $"batch-{addedMpCount}"
-        );
+        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{addedMpCount}", $"batch-{addedMpCount}");
       }
 
       addedMpCount++;
@@ -359,10 +346,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
         IS_WRITING = false;
         OnErrorAction?.Invoke(
           TransportName,
-          new Exception(
-            $"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}",
-            e
-          )
+          new Exception($"Remote error: {Account.serverInfo.url} is not reachable. \n {e.Message}", e)
         );
 
         Queue = new ConcurrentQueue<(string, string, int)>();
@@ -430,7 +414,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return null;
     }
 
-    var message = new HttpRequestMessage()
+    var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -455,7 +439,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     }
 
     // Get root object
-    var rootHttpMessage = new HttpRequestMessage()
+    var rootHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -483,8 +467,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     onTotalChildrenCountKnown?.Invoke(childrenIds.Count);
 
     var childrenFoundMap = await targetTransport.HasObjects(childrenIds).ConfigureAwait(false);
-    List<string> newChildrenIds =
-      new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
+    List<string> newChildrenIds = new(from objId in childrenFoundMap.Keys where !childrenFoundMap[objId] select objId);
 
     targetTransport.BeginWrite();
 
@@ -496,8 +479,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       childrenIdBatch.Add(objectId);
       if (childrenIdBatch.Count >= DOWNLOAD_BATCH_SIZE)
       {
-        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport)
-          .ConfigureAwait(false);
+        downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport).ConfigureAwait(false);
         if (!downloadBatchResult)
           return null;
         childrenIdBatch = new List<string>(DOWNLOAD_BATCH_SIZE);
@@ -505,8 +487,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     }
     if (childrenIdBatch.Count > 0)
     {
-      downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport)
-        .ConfigureAwait(false);
+      downloadBatchResult = await CopyObjects(childrenIdBatch, targetTransport).ConfigureAwait(false);
       if (!downloadBatchResult)
         return null;
     }
@@ -522,7 +503,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
     if (hashes.Count > 0)
     {
-      var childrenHttpMessage = new HttpRequestMessage()
+      var childrenHttpMessage = new HttpRequestMessage
       {
         RequestUri = new Uri($"/api/getobjects/{StreamId}", UriKind.Relative),
         Method = HttpMethod.Post
@@ -537,11 +518,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       try
       {
         childrenHttpResponse = await Client
-          .SendAsync(
-            childrenHttpMessage,
-            HttpCompletionOption.ResponseHeadersRead,
-            CancellationToken
-          )
+          .SendAsync(childrenHttpMessage, HttpCompletionOption.ResponseHeadersRead, CancellationToken)
           .ConfigureAwait(false);
         childrenHttpResponse.EnsureSuccessStatusCode();
       }
@@ -570,7 +547,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
           return false;
         }
 
-        var pcs = line.Split(new char[] { '\t' }, 2);
+        var pcs = line.Split(new[] { '\t' }, 2);
         targetTransport.SaveObject(pcs[0], pcs[1]);
 
         OnProgressAction?.Invoke(TransportName, 1); // possibly make this more friendly

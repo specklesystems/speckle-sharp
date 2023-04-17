@@ -32,7 +32,7 @@ public partial class Client : IDisposable
   public Client(Account account)
   {
     if (account == null)
-      throw new SpeckleException($"Provided account is null.");
+      throw new SpeckleException("Provided account is null.");
 
     Account = account;
 
@@ -54,7 +54,7 @@ public partial class Client : IDisposable
       {
         EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
         UseWebSocketForQueriesAndMutations = false,
-        ConfigureWebSocketConnectionInitPayload = (opts) =>
+        ConfigureWebSocketConnectionInitPayload = opts =>
         {
           return new { Authorization = $"Bearer {account.token}" };
         },
@@ -71,7 +71,7 @@ public partial class Client : IDisposable
           $"WebSocketException: {we.Message} (WebSocketError {we.WebSocketErrorCode}, ErrorCode {we.ErrorCode}, NativeErrorCode {we.NativeErrorCode}"
         );
       else
-        Console.WriteLine($"Exception in websocket receive stream: {e.ToString()}");
+        Console.WriteLine($"Exception in websocket receive stream: {e}");
     });
   }
 
@@ -152,17 +152,11 @@ public partial class Client : IDisposable
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
-  internal async Task<T> ExecuteGraphQLRequest<T>(
-    GraphQLRequest request,
-    CancellationToken? cancellationToken
-  )
+  internal async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken? cancellationToken)
   {
     using (LogContext.Push(_createEnrichers<T>(request)))
     {
-      SpeckleLog.Logger.Debug(
-        "Starting execution of graphql request to get {resultType}",
-        typeof(T).Name
-      );
+      SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
       var timer = new Stopwatch();
       var success = false;
       timer.Start();
@@ -264,9 +258,7 @@ public partial class Client : IDisposable
         errors.Any(
           e =>
             e.Extensions != null
-            && e.Extensions.Contains(
-              new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR")
-            )
+            && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
         )
       )
         throw new SpeckleGraphQLInternalErrorException<T>(request, response);
@@ -294,11 +286,8 @@ public partial class Client : IDisposable
   {
     // i know this is double  (de)serializing, but we need a recursive convert to
     // dict<str, object> here
-    var expando = JsonConvert.DeserializeObject<ExpandoObject>(
-      JsonConvert.SerializeObject(request.Variables)
-    );
-    var variables =
-      request.Variables != null && expando != null ? _convertExpandoToDict(expando) : null;
+    var expando = JsonConvert.DeserializeObject<ExpandoObject>(JsonConvert.SerializeObject(request.Variables));
+    var variables = request.Variables != null && expando != null ? _convertExpandoToDict(expando) : null;
     return new ILogEventEnricher[]
     {
       new PropertyEnricher("serverUrl", ServerUrl),
@@ -319,17 +308,14 @@ public partial class Client : IDisposable
           {
             try
             {
-              MaybeThrowFromGraphQLErrors<T>(request, response);
+              MaybeThrowFromGraphQLErrors(request, response);
 
               if (response.Data != null)
                 callback(this, response.Data);
               else
                 SpeckleLog.Logger
                   .ForContext("graphqlResponse", response)
-                  .Error(
-                    "Cannot execute graphql callback for {resultType}, the response has no data.",
-                    typeof(T).Name
-                  );
+                  .Error("Cannot execute graphql callback for {resultType}, the response has no data.", typeof(T).Name);
             }
             // we catch forbidden to rethrow, making sure its not logged.
             catch (SpeckleGraphQLForbiddenException<T>)

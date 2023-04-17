@@ -1,23 +1,13 @@
-﻿using Objects.Geometry;
+using System.Collections.Generic;
+using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Objects.BuiltElements
 {
   public class Column : Base, IDisplayValue<List<Mesh>>
   {
-    public ICurve baseLine { get; set; }
-
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-
-    public string units { get; set; }
-
     public Column() { }
 
     [SchemaInfo("Column", "Creates a Speckle column", "BIM", "Structure")]
@@ -25,6 +15,13 @@ namespace Objects.BuiltElements
     {
       this.baseLine = baseLine;
     }
+
+    public ICurve baseLine { get; set; }
+
+    public string units { get; set; }
+
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
   }
 }
 
@@ -32,20 +29,6 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitColumn : Column
   {
-    public Level level { get; set; }
-    public Level topLevel { get; set; }
-    public double baseOffset { get; set; }
-    public double topOffset { get; set; }
-    public bool facingFlipped { get; set; }
-    public bool handFlipped { get; set; }
-    //public bool structural { get; set; }
-    public double rotation { get; set; }
-    public bool isSlanted { get; set; }
-    public string family { get; set; }
-    public string type { get; set; }
-    public Base parameters { get; set; }
-    public string elementId { get; set; }
-
     public RevitColumn() { }
 
     /// <summary>
@@ -62,12 +45,25 @@ namespace Objects.BuiltElements.Revit
     /// <param name="rotation"></param>
     /// <param name="parameters"></param>
     /// <remarks>Assign units when using this constructor due to <paramref name="baseOffset"/> and <paramref name="topOffset"/> params</remarks>
-    [SchemaInfo("RevitColumn Vertical", "Creates a vertical Revit Column by point and levels.", "Revit", "Architecture")]
-    public RevitColumn(string family, string type,
-      [SchemaParamInfo("Only the lower point of this line will be used as base point.")][SchemaMainParam] ICurve baseLine,
-      Level level, Level topLevel,
-      double baseOffset = 0, double topOffset = 0, bool structural = false,
-      [SchemaParamInfo("Rotation angle in radians")] double rotation = 0, List<Parameter> parameters = null)
+    [SchemaInfo(
+      "RevitColumn Vertical",
+      "Creates a vertical Revit Column by point and levels.",
+      "Revit",
+      "Architecture"
+    )]
+    public RevitColumn(
+      string family,
+      string type,
+      [SchemaParamInfo("Only the lower point of this line will be used as base point."), SchemaMainParam]
+        ICurve baseLine,
+      Level level,
+      Level topLevel,
+      double baseOffset = 0,
+      double topOffset = 0,
+      bool structural = false,
+      [SchemaParamInfo("Rotation angle in radians")] double rotation = 0,
+      List<Parameter> parameters = null
+    )
     {
       this.family = family;
       this.type = type;
@@ -81,21 +77,38 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
     }
 
-    [SchemaDeprecated]
-    [SchemaInfo("RevitColumn Slanted (old)", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
-    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, bool structural = false, List<Parameter> parameters = null)
+    [
+      SchemaDeprecated,
+      SchemaInfo("RevitColumn Slanted (old)", "Creates a slanted Revit Column by curve.", "Revit", "Structure")
+    ]
+    public RevitColumn(
+      string family,
+      string type,
+      [SchemaMainParam] ICurve baseLine,
+      Level level,
+      bool structural = false,
+      List<Parameter> parameters = null
+    )
     {
       this.family = family;
       this.type = type;
       this.baseLine = baseLine;
       this.level = level;
       //this.structural = structural;
-      this.isSlanted = true;
+      isSlanted = true;
       this.parameters = parameters.ToBase();
     }
 
     [SchemaInfo("RevitColumn Slanted", "Creates a slanted Revit Column by curve.", "Revit", "Structure")]
-    public RevitColumn(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, Level topLevel = null, bool structural = false, List<Parameter> parameters = null)
+    public RevitColumn(
+      string family,
+      string type,
+      [SchemaMainParam] ICurve baseLine,
+      Level level,
+      Level topLevel = null,
+      bool structural = false,
+      List<Parameter> parameters = null
+    )
     {
       this.family = family;
       this.type = type;
@@ -103,31 +116,34 @@ namespace Objects.BuiltElements.Revit
       this.level = level;
       this.topLevel = topLevel;
       //this.structural = structural;
-      this.isSlanted = true;
+      isSlanted = true;
       this.parameters = parameters.ToBase();
     }
+
+    public Level level { get; set; }
+    public Level topLevel { get; set; }
+    public double baseOffset { get; set; }
+    public double topOffset { get; set; }
+    public bool facingFlipped { get; set; }
+
+    public bool handFlipped { get; set; }
+
+    //public bool structural { get; set; }
+    public double rotation { get; set; }
+    public bool isSlanted { get; set; }
+    public string family { get; set; }
+    public string type { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
   }
 }
 
-
 namespace Objects.BuiltElements.Archicad
 {
-  public class ArchicadColumn : Objects.BuiltElements.Column
+  public class ArchicadColumn : Column
   {
-    public class ColumnSegment : Base
-    {
-      // Segment - Veneer attributes
-      public string? veneerType { get; set; }
-      public string? veneerBuildingMaterial { get; set; }
-      public double? veneerThick { get; set; }
-      // Segment - The extrusion overridden material name
-      public string? extrusionSurfaceMaterial { get; set; }
-      // Segment - The ends overridden material name
-      public string? endsSurfaceMaterial { get; set; }
-      // Segment - The overridden materials are chained
-      public bool? materialChained { get; set; }
-      public AssemblySegment assemblySegmentData { get; set; }
-    }
+    [SchemaInfo("ArchicadColumn", "Creates an Archicad Column by curve.", "Archicad", "Structure")]
+    public ArchicadColumn() { }
 
     // Wall geometry
     public int? floorIndex { get; set; }
@@ -152,7 +168,7 @@ namespace Objects.BuiltElements.Archicad
     public string columnRelationToZoneName { get; set; }
 
     // End Cuts
-    public UInt32 nCuts { get; set; }
+    public uint nCuts { get; set; }
     public Dictionary<string, AssemblySegmentCut> Cuts { get; set; }
 
     // Reference Axis
@@ -160,12 +176,12 @@ namespace Objects.BuiltElements.Archicad
     public double? axisRotationAngle { get; set; }
 
     // Segment
-    public UInt32 nSegments { get; set; }
-    public UInt32 nProfiles { get; set; }
+    public uint nSegments { get; set; }
+    public uint nProfiles { get; set; }
     public Dictionary<string, ColumnSegment> segments { get; set; }
 
     // Scheme
-    public UInt32? nSchemes { get; set; }
+    public uint? nSchemes { get; set; }
     public Dictionary<string, AssemblySegmentScheme>? Schemes { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
@@ -209,7 +225,23 @@ namespace Objects.BuiltElements.Archicad
     public double? coverFillTransformationYAxisX { get; set; }
     public double? coverFillTransformationYAxisY { get; set; }
 
-    [SchemaInfo("ArchicadColumn", "Creates an Archicad Column by curve.", "Archicad", "Structure")]
-    public ArchicadColumn() {}
+    public class ColumnSegment : Base
+    {
+      // Segment - Veneer attributes
+      public string? veneerType { get; set; }
+      public string? veneerBuildingMaterial { get; set; }
+
+      public double? veneerThick { get; set; }
+
+      // Segment - The extrusion overridden material name
+      public string? extrusionSurfaceMaterial { get; set; }
+
+      // Segment - The ends overridden material name
+      public string? endsSurfaceMaterial { get; set; }
+
+      // Segment - The overridden materials are chained
+      public bool? materialChained { get; set; }
+      public AssemblySegment assemblySegmentData { get; set; }
+    }
   }
 }

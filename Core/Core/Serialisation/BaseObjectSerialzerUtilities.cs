@@ -36,8 +36,7 @@ internal static class SerializationUtilities
     {
       if (jsonProperty != null)
         return value.ToObject(jsonProperty.PropertyType);
-      else
-        return ((JValue)value).Value;
+      return ((JValue)value).Value;
     }
 
     // Lists
@@ -68,57 +67,43 @@ internal static class SerializationUtilities
             foreach (var dataItem in chunk.data)
               if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
               {
-                if (
-                  jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(
-                    dataItem.GetType()
-                  )
-                )
-                  addMethod.Invoke(arr, new object[] { dataItem });
+                if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(dataItem.GetType()))
+                  addMethod.Invoke(arr, new[] { dataItem });
                 else
                   addMethod.Invoke(
                     arr,
-                    new object[]
-                    {
-                      Convert.ChangeType(
-                        dataItem,
-                        jsonProperty.PropertyType.GenericTypeArguments[0]
-                      )
-                    }
+                    new[] { Convert.ChangeType(dataItem, jsonProperty.PropertyType.GenericTypeArguments[0]) }
                   );
               }
               else
               {
-                addMethod.Invoke(arr, new object[] { dataItem });
+                addMethod.Invoke(arr, new[] { dataItem });
               }
           }
           else if (hasGenericType && !jsonProperty.PropertyType.GenericTypeArguments[0].IsInterface)
           {
             if (jsonProperty.PropertyType.GenericTypeArguments[0].IsAssignableFrom(item.GetType()))
-              addMethod.Invoke(arr, new object[] { item });
+              addMethod.Invoke(arr, new[] { item });
             else
               addMethod.Invoke(
                 arr,
-                new object[]
-                {
-                  Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0])
-                }
+                new[] { Convert.ChangeType(item, jsonProperty.PropertyType.GenericTypeArguments[0]) }
               );
           }
           else
           {
-            addMethod.Invoke(arr, new object[] { item });
+            addMethod.Invoke(arr, new[] { item });
           }
         }
         return arr;
       }
-      else if (jsonProperty != null)
+
+      if (jsonProperty != null)
       {
         if (CancellationToken.IsCancellationRequested)
           return null; // Check for cancellation
 
-        var arr = Activator.CreateInstance(
-          typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType())
-        );
+        var arr = Activator.CreateInstance(typeof(List<>).MakeGenericType(jsonProperty.PropertyType.GetElementType()));
 
         foreach (var val in (JArray)value)
         {
@@ -133,26 +118,19 @@ internal static class SerializationUtilities
           {
             foreach (var dataItem in chunk.data)
               if (!jsonProperty.PropertyType.GetElementType().IsInterface)
-                ((IList)arr).Add(
-                  Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType())
-                );
+                ((IList)arr).Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()));
               else
                 ((IList)arr).Add(dataItem);
           }
           else
           {
             if (!jsonProperty.PropertyType.GetElementType().IsInterface)
-              ((IList)arr).Add(
-                Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType())
-              );
+              ((IList)arr).Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()));
             else
               ((IList)arr).Add(item);
           }
         }
-        var actualArr = Array.CreateInstance(
-          jsonProperty.PropertyType.GetElementType(),
-          ((IList)arr).Count
-        );
+        var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), ((IList)arr).Count);
         ((IList)arr).CopyTo(actualArr, 0);
         return actualArr;
       }
@@ -190,9 +168,7 @@ internal static class SerializationUtilities
         return value.ToObject<Base>(serializer);
 
       var dict =
-        jsonProperty != null
-          ? Activator.CreateInstance(jsonProperty.PropertyType)
-          : new Dictionary<string, object>();
+        jsonProperty != null ? Activator.CreateInstance(jsonProperty.PropertyType) : new Dictionary<string, object>();
       foreach (var prop in (JObject)value)
       {
         if (CancellationToken.IsCancellationRequested)
@@ -273,9 +249,7 @@ internal static class SerializationUtilities
       {
         List<MethodInfo> ret = new();
         Type type = GetType(objFullType);
-        MethodInfo[] methods = type.GetMethods(
-          BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-        );
+        MethodInfo[] methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
         foreach (MethodInfo method in methods)
         {
           List<OnDeserializedAttribute> onDeserializedAttributes = method
@@ -323,9 +297,7 @@ internal static class SerializationUtilities
 
     var pieces = assemblyQualifiedName.Split(',').Select(s => s.Trim()).ToArray();
 
-    var myAssembly = AppDomain.CurrentDomain
-      .GetAssemblies()
-      .FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
+    var myAssembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(ass => ass.GetName().Name == pieces[1]);
     if (myAssembly == null)
       throw new SpeckleException("Could not load abstract object's assembly.");
 
@@ -350,10 +322,7 @@ internal static class CallSiteCache
   // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
   // by Marc Gravell, https://github.com/mgravell
 
-  private static readonly Dictionary<
-    string,
-    CallSite<Func<CallSite, object, object, object>>
-  > setters = new();
+  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object, object>>> setters = new();
 
   public static void SetValue(string propertyName, object target, object value)
   {
@@ -374,9 +343,7 @@ internal static class CallSiteCache
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
             }
           );
-          setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(
-            binder
-          );
+          setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
         }
 
       site.Target(site, target, value);

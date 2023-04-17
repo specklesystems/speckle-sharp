@@ -2,7 +2,7 @@ using System;
 
 namespace Speckle.Core.Kits;
 
-[AttributeUsage(AttributeTargets.Constructor, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Constructor)]
 public sealed class SchemaInfo : Attribute
 {
   public SchemaInfo(string name, string description)
@@ -28,7 +28,7 @@ public sealed class SchemaInfo : Attribute
 [AttributeUsage(AttributeTargets.Constructor)]
 public sealed class SchemaDeprecated : Attribute { }
 
-[AttributeUsage(AttributeTargets.Parameter, Inherited = false, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Parameter)]
 public sealed class SchemaParamInfo : Attribute
 {
   public SchemaParamInfo(string description)
@@ -43,10 +43,7 @@ public sealed class SchemaParamInfo : Attribute
 /// Used to indicate which is the main input parameter of the schema builder component. Schema info will be attached to this object.
 /// </summary>
 [AttributeUsage(AttributeTargets.Parameter)]
-public sealed class SchemaMainParam : Attribute
-{
-  public SchemaMainParam() { }
-}
+public sealed class SchemaMainParam : Attribute { }
 
 // TODO: this could be nuked, as it's only used to hide props on Base,
 // which we might want to expose anyways...

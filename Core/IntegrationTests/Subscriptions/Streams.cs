@@ -29,11 +29,7 @@ public class Streams
 
     Thread.Sleep(1000); //let server catch-up
 
-    var streamInput = new StreamCreateInput
-    {
-      description = "Hello World",
-      name = "Super Stream 01"
-    };
+    var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
 
     var res = await client.StreamCreate(streamInput).ConfigureAwait(true);
     streamId = res;

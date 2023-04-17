@@ -29,15 +29,7 @@ public partial class Client
     int limit = 10
   )
   {
-    return StreamGetActivity(
-      CancellationToken.None,
-      streamId,
-      after,
-      before,
-      cursor,
-      actionType,
-      limit
-    );
+    return StreamGetActivity(CancellationToken.None, streamId, after, before, cursor, actionType, limit);
   }
 
   /// <summary>
@@ -94,8 +86,7 @@ public partial class Client
       }
     };
 
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.activity.items;
   }
 }

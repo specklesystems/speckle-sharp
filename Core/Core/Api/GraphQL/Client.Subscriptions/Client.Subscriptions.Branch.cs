@@ -24,10 +24,7 @@ public partial class Client
   /// <returns></returns>
   public void SubscribeBranchCreated(string streamId)
   {
-    var request = new GraphQLRequest
-    {
-      Query = $@"subscription {{ branchCreated (streamId: ""{streamId}"") }}"
-    };
+    var request = new GraphQLRequest { Query = $@"subscription {{ branchCreated (streamId: ""{streamId}"") }}" };
 
     BranchCreatedSubscription = SubscribeTo<BranchCreatedResult>(
       request,
@@ -55,8 +52,7 @@ public partial class Client
   {
     var request = new GraphQLRequest
     {
-      Query =
-        $@"subscription {{ branchUpdated (streamId: ""{streamId}"", branchId: ""{branchId}"") }}"
+      Query = $@"subscription {{ branchUpdated (streamId: ""{streamId}"", branchId: ""{branchId}"") }}"
     };
     BranchUpdatedSubscription = SubscribeTo<BranchUpdatedResult>(
       request,
@@ -81,10 +77,7 @@ public partial class Client
   /// <returns></returns>
   public void SubscribeBranchDeleted(string streamId)
   {
-    var request = new GraphQLRequest
-    {
-      Query = $@"subscription {{ branchDeleted (streamId: ""{streamId}"") }}"
-    };
+    var request = new GraphQLRequest { Query = $@"subscription {{ branchDeleted (streamId: ""{streamId}"") }}" };
 
     BranchDeletedSubscription = SubscribeTo<BranchDeletedResult>(
       request,

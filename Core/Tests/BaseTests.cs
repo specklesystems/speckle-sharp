@@ -126,9 +126,7 @@ public class BaseTests
     Assert.That(names, Has.Member(nameof(@base.attachedProp)));
   }
 
-  [Test(
-    Description = "Checks that only instance properties are returned, excluding obsolete and ignored."
-  )]
+  [Test(Description = "Checks that only instance properties are returned, excluding obsolete and ignored.")]
   public void CanGetMembers_OnlyInstance()
   {
     var @base = new SampleObject();
@@ -156,9 +154,7 @@ public class BaseTests
     var @base = new SampleObject();
     @base["dynamicProp"] = 123;
 
-    var names = @base
-      .GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.SchemaIgnored)
-      .Keys;
+    var names = @base.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.SchemaIgnored).Keys;
     Assert.That(names, Has.Member(nameof(@base.IgnoredSchemaProp)));
     Assert.That(names, Has.Member(nameof(@base.attachedProp)));
   }
@@ -169,9 +165,7 @@ public class BaseTests
     var @base = new SampleObject();
     @base["dynamicProp"] = 123;
 
-    var names = @base
-      .GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Obsolete)
-      .Keys;
+    var names = @base.GetMembers(DynamicBaseMemberType.Instance | DynamicBaseMemberType.Obsolete).Keys;
     Assert.That(names, Has.Member(nameof(@base.ObsoleteSchemaProp)));
     Assert.That(names, Has.Member(nameof(@base.attachedProp)));
   }
@@ -215,9 +209,7 @@ public class BaseTests
     var copy = sample.ShallowCopy();
 
     var selectedMembers =
-      DynamicBaseMemberType.Dynamic
-      | DynamicBaseMemberType.Instance
-      | DynamicBaseMemberType.SchemaIgnored;
+      DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.Instance | DynamicBaseMemberType.SchemaIgnored;
     var sampleMembers = sample.GetMembers(selectedMembers);
     var copyMembers = copy.GetMembers(selectedMembers);
 
@@ -230,8 +222,6 @@ public class BaseTests
 
   public class SampleObject : Base
   {
-    public SampleObject() { }
-
     [Chunkable, DetachProperty]
     public List<double> list { get; set; } = new();
 
@@ -243,7 +233,7 @@ public class BaseTests
 
     public SampleProp attachedProp { get; set; }
 
-    public string @crazyProp { get; set; }
+    public string crazyProp { get; set; }
 
     [SchemaIgnore]
     public string IgnoredSchemaProp { get; set; }

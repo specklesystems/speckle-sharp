@@ -83,8 +83,7 @@ public partial class Client
       }
     };
 
-    var res = await ExecuteGraphQLRequest<CommentsData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<CommentsData>(request, cancellationToken).ConfigureAwait(false);
     return res.comments;
   }
 
@@ -107,11 +106,7 @@ public partial class Client
   /// <param name="streamId">Id of the stream to get the comment from</param>
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
-  public async Task<string> StreamGetCommentScreenshot(
-    CancellationToken cancellationToken,
-    string id,
-    string streamId
-  )
+  public async Task<string> StreamGetCommentScreenshot(CancellationToken cancellationToken, string id, string streamId)
   {
     var request = new GraphQLRequest
     {
@@ -126,8 +121,7 @@ public partial class Client
       Variables = new { id, streamId }
     };
 
-    var res = await ExecuteGraphQLRequest<CommentItemData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<CommentItemData>(request, cancellationToken).ConfigureAwait(false);
     return res.comment.screenshot;
   }
 }

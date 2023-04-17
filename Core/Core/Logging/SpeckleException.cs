@@ -18,29 +18,17 @@ public class SpeckleException : Exception
   public SpeckleException(string message, bool log, SentryLevel level = SentryLevel.Info)
     : base(message) { }
 
-  public SpeckleException(
-    string message,
-    GraphQLError[] errors,
-    bool log = true,
-    SentryLevel level = SentryLevel.Info
-  )
+  public SpeckleException(string message, GraphQLError[] errors, bool log = true, SentryLevel level = SentryLevel.Info)
     : base(message)
   {
-    GraphQLErrors = errors
-      .Select(error => new KeyValuePair<string, object>("error", error.Message))
-      .ToList();
+    GraphQLErrors = errors.Select(error => new KeyValuePair<string, object>("error", error.Message)).ToList();
   }
 
-  public SpeckleException(
-    string message,
-    Exception? inner,
-    bool log = true,
-    SentryLevel level = SentryLevel.Info
-  )
+  public SpeckleException(string message, Exception? inner, bool log = true, SentryLevel level = SentryLevel.Info)
     : base(message, inner) { }
-
-  public List<KeyValuePair<string, object>> GraphQLErrors { get; set; }
 
   public SpeckleException(string message)
     : base(message) { }
+
+  public List<KeyValuePair<string, object>> GraphQLErrors { get; set; }
 }

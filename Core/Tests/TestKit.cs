@@ -9,10 +9,7 @@ namespace Tests;
 /// </summary>
 public class TestKit : ISpeckleKit
 {
-  public TestKit() { }
-
-  public IEnumerable<Type> Types =>
-    GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
+  public IEnumerable<Type> Types => GetType().Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(Base)));
 
   public string Description => "Simple object model for with some types for tests.";
 
@@ -62,15 +59,13 @@ public class TestKit : ISpeckleKit
 
 public class FakeMesh : Base
 {
-  public FakeMesh() { }
-
   [DetachProperty, Chunkable]
   public List<double> Vertices { get; set; } = new();
 
-  [DetachProperty, Chunkable(1000)]
+  [DetachProperty, Chunkable]
   public double[] ArrayOfDoubles { get; set; }
 
-  [DetachProperty, Chunkable(1000)]
+  [DetachProperty, Chunkable]
   public TableLeg[] ArrayOfLegs { get; set; }
 
   [DetachProperty, Chunkable(2500)]
@@ -81,13 +76,13 @@ public class DiningTable : Base
 {
   public DiningTable()
   {
-    LegOne = new TableLeg() { height = 2 * 3, radius = 10 };
-    LegTwo = new TableLeg() { height = 1, radius = 5 };
+    LegOne = new TableLeg { height = 2 * 3, radius = 10 };
+    LegTwo = new TableLeg { height = 1, radius = 5 };
 
-    MoreLegs.Add(new TableLeg() { height = 4 });
-    MoreLegs.Add(new TableLeg() { height = 10 });
+    MoreLegs.Add(new TableLeg { height = 4 });
+    MoreLegs.Add(new TableLeg { height = 10 });
 
-    Tabletop = new Tabletop()
+    Tabletop = new Tabletop
     {
       length = 200,
       width = 12,
@@ -112,8 +107,6 @@ public class DiningTable : Base
 
 public class Tabletop : Base
 {
-  public Tabletop() { }
-
   public double length { get; set; }
   public double width { get; set; }
   public double thickness { get; set; }
@@ -121,8 +114,6 @@ public class Tabletop : Base
 
 public class TableLeg : Base
 {
-  public TableLeg() { }
-
   public double height { get; set; }
   public double radius { get; set; }
 
@@ -132,8 +123,6 @@ public class TableLeg : Base
 
 public class TableLegFixture : Base
 {
-  public TableLegFixture() { }
-
   public string nails { get; set; } = "MANY NAILS WOW ";
 }
 
@@ -155,8 +144,6 @@ public class Point : Base
 
 public class SuperPoint : Point
 {
-  public SuperPoint() { }
-
   public double W { get; set; }
 }
 
@@ -167,11 +154,9 @@ public class Mesh : Base
   [JsonIgnore]
   public List<Point> Points = new();
 
-  public Mesh() { }
-
   public List<double> Vertices
   {
-    get => Points.SelectMany(pt => new List<double>() { pt.X, pt.Y, pt.Z }).ToList();
+    get => Points.SelectMany(pt => new List<double> { pt.X, pt.Y, pt.Z }).ToList();
     set
     {
       for (int i = 0; i < value.Count; i += 3)
@@ -193,11 +178,9 @@ public class Polyline : Base, ICurve
   [JsonIgnore]
   public List<Point> Points = new();
 
-  public Polyline() { }
-
   public List<double> Vertices
   {
-    get => Points.SelectMany(pt => new List<double>() { pt.X, pt.Y, pt.Z }).ToList();
+    get => Points.SelectMany(pt => new List<double> { pt.X, pt.Y, pt.Z }).ToList();
     set
     {
       for (int i = 0; i < value.Count; i += 3)
@@ -208,8 +191,6 @@ public class Polyline : Base, ICurve
 
 public class Line : Base, ICurve
 {
-  public Line() { }
-
   public Point Start { get; set; }
   public Point End { get; set; }
 }
@@ -219,8 +200,6 @@ public class Line : Base, ICurve
 /// </summary>
 public class PolygonalFeline : Base
 {
-  public PolygonalFeline() { }
-
   public List<ICurve> Whiskers { get; set; } = new();
 
   public Dictionary<string, ICurve> Claws { get; set; } = new();
