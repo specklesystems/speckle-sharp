@@ -55,6 +55,7 @@ namespace Objects.Converter.Revit
 
       ForEachRowInSchedule(UpdateDataInRow, revitSchedule, parametersToPass);
 
+      appObj.Update(createdId: docObj.UniqueId, status: ApplicationObject.State.Updated);
       return appObj;
     }
 
