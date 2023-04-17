@@ -1,48 +1,44 @@
-using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Windows.Dialogs
+namespace DesktopUI2.Views.Windows.Dialogs;
+
+public class AddFromUrlDialog : DialogUserControl
 {
-  public partial class AddFromUrlDialog : DialogUserControl
+  private TextBox UrlField;
+
+  public AddFromUrlDialog(string url)
   {
+    Url = url;
+    InitializeComponent();
+  }
 
-    private string Url { get; set; }
+  public AddFromUrlDialog()
+  {
+    InitializeComponent();
+  }
 
-    TextBox UrlField;
+  private string Url { get; set; }
 
-    public AddFromUrlDialog(string url)
-    {
-      Url = url;
-      InitializeComponent();
-    }
+  private void InitializeComponent()
+  {
+    AvaloniaXamlLoader.Load(this);
+    UrlField = this.FindControl<TextBox>("url");
 
-    public AddFromUrlDialog()
-    {
-      InitializeComponent();
-    }
+    UrlField.Text = Url;
+    UrlField.Focus(); //not working :(
+  }
 
-    private void InitializeComponent()
-    {
-      AvaloniaXamlLoader.Load(this);
-      UrlField = this.FindControl<TextBox>("url");
+  public void Add_Click(object sender, RoutedEventArgs e)
+  {
+    //too lazy to create a view model for this or properly style the Dialogs
+    Url = this.FindControl<TextBox>("url").Text;
+    Close(Url);
+  }
 
-
-      UrlField.Text = Url;
-      UrlField.Focus(); //not working :(
-    }
-
-    public void Add_Click(object sender, RoutedEventArgs e)
-    {
-      //too lazy to create a view model for this or properly style the Dialogs
-      Url = this.FindControl<TextBox>("url").Text;
-      this.Close(Url);
-    }
-
-    public void Close_Click(object sender, RoutedEventArgs e)
-    {
-      this.Close(null);
-    }
+  public void Close_Click(object sender, RoutedEventArgs e)
+  {
+    Close(null);
   }
 }

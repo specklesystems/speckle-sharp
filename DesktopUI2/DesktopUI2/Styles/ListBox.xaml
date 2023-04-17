@@ -1,7 +1,6 @@
 ﻿<Styles
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple">
   <Design.PreviewWith>
     <Border

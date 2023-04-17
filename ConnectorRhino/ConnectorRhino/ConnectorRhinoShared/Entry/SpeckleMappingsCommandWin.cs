@@ -1,46 +1,35 @@
 ﻿using System;
-using System.Runtime.InteropServices;
-using System.Threading;
-using Avalonia;
-using Avalonia.Controls;
-using Avalonia.ReactiveUI;
-using DesktopUI2.ViewModels;
-using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
+using Rhino.UI;
 using Speckle.Core.Models.Extensions;
 
-namespace SpeckleRhino
-{
+namespace SpeckleRhino;
+
 #if !MAC
-  public class SpeckleMappingsCommandWin : Command
+public class SpeckleMappingsCommandWin : Command
+{
+  public SpeckleMappingsCommandWin()
   {
-
-    public static SpeckleMappingsCommandWin Instance { get; private set; }
-
-    public override string EnglishName => "SpeckleMappings";
-
-    public SpeckleMappingsCommandWin()
-    {
-      Instance = this;
-    }
-
-    protected override Result RunCommand(RhinoDoc doc, RunMode mode)
-    {
-
-      try
-      {
-
-        Rhino.UI.Panels.OpenPanel(typeof(MappingsPanel).GUID);
-        return Result.Success;
-      }
-      catch (Exception e)
-      {
-        RhinoApp.CommandLineOut.WriteLine($"Speckle Error - { e.ToFormattedString() }");
-        return Result.Failure;
-      }
-    }
-
+    Instance = this;
   }
-#endif
+
+  public static SpeckleMappingsCommandWin Instance { get; private set; }
+
+  public override string EnglishName => "SpeckleMappings";
+
+  protected override Result RunCommand(RhinoDoc doc, RunMode mode)
+  {
+    try
+    {
+      Panels.OpenPanel(typeof(MappingsPanel).GUID);
+      return Result.Success;
+    }
+    catch (Exception e)
+    {
+      RhinoApp.CommandLineOut.WriteLine($"Speckle Error - {e.ToFormattedString()}");
+      return Result.Failure;
+    }
+  }
 }
+#endif

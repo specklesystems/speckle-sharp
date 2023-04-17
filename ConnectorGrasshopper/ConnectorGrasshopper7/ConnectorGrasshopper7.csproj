@@ -9,12 +9,6 @@
     <DefineConstants>$(DefineConstants);RHINO7</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Label="Launch Settings">
-    <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
-    <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
     <DefineConstants>$(DefineConstants);MAC</DefineConstants>
   </PropertyGroup>
@@ -34,8 +28,6 @@
   </ItemGroup>
   
   <Target Name="GenerateT4">
-    <Message Text="Restoring T4 tool..." Importance="high"/>
-    <Exec Command="dotnet tool restore"/>
     <Message Text="Generating T4 templates..." Importance="high"/>
     <Exec Command="dotnet t4 -o $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)"/>
   </Target>
