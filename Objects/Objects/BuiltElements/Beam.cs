@@ -1,26 +1,15 @@
-﻿using Objects.Geometry;
+using System.Collections.Generic;
+using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
   public class Beam : Base, IDisplayValue<List<Mesh>>
   {
-    public ICurve baseLine { get; set; }
-
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-
-    public string units { get; set; }
-
     public Beam() { }
 
     [SchemaInfo("Beam", "Creates a Speckle beam", "BIM", "Structure")]
@@ -28,6 +17,13 @@ namespace Objects.BuiltElements
     {
       this.baseLine = baseLine;
     }
+
+    public ICurve baseLine { get; set; }
+
+    public string units { get; set; }
+
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
   }
 }
 
@@ -35,16 +31,16 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitBeam : Beam
   {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Base parameters { get; set; }
-    public string elementId { get; set; }
-    public Level level { get; set; }
-
     public RevitBeam() { }
 
     [SchemaInfo("RevitBeam", "Creates a Revit beam by curve and base level.", "Revit", "Structure")]
-    public RevitBeam(string family, string type, [SchemaMainParam] ICurve baseLine, Level level, List<Parameter> parameters = null)
+    public RevitBeam(
+      string family,
+      string type,
+      [SchemaMainParam] ICurve baseLine,
+      Level level,
+      List<Parameter> parameters = null
+    )
     {
       this.family = family;
       this.type = type;
@@ -52,6 +48,12 @@ namespace Objects.BuiltElements.Revit
       this.parameters = parameters.ToBase();
       this.level = level;
     }
+
+    public string family { get; set; }
+    public string type { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
+    public Level level { get; set; }
   }
 }
 
@@ -59,27 +61,6 @@ namespace Objects.BuiltElements.TeklaStructures
 {
   public class TeklaBeam : Beam, IHasVolume, IHasArea
   {
-    public string name { get; set; }
-    [DetachProperty]
-    public SectionProfile profile { get; set; }
-    [DetachProperty]
-    public StructuralMaterial material { get; set; }
-    [DetachProperty]
-    public string finish { get; set; }
-    [DetachProperty]
-    public string classNumber { get; set; }
-    public Vector alignmentVector { get; set; } // This can be set to get proper rotation if coming from an application that doesn't have positioning
-    [DetachProperty]
-    public TeklaPosition position { get; set; }
-    public Base userProperties { get; set; }
-
-    [DetachProperty]
-    public Base rebars { get; set; }
-
-    public TeklaBeamType TeklaBeamType { get; set; }
-    public double volume { get; set; }
-    public double area { get; set; }
-
     public TeklaBeam() { }
 
     [SchemaInfo("TeklaBeam", "Creates a Tekla Structures beam by curve.", "Tekla", "Structure")]
@@ -89,13 +70,38 @@ namespace Objects.BuiltElements.TeklaStructures
       this.profile = profile;
       this.material = material;
     }
+
+    public string name { get; set; }
+
+    [DetachProperty]
+    public SectionProfile profile { get; set; }
+
+    [DetachProperty]
+    public StructuralMaterial material { get; set; }
+
+    [DetachProperty]
+    public string finish { get; set; }
+
+    [DetachProperty]
+    public string classNumber { get; set; }
+
+    public Vector alignmentVector { get; set; } // This can be set to get proper rotation if coming from an application that doesn't have positioning
+
+    [DetachProperty]
+    public TeklaPosition position { get; set; }
+
+    public Base userProperties { get; set; }
+
+    [DetachProperty]
+    public Base rebars { get; set; }
+
+    public TeklaBeamType TeklaBeamType { get; set; }
+    public double area { get; set; }
+    public double volume { get; set; }
   }
+
   public class SpiralBeam : TeklaBeam
   {
-    public SpiralBeam()
-    {
-    }
-
     public Point startPoint { get; set; }
     public Point rotationAxisPt1 { get; set; }
     public Point rotationAxisPt2 { get; set; }
@@ -103,28 +109,15 @@ namespace Objects.BuiltElements.TeklaStructures
     public double rotationAngle { get; set; }
     public double twistAngleStart { get; set; }
     public double twistAngleEnd { get; set; }
-
-
   }
 }
 
-
 namespace Objects.BuiltElements.Archicad
 {
-  public class ArchicadBeam : Objects.BuiltElements.Beam
+  public class ArchicadBeam : Beam
   {
-    public class BeamSegment : Base
-    {
-      // Segment override materials
-      public string? leftMaterial { get; set; }
-      public string? topMaterial { get; set; }
-      public string? rightMaterial { get; set; }
-      public string? bottomMaterial { get; set; }
-      public string? endsMaterial { get; set; }
-      // Segment - The overridden materials are chained
-      public bool? materialChained { get; set; }
-      public AssemblySegment assemblySegmentData { get; set; }
-    }
+    [SchemaInfo("ArchicadBeam", "Creates an Archicad beam by curve.", "Archicad", "Structure")]
+    public ArchicadBeam() { }
 
     // Positioning
     public int floorIndex { get; set; }
@@ -134,13 +127,13 @@ namespace Objects.BuiltElements.Archicad
     public bool isSlanted { get; set; }
     public double slantAngle { get; set; }
     public string beamShape { get; set; }
-    public Int32 sequence { get; set; }
+    public int sequence { get; set; }
     public double curveAngle { get; set; }
     public double verticalCurveHeight { get; set; }
     public bool isFlipped { get; set; }
 
     // End Cuts
-    public UInt32 nCuts { get; set; }
+    public uint nCuts { get; set; }
     public Dictionary<string, AssemblySegmentCut>? Cuts { get; set; }
 
     // Reference Axis
@@ -149,12 +142,12 @@ namespace Objects.BuiltElements.Archicad
     public double? profileAngle { get; set; }
 
     // Segment
-    public UInt32 nSegments { get; set; }
-    public UInt32 nProfiles { get; set; }
+    public uint nSegments { get; set; }
+    public uint nProfiles { get; set; }
     public Dictionary<string, BeamSegment> segments { get; set; }
 
     // Scheme
-    public UInt32? nSchemes { get; set; }
+    public uint? nSchemes { get; set; }
     public Dictionary<string, AssemblySegmentScheme>? Schemes { get; set; }
 
     // Hole
@@ -201,7 +194,19 @@ namespace Objects.BuiltElements.Archicad
     public double? coverFillTransformationYAxisX { get; set; }
     public double? coverFillTransformationYAxisY { get; set; }
 
-    [SchemaInfo("ArchicadBeam", "Creates an Archicad beam by curve.", "Archicad", "Structure")]
-    public ArchicadBeam() {}
+    public class BeamSegment : Base
+    {
+      // Segment override materials
+      public string? leftMaterial { get; set; }
+      public string? topMaterial { get; set; }
+      public string? rightMaterial { get; set; }
+      public string? bottomMaterial { get; set; }
+
+      public string? endsMaterial { get; set; }
+
+      // Segment - The overridden materials are chained
+      public bool? materialChained { get; set; }
+      public AssemblySegment assemblySegmentData { get; set; }
+    }
   }
 }

@@ -1,7 +1,3 @@
-﻿using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System.Collections.Generic;
-
 //namespace Objects.Primitive
 //{
 //  [SchemaIgnore]

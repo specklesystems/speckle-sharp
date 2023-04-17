@@ -23,10 +23,7 @@ public static class BaseExtensions
   /// <param name="recursionBreaker">Optional predicate function to determine whether to break (or continue) traversal of a <see cref="Base"/> object's children.</param>
   /// <returns>A flat List of <see cref="Base"/> objects.</returns>
   /// <seealso cref="Traverse"/>
-  public static IEnumerable<Base> Flatten(
-    this Base root,
-    BaseRecursionBreaker recursionBreaker = null
-  )
+  public static IEnumerable<Base> Flatten(this Base root, BaseRecursionBreaker recursionBreaker = null)
   {
     recursionBreaker ??= b => false;
 

@@ -1,11 +1,6 @@
-﻿using System;
-using Objects.Geometry;
-using Objects.Utils;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Linq;
-using Speckle.Newtonsoft.Json;
+using Objects.Geometry;
+using Speckle.Core.Models;
 
 namespace Objects.BuiltElements
 {
@@ -15,12 +10,10 @@ namespace Objects.BuiltElements
     public double diameter { get; set; }
     public double length { get; set; }
 
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-
     public string units { get; set; }
 
-    public Conduit() { }
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
   }
 }
 
@@ -37,7 +30,5 @@ namespace Objects.BuiltElements.Revit
     public Base parameters { get; set; }
 
     public string elementId { get; set; }
-
-    public RevitConduit() { }
   }
 }

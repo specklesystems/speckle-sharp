@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
@@ -14,11 +12,11 @@ namespace Objects.BuiltElements.AdvanceSteel
     [DetachProperty]
     public SectionProfile profile { get; set; }
 
-    [DetachProperty]
-    public StructuralMaterial material { get; set; }
+  [DetachProperty]
+  public StructuralMaterial material { get; set; }
 
-    [DetachProperty]
-    public AsteelSectionProfile asteelProfile { get; set; }
+  [DetachProperty]
+  public AsteelSectionProfile asteelProfile { get; set; }
 
     public double volume { get; set; }
     public double area { get; set; }

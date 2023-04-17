@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
@@ -16,7 +15,7 @@ namespace Speckle.Core.Serialisation;
 
 public class BaseObjectDeserializerV2
 {
-  private bool Busy = false;
+  private bool Busy;
   private object CallbackLock = new();
 
   // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
@@ -30,8 +29,6 @@ public class BaseObjectDeserializerV2
   public string TypeDiscriminator = "speckle_type";
 
   private DeserializationWorkerThreads WorkerThreads;
-
-  public BaseObjectDeserializerV2() { }
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -126,10 +123,7 @@ public class BaseObjectDeserializerV2
   private object DeserializeTransportObjectProxy(string objectJson)
   {
     // Try background work
-    Task<object> bgResult = WorkerThreads.TryStartTask(
-      WorkerThreadTaskType.Deserialize,
-      objectJson
-    );
+    Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson);
     if (bgResult != null)
       return bgResult;
 
@@ -259,7 +253,7 @@ public class BaseObjectDeserializerV2
 
         return Dict2Base(dict);
       default:
-        throw new Exception("Json value not supported: " + doc.Type.ToString());
+        throw new Exception("Json value not supported: " + doc.Type);
     }
   }
 
@@ -272,20 +266,13 @@ public class BaseObjectDeserializerV2
     dictObj.Remove(TypeDiscriminator);
     dictObj.Remove("__closure");
 
-    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(
-      typeName
-    );
-    List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(
-      typeName
-    );
+    Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
+    List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
 
     foreach (KeyValuePair<string, object> entry in dictObj)
     {
       string lowerPropertyName = entry.Key.ToLower();
-      if (
-        staticProperties.ContainsKey(lowerPropertyName)
-        && staticProperties[lowerPropertyName].CanWrite
-      )
+      if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
       {
         PropertyInfo property = staticProperties[lowerPropertyName];
         if (entry.Value == null)
@@ -298,21 +285,13 @@ public class BaseObjectDeserializerV2
 
         Type targetValueType = property.PropertyType;
         object convertedValue;
-        bool conversionOk = ValueConverter.ConvertValue(
-          targetValueType,
-          entry.Value,
-          out convertedValue
-        );
+        bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out convertedValue);
         if (conversionOk)
           property.SetValue(baseObj, convertedValue);
         else
           // Cannot convert the value in the json to the static property type
           throw new Exception(
-            string.Format(
-              "Cannot deserialize {0} to {1}",
-              entry.Value.GetType().FullName,
-              targetValueType.FullName
-            )
+            string.Format("Cannot deserialize {0} to {1}", entry.Value.GetType().FullName, targetValueType.FullName)
           );
       }
       else

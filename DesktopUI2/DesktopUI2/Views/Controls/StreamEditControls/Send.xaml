@@ -9,7 +9,6 @@
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">

@@ -33,11 +33,7 @@ public class Commits
   //[Ignore("Ironically, it fails.")]
   public async Task SubscribeCommitCreated()
   {
-    var streamInput = new StreamCreateInput
-    {
-      description = "Hello World",
-      name = "Super Stream 01"
-    };
+    var streamInput = new StreamCreateInput { description = "Hello World", name = "Super Stream 01" };
 
     streamId = await client.StreamCreate(streamInput).ConfigureAwait(false);
     Assert.NotNull(streamId);
@@ -69,7 +65,7 @@ public class Commits
     var objectId = await Operations
       .Send(
         myObject,
-        new List<ITransport>() { myServerTransport },
+        new List<ITransport> { myServerTransport },
         false,
         onErrorAction: (name, err) =>
         {

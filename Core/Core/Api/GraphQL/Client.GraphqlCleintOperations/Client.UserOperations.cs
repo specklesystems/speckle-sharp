@@ -42,9 +42,7 @@ public partial class Client
                       }
                     }"
     };
-    return (
-      await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false)
-    ).activeUser;
+    return (await ExecuteGraphQLRequest<ActiveUserData>(request, cancellationToken).ConfigureAwait(false)).activeUser;
   }
 
   /// <summary>
@@ -82,9 +80,7 @@ public partial class Client
                     }",
       Variables = new { id }
     };
-    return (
-      await ExecuteGraphQLRequest<LimitedUserData>(request, cancellationToken).ConfigureAwait(false)
-    ).otherUser;
+    return (await ExecuteGraphQLRequest<LimitedUserData>(request, cancellationToken).ConfigureAwait(false)).otherUser;
   }
 
   /// <summary>
@@ -104,11 +100,7 @@ public partial class Client
   /// <param name="query">String to search for. Must be at least 3 characters</param>
   /// <param name="limit">Max number of users to return</param>
   /// <returns></returns>
-  public async Task<List<LimitedUser>> UserSearch(
-    CancellationToken cancellationToken,
-    string query,
-    int limit = 10
-  )
+  public async Task<List<LimitedUser>> UserSearch(CancellationToken cancellationToken, string query, int limit = 10)
   {
     var request = new GraphQLRequest
     {
@@ -129,9 +121,7 @@ public partial class Client
                     }",
       Variables = new { query, limit }
     };
-    return (
-      await ExecuteGraphQLRequest<UserSearchData>(request, cancellationToken).ConfigureAwait(false)
-    )
+    return (await ExecuteGraphQLRequest<UserSearchData>(request, cancellationToken).ConfigureAwait(false))
       .userSearch
       .items;
   }

@@ -89,16 +89,13 @@ public class Base : DynamicBase
   /// </summary>
   /// <param name="decompose">If true, will decompose the object in the process of hashing.</param>
   /// <returns></returns>
-  public string GetId(
-    bool decompose = false,
-    SerializerVersion serializerVersion = SerializerVersion.V2
-  )
+  public string GetId(bool decompose = false, SerializerVersion serializerVersion = SerializerVersion.V2)
   {
     if (serializerVersion == SerializerVersion.V1)
     {
       var (s, t) = Operations.GetSerializerInstance();
       if (decompose)
-        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
       var obj = JsonConvert.SerializeObject(this, t);
       return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
@@ -106,7 +103,7 @@ public class Base : DynamicBase
     {
       var s = new BaseObjectSerializerV2();
       if (decompose)
-        s.WriteTransports = new List<ITransport>() { new MemoryTransport() };
+        s.WriteTransports = new List<ITransport> { new MemoryTransport() };
       var obj = s.Serialize(this);
       return JObject.Parse(obj).GetValue(nameof(id)).ToString();
     }
@@ -134,8 +131,7 @@ public class Base : DynamicBase
     foreach (var prop in typedProps.Where(p => p.CanRead))
     {
       bool isIgnored =
-        prop.IsDefined(typeof(ObsoleteAttribute), true)
-        || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
+        prop.IsDefined(typeof(ObsoleteAttribute), true) || prop.IsDefined(typeof(JsonIgnoreAttribute), true);
       if (isIgnored)
         continue;
 
@@ -153,10 +149,7 @@ public class Base : DynamicBase
         // Simplified chunking count handling.
         var asList = value as IList;
         if (asList != null)
-        {
           count += asList.Count / chunkAttribute.MaxObjCountPerChunk;
-          continue;
-        }
       }
     }
 
@@ -244,9 +237,7 @@ public class Base : DynamicBase
 
     foreach (
       var kvp in GetMembers(
-        DynamicBaseMemberType.Instance
-          | DynamicBaseMemberType.Dynamic
-          | DynamicBaseMemberType.SchemaIgnored
+        DynamicBaseMemberType.Instance | DynamicBaseMemberType.Dynamic | DynamicBaseMemberType.SchemaIgnored
       )
     )
     {

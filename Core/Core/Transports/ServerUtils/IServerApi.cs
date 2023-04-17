@@ -10,11 +10,7 @@ internal interface IServerApi
 {
   public Task<string> DownloadSingleObject(string streamId, string objectId);
 
-  public Task DownloadObjects(
-    string streamId,
-    List<string> objectIds,
-    CbObjectDownloaded onObjectCallback
-  );
+  public Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback);
 
   public Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds);
 
@@ -22,9 +18,5 @@ internal interface IServerApi
 
   public Task UploadBlobs(string streamId, List<(string, string)> objects);
 
-  public Task DownloadBlobs(
-    string streamId,
-    List<string> blobIds,
-    CbBlobdDownloaded onBlobCallback
-  );
+  public Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobCallback);
 }

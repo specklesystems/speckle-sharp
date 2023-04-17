@@ -15,13 +15,13 @@ public class TraversalTests
       new()
       {
         id = "root",
-        ["child"] = new Base()
+        ["child"] = new Base
         {
           id = "traverse through me",
-          ["child"] = new Base()
+          ["child"] = new Base
           {
             id = "break on me, go no further",
-            ["child"] = new Base() { id = "should have ignored me" }
+            ["child"] = new Base { id = "should have ignored me" }
           }
         }
       };
@@ -38,13 +38,7 @@ public class TraversalTests
     Assert.That(ret.Where(x => x.id.Contains("should have ignored me")), Is.Empty);
   }
 
-  [
-    Test,
-    TestCase(5, 5),
-    TestCase(5, 10),
-    TestCase(10, 5),
-    Description("Tests breaking after a fixed number of items")
-  ]
+  [Test, TestCase(5, 5), TestCase(5, 10), TestCase(10, 5), Description("Tests breaking after a fixed number of items")]
   public void TestBreakerFixed(int nestDepth, int flattenDepth)
   {
     //Setup
@@ -67,11 +61,7 @@ public class TraversalTests
     Assert.That(ret, Is.Unique);
   }
 
-  [
-    Test,
-    Timeout(2000),
-    Description("Tests that the flatten function does not get stuck on circular references")
-  ]
+  [Test, Timeout(2000), Description("Tests that the flatten function does not get stuck on circular references")]
   public void TestCircularReference()
   {
     //Setup

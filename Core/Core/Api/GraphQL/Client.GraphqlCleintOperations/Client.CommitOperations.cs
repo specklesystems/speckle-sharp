@@ -28,18 +28,14 @@ public partial class Client
   /// <param name="streamId">Id of the stream to get the commit from</param>
   /// <param name="commitId">Id of the commit to get</param>
   /// <returns></returns>
-  public async Task<Commit> CommitGet(
-    CancellationToken cancellationToken,
-    string streamId,
-    string commitId
-  )
+  public async Task<Commit> CommitGet(CancellationToken cancellationToken, string streamId, string commitId)
   {
     var request = new GraphQLRequest
     {
       Query =
-        $@"query Stream($streamId: String!, $commitId: String!) {{
-                      stream(id: $streamId) {{
-                        commit(id: $commitId){{
+        @"query Stream($streamId: String!, $commitId: String!) {
+                      stream(id: $streamId) {
+                        commit(id: $commitId){
                           id,
                           message,
                           sourceApplication,
@@ -49,14 +45,13 @@ public partial class Client
                           createdAt,
                           parents,
                           authorName
-                        }}                       
-                      }}
-                    }}",
+                        }                       
+                      }
+                    }",
       Variables = new { streamId, commitId }
     };
 
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.commit;
   }
 
@@ -79,11 +74,7 @@ public partial class Client
   /// <param name="limit">Max number of commits to get</param>
   /// <returns></returns>
   /// <exception cref="Exception"></exception>
-  public async Task<List<Commit>> StreamGetCommits(
-    CancellationToken cancellationToken,
-    string streamId,
-    int limit = 10
-  )
+  public async Task<List<Commit>> StreamGetCommits(CancellationToken cancellationToken, string streamId, int limit = 10)
   {
     var request = new GraphQLRequest
     {
@@ -110,8 +101,7 @@ public partial class Client
       Variables = new { streamId, limit }
     };
 
-    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.commits.items;
   }
 
@@ -127,20 +117,15 @@ public partial class Client
 
   /// <inheritdoc cref="CommitCreate(CommitCreateInput)"/>
   /// <param name="cancellationToken"></param>
-  public async Task<string> CommitCreate(
-    CancellationToken cancellationToken,
-    CommitCreateInput commitInput
-  )
+  public async Task<string> CommitCreate(CancellationToken cancellationToken, CommitCreateInput commitInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation commitCreate($myCommit: CommitCreateInput!){ commitCreate(commit: $myCommit)}",
+      Query = @"mutation commitCreate($myCommit: CommitCreateInput!){ commitCreate(commit: $myCommit)}",
       Variables = new { myCommit = commitInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (string)res["commitCreate"];
   }
 
@@ -159,20 +144,15 @@ public partial class Client
   /// </summary>
   /// <param name="commitInput"></param>
   /// <returns>The stream's id.</returns>
-  public async Task<bool> CommitUpdate(
-    CancellationToken cancellationToken,
-    CommitUpdateInput commitInput
-  )
+  public async Task<bool> CommitUpdate(CancellationToken cancellationToken, CommitUpdateInput commitInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation commitUpdate($myCommit: CommitUpdateInput!){ commitUpdate(commit: $myCommit)}",
+      Query = @"mutation commitUpdate($myCommit: CommitUpdateInput!){ commitUpdate(commit: $myCommit)}",
       Variables = new { myCommit = commitInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["commitUpdate"];
   }
 
@@ -191,20 +171,15 @@ public partial class Client
   /// </summary>
   /// <param name="commitInput"></param>
   /// <returns></returns>
-  public async Task<bool> CommitDelete(
-    CancellationToken cancellationToken,
-    CommitDeleteInput commitInput
-  )
+  public async Task<bool> CommitDelete(CancellationToken cancellationToken, CommitDeleteInput commitInput)
   {
     var request = new GraphQLRequest
     {
-      Query =
-        @"mutation commitDelete($myCommit: CommitDeleteInput!){ commitDelete(commit: $myCommit)}",
+      Query = @"mutation commitDelete($myCommit: CommitDeleteInput!){ commitDelete(commit: $myCommit)}",
       Variables = new { myCommit = commitInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["commitDelete"];
   }
 
@@ -221,10 +196,7 @@ public partial class Client
 
   /// <inheritdoc cref="CommitReceived(CommitReceivedInput)"/>
   /// <param name="cancellationToken"></param>
-  public async Task<bool> CommitReceived(
-    CancellationToken cancellationToken,
-    CommitReceivedInput commitReceivedInput
-  )
+  public async Task<bool> CommitReceived(CancellationToken cancellationToken, CommitReceivedInput commitReceivedInput)
   {
     var request = new GraphQLRequest
     {
@@ -232,8 +204,7 @@ public partial class Client
       Variables = new { myInput = commitReceivedInput }
     };
 
-    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken)
-      .ConfigureAwait(false);
+    var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
 
     return (bool)res["commitReceive"];
   }

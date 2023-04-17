@@ -29,12 +29,7 @@ public class ServerApi : IDisposable, IServerApi
   private HashSet<int> RETRY_CODES = new() { 408, 502, 503, 504 };
   private int RETRY_COUNT = 3;
 
-  public ServerApi(
-    string baseUri,
-    string authorizationToken,
-    string blobStorageFolder,
-    int timeoutSeconds = 60
-  )
+  public ServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
   {
     BaseUri = baseUri;
     CancellationToken = CancellationToken.None;
@@ -42,7 +37,7 @@ public class ServerApi : IDisposable, IServerApi
     BlobStorageFolder = blobStorageFolder;
 
     Client = Http.GetHttpProxyClient(
-      new SpeckleHttpClientHandler() { AutomaticDecompression = DecompressionMethods.GZip }
+      new SpeckleHttpClientHandler { AutomaticDecompression = DecompressionMethods.GZip }
     );
 
     Client.BaseAddress = new Uri(baseUri);
@@ -54,7 +49,7 @@ public class ServerApi : IDisposable, IServerApi
       Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
   }
 
-  private int RetriedCount { get; set; } = 0;
+  private int RetriedCount { get; set; }
   public CancellationToken CancellationToken { get; set; }
   public bool CompressPayloads { get; set; } = true;
 
@@ -75,7 +70,7 @@ public class ServerApi : IDisposable, IServerApi
     CancellationToken.ThrowIfCancellationRequested();
 
     // Get root object
-    var rootHttpMessage = new HttpRequestMessage()
+    var rootHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}/{objectId}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -92,11 +87,7 @@ public class ServerApi : IDisposable, IServerApi
     return rootObjectStr;
   }
 
-  public async Task DownloadObjects(
-    string streamId,
-    List<string> objectIds,
-    CbObjectDownloaded onObjectCallback
-  )
+  public async Task DownloadObjects(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
   {
     if (objectIds.Count == 0)
       return;
@@ -131,8 +122,7 @@ public class ServerApi : IDisposable, IServerApi
       crtBatch.Add(objectId);
       if (crtBatch.Count >= BATCH_SIZE_HAS_OBJECTS)
       {
-        Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch)
-          .ConfigureAwait(false);
+        Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch).ConfigureAwait(false);
         foreach (KeyValuePair<string, bool> kv in batchResult)
           ret[kv.Key] = kv.Value;
         crtBatch = new List<string>(BATCH_SIZE_HAS_OBJECTS);
@@ -140,8 +130,7 @@ public class ServerApi : IDisposable, IServerApi
     }
     if (crtBatch.Count > 0)
     {
-      Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch)
-        .ConfigureAwait(false);
+      Dictionary<string, bool> batchResult = await HasObjectsImpl(streamId, crtBatch).ConfigureAwait(false);
       foreach (KeyValuePair<string, bool> kv in batchResult)
         ret[kv.Key] = kv.Value;
     }
@@ -196,9 +185,7 @@ public class ServerApi : IDisposable, IServerApi
     {
       List<(string, string)> multipart = multipartedObjects[i];
       int multipartSize = multipartedObjectsSize[i];
-      if (
-        crtRequestSize + multipartSize > MAX_REQUEST_SIZE || crtRequest.Count >= MAX_MULTIPART_COUNT
-      )
+      if (crtRequestSize + multipartSize > MAX_REQUEST_SIZE || crtRequest.Count >= MAX_MULTIPART_COUNT)
       {
         await UploadObjectsImpl(streamId, crtRequest).ConfigureAwait(false);
         OnBatchSent?.Invoke(crtObjectCount, crtRequestSize);
@@ -236,7 +223,7 @@ public class ServerApi : IDisposable, IServerApi
       multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
     }
 
-    var message = new HttpRequestMessage()
+    var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/stream/{streamId}/blob", UriKind.Relative),
       Method = HttpMethod.Post,
@@ -261,16 +248,12 @@ public class ServerApi : IDisposable, IServerApi
     }
   }
 
-  public async Task DownloadBlobs(
-    string streamId,
-    List<string> blobIds,
-    CbBlobdDownloaded onBlobDownloaded
-  )
+  public async Task DownloadBlobs(string streamId, List<string> blobIds, CbBlobdDownloaded onBlobDownloaded)
   {
     foreach (var blobId in blobIds)
       try
       {
-        var blobMessage = new HttpRequestMessage()
+        var blobMessage = new HttpRequestMessage
         {
           RequestUri = new Uri($"api/stream/{streamId}/blob/{blobId}", UriKind.Relative),
           Method = HttpMethod.Get
@@ -281,9 +264,7 @@ public class ServerApi : IDisposable, IServerApi
         response.Content.Headers.TryGetValues("Content-Disposition", out cdHeaderValues);
 
         var cdHeader = cdHeaderValues.First();
-        var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1]
-          .TrimStart('"')
-          .TrimEnd('"');
+        var fileName = cdHeader.Split(new[] { "filename=" }, StringSplitOptions.None)[1].TrimStart('"').TrimEnd('"');
 
         string fileLocation = Path.Combine(
           BlobStorageFolder,
@@ -301,17 +282,13 @@ public class ServerApi : IDisposable, IServerApi
       }
   }
 
-  private async Task DownloadObjectsImpl(
-    string streamId,
-    List<string> objectIds,
-    CbObjectDownloaded onObjectCallback
-  )
+  private async Task DownloadObjectsImpl(string streamId, List<string> objectIds, CbObjectDownloaded onObjectCallback)
   {
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var childrenHttpMessage = new HttpRequestMessage()
+    var childrenHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/getobjects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -320,11 +297,7 @@ public class ServerApi : IDisposable, IServerApi
     Dictionary<string, string> postParameters = new();
     postParameters.Add("objects", JsonConvert.SerializeObject(objectIds));
     string serializedPayload = JsonConvert.SerializeObject(postParameters);
-    childrenHttpMessage.Content = new StringContent(
-      serializedPayload,
-      Encoding.UTF8,
-      "application/json"
-    );
+    childrenHttpMessage.Content = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
     childrenHttpMessage.Headers.Add("Accept", "text/plain");
 
     HttpResponseMessage childrenHttpResponse = null;
@@ -334,9 +307,7 @@ public class ServerApi : IDisposable, IServerApi
         .ConfigureAwait(false);
     childrenHttpResponse.EnsureSuccessStatusCode();
 
-    Stream childrenStream = await childrenHttpResponse.Content
-      .ReadAsStreamAsync()
-      .ConfigureAwait(false);
+    Stream childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
 
     using (childrenStream)
     using (var reader = new StreamReader(childrenStream, Encoding.UTF8))
@@ -346,7 +317,7 @@ public class ServerApi : IDisposable, IServerApi
       {
         CancellationToken.ThrowIfCancellationRequested();
 
-        var pcs = line.Split(new char[] { '\t' }, 2);
+        var pcs = line.Split(new[] { '\t' }, 2);
         onObjectCallback(pcs[0], pcs[1]);
       }
     }
@@ -354,27 +325,20 @@ public class ServerApi : IDisposable, IServerApi
     // Console.WriteLine($"ServerApi::DownloadObjects({objectIds.Count}) request in {sw.ElapsedMilliseconds / 1000.0} sec");
   }
 
-  private async Task<Dictionary<string, bool>> HasObjectsImpl(
-    string streamId,
-    List<string> objectIds
-  )
+  private async Task<Dictionary<string, bool>> HasObjectsImpl(string streamId, List<string> objectIds)
   {
     CancellationToken.ThrowIfCancellationRequested();
 
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
     string objectsPostParameter = JsonConvert.SerializeObject(objectIds);
-    var payload = new Dictionary<string, string>() { { "objects", objectsPostParameter } };
+    var payload = new Dictionary<string, string> { { "objects", objectsPostParameter } };
     string serializedPayload = JsonConvert.SerializeObject(payload);
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
     HttpResponseMessage response = null;
     while (ShouldRetry(response))
       response = await Client
-        .PostAsync(
-          uri,
-          new StringContent(serializedPayload, Encoding.UTF8, "application/json"),
-          CancellationToken
-        )
+        .PostAsync(uri, new StringContent(serializedPayload, Encoding.UTF8, "application/json"), CancellationToken)
         .ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
@@ -390,16 +354,13 @@ public class ServerApi : IDisposable, IServerApi
     return hasObjects;
   }
 
-  private async Task UploadObjectsImpl(
-    string streamId,
-    List<List<(string, string)>> multipartedObjects
-  )
+  private async Task UploadObjectsImpl(string streamId, List<List<(string, string)>> multipartedObjects)
   {
     // Stopwatch sw = new Stopwatch(); sw.Start();
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var message = new HttpRequestMessage()
+    var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -452,11 +413,7 @@ public class ServerApi : IDisposable, IServerApi
     HttpResponseMessage response = null;
     while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
       response = await Client
-        .PostAsync(
-          uri,
-          new StringContent(payload, Encoding.UTF8, "application/json"),
-          CancellationToken
-        )
+        .PostAsync(uri, new StringContent(payload, Encoding.UTF8, "application/json"), CancellationToken)
         .ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
