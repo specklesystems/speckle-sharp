@@ -26,7 +26,8 @@
       CS1591;CS1573;CS1572;CS1570;CS1587;CS1574;CS1711;CS1734;
       CS8618;CS8602;CS8600;
       CS1998; IDE0007; CS0618
-      CA1054
+      CA1054;
+      NU1701
     </NoWarn>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->
