@@ -11,6 +11,8 @@ namespace Objects.BuiltElements.AdvanceSteel
 
     public Base userAttributes { get; set; }
 
+    public Base asteelProperties { get; set; }
+
     //[SchemaInfo("AsteelSpecialPart", "Creates a Advance Steel special part.", "Advance Steel", "Structure")]
     public AsteelSpecialPart()
     {
