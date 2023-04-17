@@ -1,13 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Mappings.Controls
+namespace DesktopUI2.Views.Mappings.Controls;
+
+public class RevitMEP : UserControl
 {
-  public partial class RevitMEP : UserControl
+  public RevitMEP()
   {
-    public RevitMEP()
-    {
-      AvaloniaXamlLoader.Load(this);
-    }
+    AvaloniaXamlLoader.Load(this);
   }
 }
