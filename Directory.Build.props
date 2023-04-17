@@ -19,6 +19,7 @@
     <!-- Code quality -->
     <EnableNetAnalyzers>true</EnableNetAnalyzers>
     <AnalysisLevel>latest-AllEnabledByDefault</AnalysisLevel>
+    <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
 
     <!-- Ignore some warnings for now -->
     <NoWarn>
@@ -38,7 +39,7 @@
     <Version Condition="$(Version) == ''">2.0.999-local</Version>
     <FileVersion Condition="$(FileVersion) == ''">2.0.999.0000</FileVersion>
     <AssemblyVersion Condition="$(AssemblyVersion) == ''">$(FileVersion)</AssemblyVersion>
-
+    
     <!-- Package info -->
     <PackageVersion Condition="$(PackageVersion) == ''">$(Version)</PackageVersion>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>

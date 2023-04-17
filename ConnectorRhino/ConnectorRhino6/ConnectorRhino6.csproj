@@ -1,77 +1,51 @@
 <Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-
   <PropertyGroup>
     <TargetFramework>net462</TargetFramework>
     <Title>SpeckleRhino</Title>
     <Description>Description of SpeckleRhino</Description>
     <TargetExt>.rhp</TargetExt>
     <Product>ConnectorRhino6</Product>
-    <RhinoMacLauncher>/Applications/Rhinoceros.app</RhinoMacLauncher>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AssemblyName>SpeckleConnectorRhino</AssemblyName>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
     <RootNamespace>SpeckleRhino</RootNamespace>
-    <PlatformTarget>x64</PlatformTarget>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     <UseWpf>true</UseWpf>
+    <DefineConstants>$(DefineConstants);RHINO6</DefineConstants>
+    <RhinoMacLauncher>/Applications/Rhinoceros.app</RhinoMacLauncher>
   </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
+    <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
+    <StartAction>Program</StartAction>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
+    <DefineConstants>$(DefineConstants);MAC</DefineConstants>
+  </PropertyGroup>
+
+  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared"/>
 
   <ItemGroup>
     <EmbeddedResource Include="EmbeddedResources\**\*"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18"/>
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18"/>
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18"/>
-    <PackageReference Include="RhinoCommon" Version="6.28.20199.17141">
-    </PackageReference>
-    <PackageReference Include="RhinoWindows" Version="6.28.20199.17141">
-    </PackageReference>
+    <PackageReference Include="RhinoCommon" Version="6.28.20199.17141"/>
+    <PackageReference Include="RhinoWindows" Version="6.28.20199.17141"/>
     <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference
-      Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper6\ConnectorGrasshopper6.csproj"/>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper6\ConnectorGrasshopper6.csproj"/>
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj"/>
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
   </ItemGroup>
+
   <ItemGroup>
     <Reference Include="PresentationCore"/>
     <Reference Include="PresentationFramework"/>
     <Reference Include="System.Xaml"/>
-  </ItemGroup>
-  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
-    <StartProgram>C:\Program Files\Rhino 6\System\Rhino.exe</StartProgram>
-    <StartArguments></StartArguments>
-    <StartAction>Program</StartAction>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>TRACE;RHINO6</DefineConstants>
-
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
-    <DefineConstants>TRACE;RHINO6;MAC</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>TRACE;RHINO6</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
-    <DefineConstants>TRACE;RHINO6;MAC</DefineConstants>
-  </PropertyGroup>
-  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems"
-    Label="Shared"
-    Condition="Exists('..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems')"/>
-  <ItemGroup>
-    <Compile
-      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Properties\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-    </Compile>
-    <Compile
-      Update="C:\Code\SpeckleNext\speckle-sharp\ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\Resources.Designer.cs">
-      <DesignTime>True</DesignTime>
-    </Compile>
   </ItemGroup>
 </Project>
