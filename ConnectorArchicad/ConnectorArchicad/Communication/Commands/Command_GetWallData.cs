@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Objects.BuiltElements.Archicad;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
-
+using Objects.BuiltElements.Archicad;
 namespace Archicad.Communication.Commands
 {
   sealed internal class GetWallData : ICommand<IEnumerable<ArchicadWall>>

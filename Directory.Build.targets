@@ -11,7 +11,7 @@
   repository.
   Such as, copying a converter to the Kit folder, or cleaning up the entire monorepo.
   -->
-  
+
   <PropertyGroup>
     <!-- Determines if the project should execute the CopyToKitFolder target. Can be overriden
     per-project.  -->

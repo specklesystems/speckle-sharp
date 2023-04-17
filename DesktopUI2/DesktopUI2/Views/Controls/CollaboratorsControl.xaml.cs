@@ -1,15 +1,15 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Controls
+namespace DesktopUI2.Views.Controls;
+
+public class CollaboratorsControl : UserControl
 {
-  public partial class CollaboratorsControl : UserControl
+  public CollaboratorsControl()
   {
-    public static CollaboratorsControl Instance { get; private set; }
-    public CollaboratorsControl()
-    {
-      AvaloniaXamlLoader.Load(this);
-      Instance = this;
-    }
+    AvaloniaXamlLoader.Load(this);
+    Instance = this;
   }
+
+  public static CollaboratorsControl Instance { get; private set; }
 }

@@ -1,22 +1,21 @@
 ﻿using System;
 using System.Drawing;
+using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
 
-namespace ConnectorGrasshopper
+namespace ConnectorGrasshopper;
+
+public class ConnectorGrasshopperInfo : GH_AssemblyInfo
 {
-  public class ConnectorGrasshopperInfo : GH_AssemblyInfo
-  {
-    public override string Name => ComponentCategories.PRIMARY_RIBBON;
+  public override string Name => ComponentCategories.PRIMARY_RIBBON;
 
-    public override Bitmap Icon => Properties.Resources.speckle_logo;
+  public override Bitmap Icon => Resources.speckle_logo;
 
-    public override string Description => "Grasshopper connectors for Speckle 2.0";
+  public override string Description => "Grasshopper connectors for Speckle 2.0";
 
-    public override Guid Id => new Guid("074ee50d-763d-495a-8be2-6934897dd6b1");
+  public override Guid Id => new("074ee50d-763d-495a-8be2-6934897dd6b1");
 
-    public override string AuthorName => "AEC Systems";
-    
-    
-    public override string AuthorContact => "hello@speckle.systems";
-  }
+  public override string AuthorName => "AEC Systems";
+
+  public override string AuthorContact => "hello@speckle.systems";
 }
