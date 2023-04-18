@@ -44,7 +44,7 @@ def runCommand(argv: List[str]):
                 "f",
             ]
             print("Building for external PR " + str(external_build))
-    createConfigFile(deploy, output_filepath, external_build)
+    createConfigFile(True, output_filepath, external_build)
 
 
 def setup():
@@ -173,6 +173,8 @@ def createConfigFile(deploy: bool, outputPath: str, external_build: bool):
 
         jobsToWait = []
         for jobName in jobs_before_deploy:
+            if jobName == "test-core":
+                continue
             job = getNewDeployJob(jobName)
             if job["deploy-connector-new"]:
                 jobsToWait.append(job["deploy-connector-new"]["name"])
