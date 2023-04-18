@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -37,8 +37,6 @@ public class ConnectorBindingsRhino : ConnectorBindings
   private static string UserStrings = "userStrings";
   private static string UserDictionary = "userDictionary";
   private static string ApplicationIdKey = "applicationId";
-  private static string LayersString = "Layers";
-  private static string ElementsString = "elements";
   public Dictionary<string, Base> StoredObjectParams = new(); // these are to store any parameters found on parent objects to add to fallback objects
 
   public Dictionary<string, Base> StoredObjects = new();
@@ -742,7 +740,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
       }
 
       // skip if it is the base commit collection
-      if (current.speckle_type.Contains("Collection") && string.IsNullOrEmpty(containerId))
+      if (current is Collection && string.IsNullOrEmpty(containerId))
         return null;
 
       //Handle convertable objects
@@ -779,8 +777,8 @@ public class ConnectorBindingsRhino : ConnectorBindings
         return stringBuilder; // this was probably the base commit collection
 
       string objectLayerName = string.Empty;
-      if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
-        objectLayerName = context.current["name"] as string;
+      if (context.propName.ToLower() == "elements" && context.current is Collection coll)
+        objectLayerName = coll.name;
       else if (context.propName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
         objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
       LayerIdRecurse(context.parent, stringBuilder);
@@ -1052,7 +1050,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
     int objCount = 0;
 
     state.SelectedObjectIds = GetObjectsFromFilter(state.Filter);
-    var commitObject = converter.ConvertToSpeckle(Doc); // create a collection base obj
+    var commitObject = converter.ConvertToSpeckle(Doc) as Collection; // create a collection base obj
 
     if (state.SelectedObjectIds.Count == 0)
       throw new InvalidOperationException(
@@ -1068,7 +1066,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
     // store converted commit objects and layers by layer paths
     var commitLayerObjects = new Dictionary<string, List<Base>>();
     var commitLayers = new Dictionary<string, Layer>();
-    var commitCollections = new Dictionary<string, Base>();
+    var commitCollections = new Dictionary<string, Collection>();
 
     // convert all commit objs
     foreach (var selectedId in state.SelectedObjectIds)
@@ -1113,16 +1111,16 @@ public class ConnectorBindingsRhino : ConnectorBindings
           case Layer o:
             applicationId = o.GetUserString(ApplicationIdKey) ?? selectedId;
             converted = converter.ConvertToSpeckle(o);
-            if (converted != null && !commitLayers.ContainsKey(o.FullPath))
+            if (converted is Collection layerCollection && !commitLayers.ContainsKey(o.FullPath))
             {
               commitLayers.Add(o.FullPath, o);
-              commitCollections.Add(o.FullPath, converted);
+              commitCollections.Add(o.FullPath, layerCollection);
             }
             break;
           case ViewInfo o:
             converted = converter.ConvertToSpeckle(o);
             if (converted != null)
-              ((List<Base>)commitObject[$"{ElementsString}"]).Add(converted);
+              commitObject.elements.Add(converted);
             break;
         }
       }
@@ -1163,14 +1161,14 @@ public class ConnectorBindingsRhino : ConnectorBindings
     foreach (var layerPath in commitLayerObjects.Keys)
       if (commitCollections.ContainsKey(layerPath))
       {
-        commitCollections[layerPath][$"{ElementsString}"] = commitLayerObjects[layerPath];
+        commitCollections[layerPath].elements = commitLayerObjects[layerPath];
       }
       else
       {
-        var collection = converter.ConvertToSpeckle(commitLayers[layerPath]);
+        var collection = converter.ConvertToSpeckle(commitLayers[layerPath]) as Collection;
         if (collection != null)
         {
-          collection[$"{ElementsString}"] = commitLayerObjects[layerPath];
+          collection.elements = commitLayerObjects[layerPath];
           commitCollections.Add(layerPath, collection);
         }
       }
@@ -1188,7 +1186,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
         var parentLayer = Doc.Layers.FindId(childLayer.ParentLayerId);
         if (parentLayer != null && !commitCollections.ContainsKey(parentLayer.FullPath))
         {
-          var parentCollection = converter.ConvertToSpeckle(parentLayer);
+          var parentCollection = converter.ConvertToSpeckle(parentLayer) as Collection;
           if (parentCollection != null)
           {
             commitCollections.Add(parentLayer.FullPath, parentCollection);
@@ -1210,14 +1208,14 @@ public class ConnectorBindingsRhino : ConnectorBindings
       // if there is no parent, attach to base commit layer prop directly
       if (parentIndex == -1)
       {
-        ((List<Base>)commitObject[$"{ElementsString}"]).Add(collection);
+        commitObject.elements.Add(collection);
         continue;
       }
 
       // get the parent collection, attach child, and update parent collection in commit collections
       var parentPath = path.Substring(0, parentIndex);
       var parent = commitCollections[parentPath];
-      ((List<Base>)parent[$"{ElementsString}"]).Add(commitCollections[path]);
+      parent.elements.Add(commitCollections[path]);
       commitCollections[parentPath] = parent;
     }
 
