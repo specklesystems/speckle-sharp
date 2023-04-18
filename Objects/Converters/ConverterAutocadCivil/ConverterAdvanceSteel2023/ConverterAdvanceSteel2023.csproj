@@ -1,37 +1,41 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
-		<AssemblyName>Objects.Converter.AdvanceSteel2023</AssemblyName>
-		<RootNamespace>Objects.Converter.AdvanceSteel</RootNamespace>
-		<DefineConstants>$(DefineConstants);ADVANCESTEEL2023</DefineConstants>
-		<PackageId>Speckle.Objects.Converter.AdvanceSteel2023</PackageId>
-		<Authors>Speckle</Authors>
-		<Company>Speckle</Company>
-		<Product>Objects.Converter.AdvanceSteel2023</Product>
-		<Description>Converter for Advance Steel 2023</Description>
-		<PackageTags>$(PackageTags) objects converter advancesteel</PackageTags>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.AdvanceSteel2023</AssemblyName>
+    <RootNamespace>Objects.Converter.AdvanceSteel</RootNamespace>
+    <DefineConstants>$(DefineConstants);ADVANCESTEEL2023</DefineConstants>
+    <PackageId>Speckle.Objects.Converter.AdvanceSteel2023</PackageId>
+    <Authors>Speckle</Authors>
+    <Company>Speckle</Company>
+    <Product>Objects.Converter.AdvanceSteel2023</Product>
+    <Description>Converter for Advance Steel 2023</Description>
+    <PackageTags>$(PackageTags) objects converter advancesteel</PackageTags>
     <CopyToKitFolder>true</CopyToKitFolder>
-	</PropertyGroup>
-
-  <Target Name="CopyTriangleToKitfolder" AfterTargets="CopyToKitFolder" Condition="'$(IsDesktopBuild)' == true">
-    <Message Text="Copying Triangle to kit folder"/>
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
-          Command="xcopy /Y /S &quot;$(TargetDir)TriangleNet.dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;"/>
-  </Target>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+  </PropertyGroup>
 
   <ItemGroup>
-		<PackageReference Include="MathNet.Numerics" Version="5.0.0" />
-		<PackageReference Include="MathNet.Spatial" Version="0.6.0" />
-		<PackageReference Include="PH.AdvanceSteel.API" Version="2023.0.3" />
-		<PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" />
-	</ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" IncludeAssets="compile;build"/>
+    <PackageReference Include="MathNet.Spatial" Version="0.6.0" IncludeAssets="compile;build"/>
+    <PackageReference Include="PH.AdvanceSteel.API" Version="2023.0.3" IncludeAssets="compile;build"/>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" IncludeAssets="compile;build"/>
+    <PackageReference Include="Speckle.Triangle" Version="1.0.0"
+      PrivateAssets="all"/>
+  </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-		<ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-		<ProjectReference Include="..\..\StructuralUtilities\Triangle\Triangle.csproj" />
-	</ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" IncludeAssets="compile;build"/>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" IncludeAssets="compile;build"/>
+  </ItemGroup>
 
-	<Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
+  <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems"
+    Label="Shared"/>
+
+  <Target Name="CopyTriangleToKitfolder" AfterTargets="CopyToKitFolder"
+    Condition="'$(IsDesktopBuild)' == true">
+    <Message Text="Copying Triangle to kit folder"/>
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
+      Command="xcopy /Y /S &quot;$(TargetDir)TriangleNet.dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;"/>
+  </Target>
 </Project>
