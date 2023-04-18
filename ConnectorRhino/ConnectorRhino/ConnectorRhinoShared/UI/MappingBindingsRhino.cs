@@ -174,34 +174,24 @@ public class MappingBindingsRhino : MappingsBindings
       return false;
     }
 
-    bool HasLinearBottomEdge(Brep brp) // TODO: also can support arc base lines!!!!
+    bool HasPlanarBottomEdge(Brep brp)
     {
-      var brpCurves = b.DuplicateNakedEdgeCurves(true, false); // see if the bottom curve is linear and parallel to worldxy
-      var bottomCrv = brpCurves
-        .Where(
-          o =>
-            new Vector3d(
-              o.PointAtEnd.X - o.PointAtStart.X,
-              o.PointAtEnd.Y - o.PointAtStart.Y,
-              o.PointAtEnd.Z - o.PointAtStart.Z
-            ).IsPerpendicularTo(Vector3d.ZAxis, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
-        )
-        ?.Aggregate((curMin, o) => curMin == null || o.PointAtStart.Z < curMin.PointAtStart.Z ? o : curMin);
-      if (bottomCrv != null)
+      var brpCurves = b.DuplicateNakedEdgeCurves(true, false); // see if the bottom curve is parallel to worldxy
+      var lowestZ = brp.GetBoundingBox(false).Min.Z;
+      var bottomCrv = brpCurves.Where(
+        o =>
+          new Vector3d(
+            o.PointAtEnd.X - o.PointAtStart.X,
+            o.PointAtEnd.Y - o.PointAtStart.Y,
+            o.PointAtEnd.Z - o.PointAtStart.Z
+          ).IsPerpendicularTo(Vector3d.ZAxis, RhinoDoc.ActiveDoc.ModelAbsoluteTolerance)
+          && o.PointAtStart.Z - lowestZ <= RhinoDoc.ActiveDoc.ModelAbsoluteTolerance
+      );
+      if (bottomCrv.Any() && (bottomCrv.First().IsLinear() || bottomCrv.First().IsArc()))
       {
-        if (bottomCrv.IsLinear())
-        {
-          return true;
-        }
-        else
-        {
-          return false;
-        }
+        return true;
       }
-      else
-      {
-        return false;
-      }
+      return false;
     }
 
     var surface = b.Surfaces.First();
@@ -220,7 +210,7 @@ public class MappingBindingsRhino : MappingsBindings
         }
         else
         {
-          if (HasLinearBottomEdge(b))
+          if (HasPlanarBottomEdge(b))
           {
             schemas.Add(new RevitWallViewModel());
           }
