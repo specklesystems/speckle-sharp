@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -169,7 +169,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
   {
     try
     {
-      var model = await GetCommit();
+      var model = await GetCommit().ConfigureAwait(true);
 
       if (model == null)
         return;
@@ -204,7 +204,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
     string referencedObject = StreamSelector.SelectedBranch.commits.items.FirstOrDefault().referencedObject;
 
     var transport = new ServerTransport(StreamSelector.SelectedStream.Account, StreamSelector.SelectedStream.Stream.id);
-    return await Operations.Receive(referencedObject, transport, disposeTransports: true);
+    return await Operations.Receive(referencedObject, transport, disposeTransports: true).ConfigureAwait(true);
   }
 
   private void GetTypesAndLevels(Base model)

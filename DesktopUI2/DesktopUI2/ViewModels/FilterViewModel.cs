@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls.Selection;
@@ -60,7 +60,7 @@ public class FilterViewModel : ReactiveObject
       isSearching = true;
       RestoreSelectedItems();
       isSearching = false;
-      this.RaisePropertyChanged("Summary");
+      this.RaisePropertyChanged(nameof(Summary));
     }
   }
 
@@ -101,7 +101,7 @@ public class FilterViewModel : ReactiveObject
         foreach (var r in e.DeselectedItems)
           Filter.Selection.Remove(r as string);
 
-        this.RaisePropertyChanged("Summary");
+        this.RaisePropertyChanged(nameof(Summary));
       }
     }
     catch (Exception ex)
@@ -155,9 +155,9 @@ public class FilterViewModel : ReactiveObject
           Filter.Selection.Remove(itemToRemove);
       }
 
-      this.RaisePropertyChanged("PropertyName");
-      this.RaisePropertyChanged("PropertyValue");
-      this.RaisePropertyChanged("PropertyOperator");
+      this.RaisePropertyChanged(nameof(PropertyName));
+      this.RaisePropertyChanged(nameof(PropertyValue));
+      this.RaisePropertyChanged(nameof(PropertyOperator));
     }
     catch (Exception ex)
     {
@@ -187,7 +187,7 @@ public class FilterViewModel : ReactiveObject
         return;
 
       Filter.Selection = objIds;
-      this.RaisePropertyChanged("Summary");
+      this.RaisePropertyChanged(nameof(Summary));
       //Globals.Notify("Object selection set.");
     }
     catch (Exception ex) { }
@@ -207,7 +207,7 @@ public class FilterViewModel : ReactiveObject
         if (Filter.Selection.FirstOrDefault(x => x == id) == null)
           Filter.Selection.Add(id);
       });
-      this.RaisePropertyChanged("Summary");
+      this.RaisePropertyChanged(nameof(Summary));
       //Globals.Notify("Object added.");
     }
     catch (Exception ex) { }
@@ -230,7 +230,7 @@ public class FilterViewModel : ReactiveObject
 
       //Globals.Notify($"{Filter.Selection.Count - filtered.Count} objects removed.");
       Filter.Selection = filtered;
-      this.RaisePropertyChanged("Summary");
+      this.RaisePropertyChanged(nameof(Summary));
     }
     catch (Exception ex) { }
   }
@@ -238,7 +238,7 @@ public class FilterViewModel : ReactiveObject
   public void ClearObjectSelection()
   {
     Filter.Selection = new List<string>();
-    this.RaisePropertyChanged("Summary");
+    this.RaisePropertyChanged(nameof(Summary));
     //Globals.Notify($"Selection cleared.");
   }
 
@@ -254,7 +254,7 @@ public class FilterViewModel : ReactiveObject
     set
     {
       (Filter as PropertySelectionFilter).PropertyName = value;
-      this.RaisePropertyChanged("Summary");
+      this.RaisePropertyChanged(nameof(Summary));
     }
   }
 
@@ -264,7 +264,7 @@ public class FilterViewModel : ReactiveObject
     set
     {
       (Filter as PropertySelectionFilter).PropertyValue = value;
-      this.RaisePropertyChanged("Summary");
+      this.RaisePropertyChanged(nameof(Summary));
     }
   }
 
@@ -274,7 +274,7 @@ public class FilterViewModel : ReactiveObject
     set
     {
       (Filter as PropertySelectionFilter).PropertyOperator = value;
-      this.RaisePropertyChanged("Summary");
+      this.RaisePropertyChanged(nameof(Summary));
     }
   }
 
