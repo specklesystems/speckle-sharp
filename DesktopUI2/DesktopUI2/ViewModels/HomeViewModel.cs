@@ -180,9 +180,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             if (SelectedFilter == Filter.favorite)
               result = await account.Client
                 .FavoriteStreamsGet(StreamGetCancelTokenSource.Token, 25)
-                .ConfigureAwait(false);
+                .ConfigureAwait(true);
             else
-              result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(false);
+              result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(true);
           }
           //SEARCH
           else
@@ -192,7 +192,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
               SelectedFilter = Filter.all;
             result = await account.Client
               .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
-              .ConfigureAwait(false);
+              .ConfigureAwait(true);
           }
 
           if (StreamGetCancelTokenSource.IsCancellationRequested)
@@ -245,7 +245,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   {
     try
     {
-      var hasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(false);
+      var hasUpdate = await Helpers.IsConnectorUpdateAvailable(Bindings.GetHostAppName()).ConfigureAwait(true);
 
       Notifications.Clear();
 
@@ -263,7 +263,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       foreach (var account in Accounts)
         try
         {
-          var result = await account.Client.GetAllPendingInvites().ConfigureAwait(false);
+          var result = await account.Client.GetAllPendingInvites().ConfigureAwait(true);
           foreach (var r in result)
             Notifications.Add(new NotificationViewModel(r, account.Client.ServerUrl));
         }
@@ -290,16 +290,16 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SearchStreams()
   {
-    if (await CheckIsOffline().ConfigureAwait(false))
+    if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
-    GetStreams().ConfigureAwait(false);
+    GetStreams().ConfigureAwait(true);
     this.RaisePropertyChanged(nameof(StreamsText));
   }
 
   private async Task<bool> CheckIsOffline()
   {
-    if (!await Http.UserHasInternet().ConfigureAwait(false))
+    if (!await Http.UserHasInternet().ConfigureAwait(true))
     {
       Dispatcher.UIThread.Post(
         () =>
@@ -328,7 +328,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   {
     try
     {
-      if (await CheckIsOffline().ConfigureAwait(false))
+      if (await CheckIsOffline().ConfigureAwait(true))
         return;
 
       //prevent subscriptions from being registered multiple times
@@ -344,7 +344,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       try
       {
         //first show cached accounts, then refresh them
-        await AccountManager.UpdateAccounts().ConfigureAwait(false);
+        await AccountManager.UpdateAccounts().ConfigureAwait(true);
         Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
       }
       catch (Exception ex)
@@ -407,7 +407,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       foreach (var stateId in SavedStreams.Where(x => x.Stream.id == e.id).Select(y => y.StreamState.Id).ToList())
         RemoveSavedStream(stateId);
 
-      GetStreams().ConfigureAwait(false);
+      GetStreams().ConfigureAwait(true);
 
       MainUserControl.NotificationManager.Show(
         new PopUpNotificationViewModel
@@ -526,7 +526,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   public async void AddAccountCommand()
   {
     InProgress = true;
-    await Utils.AddAccountCommand().ConfigureAwait(false);
+    await Utils.AddAccountCommand().ConfigureAwait(true);
     InProgress = false;
   }
 
@@ -583,7 +583,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   public async void NewStreamCommand()
   {
     var dialog = new NewStreamDialog(Accounts);
-    var result = await dialog.ShowDialog<bool>().ConfigureAwait(false);
+    var result = await dialog.ShowDialog<bool>().ConfigureAwait(true);
 
     if (result)
       try
@@ -598,8 +598,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
               isPublic = dialog.IsPublic
             }
           )
-          .ConfigureAwait(false);
-        var stream = await client.StreamGet(streamId).ConfigureAwait(false);
+          .ConfigureAwait(true);
+        var stream = await client.StreamGet(streamId).ConfigureAwait(true);
         var streamState = new StreamState(dialog.Account, stream);
 
         MainViewModel.RouterInstance.Navigate.Execute(
@@ -612,7 +612,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           new Dictionary<string, object> { { "name", "Stream Create" } }
         );
 
-        GetStreams().ConfigureAwait(false); //update streams
+        GetStreams().ConfigureAwait(true); //update streams
       }
       catch (Exception ex)
       {
@@ -629,7 +629,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   public async void AddFromUrlCommand()
   {
-    var clipboard = await Application.Current.Clipboard.GetTextAsync().ConfigureAwait(false);
+    var clipboard = await Application.Current.Clipboard.GetTextAsync().ConfigureAwait(true);
 
     Uri uri;
     string defaultText = "";
@@ -638,15 +638,15 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
     var dialog = new AddFromUrlDialog(defaultText);
 
-    var result = await dialog.ShowDialog<string>().ConfigureAwait(false);
+    var result = await dialog.ShowDialog<string>().ConfigureAwait(true);
 
     if (result != null)
       try
       {
         var sw = new StreamWrapper(result);
-        var account = await sw.GetAccount().ConfigureAwait(false);
+        var account = await sw.GetAccount().ConfigureAwait(true);
         var client = new Client(account);
-        var stream = await client.StreamGet(sw.StreamId).ConfigureAwait(false);
+        var stream = await client.StreamGet(sw.StreamId).ConfigureAwait(true);
         var streamState = new StreamState(account, stream);
         streamState.BranchName = sw.BranchName;
 
@@ -656,7 +656,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
           streamState.IsReceiver = true;
           streamState.CommitId = sw.CommitId;
 
-          var commit = await client.CommitGet(sw.StreamId, sw.CommitId).ConfigureAwait(false);
+          var commit = await client.CommitGet(sw.StreamId, sw.CommitId).ConfigureAwait(true);
           streamState.BranchName = commit.branchName;
         }
 
@@ -718,7 +718,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   private async void OpenStreamCommand(object streamAccountWrapper)
   {
-    if (await CheckIsOffline().ConfigureAwait(false))
+    if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
     if (streamAccountWrapper != null)
@@ -733,7 +733,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   private async void OpenSavedStreamCommand(object streamViewModel)
   {
-    if (await CheckIsOffline().ConfigureAwait(false))
+    if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
     if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
@@ -886,7 +886,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       //do not search favourite streams, too much hassle
       if (newValue == Filter.favorite && !string.IsNullOrEmpty(SearchQuery))
         SearchQuery = "";
-      await GetStreams().ConfigureAwait(false);
+      await GetStreams().ConfigureAwait(true);
     }
 
     this.RaisePropertyChanged(nameof(FilteredStreams));

@@ -66,7 +66,7 @@ public static class ConnectorHelpers
         onTotalChildrenCountKnown: c => progress.Max = c,
         disposeTransports: true
       )
-      .ConfigureAwait(false);
+      .ConfigureAwait(true);
 
     if (commitObject == null)
       throw new SpeckleException(
@@ -92,12 +92,12 @@ public static class ConnectorHelpers
       {
         var res = await state.Client
           .BranchGet(cancellationToken, state.StreamId, state.BranchName, 1)
-          .ConfigureAwait(false);
+          .ConfigureAwait(true);
         commit = res.commits.items.First();
       }
       else
       {
-        var res = await state.Client.CommitGet(cancellationToken, state.StreamId, state.CommitId).ConfigureAwait(false);
+        var res = await state.Client.CommitGet(cancellationToken, state.StreamId, state.CommitId).ConfigureAwait(true);
         commit = res;
       }
     }
@@ -129,7 +129,7 @@ public static class ConnectorHelpers
   {
     try
     {
-      await client.CommitReceived(cancellationToken, commitReceivedInput).ConfigureAwait(false);
+      await client.CommitReceived(cancellationToken, commitReceivedInput).ConfigureAwait(true);
     }
     catch (SpeckleException ex)
     {
@@ -156,7 +156,7 @@ public static class ConnectorHelpers
       message = commit.message,
       sourceApplication = sourceApplication
     };
-    await TryCommitReceived(cancellationToken, state.Client, commitReceivedInput, logLevel).ConfigureAwait(false);
+    await TryCommitReceived(cancellationToken, state.Client, commitReceivedInput, logLevel).ConfigureAwait(true);
   }
 
   //TODO: should this just be how `CommitCreate` id implemented?
@@ -174,7 +174,7 @@ public static class ConnectorHelpers
   {
     try
     {
-      var commitId = await client.CommitCreate(cancellationToken, commitInput).ConfigureAwait(false);
+      var commitId = await client.CommitCreate(cancellationToken, commitInput).ConfigureAwait(true);
       return commitId;
     }
     catch (OperationCanceledException)

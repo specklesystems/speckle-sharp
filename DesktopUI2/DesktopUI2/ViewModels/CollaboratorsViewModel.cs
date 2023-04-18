@@ -63,7 +63,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     if (SearchQuery.Length < 3)
       return;
 
-    if (!await Http.UserHasInternet().ConfigureAwait(false))
+    if (!await Http.UserHasInternet().ConfigureAwait(true))
     {
       Dispatcher.UIThread.Post(
         () =>
@@ -119,7 +119,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     ShowProgress = true;
 
     //exclude existing ones
-    var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(false)).Where(
+    var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
       x => !AddedUsers.Any(u => u.Id == x.id)
     );
     //exclude myself
@@ -160,7 +160,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SaveCommand()
   {
-    if (!await Http.UserHasInternet().ConfigureAwait(false))
+    if (!await Http.UserHasInternet().ConfigureAwait(true))
     {
       Dispatcher.UIThread.Post(
         () =>
@@ -198,7 +198,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
                 role = user.Role
               }
             )
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
           Analytics.TrackEvent(
             _stream.StreamState.Client.Account,
             Analytics.Events.DUIAction,
@@ -226,7 +226,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
                 role = user.Role
               }
             )
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
           Analytics.TrackEvent(
             _stream.StreamState.Client.Account,
             Analytics.Events.DUIAction,
@@ -253,7 +253,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
                 role = user.Role
               }
             )
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
           Analytics.TrackEvent(
             _stream.StreamState.Client.Account,
             Analytics.Events.DUIAction,
@@ -275,7 +275,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
             .StreamRevokePermission(
               new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId }
             )
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
           Analytics.TrackEvent(
             _stream.StreamState.Client.Account,
             Analytics.Events.DUIAction,
@@ -294,7 +294,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
         {
           await _stream.StreamState.Client
             .StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
           Analytics.TrackEvent(
             _stream.StreamState.Client.Account,
             Analytics.Events.DUIAction,
@@ -308,10 +308,10 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
     try
     {
-      _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId).ConfigureAwait(false);
+      _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId).ConfigureAwait(true);
       var pc = await _stream.StreamState.Client
         .StreamGetPendingCollaborators(_stream.StreamState.StreamId)
-        .ConfigureAwait(false);
+        .ConfigureAwait(true);
       _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
       _stream.StreamState.CachedStream = _stream.Stream;
 
@@ -355,7 +355,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
   private async void ChangeRoleSeletedUsersCommand()
   {
     var dialog = new ChangeRoleDialog();
-    var result = await dialog.ShowDialog<string>().ConfigureAwait(false);
+    var result = await dialog.ShowDialog<string>().ConfigureAwait(true);
 
     if (result != null)
       foreach (var item in SelectionModel.SelectedItems.ToList())

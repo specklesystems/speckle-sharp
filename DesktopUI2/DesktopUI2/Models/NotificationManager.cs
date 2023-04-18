@@ -121,7 +121,7 @@ public class NotificationManager : TemplatedControl, IManagedNotificationManager
     if (notification != null && notification.Expiration == TimeSpan.Zero)
       return;
 
-    await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(7)).ConfigureAwait(false);
+    await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(7)).ConfigureAwait(true);
 
     notificationControl.Close();
   }

@@ -61,6 +61,6 @@ public class ActivityViewModel : ReactiveObject
 
   private async Task<AccountViewModel> GetAuthorAsync()
   {
-    return await ApiUtils.GetAccount(_activity.userId, _client).ConfigureAwait(false);
+    return await ApiUtils.GetAccount(_activity.userId, _client).ConfigureAwait(true);
   }
 }

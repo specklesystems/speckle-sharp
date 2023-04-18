@@ -68,7 +68,7 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
       _fileName = fileName;
 
       if (_fileStream == null)
-        _fileStream = await GetOrCreateStreamState().ConfigureAwait(false);
+        _fileStream = await GetOrCreateStreamState().ConfigureAwait(true);
       // check if objs are selected and set streamstate filter
       var filters = Bindings.GetSelectionFilters();
       var selection = Bindings.GetSelectedObjects();
@@ -96,7 +96,7 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
       // send to stream
       // TODO: report conversions errors, empty commit etc
 
-      Id = await Task.Run(() => Bindings.SendStream(_fileStream, Progress)).ConfigureAwait(false);
+      Id = await Task.Run(() => Bindings.SendStream(_fileStream, Progress)).ConfigureAwait(true);
 
       if (!string.IsNullOrEmpty(Id))
       {
@@ -164,7 +164,7 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
     if (fileStream != null)
       return fileStream;
     // try to find stream in account
-    var foundStream = await SearchStreams(client).ConfigureAwait(false);
+    var foundStream = await SearchStreams(client).ConfigureAwait(true);
 
     if (foundStream != null)
       return new StreamState(account, foundStream) { BranchName = "main" };
@@ -179,8 +179,8 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
           isPublic = false
         }
       )
-      .ConfigureAwait(false);
-    var newStream = await client.StreamGet(streamId).ConfigureAwait(false);
+      .ConfigureAwait(true);
+    var newStream = await client.StreamGet(streamId).ConfigureAwait(true);
 
     return new StreamState(account, newStream) { BranchName = "main" };
   }
@@ -190,7 +190,7 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
     Stream stream = null;
     try
     {
-      var streams = await client.StreamSearch(_fileName).ConfigureAwait(false);
+      var streams = await client.StreamSearch(_fileName).ConfigureAwait(true);
       stream = streams.FirstOrDefault(s => s.name == _fileName);
     }
     catch (Exception ex)

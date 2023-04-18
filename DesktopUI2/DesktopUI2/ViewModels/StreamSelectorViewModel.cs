@@ -21,7 +21,7 @@ public class StreamSelectorViewModel : ReactiveObject
   {
     streamSearchDebouncer = Utils.Debounce(SearchStreams, 500);
     Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
-    GetStreams().ConfigureAwait(false);
+    GetStreams().ConfigureAwait(true);
   }
 
   //private void SelectionModel_SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs<AccountViewModel> e)
@@ -31,7 +31,7 @@ public class StreamSelectorViewModel : ReactiveObject
 
   private void SearchStreams()
   {
-    GetStreams().ConfigureAwait(false);
+    GetStreams().ConfigureAwait(true);
   }
 
   private async Task GetStreams()
@@ -58,12 +58,12 @@ public class StreamSelectorViewModel : ReactiveObject
 
         //NO SEARCH
         if (string.IsNullOrEmpty(SearchQuery))
-          result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(false);
+          result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(true);
         //SEARCH
         else
           result = await account.Client
             .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         if (StreamGetCancelTokenSource.IsCancellationRequested)
           return;
@@ -98,7 +98,7 @@ public class StreamSelectorViewModel : ReactiveObject
   {
     var client = new Client(SelectedStream.Account);
 
-    Branches = (await client.StreamGetBranches(SelectedStream.Stream.id, 100, 1).ConfigureAwait(false))
+    Branches = (await client.StreamGetBranches(SelectedStream.Stream.id, 100, 1).ConfigureAwait(true))
       .Where(x => x.commits.totalCount > 0)
       .ToList();
 

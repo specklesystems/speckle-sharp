@@ -140,7 +140,7 @@ public class AccountViewModel : ReactiveObject
     {
       HttpClient client = Http.GetHttpProxyClient();
       //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "Bearer " + Account.token);
-      var result = await client.SendAsync(request).ConfigureAwait(false);
+      var result = await client.SendAsync(request).ConfigureAwait(true);
 
       if (!result.IsSuccessStatusCode)
       {
@@ -153,7 +153,7 @@ public class AccountViewModel : ReactiveObject
 
       try
       {
-        var bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+        var bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(true);
         SetImage(bytes);
       }
       catch (Exception ex)

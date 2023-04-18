@@ -65,12 +65,12 @@ public class CommentViewModel : ReactiveObject
 
   private async Task<AccountViewModel> GetAuthorAsync()
   {
-    return await ApiUtils.GetAccount(Comment.authorId, _client).ConfigureAwait(false);
+    return await ApiUtils.GetAccount(Comment.authorId, _client).ConfigureAwait(true);
   }
 
   private async Task<Bitmap> GetScreenshotAsync()
   {
-    var screenshot = await _client.StreamGetCommentScreenshot(Comment.id, StreamId).ConfigureAwait(false);
+    var screenshot = await _client.StreamGetCommentScreenshot(Comment.id, StreamId).ConfigureAwait(true);
     byte[] bytes = Convert.FromBase64String(screenshot.Split(',')[1]);
     Stream stream = new MemoryStream(bytes);
     return new Bitmap(stream);

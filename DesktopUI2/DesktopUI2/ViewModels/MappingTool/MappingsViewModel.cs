@@ -169,7 +169,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
   {
     try
     {
-      var model = await GetCommit().ConfigureAwait(false);
+      var model = await GetCommit().ConfigureAwait(true);
 
       if (model == null)
         return;
@@ -204,7 +204,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
     string referencedObject = StreamSelector.SelectedBranch.commits.items.FirstOrDefault().referencedObject;
 
     var transport = new ServerTransport(StreamSelector.SelectedStream.Account, StreamSelector.SelectedStream.Stream.id);
-    return await Operations.Receive(referencedObject, transport, disposeTransports: true).ConfigureAwait(false);
+    return await Operations.Receive(referencedObject, transport, disposeTransports: true).ConfigureAwait(true);
   }
 
   private void GetTypesAndLevels(Base model)

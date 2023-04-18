@@ -46,7 +46,7 @@ public class LogInViewModel : ReactiveObject, IRoutableViewModel
   public async void AddAccountCommand()
   {
     IsLoggingIn = true;
-    await Utils.AddAccountCommand().ConfigureAwait(false);
+    await Utils.AddAccountCommand().ConfigureAwait(true);
     IsLoggingIn = false;
   }
 
