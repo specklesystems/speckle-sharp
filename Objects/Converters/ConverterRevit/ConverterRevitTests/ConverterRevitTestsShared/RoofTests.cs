@@ -47,7 +47,7 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.RoofBase>(AssertRoofEqual);
     }
 
-    private Task AssertRoofEqual(DB.RoofBase sourceElem, DB.RoofBase destElem)
+    private void AssertRoofEqual(DB.RoofBase sourceElem, DB.RoofBase destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -56,7 +56,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.ROOF_BASE_LEVEL_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM);
-      return default;
     }
 
     #endregion ToNative

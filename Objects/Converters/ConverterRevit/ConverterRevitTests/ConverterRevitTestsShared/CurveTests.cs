@@ -47,7 +47,7 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.CurveElement>(AssertCurveEqual);
     }
 
-    internal Task AssertCurveEqual(DB.CurveElement sourceElem, DB.CurveElement destElem)
+    internal void AssertCurveEqual(DB.CurveElement sourceElem, DB.CurveElement destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -63,8 +63,6 @@ namespace ConverterRevitTests
         Assert.Equal(sourceEnd.Y, destEnd.Y, 4);
         Assert.Equal(sourceEnd.Z, destEnd.Z, 4);
       }
-
-      return default;
     }
 
     #endregion

@@ -48,13 +48,11 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.DirectShape>(DirectShapeEqual);
     }
 
-    private Task DirectShapeEqual(DB.DirectShape sourceElem, DB.DirectShape destElem)
+    private void DirectShapeEqual(DB.DirectShape sourceElem, DB.DirectShape destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
       Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
-
-      return default;
     }
 
     #endregion

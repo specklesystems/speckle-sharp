@@ -38,7 +38,7 @@ namespace ConverterRevitTests
       await SpeckleToNative<DB.Duct>(AssertDuctEqual);
     }
 
-    private Task AssertDuctEqual(DB.Duct sourceElem, DB.Duct destElem)
+    private void AssertDuctEqual(DB.Duct sourceElem, DB.Duct destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -50,8 +50,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_CURVE_WIDTH_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_VELOCITY);
-
-      return default;
     }
     #endregion
 

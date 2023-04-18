@@ -57,11 +57,10 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.Wall>(AssertWallEqual);
     }
 
-    private Task AssertWallEqual(DB.Wall sourceElem, DB.Wall destElem)
+    private void AssertWallEqual(DB.Wall sourceElem, DB.Wall destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
-
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_OFFSET);
@@ -69,7 +68,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
-      return default;
     }
   }
 }

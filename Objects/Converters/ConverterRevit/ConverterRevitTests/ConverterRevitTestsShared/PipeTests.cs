@@ -35,7 +35,7 @@ namespace ConverterRevitTests
       await SpeckleToNative<DB.Pipe>(AssertPipeEqual);
     }
 
-    private Task AssertPipeEqual(DB.Pipe sourceElem, DB.Pipe destElem)
+    private void AssertPipeEqual(DB.Pipe sourceElem, DB.Pipe destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -44,7 +44,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.CURVE_ELEM_LENGTH);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_START_LEVEL_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_SYSTEM_CLASSIFICATION_PARAM);
-      return default;
     }
 
     #endregion ToNative

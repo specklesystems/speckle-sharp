@@ -60,10 +60,10 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.Element>(AssertOpeningEqual);
     }
 
-    private Task AssertOpeningEqual(DB.Element sourceElem, DB.Element destElem)
+    private void AssertOpeningEqual(DB.Element sourceElem, DB.Element destElem)
     {
       if (!(sourceElem is DB.Opening))
-        return default;
+        return;
 
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -71,7 +71,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-      return default;
     }
 
     #endregion ToNative

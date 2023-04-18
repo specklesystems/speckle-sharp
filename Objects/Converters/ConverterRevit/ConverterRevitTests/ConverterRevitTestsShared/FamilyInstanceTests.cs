@@ -67,7 +67,7 @@ namespace ConverterRevitTests
       await SpeckleToNativeUpdates<DB.Element>(AssertNestedEqual);
     }
 
-    internal Task AssertNestedEqual(DB.Element sourceElem, DB.Element destElem)
+    internal void AssertNestedEqual(DB.Element sourceElem, DB.Element destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -102,8 +102,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
-
-      return default;
     }
 
     #endregion

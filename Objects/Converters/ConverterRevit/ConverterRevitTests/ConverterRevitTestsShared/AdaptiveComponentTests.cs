@@ -48,7 +48,7 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.FamilyInstance>(AdaptiveComponentEqual);
     }
 
-    private Task AdaptiveComponentEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
+    private void AdaptiveComponentEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -58,7 +58,6 @@ namespace ConverterRevitTests
       var dist = (sourceElem.Location as LocationPoint).Point.DistanceTo((destElem.Location as LocationPoint).Point);
 
       Assert.True(dist<0.1);
-      return default;
     }
 
     #endregion

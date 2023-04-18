@@ -36,7 +36,7 @@ namespace ConverterRevitTests
       await SpeckleToNative<DB.Wire>(AssertWireEqual);
     }
 
-    private Task AssertWireEqual(DB.Wire sourceElem, DB.Wire destElem)
+    private void AssertWireEqual(DB.Wire sourceElem, DB.Wire destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -44,7 +44,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_ELEC_WIRE_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FABRIC_WIRE_LENGTH);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_ELEC_WIRE_ELEVATION);
-      return default;
     }
 
     #endregion ToNative

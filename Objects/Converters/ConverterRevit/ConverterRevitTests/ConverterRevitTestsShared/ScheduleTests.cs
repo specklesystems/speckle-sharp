@@ -41,14 +41,14 @@ namespace ConverterRevitTests
     [Trait("Schedule", "ToNative")]
     public async Task ScheduleToNative()
     {
-      await SpeckleToNative<DB.ViewSchedule>(AssertSchedulesEqual);
+      await SpeckleToNative<DB.ViewSchedule>(null, AssertSchedulesEqual);
     }
 
     [Fact]
     [Trait("Schedule", "ToNativeUpdates")]
     public async Task ScheduleToNativeUpdates()
     {
-      await SpeckleToNativeUpdates<DB.ViewSchedule>(AssertSchedulesEqual);
+      await SpeckleToNativeUpdates<DB.ViewSchedule>(null, AssertSchedulesEqual);
     }
 
     #endregion
