@@ -1,4 +1,4 @@
-﻿#if GRASSHOPPER
+#if GRASSHOPPER
 using Grasshopper.Kernel.Types;
 #endif
 using System;
@@ -532,8 +532,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             schemaBase = BrepToSpeckleWall(o, out notes);
             break;
 
-          // TODO: Do we need to add ProfileWall here??
-
           case "FaceWall":
             schemaBase = BrepToFaceWall(o, args);
             break;
@@ -566,8 +564,6 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           case "Wall":
             schemaBase = BrepToSpeckleWall(o.ToBrep(), out notes);
             break;
-
-          // TODO: Do we need to add ProfileWall here??
 
           case "FaceWall":
             schemaBase = BrepToFaceWall(o.ToBrep(), args);
