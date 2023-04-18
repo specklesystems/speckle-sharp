@@ -111,8 +111,8 @@ namespace Speckle.ConnectorRevit.Entry
       {
         // We need to hook into the AssemblyResolve event before doing anything else
         // or we'll run into unresolved issues loading dependencies
-        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
         AppInstance = new UIApplication(sender as Application);
+        AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
 
         Setup.Init(ConnectorBindingsRevit.HostAppNameVersion, ConnectorBindingsRevit.HostAppName);
 
