@@ -31,72 +31,113 @@ namespace Objects.Converter.Revit
         throw new Exception($"Existing element with UniqueId = {docObj.UniqueId} is of the type {docObj.GetType()}, not of the expected type, DB.ViewSchedule");
       }
 
-      var speckleIndexToRevitScheduleDataMap = new Dictionary<int, RevitScheduleData>();
+      var speckleIndexToRevitParameterDataMap = new Dictionary<int, RevitParameterData>();
       foreach (var columnInfo in RevitScheduleUtils.ScheduleColumnIteration(revitSchedule))
       {
-        AddToIndexToScheduleMap(columnInfo, speckleTable, speckleIndexToRevitScheduleDataMap);
+        AddToIndexToScheduleMap(columnInfo, speckleTable, speckleIndexToRevitParameterDataMap);
       }
 
       var originalTableIds = new FilteredElementCollector(Doc, revitSchedule.Id)
         .ToElementIds();
       foreach (var rowInfo in RevitScheduleUtils.ScheduleRowIteration(revitSchedule))
       {
-        UpdateDataInRow(rowInfo, originalTableIds, revitSchedule, speckleTable, speckleIndexToRevitScheduleDataMap);
+        UpdateDataInRow(rowInfo, originalTableIds, revitSchedule, speckleTable, speckleIndexToRevitParameterDataMap);
       }
 
       appObj.Update(convertedItem: docObj, createdId: docObj.UniqueId, status: ApplicationObject.State.Updated);
       return appObj;
     }
 
-    private static void AddToIndexToScheduleMap(ScheduleColumnIterationInfo info, DataTable speckleTable, Dictionary<int, RevitScheduleData> speckleIndexToRevitScheduleDataMap)
+    private static void AddToIndexToScheduleMap(ScheduleColumnIterationInfo info, DataTable speckleTable, Dictionary<int, RevitParameterData> speckleIndexToRevitParameterDataMap)
     {
       var fieldInt = info.field.ParameterId.IntegerValue;
-      var incomingColumnIndex = speckleTable.columnMetadata
-        .FindIndex(b => b["BuiltInParameterInteger"] is long paramInt && paramInt == fieldInt);
+
+      var incomingColumnIndex = -1;
+      for (var i = 0; i < speckleTable.columnMetadata.Count; i++)
+      {
+        long? paramId = null;
+        if (speckleTable.columnMetadata[i]["BuiltInParameterInteger"] is int paramIdInt)
+        {
+          paramId = paramIdInt;
+        }
+        if (speckleTable.columnMetadata[i]["BuiltInParameterInteger"] is long paramIdLong)
+        {
+          paramId = paramIdLong;
+        }
+
+        if (paramId == null) { continue; }
+        if (paramId != fieldInt) { continue; }
+
+        incomingColumnIndex = i;
+        break;
+      }
 
       if (incomingColumnIndex == -1)
       {
         return;
       }
 
-      var scheduleData = new RevitScheduleData
+      if (!(speckleTable.columnMetadata[incomingColumnIndex]["FieldType"] is string fieldType))
+      {
+        throw new Exception("Column does not have prop metadata. FieldType is missing");
+      }
+
+      var scheduleData = new RevitParameterData
       {
         ColumnIndex = info.columnIndex - info.numHiddenFields,
-        Parameter = (BuiltInParameter)fieldInt
+        Parameter = (BuiltInParameter)fieldInt,
+        IsTypeParam = fieldType == "ElementType"
       };
-      speckleIndexToRevitScheduleDataMap.Add(incomingColumnIndex, scheduleData);
+      speckleIndexToRevitParameterDataMap.Add(incomingColumnIndex, scheduleData);
     }
 
-    private void UpdateDataInRow(ScheduleRowIterationInfo info, ICollection<ElementId> originalTableIds, ViewSchedule revitSchedule, DataTable speckleTable, Dictionary<int, RevitScheduleData> speckleIndexToRevitScheduleDataMap)
+    private void UpdateDataInRow(ScheduleRowIterationInfo info, ICollection<ElementId> originalTableIds, ViewSchedule revitSchedule, DataTable speckleTable, Dictionary<int, RevitParameterData> speckleIndexToRevitParameterDataMap)
     {
       var elementIds = ElementApplicationIdsInRow(info.rowIndex, info.section, originalTableIds, revitSchedule, info.tableSection);
 
-      foreach (var id in elementIds)
-      {
-        var speckleObjectRowIndex = speckleTable.rowMetadata
-          .FindIndex(b => b["RevitApplicationIds"] is IList list && list.Contains(id));
+      if (elementIds.Count == 0) { return; }
 
-        if (speckleObjectRowIndex == -1)
+      var speckleObjectRowIndex = speckleTable.rowMetadata
+        .FindIndex(b => b["RevitApplicationIds"] is IList list && list.Contains(elementIds.First()));
+
+      foreach (var kvp in speckleIndexToRevitParameterDataMap)
+      {
+        var speckleObjectColumnIndex = kvp.Key;
+        var revitScheduleData = kvp.Value;
+
+        var existingValue = revitSchedule.GetCellText(info.tableSection, info.rowIndex, revitScheduleData.ColumnIndex);
+        var newValue = speckleTable.data[speckleObjectRowIndex][speckleObjectColumnIndex];
+        if (existingValue == newValue.ToString())
         {
           continue;
         }
 
-        foreach (var kvp in speckleIndexToRevitScheduleDataMap)
+        if (revitScheduleData.IsTypeParam)
         {
-          var speckleObjectColumnIndex = kvp.Key;
-          var revitScheduleData = kvp.Value;
-          var existingValue = revitSchedule.GetCellText(info.tableSection, info.rowIndex, revitScheduleData.ColumnIndex);
-          var newValue = speckleTable.data[speckleObjectRowIndex][speckleObjectColumnIndex];
-          if (existingValue == newValue.ToString())
+          Element element = null;
+          foreach (var id in elementIds)
           {
-            continue;
+            element = Doc.GetElement(elementIds.First());
+            if (element != null)
+            {
+              break;
+            }
           }
+          if (element == null) { return; }
 
-          var element = Doc.GetElement(id);
-          if (element == null)
-            continue;
+          var elementType = Doc.GetElement(element.GetTypeId());
+          TrySetParam(elementType, revitScheduleData.Parameter, newValue, "none");
+        }
+        else
+        {
+          foreach (var id in elementIds)
+          {
+            var element = Doc.GetElement(id);
+            if (element == null)
+              continue;
 
-          TrySetParam(element, revitScheduleData.Parameter, newValue, "none");
+            TrySetParam(element, revitScheduleData.Parameter, newValue, "none");
+          }
         }
       }
     }
@@ -305,10 +346,11 @@ namespace Objects.Converter.Revit
     }
   }
 
-  public struct RevitScheduleData
+  public struct RevitParameterData
   {
     public int ColumnIndex;
     public BuiltInParameter Parameter;
+    public bool IsTypeParam;
   }
   public struct ScheduleRowIterationInfo
   {
