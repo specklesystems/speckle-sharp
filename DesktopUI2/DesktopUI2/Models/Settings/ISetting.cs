@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Speckle.Newtonsoft.Json;
 
 namespace DesktopUI2.Models.Settings;

@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Layout;
 using ReactiveUI;
@@ -61,6 +61,6 @@ public class ActivityViewModel : ReactiveObject
 
   private async Task<AccountViewModel> GetAuthorAsync()
   {
-    return await ApiUtils.GetAccount(_activity.userId, _client);
+    return await ApiUtils.GetAccount(_activity.userId, _client).ConfigureAwait(false);
   }
 }

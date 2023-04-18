@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
@@ -121,7 +121,7 @@ public class NotificationManager : TemplatedControl, IManagedNotificationManager
     if (notification != null && notification.Expiration == TimeSpan.Zero)
       return;
 
-    await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(7));
+    await Task.Delay(notification?.Expiration ?? TimeSpan.FromSeconds(7)).ConfigureAwait(false);
 
     notificationControl.Close();
   }

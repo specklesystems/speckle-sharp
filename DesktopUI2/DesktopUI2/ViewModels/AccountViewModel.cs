@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -140,7 +140,7 @@ public class AccountViewModel : ReactiveObject
     {
       HttpClient client = Http.GetHttpProxyClient();
       //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "Bearer " + Account.token);
-      var result = await client.SendAsync(request);
+      var result = await client.SendAsync(request).ConfigureAwait(false);
 
       if (!result.IsSuccessStatusCode)
       {
@@ -153,7 +153,7 @@ public class AccountViewModel : ReactiveObject
 
       try
       {
-        var bytes = await result.Content.ReadAsByteArrayAsync();
+        var bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
         SetImage(bytes);
       }
       catch (Exception ex)
@@ -172,5 +172,10 @@ public class AccountViewModel : ReactiveObject
     Stream stream = new MemoryStream(resizedBytes);
     AvatarImage = new Bitmap(stream);
     this.RaisePropertyChanged(nameof(AvatarImage));
+  }
+
+  public async void DownloadImage(Uri url)
+  {
+    throw new NotImplementedException();
   }
 }

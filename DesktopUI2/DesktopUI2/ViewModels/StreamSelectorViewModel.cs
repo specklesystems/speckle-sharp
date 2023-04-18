@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -57,11 +57,13 @@ public class StreamSelectorViewModel : ReactiveObject
         var result = new List<Stream>();
 
         //NO SEARCH
-        if (SearchQuery == "")
-          result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25);
+        if (string.IsNullOrEmpty(SearchQuery))
+          result = await account.Client.StreamsGet(StreamGetCancelTokenSource.Token, 25).ConfigureAwait(false);
         //SEARCH
         else
-          result = await account.Client.StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25);
+          result = await account.Client
+            .StreamSearch(StreamGetCancelTokenSource.Token, SearchQuery, 25)
+            .ConfigureAwait(false);
 
         if (StreamGetCancelTokenSource.IsCancellationRequested)
           return;
@@ -96,7 +98,7 @@ public class StreamSelectorViewModel : ReactiveObject
   {
     var client = new Client(SelectedStream.Account);
 
-    Branches = (await client.StreamGetBranches(SelectedStream.Stream.id, 100, 1))
+    Branches = (await client.StreamGetBranches(SelectedStream.Stream.id, 100, 1).ConfigureAwait(false))
       .Where(x => x.commits.totalCount > 0)
       .ToList();
 

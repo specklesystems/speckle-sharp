@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ReactiveUI;
 using Speckle.Core.Logging;
 using Splat;
@@ -46,7 +46,7 @@ public class LogInViewModel : ReactiveObject, IRoutableViewModel
   public async void AddAccountCommand()
   {
     IsLoggingIn = true;
-    await Utils.AddAccountCommand();
+    await Utils.AddAccountCommand().ConfigureAwait(false);
     IsLoggingIn = false;
   }
 
