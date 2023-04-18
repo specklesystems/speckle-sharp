@@ -11,6 +11,7 @@
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <UseWPF>true</UseWPF>
     <DefineConstants>$(DefineConstants);REVIT2020</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   
   <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
