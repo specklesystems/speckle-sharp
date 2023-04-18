@@ -1,23 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using ElementType = Autodesk.Revit.DB.ElementType;
-
-using Speckle.Core.Helpers;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
-
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Helpers;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
+using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
+using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -44,7 +41,7 @@ namespace Objects.Converter.Revit
       }
 
       // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      if (ContextObjects.ContainsKey(host.UniqueId))
       {
         return false;
       }
@@ -62,7 +59,7 @@ namespace Objects.Converter.Revit
         return false;
 
       // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      if (ContextObjects.ContainsKey(host.UniqueId))
       {
         // there are certain elements in Revit that can be a host to another element
         // yet not know it.
@@ -90,10 +87,9 @@ namespace Objects.Converter.Revit
       if (!hostedElementIds.Any())
         return;
 
-      var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId);
-      if (elementIndex != -1)
+      if (ContextObjects.ContainsKey(host.UniqueId))
       {
-        ContextObjects.RemoveAt(elementIndex);
+        ContextObjects.Remove(host.UniqueId);
       }
       GetHostedElementsFromIds(@base, host, hostedElementIds, out notes);
     }
@@ -106,9 +102,7 @@ namespace Objects.Converter.Revit
       foreach (var elemId in hostedElementIds)
       {
         var element = host.Document.GetElement(elemId);
-        var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
-
-        if (isSelectedInContextObjects == -1)
+        if (ContextObjects.ContainsKey(element.UniqueId))
         {
           continue;
         }
@@ -119,7 +113,7 @@ namespace Objects.Converter.Revit
           var obj = ConvertToSpeckle(element);
           if (obj != null)
           {
-            ContextObjects.RemoveAt(isSelectedInContextObjects);
+            ContextObjects.Remove(element.UniqueId);
             reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
             convertedHostedElements.Add(obj);
             ConvertedObjectsList.Add(obj.applicationId);
@@ -785,19 +779,21 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
-      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
+
 
       Element element = null;
-      if (@ref == null)
+      if (!PreviousContextObjects.ContainsKey(applicationId))
       {
         //element was not cached in a PreviousContex but might exist in the model
         //eg: user sends some objects, moves them, receives them 
         element = Doc.GetElement(applicationId);
       }
-      else if (@ref.CreatedIds.Any())
+      else
       {
+        var @ref = PreviousContextObjects[applicationId];
         //return the cached object, if it's still in the model
-        element = Doc.GetElement(@ref.CreatedIds.First());
+        if (@ref.CreatedIds.Any())
+          element = Doc.GetElement(@ref.CreatedIds.First());
       }
 
       return element;
@@ -809,9 +805,8 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return elements;
 
-      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
-      if (@ref == null)
+      if (!PreviousContextObjects.ContainsKey(applicationId))
       {
         //element was not cached in a PreviousContex but might exist in the model
         //eg: user sends some objects, moves them, receives them 
@@ -821,6 +816,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
+        var @ref = PreviousContextObjects[applicationId];
         //return the cached objects, if they are still in the model
         foreach (var id in @ref.CreatedIds)
         {
@@ -908,7 +904,7 @@ namespace Objects.Converter.Revit
       switch (type)
       {
         case ProjectBase: // note that the project base (ui) rotation is registered on the survey pt, not on the base point
-            referencePointTransform = DB.Transform.CreateTranslation(projectPoint.Position);
+          referencePointTransform = DB.Transform.CreateTranslation(projectPoint.Position);
           break;
         case Survey:
           // note that the project base (ui) rotation is registered on the survey pt, not on the base point
@@ -975,8 +971,8 @@ namespace Objects.Converter.Revit
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
-      var shafts = new List<RevitShaft>();
-      ContextObjects.ForEach(o => shafts.AddRange(o.Converted.Where(c => c is RevitShaft).Cast<RevitShaft>()));
+      var shafts = ContextObjects.Values.SelectMany(x => x.Converted.Where(y => y is RevitShaft).Cast<RevitShaft>()).ToList();
+
       openings.AddRange(shafts);
 
       foreach (var @void in speckleElement["voids"] as List<ICurve>)
