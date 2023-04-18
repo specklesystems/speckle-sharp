@@ -138,9 +138,6 @@ def createConfigFile(deploy: bool, outputPath: str, external_build: bool):
                     n = jobAttrs["name"]
                     jobs_before_deploy.append(n)
                     print(f"    Added connector job: {n}")
-                    # Add tags if marked for deployment
-                    if deploy:
-                        jobAttrs["installer"] = True
                 if deploy:
                     jobAttrs["filters"] = getTagFilter([connector])
 
