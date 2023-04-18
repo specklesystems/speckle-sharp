@@ -210,7 +210,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   deploy-connector-new:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:7.0
+      - image: mcr.microsoft.com/dotnet/sdk:6.0
     parameters:
       slug:
         type: string
