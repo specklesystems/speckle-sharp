@@ -4,30 +4,29 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using ReactiveUI;
 
-namespace DesktopUI2.Views.Filters
+namespace DesktopUI2.Views.Filters;
+
+public class TreeFilterView : ReactiveUserControl<FilterViewModel>
 {
-  public partial class TreeFilterView : ReactiveUserControl<FilterViewModel>
+  public TreeFilterView()
   {
-    public TreeFilterView()
-    {
-      InitializeComponent();
-    }
+    InitializeComponent();
+  }
 
-    private void InitializeComponent()
-    {
-      AvaloniaXamlLoader.Load(this);
-    }
+  private void InitializeComponent()
+  {
+    AvaloniaXamlLoader.Load(this);
+  }
 
-    private void TreeView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+  private void TreeView_OnSelectionChanged(object sender, SelectionChangedEventArgs e)
+  {
+    try
     {
-      try
-      {
-        (this.DataContext as FilterViewModel).RaisePropertyChanged("Summary");
-      }
-      catch
-      {
-        // ignore
-      }
+      (DataContext as FilterViewModel).RaisePropertyChanged("Summary");
+    }
+    catch
+    {
+      // ignore
     }
   }
 }

@@ -33,7 +33,7 @@ namespace Objects.Converter.RhinoGh
   {
     public Node PointToSpeckleNode(RH.Point point)
     {
-        return new Node((Point)ConvertToSpeckle(point)) { units = ModelUnits };
+      return new Node((Point)ConvertToSpeckle(point)) { units = ModelUnits };
     }
 
     public Element1D CurveToSpeckleElement1D(RH.Curve curve)
@@ -48,7 +48,7 @@ namespace Objects.Converter.RhinoGh
 
     public Element3D MeshToSpeckleElement3D(RH.Mesh mesh)
     {
-        return new Element3D((Mesh)ConvertToSpeckle(mesh)) { units = ModelUnits };
+      return new Element3D((Mesh)ConvertToSpeckle(mesh)) { units = ModelUnits };
     }
   }
 }

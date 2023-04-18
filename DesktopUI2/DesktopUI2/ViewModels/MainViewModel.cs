@@ -1,168 +1,151 @@
-﻿using Avalonia;
+﻿using System;
+using System.Linq;
+using System.Reactive;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.Views.Pages;
 using Material.Styles.Themes;
 using ReactiveUI;
-using Serilog;
 using Speckle.Core.Credentials;
 using Speckle.Core.Logging;
 using Splat;
-using System;
-using System.Linq;
-using System.Reactive;
-using System.Threading.Tasks;
 
-namespace DesktopUI2.ViewModels
+namespace DesktopUI2.ViewModels;
+
+public class MainViewModel : ViewModelBase, IScreen
 {
-  public class MainViewModel : ViewModelBase, IScreen
+  private UserControl _dialogBody;
+
+  public MainViewModel(ConnectorBindings _bindings)
   {
-    public string TitleFull => "Speckle for " + Bindings.GetHostAppNameVersion();
-    public RoutingState Router { get; private set; }
+    Bindings = _bindings;
+    Init();
+  }
 
-    public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
+  public MainViewModel()
+  {
+    Init();
+  }
 
-    public static RoutingState RouterInstance { get; private set; }
+  public string TitleFull => "Speckle for " + Bindings.GetHostAppNameVersion();
 
-    public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
+  public ConnectorBindings Bindings { get; private set; } = new DummyBindings();
 
-    public static MainViewModel Instance { get; private set; }
+  public static RoutingState RouterInstance { get; private set; }
 
-    public static HomeViewModel Home { get; private set; }
+  public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
 
-    public bool DialogVisible
+  public static MainViewModel Instance { get; private set; }
+
+  public static HomeViewModel Home { get; private set; }
+
+  public bool DialogVisible => _dialogBody != null;
+
+  public double DialogOpacity => _dialogBody != null ? 1 : 0;
+
+  public UserControl DialogBody
+  {
+    get => _dialogBody;
+    set
     {
-      get => _dialogBody != null;
+      this.RaiseAndSetIfChanged(ref _dialogBody, value);
+      this.RaisePropertyChanged("DialogVisible");
+      this.RaisePropertyChanged("DialogOpacity");
     }
+  }
 
-    public double DialogOpacity
+  public RoutingState Router { get; private set; }
+
+  private void Init()
+  {
+    Instance = this;
+    Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+
+    RxApp.DefaultExceptionHandler = Observer.Create<Exception>(CatchReactiveException);
+    TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+
+    Router = new RoutingState();
+
+    Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<StreamViewModel>));
+    Locator.CurrentMutable.Register(() => new HomeView(), typeof(IViewFor<HomeViewModel>));
+    Locator.CurrentMutable.Register(() => new OneClickView(), typeof(IViewFor<OneClickViewModel>));
+    Locator.CurrentMutable.Register(() => new CollaboratorsView(), typeof(IViewFor<CollaboratorsViewModel>));
+    Locator.CurrentMutable.Register(() => new SettingsView(), typeof(IViewFor<SettingsPageViewModel>));
+    Locator.CurrentMutable.Register(() => new NotificationsView(), typeof(IViewFor<NotificationsViewModel>));
+    Locator.CurrentMutable.Register(() => new LogInView(), typeof(IViewFor<LogInViewModel>));
+    Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
+
+    RouterInstance = Router; // makes the router available app-wide
+
+    var config = ConfigManager.Load();
+    ChangeTheme(config.DarkTheme);
+
+    //reusing the same view model not to lose its state
+    Home = new HomeViewModel(this);
+    NavigateToDefaultScreen();
+  }
+
+  public void NavigateToDefaultScreen()
+  {
+    var config = ConfigManager.Load();
+
+    if (!AccountManager.GetAccounts().Any())
     {
-      get => _dialogBody != null ? 1 : 0;
+      Router.Navigate.Execute(new LogInViewModel(this));
     }
-
-    private UserControl _dialogBody;
-    public UserControl DialogBody
+    else if (config.OneClickMode)
     {
-      get => _dialogBody;
-      set
-      {
-
-        this.RaiseAndSetIfChanged(ref _dialogBody, value);
-        this.RaisePropertyChanged("DialogVisible");
-        this.RaisePropertyChanged("DialogOpacity");
-      }
-
+      Router.Navigate.Execute(new OneClickViewModel(this));
     }
-
-
-    public MainViewModel(ConnectorBindings _bindings)
+    else
     {
-      Bindings = _bindings;
-      Init();
+      Home.Refresh();
+      Router.Navigate.Execute(Home);
     }
-    public MainViewModel()
-    {
+  }
 
-      Init();
-    }
+  //https://github.com/AvaloniaUI/Avalonia/issues/5290
+  private void CatchReactiveException(Exception ex)
+  {
+    SpeckleLog.Logger.Fatal(ex, "Reactive exception handler observed an exception {exceptionMessage}", ex.Message);
+  }
 
-    private void Init()
-    {
+  //https://docs.avaloniaui.net/docs/getting-started/unhandledexceptions
+  private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
+  {
+    SpeckleLog.Logger.Fatal(e.Exception, "Error in async task {error}", e.Exception.Message);
+  }
 
-      Instance = this;
-      Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+  public static void GoHome()
+  {
+    if (RouterInstance == null)
+      return;
 
-      RxApp.DefaultExceptionHandler = Observer.Create<Exception>(CatchReactiveException);
-      TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
+    var config = ConfigManager.Load();
+    if (!config.OneClickMode)
+      RouterInstance.Navigate.Execute(Home);
+  }
 
+  public static void CloseDialog()
+  {
+    Instance.DialogBody = null;
+  }
 
-      Router = new RoutingState();
+  internal void ChangeTheme(bool isDark)
+  {
+    if (Application.Current == null)
+      return;
 
-      Locator.CurrentMutable.Register(() => new StreamEditView(), typeof(IViewFor<StreamViewModel>));
-      Locator.CurrentMutable.Register(() => new HomeView(), typeof(IViewFor<HomeViewModel>));
-      Locator.CurrentMutable.Register(() => new OneClickView(), typeof(IViewFor<OneClickViewModel>));
-      Locator.CurrentMutable.Register(() => new CollaboratorsView(), typeof(IViewFor<CollaboratorsViewModel>));
-      Locator.CurrentMutable.Register(() => new SettingsView(), typeof(IViewFor<SettingsPageViewModel>));
-      Locator.CurrentMutable.Register(() => new NotificationsView(), typeof(IViewFor<NotificationsViewModel>));
-      Locator.CurrentMutable.Register(() => new LogInView(), typeof(IViewFor<LogInViewModel>));
-      Locator.CurrentMutable.Register(() => Bindings, typeof(ConnectorBindings));
+    var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
+    var theme = materialTheme.CurrentTheme;
 
-      RouterInstance = Router; // makes the router available app-wide
+    if (isDark)
+      theme.SetBaseTheme(Theme.Light);
+    else
+      theme.SetBaseTheme(Theme.Dark);
 
-      var config = ConfigManager.Load();
-      ChangeTheme(config.DarkTheme);
-
-      //reusing the same view model not to lose its state
-      Home = new HomeViewModel(this);
-      NavigateToDefaultScreen();
-    }
-
-    public void NavigateToDefaultScreen()
-    {
-      var config = ConfigManager.Load();
-
-      if (!AccountManager.GetAccounts().Any())
-      {
-        Router.Navigate.Execute(new LogInViewModel(this));
-      }
-      else if (config.OneClickMode)
-      {
-        Router.Navigate.Execute(new OneClickViewModel(this));
-      }
-      else
-      {
-        Home.Refresh();
-        Router.Navigate.Execute(Home);
-      }
-    }
-
-    //https://github.com/AvaloniaUI/Avalonia/issues/5290
-    private void CatchReactiveException(Exception ex)
-    {
-      SpeckleLog.Logger.Fatal(ex, "Reactive exception handler observed an exception {exceptionMessage}", ex.Message);
-    }
-
-    //https://docs.avaloniaui.net/docs/getting-started/unhandledexceptions
-    private static void TaskScheduler_UnobservedTaskException(object sender, UnobservedTaskExceptionEventArgs e)
-    {
-      SpeckleLog.Logger.Fatal(e.Exception, "Error in async task {error}", e.Exception.Message);
-    }
-
-
-    public static void GoHome()
-    {
-      if (RouterInstance == null)
-        return;
-
-      var config = ConfigManager.Load();
-      if (!config.OneClickMode)
-      {
-        RouterInstance.Navigate.Execute(Home);
-      }
-    }
-
-    public static void CloseDialog()
-    {
-      Instance.DialogBody = null;
-    }
-
-    internal void ChangeTheme(bool isDark)
-    {
-
-      if (Application.Current == null)
-        return;
-
-      var materialTheme = Application.Current.LocateMaterialTheme<MaterialThemeBase>();
-      var theme = materialTheme.CurrentTheme;
-
-      if (isDark)
-        theme.SetBaseTheme(Theme.Light);
-      else
-        theme.SetBaseTheme(Theme.Dark);
-
-      materialTheme.CurrentTheme = theme;
-    }
-
-
+    materialTheme.CurrentTheme = theme;
   }
 }
