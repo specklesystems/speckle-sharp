@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
@@ -48,12 +48,13 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.DirectShape>(DirectShapeEqual);
     }
 
-    private void DirectShapeEqual(DB.DirectShape sourceElem, DB.DirectShape destElem)
+    private Task DirectShapeEqual(DB.DirectShape sourceElem, DB.DirectShape destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
       Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
 
+      return default;
     }
 
     #endregion

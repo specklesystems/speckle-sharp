@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -47,7 +47,7 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.Floor>(AssertFloorEqual);
     }
 
-    private void AssertFloorEqual(DB.Floor sourceElem, DB.Floor destElem)
+    private Task AssertFloorEqual(DB.Floor sourceElem, DB.Floor destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -56,6 +56,8 @@ namespace ConverterRevitTests
       //AssertEqualParam(sourceElem, destElem, BuiltInParameter.HOST_PERIMETER_COMPUTED);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_ATTR_THICKNESS_PARAM);
+
+      return default;
     }
 
     #endregion ToNative

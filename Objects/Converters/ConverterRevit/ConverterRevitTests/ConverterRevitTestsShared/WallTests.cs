@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ namespace ConverterRevitTests
       await SelectionToNative<DB.Wall>(AssertWallEqual);
     }
 
-    private void AssertWallEqual(DB.Wall sourceElem, DB.Wall destElem)
+    private Task AssertWallEqual(DB.Wall sourceElem, DB.Wall destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -69,6 +69,7 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
+      return default;
     }
   }
 }

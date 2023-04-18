@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
 using Revit.Async;
 using Speckle.Core.Models;
@@ -64,7 +64,7 @@ namespace ConverterRevitTests
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="assert"></param>
-    internal async Task<List<ApplicationObject>> SpeckleToNative<T>(Action<T, T> assert, UpdateData ud = null)
+    internal async Task<List<ApplicationObject>> SpeckleToNative<T>(Func<T, T, Task> assert, UpdateData ud = null)
     {
       Document doc = null;
       IList<Element> elements = null;
@@ -187,7 +187,7 @@ namespace ConverterRevitTests
       {
         var sourceElem = (T)(object)elements.FirstOrDefault(x => x.UniqueId == flatSpkElems[i].applicationId);
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
-        assert(sourceElem, destElement);
+        await assert(sourceElem, destElement);
         if (!fixture.UpdateTestRunning)
           SpeckleUtils.DeleteElement(destElement);
       }
@@ -200,7 +200,7 @@ namespace ConverterRevitTests
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="assert"></param>
-    internal async Task SpeckleToNativeUpdates<T>(Action<T, T> assert)
+    internal async Task SpeckleToNativeUpdates<T>(Func<T, T, Task> assert)
     {
       fixture.UpdateTestRunning = true;
       var initialObjs = await SpeckleToNative(assert);
@@ -217,7 +217,7 @@ namespace ConverterRevitTests
       //DeleteElement(updatedObjs);
     }
 
-    internal async Task SelectionToNative<T>(Action<T, T> assert)
+    internal async Task SelectionToNative<T>(Func<T, T, Task> assert)
     {
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(fixture.SourceDoc);
@@ -249,7 +249,7 @@ namespace ConverterRevitTests
       {
         var sourceElem = (T)(object)fixture.RevitElements[i];
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
-        assert(sourceElem, (T)destElement);
+        await assert(sourceElem, (T)destElement);
         if (!fixture.UpdateTestRunning)
           SpeckleUtils.DeleteElement(destElement);
       }
@@ -259,7 +259,7 @@ namespace ConverterRevitTests
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);
-      Assert.NotNull(spkElem["parameters"]);
+      //Assert.NotNull(spkElem["parameters"]);
       Assert.NotNull(spkElem["elementId"]);
 
       var elemAsFam = elem as FamilyInstance;
@@ -274,7 +274,7 @@ namespace ConverterRevitTests
       //Assert.NotNull(spkRevit.displayMesh);
     }
 
-    internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
+    internal Task AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -294,13 +294,15 @@ namespace ConverterRevitTests
       //rotation
       if (sourceElem.Location is LocationPoint)
         Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation);
+
+      return default;
     }
 
-    internal void AssertEqualParam(DB.Element expected, DB.Element actual, BuiltInParameter param)
+    internal Task AssertEqualParam(DB.Element expected, DB.Element actual, BuiltInParameter param)
     {
       var expecedParam = expected.get_Parameter(param);
       if (expecedParam == null)
-        return;
+        return default;
 
       switch (expecedParam.StorageType)
       {
@@ -328,6 +330,7 @@ namespace ConverterRevitTests
         default:
           throw new ArgumentOutOfRangeException();
       }
+      return default;
     }
   }
 

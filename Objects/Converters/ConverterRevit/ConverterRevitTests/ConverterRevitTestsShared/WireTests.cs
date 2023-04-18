@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB.Electrical;
 using Xunit;
@@ -36,7 +36,7 @@ namespace ConverterRevitTests
       await SpeckleToNative<DB.Wire>(AssertWireEqual);
     }
 
-    private void AssertWireEqual(DB.Wire sourceElem, DB.Wire destElem)
+    private Task AssertWireEqual(DB.Wire sourceElem, DB.Wire destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
@@ -44,6 +44,7 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_ELEC_WIRE_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FABRIC_WIRE_LENGTH);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_ELEC_WIRE_ELEVATION);
+      return default;
     }
 
     #endregion ToNative
