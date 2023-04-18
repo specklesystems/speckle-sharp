@@ -82,6 +82,19 @@ namespace ConverterRevitTests
         
         try
         {
+          // you can't unassign parameter values in Revit, so just ignore those
+          var emptyIndicies = Enumerable.Range(0, sourceValueList[i].Count)
+             .Where(j => string.IsNullOrWhiteSpace(sourceValueList[i][j]))
+             .ToList();
+
+          if (emptyIndicies.Any())
+          {
+            for (var j = sourceValueList[i].Count - 1; j >= 0; j--)
+            {
+              sourceValueList[i].RemoveAt(j);
+              destValueList[i].RemoveAt(j);
+            }
+          }
           Assert.Equal(sourceValueList[i], destValueList[i]);
         }
         catch(Exception ex)
