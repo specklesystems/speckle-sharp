@@ -137,15 +137,15 @@ namespace Speckle.ConnectorRevit.UI
                 // attach the current, dependent, elements as a hosted element
                 if (hostIndex != -1)
                 {
-                  objs[hostIndex]["elements"] ??= new List<Base>();
-                  ((List<Base>)objs[hostIndex]["elements"]).Add(conversionResult);
+                  objs[hostIndex]["@elements"] ??= new List<Base>();
+                  ((List<Base>)objs[hostIndex]["@elements"]).Add(conversionResult);
                 }
                 // if host is not present, then it hasn't been converted yet
                 // create a placeholder that will be overridden later, but that will contain the hosted element
                 else
                 {
                   var newBase = new Base() { applicationId = host.applicationId };
-                  newBase["elements"] = new List<Base>() { conversionResult };
+                  newBase["@elements"] = new List<Base>() { conversionResult };
                   objs.Add(newBase);
                 }
 
@@ -186,13 +186,13 @@ namespace Speckle.ConnectorRevit.UI
 
                 // here we are checking to see if we're converting a host that doesn't know it is a host
                 // and if dependent elements of that host have already been converted
-                if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)
+                if (hostIndex != -1 && objs[hostIndex]["@elements"] is List<Base> elements)
                 {
                   objs.RemoveAt(hostIndex);
-                  if (conversionResult["elements"] is List<Base> els)
+                  if (conversionResult["@elements"] is List<Base> els)
                     els.AddRange(elements);
                   else
-                    conversionResult["elements"] = elements;
+                    conversionResult["@elements"] = elements;
                 }
 
                 objs.Add(conversionResult);

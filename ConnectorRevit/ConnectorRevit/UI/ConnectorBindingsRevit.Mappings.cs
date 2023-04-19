@@ -402,7 +402,8 @@ namespace Speckle.ConnectorRevit.UI
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "etabs":
-            if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
+            var nestedElements = @object["elements"] ?? @object["@elements"];
+            if (nestedElements is List<Base> els)
             {
               foreach (var el in els)
               {
@@ -472,7 +473,8 @@ namespace Speckle.ConnectorRevit.UI
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "etabs":
-            if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
+            var nestedElements = @object["elements"] ?? @object["@elements"];
+            if (nestedElements is List<Base> els)
             {
               foreach (var el in els)
               {
