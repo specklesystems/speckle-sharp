@@ -318,7 +318,7 @@ namespace Objects.Converter.Revit
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
+    public static T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
     {
       var rp = elem.get_Parameter(bip);
 
@@ -340,7 +340,7 @@ namespace Objects.Converter.Revit
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <returns></returns>
     /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
-    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
+    private static Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
     {
       var sp = new Parameter
       {
@@ -519,7 +519,7 @@ namespace Objects.Converter.Revit
 
     //Shared parameters use a GUID to be uniquely identified
     //Other parameters use a BuiltInParameter enum
-    private string GetParamInternalName(DB.Parameter rp)
+    private static string GetParamInternalName(DB.Parameter rp)
     {
       if (rp.IsShared)
         return rp.GUID.ToString();
@@ -1331,14 +1331,9 @@ namespace Objects.Converter.Revit
 
     // MEGA HACK to get the slope arrow of a roof which is technically not accessable by the api
     // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
-    private void GetSlopeArrowHack(ElementId elementId, Document doc, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
+    public static ModelLine GetSlopeArrowHack(ElementId elementId, Document doc)
     {
       ICollection<ElementId> deleted = null;
-      tail = null;
-      head = null;
-      tailOffset = 0;
-      headOffset = 0;
-      slope = 0;
       using (var t = new Transaction(doc, "TTT"))
       {
         t.Start();
@@ -1350,28 +1345,65 @@ namespace Objects.Converter.Revit
         ModelLine l = doc.GetElement(id) as ModelLine;
         if (l == null) continue;
         if (!l.Name.Equals("Slope Arrow", StringComparison.Ordinal)) continue; // TODO: does this work with other languages of Revit?
+        return l;
+        //tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0), doc);
+        //head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1), doc);
+        //tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
 
-        tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0), doc);
-        head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1), doc);
-        tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
+        //var specifyOffset = GetParamValue<int>(l, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
+        //var lineLength = GetParamValue<double>(l, BuiltInParameter.CURVE_ELEM_LENGTH);
 
-        var specifyOffset = GetParamValue<int>(l, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
-        var lineLength = GetParamValue<double>(l, BuiltInParameter.CURVE_ELEM_LENGTH);
-
-        // 1 corrosponds to the "slope" option
-        if (specifyOffset == 1)
-        {
-          // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
-          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100;
-          headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
-        }
-        else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
-        {
-          headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
-          slope = (headOffset - tailOffset) / lineLength;
-        }
-        break;
+        //// 1 corrosponds to the "slope" option
+        //if (specifyOffset == 1)
+        //{
+        //  // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
+        //  slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100;
+        //  headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
+        //}
+        //else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
+        //{
+        //  headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
+        //  slope = (headOffset - tailOffset) / lineLength;
+        //}
+        //break;
       }
+      return null;
+    }
+    private Point GetSlopeArrowHead(ModelLine slopeArrow, Document doc)
+    {
+      if (slopeArrow == null) return null;
+      return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(1), doc);
+    }
+    private Point GetSlopeArrowTail(ModelLine slopeArrow, Document doc)
+    {
+      if (slopeArrow == null) return null;
+      return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0), doc);
+    }
+    public static double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
+    {
+      return GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_START_HEIGHT);
+    }
+    public static double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
+    {
+      var specifyOffset = GetParamValue<int>(slopeArrow, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
+      var lineLength = GetParamValue<double>(slopeArrow, BuiltInParameter.CURVE_ELEM_LENGTH);
+
+      slope = 0;
+      double headOffset = 0;
+      // 1 corrosponds to the "slope" option
+      if (specifyOffset == 1)
+      {
+        // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
+        slope = GetParamValue<double>(slopeArrow, BuiltInParameter.ROOF_SLOPE) / 100;
+        headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
+      }
+      else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
+      {
+        headOffset = GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_END_HEIGHT);
+        slope = (headOffset - tailOffset) / lineLength;
+      }
+
+      return headOffset;
     }
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -177,11 +177,15 @@ namespace Objects.Converter.Revit
               slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
             };
 
-            GetSlopeArrowHack(footPrintRoof.Id, revitRoof.Document, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
+            var slopeArrow = GetSlopeArrowHack(footPrintRoof.Id, revitRoof.Document);
 
-            // these two values are not null then the slope arrow exists and we need to capture that
-            if (tail != null && head != null)
+            if (slopeArrow != null)
             {
+              var tail = GetSlopeArrowTail(slopeArrow, Doc);
+              var head = GetSlopeArrowHead(slopeArrow, Doc);
+              var tailOffset = GetSlopeArrowTailOffset(slopeArrow, Doc);
+              var headOffset = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out var slope);
+
               var newTail = new Geometry.Point(tail.x, tail.y, tailOffset);
               var newHead = new Geometry.Point(head.x, head.y, headOffset);
               profiles = GetProfiles(revitRoof, newTail, newHead);
