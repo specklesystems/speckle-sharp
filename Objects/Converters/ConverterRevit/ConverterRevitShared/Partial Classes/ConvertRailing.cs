@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
@@ -113,20 +113,16 @@ namespace Objects.Converter.Revit
       if (revitRailing.TopRail != ElementId.InvalidElementId)
       {
 
-        var railingIndex = ContextObjects.FindIndex(obj => obj.applicationId == revitRailing.UniqueId);
-        if (railingIndex != -1)
+        if (ContextObjects.ContainsKey(revitRailing.UniqueId))
         {
-          ContextObjects.RemoveAt(railingIndex);
+          ContextObjects.Remove(revitRailing.UniqueId);
         }
 
         var revitTopRail = revitRailing.Document.GetElement(revitRailing.TopRail) as TopRail;
 
-        var isSelectedInContextObjects = ContextObjects
-              .FindIndex(x => x.applicationId == revitTopRail.UniqueId);
-
-        if (isSelectedInContextObjects != -1)
+        if (ContextObjects.ContainsKey(revitTopRail.UniqueId))
         {
-          ContextObjects.RemoveAt(isSelectedInContextObjects);
+          ContextObjects.Remove(revitTopRail.UniqueId);
         }
 
         if (CanConvertToSpeckle(revitTopRail))
