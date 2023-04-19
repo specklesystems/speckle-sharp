@@ -121,6 +121,7 @@ public class MappingBindingsRhino : MappingsBindings
             else if (c.IsPlanar())
             {
               // If the curve is non-linear, but is planar, it can still be a beam.
+              result.Add(new RevitDefaultBeamViewModel());
               result.Add(new RevitBeamViewModel());
             }
 

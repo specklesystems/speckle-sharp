@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;

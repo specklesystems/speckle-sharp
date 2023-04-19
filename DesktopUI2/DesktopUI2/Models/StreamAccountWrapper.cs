@@ -1,4 +1,4 @@
-﻿using Speckle.Core.Api;
+using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 
 namespace DesktopUI2.Models;

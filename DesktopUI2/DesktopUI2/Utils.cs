@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -28,7 +28,7 @@ public static class Dialogs
   public static async void ShowDialog(string title, string message, DialogIconKind icon)
   {
     Dialog d = new(title, message, icon);
-    await d.ShowDialog();
+    await d.ShowDialog().ConfigureAwait(true);
   }
 
   public static IDialogWindow<DialogResult> SendReceiveDialog(string header, object dataContext)
@@ -119,7 +119,7 @@ public static class ApiUtils
     if (CachedUsers.ContainsKey(userId))
       return CachedUsers[userId];
 
-    var user = await client.OtherUserGet(userId);
+    var user = await client.OtherUserGet(userId).ConfigureAwait(true);
 
     if (user != null)
       CachedUsers[userId] = user;
@@ -132,7 +132,7 @@ public static class ApiUtils
     if (CachedAccounts.ContainsKey(userId))
       return CachedAccounts[userId];
 
-    var user = await GetUser(userId, client);
+    var user = await GetUser(userId, client).ConfigureAwait(true);
 
     if (user == null)
       return null;
@@ -234,7 +234,7 @@ public static class Utils
 
 
       var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
-      var result = await dialog.ShowDialog<string>();
+      var result = await dialog.ShowDialog<string>().ConfigureAwait(true);
 
       if (result != null)
       {
@@ -251,8 +251,8 @@ public static class Utils
           );
           try
           {
-            await AccountManager.AddAccount(result);
-            await Task.Delay(1000);
+            await AccountManager.AddAccount(result).ConfigureAwait(true);
+            await Task.Delay(1000).ConfigureAwait(true);
 
             MainViewModel.Instance.NavigateToDefaultScreen();
           }

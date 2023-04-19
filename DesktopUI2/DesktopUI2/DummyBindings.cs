@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -359,7 +359,7 @@ public class DummyBindings : ConnectorBindings
       if (progress.CancellationToken.IsCancellationRequested)
         return state;
 
-      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
       pd["A1"] = i;
       pd["A2"] = i + 2;
 
@@ -407,7 +407,7 @@ public class DummyBindings : ConnectorBindings
       if (progress.CancellationToken.IsCancellationRequested)
         return state;
 
-      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
       pd["A1"] = i;
       pd["A2"] = i + 2;
 
@@ -465,7 +465,7 @@ public class DummyBindings : ConnectorBindings
         return;
 
       progress.Report.Log("Done fake task " + i);
-      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
       pd["A1"] = i;
       pd["A2"] = i + 2;
 
@@ -512,7 +512,7 @@ public class DummyBindings : ConnectorBindings
       };
       progress.Report.Log(appObj);
 
-      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+      await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
       pd["A1"] = i;
       pd["A2"] = i + 2;
 
@@ -549,7 +549,7 @@ public class DummyBindings : ConnectorBindings
     Dictionary<string, List<MappingValue>> Mapping
   )
   {
-    await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000)));
+    await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
     return new Dictionary<string, List<MappingValue>>();
   }
 

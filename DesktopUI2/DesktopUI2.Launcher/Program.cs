@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using Avalonia;
 using Avalonia.ReactiveUI;
 using Speckle.Core.Logging;
