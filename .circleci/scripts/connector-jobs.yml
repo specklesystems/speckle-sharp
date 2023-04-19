@@ -198,12 +198,3 @@ archicad:
       slug: archicad
       build-with-mono: false
       installername: SpeckleArchicadInstall
-
-navisworks:
-  - build-connector:
-      slnname: ConnectorNavisworks
-      dllname: SpeckleConnectorNavisworks.dll
-      slug: navisworks
-      requires:
-        - build-desktopui
-      context: innosetup

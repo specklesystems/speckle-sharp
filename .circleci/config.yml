@@ -41,7 +41,6 @@ jobs:
                   (Core|Objects|ConnectorBentley|.*/ConverterBentley)/.* bentley true
                   (Core|Objects|ConnectorTeklaStructures|.*/ConverterTeklaStructures)/.* teklastructures true
                   (Core|Objects|ConnectorArchicad)/.* archicad true
-                  (Core|Objects|ConnectorNavisworks|.*/ConverterNavisworks)/.* navisworks true
                 base-revision: main
                 output-path: .circleci/scripts/parameters.json
       - run: cat .circleci/scripts/parameters.json
