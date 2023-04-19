@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
+using Revit.Async;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -38,42 +39,48 @@ namespace ConverterRevitTests
     [Trait("Floor", "ToNative")]
     public async Task FloorToNative()
     {
-      await SpeckleToNative<DB.Floor>(AssertFloorEqual);
+      await SpeckleToNative<DB.Floor>(null, AssertFloorEqual);
     }
 
     [Fact]
     [Trait("Floor", "Selection")]
     public async Task FloorSelectionToNative()
     {
-      await SelectionToNative<DB.Floor>(AssertFloorEqual);
+      await SelectionToNative<DB.Floor>(null,AssertFloorEqual);
     }
 
-    private void AssertFloorEqual(DB.Floor sourceElem, DB.Floor destElem)
+    private async Task AssertFloorEqual(DB.Floor sourceElem, DB.Floor destElem)
     {
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
 
-      //AssertEqualParam(sourceElem, destElem, BuiltInParameter.)
-      //var slopeArrow = ConverterRevit.GetSlopeArrowHack(sourceElem.Id, sourceElem.Document);
+      var slopeArrow = await RevitTask.RunAsync(app => {
+        return ConverterRevit.GetSlopeArrowHack(sourceElem.Id, sourceElem.Document);
+      }).ConfigureAwait(false);
 
-      //if (slopeArrow == null)
-      //{
-      //  AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
-      //}
-      //else
-      //{
-      //  var tailOffset = ConverterRevit.GetSlopeArrowTailOffset(slopeArrow, sourceElem.Document);
-      //  var headOffset = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var slope);
+      if (slopeArrow == null)
+      {
+        AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
+      }
+      else
+      {
+        var tailOffset = ConverterRevit.GetSlopeArrowTailOffset(slopeArrow, sourceElem.Document);
+        _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var slope);
 
-      //  Assert.Equal(slope, ConverterRevit.GetParamValue<double>(destElem, BuiltInParameter.ROOF_SLOPE) / 100);
+        var newSlopeArrow = await RevitTask.RunAsync(app => {
+          return ConverterRevit.GetSlopeArrowHack(destElem.Id, destElem.Document);
+        }).ConfigureAwait(false);
 
-      //  var sourceOffset = ConverterRevit.GetParamValue<double>(sourceElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
-      //  Assert.Equal(sourceOffset + tailOffset, ConverterRevit.GetParamValue<double>(destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM));
-      //}
-      
+        Assert.NotNull(newSlopeArrow);
 
-      
-      //AssertEqualParam(sourceElem, destElem, BuiltInParameter.HOST_PERIMETER_COMPUTED);
+        var newTailOffset = ConverterRevit.GetSlopeArrowTailOffset(slopeArrow, sourceElem.Document);
+        _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var newSlope);
+        Assert.Equal(slope, newSlope);
+
+        var sourceOffset = ConverterRevit.GetParamValue<double>(sourceElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
+        Assert.Equal(sourceOffset + tailOffset, ConverterRevit.GetParamValue<double>(destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM));
+      }
+
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_ATTR_THICKNESS_PARAM);
     }

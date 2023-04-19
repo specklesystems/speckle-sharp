@@ -157,7 +157,7 @@ namespace Objects.Converter.Revit
         var tail = GetSlopeArrowTail(slopeArrow, Doc);
         var head = GetSlopeArrowHead(slopeArrow, Doc);
         var tailOffset = GetSlopeArrowTailOffset(slopeArrow, Doc);
-        var headOffset = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out var slope);
+        _ = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out var slope);
 
         slopeParam ??= slope;
         speckleFloor.slope = (double)slopeParam;
@@ -166,7 +166,6 @@ namespace Objects.Converter.Revit
         if (speckleFloor["parameters"] is Base parameters && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam && offsetParam.value is double offset)
         {
           offsetParam.value = offset + tailOffset;
-          //parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] = offsetParam;
         }
       }
 

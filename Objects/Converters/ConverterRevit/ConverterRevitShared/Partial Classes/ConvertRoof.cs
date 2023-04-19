@@ -184,7 +184,7 @@ namespace Objects.Converter.Revit
               var tail = GetSlopeArrowTail(slopeArrow, Doc);
               var head = GetSlopeArrowHead(slopeArrow, Doc);
               var tailOffset = GetSlopeArrowTailOffset(slopeArrow, Doc);
-              var headOffset = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out var slope);
+              var headOffset = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out _);
 
               var newTail = new Geometry.Point(tail.x, tail.y, tailOffset);
               var newHead = new Geometry.Point(head.x, head.y, headOffset);
