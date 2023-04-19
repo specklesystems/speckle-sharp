@@ -64,7 +64,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
     /// </summary>
-    public List<string> ConvertedObjectsList { get; set; } = new List<string>();
+    public ISet<string> ConvertedObjects { get; private set; } = new HashSet<string>();
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
@@ -79,17 +79,19 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Used to cache already converted family instance FamilyType deifnitions
     /// </summary>
-    public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } = new Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType>();
+    public Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType> Symbols { get; private set; } =
+      new Dictionary<string, Objects.BuiltElements.Revit.RevitSymbolElementType>();
 
-    public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } = new Dictionary<string, SectionProfile>();
+    public Dictionary<string, SectionProfile> SectionProfiles { get; private set; } =
+      new Dictionary<string, SectionProfile>();
 
     public ReceiveMode ReceiveMode { get; set; }
-
 
     /// <summary>
     /// Contains all materials in the model
     /// </summary>
-    public Dictionary<string, Objects.Other.Material> Materials { get; private set; } = new Dictionary<string, Objects.Other.Material>();
+    public Dictionary<string, Objects.Other.Material> Materials { get; private set; } =
+      new Dictionary<string, Objects.Other.Material>();
 
     public ConverterRevit()
     {
@@ -110,7 +112,9 @@ namespace Objects.Converter.Revit
     }
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
+
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
@@ -133,7 +137,10 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject = o.MEPModel?.ConnectorManager?.Connectors?.Size > 0 ? NetworkToSpeckle(o, out notes) : FamilyInstanceToSpeckle(o, out notes);
+          returnObject =
+            o.MEPModel?.ConnectorManager?.Connectors?.Size > 0
+              ? NetworkToSpeckle(o, out notes)
+              : FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -290,10 +297,12 @@ namespace Objects.Converter.Revit
 
       // NOTE: Only try generic method assignment if there is no existing render material from conversions;
       // we might want to try later on to capture it more intelligently from inside conversion routines.
-      if (returnObject != null
-          && returnObject["renderMaterial"] == null
-          && returnObject["displayValue"] == null
-          && !(returnObject is Model))
+      if (
+        returnObject != null
+        && returnObject["renderMaterial"] == null
+        && returnObject["displayValue"] == null
+        && !(returnObject is Model)
+      )
       {
         try
         {
@@ -320,6 +329,7 @@ namespace Objects.Converter.Revit
 
       return "";
     }
+
     private BuiltInCategory GetObjectCategory(Base @object)
     {
       switch (@object)
@@ -383,7 +393,7 @@ namespace Objects.Converter.Revit
           .GetInstanceMembers()
           .Where(o => speckleSchema[o.Name] == null)
           .FirstOrDefault(o => o.PropertyType.IsInstanceOfType(@object));
-        if(prop != null)
+        if (prop != null)
           speckleSchema[prop.Name] = @object;
       }
       return speckleSchema;
@@ -408,12 +418,14 @@ namespace Objects.Converter.Revit
           //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
           var cat = GetObjectCategory(@object);
           var speckleCat = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat.ToString());
-          return TryDirectShapeToNative(new ApplicationObject(@object.id, @object.speckle_type), meshes, ToNativeMeshSetting, speckleCat);
+          return TryDirectShapeToNative(
+            new ApplicationObject(@object.id, @object.speckle_type),
+            meshes,
+            ToNativeMeshSetting,
+            speckleCat
+          );
         }
-        catch
-        {
-
-        }
+        catch { }
       }
       //Family Document
       if (Doc.IsFamilyDocument)
@@ -462,7 +474,11 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type){ applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
+          return TryDirectShapeToNative(
+            new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId },
+            o.displayValue,
+            ToNativeMeshSetting
+          );
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -613,7 +629,6 @@ namespace Objects.Converter.Revit
             return ViewOrientation3DToNative(b);
           return null;
 
-
         default:
           return null;
       }
@@ -625,8 +640,7 @@ namespace Objects.Converter.Revit
 
     public bool CanConvertToSpeckle(object @object)
     {
-      return @object
-      switch
+      return @object switch
       {
         DB.DetailCurve _ => true,
         DB.Material _ => true,
@@ -683,8 +697,7 @@ namespace Objects.Converter.Revit
       //Family Document
       if (Doc.IsFamilyDocument)
       {
-        return @object
-        switch
+        return @object switch
         {
           ICurve _ => true,
           Geometry.Brep _ => true,
@@ -699,8 +712,7 @@ namespace Objects.Converter.Revit
       if (schema != null)
         return CanConvertToNative(schema);
 
-      return @object
-      switch
+      return @object switch
       {
         //geometry
         ICurve _ => true,

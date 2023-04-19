@@ -38,7 +38,7 @@ namespace Objects.Converter.Revit
         return true;
 
       // has been converted before (from a parent host), skip it
-      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+      if (ConvertedObjects.Contains(element.UniqueId))
       {
         return false;
       }
@@ -58,7 +58,7 @@ namespace Objects.Converter.Revit
         return true;
 
       // has been converted before (from a parent host), skip it
-      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+      if (ConvertedObjects.Contains(element.UniqueId))
         return false;
 
       // the parent is in our selection list,skip it, as this element will be converted by the host element
@@ -122,10 +122,11 @@ namespace Objects.Converter.Revit
             ContextObjects.RemoveAt(isSelectedInContextObjects);
             reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
             convertedHostedElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
+            ConvertedObjects.Add(obj.applicationId);
           }
           else
           {
+            //TODO: use exceptions to handle errors better!!!
             reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
           }
         }
