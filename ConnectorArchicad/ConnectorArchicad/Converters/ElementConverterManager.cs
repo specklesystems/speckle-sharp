@@ -56,9 +56,11 @@ namespace Archicad
 
       IEnumerable<string> elementIds = filter.Selection;
       if (filter.Slug == "all")
-        elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))?.Result;
+        elementIds = AsyncCommandProcessor
+          .Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.All))
+          ?.Result;
 
-      SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken);  // Gets all selected objects
+      SelectedObjects = await GetElementsType(elementIds, progress.CancellationToken); // Gets all selected objects
       SelectedObjects = SortSelectedObjects();
 
       SpeckleLog.Logger.Debug("Conversion started (element types: {0})", SelectedObjects.Count);
@@ -67,10 +69,14 @@ namespace Archicad
       {
         SpeckleLog.Logger.Debug("{0}: {1}", element, guids.Count());
 
-        var objects = await ConvertOneTypeToSpeckle(guids, ElementTypeProvider.GetTypeByName(element), progress.CancellationToken);  // Deserialize all objects with hiven type
+        var objects = await ConvertOneTypeToSpeckle(
+          guids,
+          ElementTypeProvider.GetTypeByName(element),
+          progress.CancellationToken
+        ); // Deserialize all objects with hiven type
         if (objects.Count() > 0)
         {
-          objectToCommit["@" + element] = objects;  // Save 'em. Assigned objects are parents with subelements
+          objectToCommit["@" + element] = objects; // Save 'em. Assigned objects are parents with subelements
 
           // itermediate solution for the OneClick Send report
           for (int i = 0; i < objects.Count(); i++)
@@ -105,8 +111,10 @@ namespace Archicad
 
     private void RegisterConverters()
     {
-      IEnumerable<Type> convertes = Assembly.GetExecutingAssembly().GetTypes().Where(t =>
-        t.IsClass && !t.IsAbstract && typeof(Converters.IConverter).IsAssignableFrom(t));
+      IEnumerable<Type> convertes = Assembly
+        .GetExecutingAssembly()
+        .GetTypes()
+        .Where(t => t.IsClass && !t.IsAbstract && typeof(Converters.IConverter).IsAssignableFrom(t));
 
       foreach (Type converterType in convertes)
       {
@@ -118,7 +126,11 @@ namespace Archicad
       }
     }
 
-    public Converters.IConverter GetConverterForElement(Type elementType, ConversionOptions conversionOptions, bool forReceive)
+    public Converters.IConverter GetConverterForElement(
+      Type elementType,
+      ConversionOptions conversionOptions,
+      bool forReceive
+    )
     {
       if (forReceive && conversionOptions != null && !conversionOptions.ReceiveParametric)
         return DefaultConverterForReceive;
@@ -139,22 +151,32 @@ namespace Archicad
         return Converters[typeof(Floor)];
       if (elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)))
         return Converters[typeof(Objects.BuiltElements.Room)];
- 
+
       return forReceive ? DefaultConverterForReceive : DefaultConverterForSend;
     }
 
     #endregion
 
-    private async Task<Dictionary<string, IEnumerable<string>>?> GetElementsType(IEnumerable<string> applicationIds, CancellationToken token)
+    private async Task<Dictionary<string, IEnumerable<string>>?> GetElementsType(
+      IEnumerable<string> applicationIds,
+      CancellationToken token
+    )
     {
-      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(applicationIds), token);
+      var retval = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetElementsType(applicationIds),
+        token
+      );
       return retval;
     }
 
-    public async Task<List<Base>?> ConvertOneTypeToSpeckle(IEnumerable<string> applicationIds, Type elementType, CancellationToken token)
+    public async Task<List<Base>?> ConvertOneTypeToSpeckle(
+      IEnumerable<string> applicationIds,
+      Type elementType,
+      CancellationToken token
+    )
     {
       var rawModels = await GetModelForElements(applicationIds, token); // Model data, like meshes
-      var elementConverter = ElementConverterManager.Instance.GetConverterForElement(elementType, null, false);  // Object converter
+      var elementConverter = ElementConverterManager.Instance.GetConverterForElement(elementType, null, false); // Object converter
       var convertedObjects = await elementConverter.ConvertToSpeckle(rawModels, token); // Deserialization
 
       foreach (var convertedObject in convertedObjects)
@@ -169,9 +191,15 @@ namespace Archicad
       return convertedObjects;
     }
 
-    private async Task<IEnumerable<Model.ElementModelData>> GetModelForElements(IEnumerable<string> applicationIds, CancellationToken token)
+    private async Task<IEnumerable<Model.ElementModelData>> GetModelForElements(
+      IEnumerable<string> applicationIds,
+      CancellationToken token
+    )
     {
-      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(applicationIds), token);
+      var retval = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetModelForElements(applicationIds),
+        token
+      );
       return retval;
     }
 
@@ -193,24 +221,31 @@ namespace Archicad
       {
         if (guids.Count() == 0)
           continue;
-        var convertedSubElements = await ConvertOneTypeToSpeckle(guids, ElementTypeProvider.GetTypeByName(element), token);
-        subElementsAsBases = subElementsAsBases.Concat(convertedSubElements).ToList();  // Update list with new values
+        var convertedSubElements = await ConvertOneTypeToSpeckle(
+          guids,
+          ElementTypeProvider.GetTypeByName(element),
+          token
+        );
+        subElementsAsBases = subElementsAsBases.Concat(convertedSubElements).ToList(); // Update list with new values
       }
-      RemoveSubElements(mutualSubElements); // Remove subelements from SelectedObjects (where we stored all selected objects) 
+      RemoveSubElements(mutualSubElements); // Remove subelements from SelectedObjects (where we stored all selected objects)
 
       return subElementsAsBases;
     }
 
     private async Task<IEnumerable<SubElementData>?> GetAllSubElements(string apllicationId)
     {
-      IEnumerable<SubElementData>? currentSubElements =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetSubElementInfo(apllicationId),
-        CancellationToken.None);
+      IEnumerable<SubElementData>? currentSubElements = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetSubElementInfo(apllicationId),
+        CancellationToken.None
+      );
 
       return currentSubElements;
     }
 
-    private Dictionary<string, IEnumerable<string>> GetAllMutualSubElements(Dictionary<string, IEnumerable<string>> allSubElementsByGuid)
+    private Dictionary<string, IEnumerable<string>> GetAllMutualSubElements(
+      Dictionary<string, IEnumerable<string>> allSubElementsByGuid
+    )
     {
       Dictionary<string, IEnumerable<string>> mutualSubElements = new Dictionary<string, IEnumerable<string>>();
 
@@ -228,7 +263,6 @@ namespace Archicad
         return new List<string>();
 
       return SelectedObjects[elementType].Where(guid => applicationIds.Contains(guid));
-
     }
 
     public void RemoveSubElements(Dictionary<string, IEnumerable<string>> mutualSubElements)

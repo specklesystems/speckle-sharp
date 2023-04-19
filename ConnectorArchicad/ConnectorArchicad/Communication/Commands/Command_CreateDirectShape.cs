@@ -18,16 +18,13 @@ namespace Archicad.Communication.Commands
       {
         DirectShapes = directShapes;
       }
-
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
       [JsonProperty("applicationObjects")]
       public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
-
     }
 
     private IEnumerable<DirectShape> DirectShapes { get; }
@@ -38,15 +35,17 @@ namespace Archicad.Communication.Commands
       {
         directShape.displayValue = null;
       }
-      
+
       DirectShapes = directShapes;
     }
 
     public async Task<IEnumerable<ApplicationObject>> Execute()
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateDirectShape", new Parameters(DirectShapes));
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "CreateDirectShape",
+        new Parameters(DirectShapes)
+      );
       return result == null ? null : result.ApplicationObjects;
     }
-
   }
 }

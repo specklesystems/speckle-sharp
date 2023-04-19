@@ -24,7 +24,10 @@ namespace Archicad.Converters
 
     #region --- Functions ---
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var directShapes = new List<Objects.BuiltElements.Archicad.DirectShape>();
       foreach (var tc in elements)
@@ -34,6 +37,7 @@ namespace Archicad.Converters
           case Objects.BuiltElements.Archicad.DirectShape directShape:
             // get the geometry
             MeshModel meshModel = null;
+
             {
               List<Mesh> meshes = null;
               var m = directShape["displayValue"] ?? directShape["@displayValue"];
@@ -54,14 +58,23 @@ namespace Archicad.Converters
         }
       }
 
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDirectShape(directShapes), token);
+      var result = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.CreateDirectShape(directShapes),
+        token
+      );
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
     public Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
-      return Task.FromResult(new List<Base>(elements.Select(e =>
-        new Objects.BuiltElements.Archicad.DirectShape(e.applicationId, ModelConverter.MeshesToSpeckle(e.model)))));
+      return Task.FromResult(
+        new List<Base>(
+          elements.Select(
+            e =>
+              new Objects.BuiltElements.Archicad.DirectShape(e.applicationId, ModelConverter.MeshesToSpeckle(e.model))
+          )
+        )
+      );
     }
 
     #endregion

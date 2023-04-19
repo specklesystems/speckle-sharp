@@ -276,6 +276,32 @@ public class MappingsViewModel : ViewModelBase, IScreen
               updatedSchemas.Add(o);
               break;
 
+            case RevitProfileWallViewModel o:
+              var profileWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+              if (!profileWallFamilies.Any() || !AvailableRevitLevels.Any())
+                break;
+              var profileWallFamiliesViewModels = profileWallFamilies
+                .GroupBy(x => x.family)
+                .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
+                .ToList();
+              o.Families = profileWallFamiliesViewModels;
+              o.Levels = AvailableRevitLevels;
+              updatedSchemas.Add(o);
+              break;
+
+            case RevitFaceWallViewModel o:
+              var faceWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+              if (!faceWallFamilies.Any() || !AvailableRevitLevels.Any())
+                break;
+              var faceWallFamiliesViewModels = faceWallFamilies
+                .GroupBy(x => x.family)
+                .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
+                .ToList();
+              o.Families = faceWallFamiliesViewModels;
+              o.Levels = AvailableRevitLevels;
+              updatedSchemas.Add(o);
+              break;
+
             case RevitFloorViewModel o:
               var floorFamilies = AvailableRevitTypes.Where(x => x.category == "Floors").ToList();
               if (!floorFamilies.Any() || !AvailableRevitLevels.Any())
