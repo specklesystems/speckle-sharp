@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -52,6 +52,7 @@ namespace ConverterRevitTests
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
 
+      //AssertEqualParam(sourceElem, destElem, BuiltInParameter.)
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
       //AssertEqualParam(sourceElem, destElem, BuiltInParameter.HOST_PERIMETER_COMPUTED);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);

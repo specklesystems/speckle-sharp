@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -1333,7 +1333,7 @@ namespace Objects.Converter.Revit
     // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
     private void GetSlopeArrowHack(ElementId elementId, Document doc, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
     {
-      List<ElementId> deleted = null;
+      ICollection<ElementId> deleted = null;
       tail = null;
       head = null;
       tailOffset = 0;
@@ -1342,14 +1342,14 @@ namespace Objects.Converter.Revit
       using (var t = new Transaction(doc, "TTT"))
       {
         t.Start();
-        deleted = doc.Delete(elementId).ToList();
+        deleted = doc.Delete(elementId);
         t.RollBack();
       }
       foreach (ElementId id in deleted)
       {
         ModelLine l = doc.GetElement(id) as ModelLine;
         if (l == null) continue;
-        if (!l.Name.Equals("Slope Arrow")) continue; // TODO: does this work with other languages of Revit?
+        if (!l.Name.Equals("Slope Arrow", StringComparison.Ordinal)) continue; // TODO: does this work with other languages of Revit?
 
         tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0), doc);
         head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1), doc);
