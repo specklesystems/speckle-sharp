@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
@@ -48,13 +48,13 @@ namespace Objects.Converter.Revit
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, ApplicationObject> PreviousContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
@@ -109,8 +109,8 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
-    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
+    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects.ToDictionary(x => x.applicationId);
+    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects.ToDictionary(x => x.applicationId);
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
@@ -383,7 +383,7 @@ namespace Objects.Converter.Revit
           .GetInstanceMembers()
           .Where(o => speckleSchema[o.Name] == null)
           .FirstOrDefault(o => o.PropertyType.IsInstanceOfType(@object));
-        if(prop != null)
+        if (prop != null)
           speckleSchema[prop.Name] = @object;
       }
       return speckleSchema;
@@ -462,7 +462,7 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type){ applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
+          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
