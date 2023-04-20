@@ -899,6 +899,11 @@ public class ConnectorBindingsRhino : ConnectorBindings
           }
           break;
         case RhinoObject o: // this was prbly a block instance, baked during conversion
+
+          o.Attributes.LayerIndex = layer.Index; // assign layer
+          SetUserInfo(obj, o.Attributes, parent); // handle user info, including application id
+          o.CommitChanges();
+
           if (parent != null)
             parent.Update(o.Id.ToString());
           else
