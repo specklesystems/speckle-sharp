@@ -8,11 +8,9 @@ namespace Archicad.Communication.Commands
 {
   sealed internal class GetRoomData : ICommand<IEnumerable<ArchicadRoom>>
   {
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-
       [JsonProperty("applicationIds")]
       private IEnumerable<string> ApplicationIds { get; }
 
@@ -20,16 +18,13 @@ namespace Archicad.Communication.Commands
       {
         ApplicationIds = applicationIds;
       }
-
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
       [JsonProperty("zones")]
       public IEnumerable<ArchicadRoom> Rooms { get; private set; }
-
     }
 
     private IEnumerable<string> ApplicationIds { get; }
@@ -47,6 +42,5 @@ namespace Archicad.Communication.Commands
 
       return result.Rooms;
     }
-
   }
 }

@@ -13,7 +13,7 @@ namespace Objects.Converter.Revit
   {
     public Base GroupToSpeckle(Group revitGroup)
     {
-      var elIdsToConvert = GetDependentElementIds(revitGroup);
+      var elIdsToConvert = GetHostedElementIds(revitGroup);
       if (!elIdsToConvert.Any())
         return null;
 

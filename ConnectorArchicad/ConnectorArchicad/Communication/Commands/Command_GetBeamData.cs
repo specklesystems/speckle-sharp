@@ -8,11 +8,9 @@ namespace Archicad.Communication.Commands
 {
   sealed internal class GetBeamData : ICommand<IEnumerable<ArchicadBeam>>
   {
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-
       [JsonProperty("applicationIds")]
       private IEnumerable<string> ApplicationIds { get; }
 
@@ -20,16 +18,13 @@ namespace Archicad.Communication.Commands
       {
         ApplicationIds = applicationIds;
       }
-
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
       [JsonProperty("beams")]
       public IEnumerable<ArchicadBeam> Datas { get; private set; }
-
     }
 
     private IEnumerable<string> ApplicationIds { get; }
@@ -41,12 +36,14 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<ArchicadBeam>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetBeamData", new Parameters(ApplicationIds));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetBeamData",
+        new Parameters(ApplicationIds)
+      );
       foreach (var beam in result.Datas)
         beam.units = Units.Meters;
 
       return result.Datas;
     }
-
   }
 }
