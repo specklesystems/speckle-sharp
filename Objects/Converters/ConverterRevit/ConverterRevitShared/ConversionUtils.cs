@@ -1328,8 +1328,19 @@ namespace Objects.Converter.Revit
 
     private static ModelLine GetSlopeArrow(Element element)
     {
-      using var modelLineFilter = new ElementCategoryFilter(BuiltInCategory.OST_SketchLines);
-      var elementIds = element.GetDependentElements(modelLineFilter);
+      IList<ElementId> elementIds = null;
+#if !REVIT2020 && !REVIT2021
+      if (element is DB.Floor floor)
+      {
+        elementIds = ((Sketch)floor.Document.GetElement(floor.SketchId)).GetAllElements();
+      }
+#endif
+      if (elementIds == null)
+      {
+        using var modelLineFilter = new ElementCategoryFilter(BuiltInCategory.OST_SketchLines);
+        elementIds = element.GetDependentElements(modelLineFilter);
+      }
+
 
       foreach (var elementId in elementIds)
       {
