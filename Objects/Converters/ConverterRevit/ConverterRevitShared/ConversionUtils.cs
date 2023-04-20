@@ -1351,22 +1351,6 @@ namespace Objects.Converter.Revit
       }
       return null;
     }
-//#if !REVIT2020 && !REVIT2021
-//    private static ModelLine GetSlopeArrowFromSketchId(ElementId sketchId, Document doc)
-//    {
-//      var sketch = (Sketch)doc.GetElement(sketchId);
-
-//      var sketchLinesIds = sketch.GetAllElements();
-//      foreach (var elementId in sketchLinesIds)
-//      {
-//        if (doc.GetElement(elementId) is not ModelLine line) continue;
-//        if (!line.Name.Equals("Slope Arrow", StringComparison.Ordinal)) continue; // TODO: does this work with other languages of Revit?
-
-//        return line;
-//      }
-//      return null;
-//    }
-//#endif
     private Point GetSlopeArrowHead(ModelLine slopeArrow, Document doc)
     {
       if (slopeArrow == null) return null;
