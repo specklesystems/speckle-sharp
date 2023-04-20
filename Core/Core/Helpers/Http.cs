@@ -238,6 +238,10 @@ public class SpeckleHttpClientHandler : HttpClientHandler
       if (policyResult.Outcome == OutcomeType.Successful)
         return policyResult.Result!;
 
+      // if the policy failed due to a cancellation, AND it was our cancellation token, then don't wrap the exception, and rethrow an new cancellation
+      if (policyResult.FinalException is OperationCanceledException)
+        cancellationToken.ThrowIfCancellationRequested();
+
       // should we wrap this exception into something Speckle specific?
       throw new Exception("Policy Failed", policyResult.FinalException);
     }

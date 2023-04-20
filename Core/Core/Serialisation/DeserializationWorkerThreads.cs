@@ -1,7 +1,5 @@
+#nullable enable
 using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace Speckle.Core.Serialisation;
@@ -25,7 +23,7 @@ internal class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerTh
     this.NumThreads = Environment.ProcessorCount;
   }
 
-  public void Dispose()
+  public override void Dispose()
   {
     lock (LockFreeThreads)
       FreeThreadCount -= NumThreads;
@@ -47,9 +45,9 @@ internal class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerTh
         var result = RunOperation(taskType, inputValue!, Serializer);
         tcs.SetResult(result);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        tcs.SetException(e);
+        tcs.SetException(ex);
       }
     }
   }
@@ -73,23 +71,23 @@ internal class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerTh
     }
   }
 
-  internal Task<object> TryStartTask(WorkerThreadTaskType taskType, object inputValue)
+  internal Task<object?>? TryStartTask(WorkerThreadTaskType taskType, object inputValue)
   {
     bool canStartTask = false;
     lock (LockFreeThreads)
+    {
       if (FreeThreadCount > 0)
       {
         canStartTask = true;
         FreeThreadCount--;
       }
-
-    if (canStartTask)
-    {
-      TaskCompletionSource<object> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-      Tasks.Add(new(taskType, inputValue, tcs));
-      return tcs.Task;
     }
 
-    return null;
+    if (!canStartTask)
+      return null;
+
+    TaskCompletionSource<object?> tcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    Tasks.Add(new(taskType, inputValue, tcs));
+    return tcs.Task;
   }
 }

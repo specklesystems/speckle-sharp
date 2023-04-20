@@ -58,6 +58,8 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
 
   public string BlobStorageFolder { get; set; }
 
+  #region Operations
+
   public async Task<Dictionary<string, bool>> HasObjects(string streamId, List<string> objectIds)
   {
     EnsureStarted();
@@ -160,6 +162,16 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     await op.ConfigureAwait(false);
   }
 
+  public async Task<List<string>?> HasBlobs(string streamId, List<(string, string)> blobs)
+  {
+    EnsureStarted();
+    Task<object?> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));
+    var res = await op.ConfigureAwait(false);
+    return (List<string>?)res;
+  }
+
+  #endregion
+
   public void EnsureStarted()
   {
     if (Threads.Count == 0)
@@ -189,9 +201,9 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
         var result = RunOperation(operation, inputValue!, serialApi).GetAwaiter().GetResult();
         tcs.SetResult(result);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        tcs.SetException(e);
+        tcs.SetException(ex);
       }
     }
   }
@@ -239,7 +251,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     return tcs.Task;
   }
 
-  private List<List<T>> SplitList<T>(List<T> list, int parts)
+  private static List<List<T>> SplitList<T>(List<T> list, int parts)
   {
     List<List<T>> ret = new(parts);
     for (int i = 0; i < parts; i++)
@@ -247,13 +259,5 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
     for (int i = 0; i < list.Count; i++)
       ret[i % parts].Add(list[i]);
     return ret;
-  }
-
-  public async Task<List<string>?> HasBlobs(string streamId, List<(string, string)> blobs)
-  {
-    EnsureStarted();
-    Task<object?> op = QueueOperation(ServerApiOperation.HasBlobs, (streamId, blobs));
-    var res = await op.ConfigureAwait(false);
-    return (List<string>?)res;
   }
 }
