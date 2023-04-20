@@ -32,19 +32,27 @@ namespace Objects.Converter.Navisworks
       ElevationMode = elevationMode;
     }
 
+
     public List<double> Coords { get; set; }
+
 
     public List<int> Faces { get; set; }
 
+
     public List<TriangleD> Triangles { get; set; }
+
 
     public List<LineD> Lines { get; set; }
 
+
     public List<PointD> Points { get; set; }
+
 
     public double[] LocalToWorldTransformation { get; set; }
 
+
     public bool ElevationMode { get; set; }
+
 
     public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
     {
@@ -143,17 +151,24 @@ namespace Objects.Converter.Navisworks
       Selection = ComBridge.ToInwOpSelection(modelItemCollection);
     }
 
+
     public InwOpSelection Selection { get; set; }
+
 
     public ModelItem ModelItem { get; set; }
 
+
     public Stack<InwOaFragment3> ModelFragments { get; set; }
+
 
     public Base Geometry { get; internal set; }
 
+
     public Base Base { get; internal set; }
 
+
     public bool ElevationMode { get; set; } = false;
+
 
     public List<PrimitiveProcessor> GetUniqueGeometryFragments()
     {
@@ -211,9 +226,12 @@ namespace Objects.Converter.Navisworks
       Vertex3 = v3;
     }
 
+
     public Vector3D Vertex1 { get; set; }
 
+
     public Vector3D Vertex2 { get; set; }
+
 
     public Vector3D Vertex3 { get; set; }
   }
@@ -235,7 +253,9 @@ namespace Objects.Converter.Navisworks
       Vertex2 = v2;
     }
 
+
     public Vector3D Vertex1 { get; set; }
+
 
     public Vector3D Vertex2 { get; set; }
   }
@@ -250,6 +270,7 @@ namespace Objects.Converter.Navisworks
       Vertex1 = vertex1;
     }
 
+
     public Vector3D Vertex1 { get; set; }
   }
 
@@ -257,11 +278,15 @@ namespace Objects.Converter.Navisworks
   {
     public static Vector3D TransformVector3D { get; set; }
 
+
     public Vector SettingOutPoint { get; set; }
+
 
     public Vector TransformVector { get; set; }
 
+
     public BoundingBox3D ModelBoundingBox { get; set; }
+
 
     /// <summary>
     ///   ElevationMode is the indicator that the model is being handled as an XY ground plane
@@ -474,5 +499,5 @@ namespace Objects.Converter.Navisworks
 
 namespace Objects.Organization
 {
-  public class Geometry : Base { }
+  public class Geometry : Base {}
 }

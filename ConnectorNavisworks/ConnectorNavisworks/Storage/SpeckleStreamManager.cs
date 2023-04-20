@@ -11,8 +11,8 @@ namespace Speckle.ConnectorNavisworks.Storage;
 
 internal class SpeckleStreamManager
 {
-  internal static readonly string TableName = "speckle";
-  internal static readonly string KeyName = "stream_states";
+  internal readonly static string TableName = "speckle";
+  internal readonly static string KeyName = "stream_states";
 
   public void ClearStatesFromFile(Document doc)
   {

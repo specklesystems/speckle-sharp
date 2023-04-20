@@ -18,7 +18,9 @@ public partial class ConverterNavisworks
   private const string ProxyOrigin = "Project Base Origin";
   private const string BBoxOrigin = "Boundingbox Origin";
 
+
   public static Dictionary<string, string> Settings { get; } = new();
+
 
   public Vector2D ProjectBasePoint
   {
