@@ -239,7 +239,7 @@ public class SpeckleHttpClientHandler : HttpClientHandler
         return policyResult.Result!;
 
       // should we wrap this exception into something Speckle specific?
-      throw policyResult.FinalException!;
+      throw new Exception("Policy Failed", policyResult.FinalException);
     }
   }
 }

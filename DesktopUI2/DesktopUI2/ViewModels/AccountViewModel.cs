@@ -1,8 +1,10 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
+using Avalonia.Threading;
 using ReactiveUI;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -71,15 +73,7 @@ public class AccountViewModel : ReactiveObject
 
   private Client _client { get; set; }
 
-  public Client Client
-  {
-    get
-    {
-      if (_client == null)
-        _client = new Client(Account);
-      return _client;
-    }
-  }
+  public Client Client => _client ??= new Client(Account);
 
   public string SimpleName
   {
@@ -119,7 +113,8 @@ public class AccountViewModel : ReactiveObject
         this.RaiseAndSetIfChanged(ref _avatarUrl, $"https://robohash.org/{Id}.png?size=28x28");
       else
         this.RaiseAndSetIfChanged(ref _avatarUrl, value);
-      DownloadImage(AvatarUrl);
+
+      TrySetAvatarFromUrl(AvatarUrl);
     }
   }
 
@@ -129,40 +124,29 @@ public class AccountViewModel : ReactiveObject
     set => this.RaiseAndSetIfChanged(ref _avatarImage, value);
   }
 
-  public async void DownloadImage(string url)
+  private async void TrySetAvatarFromUrl(string url)
   {
     if (string.IsNullOrEmpty(url))
       return;
 
     _firstDownload = false;
 
-    using (var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url)))
+    try
     {
-      HttpClient client = Http.GetHttpProxyClient();
-      //request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", "Bearer " + Account.token);
-      var result = await client.SendAsync(request).ConfigureAwait(true);
-
-      if (!result.IsSuccessStatusCode)
-      {
-        SpeckleLog.Logger
-          .ForContext("imageUrl", url)
-          .Warning("{methodName} failed with code: {exceptionMessage}", nameof(DownloadImage), result.StatusCode);
-        AvatarUrl = null; // Could not download...
-        return;
-      }
-
-      try
-      {
-        var bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(true);
-        SetImage(bytes);
-      }
-      catch (Exception ex)
-      {
-        SpeckleLog.Logger
-          .ForContext("imageUrl", url)
-          .Warning(ex, "Swallowing exception in {methodName}: {exceptionMessage}", nameof(DownloadImage), ex.Message);
-        AvatarUrl = null; // Could not download...
-      }
+      var bytes = await DownloadImage(url).ConfigureAwait(true);
+      SetImage(bytes);
+    }
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger
+        .ForContext("imageUrl", url)
+        .Warning(
+          ex,
+          "Swallowing exception in {methodName}: {exceptionMessage}",
+          nameof(TrySetAvatarFromUrl),
+          ex.Message
+        );
+      AvatarUrl = null;
     }
   }
 
@@ -174,8 +158,16 @@ public class AccountViewModel : ReactiveObject
     this.RaisePropertyChanged(nameof(AvatarImage));
   }
 
-  public async void DownloadImage(Uri url)
+  private static async Task<byte[]> DownloadImage(string url)
   {
-    throw new NotImplementedException();
+    using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
+
+    HttpClient client = Http.GetHttpProxyClient();
+    var result = await client.SendAsync(request).ConfigureAwait(false);
+
+    result.EnsureSuccessStatusCode();
+
+    var bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(false);
+    return bytes;
   }
 }

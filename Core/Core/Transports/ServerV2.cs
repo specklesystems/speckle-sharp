@@ -54,7 +54,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public int TimeoutSeconds { get; set; }
   private string AuthorizationToken { get; set; }
 
-  public ParallelServerApi Api { get; private set; }
+  internal ParallelServerApi Api { get; private set; }
 
   public string BlobStorageFolder { get; set; }
 

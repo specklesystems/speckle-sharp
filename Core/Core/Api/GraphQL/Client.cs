@@ -107,11 +107,6 @@ public partial class Client : IDisposable
     catch { }
   }
 
-  public object UploadValues(string v1, string v2, NameValueCollection user_1)
-  {
-    throw new NotImplementedException();
-  }
-
   public Task OnWebSocketConnect(GraphQLHttpClient client)
   {
     return Task.CompletedTask;
@@ -152,85 +147,77 @@ public partial class Client : IDisposable
     return await graphqlRetry.ExecuteAsync(func).ConfigureAwait(false);
   }
 
-  internal async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken? cancellationToken)
+  internal async Task<T> ExecuteGraphQLRequest<T>(GraphQLRequest request, CancellationToken cancellationToken = default)
   {
-    using (LogContext.Push(_createEnrichers<T>(request)))
+    using IDisposable context0 = LogContext.Push(_createEnrichers<T>(request));
+
+    SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
+    var timer = new Stopwatch();
+    var success = false;
+    timer.Start();
+    try
     {
-      SpeckleLog.Logger.Debug("Starting execution of graphql request to get {resultType}", typeof(T).Name);
-      var timer = new Stopwatch();
-      var success = false;
-      timer.Start();
-      try
-      {
-        var result = await ExecuteWithResiliencePolicies(async () =>
-          {
-            var result = await GQLClient
-              .SendMutationAsync<T>(request, cancellationToken ?? CancellationToken.None)
-              .ConfigureAwait(false);
-            MaybeThrowFromGraphQLErrors(request, result);
-            return result.Data;
-          })
-          .ConfigureAwait(false);
-        success = true;
-        return result;
-      }
-      // cancellations are bubbling up with no logging
-      catch (OperationCanceledException)
-      {
-        throw;
-      }
-      // we catch forbidden to rethrow, making sure its not logged.
-      catch (SpeckleGraphQLForbiddenException<T>)
-      {
-        throw;
-      }
-      // anything else related to graphql gets logged
-      catch (SpeckleGraphQLException<T> gqlException)
-      {
-        SpeckleLog.Logger
-          .ForContext("graphqlResponse", gqlException.Response)
-          .ForContext("graphqlExtensions", gqlException.Extensions)
-          .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
-          .Warning(
-            gqlException,
-            "Execution of the graphql request to get {resultType} failed with {graphqlExceptionType} {exceptionMessage}.",
-            typeof(T).Name,
-            gqlException.GetType().Name,
-            gqlException.Message
-          );
-        throw;
-      }
-      // we log and wrap anything that is not a graphql exception.
-      // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
-      catch (Exception ex)
-      {
-        SpeckleLog.Logger.Warning(
-          ex,
-          "Execution of the graphql request to get {resultType} failed without a graphql response. Cause {exceptionMessage}",
+      var result = await ExecuteWithResiliencePolicies(async () =>
+        {
+          var result = await GQLClient.SendMutationAsync<T>(request, cancellationToken).ConfigureAwait(false);
+          MaybeThrowFromGraphQLErrors(request, result);
+          return result.Data;
+        })
+        .ConfigureAwait(false);
+      success = true;
+      return result;
+    }
+    // cancellations are bubbling up with no logging
+    catch (OperationCanceledException)
+    {
+      throw;
+    }
+    // we catch forbidden to rethrow, making sure its not logged.
+    catch (SpeckleGraphQLForbiddenException<T>)
+    {
+      throw;
+    }
+    // anything else related to graphql gets logged
+    catch (SpeckleGraphQLException<T> gqlException)
+    {
+      SpeckleLog.Logger
+        .ForContext("graphqlResponse", gqlException.Response)
+        .ForContext("graphqlExtensions", gqlException.Extensions)
+        .ForContext("graphqlErrorMessages", gqlException.ErrorMessages.ToList())
+        .Warning(
+          gqlException,
+          "Execution of the graphql request to get {resultType} failed with {graphqlExceptionType} {exceptionMessage}.",
           typeof(T).Name,
-          ex.Message
+          gqlException.GetType().Name,
+          gqlException.Message
         );
-        throw new SpeckleGraphQLException<T>(
-          "The graphql request failed without a graphql response",
-          ex,
-          request,
-          null
-        );
-      }
-      finally
-      {
-        // this is a performance metric log operation
-        // this makes sure that both success and failed operations report
-        // the same performance log
-        timer.Stop();
-        var status = success ? "succeeded" : "failed";
-        SpeckleLog.Logger.Information(
-          "Execution of graphql request to get {resultType} {resultStatus} after {elapsed} seconds",
-          typeof(T).Name,
-          status,
-          timer.Elapsed.TotalSeconds
-        );
-      }
+      throw;
+    }
+    // we log and wrap anything that is not a graphql exception.
+    // this makes sure, that any graphql operation only throws SpeckleGraphQLExceptions
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Warning(
+        ex,
+        "Execution of the graphql request to get {resultType} failed without a graphql response. Cause {exceptionMessage}",
+        typeof(T).Name,
+        ex.Message
+      );
+      throw new SpeckleGraphQLException<T>("The graphql request failed without a graphql response", ex, request, null);
+    }
+    finally
+    {
+      // this is a performance metric log operation
+      // this makes sure that both success and failed operations report
+      // the same performance log
+      timer.Stop();
+      var status = success ? "succeeded" : "failed";
+      SpeckleLog.Logger.Information(
+        "Execution of graphql request to get {resultType} {resultStatus} after {elapsed} seconds",
+        typeof(T).Name,
+        status,
+        timer.Elapsed.TotalSeconds
+      );
     }
   }
 
@@ -372,7 +359,6 @@ public partial class Client : IDisposable
           request,
           null
         );
-        throw;
       }
   }
 }
