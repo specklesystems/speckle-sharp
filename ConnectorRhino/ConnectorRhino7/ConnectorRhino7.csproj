@@ -24,10 +24,16 @@
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWpf>true</UseWpf>
     <DefineConstants>$(DefineConstants);RHINO7</DefineConstants>
+    <OutputType>Library</OutputType>
   </PropertyGroup>
   
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
     <DefineConstants>$(DefinesConstants);MAC</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
+    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
+    <StartAction>Program</StartAction>
   </PropertyGroup>
 
   <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" />

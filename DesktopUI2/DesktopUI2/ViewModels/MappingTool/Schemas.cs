@@ -194,6 +194,39 @@ public class RevitWallViewModel : RevitBasicViewModel
   }
 }
 
+public class RevitProfileWallViewModel : RevitBasicViewModel
+{
+  public override string Name => "ProfileWall";
+
+  public override string GetSerializedSchema()
+  {
+    var obj = new RevitProfileWall()
+    {
+      family = SelectedFamily.Name,
+      type = SelectedType,
+      level = new RevitLevel(SelectedLevel)
+    };
+    return Operations.Serialize(obj);
+  }
+}
+
+public class RevitFaceWallViewModel : RevitBasicViewModel
+{
+  public override string Name => "FaceWall";
+
+  public override string GetSerializedSchema()
+  {
+    var obj = new RevitFaceWall()
+    {
+      family = SelectedFamily.Name,
+      type = SelectedType,
+      level = new RevitLevel(SelectedLevel)
+    };
+
+    return Operations.Serialize(obj);
+  }
+}
+
 public class RevitFloorViewModel : RevitBasicViewModel
 {
   public override string Name => "Floor";
