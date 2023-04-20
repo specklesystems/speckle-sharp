@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
       {
         // there are certain elements in Revit that can be a host to another element
         // yet not know it.
-        var hostedElementIds = GetDependentElementIds(host);
+        var hostedElementIds = GetHostedElementIds(host);
         var elementId = element.Id;
         if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
         {
@@ -82,7 +82,7 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, Element host, out List<string> notes)
     {
       notes = new List<string>();
-      var hostedElementIds = GetDependentElementIds(host);
+      var hostedElementIds = GetHostedElementIds(host);
 
       if (!hostedElementIds.Any())
         return;
@@ -139,12 +139,13 @@ namespace Objects.Converter.Revit
         (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
       }
     }
-
-    public IList<ElementId> GetDependentElementIds(Element host)
+    public IList<ElementId> GetHostedElementIds(Element host)
     {
       IList<ElementId> ids = null;
       if (host is HostObject hostObject)
+      {
         ids = hostObject.FindInserts(true, false, false, false);
+      }
       else
       {
         var typeFilter = new ElementIsElementTypeFilter(true);
@@ -1325,49 +1326,71 @@ namespace Objects.Converter.Revit
       return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
     }
 
-    // MEGA HACK to get the slope arrow of a roof which is technically not accessable by the api
-    // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
-    private void GetSlopeArrowHack(ElementId elementId, Document doc, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
+    private static ModelLine GetSlopeArrow(Element element)
     {
-      List<ElementId> deleted = null;
-      tail = null;
-      head = null;
-      tailOffset = 0;
-      headOffset = 0;
+      using var modelLineFilter = new ElementCategoryFilter(BuiltInCategory.OST_SketchLines);
+      var elementIds = element.GetDependentElements(modelLineFilter);
+
+      foreach (var elementId in elementIds)
+      {
+        if (element.Document.GetElement(elementId) is not ModelLine line) continue;
+        if (!line.Name.Equals("Slope Arrow", StringComparison.Ordinal)) continue; // TODO: does this work with other languages of Revit?
+
+        return line;
+      }
+      return null;
+    }
+//#if !REVIT2020 && !REVIT2021
+//    private static ModelLine GetSlopeArrowFromSketchId(ElementId sketchId, Document doc)
+//    {
+//      var sketch = (Sketch)doc.GetElement(sketchId);
+
+//      var sketchLinesIds = sketch.GetAllElements();
+//      foreach (var elementId in sketchLinesIds)
+//      {
+//        if (doc.GetElement(elementId) is not ModelLine line) continue;
+//        if (!line.Name.Equals("Slope Arrow", StringComparison.Ordinal)) continue; // TODO: does this work with other languages of Revit?
+
+//        return line;
+//      }
+//      return null;
+//    }
+//#endif
+    private Point GetSlopeArrowHead(ModelLine slopeArrow, Document doc)
+    {
+      if (slopeArrow == null) return null;
+      return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(1), doc);
+    }
+    private Point GetSlopeArrowTail(ModelLine slopeArrow, Document doc)
+    {
+      if (slopeArrow == null) return null;
+      return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0), doc);
+    }
+    public double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
+    {
+      return GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_START_HEIGHT);
+    }
+    public double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
+    {
+      var specifyOffset = GetParamValue<int>(slopeArrow, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
+      var lineLength = GetParamValue<double>(slopeArrow, BuiltInParameter.CURVE_ELEM_LENGTH);
+
       slope = 0;
-      using (var t = new Transaction(doc, "TTT"))
+      double headOffset = 0;
+      // 1 corrosponds to the "slope" option
+      if (specifyOffset == 1)
       {
-        t.Start();
-        deleted = doc.Delete(elementId).ToList();
-        t.RollBack();
+        // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
+        slope = GetParamValue<double>(slopeArrow, BuiltInParameter.ROOF_SLOPE) / 100;
+        headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
       }
-      foreach (ElementId id in deleted)
+      else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
       {
-        ModelLine l = doc.GetElement(id) as ModelLine;
-        if (l == null) continue;
-        if (!l.Name.Equals("Slope Arrow")) continue; // TODO: does this work with other languages of Revit?
-
-        tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0), doc);
-        head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1), doc);
-        tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
-
-        var specifyOffset = GetParamValue<int>(l, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
-        var lineLength = GetParamValue<double>(l, BuiltInParameter.CURVE_ELEM_LENGTH);
-
-        // 1 corrosponds to the "slope" option
-        if (specifyOffset == 1)
-        {
-          // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
-          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100;
-          headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
-        }
-        else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
-        {
-          headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
-          slope = (headOffset - tailOffset) / lineLength;
-        }
-        break;
+        headOffset = GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_END_HEIGHT);
+        slope = (headOffset - tailOffset) / lineLength;
       }
+
+      return headOffset;
     }
   }
 }
