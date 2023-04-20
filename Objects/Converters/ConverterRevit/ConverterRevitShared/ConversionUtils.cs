@@ -1341,13 +1341,15 @@ namespace Objects.Converter.Revit
         elementIds = element.GetDependentElements(modelLineFilter);
       }
 
-
       foreach (var elementId in elementIds)
       {
         if (element.Document.GetElement(elementId) is not ModelLine line) continue;
-        if (!line.Name.Equals("Slope Arrow", StringComparison.Ordinal)) continue; // TODO: does this work with other languages of Revit?
 
-        return line;
+        var offsetAtTailParameter = line.get_Parameter(BuiltInParameter.SLOPE_START_HEIGHT);
+        if (offsetAtTailParameter != null)
+        {
+          return line;
+        }
       }
       return null;
     }
