@@ -4,7 +4,6 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OG = Objects.Geometry;
@@ -268,6 +267,10 @@ namespace Objects.Converter.Revit
         // Note: this method is untested. It seems Revit doesn't send circles... it sends two arcs instead.
         // Other applications may send circles though... needs more testing
         case OG.Circle circle:
+          if (!(circle.radius is double radius && radius > 0))
+          {
+            throw new Exception($"Circle with id, {circle.id}, does not have a valid radius");
+          }
           var circleNormalUnit = circle.plane.normal.Unit();
           var circleNormalAsPoint = new OG.Point(circleNormalUnit.x, circleNormalUnit.y, circleNormalUnit.z);
           var circleConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, circle.units);
@@ -283,7 +286,7 @@ namespace Objects.Converter.Revit
 
           if (circleNormalAsPoint.DistanceTo(new OG.Point(0, 0, 1)) < TOLERANCE)
           {
-            return new OG.Circle(newCirclePlane, circle.radius ?? 0, units: circle.units);
+            return new OG.Circle(newCirclePlane, radius, units: circle.units);
           }
 
           newCirclePlane.xdir.Normalize();
@@ -328,6 +331,14 @@ namespace Objects.Converter.Revit
           return newCurve;
 
         case OG.Ellipse ellipse:
+          if (!(ellipse.firstRadius is double firstRadius && firstRadius > 0))
+          {
+            throw new Exception($"Ellipse with id, {ellipse.id}, does not have a valid first radius");
+          }
+          if (!(ellipse.secondRadius is double secondRadius && secondRadius > 0))
+          {
+            throw new Exception($"Ellipse with id, {ellipse.id}, does not have a valid second radius");
+          }
           var ellipseConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, ellipse.units);
           var flattenTransform = new OO.Transform(
             new Vector(1, 0, 0),
@@ -350,8 +361,8 @@ namespace Objects.Converter.Revit
 
           return new OG.Ellipse(
             newEllipsePlane,
-            (ellipse.firstRadius ?? 0) * rad1Scale,
-            (ellipse.secondRadius ?? 0) * rad2Scale,
+            firstRadius * rad1Scale,
+            secondRadius * rad2Scale,
             ellipse.domain, ellipse.trimDomain, units: ellipse.units
           );
 
