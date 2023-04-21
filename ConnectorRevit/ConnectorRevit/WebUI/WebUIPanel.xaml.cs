@@ -13,7 +13,7 @@ namespace Speckle.ConnectorRevit
   {
 
 #if DEBUG
-    public WebUIPanel(WebUIBindings webUIBindings, string address = "https://distracted-jones-770c28.netlify.app/")
+    public WebUIPanel(WebUIBindings webUIBindings, string address = "http://localhost:8080")
 #else
  public WebUIPanel(WebUIBindings webUIBindings, string address = "https://dashing-haupia-e8f6e3.netlify.app/")
 #endif
@@ -26,7 +26,7 @@ namespace Speckle.ConnectorRevit
 
 #if (REVIT2022)
       // old method
-      CefSharpSettings.LegacyJavascriptBindingEnabled = true;
+      //CefSharpSettings.LegacyJavascriptBindingEnabled = true;
       Browser.RegisterAsyncJsObject("UiBindings", webUIBindings, options: BindingOptions.DefaultBinder);
 
 
@@ -41,9 +41,7 @@ namespace Speckle.ConnectorRevit
 
     private void Browser_FrameLoadEnd(object sender, FrameLoadEndEventArgs e)
     {
-#if DEBUG
       Browser.ShowDevTools();
-#endif
     }
 
 
