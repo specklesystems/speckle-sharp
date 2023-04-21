@@ -79,28 +79,21 @@ namespace Speckle.ConnectorRevit.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))?.Where(x => x != null)?.Select(x => x.Id)?.ToList();
-      if (selection != null)
+      var selection = args.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null && x.IsPhysicalElement()).Select(x => x.Id)?.ToList();
+      if (!selection.Any())
+        return;
+      
+      //merge two lists
+      if (!deselect)
       {
-        if (!deselect)
-        {
-          var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
-          if (currentSelection != null) currentSelection.AddRange(selection);
-          else currentSelection = selection;
-          try
-          {
-            CurrentDoc.Selection.SetElementIds(currentSelection);
-            CurrentDoc.ShowElements(currentSelection);
-          }
-          catch (Exception e) { }
-        }
-        else
-        {
-          var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
-          CurrentDoc.Selection.SetElementIds(updatedSelection);
-          if (updatedSelection.Any()) CurrentDoc.ShowElements(updatedSelection);
-        }
+        var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
+        selection = currentSelection.Union(selection).ToList();
       }
+  
+        CurrentDoc.Selection.SetElementIds(selection);
+        CurrentDoc.ShowElements(selection);
+     
+      
     }
 
     private List<Document> GetLinkedDocuments()

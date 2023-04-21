@@ -1323,7 +1323,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (IsReceiver)
         await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress)).ConfigureAwait(true);
       else
-        await Task.Run(() => Bindings.PreviewSend(StreamState, Progress)).ConfigureAwait(true);
+      //NOTE: do not wrap in a Task or it will crash Revit
+        Bindings.PreviewSend(StreamState, Progress);
 
       GetReport();
       SpeckleLog.Logger
