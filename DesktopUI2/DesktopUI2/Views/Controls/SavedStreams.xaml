@@ -2,16 +2,13 @@
   x:Class="DesktopUI2.Views.Controls.SavedStreams"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:ap="clr-namespace:DesktopUI2.Views.AttachedProperties"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
-  xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
   xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
   xmlns:vm="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   d:DesignHeight="450"
   d:DesignWidth="400"
@@ -21,6 +18,7 @@
   </Design.DataContext>
   <UserControl.Resources>
     <conv:OpacityValueConverter x:Key="OpacityValueConverter" />
+    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
   </UserControl.Resources>
 
   <ItemsRepeater Background="Transparent" Items="{Binding SavedStreams}">
@@ -96,13 +94,13 @@
                       Classes="StreamCard"
                       IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                       Kind="Heart"
-                      ToolTip.Tip="This is a favorite stream" />
+                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='This is a favorite stream'}" />
                     <icons:MaterialIcon
                       Grid.Column="1"
                       Classes="StreamCard"
                       IsVisible="{Binding StreamState.SchedulerEnabled}"
                       Kind="ClockCheck"
-                      ToolTip.Tip="Scheduler is enabled on this stream" />
+                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Scheduler is enabled on this stream'}" />
                     <icons:MaterialIcon
                       Grid.Column="2"
                       Margin="0,0,5,0"
@@ -146,14 +144,14 @@
                       Classes="StreamCard"
                       IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                       Kind="Heart"
-                      ToolTip.Tip="This is a favorite stream" />
+                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='This is a favorite stream'}" />
                     <icons:MaterialIcon
                       Grid.Column="1"
                       VerticalAlignment="Center"
                       Classes="StreamCard"
                       IsVisible="{Binding StreamState.AutoReceive}"
                       Kind="CallReceived"
-                      ToolTip.Tip="Auto Receive is ON for this stream" />
+                      ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Auto Receive is ON for this stream'}" />
                     <icons:MaterialIcon
                       Grid.Column="2"
                       Margin="0,0,2,0"
@@ -228,7 +226,7 @@
                     Classes="Mini"
                     Command="{Binding AskRemoveSavedStreamCommand}"
                     IsEnabled="{Binding !Progress.IsProgressing}"
-                    ToolTip.Tip="Remove this stream">
+                    ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Remove this stream'}">
                     <Button.Content>
                       <icons:MaterialIcon
                         Width="15"
@@ -261,7 +259,7 @@
               Command="{Binding AskRemoveSavedStreamCommand}"
               IsEnabled="{Binding !IsRemovingStream}"
               IsVisible="{Binding NoAccess}"
-              ToolTip.Tip="Remove this stream">
+              ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Remove this stream'}">
               <Button.Content>
                 <icons:MaterialIcon
                   Width="15"

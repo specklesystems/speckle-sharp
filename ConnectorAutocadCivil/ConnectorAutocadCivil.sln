@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutocad2021", "ConnectorAutoCAD2021\ConnectorAutocad2021.csproj", "{58A88F1A-7489-46D2-949D-2FC3F68C8D84}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2021", "ConnectorAutoCAD2021\ConnectorAutocad2021.csproj", "{58A88F1A-7489-46D2-949D-2FC3F68C8D84}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutocadCivilVersionProjects", "AutocadCivilVersionProjects", "{A07071D5-E197-487D-B543-28639AC3C719}"
 EndProject
@@ -23,7 +23,7 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorAutocadCivilShared
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2021", "..\Objects\Converters\ConverterAutocadCivil\ConverterCivil2021\ConverterCivil2021.csproj", "{361B45EB-DC3F-42BB-93EE-21F31A05FA68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2021", "ConnectorCivil2021\ConnectorCivil2021.csproj", "{AD10C167-937F-4706-9EB5-C99F86C35E8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCivil2021", "ConnectorCivil2021\ConnectorCivil2021.csproj", "{AD10C167-937F-4706-9EB5-C99F86C35E8F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2022", "..\Objects\Converters\ConverterAutocadCivil\ConverterAutocad2022\ConverterAutocad2022.csproj", "{D6731414-A695-4F89-AEA1-AE2141A1DAC1}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -33,15 +33,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2022", "..\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2022", "..\Objects\Converters\ConverterAutocadCivil\ConverterCivil2022\ConverterCivil2022.csproj", "{575293FB-158C-4F91-ABC1-18B60F310B32}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutocad2022", "ConnectorAutocad2022\ConnectorAutocad2022.csproj", "{FF1793E1-77F5-4A92-B3F2-6D8B104E479B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2022", "ConnectorAutocad2022\ConnectorAutocad2022.csproj", "{FF1793E1-77F5-4A92-B3F2-6D8B104E479B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2022", "ConnectorCivil2022\ConnectorCivil2022.csproj", "{464F2220-D7D9-4D8C-BB3D-B93A1C603469}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCivil2022", "ConnectorCivil2022\ConnectorCivil2022.csproj", "{464F2220-D7D9-4D8C-BB3D-B93A1C603469}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DesktopUI2", "..\DesktopUI2\DesktopUI2\DesktopUI2.csproj", "{EAB21473-7013-431C-B526-FB5BA657AE2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAutocad2023", "ConnectorAutocad2023\ConnectorAutocad2023.csproj", "{F4BFB155-7BA9-4E46-8240-9C825060C904}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAutocad2023", "ConnectorAutocad2023\ConnectorAutocad2023.csproj", "{F4BFB155-7BA9-4E46-8240-9C825060C904}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorCivil2023", "ConnectorCivil2023\ConnectorCivil2023.csproj", "{2639E37D-80D3-415A-B4D1-20D7F321F27F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorCivil2023", "ConnectorCivil2023\ConnectorCivil2023.csproj", "{2639E37D-80D3-415A-B4D1-20D7F321F27F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAutocad2023", "..\Objects\Converters\ConverterAutocadCivil\ConverterAutocad2023\ConverterAutocad2023.csproj", "{9A11C16B-790F-437A-9E04-7E0D3ECDC06B}"
 EndProject
@@ -49,11 +49,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterCivil2023", "..\Ob
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterAdvanceSteel2023", "..\Objects\Converters\ConverterAutocadCivil\ConverterAdvanceSteel2023\ConverterAdvanceSteel2023.csproj", "{0A736319-40F8-4A30-868A-69E856A849E3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorAdvanceSteel2023", "ConnectorAdvanceSteel2023\ConnectorAdvanceSteel2023.csproj", "{F4AA033F-4F85-4990-AFE9-86BE00ABE973}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorAdvanceSteel2023", "ConnectorAdvanceSteel2023\ConnectorAdvanceSteel2023.csproj", "{F4AA033F-4F85-4990-AFE9-86BE00ABE973}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AdvanceSteelAddinRegistrator", "AdvanceSteelAddinRegistrator\AdvanceSteelAddinRegistrator.csproj", "{4A9E92FD-CFF2-494F-AFA8-6AA2FE8BA761}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Triangle", "..\Objects\Converters\StructuralUtilities\Triangle\Triangle.csproj", "{B8217739-2B1B-4BDF-864F-88B9B423B118}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AdvanceSteelAddinRegistrator", "AdvanceSteelAddinRegistrator\AdvanceSteelAddinRegistrator.csproj", "{4A9E92FD-CFF2-494F-AFA8-6AA2FE8BA761}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -133,10 +131,6 @@ Global
 		{4A9E92FD-CFF2-494F-AFA8-6AA2FE8BA761}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A9E92FD-CFF2-494F-AFA8-6AA2FE8BA761}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A9E92FD-CFF2-494F-AFA8-6AA2FE8BA761}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B8217739-2B1B-4BDF-864F-88B9B423B118}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B8217739-2B1B-4BDF-864F-88B9B423B118}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B8217739-2B1B-4BDF-864F-88B9B423B118}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B8217739-2B1B-4BDF-864F-88B9B423B118}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -160,27 +154,26 @@ Global
 		{0A736319-40F8-4A30-868A-69E856A849E3} = {8AFDB1E6-D3E7-45EA-BCDC-F3554BDDEF1E}
 		{F4AA033F-4F85-4990-AFE9-86BE00ABE973} = {A07071D5-E197-487D-B543-28639AC3C719}
 		{4A9E92FD-CFF2-494F-AFA8-6AA2FE8BA761} = {31CF26D2-2744-4A51-AA93-7F28408A006F}
-		{B8217739-2B1B-4BDF-864F-88B9B423B118} = {31CF26D2-2744-4A51-AA93-7F28408A006F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EAFBA51C-7222-435F-8BDF-8C15B27A34C8}
 	EndGlobalSection
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{0a736319-40f8-4a30-868a-69e856a849e3}*SharedItemsImports = 5
-		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{2639e37d-80d3-415a-b4d1-20d7f321f27f}*SharedItemsImports = 4
+		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{2639e37d-80d3-415a-b4d1-20d7f321f27f}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{2d0f9f8a-2e89-4780-978a-cd92d6d7b843}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{361b45eb-dc3f-42bb-93ee-21f31a05fa68}*SharedItemsImports = 5
-		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{464f2220-d7d9-4d8c-bb3d-b93a1c603469}*SharedItemsImports = 4
+		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{464f2220-d7d9-4d8c-bb3d-b93a1c603469}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{575293fb-158c-4f91-abc1-18b60f310b32}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{57a28a09-c64e-47f6-b602-b6d58b19f1d5}*SharedItemsImports = 5
-		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{58a88f1a-7489-46d2-949d-2fc3f68c8d84}*SharedItemsImports = 4
+		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{58a88f1a-7489-46d2-949d-2fc3f68c8d84}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{8cfc7609-f640-4683-bf13-fe144d3dc50b}*SharedItemsImports = 5
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{9a11c16b-790f-437a-9e04-7e0d3ecdc06b}*SharedItemsImports = 5
-		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{ad10c167-937f-4706-9eb5-c99f86c35e8f}*SharedItemsImports = 4
+		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{ad10c167-937f-4706-9eb5-c99f86c35e8f}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{b47492d9-2eda-4016-a930-7fa708c85c3d}*SharedItemsImports = 13
 		..\Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{d6731414-a695-4f89-aea1-ae2141a1dac1}*SharedItemsImports = 5
-		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{f4aa033f-4f85-4990-afe9-86be00abe973}*SharedItemsImports = 4
-		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{f4bfb155-7ba9-4e46-8240-9c825060c904}*SharedItemsImports = 4
-		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{ff1793e1-77f5-4a92-b3f2-6d8b104e479b}*SharedItemsImports = 4
+		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{f4aa033f-4f85-4990-afe9-86be00abe973}*SharedItemsImports = 5
+		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{f4bfb155-7ba9-4e46-8240-9c825060c904}*SharedItemsImports = 5
+		ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{ff1793e1-77f5-4a92-b3f2-6d8b104e479b}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

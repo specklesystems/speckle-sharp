@@ -1,13 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Controls
+namespace DesktopUI2.Views.Controls;
+
+public class StreamSelector : UserControl
 {
-  public partial class StreamSelector : UserControl
+  public StreamSelector()
   {
-    public StreamSelector()
-    {
-      AvaloniaXamlLoader.Load(this);
-    }
+    AvaloniaXamlLoader.Load(this);
   }
 }

@@ -1,92 +1,34 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <ProjectGuid>{B81E0F77-1ABD-4941-9D76-C0DC6B1B6B82}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>ConnectorGrasshopper</RootNamespace>
     <AssemblyName>SpeckleConnectorGrasshopper</AssemblyName>
     <TargetFramework>net48</TargetFramework>
-    <LangVersion>8.0</LangVersion>
-    <StartAction>Program</StartAction>
-    <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
-    <StartArguments />
-    <RhinoMacLauncher>/Applications/Rhino 7.app</RhinoMacLauncher>
     <TargetExt>.gha</TargetExt>
-    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <TransformOnBuild>false</TransformOnBuild>
-    <PlatformTarget>x64</PlatformTarget>
-    <Platforms>AnyCPU</Platforms>
-    <DefineConstants>TRACE;RHINO7</DefineConstants>
     <Configurations>Debug;Release;Debug Mac;Release Mac</Configurations>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+    <DefineConstants>$(DefineConstants);RHINO7</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <DefineConstants>TRACE;RHINO7</DefineConstants>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' Or '$(Configuration)'=='Release Mac'">
+    <DefineConstants>$(DefineConstants);MAC</DefineConstants>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Debug Mac'">
-    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-    <DefineConstants>TRACE;RHINO7</DefineConstants>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)'=='Release Mac'">
-    <DefineConstants>TRACE;RHINO7;MAC</DefineConstants>
-  </PropertyGroup>
-  
+
+  <Import Project="..\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems" Label="Shared"/>
+
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj" />
-    <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj" />
-  </ItemGroup>
-  
-  <ItemGroup>
-    <None Update="SchemaBuilder\SchemaBuilderGen.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
-    </None>
-    <None Remove="InternalTestFiles\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="SchemaBuilder\SchemaBuilderGen.cs">
-      <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
-    </Compile>
-    <Compile Remove="InternalTestFiles\**" />
-    <Compile Update="..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs">
-      <DependentUpon>SchemaBuilderGen.tt</DependentUpon>
-    </Compile>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj"/>
+    <ProjectReference Include="..\ConnectorGrasshopperUtils\ConnectorGrasshopperUtils.csproj"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MSBuild.AssemblyVersion" Version="1.3.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3" />
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build">
-       <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build">
-       <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Remove="InternalTestFiles\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Update="..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SchemaBuilderGen.cs</LastGenOutput>
-    </Content>
+    <PackageReference Include="GrasshopperAsyncComponent" Version="1.2.3"/>
+    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build"/>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
   </ItemGroup>
   
-  <Target Name="GenerateT4" BeforeTargets="BeforeRebuild">
-    <Message Text="Restoring T4 tool..." Importance="high" />
-    <Exec Command="dotnet tool restore" />
-    <Message Text="Generating T4 templates..." Importance="high" />
-    <Exec Command="dotnet t4 -o $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)" />
+  <Target Name="GenerateT4">
+    <Message Text="Generating T4 templates..." Importance="high"/>
+    <Exec Command="dotnet t4 -o $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.cs $(ProjectDir)..\ConnectorGrasshopperShared\SchemaBuilder\SchemaBuilderGen.tt -P=$(ProjectDir)"/>
   </Target>
-  <Import Project="..\ConnectorGrasshopperShared\ConnectorGrasshopperShared.projitems" Label="Shared" />
-
 </Project>

@@ -19,7 +19,7 @@
 #define GetRoofDataCommandName					"GetRoofData";
 #define GetProjectInfoCommandName				"GetProjectInfo";
 #define GetSubelementInfoCommandName			"GetSubelementInfo";
-#define CreateDirectShapesCommandName 			"CreateDirectShapes";
+#define CreateDirectShapeCommandName 			"CreateDirectShape";
 #define CreateWallCommandName					"CreateWall";
 #define CreateDoorCommandName					"CreateDoor";
 #define CreateWindowCommandName					"CreateWindow";
@@ -28,5 +28,7 @@
 #define CreateObjectCommandName                 "CreateObject";
 #define CreateSlabCommandName					"CreateSlab";
 #define CreateZoneCommandName					"CreateZone";
+#define SelectElementsCommandName				"SelectElements";
+#define EndCreateTransactionCommandName			"FinishReceiveTransaction";
 
 #endif

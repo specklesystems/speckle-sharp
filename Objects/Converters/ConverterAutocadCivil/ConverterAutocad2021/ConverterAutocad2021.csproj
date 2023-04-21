@@ -1,49 +1,27 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AssemblyName>Objects.Converter.Autocad2021</AssemblyName>
-    <RootNamespace>Objects.Converter.Autocad</RootNamespace>
-    <DefineConstants>$(DefineConstants);AUTOCAD2021</DefineConstants>
-    <PackageId>Speckle.Objects.Converter.Autocad2021</PackageId>
-    <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
-    <Product>Objects.Converter.Autocad2021</Product>
-    <Version>2.1.0</Version>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <Description>Converter for Autocad 2021</Description>
-    <PackageTags>speckle objects converter autocad</PackageTags>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <AssemblyName>Objects.Converter.Autocad2021</AssemblyName>
+        <RootNamespace>Objects.Converter.Autocad</RootNamespace>
+        <DefineConstants>$(DefineConstants);AUTOCAD2021</DefineConstants>
+        <PackageId>Speckle.Objects.Converter.Autocad2021</PackageId>
+        <Product>Objects.Converter.Autocad2021</Product>
+        <Description>Converter for Autocad 2021</Description>
+        <PackageTags>$(PackageTags) objects converter autocad</PackageTags>
+        <CopyToKitFolder>true</CopyToKitFolder>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-  </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.0.3" />
+    </ItemGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent"  Condition="'$(IsDesktopBuild)' == true">
-    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-  </Target>
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Speckle.AutoCAD.API" Version="2021.0.0.3" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\..\..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-
-  <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems" Label="Shared" />
+    <Import Project="..\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems"
+        Label="Shared" />
 
 </Project>

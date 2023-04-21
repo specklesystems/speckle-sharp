@@ -1,46 +1,38 @@
-﻿using Avalonia.Controls.Selection;
-using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using ReactiveUI;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
 
-namespace DesktopUI2.ViewModels
+namespace DesktopUI2.ViewModels;
+
+public class SettingViewModel : ReactiveObject
 {
-  public class SettingViewModel : ReactiveObject
+  private string _selection;
+  private ISetting _setting;
+
+  public SettingViewModel(ISetting setting)
   {
-    private ISetting _setting;
+    Setting = setting;
+    //restores the selected item
+    Selection = setting.Selection;
+  }
 
-
-    public ISetting Setting
+  public ISetting Setting
+  {
+    get => _setting;
+    set
     {
-      get => _setting;
-      set
-      {
-        this.RaiseAndSetIfChanged(ref _setting, value);
-        this.RaisePropertyChanged("Summary");
-      }
+      this.RaiseAndSetIfChanged(ref _setting, value);
+      this.RaisePropertyChanged("Summary");
     }
+  }
 
-    private string _selection;
-    public string Selection
+  public string Selection
+  {
+    get => _selection;
+    set
     {
-      get => _selection;
-      set
-      {
-        //sets the selected item on the data model
-        Setting.Selection = value;
-        this.RaiseAndSetIfChanged(ref _selection, value);
-
-      }
-    }
-
-    public SettingViewModel(ISetting setting)
-    {
-      Setting = setting;
-      //restores the selected item
-      Selection = setting.Selection;
+      //sets the selected item on the data model
+      Setting.Selection = value;
+      this.RaiseAndSetIfChanged(ref _selection, value);
     }
   }
 }

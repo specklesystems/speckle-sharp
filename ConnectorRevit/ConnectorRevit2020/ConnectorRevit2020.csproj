@@ -1,111 +1,47 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8A53B084-20D8-48F6-9591-9D53CFA74130}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Speckle.ConnectorRevit</RootNamespace>
     <AssemblyName>SpeckleConnectorRevit</AssemblyName>
-    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <WarningLevel>4</WarningLevel>
+    <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <Deterministic>true</Deterministic>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <LangVersion>8</LangVersion>
-    <StartProgram>$(ProgramW6432)\Autodesk\Revit 2020\Revit.exe</StartProgram>
     <RevitFolderName>SpeckleRevit2</RevitFolderName>
     <RevitVersion>2020</RevitVersion>
-    <PlatformTarget>x64</PlatformTarget>
-    <!--these four make so that the SQLite.Interop.dll is copied in the after build target-->
-    <ContentSQLiteInteropFiles>true</ContentSQLiteInteropFiles>
-    <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-    <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-    <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
+    <AssemblyTitle>ConnectorRevit</AssemblyTitle>
+    <Product>ConnectorRevit</Product>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <UseWPF>true</UseWPF>
+    <DefineConstants>$(DefineConstants);REVIT2020</DefineConstants>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE;REVIT2020</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;REVIT2020</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+  
+  <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
+  
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
-    <Reference Include="System" />
-    <Reference Include="System.Numerics" />
     <Reference Include="System.Web.Extensions" />
     <Reference Include="System.Xaml" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <PackageReference Include="Avalonia" Version="0.10.18" />
+    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
+    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+    <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" />
+    <PackageReference Include="Revit.Async" Version="2.0.1" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Avalonia">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.Desktop">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="Avalonia.ReactiveUI">
-      <Version>0.10.18</Version>
-    </PackageReference>
-    <PackageReference Include="ModPlus.Revit.API.2020">
-      <Version>1.0.0</Version>
-      <ExcludeAssets>runtime</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="MSBuild.AssemblyVersion">
-      <Version>1.3.0</Version>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Revit.Async">
-      <Version>2.0.1</Version>
-    </PackageReference>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj">
-      <Project>{521d4aee-08cf-4913-bbe8-5511d176d126}</Project>
-      <Name>Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj">
-      <Project>{d8576aee-6ef4-4bd7-b024-864653ec41e5}</Project>
-      <Name>AvaloniaHwndHost</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj">
-      <Project>{aab81f89-c71c-4f8a-b256-6a23d19134a7}</Project>
-      <Name>DesktopUI2</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-  </PropertyGroup>
-  <!-- POST BUILD EVENTS START -->
+
+
   <Target Name="Clean">
     <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2020;$(AppData)\Autodesk\Revit\Addins\2020\SpeckleRevit2" />
   </Target>
-  <Target Name="AfterBuild">
+  <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
     <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
   </Target>
@@ -126,5 +62,4 @@
     <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
-  <!--END-->
 </Project>

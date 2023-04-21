@@ -1,0 +1,22 @@
+{
+  "solution": {
+    "path": "..\\All.sln",
+    "projects": [
+      "ConnectorBentley\\ConnectorBentleyShared\\ConnectorBentleyShared.shproj",
+      "ConnectorBentley\\ConnectorMicroStation\\ConnectorMicroStation.csproj",
+      "ConnectorBentley\\ConnectorOpenBuildings\\ConnectorOpenBuildings.csproj",
+      "ConnectorBentley\\ConnectorOpenRail\\ConnectorOpenRail.csproj",
+      "ConnectorBentley\\ConnectorOpenRoads\\ConnectorOpenRoads.csproj",
+      "Core\\Core\\Core.csproj",
+      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "Objects\\Converters\\ConverterBentley\\ConverterMicroStation\\ConverterMicroStation.csproj",
+      "Objects\\Converters\\ConverterBentley\\ConverterOpenBuildings\\ConverterOpenBuildings.csproj",
+      "Objects\\Converters\\ConverterBentley\\ConverterOpenRail\\ConverterOpenRail.csproj",
+      "Objects\\Converters\\ConverterBentley\\ConverterOpenRoads\\ConverterOpenRoads.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}

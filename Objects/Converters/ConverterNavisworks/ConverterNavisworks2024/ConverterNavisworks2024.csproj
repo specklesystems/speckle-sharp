@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <Title>SpeckleConverterNavisworks</Title>
+        <AssemblyName>Objects.Converter.Navisworks2024</AssemblyName>
+        <RootNamespace>Objects.Converter.Navisworks</RootNamespace>
+        <Platforms>AnyCPU;x64</Platforms>
+        <OutputPath>bin\x64\$(Configuration)</OutputPath>
+        <CopyToKitFolder>true</CopyToKitFolder>
+        <DefineConstants>$(DefineConstants);NAVMAN21</DefineConstants>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <Import Project="..\ConverterNavisworks\ConverterNavisworksShared.projitems" Label="Shared" />
+
+    <ItemGroup>
+        <PackageReference Include="Speckle.Navisworks.API" Version="2024.0.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    </ItemGroup>
+</Project>

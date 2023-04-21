@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Objects;
@@ -10,115 +11,136 @@ using GH_IO.Serialization;
 using Grasshopper.Kernel;
 using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
-using Rhino;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
-using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
-using Logging = Speckle.Core.Logging;
+using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
-namespace ConnectorGrasshopper.Ops
+namespace ConnectorGrasshopper.Ops;
+
+public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWrapper>>
 {
-  public class SyncSendComponent : SelectKitTaskCapableComponentBase<List<StreamWrapper>>
+  private Base converted;
+
+  public SyncSendComponent()
+    : base(
+      "Synchronous Sender",
+      "SS",
+      "Send data to a Speckle server Synchronously. This will block GH until all the data are received which can be used to safely trigger other processes downstream",
+      ComponentCategories.SECONDARY_RIBBON,
+      ComponentCategories.SEND_RECEIVE
+    ) { }
+
+  public List<StreamWrapper> OutputWrappers { get; private set; } = new();
+  public bool UseDefaultCache { get; set; } = true;
+  public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
+  public override bool CanDisableConversion => false;
+
+  protected override Bitmap Icon => Resources.SynchronousSender;
+  public override Guid ComponentGuid => new("A6ED7A5F-D013-4086-A4BB-F08B42B2A6B8");
+
+  protected override void RegisterInputParams(GH_InputParamManager pManager)
   {
-    public List<StreamWrapper> OutputWrappers { get; private set; } = new List<StreamWrapper>();
-    public bool UseDefaultCache { get; set; } = true;
-    
-    private Base converted;
-    public override GH_Exposure Exposure => GH_Exposure.secondary | GH_Exposure.obscure;
-    public override bool CanDisableConversion => false;
-    
-    public SyncSendComponent()
-      : base("Synchronous Sender", "SS",
-          "Send data to a Speckle server Synchronously. This will block GH until all the data are received which can be used to safely trigger other processes downstream",
-          ComponentCategories.SECONDARY_RIBBON, ComponentCategories.SEND_RECEIVE)
-    {
-      
-    }
-    
-    protected override void RegisterInputParams(GH_InputParamManager pManager)
-    {
-      pManager.AddGenericParameter("Data", "D", "The data to send.", GH_ParamAccess.tree);
-      pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.item);
-      pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.", GH_ParamAccess.item, "");
+    pManager.AddGenericParameter("Data", "D", "The data to send.", GH_ParamAccess.tree);
+    pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.item);
+    pManager.AddTextParameter(
+      "Message",
+      "M",
+      "Commit message. If left blank, one will be generated for you.",
+      GH_ParamAccess.item,
+      ""
+    );
 
-      Params.Input[2].Optional = true;
-    }
+    Params.Input[2].Optional = true;
+  }
 
-    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-    {
-      pManager.AddGenericParameter("Stream", "S", "Stream or streams pointing to the created commit", GH_ParamAccess.list);
-    }
+  protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+  {
+    pManager.AddGenericParameter(
+      "Stream",
+      "S",
+      "Stream or streams pointing to the created commit",
+      GH_ParamAccess.list
+    );
+  }
 
-    public override void SetConverterFromKit(string kitName)
-    {
-      base.SetConverterFromKit(kitName);
-      ExpireSolution(true);
-    }
+  public override void SetConverterFromKit(string kitName)
+  {
+    base.SetConverterFromKit(kitName);
+    ExpireSolution(true);
+  }
 
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+  public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+  {
+    base.AppendAdditionalMenuItems(menu);
+
+    Menu_AppendSeparator(menu);
+    if (OutputWrappers != null && OutputWrappers.Count != 0)
     {
-      base.AppendAdditionalMenuItems(menu);
-      
       Menu_AppendSeparator(menu);
-      if (OutputWrappers != null && OutputWrappers.Count != 0)
-      {
-        Menu_AppendSeparator(menu);
-        foreach (var ow in OutputWrappers)
-          Menu_AppendItem(
-            menu, 
-            $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
-            (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
-      }
+      foreach (var ow in OutputWrappers)
+        Menu_AppendItem(
+          menu,
+          $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
+          (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
+        );
     }
+  }
 
-    public override bool Write(GH_IWriter writer)
-    {
-      writer.SetBoolean("UseDefaultCache", UseDefaultCache);
-      var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
-      writer.SetString("OutputWrappers", owSer);
-      return base.Write(writer);
-    }
+  public override bool Write(GH_IWriter writer)
+  {
+    writer.SetBoolean("UseDefaultCache", UseDefaultCache);
+    var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
+    writer.SetString("OutputWrappers", owSer);
+    return base.Write(writer);
+  }
 
-    public override bool Read(GH_IReader reader)
-    {
-      UseDefaultCache = reader.GetBoolean("UseDefaultCache");
-      var wrappersRaw = reader.GetString("OutputWrappers");
-      var wrapperLines = wrappersRaw.Split('\n');
-      if (wrapperLines.Length != 0 && wrappersRaw != "")
+  public override bool Read(GH_IReader reader)
+  {
+    UseDefaultCache = reader.GetBoolean("UseDefaultCache");
+    var wrappersRaw = reader.GetString("OutputWrappers");
+    var wrapperLines = wrappersRaw.Split('\n');
+    if (wrapperLines.Length != 0 && wrappersRaw != "")
+      foreach (var line in wrapperLines)
       {
-        foreach (var line in wrapperLines)
-        {
-          var pieces = line.Split('\t');
-          OutputWrappers.Add(new StreamWrapper { ServerUrl = pieces[0], StreamId = pieces[1], CommitId = pieces[2] });
-        }
-      }
-      return base.Read(reader);
-    }
-    
-    public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
-    {
-      DA.DisableGapLogic();
-      if (RunCount == 1)
-      {
-        OutputWrappers = new List<StreamWrapper>();
-        DA.GetDataTree(0, out GH_Structure<IGH_Goo> dataInput);
-        // Note: this method actually converts the objects to speckle too
-        converted = Extras.Utilities.DataTreeToSpeckle(dataInput, Converter, CancelToken);
+        var pieces = line.Split('\t');
+        OutputWrappers.Add(
+          new StreamWrapper
+          {
+            ServerUrl = pieces[0],
+            StreamId = pieces[1],
+            CommitId = pieces[2]
+          }
+        );
       }
 
-      if (InPreSolve)
-      {
-        var messageInput = "";
+    return base.Read(reader);
+  }
 
-        IGH_Goo transportInput = null;
-        DA.GetData(1, ref transportInput);
-        DA.GetData(2, ref messageInput);
-        var transportsInput = new List<IGH_Goo> { transportInput };
-        
-        var task = Task.Run(async () =>
+  public override void SolveInstanceWithLogContext(IGH_DataAccess DA)
+  {
+    DA.DisableGapLogic();
+    if (RunCount == 1)
+    {
+      OutputWrappers = new List<StreamWrapper>();
+      DA.GetDataTree(0, out GH_Structure<IGH_Goo> dataInput);
+      // Note: this method actually converts the objects to speckle too
+      converted = Utilities.DataTreeToSpeckle(dataInput, Converter, CancelToken);
+    }
+
+    if (InPreSolve)
+    {
+      var messageInput = "";
+
+      IGH_Goo transportInput = null;
+      DA.GetData(1, ref transportInput);
+      DA.GetData(2, ref messageInput);
+      var transportsInput = new List<IGH_Goo> { transportInput };
+
+      var task = Task.Run(
+        async () =>
         {
           if (converted == null)
           {
@@ -151,7 +173,6 @@ namespace ConnectorGrasshopper.Ops
             var transport = data.GetType().GetProperty("Value").GetValue(data);
 
             if (transport is string s)
-            {
               try
               {
                 transport = new StreamWrapper(s);
@@ -161,7 +182,6 @@ namespace ConnectorGrasshopper.Ops
                 // TODO: Check this with team.
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, e.ToFormattedString());
               }
-            }
 
             if (transport is StreamWrapper sw)
             {
@@ -189,7 +209,11 @@ namespace ConnectorGrasshopper.Ops
                 continue;
               }
 
-              Logging.Analytics.TrackEvent(acc, Logging.Analytics.Events.Send, new Dictionary<string, object>() { { "sync", true } });
+              Speckle.Core.Logging.Analytics.TrackEvent(
+                acc,
+                Speckle.Core.Logging.Analytics.Events.Send,
+                new Dictionary<string, object> { { "sync", true } }
+              );
 
               var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
               transportBranches.Add(serverTransport, sw.BranchName ?? "main");
@@ -222,17 +246,15 @@ namespace ConnectorGrasshopper.Ops
             objectToSend,
             CancelToken,
             transports,
-            useDefaultCache: UseDefaultCache,
-            onProgressAction: y => { },
-            onErrorAction: (x, z) => { },
-            disposeTransports: true);
+            UseDefaultCache,
+            y => { },
+            (x, z) => { },
+            true
+          );
 
-          var message = messageInput;//.get_FirstItem(true).Value;
+          var message = messageInput; //.get_FirstItem(true).Value;
           if (message == "")
-          {
             message = $"Pushed {totalObjectCount} elements from Grasshopper.";
-          }
-
 
           var prevCommits = new List<StreamWrapper>();
 
@@ -245,9 +267,7 @@ namespace ConnectorGrasshopper.Ops
             }
 
             if (!(transport is ServerTransport))
-            {
               continue; // skip non-server transports (for now)
-            }
 
             try
             {
@@ -260,20 +280,21 @@ namespace ConnectorGrasshopper.Ops
                 message = message,
                 objectId = BaseId,
                 streamId = ((ServerTransport)transport).StreamId,
-                sourceApplication = Extras.Utilities.GetVersionedAppName()
+                sourceApplication = Utilities.GetVersionedAppName()
               };
 
               // Check to see if we have a previous commit; if so set it.
-              var prevCommit = prevCommits.FirstOrDefault(c =>
-                c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
+              var prevCommit = prevCommits.FirstOrDefault(
+                c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
+              );
               if (prevCommit != null)
-              {
-                commitCreateInput.parents = new List<string>() { prevCommit.CommitId };
-              }
+                commitCreateInput.parents = new List<string> { prevCommit.CommitId };
 
               var commitId = await client.CommitCreate(CancelToken, commitCreateInput);
 
-              var wrapper = new StreamWrapper($"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}");
+              var wrapper = new StreamWrapper(
+                $"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}"
+              );
               prevCommits.Add(wrapper);
             }
             catch (Exception e)
@@ -290,28 +311,26 @@ namespace ConnectorGrasshopper.Ops
           }
 
           return prevCommits;
-        }, CancelToken);
+        },
+        CancelToken
+      );
 
-        TaskList.Add(task);
-        return;
-      }
-
-      if (CancelToken.IsCancellationRequested)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
-      }
-      else if (!GetSolveResults(DA, out var outputWrappers))
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not running multithreading");
-      }
-      else
-      {
-        OutputWrappers.AddRange(outputWrappers);
-        DA.SetDataList(0, outputWrappers);
-      }
+      TaskList.Add(task);
+      return;
     }
 
-    protected override System.Drawing.Bitmap Icon => Resources.SynchronousSender;
-    public override Guid ComponentGuid => new Guid("A6ED7A5F-D013-4086-A4BB-F08B42B2A6B8");
+    if (CancelToken.IsCancellationRequested)
+    {
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Run out of time!");
+    }
+    else if (!GetSolveResults(DA, out var outputWrappers))
+    {
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Not running multithreading");
+    }
+    else
+    {
+      OutputWrappers.AddRange(outputWrappers);
+      DA.SetDataList(0, outputWrappers);
+    }
   }
 }

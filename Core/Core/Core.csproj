@@ -1,79 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Speckle.Core</RootNamespace>
-    <LangVersion>8.0</LangVersion>
     <PackageId>Speckle.Core</PackageId>
-    <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
     <Product>SpeckleCore</Product>
     <RuntimeIdentifiers>win-x64;osx-x64;osx-arm64</RuntimeIdentifiers>
     <AssemblyName>SpeckleCore2</AssemblyName>
-    <Version>2.1.0</Version>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <Description>Core is the .NET SDK for Speckle</Description>
-    <PackageTags>speckle core</PackageTags>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <PackageIcon>logo.png</PackageIcon>
-    <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-    <Configurations>Debug;Release</Configurations>
-    <Platforms>AnyCPU</Platforms>
-    <DefineConstants>TRACE;</DefineConstants>
+    <PackageTags>$(PackageTags) core</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="TestsUnit" />
-    <InternalsVisibleTo Include="TestsIntegration" />
+    <InternalsVisibleTo Include="TestsUnit"/>
+    <InternalsVisibleTo Include="TestsIntegration"/>
   </ItemGroup>
 
-  <!--Do not publish a Core nuget when publishing Objects-->
+  <!--Do
+    not publish a Core nuget when publishing Objects-->
   <PropertyGroup Condition="'$(SolutionName)'=='Objects' Or '$(SolutionName)'=='DesktopUI'">
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+
   <ItemGroup>
-    <PackageReference Include="GraphQL.Client" Version="5.1.1" />
-    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Polly" Version="7.2.3" />
-    <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1" />
-    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0" />
-    <PackageReference Include="Sentry" Version="3.29.0" />
-    <PackageReference Include="Sentry.Serilog" Version="3.29.0" />
-    <PackageReference Include="Serilog" Version="2.12.0" />
-    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="1.2.0" />
-    <PackageReference Include="Serilog.Enrichers.GlobalLogContext" Version="3.0.0" />
-    <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
-    <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2">
-      <Aliases></Aliases>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.3" />
+    <PackageReference Include="GraphQL.Client" Version="5.1.1"/>
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0"/>
+    <PackageReference Include="Polly" Version="7.2.3"/>
+    <PackageReference Include="Polly.Contrib.WaitAndRetry" Version="1.1.1"/>
+    <PackageReference Include="Polly.Extensions.Http" Version="3.0.0"/>
+    <PackageReference Include="Sentry" Version="3.29.0"/>
+    <PackageReference Include="Sentry.Serilog" Version="3.29.0"/>
+    <PackageReference Include="Serilog" Version="2.12.0"/>
+    <PackageReference Include="Serilog.Enrichers.ClientInfo" Version="1.2.0"/>
+    <PackageReference Include="Serilog.Enrichers.GlobalLogContext" Version="3.0.0"/>
+    <PackageReference Include="Serilog.Exceptions" Version="8.4.0"/>
+    <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
+    <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2"/>
+    <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2"/>
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.3"/>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Serialisation\" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Remove="Core\Commit.cs" />
-    <Compile Remove="Core\Stream.cs" />
-    <Compile Remove="Core\Classes.cs" />
-    <Compile Remove="Core\Account.cs" />
-    <Compile Remove="Core\User.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="Microsoft.Data.Sqlite" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\logo.png">
-      <Pack>True</Pack>
-      <PackagePath></PackagePath>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="System.Web" />
-  </ItemGroup>
+
+  <Target Name="husky" BeforeTargets="Restore"
+    Condition="'$(IsDesktopBuild)' == true">
+    <Exec
+      Command="dotnet tool restore"
+      StandardOutputImportance="Low"
+      StandardErrorImportance="High"/>
+    <Exec Command="dotnet husky install"
+      StandardOutputImportance="Low"
+      StandardErrorImportance="High"
+      WorkingDirectory="$(RepositoryRoot)"/>
+  </Target>
 </Project>

@@ -1,45 +1,43 @@
-﻿using Avalonia.Media;
+using System;
+using System.Diagnostics;
+using Avalonia.Media;
 using Material.Icons;
-using Material.Icons.Avalonia;
 using ReactiveUI;
 using Speckle.Core.Api;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 
-namespace DesktopUI2.ViewModels
+namespace DesktopUI2.ViewModels;
+
+public class NotificationViewModel : ReactiveObject
 {
-  public class NotificationViewModel : ReactiveObject
+  private AccountViewModel _user;
+
+  public NotificationViewModel() { }
+
+  public NotificationViewModel(PendingStreamCollaborator invite, string serverUrl)
   {
-    public string Message { get; set; }
+    User = new AccountViewModel(invite.invitedBy);
+    Message = $"{invite.invitedBy.name} is inviting you to collaborate on '{invite.streamName}'!";
+    Launch = () =>
+    {
+      Process.Start(new ProcessStartInfo($"{serverUrl}/streams/{invite.streamId}") { UseShellExecute = true });
+    };
+  }
 
-    public MaterialIconKind Icon { get; set; }
-    public IBrush IconColor { get; set; }
-    private AccountViewModel _user;
-    public AccountViewModel User
-    {
-      get => _user;
-      set => this.RaiseAndSetIfChanged(ref _user, value);
-    }
-    public Action Launch { get; set; }
-    public NotificationViewModel()
-    {
+  public string Message { get; set; }
 
-    }
-    public NotificationViewModel(PendingStreamCollaborator invite, string serverUrl)
-    {
-      User = new AccountViewModel(invite.invitedBy);
-      Message = $"{invite.invitedBy.name} is inviting you to collaborate on '{invite.streamName}'!";
-      Launch = () =>
-      {
-        Process.Start(new ProcessStartInfo($"{serverUrl}/streams/{invite.streamId}") { UseShellExecute = true });
-      };
-    }
+  public MaterialIconKind Icon { get; set; }
+  public IBrush IconColor { get; set; }
 
-    public void LaunchCommand()
-    {
-      Launch.Invoke();
-    }
+  public AccountViewModel User
+  {
+    get => _user;
+    set => this.RaiseAndSetIfChanged(ref _user, value);
+  }
+
+  public Action Launch { get; set; }
+
+  public void LaunchCommand()
+  {
+    Launch.Invoke();
   }
 }

@@ -4,14 +4,17 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="450"
   d:DesignWidth="400"
   mc:Ignorable="d">
+  <UserControl.Resources>
+    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
+  </UserControl.Resources>
   <UserControl.Styles>
     <Style Selector="icons|MaterialIcon#send">
       <Setter Property="RenderTransform" Value="rotate(-30deg)" />
@@ -30,14 +33,14 @@
         VerticalAlignment="Center"
         Classes="SpeckleFont"
         FontWeight="Bold"
-        Text="Model (branch):" />
+        Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Branch:'}" />
       <ComboBox
         Grid.Column="1"
         Margin="5,10,5,10"
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
         Items="{Binding BranchesViewModel}"
-        PlaceholderText="Select a model (branch)"
+        PlaceholderText="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Select a branch'}"
         SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
         <ComboBox.ItemsPanel />
         <ComboBox.ItemTemplate>

@@ -4,6 +4,7 @@
 namespace FieldNames
 {
 
+static const char* Id = "id";
 static const char* ApplicationId = "applicationId";
 static const char* ApplicationIds = "applicationIds";
 static const char* ParentElementId = "parentApplicationId";
@@ -13,20 +14,35 @@ static const char* ElementTypes = "elementTypes";
 static const char* Elements = "elements";
 static const char* SubElements = "subElements";
 
+namespace ApplicationObject {
+static const char* ApplicationObjects = "applicationObjects";
+static const char* Status = "Status";
+static const char* StateCreated = "Created";
+static const char* StateSkipped = "Skipped";
+static const char* StateUpdated = "Updated";
+static const char* StateFailed = "Failed";
+static const char* StateRemoved = "Removed";
+static const char* StateUnknown = "Unknown";
+static const char* OriginalId = "OriginalId";
+static const char* CreatedIds = "CreatedIds";
+}
+
 static const char* FloorIndex = "floorIndex";
 static const char* Shape = "shape";
 
-static const char* Walls = "walls";
-static const char* Windows = "windows";
-static const char* SubelementModels = "subelementModels";
-static const char* Doors = "doors";
 static const char* Beams = "beams";
 static const char* Columns = "columns";
+static const char* DirectShapes = "directShapes";
+static const char* Doors = "doors";
 static const char* Objects = "objects";
-static const char* Slabs = "slabs";
-static const char* Zones = "zones";
 static const char* Roofs = "roofs";
+static const char* Slabs = "slabs";
+static const char* Walls = "walls";
+static const char* Windows = "windows";
+static const char* Zones = "zones";
+
 static const char* Models = "models";
+static const char* SubelementModels = "subelementModels";
 
 static const char* ShowOnStories = "showOnStories";
 static const char* VisibilityContData = "visibilityCont";
@@ -188,16 +204,16 @@ static const char* nProfiles = "nProfiles";
 
 namespace BeamSegment
 {
-	// Segment override materials
-	static const char* LeftMaterial = "leftMaterial";
-	static const char* TopMaterial = "topMaterial";
-	static const char* RightMaterial = "rightMaterial";
-	static const char* BottomMaterial = "bottomMaterial";
-	static const char* EndsMaterial = "endsMaterial";
-	// Segment - The overridden materials are chained
-	static const char* MaterialsChained = "materialChained";
-	// Segment
-	static const char* segmentData = "assemblySegmentData";
+// Segment override materials
+static const char* LeftMaterial = "leftMaterial";
+static const char* TopMaterial = "topMaterial";
+static const char* RightMaterial = "rightMaterial";
+static const char* BottomMaterial = "bottomMaterial";
+static const char* EndsMaterial = "endsMaterial";
+// Segment - The overridden materials are chained
+static const char* MaterialsChained = "materialChained";
+// Segment
+static const char* segmentData = "assemblySegmentData";
 }
 
 
@@ -280,18 +296,18 @@ static const char* nProfiles = "nProfiles";
 
 namespace ColumnSegment
 {
-	// Segment - Veneer attributes
-	static const char* VenType = "veneerType";
-	static const char* VenBuildingMaterial = "veneerBuildingMaterial";
-	static const char* VenThick = "veneerThick";
-	// Segment - The extrusion overridden material name
-	static const char* ExtrusionSurfaceMaterial = "extrusionSurfaceMaterial";
-	// Segment - The ends overridden material name
-	static const char* EndsSurfaceMaterial = "endsSurfaceMaterial";
-	// Segment - The overridden materials are chained
-	static const char* MaterialsChained = "materialChained";
-	// Segment
-	static const char* segmentData = "assemblySegmentData";
+// Segment - Veneer attributes
+static const char* VenType = "veneerType";
+static const char* VenBuildingMaterial = "veneerBuildingMaterial";
+static const char* VenThick = "veneerThick";
+// Segment - The extrusion overridden material name
+static const char* ExtrusionSurfaceMaterial = "extrusionSurfaceMaterial";
+// Segment - The ends overridden material name
+static const char* EndsSurfaceMaterial = "endsSurfaceMaterial";
+// Segment - The overridden materials are chained
+static const char* MaterialsChained = "materialChained";
+// Segment
+static const char* segmentData = "assemblySegmentData";
 }
 
 

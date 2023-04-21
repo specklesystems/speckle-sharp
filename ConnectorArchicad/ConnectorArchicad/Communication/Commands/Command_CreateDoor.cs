@@ -1,14 +1,13 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Objects.BuiltElements.Archicad;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
+using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class CreateDoor : ICommand<IEnumerable<string>>
+  sealed internal class CreateDoor : ICommand<IEnumerable<ApplicationObject>>
   {
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
@@ -19,17 +18,15 @@ namespace Archicad.Communication.Commands
       {
         Datas = datas;
       }
-
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
-      [JsonProperty("applicationIds")]
-      public IEnumerable<string> ApplicationIds { get; private set; }
-
+      [JsonProperty("applicationObjects")]
+      public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
     }
+
     private IEnumerable<ArchicadDoor> Datas { get; }
 
     public CreateDoor(IEnumerable<ArchicadDoor> datas)
@@ -37,11 +34,10 @@ namespace Archicad.Communication.Commands
       Datas = datas;
     }
 
-    public async Task<IEnumerable<string>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateDoor", new Parameters(Datas));
-      return result == null ? null : result.ApplicationIds;
+      return result == null ? null : result.ApplicationObjects;
     }
-
   }
 }

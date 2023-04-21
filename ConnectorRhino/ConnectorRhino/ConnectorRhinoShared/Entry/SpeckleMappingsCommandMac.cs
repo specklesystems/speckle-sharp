@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if MAC
+using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Avalonia;
@@ -13,9 +14,8 @@ using Serilog;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
-namespace SpeckleRhino
-{
-#if MAC
+namespace SpeckleRhino;
+
   public class SpeckleMappingsCommandMac : Command
   {
 
@@ -59,4 +59,3 @@ namespace SpeckleRhino
 
   }
 #endif
-}

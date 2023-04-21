@@ -13,34 +13,34 @@ using namespace FieldNames;
 namespace AddOnCommands {
 
 
-static GSErrCode CreateNewSlab (API_Element& slab, API_ElementMemo& slabMemo)
+GS::String CreateSlab::GetFieldName () const
 {
-	return ACAPI_Element_Create (&slab, &slabMemo);
+	return Slabs;
 }
 
 
-static GSErrCode ModifyExistingSlab (API_Element& slab, API_Element& mask, API_ElementMemo& slabMemo, GS::UInt64 memoMask)
+GS::UniString CreateSlab::GetUndoableCommandName () const
 {
-	return ACAPI_Element_Change (&slab, &mask, &slabMemo, memoMask, true);
+	return "CreateSpeckleSlab";
 }
 
 
-static GSErrCode GetSlabFromObjectState (const GS::ObjectState& os,
+GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
 	API_Element& mask,
-	API_ElementMemo& slabMemo,
-	GS::UInt64& memoMask)
+	API_ElementMemo& memo,
+	GS::UInt64& memoMask,
+	AttributeManager& /*attributeManager*/,
+	LibpartImportManager& /*libpartImportManager*/,
+	API_SubElement** /*marker = nullptr*/) const
 {
-	GS::UniString guidString;
-	os.Get (ApplicationId, guidString);
-	element.header.guid = APIGuidFromString (guidString.ToCStr ());
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_SlabID;
 #else
 	element.header.typeID = API_SlabID;
 #endif
 
-	GSErrCode err = Utility::GetBaseElementData (element, &slabMemo);
+	GSErrCode err = Utility::GetBaseElementData (element, &memo);
 	if (err != NoError)
 		return err;
 
@@ -62,7 +62,7 @@ static GSErrCode GetSlabFromObjectState (const GS::ObjectState& os,
 		element.slab.poly.nCoords = slabShape.VertexCount ();
 		element.slab.poly.nArcs = slabShape.ArcCount ();
 
-		slabShape.SetToMemo (slabMemo);
+		slabShape.SetToMemo (memo);
 	}
 
 	// The floor index and level of the slab
@@ -148,17 +148,17 @@ static GSErrCode GetSlabFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Setting side materials and edge angles
-	BMhKill ((GSHandle*) &slabMemo.edgeTrims);
-	BMhKill ((GSHandle*) &slabMemo.edgeIDs);
-	BMpFree (reinterpret_cast<GSPtr> (slabMemo.sideMaterials));
+	BMhKill ((GSHandle*) &memo.edgeTrims);
+	BMhKill ((GSHandle*) &memo.edgeIDs);
+	BMpFree (reinterpret_cast<GSPtr> (memo.sideMaterials));
 
-	slabMemo.edgeTrims = (API_EdgeTrim**) BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0);
-	slabMemo.sideMaterials = (API_OverriddenAttribute*) BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0);
+	memo.edgeTrims = (API_EdgeTrim**) BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0);
+	memo.sideMaterials = (API_OverriddenAttribute*) BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0);
 	for (Int32 k = 1; k <= element.slab.poly.nCoords; ++k) {
-		slabMemo.sideMaterials[k] = element.slab.sideMat;
+		memo.sideMaterials[k] = element.slab.sideMat;
 
-		(*(slabMemo.edgeTrims))[k].sideType = edgeType;
-		(*(slabMemo.edgeTrims))[k].sideAngle = (edgeAngle.HasValue ()) ? edgeAngle.Get () : PI / 2;
+		(*(memo.edgeTrims))[k].sideType = edgeType;
+		(*(memo.edgeTrims))[k].sideAngle = (edgeAngle.HasValue ()) ? edgeAngle.Get () : PI / 2;
 	}
 
 	// The reference plane location of the slab
@@ -174,7 +174,7 @@ static GSErrCode GetSlabFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Floor Plan and Section - Floor Plan Display
-	
+
 	// Show on Stories - Story visibility
 	bool isAutoOnStoryVisibility = false;
 	Utility::ImportVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.slab.visibilityCont);
@@ -405,46 +405,4 @@ GS::String CreateSlab::GetName () const
 }
 
 
-GS::ObjectState CreateSlab::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-	GS::ObjectState result;
-
-	GS::Array<GS::ObjectState> slabs;
-	parameters.Get (Slabs, slabs);
-
-	const auto& listAdder = result.AddList<GS::UniString> (ApplicationIds);
-
-	ACAPI_CallUndoableCommand ("CreateSpeckleSlab", [&] () -> GSErrCode {
-		for (const GS::ObjectState& slabOs : slabs) {
-
-			API_Element slab{};
-			API_Element	slabMask{};
-			API_ElementMemo slabMemo{};
-			GS::UInt64 memoMask = 0;
-			GS::OnExit memoDisposer ([&slabMemo] { ACAPI_DisposeElemMemoHdls (&slabMemo); });
-
-			GSErrCode err = GetSlabFromObjectState (slabOs, slab, slabMask, slabMemo, memoMask);
-			if (err != NoError) {
-				continue;
-			}
-
-			bool slabExists = Utility::ElementExists (slab.header.guid);
-			if (slabExists) {
-				err = ModifyExistingSlab (slab, slabMask, slabMemo, memoMask);
-			} else {
-				err = CreateNewSlab (slab, slabMemo);
-			}
-
-			if (err == NoError) {
-				GS::UniString elemId = APIGuidToString (slab.header.guid);
-				listAdder (elemId);
-			}
-		}
-		return NoError;
-		});
-
-	return result;
-}
-
-
-}
+} // namespace AddOnCommands

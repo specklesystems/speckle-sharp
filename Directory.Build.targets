@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!--
+  Speckle-sharp main Directory.Build.targets file
+  
+  This file gets automatically imported by every project in the repo.
+  The import happens AFTER any information in the .csproj, which means that each project
+  cannot override anything in it, only modify properties that these targets consume.
+  
+  It is intended to hold any common targets and events shared by all (or most) projects in the
+  repository.
+  Such as, copying a converter to the Kit folder, or cleaning up the entire monorepo.
+  -->
+
+  <PropertyGroup>
+    <!-- Determines if the project should execute the CopyToKitFolder target. Can be overriden
+    per-project.  -->
+    <CopyToKitFolder Condition="'$(CopyToKitFolder)' == ''">false</CopyToKitFolder>
+    <!-- The name of the kit folder we want to copy into. Can be overriden per-project.  -->
+    <KitFolder Condition="$(KitFolder) == ''">Objects</KitFolder>
+  </PropertyGroup>
+
+  <!--
+  Ensures consistent behaviour when copying files from our Objects Kit to the local Kit folder for
+  every supported OS.
+  Requires the property "CopyToKitFolder" to be set to true in the specific project.
+  It will copy only the target assembly, any dependencies must be copied in the project file
+  in a target that depends on this one to guarantee execution order..
+  -->
+  <Target
+    Label="Copy To Objects Kit Folder"
+    Name="CopyToKitFolder"
+    AfterTargets="PostBuildEvent"
+    Condition="'$(CopyToKitFolder)' == true AND '$(IsDesktopBuild)' == true">
+    <Message Text="Copying $(AssemblyName).dll to $(KitFolder) Kit folder" Importance="high"/>
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
+          Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\$(KitFolder)\&quot;"/>
+    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))"
+          Command="mkdir -p $HOME'/.config/Speckle/Kits/$(KitFolder)'"/>
+    <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))"
+          Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/$(KitFolder)/'"/>
+  </Target>
+
+  <!--
+  Reports the current build version number in the build logs.
+  -->
+  <Target Name="ReportBuildVersion" BeforeTargets="BeforeBuild">
+    <Message
+      Text="Building $(MSBuildProjectName).csproj with version $(Version) and file version $(FileVersion)"
+      Importance="high"/>
+  </Target>
+
+  <!--
+  Deep clean target will remove all bin/ and obj/ folders from the monorepo. Can be invoked by
+  cleaning any project
+  while passing the DeepClean parameter as "true".
+  
+  "dotnet clean /p:DeepClean=true"
+  -->
+  <Target Name="DeepClean">
+    <Message Text="Deep clean of $(MSBuildProjectName).csproj" Importance="high"/>
+    <RemoveDir Directories="$(BaseIntermediateOutputPath)"/>
+    <RemoveDir Directories="$(BaseOutputPath)"/>
+  </Target>
+</Project>

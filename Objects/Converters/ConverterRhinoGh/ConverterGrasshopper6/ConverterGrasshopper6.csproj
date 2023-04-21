@@ -5,17 +5,10 @@
         <AssemblyName>Objects.Converter.Grasshopper6</AssemblyName>
         <RootNamespace>Objects.Converter.Rhino</RootNamespace>
         <PackageId>Speckle.Objects.Converter.Grasshopper6</PackageId>
-        <Version>2.1.0</Version>
-        <Authors>Speckle</Authors>
         <Description>Converter for Grasshopper (Rhino 6 version)</Description>
-        <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-        <PackageIcon>logo.png</PackageIcon>
-        <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
+        <PackageTags>$(PackageTags) objects converter rhino grasshopper gh</PackageTags>
         <RhinoPluginType>none</RhinoPluginType>
+        <CopyToKitFolder>true</CopyToKitFolder>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -27,15 +20,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Include="..\..\..\..\logo.png" Link="logo.png">
-            <PackagePath></PackagePath>
-            <Pack>True</Pack>
-        </None>
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="Grasshopper" Version="6.28.20199.17141" />
-        <PackageReference Include="RhinoCommon" Version="6.28.20199.17141" />
     </ItemGroup>
 
     <ItemGroup>
@@ -43,14 +28,6 @@
         <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-    </PropertyGroup>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-        <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-        <!-- We assume Objects project has been built, and folder for the Kit already exists -->
-        <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/Objects/'" />
-    </Target>
     <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />
 
 </Project>
