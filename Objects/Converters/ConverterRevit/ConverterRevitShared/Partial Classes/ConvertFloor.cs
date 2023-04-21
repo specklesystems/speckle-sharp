@@ -205,21 +205,6 @@ namespace Objects.Converter.Revit
 
       switch (curve)
       {
-        case OG.Line line:
-          return new OG.Line(
-            new OG.Point(
-              line.start.x,
-              line.start.y,
-              z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.start.units),
-              line.start.units),
-            new OG.Point(
-              line.end.x,
-              line.end.y,
-              z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.end.units),
-              line.end.units),
-            line.units
-            );
-
         case OG.Arc arc:
           var normalUnit = arc.plane.normal.Unit();
           var normalAsPoint = new OG.Point(normalUnit.x, normalUnit.y, normalUnit.z);
@@ -280,9 +265,47 @@ namespace Objects.Converter.Revit
             return newArcCurve;
           }
 
-        //case OG.Circle circle:
-        //case OG.Ellipse ellipse:
-        //case OG.Spiral spiral:
+        // Note: this method is untested. It seems Revit doesn't send circles... it sends two arcs instead.
+        // Other applications may send circles though... needs more testing
+        case OG.Circle circle:
+          if (!(circle.radius is double radius && radius > 0))
+          {
+            throw new Exception($"Circle with id, {circle.id}, does not have a valid radius");
+          }
+          var circleNormalUnit = circle.plane.normal.Unit();
+          var circleNormalAsPoint = new OG.Point(circleNormalUnit.x, circleNormalUnit.y, circleNormalUnit.z);
+          var circleConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, circle.units);
+
+          var flattenTransformCircle = new OO.Transform(
+            new Vector(1, 0, 0),
+            new Vector(0, 1, 0),
+            new Vector(0, 0, 0),
+            new Vector(0, 0, z * circleConversionFactor, units: circle.plane.units)
+          );
+
+          _ = circle.plane.TransformTo(flattenTransformCircle, out OG.Plane newCirclePlane);
+
+          if (circleNormalAsPoint.DistanceTo(new OG.Point(0, 0, 1)) < TOLERANCE)
+          {
+            return new OG.Circle(newCirclePlane, radius, units: circle.units);
+          }
+
+          newCirclePlane.xdir.Normalize();
+          newCirclePlane.ydir.Normalize();
+          newCirclePlane.normal = Vector.CrossProduct(newCirclePlane.xdir, newCirclePlane.ydir);
+
+          // this is the formula for an angle between two vectors
+          // cos T = a . b / (|a| * |b|)
+          var rad1ScaleCircle = Vector.DotProduct(circle.plane.xdir, newCirclePlane.xdir) / (circle.plane.xdir.Length * newCirclePlane.xdir.Length);
+
+          var rad2ScaleCircle = Vector.DotProduct(circle.plane.ydir, newCirclePlane.ydir) / (circle.plane.ydir.Length * newCirclePlane.ydir.Length);
+
+          return new OG.Ellipse(
+            newCirclePlane,
+            (circle.radius ?? 0) * rad1ScaleCircle,
+            (circle.radius ?? 0) * rad2ScaleCircle,
+            units: circle.units
+          );
 
         case OG.Curve nurbs:
           var curvePoints = new List<double>();
@@ -308,6 +331,57 @@ namespace Objects.Converter.Revit
           };
           return newCurve;
 
+        case OG.Ellipse ellipse:
+          if (!(ellipse.firstRadius is double firstRadius && firstRadius > 0))
+          {
+            throw new Exception($"Ellipse with id, {ellipse.id}, does not have a valid first radius");
+          }
+          if (!(ellipse.secondRadius is double secondRadius && secondRadius > 0))
+          {
+            throw new Exception($"Ellipse with id, {ellipse.id}, does not have a valid second radius");
+          }
+          var ellipseConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, ellipse.units);
+          var flattenTransform = new OO.Transform(
+            new Vector(1, 0, 0),
+            new Vector(0, 1, 0),
+            new Vector(0, 0, 0),
+            new Vector(0, 0, z * ellipseConversionFactor, units: ellipse.plane.units)
+          );
+
+          _ = ellipse.plane.TransformTo(flattenTransform, out OG.Plane newEllipsePlane);
+
+          newEllipsePlane.xdir.Normalize();
+          newEllipsePlane.ydir.Normalize();
+          newEllipsePlane.normal = Vector.CrossProduct(newEllipsePlane.xdir, newEllipsePlane.ydir);
+
+          // this is the formula for an angle between two vectors
+          // cos T = a . b / (|a| * |b|)
+          var rad1Scale = Vector.DotProduct(ellipse.plane.xdir, newEllipsePlane.xdir) / (ellipse.plane.xdir.Length * newEllipsePlane.xdir.Length);
+
+          var rad2Scale = Vector.DotProduct(ellipse.plane.ydir, newEllipsePlane.ydir) / (ellipse.plane.ydir.Length * newEllipsePlane.ydir.Length);
+
+          return new OG.Ellipse(
+            newEllipsePlane,
+            firstRadius * rad1Scale,
+            secondRadius * rad2Scale,
+            ellipse.domain, ellipse.trimDomain, units: ellipse.units
+          );
+
+        case OG.Line line:
+          return new OG.Line(
+            new OG.Point(
+              line.start.x,
+              line.start.y,
+              z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.start.units),
+              line.start.units),
+            new OG.Point(
+              line.end.x,
+              line.end.y,
+              z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.end.units),
+              line.end.units),
+            line.units
+          );
+
         case OG.Polyline poly:
           var polylinePonts = new List<double>();
           var originalPolylinePoints = poly.GetPoints();
@@ -327,6 +401,8 @@ namespace Objects.Converter.Revit
           foreach (var seg in plc.segments)
             newPolycurve.segments.Add(GetFlattenedCurve(seg, z));
           return newPolycurve;
+
+          //case OG.Spiral spiral:
       }
       throw new NotSupportedException($"Trying to flatten unsupported curve type, {curve.GetType()}");
     }
