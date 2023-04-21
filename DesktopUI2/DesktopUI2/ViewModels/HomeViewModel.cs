@@ -229,7 +229,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       if (StreamGetCancelTokenSource.IsCancellationRequested)
         return;
 
-      Streams = streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+      Streams = streams.OrderByDescending(x => x.Stream.updatedAt).ToList();
     }
     catch (Exception ex)
     {
