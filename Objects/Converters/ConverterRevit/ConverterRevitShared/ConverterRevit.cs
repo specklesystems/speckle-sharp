@@ -110,9 +110,31 @@ namespace Objects.Converter.Revit
     }
 
     //NOTE: not all objects come from Revit, so their applicationId might be null, in this case we fall back on the Id
-    //this fallback is only needed for a couple of ToNative conversions such as Floor, Ceiling, and Roof 
-    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects.ToDictionary(x => x.applicationId ?? x.OriginalId);
-    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects.ToDictionary(x => x.applicationId ?? x.OriginalId);
+    //this fallback is only needed for a couple of ToNative conversions such as Floor, Ceiling, and Roof
+    public void SetContextObjects(List<ApplicationObject> objects)
+    {
+      ContextObjects = new(objects.Count);
+      foreach (var ao in objects)
+      {
+        var key = ao.applicationId ?? ao.OriginalId;
+        if (ContextObjects.ContainsKey(key))
+          continue;
+        ContextObjects.Add(key, ao);
+      }
+    }
+
+    public void SetPreviousContextObjects(List<ApplicationObject> objects)
+    {
+      PreviousContextObjects = new(objects.Count);
+      foreach (var ao in objects)
+      {
+        var key = ao.applicationId ?? ao.OriginalId;
+        if (ContextObjects.ContainsKey(key))
+          continue;
+        ContextObjects.Add(key, ao);
+      }
+    }
+
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
