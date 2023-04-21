@@ -61,7 +61,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public void SaveBlob(Blob obj)
   {
     if (string.IsNullOrEmpty(StreamId) || obj == null)
-      throw new Exception("Invalid parameters to SaveBlob");
+      throw new InvalidOperationException("Invalid parameters to SaveBlob");
     var hash = obj.GetFileHash();
 
     lock (SendBufferLock)
@@ -117,13 +117,12 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   )
   {
     if (string.IsNullOrEmpty(StreamId) || string.IsNullOrEmpty(id) || targetTransport == null)
-      throw new Exception("Invalid parameters to CopyObjectAndChildren");
+      throw new InvalidOperationException("Invalid parameters to CopyObjectAndChildren");
 
-    if (CancellationToken.IsCancellationRequested)
-      return null;
+    CancellationToken.ThrowIfCancellationRequested();
 
-    using (ParallelServerApi api = new(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds))
-    {
+    using ParallelServerApi api = new(BaseUri, AuthorizationToken, BlobStorageFolder, TimeoutSeconds);
+
       var stopwatch = Stopwatch.StartNew();
       api.CancellationToken = CancellationToken;
       try
@@ -202,12 +201,10 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
         return null;
       }
     }
-  }
 
   public string GetObject(string id)
   {
-    if (CancellationToken.IsCancellationRequested)
-      return null;
+    CancellationToken.ThrowIfCancellationRequested();
     var stopwatch = Stopwatch.StartNew();
     var result = Api.DownloadSingleObject(StreamId, id).Result;
     stopwatch.Stop();
@@ -238,14 +235,14 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public void SaveObject(string id, ITransport sourceTransport)
   {
     if (string.IsNullOrEmpty(StreamId) || string.IsNullOrEmpty(id) || sourceTransport == null)
-      throw new Exception("Invalid parameters to SaveObject");
+      throw new InvalidOperationException("Invalid parameters to SaveObject");
     SaveObject(id, sourceTransport.GetObject(id));
   }
 
   public void BeginWrite()
   {
     if (ShouldSendThreadRun || SendingThread != null)
-      throw new Exception("ServerTransport already sending");
+      throw new InvalidOperationException("ServerTransport already sending");
     TotalSentBytes = 0;
     SavedObjectCount = 0;
 
@@ -271,7 +268,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   public void EndWrite()
   {
     if (!ShouldSendThreadRun || SendingThread == null)
-      throw new Exception("ServerTransport not sending");
+      throw new InvalidOperationException("ServerTransport not sending");
     ShouldSendThreadRun = false;
     SendingThread.Join();
     SendingThread = null;
