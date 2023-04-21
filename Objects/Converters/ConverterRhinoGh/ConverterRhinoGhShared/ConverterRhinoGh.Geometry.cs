@@ -470,33 +470,41 @@ public partial class ConverterRhinoGh
 
     if (curve.IsCircle(tolerance) && curve.IsClosed)
     {
-      curve.TryGetCircle(out var getObj, tolerance);
-      var cir = CircleToSpeckle(getObj, u);
-      cir.domain = IntervalToSpeckle(curve.Domain);
-      return cir;
+      if (curve.TryGetCircle(out var getObj, tolerance))
+      {
+        var cir = CircleToSpeckle(getObj, u);
+        cir.domain = IntervalToSpeckle(curve.Domain);
+        return cir;
+      }
     }
 
     if (curve.IsArc(tolerance))
     {
-      curve.TryGetArc(out var getObj, tolerance);
-      var arc = ArcToSpeckle(getObj, u);
-      arc.domain = IntervalToSpeckle(curve.Domain);
-      return arc;
+      if (curve.TryGetArc(out var getObj, tolerance))
+      {
+        var arc = ArcToSpeckle(getObj, u);
+        arc.domain = IntervalToSpeckle(curve.Domain);
+        return arc;
+      }
     }
 
     if (curve.IsEllipse(tolerance) && curve.IsClosed)
     {
-      curve.TryGetEllipse(pln, out var getObj, tolerance);
-      var ellipse = EllipseToSpeckle(getObj, u);
-      ellipse.domain = IntervalToSpeckle(curve.Domain);
-      return ellipse;
+      if (curve.TryGetEllipse(pln, out var getObj, tolerance))
+      {
+        var ellipse = EllipseToSpeckle(getObj, u);
+        ellipse.domain = IntervalToSpeckle(curve.Domain);
+        return ellipse;
+      }
     }
 
     if (curve.IsLinear(tolerance) || curve.IsPolyline()) // defaults to polyline
     {
-      curve.TryGetPolyline(out var getObj);
-      if (null != getObj)
-        return PolylineToSpeckle(getObj, IntervalToSpeckle(curve.Domain), u);
+      if (curve.TryGetPolyline(out var getObj))
+      {
+        var polyline = PolylineToSpeckle(getObj, IntervalToSpeckle(curve.Domain), u);
+        return polyline;
+      }
     }
 
     return NurbsToSpeckle(curve.ToNurbsCurve(), u);

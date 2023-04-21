@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -160,30 +160,21 @@ namespace Objects.Converter.Revit
         new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL", "ROOF_SLOPE" }
       );
 
-      GetSlopeArrowHack(
-        revitFloor.Id,
-        revitFloor.Document,
-        out var tail,
-        out var head,
-        out double tailOffset,
-        out double headOffset,
-        out double slope
-      );
-
-      slopeParam ??= slope;
-      speckleFloor.slope = (double)slopeParam;
-
-      if (tail != null && head != null)
+      var slopeArrow = GetSlopeArrow(revitFloor);
+      if (slopeArrow != null)
       {
+        var tail = GetSlopeArrowTail(slopeArrow, Doc);
+        var head = GetSlopeArrowHead(slopeArrow, Doc);
+        var tailOffset = GetSlopeArrowTailOffset(slopeArrow, Doc);
+        _ = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out var slope);
+
+        slopeParam ??= slope;
+        speckleFloor.slope = (double)slopeParam;
+
         speckleFloor.slopeDirection = new Geometry.Line(tail, head);
-        if (
-          speckleFloor["parameters"] is Base parameters
-          && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam
-          && offsetParam.value is double offset
-        )
+        if (speckleFloor["parameters"] is Base parameters && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam && offsetParam.value is double offset)
         {
           offsetParam.value = offset + tailOffset;
-          parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] = offsetParam;
         }
       }
 
