@@ -1,29 +1,25 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Autodesk.Navisworks.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.Converter.Navisworks;
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks : ISpeckleConverter
 {
 #if NAVMAN21
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
+    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
 #elif NAVMAN20
-  public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
+  public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
 #elif NAVMAN19
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
+    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
 #elif NAVMAN18
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
+    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
 #elif NAVMAN17
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
+  private readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
 #endif
-  public ConverterNavisworks()
-  {
-    var ver = Assembly.GetAssembly(typeof(ConverterNavisworks)).GetName().Version;
-  }
 
   public string Description => "Default Speckle Kit for Navisworks";
 
@@ -43,9 +39,9 @@ public partial class ConverterNavisworks : ISpeckleConverter
   /// </summary>
   public ReceiveMode ReceiveMode { get; set; }
 
-  public static Document Doc { get; private set; }
+  private static Document Doc { get; set; }
 
-  IEnumerable<string> ISpeckleConverter.GetServicedApplications()
+  public IEnumerable<string> GetServicedApplications()
   {
     return new[] { VersionedAppName };
   }
@@ -63,7 +59,14 @@ public partial class ConverterNavisworks : ISpeckleConverter
     SetTransformVector3D();
   }
 
-  public List<ApplicationObject> ContextObjects { get; set; } = new();
+  private List<ApplicationObject> _contextObjects = new();
+  public IReadOnlyList<ApplicationObject> ContextObjects => _contextObjects;
+
+  // Add a new method to allow adding items to the list.
+  public void AddContextObject(ApplicationObject contextObject)
+  {
+    _contextObjects.Add(contextObject);
+  }
 
   /// <summary>
   ///   Some converters need to know which other objects are being converted, in order to sort relationships between them
@@ -72,7 +75,7 @@ public partial class ConverterNavisworks : ISpeckleConverter
   /// <param name="objects"></param>
   public void SetContextObjects(List<ApplicationObject> objects)
   {
-    ContextObjects = objects;
+    _contextObjects = objects ?? throw new ArgumentNullException(nameof(objects));
   }
 
   /// <summary>
@@ -87,11 +90,11 @@ public partial class ConverterNavisworks : ISpeckleConverter
 
   public void SetConverterSettings(object settings)
   {
-    if (!(settings is Dictionary<string, string> newSettings))
+    if (settings is not Dictionary<string, string> newSettings)
       return;
 
     foreach (var key in newSettings.Keys)
-      if (Settings.ContainsKey(key))
+      if (Settings.TryGetValue(key, out string _))
         Settings[key] = newSettings[key];
       else
         Settings.Add(key, newSettings[key]);

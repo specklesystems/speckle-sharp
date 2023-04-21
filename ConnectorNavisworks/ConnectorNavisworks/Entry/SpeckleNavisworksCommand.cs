@@ -25,7 +25,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     ExtendedToolTip = "Speckle Connector for Navisworks"
   )
 ]
-internal class SpeckleNavisworksCommandPlugin : DockPanePlugin
+internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
 {
   public override Control CreateControlPane()
   {
@@ -65,7 +65,7 @@ internal class SpeckleNavisworksCommandPlugin : DockPanePlugin
       control.Dispose();
   }
 
-  public static AppBuilder BuildAvaloniaApp()
+  private static AppBuilder BuildAvaloniaApp()
   {
     var app = AppBuilder.Configure<App>();
 
@@ -85,7 +85,7 @@ internal class SpeckleNavisworksCommandPlugin : DockPanePlugin
     return app;
   }
 
-  public static void InitAvalonia()
+  private static void InitAvalonia()
   {
     BuildAvaloniaApp().SetupWithoutStarting();
   }
