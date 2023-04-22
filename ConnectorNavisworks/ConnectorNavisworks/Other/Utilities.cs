@@ -7,7 +7,6 @@ using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.ComApi;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Speckle.Core.Kits;
-using Units = Autodesk.Navisworks.Api.Units;
 
 namespace Speckle.ConnectorNavisworks;
 
@@ -23,7 +22,7 @@ internal static class ArrayExtension
   }
 }
 
-internal class PseudoIdComparer : IComparer<string>
+internal sealed class PseudoIdComparer : IComparer<string>
 {
   public int Compare(string x, string y)
   {
@@ -35,23 +34,21 @@ internal class PseudoIdComparer : IComparer<string>
   }
 }
 
-public static class Utils
+public static class Utilities
 {
 #if NAVMAN21
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
+    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
 #elif NAVMAN20
-  public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
+  public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
 #elif NAVMAN19
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
+    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2022);
 #elif NAVMAN18
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
+    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2021);
 #elif NAVMAN17
-    public static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
+    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2020);
 #endif
-  public static string InvalidChars = @"<>/\:;""?*|=,‘";
-  public static string ApplicationIdKey = "applicationId";
 
-  public static string RootNodePseudoId = "___"; // This should be shorter than the padding on indexes and not contain '-'
+  private const string RootNodePseudoId = "___"; // This should be shorter than the padding on indexes and not contain '-'
 
   public static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue)
   {
@@ -173,20 +170,4 @@ public static class Utils
       ? RootNodePseudoId
       : string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
   }
-
-  public static Dictionary<string, Units> UnitsMap =
-    new()
-    {
-      { "cm", Units.Centimeters },
-      { "mm", Units.Millimeters },
-      { "m", Units.Meters },
-      { "ft", Units.Feet },
-      { "in", Units.Inches },
-      { "km", Units.Kilometers },
-      { "yd", Units.Yards },
-      { "mi", Units.Miles },
-      { "uin", Units.Microinches },
-      { "mil", Units.Mils },
-      { "µm", Units.Micrometers }
-    };
 }
