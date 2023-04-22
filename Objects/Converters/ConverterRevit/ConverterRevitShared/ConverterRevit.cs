@@ -610,6 +610,9 @@ namespace Objects.Converter.Revit
         case BE.GridLine o:
           return GridLineToNative(o);
 
+        case DataTable o:
+          return DataTableToNative(o);
+
         case BE.Space o:
           return SpaceToNative(o);
         //Structural
@@ -773,6 +776,7 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
+        Organization.DataTable _ => true,
         _ => false,
       };
     }

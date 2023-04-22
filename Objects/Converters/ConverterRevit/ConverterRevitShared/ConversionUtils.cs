@@ -454,70 +454,85 @@ namespace Objects.Converter.Revit
 
       foreach (var spk in filteredSpeckleParameters)
       {
-        var sp = spk.Value as Parameter;
-        if (sp == null || sp.isReadOnly)
+        if (!(spk.Value is Parameter sp) || sp.isReadOnly)
           continue;
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
-        try
-        {
-          switch (rp.StorageType)
-          {
-            case StorageType.Double:
-              // This is meant for parameters that come from Revit
-              // as they might use a lot more unit types that Speckle doesn't currently support
-              if (!string.IsNullOrEmpty(sp.applicationUnit))
-              {
-                var val = RevitVersionHelper.ConvertToInternalUnits(sp);
-                rp.Set(val);
-              }
-              // the following two cases are for parameters comimg form schema builder
-              // they do not have applicationUnit but just units
-              // units are automatically set but the user can override them 
-              // users might set them to "none" so that we convert them by using the Revit destination parameter display units
-              // this is needed to correctly receive non lenght based parameters (eg air flow)
-              else if (sp.units == Speckle.Core.Kits.Units.None)
-              {
-                var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(sp.value), rp);
-                rp.Set(val);
-              }
-              else if (Speckle.Core.Kits.Units.IsUnitSupported(sp.units))
-              {
-                var val = ScaleToNative(Convert.ToDouble(sp.value), sp.units);
-                rp.Set(val);
-              }
-              else
-              {
-                rp.Set(Convert.ToDouble(sp.value));
-              }
-              break;
 
-            case StorageType.Integer:
-              rp.Set(Convert.ToInt32(sp.value));
-              break;
+        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
+      }
+    }
 
-            case StorageType.String:
-              if (rp.Definition.Name.ToLower().Contains("name"))
-              {
-                var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
-                Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
-                rp.Set(temp);
-              }
-              else
-              {
-                rp.Set(Convert.ToString(sp.value));
-              }
-              break;
-            default:
-              break;
-          }
-        }
-        catch (Exception ex)
+    private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
+    {
+      try
+      {
+        switch (rp.StorageType)
         {
-          continue;
+          case StorageType.Double:
+            // This is meant for parameters that come from Revit
+            // as they might use a lot more unit types that Speckle doesn't currently support
+            if (!string.IsNullOrEmpty(applicationUnit))
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(value, applicationUnit);
+              rp.Set(val);
+            }
+            // the following two cases are for parameters comimg form schema builder
+            // they do not have applicationUnit but just units
+            // units are automatically set but the user can override them 
+            // users might set them to "none" so that we convert them by using the Revit destination parameter display units
+            // this is needed to correctly receive non lenght based parameters (eg air flow)
+            else if (units == Speckle.Core.Kits.Units.None)
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(value), rp);
+              rp.Set(val);
+            }
+            else if (Speckle.Core.Kits.Units.IsUnitSupported(units))
+            {
+              var val = ScaleToNative(Convert.ToDouble(value), units);
+              rp.Set(val);
+            }
+            else
+            {
+              rp.Set(Convert.ToDouble(value));
+            }
+            break;
+
+          case StorageType.Integer:
+            if (value is string s)
+            {
+              if (s.ToLower() == "no")
+              {
+                value = 0;
+              }
+              else if (s.ToLower() == "yes")
+              {
+                value = 1;
+              }
+            }
+            rp.Set(Convert.ToInt32(value));
+            break;
+
+          case StorageType.String:
+            if (rp.Definition.Name.ToLower().Contains("name"))
+            {
+              var temp = Regex.Replace(Convert.ToString(value), "[^0-9a-zA-Z ]+", "");
+              Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
+              rp.Set(temp);
+            }
+            else
+            {
+              rp.Set(Convert.ToString(value));
+            }
+            break;
+          default:
+            break;
         }
       }
-
+      catch
+      {
+        // do nothing for now...
+      }
     }
 
     //Shared parameters use a GUID to be uniquely identified
@@ -562,22 +577,33 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
+    //private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
+    //{
+    //  var param = elem.get_Parameter(bip);
+    //  if (param != null && !param.IsReadOnly)
+    //  {
+    //    //for angles, we use the default conversion (degrees > radians)
+    //    if (string.IsNullOrEmpty(units))
+    //    {
+    //      param.Set(value);
+    //    }
+    //    else
+    //    {
+    //      param.Set(ScaleToNative(value, units));
+    //    }
+
+    //  }
+    //}
+
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, object value, string units = "")
     {
       var param = elem.get_Parameter(bip);
-      if (param != null && !param.IsReadOnly)
+      if (param == null || param.IsReadOnly)
       {
-        //for angles, we use the default conversion (degrees > radians)
-        if (string.IsNullOrEmpty(units))
-        {
-          param.Set(value);
-        }
-        else
-        {
-          param.Set(ScaleToNative(value, units));
-        }
-
+        return;
       }
+
+      TrySetParam(param, value, units);
     }
 
     /// <summary>

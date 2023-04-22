@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -215,8 +215,18 @@ namespace Speckle.ConnectorRevit.UI
               .OfClass(typeof(View))
               .Where(x => viewFilter.Selection.Contains(x.Name));
 
+            if (!views.Where(v => v is not ViewSchedule).Any())
+            {
+              foreach (var view in views)
+              {
+                selection.Add(view);
+              }
+              return selection;
+            }
+
             foreach (var view in views)
             {
+              selection.Add(view);
               var ids = selection.Select(x => x.UniqueId);
 
               foreach (var doc in allDocs)
