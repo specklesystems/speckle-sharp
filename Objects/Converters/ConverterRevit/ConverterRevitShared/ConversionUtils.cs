@@ -102,25 +102,33 @@ namespace Objects.Converter.Revit
       foreach (var elemId in hostedElementIds)
       {
         var element = host.Document.GetElement(elemId);
-        if (ContextObjects.ContainsKey(element.UniqueId))
+        if (!ContextObjects.ContainsKey(element.UniqueId))
         {
           continue;
         }
 
-        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        var reportObj = Report.ReportObjects.TryGetValue(element.UniqueId, out ApplicationObject value) ? value : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+
         if (CanConvertToSpeckle(element))
         {
-          var obj = ConvertToSpeckle(element);
-          if (obj != null)
+          try
           {
-            ContextObjects.Remove(element.UniqueId);
-            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
-            convertedHostedElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
+            var obj = ConvertToSpeckle(element);
+            if (obj != null)
+            {
+              ContextObjects.Remove(element.UniqueId);
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
+              convertedHostedElements.Add(obj);
+              ConvertedObjectsList.Add(obj.applicationId);
+            }
+            else
+            {
+              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+            }
           }
-          else
+          catch (Exception e)
           {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {e}");
           }
         }
         else

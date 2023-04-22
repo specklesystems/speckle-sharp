@@ -584,21 +584,28 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     private set => this.RaiseAndSetIfChanged(ref _menuItems, value);
   }
 
+  /// Human Readable String
   public string LastUpdated => "Updated " + Formatting.TimeAgo(StreamState.CachedStream.updatedAt);
 
+  /// Human Readable String
   public string LastUsed
   {
     get
     {
       var verb = StreamState.IsReceiver ? "Received" : "Sent";
       if (StreamState.LastUsed == null)
-        return "Never " + verb.ToLower();
+        return $"Never {verb.ToLower()}";
       return $"{verb} {Formatting.TimeAgo(StreamState.LastUsed)}";
     }
+  }
+
+  public DateTime? LastUsedTime
+  {
+    get => StreamState.LastUsed;
     set
     {
       StreamState.LastUsed = value;
-      this.RaisePropertyChanged();
+      this.RaisePropertyChanged(nameof(LastUsed));
     }
   }
 
@@ -1269,7 +1276,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         throw new Exception(message);
       }
 
-      LastUsed = DateTime.Now.ToString();
+      LastUsedTime = DateTime.UtcNow;
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
 
       Analytics.TrackEvent(
@@ -1393,7 +1400,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       // Track receive operation
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
-      LastUsed = DateTime.Now.ToString();
+      LastUsedTime = DateTime.UtcNow;
+
       Analytics.TrackEvent(
         StreamState.Client.Account,
         Analytics.Events.Receive,
