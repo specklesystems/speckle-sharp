@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -131,7 +132,7 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
           Analytics.Events.Send,
           new Dictionary<string, object> { { "method", "OneClick" } }
         );
-        _fileStream.LastUsed = DateTime.Now.ToString();
+        _fileStream.LastUsed = DateTime.UtcNow;
       }
     }
     catch (Exception ex)
