@@ -72,6 +72,71 @@ public partial class Client
     var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
     return res.stream.branches.items;
   }
+/// <summary>
+  /// Get branches from a given stream
+  /// </summary>
+  /// <param name="streamId">Id of the stream to get the branches from</param>
+  /// <param name="branchesLimit">Max number of branches to retrieve</param>
+  /// <param name="commitsLimit">Max number of commits to retrieve</param>
+  /// <returns></returns>
+  public Task<Branches> PagedStreamGetBranches(string streamId, int branchesLimit = 10, int commitsLimit = 10, string? nextCursor = null)
+  {
+    return PagedStreamGetBranches(CancellationToken.None, streamId, branchesLimit, commitsLimit);
+  }
+
+  /// <summary>
+  /// Get paginated branches from a given stream
+  /// </summary>
+  /// <param name="cancellationToken"></param>
+  /// <param name="streamId">Id of the stream to get the branches from</param>
+  /// <param name="branchesLimit">Max number of branches to retrieve</param>
+  /// <param name="commitsLimit">Max number of commits to retrieve</param>
+  /// <param name="nextCursor">Cursor to get the next page of results</param>
+  /// <returns></returns>
+  /// <exception cref="Exception"></exception>
+  public async Task<Branches> PagedStreamGetBranches(
+    CancellationToken cancellationToken,
+    string streamId,
+    int branchesLimit = 10,
+    int commitsLimit = 10,
+    string? nextCursor = null
+  )
+  {
+    var request = new GraphQLRequest
+    {
+      Query =
+        $@"query Stream ($streamId: String!) {{
+                      stream(id: $streamId) {{
+                        branches(limit: {branchesLimit}, cursor: ""{nextCursor}"") {{
+                          cursor
+                          items {{
+                            id
+                            name
+                            description
+                            commits (limit: {commitsLimit}) {{
+                              totalCount
+                              cursor
+                              items {{
+                                id
+                                referencedObject
+                                sourceApplication
+                                message
+                                authorName
+                                authorId
+                                branchName
+                                parents
+                                createdAt
+                              }}
+                            }}
+                          }}
+                        }}                       
+                      }}
+                    }}",
+      Variables = new { streamId, nextCursor }
+    };
+    var res = await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false);
+    return res.stream.branches;
+  }
 
   /// <summary>
   /// Creates a branch on a stream.

@@ -220,6 +220,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
   }
 
+  /// The limit of branches to be displayed in the stream, Given a limit to prevent runaway Branch DOS attacks
+  private const int BranchLimit = 500;
+
   internal async void GetBranchesAndRestoreState()
   {
     try
@@ -246,7 +249,17 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = AvailableFilters[0];
 
-      Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
+      // Get all branches created in the stream, not limited to the server limits
+      string nextCursor = null;
+      var branchCount = 0;
+
+      do
+      {
+        var branchResponse = await Client.PagedStreamGetBranches(Stream.id, 100, 0, nextCursor).ConfigureAwait(false);
+        Branches.AddRange(branchResponse.items);
+        nextCursor = branchResponse.cursor;
+        branchCount += branchResponse.items.Count;
+      } while (!string.IsNullOrEmpty(nextCursor) && branchCount <= BranchLimit);
 
       var index = Branches.FindIndex(x => x.name == StreamState.BranchName);
       if (index != -1)
@@ -408,7 +421,18 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   private async Task GetBranches()
   {
     var prevBranchName = SelectedBranch != null ? SelectedBranch.Branch.name : StreamState.BranchName;
-    Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
+
+    // Get all branches created in the stream, not limited to the server limits
+    string nextCursor = null;
+    var branchCount = 0;
+
+    do
+    {
+      var branchResponse = await Client.PagedStreamGetBranches(Stream.id, 100, 0, nextCursor).ConfigureAwait(false);
+      Branches.AddRange(branchResponse.items);
+      nextCursor = branchResponse.cursor;
+      branchCount += branchResponse.items.Count;
+    } while (!string.IsNullOrEmpty(nextCursor) && branchCount <= BranchLimit);
 
     var index = Branches.FindIndex(x => x.name == prevBranchName);
     if (index != -1)
