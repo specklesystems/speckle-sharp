@@ -70,7 +70,7 @@ public class ServerApi : IDisposable, IServerApi
     CancellationToken.ThrowIfCancellationRequested();
 
     // Get root object
-    var rootHttpMessage = new HttpRequestMessage
+    using var rootHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}/{objectId}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -217,13 +217,13 @@ public class ServerApi : IDisposable, IServerApi
       var fileName = Path.GetFileName(filePath);
       var stream = File.OpenRead(filePath);
       streams.Add(stream);
-      var fsc = new StreamContent(stream);
+      using var fsc = new StreamContent(stream);
       var hash = id.Split(':')[1];
 
       multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
     }
 
-    var message = new HttpRequestMessage
+    using var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/stream/{streamId}/blob", UriKind.Relative),
       Method = HttpMethod.Post,
@@ -253,7 +253,7 @@ public class ServerApi : IDisposable, IServerApi
     foreach (var blobId in blobIds)
       try
       {
-        var blobMessage = new HttpRequestMessage
+        using var blobMessage = new HttpRequestMessage
         {
           RequestUri = new Uri($"api/stream/{streamId}/blob/{blobId}", UriKind.Relative),
           Method = HttpMethod.Get
@@ -288,7 +288,7 @@ public class ServerApi : IDisposable, IServerApi
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var childrenHttpMessage = new HttpRequestMessage
+    using var childrenHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/getobjects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -337,9 +337,11 @@ public class ServerApi : IDisposable, IServerApi
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
     HttpResponseMessage response = null;
     while (ShouldRetry(response))
-      response = await Client
-        .PostAsync(uri, new StringContent(serializedPayload, Encoding.UTF8, "application/json"), CancellationToken)
-        .ConfigureAwait(false);
+    {
+      using var stringContent = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
+      response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
+    }
+
     response.EnsureSuccessStatusCode();
 
     var hasObjectsJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -360,7 +362,7 @@ public class ServerApi : IDisposable, IServerApi
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var message = new HttpRequestMessage
+    using var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -383,15 +385,16 @@ public class ServerApi : IDisposable, IServerApi
       _ctBuilder.Append("]");
       string _ct = _ctBuilder.ToString();
 
+      using var stringContent = new StringContent(_ct, Encoding.UTF8);
       if (CompressPayloads)
       {
-        var content = new GzipContent(new StringContent(_ct, Encoding.UTF8));
+        using var content = new GzipContent(stringContent);
         content.Headers.ContentType = new MediaTypeHeaderValue("application/gzip");
         multipart.Add(content, $"batch-{mpId}", $"batch-{mpId}");
       }
       else
       {
-        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{mpId}", $"batch-{mpId}");
+        multipart.Add(stringContent, $"batch-{mpId}", $"batch-{mpId}");
       }
     }
     message.Content = multipart;
@@ -412,9 +415,11 @@ public class ServerApi : IDisposable, IServerApi
 
     HttpResponseMessage response = null;
     while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
-      response = await Client
-        .PostAsync(uri, new StringContent(payload, Encoding.UTF8, "application/json"), CancellationToken)
-        .ConfigureAwait(false);
+    {
+      using var stringContent = new StringContent(payload, Encoding.UTF8, "application/json");
+      response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
+    }
+
     response.EnsureSuccessStatusCode();
 
     var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);

@@ -43,11 +43,10 @@ public static class Utilities
     if (func == HashingFuctions.MD5)
       hashAlgorithm = MD5.Create();
 
-    using (var stream = File.OpenRead(filePath))
-    {
-      var hash = hashAlgorithm.ComputeHash(stream);
-      return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
-    }
+    using var stream = File.OpenRead(filePath);
+    using var h = hashAlgorithm;
+    var hash = h.ComputeHash(stream);
+    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
   }
 
   private static string sha256(string input)
