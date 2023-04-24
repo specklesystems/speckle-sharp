@@ -77,7 +77,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       Subscribe();
       GenerateMenuItems();
 
-      var updateTextTimer = new Timer();
+      using var updateTextTimer = new Timer();
       updateTextTimer.Elapsed += UpdateTextTimer_Elapsed;
       updateTextTimer.Interval = TimeSpan.FromMinutes(1).TotalMilliseconds;
       updateTextTimer.Enabled = true;
