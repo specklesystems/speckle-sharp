@@ -1,6 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -28,7 +29,7 @@ public static class Dialogs
   public static async void ShowDialog(string title, string message, DialogIconKind icon)
   {
     Dialog d = new(title, message, icon);
-    await d.ShowDialog();
+    await d.ShowDialog().ConfigureAwait(true);
   }
 
   public static IDialogWindow<DialogResult> SendReceiveDialog(string header, object dataContext)
@@ -62,37 +63,18 @@ public static class Dialogs
 
 public static class Formatting
 {
-  public static string TimeAgo(string timestamp)
+  /// <inheritdoc cref="Helpers.TimeAgo(DateTime, string)"/>
+  [DebuggerStepThrough]
+  public static string TimeAgo(DateTime? timestamp)
   {
-    TimeSpan timeAgo;
-    try
-    {
-      timeAgo = DateTime.Now.Subtract(DateTime.Parse(timestamp));
-    }
-    catch (FormatException e)
-    {
-      return "never";
-    }
-
-    if (timeAgo.TotalSeconds < 60)
-      return "just now";
-    if (timeAgo.TotalMinutes < 60)
-      return $"{timeAgo.Minutes} minute{PluralS(timeAgo.Minutes)} ago";
-    if (timeAgo.TotalHours < 24)
-      return $"{timeAgo.Hours} hour{PluralS(timeAgo.Hours)} ago";
-    if (timeAgo.TotalDays < 7)
-      return $"{timeAgo.Days} day{PluralS(timeAgo.Days)} ago";
-    if (timeAgo.TotalDays < 30)
-      return $"{timeAgo.Days / 7} week{PluralS(timeAgo.Days / 7)} ago";
-    if (timeAgo.TotalDays < 365)
-      return $"{timeAgo.Days / 30} month{PluralS(timeAgo.Days / 30)} ago";
-
-    return $"{timeAgo.Days / 356} year{PluralS(timeAgo.Days / 356)} ago";
+    return Helpers.TimeAgo(timestamp);
   }
 
-  public static string PluralS(int num)
+  /// <inheritdoc cref="Helpers.TimeAgo(DateTime)"/>
+  [DebuggerStepThrough]
+  public static string TimeAgo(DateTime timestamp)
   {
-    return num != 1 ? "s" : "";
+    return Helpers.TimeAgo(timestamp);
   }
 
   public static string CommitInfo(string stream, string branch, string commitId)
@@ -119,7 +101,7 @@ public static class ApiUtils
     if (CachedUsers.ContainsKey(userId))
       return CachedUsers[userId];
 
-    var user = await client.OtherUserGet(userId);
+    var user = await client.OtherUserGet(userId).ConfigureAwait(true);
 
     if (user != null)
       CachedUsers[userId] = user;
@@ -132,7 +114,7 @@ public static class ApiUtils
     if (CachedAccounts.ContainsKey(userId))
       return CachedAccounts[userId];
 
-    var user = await GetUser(userId, client);
+    var user = await GetUser(userId, client).ConfigureAwait(true);
 
     if (user == null)
       return null;
@@ -234,7 +216,7 @@ public static class Utils
 
 
       var dialog = new AddAccountDialog(AccountManager.GetDefaultServerUrl());
-      var result = await dialog.ShowDialog<string>();
+      var result = await dialog.ShowDialog<string>().ConfigureAwait(true);
 
       if (result != null)
       {
@@ -251,8 +233,8 @@ public static class Utils
           );
           try
           {
-            await AccountManager.AddAccount(result);
-            await Task.Delay(1000);
+            await AccountManager.AddAccount(result).ConfigureAwait(true);
+            await Task.Delay(1000).ConfigureAwait(true);
 
             MainViewModel.Instance.NavigateToDefaultScreen();
           }

@@ -177,8 +177,7 @@ namespace Objects.Converter.Revit
               slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
             };
 
-            var slopeArrow = GetSlopeArrowHack(footPrintRoof.Id, revitRoof.Document);
-
+            var slopeArrow = GetSlopeArrow(footPrintRoof);
             if (slopeArrow != null)
             {
               var tail = GetSlopeArrowTail(slopeArrow, Doc);

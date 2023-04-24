@@ -44,7 +44,7 @@ def runCommand(argv: List[str]):
                 "f",
             ]
             print("Building for external PR " + str(external_build))
-    createConfigFile(True, output_filepath, external_build)
+    createConfigFile(deploy, output_filepath, external_build)
 
 
 def setup():

@@ -106,8 +106,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Rhino", "Rhino", "{E94E7327-5A9B-48EE-93CC-E9E9A5B980F1}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino6", "ConnectorRhino\ConnectorRhino6\ConnectorRhino6.csproj", "{D648BB69-B992-4D34-906E-7A547374B86C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3CDEF4CC-2CFA-4939-8427-3ED00FA9DB55} = {3CDEF4CC-2CFA-4939-8427-3ED00FA9DB55}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRhino7", "ConnectorRhino\ConnectorRhino7\ConnectorRhino7.csproj", "{A64ACBF9-DB82-4839-AF99-57ED2E7989F4}"
+	ProjectSection(ProjectDependencies) = postProject
+		{26ECA1BE-F5B2-4A41-9658-46A4A917BFE6} = {26ECA1BE-F5B2-4A41-9658-46A4A917BFE6}
+	EndProjectSection
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConnectorRhinoShared", "ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.shproj", "{B7376EC8-5D3E-47D2-96A7-748552F14C39}"
 EndProject

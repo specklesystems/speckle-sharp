@@ -273,6 +273,14 @@
                           <DataTemplate DataType="{x:Type s:RevitWallViewModel}">
                             <map:RevitBasic />
                           </DataTemplate>
+                          <!--  PROFILE WALL  -->
+                          <DataTemplate DataType="{x:Type s:RevitProfileWallViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
+                          <!--  FACE WALL  -->
+                          <DataTemplate DataType="{x:Type s:RevitFaceWallViewModel}">
+                            <map:RevitBasic />
+                          </DataTemplate>
                           <!--  FLOOR  -->
                           <DataTemplate DataType="{x:Type s:RevitFloorViewModel}">
                             <map:RevitBasic />

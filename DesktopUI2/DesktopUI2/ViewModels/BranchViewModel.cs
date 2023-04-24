@@ -1,4 +1,4 @@
-﻿using ReactiveUI;
+using ReactiveUI;
 using Speckle.Core.Api;
 
 namespace DesktopUI2.ViewModels;

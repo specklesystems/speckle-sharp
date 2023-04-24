@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reactive;
 using System.Threading.Tasks;
@@ -51,8 +51,8 @@ public class MainViewModel : ViewModelBase, IScreen
     set
     {
       this.RaiseAndSetIfChanged(ref _dialogBody, value);
-      this.RaisePropertyChanged("DialogVisible");
-      this.RaisePropertyChanged("DialogOpacity");
+      this.RaisePropertyChanged(nameof(DialogVisible));
+      this.RaisePropertyChanged(nameof(DialogOpacity));
     }
   }
 

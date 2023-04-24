@@ -36,12 +36,14 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<ArchicadFloor>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSlabData", new Parameters(ApplicationIds));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetSlabData",
+        new Parameters(ApplicationIds)
+      );
       foreach (var floor in result.Datas)
         floor.units = Units.Meters;
 
       return result.Datas;
     }
-
   }
 }

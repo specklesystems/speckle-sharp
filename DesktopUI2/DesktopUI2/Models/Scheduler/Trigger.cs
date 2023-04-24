@@ -1,4 +1,4 @@
-﻿namespace DesktopUI2.Models.Scheduler;
+namespace DesktopUI2.Models.Scheduler;
 
 public class Trigger
 {

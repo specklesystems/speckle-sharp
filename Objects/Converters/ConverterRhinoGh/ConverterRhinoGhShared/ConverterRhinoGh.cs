@@ -1,4 +1,4 @@
-﻿#if GRASSHOPPER
+#if GRASSHOPPER
 using Grasshopper.Kernel.Types;
 #endif
 using System;
@@ -357,6 +357,36 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     {
       switch (schemaObject)
       {
+        case RevitProfileWall o:
+          var profileWallBrep = @object.Geometry is RH.Brep profileB
+            ? profileB
+            : ((RH.Extrusion)@object.Geometry)?.ToBrep();
+          if (profileWallBrep == null)
+          {
+            throw new ArgumentException("Wall geometry can only be a brep or extrusion");
+          }
+          var edges = profileWallBrep.DuplicateNakedEdgeCurves(true, false);
+          var profileCurve = RH.Curve.JoinCurves(edges);
+          if (profileCurve.Count() != 1)
+          {
+            throw new Exception("Surface external edges should be joined into 1 curve");
+          }
+          var speckleProfileCurve = CurveToSpeckle(profileCurve.First());
+          var profile = new Polycurve()
+          {
+            segments = new List<ICurve>() { speckleProfileCurve },
+            length = profileCurve.First().GetLength(),
+            closed = profileCurve.First().IsClosed,
+            units = ModelUnits
+          };
+          o.profile = profile;
+          break;
+
+        case RevitFaceWall o:
+          var faceWallBrep = @object.Geometry is RH.Brep faceB ? faceB : ((RH.Extrusion)@object.Geometry)?.ToBrep();
+          o.brep = BrepToSpeckle(faceWallBrep);
+          break;
+
         //NOTE: this works for BOTH the Wall.cs class and RevitWall.cs class etc :)
         case Wall o:
           var extrusion = (RH.Extrusion)@object.Geometry;

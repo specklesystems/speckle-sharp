@@ -23,12 +23,12 @@ public partial class ConnectorBindingsNavisworks
 
     var manualFilter = new ManualSelectionFilter();
 
-    if (Doc == null)
+    if (_doc == null)
       return filters;
 
     filters.Add(manualFilter);
 
-    var selectSetsRootItem = Doc.SelectionSets.RootItem;
+    var selectSetsRootItem = _doc.SelectionSets.RootItem;
 
     var savedSelectionSets = selectSetsRootItem.Children.Select(GetSets).ToList();
 
@@ -45,7 +45,7 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(selectionSetsFilter);
     }
 
-    var savedViewsRootItem = Doc.SavedViewpoints.RootItem;
+    var savedViewsRootItem = _doc.SavedViewpoints.RootItem;
 
     var savedViews = savedViewsRootItem.Children
       .Select(GetViews)
@@ -68,7 +68,7 @@ public partial class ConnectorBindingsNavisworks
       filters.Add(savedViewsFilter);
     }
 
-    var clashPlugin = Doc.GetClash();
+    var clashPlugin = _doc.GetClash();
     var clashTests = clashPlugin.TestsData;
 
     var groupedClashResults = clashTests?.Tests.Select(GetClashTestResults).Where(x => x != null).ToList();
@@ -96,7 +96,7 @@ public partial class ConnectorBindingsNavisworks
       DisplayName = savedItem.DisplayName,
       Guid = savedItem.Guid,
       IndexWith = nameof(TreeNode.Guid),
-      Indices = Doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
+      Indices = _doc.SelectionSets.CreateIndexPath(savedItem).ToArray()
     };
 
     if (!savedItem.IsGroup)
@@ -111,7 +111,7 @@ public partial class ConnectorBindingsNavisworks
 
   private static TreeNode GetViews(SavedItem savedItem)
   {
-    var reference = Doc.SavedViewpoints.CreateReference(savedItem);
+    var reference = _doc.SavedViewpoints.CreateReference(savedItem);
 
     var treeNode = new TreeNode
     {
@@ -143,7 +143,7 @@ public partial class ConnectorBindingsNavisworks
     return treeNode.Elements.Count > 0 ? treeNode : null;
   }
 
-  public static TreeNode RemoveNullNodes(TreeNode node)
+  private static TreeNode RemoveNullNodes(TreeNode node)
   {
     if (node == null)
       return null;

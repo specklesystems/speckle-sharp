@@ -17,7 +17,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject FloorToNative(BuiltElements.Floor speckleFloor)
     {
       var docObj = GetExistingElementByApplicationId(speckleFloor.applicationId);
-      var appObj = new ApplicationObject(speckleFloor.id, speckleFloor.speckle_type) { applicationId = speckleFloor.applicationId };
+      var appObj = new ApplicationObject(speckleFloor.id, speckleFloor.speckle_type)
+      {
+        applicationId = speckleFloor.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
@@ -41,11 +44,15 @@ namespace Objects.Converter.Revit
         level = ConvertLevelToRevit(speckleRevitFloor.level, out ApplicationObject.State state);
         structural = speckleRevitFloor.structural;
         slope = speckleRevitFloor.slope;
-        slopeDirection = (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
+        slopeDirection =
+          (speckleRevitFloor.slopeDirection != null) ? LineToNative(speckleRevitFloor.slopeDirection) : null;
       }
       else
       {
-        level = ConvertLevelToRevit(LevelFromCurve(CurveToNative(speckleFloor.outline).get_Item(0)), out ApplicationObject.State state);
+        level = ConvertLevelToRevit(
+          LevelFromCurve(CurveToNative(speckleFloor.outline).get_Item(0)),
+          out ApplicationObject.State state
+        );
       }
 
       var flattenedOutline = GetFlattenedCurve(speckleFloor.outline, level.Elevation);
@@ -60,7 +67,7 @@ namespace Objects.Converter.Revit
 
       // NOTE: I have not found a way to edit a slab outline properly, so whenever we bake, we renew the element. The closest thing would be:
       // https://adndevbConversionLog.Add.typepad.com/aec/2013/10/change-the-boundary-of-floorsslabs.html
-      // This would only work if the floors have the same number (and type!!!) of outline curves. 
+      // This would only work if the floors have the same number (and type!!!) of outline curves.
 
 
       if (docObj != null)
@@ -86,7 +93,6 @@ namespace Objects.Converter.Revit
 #else
       if (floorType == null)
         throw new SpeckleException("Floor needs a floor type");
-
       else
       {
         //from revit 2022 we can create openings in the floors!
@@ -148,10 +154,13 @@ namespace Objects.Converter.Revit
       // Divide by 100 to convert from percentage to unitless ratio (rise over run)
       var slopeParam = GetParamValue<double?>(revitFloor, BuiltInParameter.ROOF_SLOPE) / 100;
 
-      GetAllRevitParamsAndIds(speckleFloor, revitFloor, new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL", "ROOF_SLOPE" });
+      GetAllRevitParamsAndIds(
+        speckleFloor,
+        revitFloor,
+        new List<string> { "LEVEL_PARAM", "FLOOR_PARAM_IS_STRUCTURAL", "ROOF_SLOPE" }
+      );
 
-      var slopeArrow = GetSlopeArrowHack(revitFloor.Id, revitFloor.Document);
-
+      var slopeArrow = GetSlopeArrow(revitFloor);
       if (slopeArrow != null)
       {
         var tail = GetSlopeArrowTail(slopeArrow, Doc);
@@ -169,14 +178,18 @@ namespace Objects.Converter.Revit
         }
       }
 
-      speckleFloor.displayValue = GetElementDisplayMesh(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleFloor.displayValue = GetElementDisplayMesh(
+        revitFloor,
+        new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false }
+      );
 
       GetHostedElements(speckleFloor, revitFloor, out List<string> hostedNotes);
-      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
+      if (hostedNotes.Any())
+        notes.AddRange(hostedNotes);
       return speckleFloor;
     }
 
-    // Nesting the various profiles into a polycurve segments. 
+    // Nesting the various profiles into a polycurve segments.
     // TODO: **These should be HORIZONTAL on the floor level!** otherwise sloped floors will not be converted back to native properly
     private List<ICurve> GetProfiles(DB.CeilingAndFloor floor)
     {
@@ -217,7 +230,12 @@ namespace Objects.Converter.Revit
           if (normalAsPoint.DistanceTo(new OG.Point(0, 0, 1)) < TOLERANCE)
           {
             var translation = new OG.Vector(0, 0, (z * arcConversionFactor) - arc.startPoint.z) { units = ModelUnits };
-            var transform = new OO.Transform(new OG.Vector(1, 0, 0), new OG.Vector(0, 1, 0), new OG.Vector(0, 0, 1), translation);
+            var transform = new OO.Transform(
+              new OG.Vector(1, 0, 0),
+              new OG.Vector(0, 1, 0),
+              new OG.Vector(0, 0, 1),
+              translation
+            );
             _ = arc.TransformTo(transform, out OG.Arc newArc);
             return newArc;
           }
@@ -232,8 +250,20 @@ namespace Objects.Converter.Revit
               arc.plane.xdir,
               arc.plane.ydir
             );
-            var firstHalfArc = new OG.Arc(newPlane, arc.midPoint, arc.startPoint, arc.angleRadians / 2, units: arc.units);
-            var secondHalfArc = new OG.Arc(newPlane, arc.endPoint, arc.midPoint, arc.angleRadians / 2, units: arc.units);
+            var firstHalfArc = new OG.Arc(
+              newPlane,
+              arc.midPoint,
+              arc.startPoint,
+              arc.angleRadians / 2,
+              units: arc.units
+            );
+            var secondHalfArc = new OG.Arc(
+              newPlane,
+              arc.endPoint,
+              arc.midPoint,
+              arc.angleRadians / 2,
+              units: arc.units
+            );
             var arcCurvePoints = new List<double>
             {
               arc.startPoint.x,
@@ -261,7 +291,7 @@ namespace Objects.Converter.Revit
               //degree = nurbs.degree,
               rational = false,
               closed = false,
-              //newCurve.domain 
+              //newCurve.domain
               //newCurve.length
               units = arc.units
             };
@@ -269,18 +299,16 @@ namespace Objects.Converter.Revit
             return newArcCurve;
           }
 
+        // Note: this method is untested. It seems Revit doesn't send circles... it sends two arcs instead.
+        // Other applications may send circles though... needs more testing
         case OG.Circle circle:
+          if (!(circle.radius is double radius && radius > 0))
+          {
+            throw new Exception($"Circle with id, {circle.id}, does not have a valid radius");
+          }
           var circleNormalUnit = circle.plane.normal.Unit();
           var circleNormalAsPoint = new OG.Point(circleNormalUnit.x, circleNormalUnit.y, circleNormalUnit.z);
           var circleConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, circle.units);
-
-          if (circleNormalAsPoint.DistanceTo(new OG.Point(0, 0, 1)) < TOLERANCE)
-          {
-            var translation = new OG.Vector(0, 0, (z * circleConversionFactor) - circle.plane.origin.z) { units = ModelUnits };
-            var transform = new OO.Transform(new OG.Vector(1, 0, 0), new OG.Vector(0, 1, 0), new OG.Vector(0, 0, 1), translation);
-            _ = circle.plane.TransformTo(transform, out OG.Plane newPlace);
-            return new OG.Circle(newPlace, circle.radius ?? 0, units: circle.units);
-          }
 
           var flattenTransformCircle = new OO.Transform(
             new Vector(1, 0, 0),
@@ -290,6 +318,11 @@ namespace Objects.Converter.Revit
           );
 
           _ = circle.plane.TransformTo(flattenTransformCircle, out OG.Plane newCirclePlane);
+
+          if (circleNormalAsPoint.DistanceTo(new OG.Point(0, 0, 1)) < TOLERANCE)
+          {
+            return new OG.Circle(newCirclePlane, radius, units: circle.units);
+          }
 
           newCirclePlane.xdir.Normalize();
           newCirclePlane.ydir.Normalize();
@@ -304,7 +337,7 @@ namespace Objects.Converter.Revit
           return new OG.Ellipse(
             newCirclePlane,
             (circle.radius ?? 0) * rad1ScaleCircle,
-            (circle.radius ?? 0) * rad2ScaleCircle, 
+            (circle.radius ?? 0) * rad2ScaleCircle,
             units: circle.units
           );
 
@@ -326,13 +359,21 @@ namespace Objects.Converter.Revit
             degree = nurbs.degree,
             rational = nurbs.rational,
             closed = nurbs.closed,
-            //newCurve.domain 
+            //newCurve.domain
             //newCurve.length
             units = nurbs.units
           };
           return newCurve;
 
         case OG.Ellipse ellipse:
+          if (!(ellipse.firstRadius is double firstRadius && firstRadius > 0))
+          {
+            throw new Exception($"Ellipse with id, {ellipse.id}, does not have a valid first radius");
+          }
+          if (!(ellipse.secondRadius is double secondRadius && secondRadius > 0))
+          {
+            throw new Exception($"Ellipse with id, {ellipse.id}, does not have a valid second radius");
+          }
           var ellipseConversionFactor = Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, ellipse.units);
           var flattenTransform = new OO.Transform(
             new Vector(1, 0, 0),
@@ -355,8 +396,8 @@ namespace Objects.Converter.Revit
 
           return new OG.Ellipse(
             newEllipsePlane,
-            (ellipse.firstRadius ?? 0) * rad1Scale,
-            (ellipse.secondRadius ?? 0) * rad2Scale,
+            firstRadius * rad1Scale,
+            secondRadius * rad2Scale,
             ellipse.domain, ellipse.trimDomain, units: ellipse.units
           );
 
@@ -395,7 +436,7 @@ namespace Objects.Converter.Revit
             newPolycurve.segments.Add(GetFlattenedCurve(seg, z));
           return newPolycurve;
 
-        //case OG.Spiral spiral:
+          //case OG.Spiral spiral:
       }
       throw new NotSupportedException($"Trying to flatten unsupported curve type, {curve.GetType()}");
     }
