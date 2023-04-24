@@ -1,4 +1,4 @@
-﻿#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -276,7 +276,7 @@ namespace Objects.Converter.AutocadCivil
       return appObj;
     }
 
-    #region helper methods
+#region helper methods
     private SpiralType SpiralTypeToSpeckle(Civil.SpiralType type)
     {
       switch (type)
@@ -625,7 +625,7 @@ namespace Objects.Converter.AutocadCivil
       // add tin surface props
       var props = Speckle.Core.Models.Utilities.GetApplicationProps(surface, typeof(CivilDB.TinSurface), false);
       mesh[CivilPropName] = props;
-
+      
       return mesh;
     }
 
@@ -667,11 +667,8 @@ namespace Objects.Converter.AutocadCivil
       mesh.bbox = BoxToSpeckle(surface.GeometricExtents);
 
       // add grid surface props
-      try{
-      mesh["name"] = surface.DisplayName;
-      mesh["description"] = surface.Description;
-      }
-      catch{}
+      if (!string.IsNullOrEmpty(surface.DisplayName)){ mesh["name"] = surface.DisplayName; }
+      if (!string.IsNullOrEmpty(surface.Description)){ mesh["description"] = surface.Description; }
 
       return mesh;
     }
