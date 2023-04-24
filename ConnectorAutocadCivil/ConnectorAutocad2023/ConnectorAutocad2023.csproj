@@ -42,6 +42,6 @@
         <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" />
+        <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" IncludeAssets="compile;build" PrivateAssets="all"/>
     </ItemGroup>
 </Project>
