@@ -76,7 +76,7 @@ namespace Objects.Converter.CSI
       var results1D = send1DResults ? AllResultSet1dToSpeckle(convertedFrameNames, convertedPierNames, convertedSpandrelNames) : null;
       var results2D = send2DResults ? AreaResultSet2dToSpeckle(convertedAreaNames) : null;
 
-      var results = new ResultSetAll(results1D, results2D, new ResultSet3D(), new ResultGlobal(), resultsNode);
+      var results = new ResultSetAll(results1D, results2D, new ResultSet3D(), new ResultSetGlobal(), resultsNode);
 
       return results;
     }
