@@ -193,16 +193,23 @@ dotnet_diagnostic.ca1507.severity = warning
 dotnet_diagnostic.ca1508.severity = warning
 dotnet_diagnostic.ca1509.severity = warning
 
+dotnet_diagnostic.ca1002.severity = suggestion
+
 # Misc
 dotnet_diagnostic.ca1051.severity = none # Do not declare visible instance fields
-dotnet_diagnostic.ca1062.severity = none # Public method must check all parameters for null
+dotnet_diagnostic.ca1056.severity = suggestion
+dotnet_diagnostic.ca1062.severity = suggestion # Public method must check all parameters for null
 dotnet_diagnostic.ca1707.severity = none # Remove underscores in names
+dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
+
+dotnet_diagnostic.ca2211.severity = suggestion # Non constant fields should not be visible
+dotnet_diagnostic.ca2227.severity = suggestion # Collection props should be read-only
 
 
-dotnet_analyzer_diagnostic.category-globalization.severity = none
-dotnet_analyzer_diagnostic.category-security.severity = none
-dotnet_analyzer_diagnostic.category-interoperability.severity = none
-dotnet_analyzer_diagnostic.category-singlefile.severity = none
+dotnet_analyzer_diagnostic.category-Globalization.severity = none
+dotnet_analyzer_diagnostic.category-Security.severity = none
+dotnet_analyzer_diagnostic.category-Interoperability.severity = none
+dotnet_analyzer_diagnostic.category-SingleFile.severity = none
 
 [*.{appxmanifest,asax,ascx,aspx,axaml,build,c,c++,cc,cginc,compute,cp,cpp,cs,cshtml,cu,cuh,cxx,dtd,fs,fsi,fsscript,fsx,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,hxx,inc,inl,ino,ipp,ixx,master,ml,mli,mpp,mq4,mq5,mqh,nuspec,paml,razor,resw,resx,shader,skin,tpp,usf,ush,vb,xaml,xamlx,xoml,xsd}]
 indent_style = space
