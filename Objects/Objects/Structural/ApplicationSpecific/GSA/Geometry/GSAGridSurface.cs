@@ -1,53 +1,62 @@
-﻿using Speckle.Core.Models;
-using Speckle.Core.Kits;
 using System.Collections.Generic;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
-namespace Objects.Structural.GSA.Geometry
+namespace Objects.Structural.GSA.Geometry;
+
+public class GSAGridSurface : Base
 {
-    public class GSAGridSurface : Base
-    {
-        public string name { get; set; }
-        public int nativeId { get; set; }
+  public GSAGridSurface() { }
 
-        [DetachProperty]
-        public GSAGridPlane gridPlane { get; set; }
-        public double tolerance { get; set; }
-        public double spanDirection { get; set; }
-        public LoadExpansion loadExpansion { get; set; }
-        public GridSurfaceSpanType span { get; set; }
+  [SchemaInfo("GSAGridSurface", "Creates a Speckle structural grid surface for GSA", "GSA", "Geometry")]
+  public GSAGridSurface(
+    string name,
+    int nativeId,
+    GSAGridPlane gridPlane,
+    double tolerance,
+    double spanDirection,
+    LoadExpansion loadExpansion,
+    GridSurfaceSpanType span,
+    List<Base> elements
+  )
+  {
+    this.name = name;
+    this.nativeId = nativeId;
+    this.gridPlane = gridPlane;
+    this.tolerance = tolerance;
+    this.spanDirection = spanDirection;
+    this.loadExpansion = loadExpansion;
+    this.span = span;
+    this.elements = elements;
+  }
 
-        [DetachProperty]
-        [Chunkable(5000)]
-        public List<Base> elements { get; set; }
-        public GSAGridSurface() { }
+  public string name { get; set; }
+  public int nativeId { get; set; }
 
-        [SchemaInfo("GSAGridSurface", "Creates a Speckle structural grid surface for GSA", "GSA", "Geometry")]
-        public GSAGridSurface(string name, int nativeId, GSAGridPlane gridPlane, double tolerance, double spanDirection, LoadExpansion loadExpansion, GridSurfaceSpanType span, List<Base> elements)
-        {
-            this.name = name;
-            this.nativeId = nativeId;
-            this.gridPlane = gridPlane;
-            this.tolerance = tolerance;
-            this.spanDirection = spanDirection;
-            this.loadExpansion = loadExpansion;
-            this.span = span;
-            this.elements = elements;
-        }
-    }
+  [DetachProperty]
+  public GSAGridPlane gridPlane { get; set; }
 
-    public enum GridSurfaceSpanType
-    {
-        NotSet = 0,
-        OneWay,
-        TwoWay
-    }
+  public double tolerance { get; set; }
+  public double spanDirection { get; set; }
+  public LoadExpansion loadExpansion { get; set; }
+  public GridSurfaceSpanType span { get; set; }
 
-    public enum LoadExpansion
-    {
-        NotSet = 0,
-        Legacy = 1,
-        PlaneAspect = 2,
-        PlaneSmooth = 3,
-        PlaneCorner = 4
-    }
+  [DetachProperty, Chunkable(5000)]
+  public List<Base> elements { get; set; }
+}
+
+public enum GridSurfaceSpanType
+{
+  NotSet = 0,
+  OneWay,
+  TwoWay
+}
+
+public enum LoadExpansion
+{
+  NotSet = 0,
+  Legacy = 1,
+  PlaneAspect = 2,
+  PlaneSmooth = 3,
+  PlaneCorner = 4
 }

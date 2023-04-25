@@ -11,66 +11,38 @@ using namespace FieldNames;
 
 
 namespace AddOnCommands {
-static GS::ObjectState GetDoors (const API_Guid& guid)
+
+
+
+GS::String GetDoorData::GetFieldName () const
 {
-	GSErrCode err = NoError;
-
-	GS::ObjectState currentDoor;
-	API_Element element;
-
-	BNZeroMemory (&element, sizeof (API_Element));
-	element.header.guid = guid;
-	err = ACAPI_Element_Get (&element);
-
-	if (err == NoError) {
-		currentDoor.Add (ApplicationId, APIGuidToString (guid));
-		currentDoor.Add (ParentElementId, APIGuidToString (element.door.owner));
-
-		AddOnCommands::GetOpeningBaseData<API_DoorType> (element.door, currentDoor);
-	}
-
-	return currentDoor;
+	return Doors;
 }
+
+
+API_ElemTypeID GetDoorData::GetElemTypeID () const
+{
+	return API_DoorID;
+}
+
+
+GS::ErrCode	GetDoorData::SerializeElementType (const API_Element& element,
+	const API_ElementMemo& /*memo*/,
+	GS::ObjectState& os) const
+{
+	os.Add (ApplicationId, APIGuidToString (element.header.guid));
+	os.Add (ParentElementId, APIGuidToString (element.door.owner));
+
+	GetOpeningBaseData<API_DoorType> (element.door, os);
+
+	return NoError;
+}
+
 
 GS::String GetDoorData::GetName () const
 {
 	return GetDoorCommandName;
 }
 
-GS::ObjectState GetDoorData::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-	GS::ObjectState result;
 
-	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIds, ids);
-	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
-
-	if (elementGuids.IsEmpty ())
-		return result;
-
-	const auto& listAdderDoors = result.AddList<GS::ObjectState> (Doors);
-
-	for (const API_Guid& guid : elementGuids) {
-		API_Element element{};
-		element.header.guid = guid;
-
-		GSErrCode err = ACAPI_Element_Get (&element);
-
-		if (err != NoError /*|| element.header.type.typeID != API_WallID*/) {
-			return result;
-		}
-
-#ifdef ServerMainVers_2600
-		if (element.header.type.typeID == API_DoorID) {
-#else
-		if (element.header.typeID == API_DoorID) {
-#endif
-			GS::ObjectState door = GetDoors (element.header.guid);
-			listAdderDoors (door);
-		}
-	}
-
-	return result;
-}
-
-}
+} // namespace AddOnCommands

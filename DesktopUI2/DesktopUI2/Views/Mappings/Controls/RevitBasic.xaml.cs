@@ -1,13 +1,12 @@
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Mappings.Controls
+namespace DesktopUI2.Views.Mappings.Controls;
+
+public class RevitBasic : UserControl
 {
-  public partial class RevitBasic : UserControl
+  public RevitBasic()
   {
-    public RevitBasic()
-    {
-      AvaloniaXamlLoader.Load(this);
-    }
+    AvaloniaXamlLoader.Load(this);
   }
 }

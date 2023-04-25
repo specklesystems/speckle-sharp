@@ -3,93 +3,90 @@ using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Application = Autodesk.Navisworks.Api.Application;
 using MenuItem = DesktopUI2.Models.MenuItem;
 
-namespace Speckle.ConnectorNavisworks.Bindings
+namespace Speckle.ConnectorNavisworks.Bindings;
+
+public partial class ConnectorBindingsNavisworks : ConnectorBindings
 {
-  public partial class ConnectorBindingsNavisworks : ConnectorBindings
+  // Much of the interaction in Navisworks is through the ActiveDocument API
+  private static Document _doc;
+  private static Control _control;
+  private ISpeckleKit _defaultKit;
+  private ISpeckleConverter _navisworksConverter;
+
+  public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
-    // Much of the interaction in Navisworks is through the ActiveDocument API
-    public static Document Doc;
-    public static Control Control;
-    public ISpeckleKit DefaultKit;
-    public ISpeckleConverter NavisworksConverter;
+    _doc = navisworksActiveDocument;
+    _doc.SelectionSets.ToSavedItemCollection();
 
-    public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
-    {
-      Doc = navisworksActiveDocument;
-      SavedSets = Doc.SelectionSets.ToSavedItemCollection();
+    // Sets the Main Thread Control to Invoke commands on.
+    _control = new Control();
+    _control.CreateControl();
 
-      // Sets the Main Thread Control to Invoke commands on.
-      Control = new Control();
-      Control.CreateControl();
+    _defaultKit = KitManager.GetDefaultKit();
+    _navisworksConverter = _defaultKit?.LoadConverter(Utilities.VersionedAppName);
+  }
 
-      DefaultKit = KitManager.GetDefaultKit();
-      NavisworksConverter = DefaultKit?.LoadConverter(Utils.VersionedAppName);
-    }
-
-    // Majority of interaction with Speckle will be through the saved selection and search Sets
-    public SavedItemCollection SavedSets { get; set; }
+  // Majority of interaction with Speckle will be through the saved selection and search Sets
 
 
-    public override string GetActiveViewName()
-    {
-      return "Entire Document";
-    }
+  public static string HostAppName => HostApplications.Navisworks.Slug;
 
-    public override List<MenuItem> GetCustomStreamMenuItems()
-    {
-      return new List<MenuItem>();
-    }
+  public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
 
-    public override string GetHostAppName()
-    {
-      return HostApplications.Navisworks.Slug;
-    }
+  public override string GetActiveViewName()
+  {
+    return "Entire Document";
+  }
 
+  public override List<MenuItem> GetCustomStreamMenuItems()
+  {
+    return new List<MenuItem>();
+  }
 
-    public override string GetHostAppNameVersion()
-    {
-      return Utils.VersionedAppName.Replace("Navisworks", "Navisworks ");
-    }
+  public override string GetHostAppName()
+  {
+    return HostAppName;
+  }
 
-    public override string GetFileName()
-    {
-      return Application.ActiveDocument != null
-        ? Application.ActiveDocument.CurrentFileName
-        : string.Empty;
-    }
+  public override string GetHostAppNameVersion()
+  {
+    return HostAppNameVersion;
+  }
 
-    private static string GetDocPath()
-    {
-      return "";
-    }
+  public override string GetFileName()
+  {
+    return Application.ActiveDocument != null ? Application.ActiveDocument.CurrentFileName : string.Empty;
+  }
 
-    public override string GetDocumentLocation()
-    {
-      return GetDocPath();
-    }
+  private static string GetDocPath()
+  {
+    return "";
+  }
 
-    public override void SelectClientObjects(List<string> args, bool deselect = false)
-    {
-      // TODO!
-    }
+  public override string GetDocumentLocation()
+  {
+    return GetDocPath();
+  }
 
-    public override void ResetDocument()
-    {
-      // TODO!
-    }
+  public override void SelectClientObjects(List<string> objs, bool deselect = false)
+  {
+    // TODO!
+  }
 
+  public override void ResetDocument()
+  {
+    // TODO!
+  }
 
-    public override string GetDocumentId()
-    {
-      // TODO!
-      // An unsaved document has no path or filename
-      var fileName = Doc.CurrentFileName;
-      var hash = Utilities.hashString(fileName, Utilities.HashingFuctions.MD5);
-      return hash;
-    }
+  public override string GetDocumentId()
+  {
+    // TODO!
+    // An unsaved document has no path or filename
+    var fileName = _doc.CurrentFileName;
+    var hash = Core.Models.Utilities.hashString(fileName, Core.Models.Utilities.HashingFuctions.MD5);
+    return hash;
   }
 }

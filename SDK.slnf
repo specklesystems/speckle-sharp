@@ -1,0 +1,15 @@
+{
+  "solution": {
+    "path": "All.sln",
+    "projects": [
+      "Core\\Core\\Core.csproj",
+      "Core\\IntegrationTests\\TestsIntegration.csproj",
+      "Core\\Tests\\TestsUnit.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "Core\\Transports\\MongoDBTransport\\MongoDBTransport.csproj",
+      "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}

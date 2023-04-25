@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Objects.Structural.CSI.Analysis;
 
-namespace Objects.Structural.CSI.Analysis
+public enum WindPressureType
 {
-    public enum WindPressureType
-    {
-        Windward,
-        other
-    }
+  Windward,
+  other
 }

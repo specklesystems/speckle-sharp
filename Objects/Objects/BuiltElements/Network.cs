@@ -1,13 +1,8 @@
-﻿using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using System.Text;
+using Objects.Geometry;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using Objects.BuiltElements;
 
 namespace Objects.BuiltElements
 {
@@ -30,8 +25,6 @@ namespace Objects.BuiltElements
     /// The connections between <see cref="elements"/>
     /// </summary>
     public List<NetworkLink> links { get; set; }
-
-    public Network() { }
   }
 
   public class NetworkElement : Base
@@ -45,22 +38,21 @@ namespace Objects.BuiltElements
     /// <remarks>
     /// Currently named "elements" to assist with receiving in connector flatten method.
     /// </remarks>
-    public Base elements { get; set; } 
+    public Base elements { get; set; }
 
     /// <summary>
     /// The index of the links in <see cref="network"/> that are connected to this element
     /// </summary>
     public List<int> linkIndices { get; set; }
 
-    [JsonIgnore] 
+    [JsonIgnore]
     public Network network { get; set; }
-
-    public NetworkElement() { }
 
     /// <summary>
     /// Retrieves the links for this element
     /// </summary>
-    [JsonIgnore] public List<NetworkLink> links => linkIndices.Select(i => network?.links[i]).ToList();
+    [JsonIgnore]
+    public List<NetworkLink> links => linkIndices.Select(i => network?.links[i]).ToList();
   }
 
   public class NetworkLink : Base
@@ -72,15 +64,14 @@ namespace Objects.BuiltElements
     /// </summary>
     public List<int> elementIndices { get; set; }
 
-    [JsonIgnore] 
+    [JsonIgnore]
     public Network network { get; set; }
-
-    public NetworkLink() { }
 
     /// <summary>
     /// Retrieves the elements for this link
     /// </summary>
-    [JsonIgnore] public List<NetworkElement> elements => elementIndices.Select(i => network?.elements[i]).ToList();
+    [JsonIgnore]
+    public List<NetworkElement> elements => elementIndices.Select(i => network?.elements[i]).ToList();
   }
 }
 
@@ -100,9 +91,8 @@ namespace Objects.BuiltElements.Revit
     /// For example, some fittings cannot be created based on connectors, and so will be created similarly to mechanical equipment
     /// </remarks>
     public bool isConnectorBased { get; set; }
-
-    public RevitNetworkElement() { }
   }
+
   public class RevitNetworkLink : NetworkLink
   {
     public double height { get; set; }
@@ -110,10 +100,12 @@ namespace Objects.BuiltElements.Revit
     public double diameter { get; set; }
     public Point origin { get; set; }
     public Vector direction { get; set; }
+
     /// <summary>
     /// The system category
     /// </summary>
     public string systemName { get; set; }
+
     public string systemType { get; set; }
 
     /// <summary>
@@ -137,8 +129,8 @@ namespace Objects.BuiltElements.Revit
     /// <summary>
     /// Indicates if this link needs temporary placeholder objects to be created first when receiving
     /// </summary>
-    /// <remarks> 
-    /// Placeholder geometry are curves. 
+    /// <remarks>
+    /// Placeholder geometry are curves.
     /// For example, U-bend links need temporary pipes to be created first, if one or more linked pipes have not yet been created in the network.
     /// </remarks>
     public bool needsPlaceholders { get; set; }
@@ -147,7 +139,5 @@ namespace Objects.BuiltElements.Revit
     /// Indicates if this link has been connected to its elements
     /// </summary>
     public bool isConnected { get; set; }
-
-    public RevitNetworkLink() { }
   }
 }

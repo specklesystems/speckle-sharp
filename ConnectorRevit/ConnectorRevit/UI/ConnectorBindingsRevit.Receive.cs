@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -33,7 +33,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="state"></param>
     /// <returns></returns>
-    /// 
+    ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       //make sure to instance a new copy so all values are reset correctly
@@ -47,49 +47,49 @@ namespace Speckle.ConnectorRevit.UI
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
-      
+
       Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
       await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);
-      
+
       Preview.Clear();
       StoredObjects.Clear();
-      
+
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
         progress.Report.Log(previewObj);
-      
+
 
       converter.ReceiveMode = state.ReceiveMode;
-      // needs to be set for editing to work 
+      // needs to be set for editing to work
       converter.SetPreviousContextObjects(previouslyReceiveObjects);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
-      
+
       try
       {
         await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
       }
       catch (Exception ex)
       {
-        Log.Warning(ex, "Could not update receive object with user types");
+        SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
       }
-      
+
       var (success, exception) = await RevitTask.RunAsync(app =>
       {
         string transactionName = $"Baking stream {state.StreamId}";
         using var g = new TransactionGroup(CurrentDoc.Document, transactionName);
         using var t = new Transaction(CurrentDoc.Document, transactionName);
-        
+
         g.Start();
         var failOpts = t.GetFailureHandlingOptions();
         failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
         failOpts.SetClearAfterRollback(true);
         t.SetFailureHandlingOptions(failOpts);
         t.Start();
-        
+
         try
         {
           converter.SetContextDocument(t);
@@ -106,8 +106,8 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception ex)
         {
-          Log.Error(ex, "Rolling back connector transaction {transactionName} {transactionType}",transactionName, t.GetType());
-          
+          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction {transactionName} {transactionType}", transactionName, t.GetType());
+
           string message = $"Fatal Error: {ex.Message}";
           if (ex is OperationCanceledException) message = "Receive cancelled";
           progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
@@ -124,7 +124,7 @@ namespace Speckle.ConnectorRevit.UI
         if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
         throw new SpeckleException(exception.Message, exception);
       }
-      
+
       return state;
     }
 
@@ -186,7 +186,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception e)
         {
-          Log.Warning("Failed to convert ");
+          SpeckleLog.Logger.Warning("Failed to convert ");
           obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
           progress.Report.UpdateReportObject(obj);
         }
@@ -202,6 +202,11 @@ namespace Speckle.ConnectorRevit.UI
 
       // get the active ui view
       var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+      if (view is TableView)
+      {
+        return;
+      }
+
       var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
       // "refresh" the active view

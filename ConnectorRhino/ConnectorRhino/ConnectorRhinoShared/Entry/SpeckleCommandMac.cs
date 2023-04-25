@@ -1,3 +1,4 @@
+#if MAC
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -8,11 +9,12 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Rhino;
 using Rhino.Commands;
+using Serilog;
+using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
-namespace SpeckleRhino
-{
-  #if MAC
+namespace SpeckleRhino;
+
   public class SpeckleCommandMac : Command
   {
 
@@ -37,6 +39,7 @@ namespace SpeckleRhino
       }
       catch (Exception e)
       {
+        SpeckleLog.Logger.Fatal(e, "Failed to create or focus Speckle window");
         RhinoApp.CommandLineOut.WriteLine($"Speckle Error - { e.ToFormattedString() }");
         return Result.Failure;
       }
@@ -59,4 +62,3 @@ namespace SpeckleRhino
     }
   }
 #endif
-}

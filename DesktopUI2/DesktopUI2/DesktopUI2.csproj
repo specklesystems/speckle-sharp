@@ -1,412 +1,389 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>8.0</LangVersion>
-    <ApplicationIcon />
-    <OutputType>Library</OutputType>
-    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <StartupObject />
-    <PackageProjectUrl>https://speckle.systems</PackageProjectUrl>
-    <PackageIcon>logo.png</PackageIcon>
-    <Description>Cross platform Desktop UI for Speckle.</Description>
-    <Copyright>Copyright (c) AEC Systems Ltd</Copyright>
-    <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-    <PackageTags>speckle, ui, desktopui, dui</PackageTags>
-    <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-    <RepositoryType>git</RepositoryType>
-    <Product></Product>
-    <PackageId>Speckle.DesktopUI</PackageId>
-    <Authors>Speckle</Authors>
-    <Company>Speckle</Company>
-
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
-    <WarningLevel>2</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <AvaloniaResource Include="Assets\**" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="App.xaml" />
-    <None Remove="Styles\NotificationCard.xaml" />
-    <None Remove="Styles\NotificationManager.xaml" />
-    <None Remove="Views\Controls\CollaboratorsControl.xaml" />
-    <None Remove="Views\Controls\PreviewButton.xaml" />
-    <None Remove="Styles\Button.xaml" />
-    <None Remove="Styles\ChipListBox.xaml" />
-    <None Remove="Styles\ComboBox.xaml" />
-    <None Remove="Styles\Dialog.xaml" />
-    <None Remove="Styles\Expander.xaml" />
-    <None Remove="Styles\FloatingButton.xaml" />
-    <None Remove="Styles\ListBox.xaml" />
-    <None Remove="Styles\MenuItem.xaml" />
-    <None Remove="Styles\Playground.xaml" />
-    <None Remove="Styles\Styles.xaml" />
-    <None Remove="Styles\Text.xaml" />
-    <None Remove="Styles\TextBox.xaml" />
-    <None Remove="Views\Controls\StreamSelector.xaml" />
-    <None Remove="Views\Filters\AllFilterView.xaml" />
-    <None Remove="Views\Filters\ListFilterView.xaml" />
-    <None Remove="Views\Filters\ManualFilterView.xaml" />
-    <None Remove="Views\Filters\PropertyFilterView.xaml" />
-    <None Remove="Views\Filters\TreeFilterView.xaml" />
-    <None Remove="Views\MainUserControl.xaml" />
-    <None Remove="Views\MainWindow.xaml" />
-    <None Remove="Views\MappingsControl.xaml" />
-    <None Remove="Views\MappingsWindow.xaml" />
-    <None Remove="Views\Mappings\Controls\RevitBasic.xaml" />
-    <None Remove="Views\Mappings\Controls\RevitMEP.xaml" />
-    <None Remove="Views\Pages\HomeView.xaml" />
-    <None Remove="Views\Pages\LogInView.xaml" />
-    <None Remove="Views\Pages\NotificationsView.xaml" />
-    <None Remove="Views\Pages\OneClickView.xaml" />
-    <None Remove="Views\Controls\StreamEditControls\Activity.xaml" />
-    <None Remove="Views\Controls\StreamEditControls\Comments.xaml" />
-    <None Remove="Views\Controls\StreamEditControls\Report.xaml" />
-    <None Remove="Views\Pages\SettingsView.xaml" />
-    <None Remove="Views\Controls\StreamEditControls\Receive.xaml" />
-    <None Remove="Views\Controls\StreamEditControls\Send.xaml" />
-    <None Remove="Views\Pages\StreamEditView.xaml" />
-    <None Remove="Views\Scheduler.xaml" />
-    <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
-	  <None Remove="Views\Settings\ListBoxSettingView.xaml" />
-    <None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
-    <None Remove="Views\Settings\NumericSettingView.xaml" />
-    <None Remove="Views\Settings\TextBoxSettingView.xaml" />
-    <None Remove="Views\Share.xaml" />
-    <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
-    <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
-    <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
-    <None Remove="Views\Windows\Dialogs\ImportExportAlert.xaml" />
-    <None Remove="Views\Windows\Dialogs\ImportFamiliesDialog.xaml" />
-    <None Remove="Views\Windows\Dialogs\MappingViewDialog.xaml" />
-    <None Remove="Views\Windows\Dialogs\NewBranchDialog.xaml" />
-    <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
-    <None Remove="Views\Windows\QuickOpsDialog.xaml" />
-    <None Remove="Views\Windows\Settings.xaml" />
-    <AvaloniaResource Include="Styles\Expander.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\Playground.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\Button.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\Dialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\ChipListBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\ListBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\ComboBox.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\FloatingButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\MenuItem.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\Styles.xaml">
-      <Generator></Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\TextBox.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaResource>
-    <AvaloniaResource Include="Styles\Text.xaml">
-      <Generator></Generator>
-    </AvaloniaResource>
-    <AvaloniaXaml Include="App.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Styles\NotificationCard.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Styles\NotificationManager.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\CollaboratorsControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\PreviewButton.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Styles\MenuItem.xaml" />
-    <AvaloniaXaml Include="Views\Controls\StreamSelector.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Filters\AllFilterView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Filters\TreeFilterView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Filters\ListFilterView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Filters\ManualFilterView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Filters\PropertyFilterView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\MainUserControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\MappingsControl.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\MappingsWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Mappings\Controls\RevitBasic.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Mappings\Controls\RevitMEP.xaml" />
-    <AvaloniaXaml Include="Views\Pages\LogInView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\NotificationsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\OneClickView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Settings\NumericSettingView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Settings\TextBoxSettingView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\ChangeRoleDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\StreamDetails.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Activity.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Comments.xaml">
-        <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\SettingsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\CollaboratorsView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Report.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Scheduler.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\MainWindow.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\SavedStreams.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Pages\HomeView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Receive.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Controls\StreamEditControls\Send.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-	  <AvaloniaXaml Include="Views\Settings\MultiSelectBoxSettingView.xaml">
-		  <Generator>MSBuild:Compile</Generator>
-	  </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\AddAccountDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\AddFromUrlDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\Dialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\ImportExportAlert.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\ImportFamiliesDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\MappingViewDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\NewBranchDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\NewStreamDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <AvaloniaXaml Include="Views\Windows\Dialogs\QuickOpsDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </AvaloniaXaml>
-    <None Update="Native\libAvalonia.Native.OSX.dylib">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Diagnostics" Version="0.10.18" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-    <PackageReference Include="Material.Avalonia" Version="3.0.0-rc0.98-nightly" />
-    <PackageReference Include="Speckle.Material.Icons.Avalonia" Version="1.2.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Native\" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="logo.png">
-      <Pack>True</Pack>
-      <PackagePath>\</PackagePath>
-    </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="App.xaml.cs">
-      <DependentUpon>App.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\CollaboratorsControl.xaml.cs">
-      <DependentUpon>CollaboratorsControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\PreviewButton.xaml.cs">
-      <DependentUpon>PreviewButton.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\StreamSelector.xaml.cs">
-      <DependentUpon>StreamSelector.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Filters\AllFilterView.xaml.cs">
-      <DependentUpon>AllFilterView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Filters\ListFilterView.xaml.cs">
-      <DependentUpon>ListFilterView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Filters\ManualFilterView.xaml.cs">
-      <DependentUpon>ManualFilterView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
-      <DependentUpon>PropertyFilterView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\MappingsControl.xaml.cs">
-      <DependentUpon>MappingsControl.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\MappingsWindow.xaml.cs">
-      <DependentUpon>MappingsWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Mappings\Controls\RevitBasic.xaml.cs">
-      <DependentUpon>RevitBasic.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\LogInView.xaml.cs">
-      <DependentUpon>LogInView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\NotificationsView.xaml.cs">
-      <DependentUpon>NotificationsView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\OneClickView.xaml.cs">
-      <DependentUpon>OneClickView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\ChangeRoleDialog.xaml.cs">
-      <DependentUpon>ChangeRoleDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\StreamDetails.xaml.cs">
-      <DependentUpon>StreamDetails.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\StreamEditControls\Activity.xaml.cs">
-      <DependentUpon>Activity.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\StreamEditControls\Comments.xaml.cs">
-      <DependentUpon>Comments.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\StreamEditView.xaml.cs">
-      <DependentUpon>StreamEditView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Scheduler.xaml.cs">
-      <DependentUpon>Scheduler.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\MainWindow.xaml.cs">
-      <DependentUpon>MainWindow.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\SavedStreams.xaml.cs">
-      <DependentUpon>SavedStreams.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Pages\HomeView.xaml.cs">
-      <DependentUpon>HomeView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\StreamEditControls\Receive.xaml.cs">
-      <DependentUpon>Receive.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Controls\StreamEditControls\Send.xaml.cs">
-      <DependentUpon>Send.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
-      <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Settings\MultiSelectBoxSettingView.xaml.cs">
-      <DependentUpon>MultiSelectBoxSettingView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Settings\CheckBoxSettingView.xaml.cs">
-      <DependentUpon>CheckboxSettingView.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
-      <DependentUpon>AddAccountDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\AddFromUrlDialog.xaml.cs">
-      <DependentUpon>AddFromUrlDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\Dialog.xaml.cs">
-      <DependentUpon>Dialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\ImportExportAlert.xaml.cs">
-      <DependentUpon>ImportExportAlert.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\ImportFamiliesDialog.xaml.cs">
-      <DependentUpon>ImportFamiliesDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\MappingViewDialog.xaml.cs">
-      <DependentUpon>MappingViewDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\NewBranchDialog.xaml.cs">
-      <DependentUpon>NewBranchDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\NewStreamDialog.xaml.cs">
-      <DependentUpon>NewStreamDialog.xaml</DependentUpon>
-    </Compile>
-    <Compile Update="Views\Windows\Dialogs\QuickOpsDialog.xaml.cs">
-      <DependentUpon>QuickOpsDialog.xaml</DependentUpon>
-    </Compile>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <OutputType>Library</OutputType>
+        <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+        <Description>Cross platform Desktop UI for Speckle.</Description>
+        <PackageTags>$(PackageTags), ui, desktopui, dui</PackageTags>
+        <PackageId>Speckle.DesktopUI</PackageId>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" />
+    </ItemGroup>
+    <ItemGroup>
+        <None Remove="App.xaml" />
+        <None Remove="Styles\NotificationCard.xaml" />
+        <None Remove="Styles\NotificationManager.xaml" />
+        <None Remove="Views\Controls\CollaboratorsControl.xaml" />
+        <None Remove="Views\Controls\PreviewButton.xaml" />
+        <None Remove="Styles\Button.xaml" />
+        <None Remove="Styles\ChipListBox.xaml" />
+        <None Remove="Styles\ComboBox.xaml" />
+        <None Remove="Styles\Dialog.xaml" />
+        <None Remove="Styles\Expander.xaml" />
+        <None Remove="Styles\FloatingButton.xaml" />
+        <None Remove="Styles\ListBox.xaml" />
+        <None Remove="Styles\MenuItem.xaml" />
+        <None Remove="Styles\Playground.xaml" />
+        <None Remove="Styles\Styles.xaml" />
+        <None Remove="Styles\Text.xaml" />
+        <None Remove="Styles\TextBox.xaml" />
+        <None Remove="Views\Controls\StreamSelector.xaml" />
+        <None Remove="Views\Filters\AllFilterView.xaml" />
+        <None Remove="Views\Filters\ListFilterView.xaml" />
+        <None Remove="Views\Filters\ManualFilterView.xaml" />
+        <None Remove="Views\Filters\PropertyFilterView.xaml" />
+        <None Remove="Views\Filters\TreeFilterView.xaml" />
+        <None Remove="Views\MainUserControl.xaml" />
+        <None Remove="Views\MainWindow.xaml" />
+        <None Remove="Views\MappingsControl.xaml" />
+        <None Remove="Views\MappingsWindow.xaml" />
+        <None Remove="Views\Mappings\Controls\RevitBasic.xaml" />
+        <None Remove="Views\Mappings\Controls\RevitMEP.xaml" />
+        <None Remove="Views\Pages\HomeView.xaml" />
+        <None Remove="Views\Pages\LogInView.xaml" />
+        <None Remove="Views\Pages\NotificationsView.xaml" />
+        <None Remove="Views\Pages\OneClickView.xaml" />
+        <None Remove="Views\Controls\StreamEditControls\Activity.xaml" />
+        <None Remove="Views\Controls\StreamEditControls\Comments.xaml" />
+        <None Remove="Views\Controls\StreamEditControls\Report.xaml" />
+        <None Remove="Views\Pages\SettingsView.xaml" />
+        <None Remove="Views\Controls\StreamEditControls\Receive.xaml" />
+        <None Remove="Views\Controls\StreamEditControls\Send.xaml" />
+        <None Remove="Views\Pages\StreamEditView.xaml" />
+        <None Remove="Views\Scheduler.xaml" />
+        <None Remove="Views\Settings\CheckBoxSettingView.xaml" />
+        <None Remove="Views\Settings\ListBoxSettingView.xaml" />
+        <None Remove="Views\Settings\MultiSelectBoxSettingView.xaml" />
+        <None Remove="Views\Settings\NumericSettingView.xaml" />
+        <None Remove="Views\Settings\TextBoxSettingView.xaml" />
+        <None Remove="Views\Share.xaml" />
+        <None Remove="Views\Windows\Dialogs\AddAccountDialog.xaml" />
+        <None Remove="Views\Windows\Dialogs\AddFromUrlDialog.xaml" />
+        <None Remove="Views\Windows\Dialogs\Dialog.xaml" />
+        <None Remove="Views\Windows\Dialogs\ImportExportAlert.xaml" />
+        <None Remove="Views\Windows\Dialogs\ImportFamiliesDialog.xaml" />
+        <None Remove="Views\Windows\Dialogs\MappingViewDialog.xaml" />
+        <None Remove="Views\Windows\Dialogs\NewBranchDialog.xaml" />
+        <None Remove="Views\Windows\Dialogs\NewStreamDialog.xaml" />
+        <None Remove="Views\Windows\QuickOpsDialog.xaml" />
+        <None Remove="Views\Windows\Settings.xaml" />
+        <AvaloniaResource Include="Styles\Expander.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\Playground.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\Button.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\Dialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\ChipListBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\ListBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\ComboBox.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\FloatingButton.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\MenuItem.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\Styles.xaml">
+            <Generator></Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\TextBox.xaml">
+            <SubType>Designer</SubType>
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaResource>
+        <AvaloniaResource Include="Styles\Text.xaml">
+            <Generator></Generator>
+        </AvaloniaResource>
+        <AvaloniaXaml Include="App.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Styles\NotificationCard.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Styles\NotificationManager.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\CollaboratorsControl.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\PreviewButton.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Styles\MenuItem.xaml" />
+        <AvaloniaXaml Include="Views\Controls\StreamSelector.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Filters\AllFilterView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Filters\TreeFilterView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Filters\ListFilterView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Filters\ManualFilterView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Filters\PropertyFilterView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\MainUserControl.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\MappingsControl.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\MappingsWindow.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Mappings\Controls\RevitBasic.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Mappings\Controls\RevitMEP.xaml" />
+        <AvaloniaXaml Include="Views\Pages\LogInView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Pages\NotificationsView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Pages\OneClickView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Settings\NumericSettingView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Settings\TextBoxSettingView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\ChangeRoleDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\StreamDetails.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\StreamEditControls\Activity.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\StreamEditControls\Comments.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Pages\SettingsView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Pages\CollaboratorsView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\StreamEditControls\Report.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Pages\StreamEditView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Scheduler.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\MainWindow.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\SavedStreams.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Pages\HomeView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\StreamEditControls\Receive.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Controls\StreamEditControls\Send.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Settings\CheckBoxSettingView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Settings\ListBoxSettingView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Settings\MultiSelectBoxSettingView.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\AddAccountDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\AddFromUrlDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\Dialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\ImportExportAlert.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\ImportFamiliesDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\MappingViewDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\NewBranchDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\NewStreamDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <AvaloniaXaml Include="Views\Windows\Dialogs\QuickOpsDialog.xaml">
+            <Generator>MSBuild:Compile</Generator>
+        </AvaloniaXaml>
+        <None Update="Native\libAvalonia.Native.OSX.dylib">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Avalonia" Version="0.10.18" />
+        <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
+        <PackageReference Include="Avalonia.Diagnostics" Version="0.10.18" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
+        <PackageReference Include="Speckle.Material.Avalonia" Version="3.0.4" />
+        <PackageReference Include="Speckle.Material.Icons.Avalonia" Version="1.2.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <Folder Include="Native\" />
+    </ItemGroup>
+    <ItemGroup>
+        <Compile Update="App.xaml.cs">
+            <DependentUpon>App.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\CollaboratorsControl.xaml.cs">
+            <DependentUpon>CollaboratorsControl.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\PreviewButton.xaml.cs">
+            <DependentUpon>PreviewButton.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\StreamSelector.xaml.cs">
+            <DependentUpon>StreamSelector.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Filters\AllFilterView.xaml.cs">
+            <DependentUpon>AllFilterView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Filters\ListFilterView.xaml.cs">
+            <DependentUpon>ListFilterView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Filters\ManualFilterView.xaml.cs">
+            <DependentUpon>ManualFilterView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Filters\PropertyFilterView.xaml.cs">
+            <DependentUpon>PropertyFilterView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\MappingsControl.xaml.cs">
+            <DependentUpon>MappingsControl.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\MappingsWindow.xaml.cs">
+            <DependentUpon>MappingsWindow.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Mappings\Controls\RevitBasic.xaml.cs">
+            <DependentUpon>RevitBasic.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Pages\LogInView.xaml.cs">
+            <DependentUpon>LogInView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Pages\NotificationsView.xaml.cs">
+            <DependentUpon>NotificationsView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Pages\OneClickView.xaml.cs">
+            <DependentUpon>OneClickView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\ChangeRoleDialog.xaml.cs">
+            <DependentUpon>ChangeRoleDialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\StreamDetails.xaml.cs">
+            <DependentUpon>StreamDetails.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\StreamEditControls\Activity.xaml.cs">
+            <DependentUpon>Activity.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\StreamEditControls\Comments.xaml.cs">
+            <DependentUpon>Comments.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Pages\StreamEditView.xaml.cs">
+            <DependentUpon>StreamEditView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Scheduler.xaml.cs">
+            <DependentUpon>Scheduler.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\MainWindow.xaml.cs">
+            <DependentUpon>MainWindow.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\SavedStreams.xaml.cs">
+            <DependentUpon>SavedStreams.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Pages\HomeView.xaml.cs">
+            <DependentUpon>HomeView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\StreamEditControls\Receive.xaml.cs">
+            <DependentUpon>Receive.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Controls\StreamEditControls\Send.xaml.cs">
+            <DependentUpon>Send.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Settings\ListBoxSettingView.xaml.cs">
+            <DependentUpon>ListBoxSettingView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Settings\MultiSelectBoxSettingView.xaml.cs">
+            <DependentUpon>MultiSelectBoxSettingView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Settings\CheckBoxSettingView.xaml.cs">
+            <DependentUpon>CheckboxSettingView.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\AddAccountDialog.xaml.cs">
+            <DependentUpon>AddAccountDialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\AddFromUrlDialog.xaml.cs">
+            <DependentUpon>AddFromUrlDialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\Dialog.xaml.cs">
+            <DependentUpon>Dialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\ImportExportAlert.xaml.cs">
+            <DependentUpon>ImportExportAlert.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\ImportFamiliesDialog.xaml.cs">
+            <DependentUpon>ImportFamiliesDialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\MappingViewDialog.xaml.cs">
+            <DependentUpon>MappingViewDialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\NewBranchDialog.xaml.cs">
+            <DependentUpon>NewBranchDialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\NewStreamDialog.xaml.cs">
+            <DependentUpon>NewStreamDialog.xaml</DependentUpon>
+        </Compile>
+        <Compile Update="Views\Windows\Dialogs\QuickOpsDialog.xaml.cs">
+            <DependentUpon>QuickOpsDialog.xaml</DependentUpon>
+        </Compile>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+        <ProjectReference Include="..\..\Objects\Objects\Objects.csproj">
 			<!--Prevent copying Objects.dll only Private seems to work, but let's keep all of them-->
-      <CopyLocal>False</CopyLocal>
-			<Private>False</Private>
-      <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
-      <EmbedInteropTypes>False</EmbedInteropTypes>
-      <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
-			<PrivateAssets>all</PrivateAssets>
-    </ProjectReference>
-  </ItemGroup>
+            <CopyLocal>False</CopyLocal>
+            <Private>False</Private>
+            <CopyLocalSatelliteAssemblies>False</CopyLocalSatelliteAssemblies>
+            <EmbedInteropTypes>False</EmbedInteropTypes>
+            <ReferenceOutputAssembly>True</ReferenceOutputAssembly>
+            <PrivateAssets>all</PrivateAssets>
+        </ProjectReference>
+    </ItemGroup>
 </Project>

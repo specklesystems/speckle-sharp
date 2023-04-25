@@ -1,36 +1,33 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System.Collections.Generic;
 using Objects.Structural.Geometry;
 using Objects.Structural.Materials;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
-namespace Objects.Structural.Properties
+namespace Objects.Structural.Properties;
+
+public class Property3D : Property
 {
-    public class Property3D : Property
-    {
-        public PropertyType3D type { get; set; }
+  public Property3D() { }
 
-        [DetachProperty]
-        public StructuralMaterial material { get; set; }
+  [SchemaInfo("Property3D (by name)", "Creates a Speckle structural 3D element property", "Structural", "Properties")]
+  public Property3D(string name)
+  {
+    this.name = name;
+  }
 
-        [DetachProperty]
-        public Axis orientationAxis { get; set; }
+  [SchemaInfo("Property3D", "Creates a Speckle structural 3D element property", "Structural", "Properties")]
+  public Property3D(string name, PropertyType3D type, StructuralMaterial material)
+  {
+    this.name = name;
+    this.type = type;
+    this.material = material;
+  }
 
-        public Property3D() { }
+  public PropertyType3D type { get; set; }
 
-        [SchemaInfo("Property3D (by name)", "Creates a Speckle structural 3D element property", "Structural", "Properties")]
-        public Property3D(string name)
-        {
-            this.name = name;
-        }
+  [DetachProperty]
+  public StructuralMaterial material { get; set; }
 
-        [SchemaInfo("Property3D", "Creates a Speckle structural 3D element property", "Structural", "Properties")]
-        public Property3D(string name, PropertyType3D type , StructuralMaterial material)
-        {
-            this.name = name;
-            this.type = type;
-            this.material = material;
-        }
-    }
+  [DetachProperty]
+  public Axis orientationAxis { get; set; }
 }

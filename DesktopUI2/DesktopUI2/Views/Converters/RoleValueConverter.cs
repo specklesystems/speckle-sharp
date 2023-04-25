@@ -1,24 +1,22 @@
-﻿using Avalonia.Data.Converters;
 using System;
+using System.Globalization;
+using Avalonia.Data.Converters;
 
-namespace DesktopUI2.Views.Converters
+namespace DesktopUI2.Views.Converters;
+
+public class RoleValueConverter : IValueConverter
 {
-
-  public class RoleValueConverter : IValueConverter
+  public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
   {
-    public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-    {
-      if (value == null)
-        return "public stream";
-      return value.ToString().Replace("stream:", "");
-    }
+    if (value == null)
+      return "public stream";
+    return value.ToString().Replace("stream:", "");
+  }
 
-    public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
-    {
-      if (value == null)
-        return null;
-      return "stream:" + value.ToString();
-    }
+  public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+  {
+    if (value == null)
+      return null;
+    return "stream:" + value;
   }
 }
-

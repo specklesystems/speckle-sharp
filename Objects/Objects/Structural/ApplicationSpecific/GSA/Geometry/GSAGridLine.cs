@@ -1,22 +1,19 @@
-﻿using Speckle.Newtonsoft.Json;
-using Speckle.Core.Kits;
-using Objects.Geometry;
-using Objects.Structural.Properties;
 using Objects.BuiltElements;
+using Speckle.Core.Kits;
 
-namespace Objects.Structural.GSA.Geometry
+namespace Objects.Structural.GSA.Geometry;
+
+public class GSAGridLine : GridLine
 {
-    public class GSAGridLine : GridLine
-    {
-        public int nativeId { get; set; }
-        public GSAGridLine() { }
+  public GSAGridLine() { }
 
-        [SchemaInfo("GSAGridLine", "Creates a Speckle structural grid line for GSA", "GSA", "Geometry")]
-        public GSAGridLine(int nativeId, string name, ICurve line)
-        {            
-            this.nativeId = nativeId;
-            this.label = name;
-            this.baseLine = line;
-        }
-    }
+  [SchemaInfo("GSAGridLine", "Creates a Speckle structural grid line for GSA", "GSA", "Geometry")]
+  public GSAGridLine(int nativeId, string name, ICurve line)
+  {
+    this.nativeId = nativeId;
+    label = name;
+    baseLine = line;
+  }
+
+  public int nativeId { get; set; }
 }

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Forms;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Objects;
+using ConnectorGrasshopper.Properties;
 using GH_IO.Serialization;
 using Grasshopper.GUI;
 using Grasshopper.GUI.Canvas;
@@ -18,7 +19,6 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using GrasshopperAsyncComponent;
 using Rhino;
-using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Helpers;
@@ -28,521 +28,564 @@ using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 using Utilities = ConnectorGrasshopper.Extras.Utilities;
 
-namespace ConnectorGrasshopper.Ops
+namespace ConnectorGrasshopper.Ops;
+
+public class NewVariableInputSendComponent : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
 {
-  public class NewVariableInputSendComponent : SelectKitAsyncComponentBase, IGH_VariableParameterComponent
+  private DebounceDispatcher nicknameChangeDebounce = new();
+
+  public List<StreamWrapper> OutputWrappers = new();
+
+  public NewVariableInputSendComponent()
+    : base(
+      "Send",
+      "Send",
+      "Sends data to a Speckle server (or any other provided transport).",
+      ComponentCategories.PRIMARY_RIBBON,
+      ComponentCategories.SEND_RECEIVE
+    )
   {
-    public override Guid ComponentGuid => new Guid("B7B46BA5-DF54-4D0C-9668-7E9287409C20");
+    BaseWorker = new NewVariableInputSendComponentWorker(this);
+    Attributes = new NewVariableInputSendComponentAttributes(this);
+  }
 
-    protected override Bitmap Icon => Properties.Resources.Sender;
+  public override Guid ComponentGuid => new("B7B46BA5-DF54-4D0C-9668-7E9287409C20");
 
-    public override GH_Exposure Exposure => GH_Exposure.primary;
-    public override bool CanDisableConversion => false;
-    public bool AutoSend { get; set; } = false;
+  protected override Bitmap Icon => Resources.Sender;
 
-    public string CurrentComponentState { get; set; } = "needs_input";
+  public override GH_Exposure Exposure => GH_Exposure.primary;
+  public override bool CanDisableConversion => false;
+  public bool AutoSend { get; set; }
 
-    public bool UseDefaultCache { get; set; } = true;
+  public string CurrentComponentState { get; set; } = "needs_input";
 
-    public double OverallProgress { get; set; } = 0;
+  public bool UseDefaultCache { get; set; } = true;
 
-    public bool JustPastedIn { get; set; }
+  public double OverallProgress { get; set; }
 
-    public List<StreamWrapper> OutputWrappers = new List<StreamWrapper>();
+  public bool JustPastedIn { get; set; }
 
-    public string BaseId { get; set; }
+  public string BaseId { get; set; }
 
-    public NewVariableInputSendComponent() : base("Send", "Send", "Sends data to a Speckle server (or any other provided transport).", ComponentCategories.PRIMARY_RIBBON,
-      ComponentCategories.SEND_RECEIVE)
+  public bool HasDuplicateKeys =>
+    Params.Input.Skip(2).Select(p => p.NickName).GroupBy(x => x).Count(group => group.Count() > 1) > 0;
+
+  public bool CanInsertParameter(GH_ParameterSide side, int index)
+  {
+    return side == GH_ParameterSide.Input && index >= 2;
+  }
+
+  public bool CanRemoveParameter(GH_ParameterSide side, int index)
+  {
+    return side == GH_ParameterSide.Input && Params.Input.Count > 3 && index >= 2;
+  }
+
+  public IGH_Param CreateParameter(GH_ParameterSide side, int index)
+  {
+    var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
+    var myParam = new SendReceiveDataParam
     {
-      BaseWorker = new NewVariableInputSendComponentWorker(this);
-      Attributes = new NewVariableInputSendComponentAttributes(this);
-    }
+      Name = uniqueName,
+      NickName = uniqueName,
+      MutableNickName = true,
+      Optional = false
+    };
+    myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
+    return myParam;
+  }
 
+  public bool DestroyParameter(GH_ParameterSide side, int index)
+  {
+    return side == GH_ParameterSide.Input && Params.Input.Count > 3 && index >= 2;
+  }
 
-    public override bool Write(GH_IWriter writer)
+  public void VariableParameterMaintenance()
+  {
+    Params.Input
+      .Skip(2)
+      .Where(param => !(param.Attributes is GenericAccessParamAttributes))
+      .ToList()
+      .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes));
+  }
+
+  public override bool Write(GH_IWriter writer)
+  {
+    writer.SetBoolean("UseDefaultCache", UseDefaultCache);
+    writer.SetBoolean("AutoSend", AutoSend);
+    writer.SetString("CurrentComponentState", CurrentComponentState);
+    writer.SetString("BaseId", BaseId);
+    writer.SetString("KitName", Kit?.Name);
+
+    var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
+    writer.SetString("OutputWrappers", owSer);
+
+    return base.Write(writer);
+  }
+
+  public override bool Read(GH_IReader reader)
+  {
+    UseDefaultCache = reader.GetBoolean("UseDefaultCache");
+    AutoSend = reader.GetBoolean("AutoSend");
+    CurrentComponentState = reader.GetString("CurrentComponentState");
+    BaseId = reader.GetString("BaseId");
+
+    var wrappersRaw = reader.GetString("OutputWrappers");
+    var wrapperLines = wrappersRaw.Split('\n');
+    if (wrapperLines != null && wrapperLines.Length != 0 && wrappersRaw != "")
     {
-      writer.SetBoolean("UseDefaultCache", UseDefaultCache);
-      writer.SetBoolean("AutoSend", AutoSend);
-      writer.SetString("CurrentComponentState", CurrentComponentState);
-      writer.SetString("BaseId", BaseId);
-      writer.SetString("KitName", Kit?.Name);
-
-      var owSer = string.Join("\n", OutputWrappers.Select(ow => $"{ow.ServerUrl}\t{ow.StreamId}\t{ow.CommitId}"));
-      writer.SetString("OutputWrappers", owSer);
-
-      return base.Write(writer);
-    }
-
-    public override bool Read(GH_IReader reader)
-    {
-      UseDefaultCache = reader.GetBoolean("UseDefaultCache");
-      AutoSend = reader.GetBoolean("AutoSend");
-      CurrentComponentState = reader.GetString("CurrentComponentState");
-      BaseId = reader.GetString("BaseId");
-
-      var wrappersRaw = reader.GetString("OutputWrappers");
-      var wrapperLines = wrappersRaw.Split('\n');
-      if (wrapperLines != null && wrapperLines.Length != 0 && wrappersRaw != "")
+      foreach (var line in wrapperLines)
       {
-        foreach (var line in wrapperLines)
-        {
-          var pieces = line.Split('\t');
-          OutputWrappers.Add(new StreamWrapper { ServerUrl = pieces[0], StreamId = pieces[1], CommitId = pieces[2] });
-        }
-
-        if (OutputWrappers.Count != 0)
-        {
-          JustPastedIn = true;
-        }
+        var pieces = line.Split('\t');
+        OutputWrappers.Add(
+          new StreamWrapper
+          {
+            ServerUrl = pieces[0],
+            StreamId = pieces[1],
+            CommitId = pieces[2]
+          }
+        );
       }
 
-      return base.Read(reader);
+      if (OutputWrappers.Count != 0)
+        JustPastedIn = true;
     }
 
-    protected override void RegisterInputParams(GH_InputParamManager pManager)
-    {
+    return base.Read(reader);
+  }
 
-      pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
-      pManager.AddTextParameter("Message", "M", "Commit message. If left blank, one will be generated for you.",
-        GH_ParamAccess.tree, "");
-      pManager.AddParameter(new SendReceiveDataParam
+  protected override void RegisterInputParams(GH_InputParamManager pManager)
+  {
+    pManager.AddGenericParameter("Stream", "S", "Stream(s) and/or transports to send to.", GH_ParamAccess.tree);
+    pManager.AddTextParameter(
+      "Message",
+      "M",
+      "Commit message. If left blank, one will be generated for you.",
+      GH_ParamAccess.tree,
+      ""
+    );
+    pManager.AddParameter(
+      new SendReceiveDataParam
       {
         Name = "Data",
         NickName = "D",
         Description = "The data to send."
-      });
-      Params.Input[1].Optional = true;
-    }
+      }
+    );
+    Params.Input[1].Optional = true;
+  }
 
-    protected override void RegisterOutputParams(GH_OutputParamManager pManager)
-    {
-      pManager.AddGenericParameter("Stream", "S",
-        "Stream or streams pointing to the created commit", GH_ParamAccess.list);
-    }
+  protected override void RegisterOutputParams(GH_OutputParamManager pManager)
+  {
+    pManager.AddGenericParameter(
+      "Stream",
+      "S",
+      "Stream or streams pointing to the created commit",
+      GH_ParamAccess.list
+    );
+  }
 
-    public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
-    {
-      Menu_AppendSeparator(menu);
+  public override void AppendAdditionalMenuItems(ToolStripDropDown menu)
+  {
+    Menu_AppendSeparator(menu);
 
-      var cacheMi = Menu_AppendItem(menu, "Use default cache", (s, e) => UseDefaultCache = !UseDefaultCache, true,
-        UseDefaultCache);
-      cacheMi.ToolTipText =
-        "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
+    var cacheMi = Menu_AppendItem(
+      menu,
+      "Use default cache",
+      (s, e) => UseDefaultCache = !UseDefaultCache,
+      true,
+      UseDefaultCache
+    );
+    cacheMi.ToolTipText =
+      "It's advised you always use the default cache, unless you are providing a list of custom transports and you understand the consequences.";
 
-      var autoSendMi = Menu_AppendItem(menu, "Send automatically", (s, e) =>
+    var autoSendMi = Menu_AppendItem(
+      menu,
+      "Send automatically",
+      (s, e) =>
       {
         AutoSend = !AutoSend;
-        Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
-      }, true, AutoSend);
-      autoSendMi.ToolTipText =
-        "Toggle automatic data sending. If set, any change in any of the input parameters of this component will start sending.\n Please be aware that if a new send starts before an old one is finished, the previous operation is cancelled.";
+        RhinoApp.InvokeOnUiThread(
+          (Action)
+            delegate
+            {
+              OnDisplayExpired(true);
+            }
+        );
+      },
+      true,
+      AutoSend
+    );
+    autoSendMi.ToolTipText =
+      "Toggle automatic data sending. If set, any change in any of the input parameters of this component will start sending.\n Please be aware that if a new send starts before an old one is finished, the previous operation is cancelled.";
 
-      if (OutputWrappers.Count != 0)
-      {
-        Menu_AppendSeparator(menu);
-        foreach (var ow in OutputWrappers)
-        {
-          Menu_AppendItem(menu, $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
-            (s, e) => System.Diagnostics.Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}"));
-        }
-      }
+    if (OutputWrappers.Count != 0)
+    {
       Menu_AppendSeparator(menu);
+      foreach (var ow in OutputWrappers)
+        Menu_AppendItem(
+          menu,
+          $"View commit {ow.CommitId} @ {ow.ServerUrl} online ↗",
+          (s, e) => Process.Start($"{ow.ServerUrl}/streams/{ow.StreamId}/commits/{ow.CommitId}")
+        );
+    }
+    Menu_AppendSeparator(menu);
 
-      if (CurrentComponentState == "sending")
-      {
-        Menu_AppendItem(menu, "Cancel Send", (s, e) =>
+    if (CurrentComponentState == "sending")
+      Menu_AppendItem(
+        menu,
+        "Cancel Send",
+        (s, e) =>
         {
           CurrentComponentState = "expired";
           RequestCancellation();
-        });
-      }
-
-      base.AppendAdditionalMenuItems(menu);
-    }
-
-    public bool HasDuplicateKeys => Params.Input.Skip(2)
-      .Select(p => p.NickName)
-      .GroupBy(x => x).Count(group => group.Count() > 1) > 0;
-
-    protected override void SolveInstance(IGH_DataAccess DA)
-    {
-
-      // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
-      if (JustPastedIn)
-      {
-        base.SolveInstance(DA);
-        return;
-      }
-
-      if (HasDuplicateKeys)
-      {
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
-        CurrentComponentState = "needs_input";
-        Message = "Expired";
-        return;
-      }
-
-      if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") &&
-        !JustPastedIn)
-      {
-        CurrentComponentState = "sending";
-
-        // Delegate control to parent async component.
-        base.SolveInstance(DA);
-        return;
-      }
-      else if (!JustPastedIn)
-      {
-        DA.SetDataList(0, OutputWrappers);
-        //DA.SetData(1, BaseId);
-        CurrentComponentState = "expired";
-        Message = "Expired";
-        OnDisplayExpired(true);
-      }
-    }
-
-    public override void DisplayProgress(object sender, ElapsedEventArgs e)
-    {
-      if (Workers.Count == 0)
-      {
-        return;
-      }
-
-      Message = "";
-      var total = 0.0;
-      foreach (var kvp in ProgressReports)
-      {
-        Message += $"{kvp.Key}: {kvp.Value}\n";
-        total += kvp.Value;
-      }
-
-      OverallProgress = total / ProgressReports.Keys.Count();
-
-      Rhino.RhinoApp.InvokeOnUiThread((Action)delegate { OnDisplayExpired(true); });
-    }
-
-    public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
-    {
-      switch (context)
-      {
-        case GH_DocumentContext.Loaded:
-          OnDisplayExpired(true);
-          break;
-
-        case GH_DocumentContext.Unloaded:
-          // Will execute every time a document becomes inactive (in background or closing file.)
-          //Correctly dispose of the client when changing documents to prevent subscription handlers being called in background.
-          RequestCancellation();
-          break;
-      }
-
-      base.DocumentContextChanged(document, context);
-    }
-
-    public bool CanInsertParameter(GH_ParameterSide side, int index)
-    {
-      return side == GH_ParameterSide.Input && index >= 2;
-    }
-
-    public bool CanRemoveParameter(GH_ParameterSide side, int index)
-    {
-      return side == GH_ParameterSide.Input && Params.Input.Count > 3 && index >= 2;
-    }
-
-    public IGH_Param CreateParameter(GH_ParameterSide side, int index)
-    {
-      var uniqueName = GH_ComponentParamServer.InventUniqueNickname("ABCD", Params.Input);
-      var myParam = new SendReceiveDataParam
-      {
-        Name = uniqueName,
-        NickName = uniqueName,
-        MutableNickName = true,
-        Optional = false
-      };
-      myParam.Attributes = new GenericAccessParamAttributes(myParam, Attributes);
-      return myParam;
-    }
-
-    public bool DestroyParameter(GH_ParameterSide side, int index)
-    {
-      return side == GH_ParameterSide.Input && Params.Input.Count > 3 && index >= 2;
-    }
-
-    public void VariableParameterMaintenance()
-    {
-      Params.Input.Skip(2)
-        .Where(param => !(param.Attributes is GenericAccessParamAttributes))
-        .ToList()
-        .ForEach(param => param.Attributes = new GenericAccessParamAttributes(param, Attributes)
-        );
-    }
-
-    private DebounceDispatcher nicknameChangeDebounce = new DebounceDispatcher();
-
-    public override void AddedToDocument(GH_Document document)
-    {
-      base.AddedToDocument(document); // This would set the converter already.
-      Params.ParameterChanged += (sender, args) =>
-      {
-        if (args.ParameterSide != GH_ParameterSide.Input) return;
-        switch (args.OriginalArguments.Type)
-        {
-          case GH_ObjectEventType.NickName:
-            // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
-            // Prevents UI from locking too soon while writing new names for inputs.
-            args.Parameter.Name = args.Parameter.NickName;
-            nicknameChangeDebounce.Debounce(400, (e) => ExpireSolution(true));
-            break;
-          case GH_ObjectEventType.NickNameAccepted:
-            args.Parameter.Name = args.Parameter.NickName;
-            ExpireSolution(true);
-            break;
         }
-      };
+      );
+
+    base.AppendAdditionalMenuItems(menu);
+  }
+
+  protected override void SolveInstance(IGH_DataAccess DA)
+  {
+    // Set output data in a "first run" event. Note: we are not persisting the actual "sent" object as it can be very big.
+    if (JustPastedIn)
+    {
+      base.SolveInstance(DA);
+      return;
+    }
+
+    if (HasDuplicateKeys)
+    {
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Cannot have duplicate keys in object.");
+      CurrentComponentState = "needs_input";
+      Message = "Expired";
+      return;
+    }
+
+    if ((AutoSend || CurrentComponentState == "primed_to_send" || CurrentComponentState == "sending") && !JustPastedIn)
+    {
+      CurrentComponentState = "sending";
+
+      // Delegate control to parent async component.
+      base.SolveInstance(DA);
+      return;
+    }
+
+    if (!JustPastedIn)
+    {
+      DA.SetDataList(0, OutputWrappers);
+      //DA.SetData(1, BaseId);
+      CurrentComponentState = "expired";
+      Message = "Expired";
+      OnDisplayExpired(true);
     }
   }
 
-  public class NewVariableInputSendComponentWorker : WorkerInstance
+  public override void DisplayProgress(object sender, ElapsedEventArgs e)
   {
-    GH_Structure<IGH_Goo> DataInput;
-    Dictionary<string, GH_Structure<IGH_Goo>> DataInputs;
-    GH_Structure<IGH_Goo> _TransportsInput;
-    GH_Structure<GH_String> _MessageInput;
+    if (Workers.Count == 0)
+      return;
 
-    string InputState;
-
-    List<ITransport> Transports;
-
-    Base ObjectToSend;
-    long TotalObjectCount;
-
-    Action<ConcurrentDictionary<string, int>> InternalProgressAction;
-
-    Action<string, Exception> ErrorAction;
-
-    List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new List<(GH_RuntimeMessageLevel, string)>();
-
-    List<StreamWrapper> OutputWrappers = new List<StreamWrapper>();
-
-    public string BaseId { get; set; }
-
-    public NewVariableInputSendComponentWorker(GH_Component p) : base(p)
+    Message = "";
+    var total = 0.0;
+    foreach (var kvp in ProgressReports)
     {
-      RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
-      DataInputs = new Dictionary<string, GH_Structure<IGH_Goo>>();
+      Message += $"{kvp.Key}: {kvp.Value}\n";
+      total += kvp.Value;
     }
 
-    public override WorkerInstance Duplicate() => new NewVariableInputSendComponentWorker(Parent);
+    OverallProgress = total / ProgressReports.Keys.Count();
 
-    private System.Diagnostics.Stopwatch stopwatch;
-
-    public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
-    {
-      for (var i = 2; i < Params.Input.Count; i++)
-      {
-        DA.GetDataTree(i, out GH_Structure<IGH_Goo> input);
-        DataInputs.Add(Params.Input[i].Name, input);
-      }
-      DA.GetDataTree(0, out _TransportsInput);
-      DA.GetDataTree(1, out _MessageInput);
-
-      OutputWrappers = new List<StreamWrapper>();
-      stopwatch = new System.Diagnostics.Stopwatch();
-      stopwatch.Start();
-    }
-
-    public override void DoWork(Action<string, double> ReportProgress, Action Done)
-    {
-      try
-      {
-        var sendComponent = (NewVariableInputSendComponent)Parent;
-        if (sendComponent.JustPastedIn)
+    RhinoApp.InvokeOnUiThread(
+      (Action)
+        delegate
         {
+          OnDisplayExpired(true);
+        }
+    );
+  }
+
+  public override void DocumentContextChanged(GH_Document document, GH_DocumentContext context)
+  {
+    switch (context)
+    {
+      case GH_DocumentContext.Loaded:
+        OnDisplayExpired(true);
+        break;
+
+      case GH_DocumentContext.Unloaded:
+        // Will execute every time a document becomes inactive (in background or closing file.)
+        //Correctly dispose of the client when changing documents to prevent subscription handlers being called in background.
+        RequestCancellation();
+        break;
+    }
+
+    base.DocumentContextChanged(document, context);
+  }
+
+  public override void AddedToDocument(GH_Document document)
+  {
+    base.AddedToDocument(document); // This would set the converter already.
+    Params.ParameterChanged += (sender, args) =>
+    {
+      if (args.ParameterSide != GH_ParameterSide.Input)
+        return;
+      switch (args.OriginalArguments.Type)
+      {
+        case GH_ObjectEventType.NickName:
+          // This means the user is typing characters, debounce until it stops for 400ms before expiring the solution.
+          // Prevents UI from locking too soon while writing new names for inputs.
+          args.Parameter.Name = args.Parameter.NickName;
+          nicknameChangeDebounce.Debounce(400, e => ExpireSolution(true));
+          break;
+        case GH_ObjectEventType.NickNameAccepted:
+          args.Parameter.Name = args.Parameter.NickName;
+          ExpireSolution(true);
+          break;
+      }
+    };
+  }
+}
+
+public class NewVariableInputSendComponentWorker : WorkerInstance
+{
+  private GH_Structure<GH_String> _MessageInput;
+  private GH_Structure<IGH_Goo> _TransportsInput;
+  private GH_Structure<IGH_Goo> DataInput;
+  private Dictionary<string, GH_Structure<IGH_Goo>> DataInputs;
+
+  private Action<string, Exception> ErrorAction;
+
+  private string InputState;
+
+  private Action<ConcurrentDictionary<string, int>> InternalProgressAction;
+
+  private Base ObjectToSend;
+
+  private List<StreamWrapper> OutputWrappers = new();
+
+  private Stopwatch stopwatch;
+  private long TotalObjectCount;
+
+  private List<ITransport> Transports;
+
+  public NewVariableInputSendComponentWorker(GH_Component p)
+    : base(p)
+  {
+    RuntimeMessages = new List<(GH_RuntimeMessageLevel, string)>();
+    DataInputs = new Dictionary<string, GH_Structure<IGH_Goo>>();
+  }
+
+  private List<(GH_RuntimeMessageLevel, string)> RuntimeMessages { get; set; } = new();
+
+  public string BaseId { get; set; }
+
+  public override WorkerInstance Duplicate()
+  {
+    return new NewVariableInputSendComponentWorker(Parent);
+  }
+
+  public override void GetData(IGH_DataAccess DA, GH_ComponentParamServer Params)
+  {
+    for (var i = 2; i < Params.Input.Count; i++)
+    {
+      DA.GetDataTree(i, out GH_Structure<IGH_Goo> input);
+      DataInputs.Add(Params.Input[i].Name, input);
+    }
+    DA.GetDataTree(0, out _TransportsInput);
+    DA.GetDataTree(1, out _MessageInput);
+
+    OutputWrappers = new List<StreamWrapper>();
+    stopwatch = new Stopwatch();
+    stopwatch.Start();
+  }
+
+  public override void DoWork(Action<string, double> ReportProgress, Action Done)
+  {
+    try
+    {
+      var sendComponent = (NewVariableInputSendComponent)Parent;
+      if (sendComponent.JustPastedIn)
+      {
+        Done();
+        return;
+      }
+
+      if (CancellationToken.IsCancellationRequested)
+      {
+        sendComponent.CurrentComponentState = "expired";
+        return;
+      }
+
+      //the active document may have changed
+      sendComponent.Converter.SetContextDocument(Loader.GetCurrentDocument());
+
+      if (!Http.UserHasInternet().Result)
+        throw new Exception("You are not connected to the internet.");
+
+      // Note: this method actually converts the objects to speckle too
+      ObjectToSend = new Base();
+      int convertedCount = 0;
+
+      foreach (var d in DataInputs)
+        try
+        {
+          var converted = Utilities.DataTreeToSpeckle(
+            d.Value,
+            sendComponent.Converter,
+            CancellationToken,
+            () =>
+            {
+              ReportProgress(
+                "Conversion",
+                Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2)
+              );
+            }
+          );
+
+          convertedCount++;
+          var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
+          var key = d.Key;
+          if (param is SendReceiveDataParam srParam)
+            if (srParam.Detachable && !key.StartsWith("@"))
+              key = "@" + key;
+          ObjectToSend[key] = converted;
+          TotalObjectCount += ObjectToSend.GetTotalChildrenCount();
+        }
+        catch (Exception e)
+        {
+          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
           Done();
           return;
         }
 
-        if (CancellationToken.IsCancellationRequested)
-        {
-          sendComponent.CurrentComponentState = "expired";
-          return;
-        }
+      foreach (var error in sendComponent.Converter.Report.ConversionErrors)
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, error.ToFormattedString()));
 
-        //the active document may have changed
-        sendComponent.Converter.SetContextDocument(Loader.GetCurrentDocument());
+      if (convertedCount == 0)
+      {
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
+        Done();
+        return;
+      }
+      if (CancellationToken.IsCancellationRequested)
+      {
+        sendComponent.CurrentComponentState = "expired";
+        return;
+      }
 
-        if (!Http.UserHasInternet().Result)
-        {
-          throw new Exception("You are not connected to the internet.");
-        }
+      // Part 2: create transports
 
-        // Note: this method actually converts the objects to speckle too
-        ObjectToSend = new Base();
-        int convertedCount = 0;
+      Transports = new List<ITransport>();
 
+      if (_TransportsInput.DataCount == 0)
+      {
+        // TODO: Set default account + "default" user stream
+      }
 
-        foreach (var d in DataInputs)
-        {
+      var transportBranches = new Dictionary<ITransport, string>();
+      int t = 0;
+      foreach (var data in _TransportsInput)
+      {
+        var transport = data.GetType().GetProperty("Value").GetValue(data);
+
+        if (transport is string s)
           try
           {
-            var converted = Utilities.DataTreeToSpeckle(d.Value, sendComponent.Converter, CancellationToken, () =>
-            {
-              ReportProgress("Conversion", Math.Round(convertedCount++ / (double)d.Value.DataCount / DataInputs.Count, 2));
-            });
-
-            convertedCount++;
-            var param = Parent.Params.Input.Find(p => p.Name == d.Key || p.NickName == d.Key);
-            var key = d.Key;
-            if (param is SendReceiveDataParam srParam)
-            {
-              if (srParam.Detachable && !key.StartsWith("@"))
-                key = "@" + key;
-            }
-            ObjectToSend[key] = converted;
-            TotalObjectCount += ObjectToSend.GetTotalChildrenCount();
+            transport = new StreamWrapper(s);
           }
           catch (Exception e)
           {
-            RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
-            Done();
-            return;
-          }
-        }
-
-        foreach (var error in sendComponent.Converter.Report.ConversionErrors)
-        {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, error.ToFormattedString()));
-        }
-
-        if (convertedCount == 0)
-        {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, "Zero objects converted successfully. Send stopped."));
-          Done();
-          return;
-        }
-        if (CancellationToken.IsCancellationRequested)
-        {
-          sendComponent.CurrentComponentState = "expired";
-          return;
-        }
-
-        // Part 2: create transports
-
-        Transports = new List<ITransport>();
-
-        if (_TransportsInput.DataCount == 0)
-        {
-          // TODO: Set default account + "default" user stream
-        }
-
-        var transportBranches = new Dictionary<ITransport, string>();
-        int t = 0;
-        foreach (var data in _TransportsInput)
-        {
-          var transport = data.GetType().GetProperty("Value").GetValue(data);
-
-          if (transport is string s)
-          {
-            try
-            {
-              transport = new StreamWrapper(s);
-            }
-            catch (Exception e)
-            {
-              // TODO: Check this with team.
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
-            }
+            // TODO: Check this with team.
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
           }
 
-          if (transport is StreamWrapper sw)
+        if (transport is StreamWrapper sw)
+        {
+          if (sw.Type == StreamWrapperType.Undefined)
           {
-            if (sw.Type == StreamWrapperType.Undefined)
-            {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Input stream is invalid."));
-              continue;
-            }
-
-            if (sw.Type == StreamWrapperType.Commit)
-            {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url."));
-              continue;
-            }
-
-            if (sw.Type == StreamWrapperType.Object)
-            {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific object stream url."));
-              continue;
-            }
-
-            Account acc;
-            try
-            {
-              acc = sw.GetAccount().Result;
-            }
-            catch (Exception e)
-            {
-              RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
-              continue;
-            }
-
-            var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
-            transportBranches.Add(serverTransport, sw.BranchName ?? "main");
-            Transports.Add(serverTransport);
-
-            sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
-          }
-          else if (transport is ITransport otherTransport)
-          {
-            otherTransport.TransportName = $"T{t}";
-            Transports.Add(otherTransport);
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Input stream is invalid."));
+            continue;
           }
 
-          t++;
-        }
-
-        if (Transports.Count == 0)
-        {
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Could not identify any valid transports to send to."));
-          Done();
-          return;
-        }
-
-        InternalProgressAction = (dict) =>
-        {
-          foreach (var kvp in dict)
+          if (sw.Type == StreamWrapperType.Commit)
           {
-            //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
-            //ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
-            ReportProgress(kvp.Key, (double)kvp.Value);
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific commit stream url."));
+            continue;
           }
-        };
 
-        ErrorAction = (transportName, exception) =>
-        {
-          // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
-          var msg = exception.Message.Contains("401")
-            ? $"You don't have access to this transport , or it doesn't exist."
-            : exception.ToFormattedString();
-          RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {exception.ToFormattedString()}"));
-          Done();
-          var asyncParent = (GH_AsyncComponent)Parent;
-          asyncParent.CancellationSources.ForEach(source =>
+          if (sw.Type == StreamWrapperType.Object)
           {
-            if (source.Token != CancellationToken)
-              source.Cancel();
-          });
-        };
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Cannot push to a specific object stream url."));
+            continue;
+          }
 
-        if (CancellationToken.IsCancellationRequested)
+          Account acc;
+          try
+          {
+            acc = sw.GetAccount().Result;
+          }
+          catch (Exception e)
+          {
+            RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, e.ToFormattedString()));
+            continue;
+          }
+
+          var serverTransport = new ServerTransport(acc, sw.StreamId) { TransportName = $"T{t}" };
+          transportBranches.Add(serverTransport, sw.BranchName ?? "main");
+          Transports.Add(serverTransport);
+
+          sendComponent.Tracker.TrackNodeSend(acc, sendComponent.AutoSend);
+        }
+        else if (transport is ITransport otherTransport)
         {
-          sendComponent.CurrentComponentState = "expired";
-          return;
+          otherTransport.TransportName = $"T{t}";
+          Transports.Add(otherTransport);
         }
 
-        // Part 3: actually send stuff!
+        t++;
+      }
 
-        var task = Task.Run(async () =>
+      if (Transports.Count == 0)
+      {
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Warning, "Could not identify any valid transports to send to."));
+        Done();
+        return;
+      }
+
+      InternalProgressAction = dict =>
+      {
+        foreach (var kvp in dict)
+          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+          //ReportProgress(kvp.Key, (double)kvp.Value / TotalObjectCount);
+          ReportProgress(kvp.Key, kvp.Value);
+      };
+
+      ErrorAction = (transportName, exception) =>
+      {
+        // TODO: This message condition should be removed once the `link sharing` issue is resolved server-side.
+        var msg = exception.Message.Contains("401")
+          ? "You don't have access to this transport , or it doesn't exist."
+          : exception.ToFormattedString();
+        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, $"{transportName}: {exception.ToFormattedString()}"));
+        Done();
+        var asyncParent = (GH_AsyncComponent)Parent;
+        asyncParent.CancellationSources.ForEach(source =>
+        {
+          if (source.Token != CancellationToken)
+            source.Cancel();
+        });
+      };
+
+      if (CancellationToken.IsCancellationRequested)
+      {
+        sendComponent.CurrentComponentState = "expired";
+        return;
+      }
+
+      // Part 3: actually send stuff!
+
+      var task = Task.Run(
+        async () =>
         {
           if (CancellationToken.IsCancellationRequested)
           {
@@ -557,10 +600,11 @@ namespace ConnectorGrasshopper.Ops
               ObjectToSend,
               CancellationToken,
               Transports,
-              useDefaultCache: sendComponent.UseDefaultCache,
-              onProgressAction: InternalProgressAction,
-              onErrorAction: ErrorAction, disposeTransports: true);
-
+              sendComponent.UseDefaultCache,
+              InternalProgressAction,
+              ErrorAction,
+              true
+            );
           }
           catch (Exception e)
           {
@@ -572,9 +616,7 @@ namespace ConnectorGrasshopper.Ops
 
           var message = _MessageInput.get_FirstItem(true).Value;
           if (message == "")
-          {
             message = $"Pushed {TotalObjectCount} elements from Grasshopper.";
-          }
 
           var prevCommits = sendComponent.OutputWrappers;
 
@@ -587,9 +629,7 @@ namespace ConnectorGrasshopper.Ops
             }
 
             if (!(transport is ServerTransport))
-            {
               continue; // skip non-server transports (for now)
-            }
 
             try
             {
@@ -602,20 +642,21 @@ namespace ConnectorGrasshopper.Ops
                 message = message,
                 objectId = BaseId,
                 streamId = ((ServerTransport)transport).StreamId,
-                sourceApplication = Extras.Utilities.GetVersionedAppName()
+                sourceApplication = Utilities.GetVersionedAppName()
               };
 
               // Check to see if we have a previous commit; if so set it.
-              var prevCommit = prevCommits.FirstOrDefault(c =>
-                c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId);
+              var prevCommit = prevCommits.FirstOrDefault(
+                c => c.ServerUrl == client.ServerUrl && c.StreamId == ((ServerTransport)transport).StreamId
+              );
               if (prevCommit != null)
-              {
-                commitCreateInput.parents = new List<string>() { prevCommit.CommitId };
-              }
+                commitCreateInput.parents = new List<string> { prevCommit.CommitId };
 
               var commitId = await client.CommitCreate(CancellationToken, commitCreateInput);
 
-              var wrapper = new StreamWrapper($"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}");
+              var wrapper = new StreamWrapper(
+                $"{client.Account.serverInfo.url}/streams/{((ServerTransport)transport).StreamId}/commits/{commitId}?u={client.Account.userInfo.id}"
+              );
               OutputWrappers.Add(wrapper);
             }
             catch (Exception e)
@@ -631,165 +672,171 @@ namespace ConnectorGrasshopper.Ops
           }
 
           Done();
-        }, CancellationToken);
-      }
-      catch (Exception e)
-      {
+        },
+        CancellationToken
+      );
+    }
+    catch (Exception e)
+    {
+      // If we reach this, something happened that we weren't expecting...
+      SpeckleLog.Logger.Error(e, e.Message);
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
+      //Parent.Message = "Error";
+      //((SendComponent)Parent).CurrentComponentState = "expired";
+      Done();
+    }
+  }
 
-        // If we reach this, something happened that we weren't expecting...
-        Log.Error(e, e.Message);
-        RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
-        //Parent.Message = "Error";
-        //((SendComponent)Parent).CurrentComponentState = "expired";
-        Done();
-      }
+  public override void SetData(IGH_DataAccess DA)
+  {
+    stopwatch.Stop();
+
+    if (((NewVariableInputSendComponent)Parent).JustPastedIn)
+    {
+      ((NewVariableInputSendComponent)Parent).JustPastedIn = false;
+      DA.SetDataList(0, ((NewVariableInputSendComponent)Parent).OutputWrappers);
+      return;
     }
 
-    public override void SetData(IGH_DataAccess DA)
+    if (CancellationToken.IsCancellationRequested)
     {
-      stopwatch.Stop();
+      ((NewVariableInputSendComponent)Parent).CurrentComponentState = "expired";
+      return;
+    }
 
-      if (((NewVariableInputSendComponent)Parent).JustPastedIn)
+    foreach (var (level, message) in RuntimeMessages)
+      Parent.AddRuntimeMessage(level, message);
+
+    DA.SetDataList(0, OutputWrappers);
+
+    ((NewVariableInputSendComponent)Parent).CurrentComponentState = "up_to_date";
+    ((NewVariableInputSendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
+
+    ((NewVariableInputSendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
+
+    ((NewVariableInputSendComponent)Parent).OverallProgress = 0;
+
+    var hasWarnings = RuntimeMessages.Count > 0;
+    if (!hasWarnings)
+    {
+      Parent.AddRuntimeMessage(
+        GH_RuntimeMessageLevel.Remark,
+        $"Successfully pushed {TotalObjectCount} objects to {(((NewVariableInputSendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports."
+      );
+      Parent.AddRuntimeMessage(
+        GH_RuntimeMessageLevel.Remark,
+        $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s"
+      );
+      foreach (var t in Transports)
       {
-        ((NewVariableInputSendComponent)Parent).JustPastedIn = false;
-        DA.SetDataList(0, ((NewVariableInputSendComponent)Parent).OutputWrappers);
-        return;
+        if (!(t is ServerTransport st))
+          continue;
+
+        var mb = st.TotalSentBytes / 1e6;
+        Parent.AddRuntimeMessage(
+          GH_RuntimeMessageLevel.Remark,
+          $"{t.TransportName} avg {mb / (stopwatch.ElapsedMilliseconds / 1000f):0.00} MB/s"
+        );
       }
+    }
+  }
+}
 
-      if (CancellationToken.IsCancellationRequested)
+public class NewVariableInputSendComponentAttributes : GH_ComponentAttributes
+{
+  private bool _selected;
+
+  public NewVariableInputSendComponentAttributes(GH_Component owner)
+    : base(owner) { }
+
+  private Rectangle ButtonBounds { get; set; }
+
+  public override bool Selected
+  {
+    get => _selected;
+    set =>
+      //Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
+      _selected = value;
+  }
+
+  protected override void Layout()
+  {
+    base.Layout();
+
+    var baseRec = GH_Convert.ToRectangle(Bounds);
+    baseRec.Height += 26;
+
+    var btnRec = baseRec;
+    btnRec.Y = btnRec.Bottom - 26;
+    btnRec.Height = 26;
+    btnRec.Inflate(-2, -2);
+
+    Bounds = baseRec;
+    ButtonBounds = btnRec;
+  }
+
+  protected override void Render(GH_Canvas canvas, Graphics graphics, GH_CanvasChannel channel)
+  {
+    base.Render(canvas, graphics, channel);
+
+    var state = ((NewVariableInputSendComponent)Owner).CurrentComponentState;
+
+    if (channel == GH_CanvasChannel.Objects)
+    {
+      if (((NewVariableInputSendComponent)Owner).AutoSend)
       {
-        ((NewVariableInputSendComponent)Parent).CurrentComponentState = "expired";
-        return;
+        var autoSendButton = GH_Capsule.CreateTextCapsule(
+          ButtonBounds,
+          ButtonBounds,
+          GH_Palette.Blue,
+          "Auto Send",
+          2,
+          0
+        );
+
+        autoSendButton.Render(graphics, Selected, Owner.Locked, false);
+        autoSendButton.Dispose();
       }
-
-      foreach (var (level, message) in RuntimeMessages)
+      else
       {
-        Parent.AddRuntimeMessage(level, message);
-      }
+        var palette = state == "expired" || state == "up_to_date" ? GH_Palette.Black : GH_Palette.Transparent;
+        //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
+        //var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress}" : "Send";
+        var text = state == "sending" ? "Sending..." : "Send";
 
-      DA.SetDataList(0, OutputWrappers);
-
-      ((NewVariableInputSendComponent)Parent).CurrentComponentState = "up_to_date";
-      ((NewVariableInputSendComponent)Parent).OutputWrappers = OutputWrappers; // ref the outputs in the parent too, so we can serialise them on write/read
-
-      ((NewVariableInputSendComponent)Parent).BaseId = BaseId; // ref the outputs in the parent too, so we can serialise them on write/read
-
-      ((NewVariableInputSendComponent)Parent).OverallProgress = 0;
-
-      var hasWarnings = RuntimeMessages.Count > 0;
-      if (!hasWarnings)
-      {
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-          $"Successfully pushed {TotalObjectCount} objects to {(((NewVariableInputSendComponent)Parent).UseDefaultCache ? Transports.Count - 1 : Transports.Count)} transports.");
-        Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-          $"Send duration: {stopwatch.ElapsedMilliseconds / 1000f}s");
-        foreach (var t in Transports)
-        {
-          if (!(t is ServerTransport st))
-          {
-            continue;
-          }
-
-          var mb = st.TotalSentBytes / 1e6;
-          Parent.AddRuntimeMessage(GH_RuntimeMessageLevel.Remark,
-            $"{t.TransportName} avg {(mb / (stopwatch.ElapsedMilliseconds / 1000f)):0.00} MB/s");
-        }
+        var button = GH_Capsule.CreateTextCapsule(
+          ButtonBounds,
+          ButtonBounds,
+          palette,
+          text,
+          2,
+          state == "expired" ? 10 : 0
+        );
+        button.Render(graphics, Selected, Owner.Locked, false);
+        button.Dispose();
       }
     }
   }
 
-  public class NewVariableInputSendComponentAttributes : GH_ComponentAttributes
+  public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
   {
-    private bool _selected;
-    Rectangle ButtonBounds { get; set; }
-
-    public NewVariableInputSendComponentAttributes(GH_Component owner) : base(owner) { }
-
-    public override bool Selected
-    {
-      get
-      {
-        return _selected;
-      }
-      set
-      {
-        //Owner.Params.ToList().ForEach(p => p.Attributes.Selected = value);
-        _selected = value;
-      }
-    }
-
-    protected override void Layout()
-    {
-      base.Layout();
-
-      var baseRec = GH_Convert.ToRectangle(Bounds);
-      baseRec.Height += 26;
-
-      var btnRec = baseRec;
-      btnRec.Y = btnRec.Bottom - 26;
-      btnRec.Height = 26;
-      btnRec.Inflate(-2, -2);
-
-      Bounds = baseRec;
-      ButtonBounds = btnRec;
-    }
-
-    protected override void Render(GH_Canvas canvas, Graphics graphics, GH_CanvasChannel channel)
-    {
-      base.Render(canvas, graphics, channel);
-
-      var state = ((NewVariableInputSendComponent)Owner).CurrentComponentState;
-
-      if (channel == GH_CanvasChannel.Objects)
+    if (e.Button == MouseButtons.Left)
+      if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
       {
         if (((NewVariableInputSendComponent)Owner).AutoSend)
         {
-          var autoSendButton =
-            GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, GH_Palette.Blue, "Auto Send", 2, 0);
-
-          autoSendButton.Render(graphics, Selected, Owner.Locked, false);
-          autoSendButton.Dispose();
-        }
-        else
-        {
-          var palette = (state == "expired" || state == "up_to_date") ? GH_Palette.Black : GH_Palette.Transparent;
-          //NOTE: progress set to indeterminate until the TotalChildrenCount is correct
-          //var text = state == "sending" ? $"{((SendComponent)Owner).OverallProgress}" : "Send";
-          var text = state == "sending" ? $"Sending..." : "Send";
-
-          var button = GH_Capsule.CreateTextCapsule(ButtonBounds, ButtonBounds, palette, text, 2,
-            state == "expired" ? 10 : 0);
-          button.Render(graphics, Selected, Owner.Locked, false);
-          button.Dispose();
-        }
-      }
-    }
-
-    public override GH_ObjectResponse RespondToMouseDown(GH_Canvas sender, GH_CanvasMouseEvent e)
-    {
-      if (e.Button == MouseButtons.Left)
-      {
-        if (((RectangleF)ButtonBounds).Contains(e.CanvasLocation))
-        {
-          if (((NewVariableInputSendComponent)Owner).AutoSend)
-          {
-            ((NewVariableInputSendComponent)Owner).AutoSend = false;
-            Owner.OnDisplayExpired(true);
-            return GH_ObjectResponse.Handled;
-          }
-          if (((NewVariableInputSendComponent)Owner).CurrentComponentState == "sending")
-          {
-            return GH_ObjectResponse.Handled;
-          }
-
-          ((NewVariableInputSendComponent)Owner).CurrentComponentState = "primed_to_send";
-          Owner.ExpireSolution(true);
+          ((NewVariableInputSendComponent)Owner).AutoSend = false;
+          Owner.OnDisplayExpired(true);
           return GH_ObjectResponse.Handled;
         }
+        if (((NewVariableInputSendComponent)Owner).CurrentComponentState == "sending")
+          return GH_ObjectResponse.Handled;
+
+        ((NewVariableInputSendComponent)Owner).CurrentComponentState = "primed_to_send";
+        Owner.ExpireSolution(true);
+        return GH_ObjectResponse.Handled;
       }
 
-      return base.RespondToMouseDown(sender, e);
-    }
-
+    return base.RespondToMouseDown(sender, e);
   }
 }

@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.TeklaStructures2023</AssemblyName>
+    <RootNamespace>Objects.Converter.TeklaStructures</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;TeklaStructures2023</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TeklaStructures2023</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
+  </PropertyGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(ALLUSERSPROFILE)\Speckle\Kits\Objects\&quot;&#xD;&#xA;xcopy /Y /S &quot;$(TargetDir)\Objects.dll&quot; &quot;$(ALLUSERSPROFILE)\Speckle\Kits\Objects\&quot;" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="Tekla.Structures" Version="2023.0.1" />
+    <PackageReference Include="Tekla.Structures.Catalogs" Version="2023.0.1" />
+    <PackageReference Include="Tekla.Structures.Datatype" Version="2023.0.1" />
+    <PackageReference Include="Tekla.Structures.Model" Version="2023.0.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
+    <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
+  </ItemGroup>
+
+  <Import Project="..\ConverterTeklaStructuresShared\ConverterTeklaStructuresShared.projitems" Label="Shared" />
+
+</Project>

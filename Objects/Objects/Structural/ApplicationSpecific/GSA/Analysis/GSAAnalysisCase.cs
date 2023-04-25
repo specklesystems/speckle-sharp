@@ -1,40 +1,41 @@
-﻿using Speckle.Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using Objects.Structural.Loading;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using Objects.Geometry;
-using Objects.Structural.GSA.Loading;
-using Objects.Structural.Loading;
-using System.Diagnostics;
-using System;
 
-namespace Objects.Structural.GSA.Analysis
+namespace Objects.Structural.GSA.Analysis;
+
+public class GSAAnalysisCase : Base
 {
-    public class GSAAnalysisCase : Base
-    {
-        public int nativeId { get; set; }
-        public string name { get; set; }
+  public GSAAnalysisCase() { }
 
-        [DetachProperty]
-        public GSATask task { get; set; } //task reference
+  [SchemaInfo("GSAAnalysisCase", "Creates a Speckle structural analysis case for GSA", "GSA", "Analysis")]
+  public GSAAnalysisCase(
+    int nativeId,
+    string name,
+    GSATask task,
+    [SchemaParamInfo("A list of load cases")] List<LoadCase> loadCases,
+    [SchemaParamInfo("A list of load factors (to be mapped to provided load cases)")] List<double> loadFactors
+  )
+  {
+    if (loadCases.Count != loadFactors.Count)
+      throw new ArgumentException("Number of load cases provided does not match number of load factors provided");
+    this.nativeId = nativeId;
+    this.name = name;
+    this.task = task;
+    this.loadCases = loadCases;
+    this.loadFactors = loadFactors;
+  }
 
-        [DetachProperty]
-        public List<LoadCase> loadCases { get; set; }
-        public List<double> loadFactors { get; set; }
-        public GSAAnalysisCase() { }
+  public int nativeId { get; set; }
+  public string name { get; set; }
 
-        [SchemaInfo("GSAAnalysisCase", "Creates a Speckle structural analysis case for GSA", "GSA", "Analysis")]
-        public GSAAnalysisCase(int nativeId, string name, GSATask task,
-          [SchemaParamInfo("A list of load cases")] List<LoadCase> loadCases,
-          [SchemaParamInfo("A list of load factors (to be mapped to provided load cases)")] List<double> loadFactors) 
-        {
-            if (loadCases.Count != loadFactors.Count)
-              throw new ArgumentException("Number of load cases provided does not match number of load factors provided");
-            this.nativeId = nativeId;
-            this.name = name;
-            this.task = task;
-            this.loadCases = loadCases;
-            this.loadFactors = loadFactors;
-        }
-    }
+  [DetachProperty]
+  public GSATask task { get; set; } //task reference
+
+  [DetachProperty]
+  public List<LoadCase> loadCases { get; set; }
+
+  public List<double> loadFactors { get; set; }
 }

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Numerics;
 using Autodesk.Navisworks.Api;
@@ -15,70 +17,115 @@ using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Navisworks
 {
-  public class PrimitiveProcessor : InwSimplePrimitivesCB
+  public class TransformationMatrix : IReadOnlyList<double>
   {
-    public PrimitiveProcessor()
+    private readonly double[] _data = new double[16];
+
+    public double this[int row, int col]
     {
-      Coords = new List<double>();
-      Faces = new List<int>();
-      Triangles = new List<TriangleD>();
-      Lines = new List<LineD>();
-      Points = new List<PointD>();
+      get => _data[row * 4 + col];
+      set => _data[row * 4 + col] = value;
     }
 
-    public PrimitiveProcessor(bool elevationMode) : this()
+
+    public int Count => _data.Length;
+
+
+    public IEnumerator<double> GetEnumerator()
+    {
+      return ((IEnumerable<double>)_data).GetEnumerator();
+    }
+
+    IEnumerator IEnumerable.GetEnumerator()
+    {
+      return GetEnumerator();
+    }
+
+    public double this[int index] => _data[index];
+  }
+
+  public class PrimitiveProcessor : InwSimplePrimitivesCB
+  {
+    private readonly List<double> _coords = new();
+
+    private List<int> _faces = new();
+
+    private List<LineD> _lines = new();
+
+    private List<PointD> _points = new();
+
+    private List<TriangleD> _triangles = new();
+
+    public PrimitiveProcessor(bool elevationMode)
+      : this()
     {
       ElevationMode = elevationMode;
     }
 
-
-    public List<double> Coords { get; set; }
-
-
-    public List<int> Faces { get; set; }
-
-
-    public List<TriangleD> Triangles { get; set; }
-
-
-    public List<LineD> Lines { get; set; }
+    private PrimitiveProcessor()
+    {
+      SetCoords(new ReadOnlyCollection<double>(new List<double>()));
+      SetFaces(new List<int>());
+      SetTriangles(new List<TriangleD>());
+      SetLines(new List<LineD>());
+      SetPoints(new List<PointD>());
+    }
 
 
-    public List<PointD> Points { get; set; }
+    public IReadOnlyList<double> Coords => _coords.AsReadOnly();
 
 
-    public double[] LocalToWorldTransformation { get; set; }
+    private IReadOnlyList<int> Faces => _faces.AsReadOnly();
 
 
-    public bool ElevationMode { get; set; }
+    public IReadOnlyList<TriangleD> Triangles => _triangles.AsReadOnly();
+
+
+    public IReadOnlyList<LineD> Lines => _lines.AsReadOnly();
+
+
+    public IReadOnlyList<PointD> Points => _points.AsReadOnly();
+
+
+    public TransformationMatrix LocalToWorldTransformation { get; set; }
+
+
+    private bool ElevationMode { get; set; }
 
 
     public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
     {
-      var vD1 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-        ElevationMode);
-      var vD2 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
-        ElevationMode);
-
-      var line = new LineD();
+      using var vD1 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
+        ElevationMode
+      );
+      using var vD2 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
+        ElevationMode
+      );
       try
       {
-        line = new LineD(vD1, vD2);
+        var line = new LineD(vD1, vD2);
+        AddLine(line);
       }
-      catch (Exception ex)
+      catch (ArgumentException ex)
       {
-        Console.WriteLine(ex);
+        Console.WriteLine($"ArgumentException caught: {ex.Message}");
       }
-
-      Lines.Add(line);
+      catch (InvalidOperationException ex)
+      {
+        Console.WriteLine($"InvalidOperationException caught: {ex.Message}");
+      }
     }
 
     public void Point(InwSimpleVertex v1)
     {
-      var vD1 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-        ElevationMode);
+      var vD1 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
+        ElevationMode
+      );
 
-      Points.Add(new PointD(vD1));
+      AddPoint(new PointD(vD1));
     }
 
     public void SnapPoint(InwSimpleVertex v1)
@@ -88,26 +135,85 @@ namespace Objects.Converter.Navisworks
 
     public void Triangle(InwSimpleVertex v1, InwSimpleVertex v2, InwSimpleVertex v3)
     {
-      var vD1 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
-        ElevationMode);
-      var vD2 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
-        ElevationMode);
-      var vD3 = SetElevationModeVector(ApplyTransformation(VectorFromVertex(v3), LocalToWorldTransformation),
-        ElevationMode);
+      var vD1 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
+        ElevationMode
+      );
+      var vD2 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
+        ElevationMode
+      );
+      var vD3 = SetElevationModeVector(
+        ApplyTransformation(VectorFromVertex(v3), LocalToWorldTransformation),
+        ElevationMode
+      );
 
       var indexPointer = Faces.Count;
-      Faces.Add(3);
-      Coords.AddRange(new[] { vD1.X, vD1.Y, vD1.Z, vD2.X, vD2.Y, vD2.Z, vD3.X, vD3.Y, vD3.Z });
-      Faces.AddRange(new[] { indexPointer + 0, indexPointer + 1, indexPointer + 2 });
+      AddFace(3);
+      AddFaces(new[] { indexPointer + 0, indexPointer + 1, indexPointer + 2 });
+      AddCoords(new[] { vD1.X, vD1.Y, vD1.Z, vD2.X, vD2.Y, vD2.Z, vD3.X, vD3.Y, vD3.Z });
+      AddTriangle(new TriangleD(vD1, vD2, vD3));
+    }
 
-      Triangles.Add(new TriangleD(vD1, vD2, vD3));
+    private void SetCoords(ReadOnlyCollection<double> coords)
+    {
+      _coords.Clear();
+      _coords.AddRange(coords);
+    }
+
+    private void AddCoords(IEnumerable<double> coords)
+    {
+      _coords.AddRange(coords);
+    }
+
+    private void SetFaces(List<int> faces)
+    {
+      _faces = faces ?? throw new ArgumentNullException(nameof(faces));
+    }
+
+    private void AddFace(int face)
+    {
+      _faces.Add(face);
+    }
+
+    private void AddFaces(IEnumerable<int> faces)
+    {
+      _faces.AddRange(faces);
+    }
+
+    private void SetTriangles(List<TriangleD> triangles)
+    {
+      _triangles = triangles ?? throw new ArgumentNullException(nameof(triangles));
+    }
+
+    private void AddTriangle(TriangleD triangle)
+    {
+      _triangles.Add(triangle);
+    }
+
+    private void SetLines(List<LineD> lines)
+    {
+      _lines = lines ?? throw new ArgumentNullException(nameof(lines));
+    }
+
+    private void AddLine(LineD line)
+    {
+      _lines.Add(line);
+    }
+
+    private void SetPoints(List<PointD> points)
+    {
+      _points = points ?? throw new ArgumentNullException(nameof(points));
+    }
+
+    private void AddPoint(PointD point)
+    {
+      _points.Add(point);
     }
 
     private static Vector3D SetElevationModeVector(Vector3D v, bool elevationMode)
     {
-      return elevationMode
-        ? v
-        : new Vector3D(v.X, -v.Z, v.Y);
+      return elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
     }
 
     private static Vector3D ApplyTransformation(Vector3 vector3, IReadOnlyList<double> matrix)
@@ -123,24 +229,20 @@ namespace Objects.Converter.Navisworks
     private static Vector3 VectorFromVertex(InwSimpleVertex v)
     {
       var arrayV = (Array)v.coord;
-      return new Vector3(
-        (float)arrayV.GetValue(1),
-        (float)arrayV.GetValue(2),
-        (float)arrayV.GetValue(3)
-      );
+      return new Vector3((float)arrayV.GetValue(1), (float)arrayV.GetValue(2), (float)arrayV.GetValue(3));
     }
   }
 
-
   public class NavisworksGeometry
   {
+    internal readonly Stack<InwOaFragment3> ModelFragmentStack = new();
+
     public NavisworksGeometry(ModelItem modelItem)
     {
       ModelItem = modelItem;
 
       // Add conversion geometry to oModelColl Property
-      var modelItemCollection = new ModelItemCollection { modelItem };
-
+      using var modelItemCollection = new ModelItemCollection { modelItem };
       //convert to COM selection
       Selection = ComBridge.ToInwOpSelection(modelItemCollection);
     }
@@ -152,19 +254,13 @@ namespace Objects.Converter.Navisworks
     public ModelItem ModelItem { get; set; }
 
 
-    public Stack<InwOaFragment3> ModelFragments { get; set; }
+    private IReadOnlyCollection<InwOaFragment3> ModelFragments => ModelFragmentStack;
 
 
-    public Base Geometry { get; internal set; }
+    public bool ElevationMode { get; set; }
 
 
-    public Base Base { get; internal set; }
-
-
-    public bool ElevationMode { get; set; } = false;
-
-
-    public List<PrimitiveProcessor> GetUniqueGeometryFragments()
+    public IReadOnlyList<PrimitiveProcessor> GetUniqueGeometryFragments()
     {
       var processors = new List<PrimitiveProcessor>();
 
@@ -174,11 +270,15 @@ namespace Objects.Converter.Navisworks
 
         foreach (var fragment in ModelFragments)
         {
-          if (!IsSameFragmentPath(((Array)fragment.path.ArrayData).ToArray<int>(),
-                ((Array)path.ArrayData).ToArray<int>())) continue;
+          if (
+            !IsSameFragmentPath(((Array)fragment.path.ArrayData).ToArray<int>(), ((Array)path.ArrayData).ToArray<int>())
+          )
+            continue;
 
           var localToWorldTransform = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
-          processor.LocalToWorldTransformation = ConvertArrayToDouble((Array)localToWorldTransform.Matrix);
+
+          processor.LocalToWorldTransformation = LocalToWorldTransformationMatrix(localToWorldTransform);
+
           fragment.GenerateSimplePrimitives(nwEVertexProperty.eNORMAL, processor);
         }
 
@@ -188,6 +288,31 @@ namespace Objects.Converter.Navisworks
       return processors;
     }
 
+    private static TransformationMatrix LocalToWorldTransformationMatrix(InwLTransform3f3 localToWorldTransform)
+    {
+      double[] matrix = ((IEnumerable<object>)localToWorldTransform.Matrix).Cast<double>().ToArray();
+
+      return new TransformationMatrix
+      {
+        [0, 0] = matrix[0],
+        [0, 1] = matrix[1],
+        [0, 2] = matrix[2],
+        [0, 3] = matrix[3],
+        [1, 0] = matrix[4],
+        [1, 1] = matrix[5],
+        [1, 2] = matrix[6],
+        [1, 3] = matrix[7],
+        [2, 0] = matrix[8],
+        [2, 1] = matrix[9],
+        [2, 2] = matrix[10],
+        [2, 3] = matrix[11],
+        [3, 0] = matrix[12],
+        [3, 1] = matrix[13],
+        [3, 2] = matrix[14],
+        [3, 3] = matrix[15]
+      };
+    }
+
     private static bool IsSameFragmentPath(Array a1, Array a2)
     {
       return a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
@@ -195,7 +320,8 @@ namespace Objects.Converter.Navisworks
 
     public static double[] ConvertArrayToDouble(Array arr)
     {
-      if (arr.Rank != 1) throw new ArgumentException();
+      if (arr.Rank != 1)
+        throw new ArgumentException("The input array must have a rank of 1.");
 
       var doubleArray = new double[arr.GetLength(0)];
       for (var ix = arr.GetLowerBound(0); ix <= arr.GetUpperBound(0); ++ix)
@@ -265,10 +391,9 @@ namespace Objects.Converter.Navisworks
     public Vector3D Vertex1 { get; set; }
   }
 
-
   public partial class ConverterNavisworks
   {
-    public static Vector3D TransformVector3D { get; set; }
+    private static Vector3D TransformVector3D { get; set; }
 
 
     public Vector SettingOutPoint { get; set; }
@@ -277,7 +402,7 @@ namespace Objects.Converter.Navisworks
     public Vector TransformVector { get; set; }
 
 
-    public BoundingBox3D ModelBoundingBox { get; set; }
+    private BoundingBox3D ModelBoundingBox { get; set; }
 
 
     /// <summary>
@@ -285,7 +410,7 @@ namespace Objects.Converter.Navisworks
     ///   with Z as elevation height.
     ///   This is distinct from the typical "handedness" of 3D models.
     /// </summary>
-    public static bool ElevationMode { get; set; }
+    private static bool ElevationMode { get; set; }
 
     public static Box BoxToSpeckle(BoundingBox3D boundingBox3D)
     {
@@ -317,10 +442,10 @@ namespace Objects.Converter.Navisworks
       return boundingBox;
     }
 
-    public void SetModelOrientationMode()
+    private static void SetModelOrientationMode()
     {
-      var elevationModeUpVector = new Vector3D(0, 0, 1);
-      var elevationModeRightVector = new Vector3D(1, 0, 0);
+      using var elevationModeUpVector = new Vector3D(0, 0, 1);
+      using var elevationModeRightVector = new Vector3D(1, 0, 0);
 
       var upMatch = VectorMatch(Doc.UpVector, elevationModeUpVector);
       var rightMatch = VectorMatch(Doc.RightVector, elevationModeRightVector);
@@ -338,16 +463,13 @@ namespace Objects.Converter.Navisworks
     /// <returns>Boolean value indicating match success</returns>
     private static bool VectorMatch(Vector3D vectorA, Vector3D vectorB, double tolerance = 1e-9)
     {
-      return Math.Abs(vectorA.X - vectorB.X) < tolerance &&
-             Math.Abs(vectorA.Y - vectorB.Y) < tolerance &&
-             Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
+      return Math.Abs(vectorA.X - vectorB.X) < tolerance
+        && Math.Abs(vectorA.Y - vectorB.Y) < tolerance
+        && Math.Abs(vectorA.Z - vectorB.Z) < tolerance;
     }
 
-
-    public static void PopulateModelFragments(NavisworksGeometry geometry)
+    private static void PopulateModelFragments(NavisworksGeometry geometry)
     {
-      geometry.ModelFragments = new Stack<InwOaFragment3>();
-
       var paths = geometry.Selection.Paths();
 
       foreach (InwOaPath path in paths)
@@ -359,7 +481,8 @@ namespace Objects.Converter.Navisworks
           var a2 = ((Array)path.ArrayData).ToArray<int>();
           var isSame = !(a1.Length != a2.Length || !a1.SequenceEqual(a2));
 
-          if (isSame) geometry.ModelFragments.Push(fragment);
+          if (isSame)
+            geometry.ModelFragmentStack.Push(fragment);
 
           GC.KeepAlive(fragments);
         }
@@ -368,8 +491,7 @@ namespace Objects.Converter.Navisworks
       }
     }
 
-
-    public static List<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
+    private static IReadOnlyList<Base> TranslateFragmentGeometry(NavisworksGeometry navisworksGeometry)
     {
       var callbackListeners = navisworksGeometry.GetUniqueGeometryFragments();
 
@@ -415,28 +537,21 @@ namespace Objects.Converter.Navisworks
           }
         }
 
-        if (lines != null)
-        {
-          var lineCount = lines.Count;
-          if (lineCount <= 0) continue;
-          for (var i = 0; i < lines.Count; i++)
-          {
-            var lineD = lines[i];
+        if (lines == null)
+          continue;
 
-            var verticesA = MoveAndScaleVertices(lineD.Vertex1, move, scale).ToArray();
-            var verticesB = MoveAndScaleVertices(lineD.Vertex2, move, scale).ToArray();
+        var lineCount = lines.Count;
+        if (lineCount <= 0)
+          continue;
 
-            var start = new Point(verticesA[0], verticesA[1], verticesA[2]);
-            var end = new Point(verticesB[0], verticesB[1], verticesB[2]);
-
-            var baseLine = new Line(start, end)
-            {
-              ["renderMaterial"] = TranslateMaterial(navisworksGeometry.ModelItem)
-            };
-
-            baseGeometries.Add(baseLine);
-          }
-        }
+        baseGeometries.AddRange(
+          from lineD in lines
+          let verticesA = MoveAndScaleVertices(lineD.Vertex1, move, scale).ToArray()
+          let verticesB = MoveAndScaleVertices(lineD.Vertex2, move, scale).ToArray()
+          let start = new Point(verticesA[0], verticesA[1], verticesA[2])
+          let end = new Point(verticesB[0], verticesB[1], verticesB[2])
+          select new Line(start, end) { ["renderMaterial"] = TranslateMaterial(navisworksGeometry.ModelItem) }
+        );
       }
 
       return baseGeometries;
@@ -449,7 +564,8 @@ namespace Objects.Converter.Navisworks
 
     private void SetTransformVector3D()
     {
-      if (TransformVector3D != null) return;
+      if (TransformVector3D != null)
+        return;
 
       Vector3D transform;
 
@@ -480,7 +596,9 @@ namespace Objects.Converter.Navisworks
     {
       return new List<double>
       {
-        (vertex1.X + move.X) * scale, (vertex1.Y + move.Y) * scale, (vertex1.Z + move.Z) * scale
+        (vertex1.X + move.X) * scale,
+        (vertex1.Y + move.Y) * scale,
+        (vertex1.Z + move.Z) * scale
       };
     }
   }
@@ -488,10 +606,5 @@ namespace Objects.Converter.Navisworks
 
 namespace Objects.Organization
 {
-  public class Geometry : Base
-  {
-    public Geometry()
-    {
-    }
-  }
+  public class GeometryNode : Base {}
 }

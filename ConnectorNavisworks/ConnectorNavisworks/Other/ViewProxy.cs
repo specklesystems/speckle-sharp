@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Speckle.ConnectorNavisworks
+namespace Speckle.ConnectorNavisworks;
+
+internal sealed class ViewProxy
 {
-  internal class ViewProxy
-  {
-    public List<string> Selection { get; set; }
-  }
+  public List<string> Selection { get; set; }
 }

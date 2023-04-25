@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Windows.Forms;
 using CSiAPIv1;
@@ -10,11 +11,14 @@ namespace DriverCSharp
   {
     private const string ProgID_SAP2000 = "CSI.SAP2000.API.SapObject";
     private const string ProgID_ETABS = "CSI.ETABS.API.ETABSObject";
-    private const string ProgID_CSIBridge = "CSI.CSiBridge.API.CSIBridgeObject";
+    private const string ProgID_CSiBridge = "CSI.CSiBridge.API.SapObject";
     private const string ProgID_SAFE = "CSI.SAFE.API.SAFEObject";
 
     static int Main(string[] args)
     {
+#if DEBUG
+      Debugger.Launch();
+#endif
       //MessageBox.Show("Starting DriverCSharp");
 
       // dimension the SapObject as cOAPI type
@@ -55,7 +59,7 @@ namespace DriverCSharp
           else if (string.Compare(arg, "SAFE", true) == 0)
             progID = ProgID_SAFE;
           else if (string.Compare(arg, "CSiBridge", true) == 0)
-            progID = ProgID_SAFE;
+            progID = ProgID_CSiBridge;
         }
 
         if (progID != null)
@@ -74,11 +78,25 @@ namespace DriverCSharp
 
           if (mySapObject == null)
           {
-          try{ 
-            progID = ProgID_ETABS;
-            mySapObject = myHelper.GetObject(progID);
+            try
+            { 
+              progID = ProgID_ETABS;
+              mySapObject = myHelper.GetObject(progID);
             }
-            catch (Exception ex){ }
+            catch (Exception ex)
+            { 
+            }
+          }
+          if (mySapObject == null)
+          {
+            try
+            {
+              progID = ProgID_CSiBridge;
+              mySapObject = myHelper.GetObject(progID);
+            }
+            catch (Exception ex)
+            {
+            }
           }
         }
       }

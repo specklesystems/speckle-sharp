@@ -1,37 +1,37 @@
-﻿using System;
+using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System.Collections.Generic;
-using System.Linq;
-using Speckle.Newtonsoft.Json;
 
 namespace Objects.BuiltElements
 {
   public class Floor : Base, IDisplayValue<List<Mesh>>
   {
-    public ICurve outline { get; set; }
-    public List<ICurve> voids { get; set; } = new List<ICurve>();
-
-    [DetachProperty]
-    public List<Base> elements { get; set; }
-    
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-
-    public string units { get; set; }
-
     public Floor() { }
 
     [SchemaInfo("Floor", "Creates a Speckle floor", "BIM", "Architecture")]
-    public Floor([SchemaMainParam] ICurve outline, List<ICurve> voids = null,
-      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null)
+    public Floor(
+      [SchemaMainParam] ICurve outline,
+      List<ICurve> voids = null,
+      [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null
+    )
     {
       this.outline = outline;
       this.voids = voids;
       this.elements = elements;
     }
+
+    public ICurve outline { get; set; }
+    public List<ICurve> voids { get; set; } = new();
+
+    [DetachProperty]
+    public List<Base> elements { get; set; }
+
+    public string units { get; set; }
+
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
   }
 }
 
@@ -39,21 +39,21 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitFloor : Floor
   {
-    public string family { get; set; }
-    public string type { get; set; }
-    public Level level { get; set; }
-    public bool structural { get; set; }
-    public double slope { get; set; }
-    public Line slopeDirection { get; set; }
-    public Base parameters { get; set; }
-    public string elementId { get; set; }
     public RevitFloor() { }
 
     [SchemaInfo("RevitFloor", "Creates a Revit floor by outline and level", "Revit", "Architecture")]
-    public RevitFloor(string family, string type, [SchemaMainParam] ICurve outline,
-       Level level, bool structural = false, double slope = 0, Line slopeDirection = null, List<ICurve> voids = null,
+    public RevitFloor(
+      string family,
+      string type,
+      [SchemaMainParam] ICurve outline,
+      Level level,
+      bool structural = false,
+      double slope = 0,
+      Line slopeDirection = null,
+      List<ICurve> voids = null,
       [SchemaParamInfo("Any nested elements that this floor might have")] List<Base> elements = null,
-      List<Parameter> parameters = null)
+      List<Parameter> parameters = null
+    )
     {
       this.family = family;
       this.type = type;
@@ -66,23 +66,22 @@ namespace Objects.BuiltElements.Revit
       this.voids = voids;
       this.elements = elements;
     }
+
+    public string family { get; set; }
+    public string type { get; set; }
+    public Level level { get; set; }
+    public bool structural { get; set; }
+    public double slope { get; set; }
+    public Line slopeDirection { get; set; }
+    public Base parameters { get; set; }
+    public string elementId { get; set; }
   }
 }
 
-
 namespace Objects.BuiltElements.Archicad
 {
-  public sealed class ArchicadFloor : BuiltElements.Floor
+  public sealed class ArchicadFloor : Floor
   {
-    public class Visibility : Base
-    {
-      public bool? showOnHome { get; set; }
-      public bool? showAllAbove { get; set; }
-      public bool? showAllBelow { get; set; }
-      public short? showRelAbove { get; set; }
-      public short? showRelBelow { get; set; }
-    }
-
     // Geometry and positioning
     public int? floorIndex { get; set; }
     public double? thickness { get; set; }
@@ -114,7 +113,7 @@ namespace Objects.BuiltElements.Archicad
     public string? hiddenContourLineType { get; set; }
 
     // Floor Plan and Section - Cover Fills
-   public bool? useFloorFill { get; set; }
+    public bool? useFloorFill { get; set; }
     public short? floorFillPen { get; set; }
     public short? floorFillBGPen { get; set; }
     public string? floorFillName { get; set; }
@@ -133,6 +132,13 @@ namespace Objects.BuiltElements.Archicad
     public string? botMat { get; set; }
     public bool? materialsChained { get; set; }
 
-    public ArchicadFloor() { }
+    public class Visibility : Base
+    {
+      public bool? showOnHome { get; set; }
+      public bool? showAllAbove { get; set; }
+      public bool? showAllBelow { get; set; }
+      public short? showRelAbove { get; set; }
+      public short? showRelBelow { get; set; }
+    }
   }
 }

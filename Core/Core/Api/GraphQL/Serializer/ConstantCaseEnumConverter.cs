@@ -1,36 +1,37 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Reflection;
 using GraphQL.Client.Abstractions.Utilities;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Converters;
 
-namespace Speckle.Core.Api.GraphQL.Serializer
+namespace Speckle.Core.Api.GraphQL.Serializer;
+
+public class ConstantCaseEnumConverter : StringEnumConverter
 {
-  public class ConstantCaseEnumConverter : StringEnumConverter
+  public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
   {
-    public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+    if (value == null)
     {
-      if (value == null)
+      writer.WriteNull();
+    }
+    else
+    {
+      var enumString = ((Enum)value).ToString("G");
+      var memberName = value
+        .GetType()
+        .GetMember(enumString, BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public)
+        .FirstOrDefault()
+        ?.Name;
+      if (string.IsNullOrEmpty(memberName))
       {
-        writer.WriteNull();
+        if (!AllowIntegerValues)
+          throw new JsonSerializationException($"Integer value {value} is not allowed.");
+        writer.WriteValue(value);
       }
       else
       {
-        var enumString = ((Enum)value).ToString("G");
-        var memberName = value.GetType()
-            .GetMember(enumString, BindingFlags.DeclaredOnly | BindingFlags.Static | BindingFlags.Public)
-            .FirstOrDefault()?.Name;
-        if (string.IsNullOrEmpty(memberName))
-        {
-          if (!AllowIntegerValues)
-            throw new JsonSerializationException($"Integer value {value} is not allowed.");
-          writer.WriteValue(value);
-        }
-        else
-        {
-          writer.WriteValue(memberName.ToConstantCase());
-        }
+        writer.WriteValue(memberName.ToConstantCase());
       }
     }
   }

@@ -2,7 +2,6 @@
   x:Class="DesktopUI2.Views.Settings.MultiSelectBoxSettingView"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -31,58 +30,61 @@
       TextWrapping="Wrap"
       ToolTip.Tip="{Binding Setting.Description}" />
 
-    <StackPanel Grid.Column="2" Grid.RowSpan="2">
+    <StackPanel Grid.RowSpan="2" Grid.Column="2">
       <Grid>
-        <TextBlock 
-          Margin="5"
-          TextWrapping="Wrap"
+        <TextBlock
           MinHeight="16"
-          Text="{Binding Setting.Selection}"/>
-        <DropDown 
+          Margin="5"
+          Text="{Binding Setting.Selection}"
+          TextWrapping="Wrap" />
+        <DropDown
           Name="PopupParent"
-          VerticalAlignment="Bottom"
-          Margin="0">
-          
-        </DropDown>
+          Margin="0"
+          VerticalAlignment="Bottom" />
         <Popup
           Name="PopupBody"
-          Opacity="100"
-          WindowManagerAddShadowHint="False"
-          IsOpen="{Binding #PopupParent.IsDropDownOpen}"
           Width="{Binding #PopupParent.Bounds.Width}"
+          IsOpen="{Binding #PopupParent.IsDropDownOpen}"
+          Opacity="100"
           PlacementAnchor="Top"
           PlacementMode="Bottom"
-          PlacementTarget="{Binding #PopupParent}">
+          PlacementTarget="{Binding #PopupParent}"
+          WindowManagerAddShadowHint="False">
           <Border
             Background="{DynamicResource MaterialDesignCardBackground}"
-            BorderThickness="0"
             BorderBrush="Gray"
+            BorderThickness="0"
             CornerRadius="5">
             <StackPanel>
               <ListBox
                 Items="{Binding Setting.Values}"
                 Selection="{Binding Setting.SelectionModel}"
-                SelectionMode="Multiple,Toggle">
-              </ListBox>
-              <!-- button to create custom value -->
+                SelectionMode="Multiple,Toggle" />
+              <!--  button to create custom value  -->
               <!--<Button>
                 + Custom
               </Button>-->
-              <!-- this button corrosponds to commented 
-              block below -->
+              <!--
+                this button corrosponds to commented
+                block below
+              -->
             </StackPanel>
           </Border>
         </Popup>
       </Grid>
     </StackPanel>
 
-    <!-- This code is for the option to add more customizable 
-    options such a walls or structural framing of a specific material,
-    family, or type -->
-    <!-- Change isvisible from {Binding Setting.AddCustom}
-    to True in order to have a better debug experience-->
-    <!--<StackPanel 
-      Grid.Row="2" 
+    <!--
+      This code is for the option to add more customizable
+      options such a walls or structural framing of a specific material,
+      family, or type
+    -->
+    <!--
+      Change isvisible from {Binding Setting.AddCustom}
+      to True in order to have a better debug experience
+    -->
+    <!--<StackPanel
+      Grid.Row="2"
       Grid.ColumnSpan="3"
       IsVisible="{Binding Setting.AddCustom}">
       <Grid ColumnDefinitions="auto, 1*">

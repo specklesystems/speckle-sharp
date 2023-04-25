@@ -1,0 +1,25 @@
+{
+  "solution": {
+    "path": "..\\All.sln",
+    "projects": [
+      "ConnectorCSI\\ConnectorCSIBridge\\ConnectorCSIBridge.csproj",
+      "ConnectorCSI\\ConnectorCSIShared\\ConnectorCSIShared.shproj",
+      "ConnectorCSI\\ConnectorETABS\\ConnectorETABS.csproj",
+      "ConnectorCSI\\ConnectorSAFE\\ConnectorSAFE.csproj",
+      "ConnectorCSI\\ConnectorSAP2000\\ConnectorSAP2000.csproj",
+      "ConnectorCSI\\DriverCSharp\\DriverCSharp.csproj",
+      "ConnectorCSI\\DriverPluginCSharp\\DriverPluginCSharp.csproj",
+      "Core\\Core\\Core.csproj",
+      "Core\\Transports\\DiskTransport\\DiskTransport.csproj",
+      "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "Objects\\Converters\\ConverterCSI\\ConverterCSIBridge\\ConverterCSIBridge.csproj",
+      "Objects\\Converters\\ConverterCSI\\ConverterCSIShared\\ConverterCSIShared.shproj",
+      "Objects\\Converters\\ConverterCSI\\ConverterETABS\\ConverterETABS.csproj",
+      "Objects\\Converters\\ConverterCSI\\ConverterSAFE\\ConverterSAFE.csproj",
+      "Objects\\Converters\\ConverterCSI\\ConverterSAP2000\\ConverterSAP2000.csproj",
+      "Objects\\Converters\\StructuralUtilities\\PolygonMesher\\PolygonMesher.csproj",
+      "Objects\\Objects\\Objects.csproj",
+      "Objects\\Tests\\Tests.csproj"
+    ]
+  }
+}

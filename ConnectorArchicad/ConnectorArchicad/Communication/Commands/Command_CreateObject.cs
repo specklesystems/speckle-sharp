@@ -1,11 +1,12 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Objects.BuiltElements.Archicad;
+using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
+using Objects.BuiltElements.Archicad;
 
 namespace Archicad.Communication.Commands
 {
-  sealed internal class CreateObject : ICommand<IEnumerable<string>>
+  sealed internal class CreateObject : ICommand<IEnumerable<ApplicationObject>>
   {
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
@@ -22,8 +23,8 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-      [JsonProperty("applicationIds")]
-      public IEnumerable<string> ApplicationIds { get; private set; }
+      [JsonProperty("applicationObjects")]
+      public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
     }
 
     private IEnumerable<ArchicadObject> Objects { get; }
@@ -33,11 +34,10 @@ namespace Archicad.Communication.Commands
       Objects = objects;
     }
 
-    public async Task<IEnumerable<string>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects));
-      return result == null ? null : result.ApplicationIds;
+      return result == null ? null : result.ApplicationObjects;
     }
-
   }
 }

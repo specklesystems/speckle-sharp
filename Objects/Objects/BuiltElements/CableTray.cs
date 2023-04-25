@@ -1,11 +1,6 @@
-﻿using System;
-using Objects.Geometry;
-using Objects.Utils;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using System.Collections.Generic;
-using System.Linq;
-using Speckle.Newtonsoft.Json;
+using Objects.Geometry;
+using Speckle.Core.Models;
 
 namespace Objects.BuiltElements
 {
@@ -15,14 +10,11 @@ namespace Objects.BuiltElements
     public double width { get; set; }
     public double height { get; set; }
     public double length { get; set; }
-    
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
 
     public string units { get; set; }
 
-    public CableTray() { }
-
+    [DetachProperty]
+    public List<Mesh> displayValue { get; set; }
   }
 }
 
@@ -35,8 +27,5 @@ namespace Objects.BuiltElements.Revit
     public Level level { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
-
-    public RevitCableTray() { }
-
   }
 }

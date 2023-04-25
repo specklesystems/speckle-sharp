@@ -1,82 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <Title>Objects.Converter.Grasshopper7</Title>
+    <PackageId>Speckle.Objects.Converter.Grasshopper7</PackageId>
+    <PackageTags>$(PackageTags) objects converter rhino grasshopper gh</PackageTags>
+    <AssemblyName>Objects.Converter.Grasshopper7</AssemblyName>
+    <RootNamespace>Objects.Converter.Rhino</RootNamespace>
+    <RhinoPluginType>none</RhinoPluginType>
+    <CopyToKitFolder>true</CopyToKitFolder>
+    <DefineConstants>$(DefineConstants);RHINO7;GRASSHOPPER</DefineConstants>
+  </PropertyGroup>
 
-    <PropertyGroup>
-        <TargetFramework>net48</TargetFramework>
-        <Version>2.1.0</Version>
-        <Title>Objects.Converter.Grasshopper7</Title>
-        <Description></Description>
-        <PackageId>Speckle.Objects.Converter.Grasshopper7</PackageId>
-        <Authors>Speckle</Authors>
-        <Company />
-        <Product />
-        <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
-        <PackageProjectUrl>https://speckle.systems/</PackageProjectUrl>
-        <PackageIcon>logo.png</PackageIcon>
-        <RepositoryUrl>https://github.com/specklesystems/speckle-sharp</RepositoryUrl>
-        <RepositoryType>git</RepositoryType>
-        <PackageTags>speckle objects converter rhino grasshopper gh</PackageTags>
-        <AssemblyName>Objects.Converter.Grasshopper7</AssemblyName>
-        <RootNamespace>Objects.Converter.Rhino</RootNamespace>
-        <RhinoPluginType>none</RhinoPluginType>
-    </PropertyGroup>
+  <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared"/>
 
-    <ItemGroup>
-        <EmbeddedResource Include="EmbeddedResources\**\*" />
-    </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="EmbeddedResources\**\*"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Grasshopper" Version="7.4.21078.1001" />
-        <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Grasshopper" Version="7.4.21078.1001" IncludeAssets="compile;build"/>
+  </ItemGroup>
 
-
-    <PropertyGroup>
-        <CopySQLiteInteropFiles>false</CopySQLiteInteropFiles>
-        <CleanSQLiteInteropFiles>false</CleanSQLiteInteropFiles>
-        <CollectSQLiteInteropFiles>false</CollectSQLiteInteropFiles>
-    </PropertyGroup>
-    
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj">
-            <ExcludeAssets>runtime</ExcludeAssets>
-        </ProjectReference>
-        <ProjectReference Include="..\..\..\Objects\Objects.csproj">
-            <ExcludeAssets>runtime</ExcludeAssets>
-        </ProjectReference>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="..\..\..\..\logo.png">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
-    </ItemGroup>
-
-    <PropertyGroup Condition="$(Configuration) == 'Debug' AND $([MSBuild]::IsOSPlatform(Windows))">
-        <StartProgram>C:\Program Files\Rhino 7\System\Rhino.exe</StartProgram>
-        <StartArguments></StartArguments>
-        <StartAction>Program</StartAction>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <DefineConstants>TRACE;RHINO7;GRASSHOPPER</DefineConstants>
-        <PlatformTarget>x64</PlatformTarget>
-    </PropertyGroup>
-
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <DefineConstants>TRACE;RHINO7;GRASSHOPPER</DefineConstants>
-        <PlatformTarget>x64</PlatformTarget>
-    </PropertyGroup>
-
-    <PropertyGroup>
-        <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
-    </PropertyGroup>
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(IsDesktopBuild)' == true">
-      <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-      <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))" Command="xcopy /Y /S &quot;$(TargetDir)$(AssemblyName).pdb&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;" />
-        <!-- We assume Objects project has been built, and folder for the Kit already exists -->
-        <Exec Condition="$([MSBuild]::IsOsPlatform('OSX'))" Command="cp '$(TargetDir)$(AssemblyName).dll' $HOME'/.config/Speckle/Kits/Objects/'" />
-    </Target>
-    <Import Project="..\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems" Label="Shared" />
-
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj" IncludeAssets="compile;build"/>
+  </ItemGroup>
 </Project>

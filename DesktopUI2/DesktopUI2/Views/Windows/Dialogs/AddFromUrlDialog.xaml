@@ -2,9 +2,7 @@
   x:Class="DesktopUI2.Views.Windows.Dialogs.AddFromUrlDialog"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-  xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">

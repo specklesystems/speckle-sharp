@@ -3,14 +3,13 @@ using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using ReactiveUI;
 
-namespace DesktopUI2.Views.Pages
+namespace DesktopUI2.Views.Pages;
+
+public class SettingsView : ReactiveUserControl<SettingsPageViewModel>
 {
-  public partial class SettingsView : ReactiveUserControl<SettingsPageViewModel>
+  public SettingsView()
   {
-    public SettingsView()
-    {
-      this.WhenActivated(disposables => { });
-      AvaloniaXamlLoader.Load(this);
-    }
+    this.WhenActivated(disposables => { });
+    AvaloniaXamlLoader.Load(this);
   }
 }

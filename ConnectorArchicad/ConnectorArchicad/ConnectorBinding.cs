@@ -77,7 +77,9 @@ namespace Archicad.Launcher
 
     public override List<string> GetSelectedObjects()
     {
-      var elementIds = AsyncCommandProcessor.Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.Selection))?.Result;
+      var elementIds = AsyncCommandProcessor
+        .Execute(new Communication.Commands.GetElementIds(Communication.Commands.GetElementIds.ElementFilter.Selection))
+        ?.Result;
       return elementIds is null ? new List<string>() : elementIds.ToList();
     }
 
@@ -86,9 +88,14 @@ namespace Archicad.Launcher
       return new List<ISelectionFilter>()
       {
         new ManualSelectionFilter(),
-        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." }
+        new AllSelectionFilter
+        {
+          Slug = "all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Sends all supported elements and project information."
+        }
       };
-
     }
 
     public override List<StreamState> GetStreamsInFile()
@@ -107,6 +114,7 @@ namespace Archicad.Launcher
     }
 
     public override bool CanPreviewReceive => false;
+
     public override Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       throw new NotImplementedException("Preview receiving not supported");
@@ -115,47 +123,59 @@ namespace Archicad.Launcher
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       Base commitObject = await Helpers.Receive(IdentifyStream(state));
-      if (commitObject == null) throw new SpeckleException("Failed to receive specified");
+      if (commitObject is not null)
+        await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
 
-      ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+      await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
 
-      state.SelectedObjectIds = await ElementConverterManager.Instance.ConvertToNative(commitObject, conversionOptions, progress.CancellationToken);
+      if (commitObject == null)
+        throw new SpeckleException("Failed to receive specified");
 
       return state;
     }
 
-    public override void SelectClientObjects(List<string> args, bool deselect = false)
-    {
-      // TODO!
-    }
-
     public override bool CanPreviewSend => false;
+
     public override void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       throw new NotImplementedException("Preview send not supported");
     }
+
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      if (state.Filter == null) throw new InvalidOperationException("Expected selection filter to be non-null");
+      if (state.Filter == null)
+        throw new InvalidOperationException("Expected selection filter to be non-null");
 
-      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(
-        state.Filter,
-        progress);
+      var commitObject = await ElementConverterManager.Instance.ConvertToSpeckle(state.Filter, progress);
 
-      if (commitObject == null) throw new SpeckleException("Failed to convert objects to speckle: conversion returned null");
-      
-      return await Helpers.Send(IdentifyStream(state), commitObject, state.CommitMessage, HostApplications.Archicad.Name);
+      if (commitObject == null)
+        throw new SpeckleException("Failed to convert objects to speckle: conversion returned null");
+
+      return await Helpers.Send(
+        IdentifyStream(state),
+        commitObject,
+        state.CommitMessage,
+        HostApplications.Archicad.Name
+      );
     }
 
     public override void WriteStreamsToFile(List<StreamState> streams) { }
 
     private static string IdentifyStream(StreamState state)
     {
-      var stream = new StreamWrapper { StreamId = state.StreamId, ServerUrl = state.ServerUrl, BranchName = state.BranchName, CommitId = state.CommitId != "latest" ? state.CommitId : null };
+      var stream = new StreamWrapper
+      {
+        StreamId = state.StreamId,
+        ServerUrl = state.ServerUrl,
+        BranchName = state.BranchName,
+        CommitId = state.CommitId != "latest" ? state.CommitId : null
+      };
       return stream.ToString();
     }
 
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
+      Dictionary<string, List<MappingValue>> Mapping
+    )
     {
       await Task.Delay(TimeSpan.FromMilliseconds(500));
       return new Dictionary<string, List<MappingValue>>();

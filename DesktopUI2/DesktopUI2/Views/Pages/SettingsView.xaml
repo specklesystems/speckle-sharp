@@ -9,7 +9,6 @@
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
   x:Name="SettingsWindow"
   d:DesignHeight="500"
   d:DesignWidth="500"

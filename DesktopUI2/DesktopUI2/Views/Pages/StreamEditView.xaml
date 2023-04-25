@@ -11,7 +11,6 @@
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:uc="clr-namespace:DesktopUI2.Views.Controls.StreamEditControls"
-  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels.DesignViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
   Background="{DynamicResource MaterialDesignTextFieldBoxBackground}"

@@ -2,23 +2,22 @@
   x:Class="DesktopUI2.Views.Windows.Dialogs.NewStreamDialog"
   xmlns="https://github.com/avaloniaui"
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-  xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   mc:Ignorable="d">
-	<UserControl.Styles>
+  <UserControl.Styles>
 
-		<Style Selector="ToggleSwitch[IsChecked=true]">
-			<Setter Property="Content" Value="Public stream" />
-		</Style>
+    <Style Selector="ToggleSwitch[IsChecked=true]">
+      <Setter Property="Content" Value="Public stream" />
+    </Style>
 
-		<Style Selector="ToggleSwitch[IsChecked=false]">
-			<Setter Property="Content" Value="Private stream" />
-		</Style>
+    <Style Selector="ToggleSwitch[IsChecked=false]">
+      <Setter Property="Content" Value="Private stream" />
+    </Style>
 
 
-	</UserControl.Styles>
+  </UserControl.Styles>
   <Grid RowDefinitions="auto, auto, auto, auto, auto, auto">
     <TextBlock
       Margin="15,15,15,0"

@@ -1,32 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+namespace Objects.Structural.CSI.Properties;
 
-namespace Objects.Structural.CSI.Properties
+public enum DiaphragmOption
 {
-  public enum DiaphragmOption{
   Disconnect,
   FromShellObject,
   DefinedDiaphragm
-  }
-  public enum NonLinearOptions
-  {
+}
+
+public enum NonLinearOptions
+{
   Linear,
   CompressionOnly,
   TensionOnly
-  }
+}
 
-  public enum SpringOption
-  {
-    Link,
-    SoilProfileFooting
-  }
-  public enum ModelingOption {
+public enum SpringOption
+{
+  Link,
+  SoilProfileFooting
+}
+
+public enum ModelingOption
+{
   Loads,
   Elements
-  }
+}
 
-  public enum DesignProcedure{
+public enum DesignProcedure
+{
   ProgramDetermined,
   SteelFrameDesign,
   ConcreteFrameDesign,
@@ -34,5 +35,4 @@ namespace Objects.Structural.CSI.Properties
   SteelJoistDesign,
   NoDesign,
   CompositeColumnDesign
-  }
 }

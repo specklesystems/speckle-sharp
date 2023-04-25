@@ -11,8 +11,6 @@
   xmlns:local="clr-namespace:DesktopUI2.Views.Pages"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:ripple="clr-namespace:Material.Ripple;assembly=Material.Ripple"
-  xmlns:vm="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="550"
   d:DesignWidth="400"
   mc:Ignorable="d">
@@ -21,6 +19,7 @@
   </Design.DataContext>
   <UserControl.Resources>
     <conv:EnumBooleanConverter x:Key="EnumBooleanConverter" />
+    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
   </UserControl.Resources>
   <Grid RowDefinitions="auto, *">
     <!--  HEADER BAR  -->
@@ -70,6 +69,17 @@
           Text="{Binding Version}"
           TextTrimming="CharacterEllipsis" />
 
+
+        <icons:MaterialIcon
+          Grid.Column="4"
+          Width="18"
+          Height="18"
+          Margin="0,0,5,0"
+          assists:ShadowAssist.ShadowDepth="0"
+          Foreground="White"
+          IsVisible="{Binding UseFe2}"
+          Kind="NewBox"
+          ToolTip.Tip="Links are pointing to the NEW frontend" />
 
         <!--  ACCOUNT MENU  -->
 
@@ -152,7 +162,7 @@
             Padding="0"
             Classes="Solo Small"
             Text="{Binding SearchQuery}"
-            Watermark="Search streams">
+            Watermark="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Search streams'}">
             <TextBox.InnerRightContent>
               <StackPanel Orientation="Horizontal">
                 <m:FloatingButton
@@ -179,7 +189,7 @@
                   Grid.Column="1"
                   Margin="2,0,0,0"
                   VerticalAlignment="Center"
-                  ToolTip.Tip="Filter streams by ownership of favorite">
+                  ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Filter streams by ownership of favorite'}">
 
                   <MenuItem
                     Width="30"
@@ -261,7 +271,7 @@
               Margin="8,0"
               Padding="0"
               VerticalAlignment="Center"
-              Text="Create new Stream"
+              Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Create new Stream'}"
               TextTrimming="CharacterEllipsis" />
           </Grid>
         </Button>
@@ -305,7 +315,7 @@
                 Classes="Overline"
                 Foreground="Gray"
                 IsVisible="{Binding HasSavedStreams}"
-                Text="SAVED STREAMS:" />
+                Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='SAVED STREAMS:'}" />
             </Expander.Header>
             <c:SavedStreams />
           </Expander>
@@ -321,13 +331,13 @@
                 Padding="0"
                 Classes="Overline"
                 Foreground="Gray"
-                Text="{Binding StreamsText, FallbackValue='ALL STREAMS:'}" />
+                Text="{Binding StreamsText, FallbackValue='ALL STREAMS/PROJECTS:'}" />
             </Expander.Header>
             <Grid IsVisible="{Binding InProgress, Converter={x:Static BoolConverters.Not}}">
               <TextBlock
                 Margin="15"
                 IsVisible="{Binding HasStreams, Converter={x:Static BoolConverters.Not}, FallbackValue=False}"
-                Text="No streams found 😅&#x0a;&#x0a;You can create a new one or add a public stream by ID or URL."
+                Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='No streams found 😅&#x0a;&#x0a;You can create a new one or add a public stream by ID or URL.'}"
                 TextAlignment="Center"
                 TextWrapping="Wrap" />
               <ItemsRepeater
@@ -367,7 +377,7 @@
                             VerticalAlignment="Center"
                             IsVisible="{Binding Stream.favoritedDate, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
                             Kind="Heart"
-                            ToolTip.Tip="This is a favorite stream" />
+                            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='This is a favorite stream'}" />
                         </Grid>
                         <Grid
                           Grid.Row="1"

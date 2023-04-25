@@ -1,23 +1,30 @@
 #ifndef CREATE_DIRECT_SHAPE_HPP
 #define CREATE_DIRECT_SHAPE_HPP
 
-#include "BaseCommand.hpp"
+#include "CreateCommand.hpp"
 
 
 namespace AddOnCommands {
 
 
-class CreateDirectShape : public BaseCommand {
+class CreateDirectShape : public CreateCommand {
+	GS::String			GetFieldName () const override;
+	GS::UniString		GetUndoableCommandName () const override;
+
+	GSErrCode			GetElementFromObjectState (const GS::ObjectState& os,
+		API_Element& element,
+		API_Element& elementMask,
+		API_ElementMemo& memo,
+		GS::UInt64& memoMask,
+		AttributeManager& attributeManager,
+		LibpartImportManager& libpartImportManager,
+		API_SubElement** marker = nullptr) const override;
+
 public:
-	virtual GS::String							GetName () const override;
-	virtual GS::ObjectState						Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
-#ifdef ServerMainVers_2600
-	virtual bool								IsProcessWindowVisible () const override { return true; }
-#endif
+	GS::String			GetName () const override;
 };
 
 
 }
-
 
 #endif

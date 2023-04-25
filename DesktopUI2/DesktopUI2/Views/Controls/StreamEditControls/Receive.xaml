@@ -4,14 +4,17 @@
   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
   xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
   xmlns:c="clr-namespace:DesktopUI2.Views.Controls"
+  xmlns:conv="clr-namespace:DesktopUI2.Views.Converters"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:icons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
   xmlns:m="clr-namespace:Material.Styles;assembly=Material.Styles"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  xmlns:viewModels="clr-namespace:DesktopUI2.ViewModels"
   d:DesignHeight="650"
   d:DesignWidth="400"
   mc:Ignorable="d">
+  <UserControl.Resources>
+    <conv:Fe2TextValueConverter x:Key="Fe2TextValueConverter" />
+  </UserControl.Resources>
   <UserControl.Styles>
     <Style Selector="icons|MaterialIcon#receive">
       <Setter Property="RenderTransform" Value="rotate(30deg) scaleX(-1)" />
@@ -20,7 +23,6 @@
       <Setter Property="RenderTransform" Value="rotate(15deg) scaleX(-1)" />
     </Style>
   </UserControl.Styles>
-
   <StackPanel Orientation="Vertical">
     <Grid
       Margin="15"
@@ -33,7 +35,7 @@
         VerticalAlignment="Center"
         Classes="SpeckleFont"
         FontWeight="Bold"
-        Text="Model (branch):" />
+        Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Branch:'}" />
 
       <!--<icons:MaterialIcon
         Margin="0"
@@ -47,7 +49,7 @@
         HorizontalAlignment="Stretch"
         VerticalAlignment="Center"
         Items="{Binding BranchesViewModel}"
-        PlaceholderText="Select a model (branch)"
+        PlaceholderText="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Select a branch'}"
         SelectedItem="{Binding SelectedBranch, Mode=TwoWay}">
         <ComboBox.ItemsPanel />
         <ComboBox.ItemTemplate>
@@ -93,7 +95,7 @@
             VerticalAlignment="Center"
             Foreground="Gray"
             Kind="InfoCircle"
-            ToolTip.Tip="A commit is a snapshot in time&#x0a;of the data inside a branch.&#x0a;Every time you send to Speckle from a connector,&#x0a;a commit is created." />
+            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='A commit is a snapshot in time&#x0a;of a branch.&#x0a;Every time you send to a Speckle branch from a connector,&#x0a;a commit is created.'}" />
           <ComboBox
             Grid.Column="3"
             Margin="5,10,0,10"
@@ -150,7 +152,7 @@
             VerticalAlignment="Center"
             Foreground="Gray"
             Kind="InfoCircle"
-            ToolTip.Tip="Automatically receive new data&#x0a;when it is sent to this branch.&#x0a;NOTE: use with caution!" />
+            ToolTip.Tip="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='Automatically receive&#x0a;when this branch is updated.&#x0a;NOTE: use with caution!'}" />
           <ToggleSwitch
             Grid.Row="1"
             Grid.Column="1"
@@ -197,7 +199,7 @@
       <StackPanel>
         <TextBlock
           IsVisible="{Binding !Commits.Count}"
-          Text="This branch has no commits. Commits are generated what data is sent to a Stream.&#x0a;&#x0a;Please select a different branch or stream."
+          Text="{Binding UseFe2, Converter={StaticResource Fe2TextValueConverter}, ConverterParameter='This branch has no commits. Commits are generated what data is sent to a Branch in a Stream.&#x0a;&#x0a;Please select a different Branch or Stream.'}"
           TextWrapping="Wrap" />
         <!--  360 preview and hide logic in Receive.xaml.cs  -->
         <Grid IsVisible="{Binding Commits.Count}">
@@ -225,10 +227,6 @@
       Margin="15,5"
       ColumnDefinitions="*,auto"
       RowDefinitions="auto, auto,auto">
-
-
-
-
 
       <StackPanel
         Grid.Row="2"

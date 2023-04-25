@@ -3,27 +3,25 @@ using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Markup.Xaml;
 
-namespace DesktopUI2.Views.Windows.Dialogs
+namespace DesktopUI2.Views.Windows.Dialogs;
+
+public class QuickOpsDialog : Window
 {
-  public partial class QuickOpsDialog : Window
+  public QuickOpsDialog()
   {
-
-    public QuickOpsDialog()
-    {
-      InitializeComponent();
+    InitializeComponent();
 #if DEBUG
-      this.AttachDevTools();
+    this.AttachDevTools();
 #endif
-    }
+  }
 
-    private void InitializeComponent()
-    {
-      AvaloniaXamlLoader.Load(this);
-    }
+  private void InitializeComponent()
+  {
+    AvaloniaXamlLoader.Load(this);
+  }
 
-    public void Close_Click(object sender, RoutedEventArgs e)
-    {
-      this.Close();
-    }
+  public void Close_Click(object sender, RoutedEventArgs e)
+  {
+    Close();
   }
 }

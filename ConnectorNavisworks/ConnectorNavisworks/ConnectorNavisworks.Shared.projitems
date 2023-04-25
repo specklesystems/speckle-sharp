@@ -22,7 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Commands\Commands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Other\Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\Utilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Ribbon.xaml.cs">
       <DependentUpon>Ribbon.xaml</DependentUpon>
     </Compile>
@@ -76,10 +76,5 @@
       <SubType>Designer</SubType>
       <Generator>XamlIntelliSenseFileGenerator</Generator>
     </Page>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="..\..\Core\.editorconfig">
-      <Link>.editorconfig</Link>
-    </Content>
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -79,28 +79,21 @@ namespace Speckle.ConnectorRevit.UI
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))?.Where(x => x != null)?.Select(x => x.Id)?.ToList();
-      if (selection != null)
+      var selection = args.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null && x.IsPhysicalElement()).Select(x => x.Id)?.ToList();
+      if (!selection.Any())
+        return;
+      
+      //merge two lists
+      if (!deselect)
       {
-        if (!deselect)
-        {
-          var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
-          if (currentSelection != null) currentSelection.AddRange(selection);
-          else currentSelection = selection;
-          try
-          {
-            CurrentDoc.Selection.SetElementIds(currentSelection);
-            CurrentDoc.ShowElements(currentSelection);
-          }
-          catch (Exception e) { }
-        }
-        else
-        {
-          var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
-          CurrentDoc.Selection.SetElementIds(updatedSelection);
-          if (updatedSelection.Any()) CurrentDoc.ShowElements(updatedSelection);
-        }
+        var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
+        selection = currentSelection.Union(selection).ToList();
       }
+  
+        CurrentDoc.Selection.SetElementIds(selection);
+        CurrentDoc.ShowElements(selection);
+     
+      
     }
 
     private List<Document> GetLinkedDocuments()
@@ -215,8 +208,18 @@ namespace Speckle.ConnectorRevit.UI
               .OfClass(typeof(View))
               .Where(x => viewFilter.Selection.Contains(x.Name));
 
+            if (!views.Where(v => v is not ViewSchedule).Any())
+            {
+              foreach (var view in views)
+              {
+                selection.Add(view);
+              }
+              return selection;
+            }
+
             foreach (var view in views)
             {
+              selection.Add(view);
               var ids = selection.Select(x => x.UniqueId);
 
               foreach (var doc in allDocs)
@@ -313,7 +316,7 @@ namespace Speckle.ConnectorRevit.UI
             }
             catch (Exception ex)
             {
-              Serilog.Log.Error(ex, ex.Message);
+              SpeckleLog.Logger.Error(ex, ex.Message);
             }
             return selection;
         }

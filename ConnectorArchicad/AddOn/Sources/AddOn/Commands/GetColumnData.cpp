@@ -11,10 +11,31 @@ using namespace FieldNames;
 namespace AddOnCommands
 {
 
-static GS::ObjectState SerializeColumnType (const API_Element& elem, const API_ElementMemo& memo)
-{
-	GS::ObjectState os;
 
+GS::String GetColumnData::GetFieldName () const
+{
+	return Columns;
+}
+
+
+API_ElemTypeID GetColumnData::GetElemTypeID () const
+{
+	return API_ColumnID;
+}
+
+
+GS::UInt64 GetColumnData::GetMemoMask () const
+{
+	return APIMemoMask_ColumnSegment |
+		APIMemoMask_AssemblySegmentScheme |
+		APIMemoMask_AssemblySegmentCut;
+}
+
+
+GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
+	const API_ElementMemo& memo,
+	GS::ObjectState& os) const
+{
 	// The identifier of the column
 	os.Add (ApplicationId, APIGuidToString (elem.column.head.guid));
 
@@ -50,7 +71,7 @@ static GS::ObjectState SerializeColumnType (const API_Element& elem, const API_E
 		Utility::GetAllCutData (memo.assemblySegmentCuts, allCuts);
 		os.Add (AssemblySegment::CutData, allCuts);
 	}
-	
+
 	// Reference Axis
 	os.Add (Column::coreAnchor, elem.column.coreAnchor);
 	os.Add (Column::axisRotationAngle, elem.column.axisRotationAngle);
@@ -185,7 +206,7 @@ static GS::ObjectState SerializeColumnType (const API_Element& elem, const API_E
 	}
 
 	// Floor Plan and Section - Outlines
-;
+	;
 	// The pen index of column uncut contour line
 	os.Add (Column::UncutLinePenIndex, elem.column.belowViewLinePen);
 
@@ -240,7 +261,7 @@ static GS::ObjectState SerializeColumnType (const API_Element& elem, const API_E
 
 		// Cover fill type
 		if (!elem.column.useCoverFillFromSurface) {
-			
+
 			BNZeroMemory (&attrib, sizeof (API_Attribute));
 			attrib.header.typeID = API_FilltypeID;
 			attrib.header.index = elem.column.coverFillType;
@@ -262,54 +283,13 @@ static GS::ObjectState SerializeColumnType (const API_Element& elem, const API_E
 		}
 	}
 
-	return os;
+	return NoError;
 }
 
 
 GS::String GetColumnData::GetName () const
 {
 	return GetColumnDataCommandName;
-}
-
-
-GS::ObjectState GetColumnData::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
-{
-	/*BASED ON THE GIVEN (SELECTED) OBJECTS, READ THEIR GUIDS AND EXECUTE SERIALIZATION ON THEM*/
-	GS::ObjectState result;
-	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIds, ids);
-	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); });
-
-	const auto& listAdder = result.AddList<GS::ObjectState> (Columns);
-	for (const API_Guid& guid : elementGuids) {
-		API_Element element{};
-		element.header.guid = guid;
-
-		GSErrCode err = ACAPI_Element_Get (&element);
-		if (err != NoError)
-			continue;
-
-		API_ElementMemo memo{};
-		ACAPI_Element_GetMemo (guid, &memo,
-			APIMemoMask_ColumnSegment |
-			APIMemoMask_AssemblySegmentScheme |
-			APIMemoMask_AssemblySegmentCut);
-		if (err != NoError)
-			continue;
-
-#ifdef ServerMainVers_2600
-		if (element.header.type.typeID != API_ColumnID)
-#else
-		if (element.header.typeID != API_ColumnID)
-#endif
-		{
-			continue;
-		}
-
-		listAdder (SerializeColumnType (element, memo));
-	}
-
-	return result;
 }
 
 

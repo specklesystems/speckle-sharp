@@ -7,6 +7,24 @@
       "commands": [
         "t4"
       ]
+    },
+    "jetbrains.resharper.globaltools": {
+      "version": "2023.1.0",
+      "commands": [
+        "jb"
+      ]
+    },
+    "csharpier": {
+      "version": "0.23.0",
+      "commands": [
+        "dotnet-csharpier"
+      ]
+    },
+    "husky": {
+      "version": "0.5.4",
+      "commands": [
+        "husky"
+      ]
     }
   }
 }

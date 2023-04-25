@@ -1,26 +1,16 @@
-﻿using Objects.Geometry;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using Speckle.Newtonsoft.Json;
+using Objects.Geometry;
+using Speckle.Core.Models;
 
-namespace Objects.BuiltElements
+namespace Objects.BuiltElements;
+
+public class Structure : Base, IDisplayValue<List<Mesh>>
 {
-  public class Structure : Base, IDisplayValue<List<Mesh>>
-  {
-    public Point location { get; set; }
-    public List<string> pipeIds { get; set; }
-    
-    [DetachProperty]
-    public List<Mesh> displayValue { get; set; }
-    
-    public string units { get; set; }
+  public Point location { get; set; }
+  public List<string> pipeIds { get; set; }
 
-    public Structure() { }
+  public string units { get; set; }
 
-  }
+  [DetachProperty]
+  public List<Mesh> displayValue { get; set; }
 }

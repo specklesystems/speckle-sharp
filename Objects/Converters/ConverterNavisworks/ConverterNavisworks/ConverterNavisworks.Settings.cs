@@ -1,66 +1,72 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Autodesk.Navisworks.Api;
 
-namespace Objects.Converter.Navisworks
+namespace Objects.Converter.Navisworks;
+
+public partial class ConverterNavisworks
 {
-  public partial class ConverterNavisworks
+  public enum Transforms
   {
-    public enum Transforms
+    Default,
+    ProjectBasePoint,
+    BoundingBox
+  }
+
+  // CAUTION: these strings need to have the same values as in the converter
+  private const string InternalOrigin = "Model Origin (default)";
+  private const string ProxyOrigin = "Project Base Origin";
+  private const string BBoxOrigin = "Boundingbox Origin";
+
+
+  private static Dictionary<string, string> Settings { get; } = new();
+
+
+  private static Vector2D ProjectBasePoint
+  {
+    get
     {
-      Default,
-      ProjectBasePoint,
-      BoundingBox
+      if (!Settings.ContainsKey("x-coordinate") || !Settings.ContainsKey("y-coordinate"))
+        return new Vector2D(0, 0);
+
+      var x = Settings["x-coordinate"];
+      var y = Settings["y-coordinate"];
+
+      return new Vector2D(
+        Convert.ToDouble(x, CultureInfo.InvariantCulture),
+        Convert.ToDouble(y, CultureInfo.InvariantCulture)
+      );
     }
+  }
 
-    // CAUTION: these strings need to have the same values as in the converter
-    private const string InternalOrigin = "Model Origin (default)";
-    private const string ProxyOrigin = "Project Base Origin";
-    private const string BBoxOrigin = "Boundingbox Origin";
-
-
-    public static Dictionary<string, string> Settings { get; } = new Dictionary<string, string>();
-
-
-    public Vector2D ProjectBasePoint
+  private static Transforms ModelTransform
+  {
+    get
     {
-      get
+      if (!Settings.ContainsKey("reference-point"))
+        return Transforms.Default;
+      var value = Settings["reference-point"];
+
+      return value switch
       {
-        if (!Settings.ContainsKey("x-coordinate") || !Settings.ContainsKey("y-coordinate")) return new Vector2D(0, 0);
-
-        var x = Settings["x-coordinate"];
-        var y = Settings["y-coordinate"];
-
-        return new Vector2D(Convert.ToDouble(x), Convert.ToDouble(y));
-      }
+        ProxyOrigin => Transforms.ProjectBasePoint,
+        BBoxOrigin => Transforms.BoundingBox,
+        InternalOrigin => Transforms.Default,
+        _ => Transforms.Default
+      };
     }
+  }
 
-    public Transforms ModelTransform
+  private static Units CoordinateUnits
+  {
+    get
     {
-      get
-      {
-        if (!Settings.ContainsKey("reference-point")) return Transforms.Default;
-        var value = Settings["reference-point"];
+      if (!Settings.ContainsKey("units"))
+        return Units.Meters;
+      var value = Settings["units"];
 
-        switch (value)
-        {
-          case ProxyOrigin: return Transforms.ProjectBasePoint;
-          case BBoxOrigin: return Transforms.BoundingBox;
-          default:
-            return Transforms.Default;
-        }
-      }
-    }
-
-    static Units CoordinateUnits
-    {
-      get
-      {
-        if (!Settings.ContainsKey("units")) return Units.Meters;
-        var value = Settings["units"];
-
-        return (Units)Enum.Parse(typeof(Units), value, true);
-      }
+      return (Units)Enum.Parse(typeof(Units), value, true);
     }
   }
 }

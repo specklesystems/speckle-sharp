@@ -189,7 +189,7 @@ namespace Objects.Converter.Revit
             speckleWall.elements.Add(WallToSpeckle(wall, out List<string> stackedWallNotes));
         }
 
-        speckleWall.displayValue = GetElementDisplayMesh(revitWall,
+        speckleWall.displayValue = GetElementDisplayValue(revitWall,
           new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
       }
       else
@@ -250,8 +250,8 @@ namespace Objects.Converter.Revit
         solidMullions.AddRange(GetElementSolids(wall.Document.GetElement(mullionId)));
       }
 
-      var meshPanels = GetMeshesFromSolids(solidPanels, wall.Document);
-      var meshMullions = GetMeshesFromSolids(solidMullions, wall.Document);
+      var meshPanels = ConvertSolidsByRenderMaterial(solidPanels, wall.Document);
+      var meshMullions = ConvertSolidsByRenderMaterial(solidMullions, wall.Document);
 
       return (meshPanels, meshMullions);
     }

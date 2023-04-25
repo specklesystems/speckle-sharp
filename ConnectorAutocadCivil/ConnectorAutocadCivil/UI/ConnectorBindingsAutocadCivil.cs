@@ -473,6 +473,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
         }
 
+        // skip if it is the base commit collection
+        if (current.speckle_type.Contains("Collection") && string.IsNullOrEmpty(containerId))
+          return null;
+
         //Handle convertable objects
         if (converter.CanConvertToNative(current))
         {
@@ -503,12 +507,19 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         if (context.propName == null) return stringBuilder;
 
-        var objectLayerName = context.propName[0] == '@'
-          ? context.propName.Substring(1)
-          : context.propName;
-
+        string objectLayerName = string.Empty;
+        if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
+        {
+          objectLayerName = context.current["name"] as string;
+        }
+        else if (context.propName.ToLower() != "elements")// this is for any other property on the collection. skip elements props in layer structure.
+        {
+          objectLayerName = context.propName[0] == '@'
+            ? context.propName.Substring(1)
+            : context.propName;
+        }
         LayerIdRecurse(context.parent, stringBuilder);
-        stringBuilder.Append('$');
+        if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName)) { stringBuilder.Append('$'); }
         stringBuilder.Append(objectLayerName);
 
         return stringBuilder;
