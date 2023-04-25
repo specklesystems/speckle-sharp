@@ -10,6 +10,7 @@
     <PackageTags>$(PackageTags), objects</PackageTags>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <CopyToKitFolder>true</CopyToKitFolder>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
