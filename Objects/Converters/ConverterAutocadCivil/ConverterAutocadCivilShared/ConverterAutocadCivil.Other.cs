@@ -2,29 +2,23 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Autodesk.AutoCAD.Colors;
+
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Windows.Data;
-using Objects.BuiltElements.Revit;
-using Objects.Other;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
+using Autodesk.AutoCAD.Colors;
+using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
-/* Unmerged change from project 'ConverterAutocad2023'
-Before:
+using Speckle.Core.Models;
+using Speckle.Core.Kits;
+using Speckle.Core.Models.GraphTraversal;
 using Utilities = Speckle.Core.Models.Utilities;
 
 using Objects.Other;
-After:
-using AcadBRep = Speckle.Core.Models.BoundaryRepresentation;
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
-*/
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Arc = Objects.Geometry.Arc;
-using BlockDefinition = Objects.Other.BlockDefinition;
 using BlockInstance = Objects.Other.BlockInstance;
+using BlockDefinition = Objects.Other.BlockDefinition;
 using Dimension = Objects.Other.Dimension;
 using Hatch = Objects.Other.Hatch;
 using HatchLoop = Objects.Other.HatchLoop;
@@ -32,14 +26,7 @@ using HatchLoopType = Objects.Other.HatchLoopType;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
-
-/* Unmerged change from project 'ConverterAutocad2023'
-Before:
 using Objects.BuiltElements.Revit;
-After:
-using Objects.Core.Models.Utilities;
-*/
-using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -167,7 +154,7 @@ namespace Objects.Converter.AutocadCivil
       switch (type)
       {
         case HatchLoopType.Outer:
-          return HatchLoopTypes.External;
+            return HatchLoopTypes.External;
         default:
           return HatchLoopTypes.Default;
       }
@@ -327,7 +314,7 @@ namespace Objects.Converter.AutocadCivil
 
       var btrObjId = reference.BlockTableRecord;
       if (reference.IsDynamicBlock)
-        btrObjId = reference.AnonymousBlockTableRecord != ObjectId.Null ?
+        btrObjId = reference.AnonymousBlockTableRecord != ObjectId.Null ? 
           reference.AnonymousBlockTableRecord : reference.DynamicBlockTableRecord;
 
       var btr = (BlockTableRecord)Trans.GetObject(btrObjId, OpenMode.ForRead);
@@ -343,7 +330,7 @@ namespace Objects.Converter.AutocadCivil
 
       var instance = new BlockInstance()
       {
-        transform = new Transform(reference.BlockTransform.ToArray(), ModelUnits),
+        transform = new Transform( reference.BlockTransform.ToArray(), ModelUnits ),
         typedDefinition = definition,
         units = ModelUnits
       };
@@ -395,7 +382,7 @@ namespace Objects.Converter.AutocadCivil
 
       // transform
       Matrix3d convertedTransform = TransformToNativeMatrix(instance.transform);
-
+      
       // add block reference
       BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
       var insertionPoint = Point3d.Origin.TransformBy(convertedTransform);
@@ -426,7 +413,7 @@ namespace Objects.Converter.AutocadCivil
       return appObj;
     }
 
-    public BlockDefinition BlockRecordToSpeckle(BlockTableRecord record)
+    public BlockDefinition BlockRecordToSpeckle (BlockTableRecord record)
     {
       // get geometry
       var geometry = new List<Base>();
@@ -651,7 +638,7 @@ namespace Objects.Converter.AutocadCivil
 
         if (btr.IsAnonymous)
         {
-          BlockTableRecord dynamicBlock = reference.DynamicBlockTableRecord != ObjectId.Null ?
+          BlockTableRecord dynamicBlock = reference.DynamicBlockTableRecord != ObjectId.Null ? 
             Trans.GetObject(reference.DynamicBlockTableRecord, OpenMode.ForRead) as BlockTableRecord : null;
           if (dynamicBlock != null) fullName = dynamicBlock.Name;
         }
@@ -722,7 +709,7 @@ namespace Objects.Converter.AutocadCivil
       // not realistically feasible to extract outline curves for displayvalue currently
       _text.height = text.Height;
       var center = GetTextCenter(text);
-      _text.plane = PlaneToSpeckle(new Plane(center, text.Normal));
+      _text.plane = PlaneToSpeckle( new Plane(center, text.Normal));
       _text.rotation = text.Rotation;
       _text.value = text.TextString;
       _text.units = ModelUnits;
@@ -747,8 +734,8 @@ namespace Objects.Converter.AutocadCivil
       // not realistically feasible to extract outline curves for displayvalue currently
       _text.height = text.Height == 0 ? text.ActualHeight : text.Height;
       var center = (text.Bounds != null) ? GetTextCenter(text.Bounds.Value) : text.Location;
-      _text.plane = PlaneToSpeckle(new Plane(center, text.Normal));
-      _text.rotation = text.Rotation;
+      _text.plane = PlaneToSpeckle( new Plane(center, text.Normal));
+      _text.rotation = text.Rotation;    
       _text.value = text.Text;
       _text.richText = text.ContentsRTF;
       _text.units = ModelUnits;
@@ -859,11 +846,11 @@ namespace Objects.Converter.AutocadCivil
       {
         case AttachmentPoint.BottomMid:
         case AttachmentPoint.BottomCenter:
-          x = alignment.X; y = alignment.Y + (height / 2);
+          x = alignment.X;  y = alignment.Y + (height / 2);
           break;
         case AttachmentPoint.TopCenter:
         case AttachmentPoint.TopMid:
-          x = alignment.X; y = alignment.Y - (height / 2);
+          x = alignment.X;  y = alignment.Y - (height / 2);
           break;
         case AttachmentPoint.MiddleRight:
           x = alignment.X - ((alignment.X - position.X) / 2); y = alignment.Y;
@@ -914,7 +901,7 @@ namespace Objects.Converter.AutocadCivil
           _dimension = rotatedDimension;
           break;
         case OrdinateDimension o:
-          var ordinateDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = true };
+          var ordinateDimension = new DistanceDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement, isOrdinate = true};
           ordinateDimension.direction = o.UsingXAxis ? VectorToSpeckle(Vector3d.XAxis) : VectorToSpeckle(Vector3d.YAxis);
           ordinateDimension.position = PointToSpeckle(o.LeaderEndPoint);
           ordinateDimension.measured = new List<Point>() { PointToSpeckle(o.Origin), PointToSpeckle(o.DefiningPoint) };
@@ -922,7 +909,7 @@ namespace Objects.Converter.AutocadCivil
           _dimension = ordinateDimension;
           break;
         case RadialDimension o:
-          var radialDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement };
+          var radialDimension = new LengthDimension() { units = ModelUnits, value = dimension.DimensionText, measurement = dimension.Measurement};
           radialDimension.measured = new Line(PointToSpeckle(o.Center), PointToSpeckle(o.ChordPoint), ModelUnits);
           radialDimension.position = PointToSpeckle(o.ChordPoint); // TODO: the position could be improved by using the leader length x the direction of the dimension
           props = Utilities.GetApplicationProps(o, typeof(RadialDimension), true, ignore);
@@ -1154,7 +1141,7 @@ namespace Objects.Converter.AutocadCivil
             {
               var dir = new Vector3d(end.X - start.X, end.Y - start.Y, end.Z - start.Z); // dimension direction
               var angleBetween = Math.Round(dir.GetAngleTo(normal), 3);
-              if (dir.IsParallelTo(normal, Tolerance.Global))
+              if (dir.IsParallelTo(normal,Tolerance.Global))
                 _dimension = new AlignedDimension(start, end, position, dimension.value, style);
               else
                 _dimension = new RotatedDimension(angleBetween, start, end, position, dimension.value, style);
@@ -1166,7 +1153,7 @@ namespace Objects.Converter.AutocadCivil
           break;
       }
       //if (_dimension != null)
-      // _dimension.TextPosition = PointToNative(dimension.textPosition);
+       // _dimension.TextPosition = PointToNative(dimension.textPosition);
       return _dimension;
     }
     private ObjectId GetDimensionStyle(string styleName)

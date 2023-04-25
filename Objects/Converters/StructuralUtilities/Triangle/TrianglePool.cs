@@ -6,319 +6,319 @@
 
 namespace TriangleNet
 {
-  using System;
-  using System.Collections.Generic;
-  using TriangleNet.Topology;
-
-  /// <summary>
-  /// Pool datastructure storing triangles of a <see cref="Mesh" />.
-  /// </summary>
-  public class TrianglePool : ICollection<Triangle>
-  {
-    // Determines the size of each block in the pool.
-    private const int BLOCKSIZE = 1024;
-
-    // The total number of currently allocated triangles.
-    int size;
-
-    // The number of triangles currently used.
-    int count;
-
-    // The pool.
-    Triangle[][] pool;
-
-    // A stack of free triangles.
-    Stack<Triangle> stack;
+    using System;
+    using System.Collections.Generic;
+    using TriangleNet.Topology;
 
     /// <summary>
-    /// Gets the total number of currently allocated triangles.
+    /// Pool datastructure storing triangles of a <see cref="Mesh" />.
     /// </summary>
-    public int Capacity => size;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="TrianglePool" /> class.
-    /// </summary>
-    public TrianglePool()
+    public class TrianglePool : ICollection<Triangle>
     {
-      size = 0;
+        // Determines the size of each block in the pool.
+        private const int BLOCKSIZE = 1024;
 
-      // On startup, the pool should be able to hold 2^16 triangles.
-      int n = Math.Max(1, 65536 / BLOCKSIZE);
+        // The total number of currently allocated triangles.
+        int size;
 
-      pool = new Triangle[n][];
-      pool[0] = new Triangle[BLOCKSIZE];
+        // The number of triangles currently used.
+        int count;
 
-      stack = new Stack<Triangle>(BLOCKSIZE);
-    }
+        // The pool.
+        Triangle[][] pool;
 
-    /// <summary>
-    /// Gets a triangle from the pool.
-    /// </summary>
-    /// <returns></returns>
-    public Triangle Get()
-    {
-      Triangle triangle;
+        // A stack of free triangles.
+        Stack<Triangle> stack;
 
-      if (stack.Count > 0)
-      {
-        triangle = stack.Pop();
-        triangle.hash = -triangle.hash - 1;
+        /// <summary>
+        /// Gets the total number of currently allocated triangles.
+        /// </summary>
+        public int Capacity => size;
 
-        Cleanup(triangle);
-      }
-      else if (count < size)
-      {
-        triangle = pool[count / BLOCKSIZE][count % BLOCKSIZE];
-        triangle.id = triangle.hash;
-
-        Cleanup(triangle);
-
-        count++;
-      }
-      else
-      {
-        triangle = new Triangle();
-        triangle.hash = size;
-        triangle.id = triangle.hash;
-
-        int block = size / BLOCKSIZE;
-
-        if (pool[block] == null)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TrianglePool" /> class.
+        /// </summary>
+        public TrianglePool()
         {
-          pool[block] = new Triangle[BLOCKSIZE];
+            size = 0;
 
-          // Check if the pool has to be resized.
-          if (block + 1 == pool.Length)
-          {
-            Array.Resize(ref pool, 2 * pool.Length);
-          }
+            // On startup, the pool should be able to hold 2^16 triangles.
+            int n = Math.Max(1, 65536 / BLOCKSIZE);
+
+            pool = new Triangle[n][];
+            pool[0] = new Triangle[BLOCKSIZE];
+
+            stack = new Stack<Triangle>(BLOCKSIZE);
         }
 
-        // Add triangle to pool.
-        pool[block][size % BLOCKSIZE] = triangle;
-
-        count = ++size;
-      }
-
-      return triangle;
-    }
-
-    /// <summary>
-    /// Release triangle (making it a free triangle).
-    /// </summary>
-    public void Release(Triangle triangle)
-    {
-      stack.Push(triangle);
-
-      // Mark the triangle as free (used by enumerator).
-      triangle.hash = -triangle.hash - 1;
-    }
-
-    /// <summary>
-    /// Restart the triangle pool.
-    /// </summary>
-    public TrianglePool Restart()
-    {
-      foreach (var triangle in stack)
-      {
-        // Reset hash to original value.
-        triangle.hash = -triangle.hash - 1;
-      }
-
-      stack.Clear();
-
-      count = 0;
-
-      return this;
-    }
-
-    /// <summary>
-    /// Samples a number of triangles from the pool.
-    /// </summary>
-    /// <param name="k">The number of triangles to sample.</param>
-    /// <param name="random"></param>
-    /// <returns></returns>
-    internal IEnumerable<Triangle> Sample(int k, Random random)
-    {
-      int i, count = this.Count;
-
-      if (k > count)
-      {
-        // TODO: handle Sample special case.
-        k = count;
-      }
-
-      Triangle t;
-
-      // TODO: improve sampling code (to ensure no duplicates).
-
-      while (k > 0)
-      {
-        i = random.Next(0, count);
-
-        t = pool[i / BLOCKSIZE][i % BLOCKSIZE];
-
-        if (t.hash >= 0)
+        /// <summary>
+        /// Gets a triangle from the pool.
+        /// </summary>
+        /// <returns></returns>
+        public Triangle Get()
         {
-          k--;
-          yield return t;
-        }
-      }
-    }
+            Triangle triangle;
 
-    private void Cleanup(Triangle triangle)
-    {
-      triangle.label = 0;
-      triangle.area = 0.0;
-      triangle.infected = false;
+            if (stack.Count > 0)
+            {
+                triangle = stack.Pop();
+                triangle.hash = -triangle.hash - 1;
 
-      for (int i = 0; i < 3; i++)
-      {
-        triangle.vertices[i] = null;
+                Cleanup(triangle);
+            }
+            else if (count < size)
+            {
+                triangle = pool[count / BLOCKSIZE][count % BLOCKSIZE];
+                triangle.id = triangle.hash;
 
-        triangle.subsegs[i] = default(Osub);
-        triangle.neighbors[i] = default(Otri);
-      }
-    }
+                Cleanup(triangle);
 
-    /// <summary>
-    /// Not supported for this <see cref="ICollection{Triangle}" />.
-    /// </summary>
-    public void Add(Triangle item)
-    {
-      throw new NotSupportedException();
-    }
+                count++;
+            }
+            else
+            {
+                triangle = new Triangle();
+                triangle.hash = size;
+                triangle.id = triangle.hash;
 
-    /// <summary>
-    /// Clear the pool.
-    /// </summary>
-    public void Clear()
-    {
-      stack.Clear();
+                int block = size / BLOCKSIZE;
 
-      int blocks = (size / BLOCKSIZE) + 1;
+                if (pool[block] == null)
+                {
+                    pool[block] = new Triangle[BLOCKSIZE];
 
-      for (int i = 0; i < blocks; i++)
-      {
-        var block = pool[i];
+                    // Check if the pool has to be resized.
+                    if (block + 1 == pool.Length)
+                    {
+                        Array.Resize(ref pool, 2 * pool.Length);
+                    }
+                }
 
-        // Number of triangles in current block:
-        int length = (size - i * BLOCKSIZE) % BLOCKSIZE;
+                // Add triangle to pool.
+                pool[block][size % BLOCKSIZE] = triangle;
 
-        for (int j = 0; j < length; j++)
-        {
-          block[j] = null;
-        }
-      }
+                count = ++size;
+            }
 
-      size = count = 0;
-    }
-
-    /// <inheritdoc />
-    public bool Contains(Triangle item)
-    {
-      int i = item.hash;
-
-      if (i < 0 || i > size)
-      {
-        return false;
-      }
-
-      return pool[i / BLOCKSIZE][i % BLOCKSIZE].hash >= 0;
-    }
-
-    /// <inheritdoc />
-    public void CopyTo(Triangle[] array, int index)
-    {
-      var enumerator = GetEnumerator();
-
-      while (enumerator.MoveNext())
-      {
-        array[index] = enumerator.Current;
-        index++;
-      }
-    }
-
-    /// <inheritdoc />
-    public int Count => count - stack.Count;
-
-    /// <inheritdoc />
-    public bool IsReadOnly => true;
-
-    /// <inheritdoc />
-    public bool Remove(Triangle item)
-    {
-      throw new NotImplementedException();
-    }
-
-    /// <inheritdoc />
-    public IEnumerator<Triangle> GetEnumerator()
-    {
-      return new Enumerator(this);
-    }
-
-    System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
-    {
-      return GetEnumerator();
-    }
-
-    class Enumerator : IEnumerator<Triangle>
-    {
-      // TODO: enumerator should be able to tell if collection changed.
-
-      int count;
-
-      Triangle[][] pool;
-
-      Triangle current;
-
-      int index, offset;
-
-      public Enumerator(TrianglePool pool)
-      {
-        this.count = pool.Count;
-        this.pool = pool.pool;
-
-        index = 0;
-        offset = 0;
-      }
-
-      public Triangle Current
-      {
-        get { return current; }
-      }
-
-      public void Dispose()
-      {
-      }
-
-      object System.Collections.IEnumerator.Current
-      {
-        get { return current; }
-      }
-
-      public bool MoveNext()
-      {
-        while (index < count)
-        {
-          current = pool[offset / BLOCKSIZE][offset % BLOCKSIZE];
-
-          offset++;
-
-          if (current.hash >= 0)
-          {
-            index++;
-            return true;
-          }
+            return triangle;
         }
 
-        return false;
-      }
+        /// <summary>
+        /// Release triangle (making it a free triangle).
+        /// </summary>
+        public void Release(Triangle triangle)
+        {
+            stack.Push(triangle);
 
-      public void Reset()
-      {
-        index = offset = 0;
-      }
+            // Mark the triangle as free (used by enumerator).
+            triangle.hash = -triangle.hash - 1;
+        }
+
+        /// <summary>
+        /// Restart the triangle pool.
+        /// </summary>
+        public TrianglePool Restart()
+        {
+            foreach (var triangle in stack)
+            {
+                // Reset hash to original value.
+                triangle.hash = -triangle.hash - 1;
+            }
+
+            stack.Clear();
+
+            count = 0;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Samples a number of triangles from the pool.
+        /// </summary>
+        /// <param name="k">The number of triangles to sample.</param>
+        /// <param name="random"></param>
+        /// <returns></returns>
+        internal IEnumerable<Triangle> Sample(int k, Random random)
+        {
+            int i, count = this.Count;
+
+            if (k > count)
+            {
+                // TODO: handle Sample special case.
+                k = count;
+            }
+
+            Triangle t;
+
+            // TODO: improve sampling code (to ensure no duplicates).
+
+            while (k > 0)
+            {
+                i = random.Next(0, count);
+
+                t = pool[i / BLOCKSIZE][i % BLOCKSIZE];
+
+                if (t.hash >= 0)
+                {
+                    k--;
+                    yield return t;
+                }
+            }
+        }
+
+        private void Cleanup(Triangle triangle)
+        {
+            triangle.label = 0;
+            triangle.area = 0.0;
+            triangle.infected = false;
+
+            for (int i = 0; i < 3; i++)
+            {
+                triangle.vertices[i] = null;
+
+                triangle.subsegs[i] = default(Osub);
+                triangle.neighbors[i] = default(Otri);
+            }
+        }
+
+        /// <summary>
+        /// Not supported for this <see cref="ICollection{Triangle}" />.
+        /// </summary>
+        public void Add(Triangle item)
+        {
+            throw new NotSupportedException();
+        }
+
+        /// <summary>
+        /// Clear the pool.
+        /// </summary>
+        public void Clear()
+        {
+            stack.Clear();
+
+            int blocks = (size / BLOCKSIZE) + 1;
+
+            for (int i = 0; i < blocks; i++)
+            {
+                var block = pool[i];
+
+                // Number of triangles in current block:
+                int length = (size - i * BLOCKSIZE) % BLOCKSIZE;
+
+                for (int j = 0; j < length; j++)
+                {
+                    block[j] = null;
+                }
+            }
+
+            size = count = 0;
+        }
+
+        /// <inheritdoc />
+        public bool Contains(Triangle item)
+        {
+            int i = item.hash;
+
+            if (i < 0 || i > size)
+            {
+                return false;
+            }
+
+            return pool[i / BLOCKSIZE][i % BLOCKSIZE].hash >= 0;
+        }
+
+        /// <inheritdoc />
+        public void CopyTo(Triangle[] array, int index)
+        {
+            var enumerator = GetEnumerator();
+
+            while (enumerator.MoveNext())
+            {
+                array[index] = enumerator.Current;
+                index++;
+            }
+        }
+
+        /// <inheritdoc />
+        public int Count => count - stack.Count;
+
+        /// <inheritdoc />
+        public bool IsReadOnly => true;
+
+        /// <inheritdoc />
+        public bool Remove(Triangle item)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <inheritdoc />
+        public IEnumerator<Triangle> GetEnumerator()
+        {
+            return new Enumerator(this);
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
+        }
+
+        class Enumerator : IEnumerator<Triangle>
+        {
+            // TODO: enumerator should be able to tell if collection changed.
+
+            int count;
+
+            Triangle[][] pool;
+
+            Triangle current;
+
+            int index, offset;
+
+            public Enumerator(TrianglePool pool)
+            {
+                this.count = pool.Count;
+                this.pool = pool.pool;
+
+                index = 0;
+                offset = 0;
+            }
+
+            public Triangle Current
+            {
+                get { return current; }
+            }
+
+            public void Dispose()
+            {
+            }
+
+            object System.Collections.IEnumerator.Current
+            {
+                get { return current; }
+            }
+
+            public bool MoveNext()
+            {
+                while (index < count)
+                {
+                    current = pool[offset / BLOCKSIZE][offset % BLOCKSIZE];
+
+                    offset++;
+
+                    if (current.hash >= 0)
+                    {
+                        index++;
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            public void Reset()
+            {
+                index = offset = 0;
+            }
+        }
     }
-  }
 }

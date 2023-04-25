@@ -7,50 +7,50 @@
 
 namespace TriangleNet.Tools
 {
-  using TriangleNet.Geometry;
+    using TriangleNet.Geometry;
 
-  /// <summary>
-  /// Interpolation helper.
-  /// </summary>
-  public static class Interpolation
-  {
     /// <summary>
-    /// Linear interpolation of a point.
+    /// Interpolation helper.
     /// </summary>
-    /// <param name="tri">The triangle containing the point <paramref name="p"/></param>
-    /// <param name="p">The point to interpolate.</param>
-    /// <param name="data">The vertex data (z values).</param>
-    /// <returns>The linear interpolation value.</returns>
-    /// <remarks>
-    /// IMPORTANT: this method assumes the mesh vertex ids correspond to the data array indices.
-    /// </remarks>
-    public static double InterpolatePoint(ITriangle tri, Point p, double[] data)
+    public static class Interpolation
     {
-      var org = tri.GetVertex(0);
-      var dest = tri.GetVertex(1);
-      var apex = tri.GetVertex(2);
+        /// <summary>
+        /// Linear interpolation of a point.
+        /// </summary>
+        /// <param name="tri">The triangle containing the point <paramref name="p"/></param>
+        /// <param name="p">The point to interpolate.</param>
+        /// <param name="data">The vertex data (z values).</param>
+        /// <returns>The linear interpolation value.</returns>
+        /// <remarks>
+        /// IMPORTANT: this method assumes the mesh vertex ids correspond to the data array indices.
+        /// </remarks>
+        public static double InterpolatePoint(ITriangle tri, Point p, double[] data)
+        {
+            var org = tri.GetVertex(0);
+            var dest = tri.GetVertex(1);
+            var apex = tri.GetVertex(2);
 
-      double xdo = dest.x - org.x;
-      double ydo = dest.y - org.y;
-      double xao = apex.x - org.x;
-      double yao = apex.y - org.y;
+            double xdo = dest.x - org.x;
+            double ydo = dest.y - org.y;
+            double xao = apex.x - org.x;
+            double yao = apex.y - org.y;
 
-      double denominator = 0.5 / (xdo * yao - xao * ydo);
+            double denominator = 0.5 / (xdo * yao - xao * ydo);
 
-      double dx = p.x - org.x;
-      double dy = p.y - org.y;
+            double dx = p.x - org.x;
+            double dy = p.y - org.y;
 
-      // To interpolate z value for the given point inserted, define a
-      // coordinate system with a xi-axis, directed from the triangle's
-      // origin to its destination, and an eta-axis, directed from its
-      // origin to its apex.
-      double xi = (yao * dx - xao * dy) * (2.0 * denominator);
-      double eta = (xdo * dy - ydo * dx) * (2.0 * denominator);
+            // To interpolate z value for the given point inserted, define a
+            // coordinate system with a xi-axis, directed from the triangle's
+            // origin to its destination, and an eta-axis, directed from its
+            // origin to its apex.
+            double xi = (yao * dx - xao * dy) * (2.0 * denominator);
+            double eta = (xdo * dy - ydo * dx) * (2.0 * denominator);
 
-      double orgz = data[org.id];
+            double orgz = data[org.id];
 
-      return orgz + xi * (data[dest.id] - orgz) + eta * (data[apex.id] - orgz);
-    }
+            return orgz + xi * (data[dest.id] - orgz) + eta * (data[apex.id] - orgz);
+        }
 
 #if USE_ATTRIBS
         /// <summary>
@@ -131,5 +131,5 @@ namespace TriangleNet.Tools
             p.z = org.z + xi * (dest.z - org.z) + eta * (apex.z - org.z);
         }
 #endif
-  }
+    }
 }

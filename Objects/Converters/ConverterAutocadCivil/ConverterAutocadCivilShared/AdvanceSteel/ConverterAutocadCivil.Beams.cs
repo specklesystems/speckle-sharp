@@ -2,15 +2,18 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Autodesk.AdvanceSteel.DotNetRoots.DatabaseAccess;
 using Autodesk.AdvanceSteel.Profiles;
+
 using Objects.BuiltElements.AdvanceSteel;
-using Objects.Structural.Properties.Profiles;
+using Line = Objects.Geometry.Line;
+using Point = Objects.Geometry.Point;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
 using ASPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
 using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
-using Line = Objects.Geometry.Line;
-using Point = Objects.Geometry.Point;
+
+using Objects.Structural.Properties.Profiles;
 
 namespace Objects.Converter.AutocadCivil
 {

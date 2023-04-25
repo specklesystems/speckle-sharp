@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Reflection;
+
 using Autodesk.AutoCAD.ApplicationServices;
-using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.EditorInput;
-using Speckle.ConnectorAutocadCivil.DocumentUtils;
+using Autodesk.AutoCAD.Colors;
+
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.ConnectorAutocadCivil.DocumentUtils;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
@@ -630,7 +632,7 @@ namespace Speckle.ConnectorAutocadCivil
       {
         var systemColor = System.Drawing.Color.FromArgb((int)color);
         entity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
-        var alpha = transparency != null
+        var alpha = transparency != null 
           ? (byte)(transparency * 255d) //render material
           : systemColor.A; //display style
         entity.Transparency = new Transparency(alpha);

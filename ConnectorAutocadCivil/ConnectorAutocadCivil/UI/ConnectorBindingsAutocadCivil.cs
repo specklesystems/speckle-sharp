@@ -250,11 +250,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
       if (Doc == null) throw new InvalidOperationException("No Document is open");
-
+      
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
 
       var stream = await state.Client.StreamGet(state.StreamId);
-
+      
       Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = commit;
 
@@ -890,9 +890,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
         onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
         );
-
+      
       progress.CancellationToken.ThrowIfCancellationRequested();
-
+      
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
@@ -901,7 +901,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         message = state.CommitMessage ?? $"Pushed {convertedCount} elements from {Utils.AppName}.",
         sourceApplication = Utils.VersionedAppName
       };
-
+      
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
       var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);

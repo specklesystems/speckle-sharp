@@ -3,24 +3,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.AdvanceSteel.DocumentManagement;
-using Autodesk.AdvanceSteel.DotNetRoots.Units;
+
 using Autodesk.AutoCAD.Geometry;
-using Autodesk.AutoCAD.PlottingServices;
-using MathNet.Spatial.Euclidean;
-using Speckle.Newtonsoft.Json.Linq;
-using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 using AcadGeo = Autodesk.AutoCAD.Geometry;
+
 using Arc = Objects.Geometry.Arc;
-using ASBoundBlock3d = Autodesk.AdvanceSteel.Geometry.BoundBlock3d;
-using ASCircArc3d = Autodesk.AdvanceSteel.Geometry.CircArc3d;
-using ASCurve3d = Autodesk.AdvanceSteel.Geometry.Curve3d;
-using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
-using ASLineSeg3d = Autodesk.AdvanceSteel.Geometry.LineSeg3d;
-using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
-using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
-using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
-using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
 using Box = Objects.Geometry.Box;
 using Interval = Objects.Primitive.Interval;
 using Line = Objects.Geometry.Line;
@@ -28,6 +15,24 @@ using Plane = Objects.Geometry.Plane;
 using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Vector = Objects.Geometry.Vector;
+
+using MathNet.Spatial.Euclidean;
+
+using ASPolyline3d = Autodesk.AdvanceSteel.Geometry.Polyline3d;
+using ASCurve3d = Autodesk.AdvanceSteel.Geometry.Curve3d;
+using ASLineSeg3d = Autodesk.AdvanceSteel.Geometry.LineSeg3d;
+using ASCircArc3d = Autodesk.AdvanceSteel.Geometry.CircArc3d;
+using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
+using ASVector3d = Autodesk.AdvanceSteel.Geometry.Vector3d;
+using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
+using ASPlane = Autodesk.AdvanceSteel.Geometry.Plane;
+using ASBoundBlock3d = Autodesk.AdvanceSteel.Geometry.BoundBlock3d;
+
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
+using Autodesk.AdvanceSteel.DocumentManagement;
+using Autodesk.AdvanceSteel.DotNetRoots.Units;
+using Autodesk.AutoCAD.PlottingServices;
+using Speckle.Newtonsoft.Json.Linq;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -258,7 +263,7 @@ namespace Objects.Converter.AutocadCivil
       }
       else
       {
-        if (unitType.HasValue && @object is double)
+        if(unitType.HasValue && @object is double)
         {
           @object = FromInternalUnits((double)@object, unitType.Value);
         }

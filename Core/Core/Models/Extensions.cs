@@ -71,19 +71,19 @@ public static class BaseExtensions
             stack.Push(o);
             break;
           case IDictionary dictionary:
-            {
-              foreach (object obj in dictionary.Keys)
-                if (obj is Base b)
-                  stack.Push(b);
-              break;
-            }
+          {
+            foreach (object obj in dictionary.Keys)
+              if (obj is Base b)
+                stack.Push(b);
+            break;
+          }
           case IList collection:
-            {
-              foreach (object obj in collection)
-                if (obj is Base b)
-                  stack.Push(b);
-              break;
-            }
+          {
+            foreach (object obj in collection)
+              if (obj is Base b)
+                stack.Push(b);
+            break;
+          }
         }
     }
   }

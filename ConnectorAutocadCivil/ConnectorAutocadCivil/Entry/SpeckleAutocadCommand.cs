@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+using Autodesk.AutoCAD.ApplicationServices;
+
 #if ADVANCESTEEL2023
 using Autodesk.AdvanceSteel.Runtime;
 #else
@@ -14,6 +16,8 @@ using Application = Autodesk.AutoCAD.ApplicationServices.Core.Application;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.ReactiveUI;
+
+using DesktopUI2;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
 using Speckle.ConnectorAutocadCivil.UI;
