@@ -1,17 +1,40 @@
 using System;
+
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
 using System.Linq;
 using System.Collections.Generic;
+After:
+using System.Collections.Generic;
+using System.Linq;
+*/
+using System.Collections.Generic;
 using System.Reflection;
+
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
 using System.Text.RegularExpressions;
 
 using Objects.Other;
-using Speckle.Core.Kits;
+After:
+using System.Text.RegularExpressions;
+using Autodesk.AutoCAD.Colors;
+*/
+using System.Text.RegularExpressions;
+using Autodesk.AutoCAD.DatabaseServices;
+
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
 using Speckle.Core.Models;
 
 using Autodesk.AutoCAD.Colors;
-using Autodesk.AutoCAD.DatabaseServices;
+After:
+using Speckle.Core.Models;
 using Autodesk.AutoCAD.Geometry;
+*/
 using Autodesk.AutoCAD.EditorInput;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
 
 #if ADVANCESTEEL2023
 using Autodesk.AdvanceSteel.DocumentManagement;

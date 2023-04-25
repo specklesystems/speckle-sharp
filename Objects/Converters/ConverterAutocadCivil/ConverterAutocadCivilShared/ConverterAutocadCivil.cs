@@ -1,19 +1,38 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+﻿
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
+using Autodesk.AutoCAD.ApplicationServices;
+After:
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Xml;
+using Autodesk.AutoCAD.ApplicationServices;
+*/
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
-using Objects.Other;
-using Objects.Structural.Properties.Profiles;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
+using Objects.
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml;
 using Acad = Autodesk.AutoCAD;
+After:
+using Acad = Autodesk.AutoCAD;
+*/
+Other;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Acad = Autodesk.AutoCAD;
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Alignment = Objects.BuiltElements.Alignment;
 using Arc = Objects.Geometry.Arc;
 using BlockDefinition = Objects.Other.BlockDefinition;
-using BlockInstance = Objects.Other.BlockInstance;
 using Circle = Objects.Geometry.Circle;
 using Curve = Objects.Geometry.Curve;
 using Dimension = Objects.Other.Dimension;

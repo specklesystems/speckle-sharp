@@ -6,27 +6,27 @@
 
 namespace TriangleNet.Voronoi.Legacy
 {
-    using System.Collections.Generic;
-    using TriangleNet.Geometry;
+  using System.Collections.Generic;
+  using TriangleNet.Geometry;
+
+  /// <summary>
+  /// Voronoi diagram interface.
+  /// </summary>
+  public interface IVoronoi
+  {
+    /// <summary>
+    /// Gets the list of Voronoi vertices.
+    /// </summary>
+    Point[] Points { get; }
 
     /// <summary>
-    /// Voronoi diagram interface.
+    /// Gets the list of Voronoi regions.
     /// </summary>
-    public interface IVoronoi
-    {
-        /// <summary>
-        /// Gets the list of Voronoi vertices.
-        /// </summary>
-        Point[] Points { get; }
+    ICollection<VoronoiRegion> Regions { get; }
 
-        /// <summary>
-        /// Gets the list of Voronoi regions.
-        /// </summary>
-        ICollection<VoronoiRegion> Regions { get; }
-
-        /// <summary>
-        /// Gets the list of edges.
-        /// </summary>
-        IEnumerable<IEdge> Edges { get; }
-    }
+    /// <summary>
+    /// Gets the list of edges.
+    /// </summary>
+    IEnumerable<IEdge> Edges { get; }
+  }
 }

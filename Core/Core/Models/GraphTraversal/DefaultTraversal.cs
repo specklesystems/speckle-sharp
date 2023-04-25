@@ -67,7 +67,7 @@ public static class DefaultTraversal
         }
   );
 
-  //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
+    //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
     var ignoreResultsRule = TraversalRule
       .NewTraversalRule()
       .When(o => o.speckle_type.Contains("Objects.Structural.Results"))

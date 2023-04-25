@@ -7,8 +7,8 @@ using Autodesk.AdvanceSteel.CADAccess;
 using Autodesk.AdvanceSteel.Connection;
 using Autodesk.AdvanceSteel.ConstructionTypes;
 using Autodesk.AdvanceSteel.Geometry;
-using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
+using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -74,7 +74,7 @@ namespace Objects.Converter.AutocadCivil
     private static Point3d GetBalancePoint(AtomicElement atomicElement)
     {
       //it's necessary round the balance point because it has different returns at the last decimals 
-      if(!atomicElement.GetBalancepoint(out var point, out var weigth))
+      if (!atomicElement.GetBalancepoint(out var point, out var weigth))
       {
         return Point3d.kOrigin;
       }

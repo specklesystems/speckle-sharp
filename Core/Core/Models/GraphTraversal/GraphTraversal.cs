@@ -66,17 +66,17 @@ public sealed class GraphTraversal
         stack.Add(new TraversalContext(o, memberName, parent));
         break;
       case IList list:
-      {
-        foreach (object? obj in list)
-          TraverseMemberToStack(stack, obj, memberName, parent);
-        break;
-      }
+        {
+          foreach (object? obj in list)
+            TraverseMemberToStack(stack, obj, memberName, parent);
+          break;
+        }
       case IDictionary dictionary:
-      {
-        foreach (object? obj in dictionary.Values)
-          TraverseMemberToStack(stack, obj, memberName, parent);
-        break;
-      }
+        {
+          foreach (object? obj in dictionary.Values)
+            TraverseMemberToStack(stack, obj, memberName, parent);
+          break;
+        }
     }
   }
 
@@ -94,23 +94,23 @@ public sealed class GraphTraversal
         yield return o;
         break;
       case IList list:
-      {
-        foreach (object? obj in list)
         {
-          foreach (Base o in TraverseMember(obj))
-            yield return o;
+          foreach (object? obj in list)
+          {
+            foreach (Base o in TraverseMember(obj))
+              yield return o;
+          }
+          break;
         }
-        break;
-      }
       case IDictionary dictionary:
-      {
-        foreach (object? obj in dictionary.Values)
         {
-          foreach (Base o in TraverseMember(obj))
-            yield return o;
+          foreach (object? obj in dictionary.Values)
+          {
+            foreach (Base o in TraverseMember(obj))
+              yield return o;
+          }
+          break;
         }
-        break;
-      }
     }
   }
 

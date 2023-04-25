@@ -1,12 +1,12 @@
 #if ADVANCESTEEL2023
 
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 
 namespace Objects.Converter.AutocadCivil
 {
   public static class DxfNames
-  { 
+  {
     public const string BEAM = "ASTBEAM";
     public const string PLATE = "ASTPLATE";
 

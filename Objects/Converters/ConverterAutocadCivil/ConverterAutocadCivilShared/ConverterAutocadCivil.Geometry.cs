@@ -1,26 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Numerics;
+using System.Drawing;
 using System.Linq;
+
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
 using System.Drawing;
 
 using Autodesk.AutoCAD.Geometry;
 using AcadGeo = Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.DatabaseServices;
-using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
+After:
+using System.Numerics;
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AutoCAD.Geometry;
+using Objects.Geometry;
+using Objects.Other;
+using Objects.Utils;
+using Speckle.AutoCAD.Geometry;
+using Speckle.Core.Models;
+*/
+using Autodesk.AutoCAD.DatabaseServices;
+using Objects.Other;
+using Objects.Utils;
+
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
 using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 
 using Speckle.Core.Models;
-
-using Objects.Utils;
+After:
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+using AcadGeo = Autodesk.Core.Models;
+*/
+using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
+using AcadGeo = Autodesk.AutoCAD.Geometry;
 using Arc = Objects.Geometry.Arc;
 using Box = Objects.Geometry.Box;
-using Brep = Objects.Geometry.Brep;
-using BrepEdge = Objects.Geometry.BrepEdge;
-using BrepFace = Objects.Geometry.BrepFace;
-using BrepLoop = Objects.Geometry.BrepLoop;
-using BrepLoopType = Objects.Geometry.BrepLoopType;
-using BrepTrim = Objects.Geometry.BrepTrim;
 using Circle = Objects.Geometry.Circle;
 using ControlPoint = Objects.Geometry.ControlPoint;
 using Curve = Objects.Geometry.Curve;
@@ -33,11 +50,7 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-using Surface = Objects.Geometry.Surface;
 using Vector = Objects.Geometry.Vector;
-using Speckle.Core.Kits;
-using Objects.Geometry;
-using Objects.Other;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -69,7 +82,7 @@ namespace Objects.Converter.AutocadCivil
       var intPt = ToInternalCoordinates(_point);
       return intPt;
     }
-    
+
     public List<List<ControlPoint>> ControlPointsToSpeckle(AcadGeo.NurbSurface surface, string units = null)
     {
       var u = units ?? ModelUnits;
@@ -161,7 +174,7 @@ namespace Objects.Converter.AutocadCivil
     {
       return new AcadGeo.Plane(PointToNative(plane.origin), VectorToNative(plane.normal));
     }
-    
+
     //Matrix
 
     public Matrix3d TransformToNativeMatrix(Transform transform)
@@ -178,20 +191,20 @@ namespace Objects.Converter.AutocadCivil
 
       return convertedTransform;
     }
-    
+
     // https://forums.autodesk.com/t5/net/set-blocktransform-values/m-p/6452121#M49479
     private static double[] MakePerpendicular(Matrix3d matrix)
     {
       // Get the basis vectors of the matrix
-      Vector3d right = new Vector3d(matrix[0,0], matrix[1,0], matrix[2,0]);
-      Vector3d up = new Vector3d(matrix[0,1], matrix[1,1], matrix[2,1]);
+      Vector3d right = new Vector3d(matrix[0, 0], matrix[1, 0], matrix[2, 0]);
+      Vector3d up = new Vector3d(matrix[0, 1], matrix[1, 1], matrix[2, 1]);
 
-      
-      Vector3d newForward = right.CrossProduct(up).GetNormal();;
-      
+
+      Vector3d newForward = right.CrossProduct(up).GetNormal(); ;
+
       Vector3d newUp = newForward.CrossProduct(right).GetNormal();
 
-      return new []{
+      return new[]{
         right.X,  newUp.X,  newForward.X,  matrix[0,3],
         right.Y,  newUp.Y,  newForward.Y,  matrix[1,3],
         right.Z,  newUp.Z,  newForward.Z,  matrix[2,3],

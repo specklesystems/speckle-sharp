@@ -1,11 +1,10 @@
 using Speckle.Core.Models;
 
-namespace Objects.BuiltElements.AdvanceSteel
-{
-  public interface IAsteelObject
-  {
-    Base userAttributes { get; set; }
+namespace Objects.BuiltElements.AdvanceSteel;
 
-    Base asteelProperties { get; set; }
-  }
+public interface IAsteelObject
+{
+  Base userAttributes { get; set; }
+
+  Base asteelProperties { get; set; }
 }

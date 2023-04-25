@@ -7,10 +7,9 @@ using Autodesk.AdvanceSteel.ConstructionTypes;
 using Autodesk.AdvanceSteel.Geometry;
 using Autodesk.AdvanceSteel.Modelling;
 using Objects.BuiltElements;
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 using ASBeam = Autodesk.AdvanceSteel.Modelling.Beam;
 using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
-
-using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
 namespace Objects.Converter.AutocadCivil
 {

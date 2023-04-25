@@ -6,27 +6,27 @@
 
 namespace TriangleNet.Geometry
 {
+  /// <summary>
+  /// Simple edge interface.
+  /// </summary>
+  public interface IEdge
+  {
     /// <summary>
-    /// Simple edge interface.
+    /// Gets the first endpoints index.
     /// </summary>
-    public interface IEdge
-    {
-        /// <summary>
-        /// Gets the first endpoints index.
-        /// </summary>
-        int P0 { get; }
+    int P0 { get; }
 
-        /// <summary>
-        /// Gets the second endpoints index.
-        /// </summary>
-        int P1 { get; }
+    /// <summary>
+    /// Gets the second endpoints index.
+    /// </summary>
+    int P1 { get; }
 
-        /// <summary>
-        /// Gets or sets a general-purpose label.
-        /// </summary>
-        /// <remarks>
-        /// This is used for the segments boundary mark.
-        /// </remarks>
-        int Label { get; }
-    }
+    /// <summary>
+    /// Gets or sets a general-purpose label.
+    /// </summary>
+    /// <remarks>
+    /// This is used for the segments boundary mark.
+    /// </remarks>
+    int Label { get; }
+  }
 }
