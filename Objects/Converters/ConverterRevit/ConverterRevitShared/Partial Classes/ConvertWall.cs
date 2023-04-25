@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,8 +33,7 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      var wallType = GetElementType<WallType>(speckleWall, appObj, out bool exactSymbolMatch);
-
+      var wallType = GetElementType<WallType>(speckleWall, appObj, out bool _);
       if (wallType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
@@ -85,8 +84,10 @@ namespace Objects.Converter.Revit
       //is structural update
       TrySetParam(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT, structural);
 
-      if (exactSymbolMatch && revitWall.WallType.Name != wallType.Name)
+      if (revitWall.WallType.Name != wallType.Name)
+      {
         revitWall.ChangeTypeId(wallType.Id);
+      }
 
       if (isUpdate)
       {

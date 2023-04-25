@@ -12,7 +12,6 @@ using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Newtonsoft.Json.Linq;
 using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
 using ElementType = Autodesk.Revit.DB.ElementType;
@@ -636,56 +635,6 @@ namespace Objects.Converter.Revit
 
     #region  element types
 
-    private bool GetElementType<T>(string family, string type, ApplicationObject appObj, out T value)
-    {
-      List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-
-      //match family and type
-      var match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
-      if (match != null)
-      {
-        if (match is FamilySymbol fs && !fs.IsActive)
-          fs.Activate();
-
-        value = (T)(object)match;
-        return true;
-      }
-
-      //match family
-      match = types.FirstOrDefault(x => x.FamilyName == family);
-      if (match != null)
-      {
-        appObj.Log.Add($"Missing type [{family} - {type}] was replaced with [{match.FamilyName} - {match.Name}]");
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-            fs.Activate();
-
-          value = (T)(object)match;
-          return true;
-        }
-      }
-
-      // get whatever we found, could be a different category!
-      if (types.Any())
-      {
-        match = types.FirstOrDefault();
-        appObj.Log.Add($"Missing family and type, the following family and type were used: {match.FamilyName} - {match.Name}");
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-            fs.Activate();
-
-          value = (T)(object)match;
-          return true;
-        }
-      }
-
-      appObj.Log.Add($"Could not find any family symbol to use.");
-      value = default(T);
-      return false;
-    }
-
     private bool GetElementType<T>(Base element, ApplicationObject appObj, out T value)
     {
       List<ElementType> types = new List<ElementType>();
@@ -763,13 +712,8 @@ namespace Objects.Converter.Revit
     private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
     {
       isExactMatch = false;
-      ElementType match = null;
-
       var filter = GetCategoryFilter(element);
       var types = GetElementTypesThatPassFilter<T>(filter);
-
-      if (types.Count == 0)
-        return default;
 
       if (types.Count == 0)
       {
@@ -778,6 +722,8 @@ namespace Objects.Converter.Revit
           name = category;
 
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
+
+        return default;
       }
 
       var family = (element["family"] as string)?.ToLower();
@@ -843,14 +789,6 @@ namespace Objects.Converter.Revit
 
     private ElementFilter GetCategoryFilter(Base element)
     {
-      if (element is OSG.Element1D element1D)
-      {
-        if (element1D.type == OSG.ElementType1D.Column)
-          return new ElementMulticategoryFilter(Categories.columnCategories);
-        else if (element1D.type == OSG.ElementType1D.Beam || element1D.type == OSG.ElementType1D.Brace)
-          return new ElementMulticategoryFilter(Categories.beamCategories);
-      }
-
       switch (element)
       {
         case BuiltElements.Wall _:
@@ -862,34 +800,41 @@ namespace Objects.Converter.Revit
           return new ElementMulticategoryFilter(Categories.beamCategories);
         case Duct _:
           return new ElementMulticategoryFilter(Categories.ductCategories);
-        case Floor _:
+        case OSG.Element1D o:
+          if (o.type == OSG.ElementType1D.Column)
+            return new ElementMulticategoryFilter(Categories.columnCategories);
+          else if (o.type == OSG.ElementType1D.Beam || o.type == OSG.ElementType1D.Brace)
+            return new ElementMulticategoryFilter(Categories.beamCategories);
+          break;
         case OSG.Element2D _:
+        case Floor _:
           return new ElementMulticategoryFilter(Categories.floorCategories);
         case Pipe _:
           return new ElementMulticategoryFilter(Categories.pipeCategories);
         case Roof _:
           return new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
         default:
-          ElementFilter filter = null;
           if (element["category"] != null)
           {
             var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
             if (cat != null)
-              filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
+            {
+              return new ElementCategoryFilter(cat.Id);
+            }
           }
-          return filter;
+          break;
       }
+      return null;
     }
 
     private List<ElementType> GetElementTypesThatPassFilter<T>(ElementFilter filter)
     {
-      List<ElementType> types;
+      using var collector = new FilteredElementCollector(Doc);
       if (filter != null)
-        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
-      else
-        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-
-      return types;
+      {
+        return collector.WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
+      }
+      return collector.WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
     }
 
     private string GetTypeOfSpeckleObject(Base @base)

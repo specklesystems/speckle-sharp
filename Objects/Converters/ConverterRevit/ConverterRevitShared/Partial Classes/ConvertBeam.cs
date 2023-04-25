@@ -30,7 +30,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (!GetElementType<FamilySymbol>(speckleBeam, appObj, out DB.FamilySymbol familySymbol))
+      var familySymbol = GetElementType<FamilySymbol>(speckleBeam, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -57,16 +58,19 @@ namespace Objects.Converter.Revit
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
+          {
             Doc.Delete(docObj.Id);
-
+          }
           else
           {
             revitBeam = (DB.FamilyInstance)docObj;
             (revitBeam.Location as LocationCurve).Curve = baseLine;
 
             // check for a type change
-            if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
+            if (!isExactMatch)
+            {
               revitBeam.ChangeTypeId(familySymbol.Id);
+            }
           }
           isUpdate = true;
         }

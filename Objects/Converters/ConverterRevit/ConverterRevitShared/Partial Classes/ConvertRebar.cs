@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -35,7 +36,8 @@ namespace Objects.Converter.Revit
       }
 
       var rebarType = speckleRevitRebar?.barType;
-      if (!GetElementType<RebarBarType>(speckleRebar, appObj, out RebarBarType barType))
+      var barType = GetElementType<RebarBarType>(speckleRebar, appObj, out bool _);
+      if (barType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;

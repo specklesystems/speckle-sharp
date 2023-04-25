@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -29,7 +29,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (!GetElementType<FamilySymbol>(speckleColumn, appObj, out DB.FamilySymbol familySymbol))
+      var familySymbol = GetElementType<FamilySymbol>(speckleColumn, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -92,7 +93,7 @@ namespace Objects.Converter.Revit
             }
 
             // check for a type change
-            if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
+            if (!isExactMatch)
               revitColumn.ChangeTypeId(familySymbol.Id);
           }
           isUpdate = true;

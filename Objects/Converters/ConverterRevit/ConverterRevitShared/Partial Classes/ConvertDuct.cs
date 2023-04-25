@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -36,7 +36,8 @@ namespace Objects.Converter.Revit
       Element duct = null;
       if (speckleDuct.baseCurve == null || speckleDuct.baseCurve is Line)
       {
-        if (!GetElementType<DuctType>(speckleDuct, appObj, out DuctType ductType))
+        var ductType = GetElementType<FlexDuctType>(speckleDuct, appObj, out bool _);
+        if (ductType == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed);
           return appObj;
@@ -51,7 +52,8 @@ namespace Objects.Converter.Revit
       }
       else if (speckleDuct.baseCurve is Polyline polyline)
       {
-        if (!GetElementType<FlexDuctType>(speckleDuct, appObj, out FlexDuctType ductType))
+        var ductType = GetElementType<FlexDuctType>(speckleDuct, appObj, out bool _);
+        if (ductType == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed);
           return appObj;
