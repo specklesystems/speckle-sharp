@@ -1360,7 +1360,7 @@ namespace Objects.Converter.Revit
       return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
     }
 
-    private static ModelLine GetSlopeArrow(Element element)
+    public static ModelLine GetSlopeArrow(Element element)
     {
       IList<ElementId> elementIds = null;
 #if !REVIT2020 && !REVIT2021
@@ -1397,11 +1397,11 @@ namespace Objects.Converter.Revit
       if (slopeArrow == null) return null;
       return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0), doc);
     }
-    public double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
+    public static double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
     {
       return GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_START_HEIGHT);
     }
-    public double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
+    public static double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
     {
       var specifyOffset = GetParamValue<int>(slopeArrow, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
       var lineLength = GetParamValue<double>(slopeArrow, BuiltInParameter.CURVE_ELEM_LENGTH);

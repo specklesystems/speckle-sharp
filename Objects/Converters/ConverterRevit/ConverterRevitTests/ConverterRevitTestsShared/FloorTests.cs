@@ -55,7 +55,7 @@ namespace ConverterRevitTests
       Assert.Equal(sourceElem.Name, destElem.Name);
 
       var slopeArrow = await RevitTask.RunAsync(app => {
-        return ConverterRevit.GetSlopeArrowHack(sourceElem.Id, sourceElem.Document);
+        return ConverterRevit.GetSlopeArrow(sourceElem);
       }).ConfigureAwait(false);
 
       if (slopeArrow == null)
@@ -68,7 +68,7 @@ namespace ConverterRevitTests
         _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var slope);
 
         var newSlopeArrow = await RevitTask.RunAsync(app => {
-          return ConverterRevit.GetSlopeArrowHack(destElem.Id, destElem.Document);
+          return ConverterRevit.GetSlopeArrow(destElem);
         }).ConfigureAwait(false);
 
         Assert.NotNull(newSlopeArrow);
