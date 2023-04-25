@@ -69,7 +69,8 @@ public class Arc : Base, IHasBoundingBox, ICurve, IHasArea, ITransformable<Arc>
       angleRadians,
       units,
       applicationId
-    ) { }
+    )
+  { }
 
   /// <summary>
   /// Initialise an `Arc` using a plane, the arc angle and the start and end points.

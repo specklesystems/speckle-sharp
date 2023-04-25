@@ -23,9 +23,9 @@ namespace Objects.Converter.AutocadCivil
 
     public static ASPropertiesCache Instance
     {
-      get 
+      get
       {
-        if (instance == null) 
+        if (instance == null)
         {
           instance = new ASPropertiesCache();
           instance.LoadASTypeDictionary();

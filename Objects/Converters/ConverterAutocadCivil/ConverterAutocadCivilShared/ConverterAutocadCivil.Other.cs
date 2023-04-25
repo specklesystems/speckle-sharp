@@ -2,23 +2,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
+using Autodesk.AutoCAD.Colors;
 using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.Windows.Data;
-using Autodesk.AutoCAD.Colors;
-using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
-using AcadDB = Autodesk.AutoCAD.DatabaseServices;
-
-using Speckle.Core.Models;
+using Objects.BuiltElements.Revit;
+using Objects.Other;
 using Speckle.Core.Kits;
+using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
+
+/* Unmerged change from project 'ConverterAutocad2023'
+Before:
 using Utilities = Speckle.Core.Models.Utilities;
 
 using Objects.Other;
+After:
+using AcadBRep = Autodesk.AutoCAD.BoundaryRepresentation;
+using AcadDB = Autodesk.AutoCAD.Other;
+*/
+using AcadDB = Autodesk.AutoCAD.DatabaseServices;
 using Arc = Objects.Geometry.Arc;
-using BlockInstance = Objects.Other.BlockInstance;
 using BlockDefinition = Objects.Other.BlockDefinition;
+using BlockInstance = Objects.Other.BlockInstance;
 using Dimension = Objects.Other.Dimension;
 using Hatch = Objects.Other.Hatch;
 using HatchLoop = Objects.Other.HatchLoop;
@@ -26,7 +32,7 @@ using HatchLoopType = Objects.Other.HatchLoopType;
 using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
-using Objects.BuiltElements.Revit;
+using Utilities = Speckle.Core.Models.Utilities;
 
 namespace Objects.Converter.AutocadCivil
 {

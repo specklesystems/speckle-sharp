@@ -33,7 +33,7 @@ namespace Objects.Converter.AutocadCivil
       {
         if (PropertiesAll.ContainsKey(item.Key))
           throw new Exception($"Property '{item.Key}' already added");
-        
+
         PropertiesAll.Add(item.Key, new ASProperty(item.Value));
       }
     }

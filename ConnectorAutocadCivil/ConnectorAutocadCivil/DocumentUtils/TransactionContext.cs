@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Autodesk.AutoCAD.ApplicationServices;
 using Document = Autodesk.AutoCAD.ApplicationServices.Document;
 
