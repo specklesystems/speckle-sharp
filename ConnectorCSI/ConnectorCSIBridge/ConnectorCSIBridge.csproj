@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>DummySpeckleConnectorCSI</AssemblyName>
+    <AssemblyName>SpeckleConnectorCSI</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj" />
+    <ProjectReference Include="..\DriverPluginCSharp\DriverPluginCSharp.csproj"/>
   </ItemGroup>
 </Project>

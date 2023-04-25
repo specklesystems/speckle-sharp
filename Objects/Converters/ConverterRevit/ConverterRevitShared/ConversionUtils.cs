@@ -1,23 +1,20 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
-
 using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using ElementType = Autodesk.Revit.DB.ElementType;
-
-using Speckle.Core.Helpers;
-using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
-
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
+using Speckle.Core.Helpers;
+using Speckle.Core.Kits;
+using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
+using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
+using ElementType = Autodesk.Revit.DB.ElementType;
 using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
@@ -44,7 +41,7 @@ namespace Objects.Converter.Revit
       }
 
       // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      if (ContextObjects.ContainsKey(host.UniqueId))
       {
         return false;
       }
@@ -62,11 +59,11 @@ namespace Objects.Converter.Revit
         return false;
 
       // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId) != -1)
+      if (ContextObjects.ContainsKey(host.UniqueId))
       {
         // there are certain elements in Revit that can be a host to another element
         // yet not know it.
-        var hostedElementIds = GetDependentElementIds(host);
+        var hostedElementIds = GetHostedElementIds(host);
         var elementId = element.Id;
         if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
         {
@@ -85,15 +82,14 @@ namespace Objects.Converter.Revit
     public void GetHostedElements(Base @base, Element host, out List<string> notes)
     {
       notes = new List<string>();
-      var hostedElementIds = GetDependentElementIds(host);
+      var hostedElementIds = GetHostedElementIds(host);
 
       if (!hostedElementIds.Any())
         return;
 
-      var elementIndex = ContextObjects.FindIndex(obj => obj.applicationId == host.UniqueId);
-      if (elementIndex != -1)
+      if (ContextObjects.ContainsKey(host.UniqueId))
       {
-        ContextObjects.RemoveAt(elementIndex);
+        ContextObjects.Remove(host.UniqueId);
       }
       GetHostedElementsFromIds(@base, host, hostedElementIds, out notes);
     }
@@ -106,27 +102,33 @@ namespace Objects.Converter.Revit
       foreach (var elemId in hostedElementIds)
       {
         var element = host.Document.GetElement(elemId);
-        var isSelectedInContextObjects = ContextObjects.FindIndex(x => x.applicationId == element.UniqueId);
-
-        if (isSelectedInContextObjects == -1)
+        if (!ContextObjects.ContainsKey(element.UniqueId))
         {
           continue;
         }
 
-        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        var reportObj = Report.ReportObjects.TryGetValue(element.UniqueId, out ApplicationObject value) ? value : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+
         if (CanConvertToSpeckle(element))
         {
-          var obj = ConvertToSpeckle(element);
-          if (obj != null)
+          try
           {
-            ContextObjects.RemoveAt(isSelectedInContextObjects);
-            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
-            convertedHostedElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
+            var obj = ConvertToSpeckle(element);
+            if (obj != null)
+            {
+              ContextObjects.Remove(element.UniqueId);
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
+              convertedHostedElements.Add(obj);
+              ConvertedObjectsList.Add(obj.applicationId);
+            }
+            else
+            {
+              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+            }
           }
-          else
+          catch (Exception e)
           {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {e}");
           }
         }
         else
@@ -145,12 +147,13 @@ namespace Objects.Converter.Revit
         (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
       }
     }
-
-    public IList<ElementId> GetDependentElementIds(Element host)
+    public IList<ElementId> GetHostedElementIds(Element host)
     {
       IList<ElementId> ids = null;
       if (host is HostObject hostObject)
+      {
         ids = hostObject.FindInserts(true, false, false, false);
+      }
       else
       {
         var typeFilter = new ElementIsElementTypeFilter(true);
@@ -451,70 +454,85 @@ namespace Objects.Converter.Revit
 
       foreach (var spk in filteredSpeckleParameters)
       {
-        var sp = spk.Value as Parameter;
-        if (sp == null || sp.isReadOnly)
+        if (!(spk.Value is Parameter sp) || sp.isReadOnly)
           continue;
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
-        try
-        {
-          switch (rp.StorageType)
-          {
-            case StorageType.Double:
-              // This is meant for parameters that come from Revit
-              // as they might use a lot more unit types that Speckle doesn't currently support
-              if (!string.IsNullOrEmpty(sp.applicationUnit))
-              {
-                var val = RevitVersionHelper.ConvertToInternalUnits(sp);
-                rp.Set(val);
-              }
-              // the following two cases are for parameters comimg form schema builder
-              // they do not have applicationUnit but just units
-              // units are automatically set but the user can override them 
-              // users might set them to "none" so that we convert them by using the Revit destination parameter display units
-              // this is needed to correctly receive non lenght based parameters (eg air flow)
-              else if (sp.units == Speckle.Core.Kits.Units.None)
-              {
-                var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(sp.value), rp);
-                rp.Set(val);
-              }
-              else if (Speckle.Core.Kits.Units.IsUnitSupported(sp.units))
-              {
-                var val = ScaleToNative(Convert.ToDouble(sp.value), sp.units);
-                rp.Set(val);
-              }
-              else
-              {
-                rp.Set(Convert.ToDouble(sp.value));
-              }
-              break;
 
-            case StorageType.Integer:
-              rp.Set(Convert.ToInt32(sp.value));
-              break;
+        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
+      }
+    }
 
-            case StorageType.String:
-              if (rp.Definition.Name.ToLower().Contains("name"))
-              {
-                var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
-                Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
-                rp.Set(temp);
-              }
-              else
-              {
-                rp.Set(Convert.ToString(sp.value));
-              }
-              break;
-            default:
-              break;
-          }
-        }
-        catch (Exception ex)
+    private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
+    {
+      try
+      {
+        switch (rp.StorageType)
         {
-          continue;
+          case StorageType.Double:
+            // This is meant for parameters that come from Revit
+            // as they might use a lot more unit types that Speckle doesn't currently support
+            if (!string.IsNullOrEmpty(applicationUnit))
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(value, applicationUnit);
+              rp.Set(val);
+            }
+            // the following two cases are for parameters comimg form schema builder
+            // they do not have applicationUnit but just units
+            // units are automatically set but the user can override them 
+            // users might set them to "none" so that we convert them by using the Revit destination parameter display units
+            // this is needed to correctly receive non lenght based parameters (eg air flow)
+            else if (units == Speckle.Core.Kits.Units.None)
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(value), rp);
+              rp.Set(val);
+            }
+            else if (Speckle.Core.Kits.Units.IsUnitSupported(units))
+            {
+              var val = ScaleToNative(Convert.ToDouble(value), units);
+              rp.Set(val);
+            }
+            else
+            {
+              rp.Set(Convert.ToDouble(value));
+            }
+            break;
+
+          case StorageType.Integer:
+            if (value is string s)
+            {
+              if (s.ToLower() == "no")
+              {
+                value = 0;
+              }
+              else if (s.ToLower() == "yes")
+              {
+                value = 1;
+              }
+            }
+            rp.Set(Convert.ToInt32(value));
+            break;
+
+          case StorageType.String:
+            if (rp.Definition.Name.ToLower().Contains("name"))
+            {
+              var temp = Regex.Replace(Convert.ToString(value), "[^0-9a-zA-Z ]+", "");
+              Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
+              rp.Set(temp);
+            }
+            else
+            {
+              rp.Set(Convert.ToString(value));
+            }
+            break;
+          default:
+            break;
         }
       }
-
+      catch
+      {
+        // do nothing for now...
+      }
     }
 
     //Shared parameters use a GUID to be uniquely identified
@@ -559,22 +577,33 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
+    //private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
+    //{
+    //  var param = elem.get_Parameter(bip);
+    //  if (param != null && !param.IsReadOnly)
+    //  {
+    //    //for angles, we use the default conversion (degrees > radians)
+    //    if (string.IsNullOrEmpty(units))
+    //    {
+    //      param.Set(value);
+    //    }
+    //    else
+    //    {
+    //      param.Set(ScaleToNative(value, units));
+    //    }
+
+    //  }
+    //}
+
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, object value, string units = "")
     {
       var param = elem.get_Parameter(bip);
-      if (param != null && !param.IsReadOnly)
+      if (param == null || param.IsReadOnly)
       {
-        //for angles, we use the default conversion (degrees > radians)
-        if (string.IsNullOrEmpty(units))
-        {
-          param.Set(value);
-        }
-        else
-        {
-          param.Set(ScaleToNative(value, units));
-        }
-
+        return;
       }
+
+      TrySetParam(param, value, units);
     }
 
     /// <summary>
@@ -785,19 +814,21 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
-      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
+
 
       Element element = null;
-      if (@ref == null)
+      if (!PreviousContextObjects.ContainsKey(applicationId))
       {
         //element was not cached in a PreviousContex but might exist in the model
         //eg: user sends some objects, moves them, receives them 
         element = Doc.GetElement(applicationId);
       }
-      else if (@ref.CreatedIds.Any())
+      else
       {
+        var @ref = PreviousContextObjects[applicationId];
         //return the cached object, if it's still in the model
-        element = Doc.GetElement(@ref.CreatedIds.First());
+        if (@ref.CreatedIds.Any())
+          element = Doc.GetElement(@ref.CreatedIds.First());
       }
 
       return element;
@@ -809,9 +840,8 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return elements;
 
-      var @ref = PreviousContextObjects.FirstOrDefault(o => o.applicationId == applicationId);
 
-      if (@ref == null)
+      if (!PreviousContextObjects.ContainsKey(applicationId))
       {
         //element was not cached in a PreviousContex but might exist in the model
         //eg: user sends some objects, moves them, receives them 
@@ -821,6 +851,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
+        var @ref = PreviousContextObjects[applicationId];
         //return the cached objects, if they are still in the model
         foreach (var id in @ref.CreatedIds)
         {
@@ -908,7 +939,7 @@ namespace Objects.Converter.Revit
       switch (type)
       {
         case ProjectBase: // note that the project base (ui) rotation is registered on the survey pt, not on the base point
-            referencePointTransform = DB.Transform.CreateTranslation(projectPoint.Position);
+          referencePointTransform = DB.Transform.CreateTranslation(projectPoint.Position);
           break;
         case Survey:
           // note that the project base (ui) rotation is registered on the survey pt, not on the base point
@@ -975,8 +1006,8 @@ namespace Objects.Converter.Revit
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
-      var shafts = new List<RevitShaft>();
-      ContextObjects.ForEach(o => shafts.AddRange(o.Converted.Where(c => c is RevitShaft).Cast<RevitShaft>()));
+      var shafts = ContextObjects.Values.SelectMany(x => x.Converted.Where(y => y is RevitShaft).Cast<RevitShaft>()).ToList();
+
       openings.AddRange(shafts);
 
       foreach (var @void in speckleElement["voids"] as List<ICurve>)
@@ -1329,49 +1360,68 @@ namespace Objects.Converter.Revit
       return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
     }
 
-    // MEGA HACK to get the slope arrow of a roof which is technically not accessable by the api
-    // https://forums.autodesk.com/t5/revit-api-forum/access-parameters-of-slope-arrow/td-p/8134470
-    private void GetSlopeArrowHack(ElementId elementId, Document doc, out Point tail, out Point head, out double tailOffset, out double headOffset, out double slope)
+    private static ModelLine GetSlopeArrow(Element element)
     {
-      List<ElementId> deleted = null;
-      tail = null;
-      head = null;
-      tailOffset = 0;
-      headOffset = 0;
+      IList<ElementId> elementIds = null;
+#if !REVIT2020 && !REVIT2021
+      if (element is DB.Floor floor)
+      {
+        elementIds = ((Sketch)floor.Document.GetElement(floor.SketchId)).GetAllElements();
+      }
+#endif
+      if (elementIds == null)
+      {
+        using var modelLineFilter = new ElementCategoryFilter(BuiltInCategory.OST_SketchLines);
+        elementIds = element.GetDependentElements(modelLineFilter);
+      }
+
+      foreach (var elementId in elementIds)
+      {
+        if (element.Document.GetElement(elementId) is not ModelLine line) continue;
+
+        var offsetAtTailParameter = line.get_Parameter(BuiltInParameter.SLOPE_START_HEIGHT);
+        if (offsetAtTailParameter != null)
+        {
+          return line;
+        }
+      }
+      return null;
+    }
+    private Point GetSlopeArrowHead(ModelLine slopeArrow, Document doc)
+    {
+      if (slopeArrow == null) return null;
+      return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(1), doc);
+    }
+    private Point GetSlopeArrowTail(ModelLine slopeArrow, Document doc)
+    {
+      if (slopeArrow == null) return null;
+      return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0), doc);
+    }
+    public double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
+    {
+      return GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_START_HEIGHT);
+    }
+    public double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
+    {
+      var specifyOffset = GetParamValue<int>(slopeArrow, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
+      var lineLength = GetParamValue<double>(slopeArrow, BuiltInParameter.CURVE_ELEM_LENGTH);
+
       slope = 0;
-      using (var t = new Transaction(doc, "TTT"))
+      double headOffset = 0;
+      // 1 corrosponds to the "slope" option
+      if (specifyOffset == 1)
       {
-        t.Start();
-        deleted = doc.Delete(elementId).ToList();
-        t.RollBack();
+        // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
+        slope = GetParamValue<double>(slopeArrow, BuiltInParameter.ROOF_SLOPE) / 100;
+        headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
       }
-      foreach (ElementId id in deleted)
+      else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
       {
-        ModelLine l = doc.GetElement(id) as ModelLine;
-        if (l == null) continue;
-        if (!l.Name.Equals("Slope Arrow")) continue; // TODO: does this work with other languages of Revit?
-
-        tail = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(0), doc);
-        head = PointToSpeckle(((LocationCurve)l.Location).Curve.GetEndPoint(1), doc);
-        tailOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_START_HEIGHT);
-
-        var specifyOffset = GetParamValue<int>(l, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
-        var lineLength = GetParamValue<double>(l, BuiltInParameter.CURVE_ELEM_LENGTH);
-
-        // 1 corrosponds to the "slope" option
-        if (specifyOffset == 1)
-        {
-          // in this scenario, slope is returned as a percentage. Divide by 100 to get the unitless form
-          slope = GetParamValue<double>(l, BuiltInParameter.ROOF_SLOPE) / 100;
-          headOffset = tailOffset + lineLength * Math.Sin(Math.Atan(slope));
-        }
-        else if (specifyOffset == 0) // 0 corrospondes to the "height at tail" option
-        {
-          headOffset = GetParamValue<double>(l, BuiltInParameter.SLOPE_END_HEIGHT);
-          slope = (headOffset - tailOffset) / lineLength;
-        }
-        break;
+        headOffset = GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_END_HEIGHT);
+        slope = (headOffset - tailOffset) / lineLength;
       }
+
+      return headOffset;
     }
   }
 }

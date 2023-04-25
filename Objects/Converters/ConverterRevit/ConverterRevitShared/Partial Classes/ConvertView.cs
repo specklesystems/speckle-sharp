@@ -16,7 +16,22 @@ namespace Objects.Converter.Revit
     {
       "VIEW_NAME", // param value is already stored in name prop of view and setting this param can cause errors 
     };
-    public View ViewToSpeckle(DB.View revitView)
+    public Base ViewToSpeckle(DB.View revitView)
+    {
+      switch (revitView)
+      {
+        case DB.View3D o:
+          return View3DToSpeckle(o);
+        case DB.ViewSchedule o:
+          return ScheduleToSpeckle(o);
+        default:
+          var speckleView = new View();
+          GetAllRevitParamsAndIds(speckleView, revitView, excludedParameters);
+          Report.Log($"Converted View {revitView.ViewType} {revitView.Id}");
+          return speckleView;
+      }
+    }
+    public View View3DToSpeckle(DB.View3D revitView)
     {
       switch (revitView.ViewType)
       {

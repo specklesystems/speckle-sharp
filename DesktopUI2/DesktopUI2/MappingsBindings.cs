@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using DesktopUI2.ViewModels.MappingTool;
 
 namespace DesktopUI2;

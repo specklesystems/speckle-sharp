@@ -7,7 +7,7 @@ namespace Objects.Converter.Navisworks;
 
 public partial class ConverterNavisworks
 {
-  public static Color NavisworksColorToColor(Autodesk.Navisworks.Api.Color color)
+  private static Color NavisworksColorToColor(Autodesk.Navisworks.Api.Color color)
   {
     return Color.FromArgb(
       Convert.ToInt32(color.R * 255),
@@ -16,7 +16,7 @@ public partial class ConverterNavisworks
     );
   }
 
-  public static RenderMaterial TranslateMaterial(ModelItem geom)
+  private static RenderMaterial TranslateMaterial(ModelItem geom)
   {
     var materialSettings = new { Mode = "original" };
 
@@ -47,7 +47,7 @@ public partial class ConverterNavisworks
     {
       var itemProperties = itemCategory.Properties;
       var itemMaterial = itemProperties.FindPropertyByDisplayName("Material");
-      if (itemMaterial != null && itemMaterial.DisplayName != "")
+      if (itemMaterial != null && !string.IsNullOrEmpty(itemMaterial.DisplayName))
         materialName = itemMaterial.Value.ToDisplayString();
     }
 
@@ -56,7 +56,7 @@ public partial class ConverterNavisworks
     {
       var material = materialPropertyCategory.Properties;
       var name = material.FindPropertyByDisplayName("Name");
-      if (name != null && name.DisplayName != "")
+      if (name != null && !string.IsNullOrEmpty(name.DisplayName))
         materialName = name.Value.ToDisplayString();
     }
 
@@ -68,29 +68,13 @@ public partial class ConverterNavisworks
     return r;
   }
 
-  public static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue)
+  private static void ConsoleLog(string message, ConsoleColor color = ConsoleColor.Blue)
   {
     Console.WriteLine(message, color);
   }
 
-  public static void WarnLog(string warningMessage)
-  {
-    ConsoleLog(warningMessage, ConsoleColor.DarkYellow);
-  }
-
-  public static void ErrorLog(Exception err)
-  {
-    ErrorLog(err.Message);
-    throw err;
-  }
-
-  public static void ErrorLog(string errorMessage)
+  private static void ErrorLog(string errorMessage)
   {
     ConsoleLog(errorMessage, ConsoleColor.DarkRed);
-  }
-
-  public static string GetUnits(Document doc)
-  {
-    return nameof(doc.Units).ToLower();
   }
 }

@@ -20,6 +20,8 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2022\\ConverterRevit2022.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2023\\ConverterRevit2023.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTests2021\\ConverterRevitTests2021.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTestsShared\\ConverterRevitTestsShared.shproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Tests.csproj"
     ]

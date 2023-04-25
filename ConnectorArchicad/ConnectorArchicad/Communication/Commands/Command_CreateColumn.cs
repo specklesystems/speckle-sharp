@@ -8,11 +8,9 @@ namespace Archicad.Communication.Commands
 {
   sealed internal class CreateColumn : ICommand<IEnumerable<ApplicationObject>>
   {
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-
       [JsonProperty("columns")]
       private IEnumerable<ArchicadColumn> Datas { get; }
 
@@ -25,10 +23,8 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
       [JsonProperty("applicationObjects")]
       public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
-
     }
 
     private IEnumerable<ArchicadColumn> Datas { get; }
