@@ -150,8 +150,10 @@ namespace Objects.Converter.Revit
               (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
-            if (!isExactMatch)
+            if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
+            {
               familyInstance.ChangeTypeId(familySymbol.Id);
+            }
 
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
@@ -523,8 +525,10 @@ namespace Objects.Converter.Revit
             (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
-            if (!isExactMatch)
+            if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
+            {
               familyInstance.ChangeTypeId(familySymbol.Id);
+            }
 
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);

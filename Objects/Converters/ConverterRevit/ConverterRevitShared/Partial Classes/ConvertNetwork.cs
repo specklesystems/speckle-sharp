@@ -64,7 +64,7 @@ namespace Objects.Converter.Revit
         if (familySymbol == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed);
-          return appObj;
+          continue;
         }
 
         DB.FamilyInstance familyInstance = null;

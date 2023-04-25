@@ -93,8 +93,10 @@ namespace Objects.Converter.Revit
             }
 
             // check for a type change
-            if (!isExactMatch)
+            if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
+            {
               revitColumn.ChangeTypeId(familySymbol.Id);
+            }
           }
           isUpdate = true;
         }

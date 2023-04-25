@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (familySymbol.FamilyName != familyName)
+      if (!isExactMatch)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find adaptive component {familyName}");
         return appObj;

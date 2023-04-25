@@ -67,7 +67,7 @@ namespace Objects.Converter.Revit
             (revitBeam.Location as LocationCurve).Curve = baseLine;
 
             // check for a type change
-            if (!isExactMatch)
+            if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
             {
               revitBeam.ChangeTypeId(familySymbol.Id);
             }
