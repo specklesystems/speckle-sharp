@@ -44,6 +44,8 @@ namespace Objects.Converter.AutocadCivil
       { typeof(PolyBeam), new ASTypeData("poly beam") },
       { typeof(BoltPattern), new ASTypeData("bolt") },
       { typeof(ScrewBoltPattern), new ASTypeData("screw bolt") },
+      { typeof(ConstructionElement), new ASTypeData("construction") },
+      { typeof(FilerObject), new ASTypeData("asteel") }
     };
 
     /// <summary>
