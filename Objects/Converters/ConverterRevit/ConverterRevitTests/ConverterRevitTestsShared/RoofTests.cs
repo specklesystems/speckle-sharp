@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;

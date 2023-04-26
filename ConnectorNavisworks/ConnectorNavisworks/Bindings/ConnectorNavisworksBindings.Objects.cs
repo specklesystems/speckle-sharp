@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Models.Filters;
 using static System.Tuple;
-using static Speckle.ConnectorNavisworks.Utils;
+using static Speckle.ConnectorNavisworks.Utilities;
 using Cursor = System.Windows.Forms.Cursor;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
@@ -56,7 +56,7 @@ public partial class ConnectorBindingsNavisworks
       return Enumerable.Empty<Tuple<string, int>>();
 
     var items = savedViewpoint.GetVisibilityOverrides().Hidden;
-    items.Invert(Doc);
+    items.Invert(_doc);
 
     var uniqueIds = new Dictionary<string, int>();
 
@@ -72,7 +72,7 @@ public partial class ConnectorBindingsNavisworks
 
   private static SavedViewpoint ResolveSavedViewpoint(string savedViewReference)
   {
-    var flattenedViewpointList = Doc.SavedViewpoints.RootItem.Children
+    var flattenedViewpointList = _doc.SavedViewpoints.RootItem.Children
       .Select(GetViews)
       .Where(x => x != null)
       .SelectMany(node => node.Flatten())
@@ -96,12 +96,14 @@ public partial class ConnectorBindingsNavisworks
     if (Guid.TryParse(savedViewReference, out var guid))
       // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
       if (savedViewReference != new Guid().ToString())
-        return (SavedViewpoint)Doc.SavedViewpoints.ResolveGuid(guid);
+        return (SavedViewpoint)_doc.SavedViewpoints.ResolveGuid(guid);
 
     if (!(viewpointMatch?.Reference is string[] reference) || reference.Length != 2)
       return null;
 
-    return (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(reference[0], reference[1]));
+    using var savedRef = new SavedItemReference(reference[0], reference[1]);
+    using var resolvedReference = _doc.ResolveReference(savedRef);
+    return (SavedViewpoint)resolvedReference;
   }
 
   private static IEnumerable<Tuple<string, int>> GetObjectsFromSelection(ISelectionFilter filter)
@@ -135,7 +137,7 @@ public partial class ConnectorBindingsNavisworks
     Cursor.Current = Cursors.WaitCursor;
     // Saved Sets filter stores Guids of the selection sets. This can be converted to ModelItem pseudoIds
     var selections = filter.Selection.Select(guid => new Guid(guid)).ToList();
-    var savedItems = selections.Select(Doc.SelectionSets.ResolveGuid).Cast<SelectionSet>().ToList();
+    var savedItems = selections.Select(_doc.SelectionSets.ResolveGuid).Cast<SelectionSet>().ToList();
 
     var objectPseudoIds = new Dictionary<string, int>();
 
@@ -150,7 +152,7 @@ public partial class ConnectorBindingsNavisworks
 
       if (item.HasSearch)
       {
-        var nodes = item.Search.FindAll(Doc, false);
+        var nodes = item.Search.FindAll(_doc, false);
         if (nodes != null)
           objectPseudoIds = MergeDictionaries(objectPseudoIds, nodes);
       }

@@ -8,11 +8,9 @@ namespace Archicad.Communication.Commands
 {
   sealed internal class GetSubElementInfo : ICommand<IEnumerable<SubElementData>>
   {
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-
       [JsonProperty("applicationId")]
       private string ApplicationId { get; }
 
@@ -20,16 +18,13 @@ namespace Archicad.Communication.Commands
       {
         ApplicationId = applicationId;
       }
-
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
       [JsonProperty("subelementModels")]
       public IEnumerable<SubElementData> Datas { get; private set; }
-
     }
 
     private string ApplicationId { get; }
@@ -41,9 +36,11 @@ namespace Archicad.Communication.Commands
 
     public async Task<IEnumerable<SubElementData>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSubelementInfo", new Parameters(ApplicationId));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
+        "GetSubelementInfo",
+        new Parameters(ApplicationId)
+      );
       return result.Datas;
     }
-
   }
 }

@@ -3,7 +3,6 @@ using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 using Application = Autodesk.Navisworks.Api.Application;
 using MenuItem = DesktopUI2.Models.MenuItem;
 
@@ -12,30 +11,30 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 public partial class ConnectorBindingsNavisworks : ConnectorBindings
 {
   // Much of the interaction in Navisworks is through the ActiveDocument API
-  public static Document Doc;
-  public static Control Control;
-  public ISpeckleKit DefaultKit;
-  public ISpeckleConverter NavisworksConverter;
+  private static Document _doc;
+  private static Control _control;
+  private ISpeckleKit _defaultKit;
+  private ISpeckleConverter _navisworksConverter;
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
-    Doc = navisworksActiveDocument;
-    SavedSets = Doc.SelectionSets.ToSavedItemCollection();
+    _doc = navisworksActiveDocument;
+    _doc.SelectionSets.ToSavedItemCollection();
 
     // Sets the Main Thread Control to Invoke commands on.
-    Control = new Control();
-    Control.CreateControl();
+    _control = new Control();
+    _control.CreateControl();
 
-    DefaultKit = KitManager.GetDefaultKit();
-    NavisworksConverter = DefaultKit?.LoadConverter(Utils.VersionedAppName);
+    _defaultKit = KitManager.GetDefaultKit();
+    _navisworksConverter = _defaultKit?.LoadConverter(Utilities.VersionedAppName);
   }
 
   // Majority of interaction with Speckle will be through the saved selection and search Sets
-  public SavedItemCollection SavedSets { get; set; }
+
 
   public static string HostAppName => HostApplications.Navisworks.Slug;
 
-  public static string HostAppNameVersion => Utils.VersionedAppName.Replace("Navisworks", "Navisworks ");
+  public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
 
   public override string GetActiveViewName()
   {
@@ -72,7 +71,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     return GetDocPath();
   }
 
-  public override void SelectClientObjects(List<string> args, bool deselect = false)
+  public override void SelectClientObjects(List<string> objs, bool deselect = false)
   {
     // TODO!
   }
@@ -86,8 +85,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   {
     // TODO!
     // An unsaved document has no path or filename
-    var fileName = Doc.CurrentFileName;
-    var hash = Utilities.hashString(fileName, Utilities.HashingFuctions.MD5);
+    var fileName = _doc.CurrentFileName;
+    var hash = Core.Models.Utilities.hashString(fileName, Core.Models.Utilities.HashingFuctions.MD5);
     return hash;
   }
 }

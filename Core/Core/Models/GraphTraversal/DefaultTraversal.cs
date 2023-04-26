@@ -23,9 +23,7 @@ public static class DefaultTraversal
       .When(HasDisplayValue)
       .ContinueTraversing(b =>
       {
-        var membersToTraverse = b.GetDynamicMembers()
-          .Concat(elementsAliases)
-          .Except(ignoreProps);
+        var membersToTraverse = b.GetDynamicMembers().Concat(elementsAliases).Except(ignoreProps);
         return membersToTraverse;
       });
 
@@ -56,18 +54,16 @@ public static class DefaultTraversal
     var displayValueRule = TraversalRule
       .NewTraversalRule()
       .When(HasDisplayValue)
-      .ContinueTraversing(
-        b =>
-        {
-          var membersToTraverse = b.GetDynamicMembers()
-            .Concat(elementsAliases)
-            .Except(ignoreProps)
-            .Concat(displayValueAliases);
-          return membersToTraverse;
-        }
-  );
+      .ContinueTraversing(b =>
+      {
+        var membersToTraverse = b.GetDynamicMembers()
+          .Concat(elementsAliases)
+          .Except(ignoreProps)
+          .Concat(displayValueAliases);
+        return membersToTraverse;
+      });
 
-  //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
+    //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
     var ignoreResultsRule = TraversalRule
       .NewTraversalRule()
       .When(o => o.speckle_type.Contains("Objects.Structural.Results"))

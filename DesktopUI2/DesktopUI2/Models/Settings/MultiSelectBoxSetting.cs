@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Avalonia.Controls.Selection;
 using DesktopUI2.Views.Settings;
@@ -49,6 +49,6 @@ public class MultiSelectBoxSetting : ReactiveObject, ISetting
   public void SelectionChanged(object sender, SelectionModelSelectionChangedEventArgs e)
   {
     Selection = string.Join(", ", SelectionModel.SelectedItems);
-    this.RaisePropertyChanged("Selection");
+    this.RaisePropertyChanged(nameof(Selection));
   }
 }

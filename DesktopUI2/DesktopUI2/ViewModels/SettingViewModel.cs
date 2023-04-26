@@ -1,4 +1,4 @@
-﻿using DesktopUI2.Models.Settings;
+using DesktopUI2.Models.Settings;
 using ReactiveUI;
 
 namespace DesktopUI2.ViewModels;

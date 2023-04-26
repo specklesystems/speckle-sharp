@@ -39,6 +39,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCombinableElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRevitElement.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertArea.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertView.Schedule.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertSpace.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertProfileWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertStructuralConnectionHandlers.cs" />

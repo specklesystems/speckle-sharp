@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -36,9 +36,9 @@ public class SchedulerViewModel : ReactiveObject
   public List<Trigger> Triggers { get; set; } =
     new()
     {
-      new("On File Save", "save", "ContentSave"),
-      new("On Sync To Central", "sync", "CloudSync"),
-      new("On File Export", "export", "DatabaseExport")
+      new Trigger("On File Save", "save", "ContentSave"),
+      new Trigger("On Sync To Central", "sync", "CloudSync"),
+      new Trigger("On File Export", "export", "DatabaseExport")
     };
 
   private List<StreamState> SavedStreams { get; set; } = new();

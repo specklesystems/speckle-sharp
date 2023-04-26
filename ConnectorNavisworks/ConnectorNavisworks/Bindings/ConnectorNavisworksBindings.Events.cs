@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-using static Speckle.ConnectorNavisworks.Utils;
+using static Speckle.ConnectorNavisworks.Utilities;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
 
@@ -16,13 +16,12 @@ public partial class ConnectorBindingsNavisworks
     // Navisworks is an SDI (Single Document Interface) and on launch has an initial empty document.
     // Loading a file doesn't trigger the ActiveDocumentChanged event.
     // Instead it amends it in place. We can listen to the filename changing to get the intuitive event.
-    Doc.FileNameChanged += DocumentChangedEvent;
-    Doc.SelectionSets.Changed += SetsChangedEvent;
+    _doc.FileNameChanged += DocumentChangedEvent;
+    _doc.SelectionSets.Changed += SetsChangedEvent;
   }
 
   private void SetsChangedEvent(object sender, EventArgs e)
   {
-    SavedSets = Doc.SelectionSets;
     UpdateSelectedStream?.Invoke();
   }
 
@@ -49,7 +48,7 @@ public partial class ConnectorBindingsNavisworks
 
       MainViewModel.GoHome();
 
-      NavisworksConverter.SetContextDocument(doc);
+      _navisworksConverter.SetContextDocument(doc);
     }
     catch (Exception ex)
     {

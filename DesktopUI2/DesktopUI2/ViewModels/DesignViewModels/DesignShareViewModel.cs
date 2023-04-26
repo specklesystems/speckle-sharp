@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Speckle.Core.Credentials;
 
 namespace DesktopUI2.ViewModels.DesignViewModels;

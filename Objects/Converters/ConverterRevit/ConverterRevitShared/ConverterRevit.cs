@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
@@ -48,13 +48,13 @@ namespace Objects.Converter.Revit
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public List<ApplicationObject> ContextObjects { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
+    public Dictionary<string, ApplicationObject> PreviousContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
@@ -111,9 +111,31 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
+    //NOTE: not all objects come from Revit, so their applicationId might be null, in this case we fall back on the Id
+    //this fallback is only needed for a couple of ToNative conversions such as Floor, Ceiling, and Roof
+    public void SetContextObjects(List<ApplicationObject> objects)
+    {
+      ContextObjects = new(objects.Count);
+      foreach (var ao in objects)
+      {
+        var key = ao.applicationId ?? ao.OriginalId;
+        if (ContextObjects.ContainsKey(key))
+          continue;
+        ContextObjects.Add(key, ao);
+      }
+    }
 
-    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
+    public void SetPreviousContextObjects(List<ApplicationObject> objects)
+    {
+      PreviousContextObjects = new(objects.Count);
+      foreach (var ao in objects)
+      {
+        var key = ao.applicationId ?? ao.OriginalId;
+        if (ContextObjects.ContainsKey(key))
+          continue;
+        ContextObjects.Add(key, ao);
+      }
+    }
 
     public void SetConverterSettings(object settings)
     {
@@ -474,11 +496,7 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return TryDirectShapeToNative(
-            new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId },
-            o.displayValue,
-            ToNativeMeshSetting
-          );
+          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);
@@ -601,6 +619,9 @@ namespace Objects.Converter.Revit
 
         case BE.GridLine o:
           return GridLineToNative(o);
+
+        case DataTable o:
+          return DataTableToNative(o);
 
         case BE.Space o:
           return SpaceToNative(o);
@@ -761,6 +782,7 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
+        Organization.DataTable _ => true,
         _ => false,
       };
     }

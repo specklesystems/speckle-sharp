@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using DesktopUI2.Models.Filters;
 
 namespace DesktopUI2.ViewModels.DesignViewModels;

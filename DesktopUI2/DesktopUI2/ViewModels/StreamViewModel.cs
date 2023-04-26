@@ -84,7 +84,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger.ForContext("StreamState", streamState).Fatal(ex, "Failed to create stream view model");
+      SpeckleLog.Logger.ForContext(nameof(StreamState), streamState).Fatal(ex, "Failed to create stream view model");
     }
   }
 
@@ -150,7 +150,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     try
     {
-      GetStream().ConfigureAwait(false);
+      GetStream().ConfigureAwait(true);
       GetBranchesAndRestoreState();
       GetActivity();
       GetReport();
@@ -165,8 +165,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private void UpdateTextTimer_Elapsed(object sender, ElapsedEventArgs e)
   {
-    this.RaisePropertyChanged("LastUsed");
-    this.RaisePropertyChanged("LastUpdated");
+    this.RaisePropertyChanged(nameof(LastUsed));
+    this.RaisePropertyChanged(nameof(LastUpdated));
   }
 
   private void GenerateMenuItems()
@@ -189,7 +189,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       //menu.Items.Add(new MenuItemViewModel(RemoveSavedStreamCommand, StreamState.Id, "Remove", MaterialIconKind.Bin));
       MenuItems.Add(menu);
 
-      this.RaisePropertyChanged("MenuItems");
+      this.RaisePropertyChanged(nameof(MenuItems));
     }
     catch (Exception ex)
     {
@@ -201,10 +201,12 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     try
     {
-      Stream = await Client.StreamGet(StreamState.StreamId, 25);
+      Stream = await Client.StreamGet(StreamState.StreamId, 25).ConfigureAwait(true);
       if (Stream.role == "stream:owner")
       {
-        var streamPendingCollaborators = await Client.StreamGetPendingCollaborators(StreamState.StreamId);
+        var streamPendingCollaborators = await Client
+          .StreamGetPendingCollaborators(StreamState.StreamId)
+          .ConfigureAwait(true);
         Stream.pendingCollaborators = streamPendingCollaborators.pendingCollaborators;
       }
       Collaborators.ReloadUsers();
@@ -244,7 +246,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       AvailableFilters = new List<FilterViewModel>(Bindings.GetSelectionFilters().Select(x => new FilterViewModel(x)));
       SelectedFilter = AvailableFilters[0];
 
-      Branches = await Client.StreamGetBranches(Stream.id, 100, 0);
+      Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
 
       var index = Branches.FindIndex(x => x.name == StreamState.BranchName);
       if (index != -1)
@@ -313,7 +315,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     try
     {
-      var filteredActivity = (await Client.StreamGetActivity(Stream.id))
+      var filteredActivity = (await Client.StreamGetActivity(Stream.id).ConfigureAwait(true))
         .Where(
           x => x.actionType == "commit_create" || x.actionType == "commit_receive" || x.actionType == "stream_create"
         )
@@ -338,7 +340,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     try
     {
-      var commentData = await Client.StreamGetComments(Stream.id);
+      var commentData = await Client.StreamGetComments(Stream.id).ConfigureAwait(true);
       var comments = new List<CommentViewModel>();
       foreach (var c in commentData.items)
       {
@@ -359,7 +361,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       if (StreamEditView.Instance != null)
       {
-        await Task.Delay(250);
+        await Task.Delay(250).ConfigureAwait(true);
         Dispatcher.UIThread.Post(() =>
         {
           var scroller = StreamEditView.Instance.FindControl<ScrollViewer>("activityScroller");
@@ -406,7 +408,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   private async Task GetBranches()
   {
     var prevBranchName = SelectedBranch != null ? SelectedBranch.Branch.name : StreamState.BranchName;
-    Branches = await Client.StreamGetBranches(Stream.id, 100, 0);
+    Branches = await Client.StreamGetBranches(Stream.id, 100, 0).ConfigureAwait(true);
 
     var index = Branches.FindIndex(x => x.name == prevBranchName);
     if (index != -1)
@@ -420,7 +422,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       var prevCommitId = SelectedCommit != null ? SelectedCommit.id : StreamState.CommitId;
-      var branch = await Client.BranchGet(Stream.id, SelectedBranch.Branch.name, 100);
+      var branch = await Client.BranchGet(Stream.id, SelectedBranch.Branch.name, 100).ConfigureAwait(true);
       if (branch != null && branch.commits.items.Any())
       {
         branch.commits.items.Insert(
@@ -457,9 +459,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       using var httpClient = new HttpClient();
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Client.ApiToken}");
-      var result = await httpClient.GetAsync(url);
+      var result = await httpClient.GetAsync(url).ConfigureAwait(true);
 
-      byte[] bytes = await result.Content.ReadAsByteArrayAsync();
+      byte[] bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(true);
 
       System.IO.Stream stream = new MemoryStream(bytes);
 
@@ -486,9 +488,9 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       using var httpClient = new HttpClient();
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Client.ApiToken}");
-      var result = await httpClient.GetAsync(url);
+      var result = await httpClient.GetAsync(url).ConfigureAwait(true);
 
-      byte[] bytes = await result.Content.ReadAsByteArrayAsync();
+      byte[] bytes = await result.Content.ReadAsByteArrayAsync().ConfigureAwait(true);
 
       System.IO.Stream stream = new MemoryStream(bytes);
 
@@ -558,21 +560,28 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     private set => this.RaiseAndSetIfChanged(ref _menuItems, value);
   }
 
+  /// Human Readable String
   public string LastUpdated => "Updated " + Formatting.TimeAgo(StreamState.CachedStream.updatedAt);
 
+  /// Human Readable String
   public string LastUsed
   {
     get
     {
       var verb = StreamState.IsReceiver ? "Received" : "Sent";
       if (StreamState.LastUsed == null)
-        return "Never " + verb.ToLower();
+        return $"Never {verb.ToLower()}";
       return $"{verb} {Formatting.TimeAgo(StreamState.LastUsed)}";
     }
+  }
+
+  public DateTime? LastUsedTime
+  {
+    get => StreamState.LastUsed;
     set
     {
       StreamState.LastUsed = value;
-      this.RaisePropertyChanged();
+      this.RaisePropertyChanged(nameof(LastUsed));
     }
   }
 
@@ -593,7 +602,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     private set
     {
       this.RaiseAndSetIfChanged(ref _isRemovingStream, value);
-      this.RaisePropertyChanged("StreamEnabled");
+      this.RaisePropertyChanged(nameof(StreamEnabled));
     }
   }
 
@@ -765,10 +774,10 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     private set
     {
       this.RaiseAndSetIfChanged(ref _report, value);
-      this.RaisePropertyChanged("FilteredReport");
-      this.RaisePropertyChanged("HasReportItems");
-      this.RaisePropertyChanged("ReportFilterItems");
-      this.RaisePropertyChanged("Log");
+      this.RaisePropertyChanged(nameof(FilteredReport));
+      this.RaisePropertyChanged(nameof(HasReportItems));
+      this.RaisePropertyChanged(nameof(ReportFilterItems));
+      this.RaisePropertyChanged(nameof(Log));
     }
   }
 
@@ -776,13 +785,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     get
     {
-      if (SearchQuery == "" && !_reportSelectedFilterItems.Any())
+      if (string.IsNullOrEmpty(SearchQuery) && !_reportSelectedFilterItems.Any())
         return Report;
 
       var filterItems = _reportSelectedFilterItems.Any()
         ? Report.Where(o => _reportSelectedFilterItems.Any(a => o.Status == a)).ToList()
         : Report;
-      return SearchQuery == ""
+      return string.IsNullOrEmpty(SearchQuery)
         ? filterItems
         : filterItems.Where(o => _searchQueryItems.All(a => o.SearchText.ToLower().Contains(a.ToLower()))).ToList();
     }
@@ -825,7 +834,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         ClearSearchCommand();
       else
         _searchQueryItems = _searchQuery.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
-      this.RaisePropertyChanged("FilteredReport");
+      this.RaisePropertyChanged(nameof(FilteredReport));
     }
   }
 
@@ -852,7 +861,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         if (_reportSelectedFilterItems.Contains(r as string))
           _reportSelectedFilterItems.Remove(r as string);
 
-      this.RaisePropertyChanged("FilteredReport");
+      this.RaisePropertyChanged(nameof(FilteredReport));
     }
     catch (Exception ex) { }
   }
@@ -911,7 +920,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     internal set
     {
       this.RaiseAndSetIfChanged(ref _settings, value);
-      this.RaisePropertyChanged("HasSettings");
+      this.RaisePropertyChanged(nameof(HasSettings));
     }
   }
 
@@ -998,12 +1007,12 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private async void Client_OnCommentActivity(object sender, CommentItem e)
   {
-    await GetComments();
+    await GetComments().ConfigureAwait(true);
 
     var authorName = "you";
     if (e.authorId != Client.Account.userInfo.id)
     {
-      var author = await Client.OtherUserGet(e.id);
+      var author = await Client.OtherUserGet(e.id).ConfigureAwait(true);
       authorName = author.name;
     }
 
@@ -1036,13 +1045,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   private async void Client_OnBranchChange(object sender, BranchInfo info)
   {
     if (!_isAddingBranches)
-      await GetBranches();
+      await GetBranches().ConfigureAwait(true);
   }
 
   private async void Client_OnCommitChange(object sender, CommitInfo info)
   {
     if (info.branchName == SelectedBranch.Branch.name)
-      await GetCommits();
+      await GetCommits().ConfigureAwait(true);
   }
 
   private async void Client_OnCommitCreated(object sender, CommitInfo info)
@@ -1050,7 +1059,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     try
     {
       if (info.branchName == SelectedBranch.Branch.name)
-        await GetCommits();
+        await GetCommits().ConfigureAwait(true);
 
       if (!IsReceiver)
         return;
@@ -1058,7 +1067,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       var authorName = "You";
       if (info.authorId != Client.Account.userInfo.id)
       {
-        var author = await Client.OtherUserGet(info.id);
+        var author = await Client.OtherUserGet(info.id).ConfigureAwait(true);
         authorName = author.name;
       }
 
@@ -1109,7 +1118,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private void Client_OnStreamUpdated(object sender, StreamInfo e)
   {
-    GetStream().ConfigureAwait(false);
+    GetStream().ConfigureAwait(true);
   }
 
   #endregion
@@ -1126,21 +1135,23 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     var nbvm = new NewBranchViewModel(Branches);
     dialog.DataContext = nbvm;
 
-    var result = await dialog.ShowDialog<bool>();
+    var result = await dialog.ShowDialog<bool>().ConfigureAwait(true);
 
     if (result)
       try
       {
         _isAddingBranches = true;
-        var branchId = await StreamState.Client.BranchCreate(
-          new BranchCreateInput
-          {
-            streamId = Stream.id,
-            description = nbvm.Description ?? "",
-            name = nbvm.BranchName
-          }
-        );
-        await GetBranches();
+        var branchId = await StreamState.Client
+          .BranchCreate(
+            new BranchCreateInput
+            {
+              streamId = Stream.id,
+              description = nbvm.Description ?? "",
+              name = nbvm.BranchName
+            }
+          )
+          .ConfigureAwait(true);
+        await GetBranches().ConfigureAwait(true);
 
         var index = Branches.FindIndex(x => x.name == nbvm.BranchName);
         if (index != -1)
@@ -1170,7 +1181,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     var reportObjectSummaries = FilteredReport.Select(o => o.GetSummary()).ToArray();
     var summary = string.Join("\n", reportObjectSummaries);
 
-    await Application.Current.Clipboard.SetTextAsync(summary);
+    await Application.Current.Clipboard.SetTextAsync(summary).ConfigureAwait(true);
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Copy Report" } });
   }
 
@@ -1195,7 +1206,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   public async void ViewOnlineSavedStreamCommand()
   {
     //ensure click transition has finished
-    await Task.Delay(100);
+    await Task.Delay(100).ConfigureAwait(true);
 
     OpenUrl(Url);
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream View" } });
@@ -1210,7 +1221,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   public async void CopyStreamURLCommand()
   {
     //ensure click transition has finished
-    await Task.Delay(100);
+    await Task.Delay(100).ConfigureAwait(true);
     Application.Current.Clipboard.SetTextAsync(Url);
     Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream Copy Link" } });
   }
@@ -1223,13 +1234,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       ResetProgress();
       Progress.IsProgressing = true;
 
-      if (!await Http.UserHasInternet())
+      if (!await Http.UserHasInternet().ConfigureAwait(true))
         throw new InvalidOperationException("Could not reach the internet, are you connected?");
 
       Progress.CancellationToken.ThrowIfCancellationRequested();
 
       // We don't pass the progress cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
-      var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress));
+      var commitId = await Task.Run(() => Bindings.SendStream(StreamState, Progress)).ConfigureAwait(true);
 
       if (commitId == null)
       {
@@ -1241,7 +1252,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         throw new Exception(message);
       }
 
-      LastUsed = DateTime.Now.ToString();
+      LastUsedTime = DateTime.UtcNow;
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
 
       Analytics.TrackEvent(
@@ -1317,13 +1328,14 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", previewName } });
 
       if (IsReceiver)
-        await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress));
+        await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress)).ConfigureAwait(true);
       else
-        await Task.Run(() => Bindings.PreviewSend(StreamState, Progress));
+      //NOTE: do not wrap in a Task or it will crash Revit
+        Bindings.PreviewSend(StreamState, Progress);
 
       GetReport();
       SpeckleLog.Logger
-        .ForContext("IsReceiver", IsReceiver)
+        .ForContext(nameof(IsReceiver), IsReceiver)
         .Information(CommandSucceededLogTemplate, nameof(PreviewCommand));
     }
     catch (Exception ex)
@@ -1345,13 +1357,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       ResetProgress();
       Progress.IsProgressing = true;
 
-      if (!await Http.UserHasInternet())
+      if (!await Http.UserHasInternet().ConfigureAwait(true))
         throw new InvalidOperationException("Could not reach the internet, are you connected?");
 
       Progress.CancellationToken.ThrowIfCancellationRequested();
 
       //NOTE: We don't pass the cancellation token into Task.Run, as forcefully ending the task could leave a host app in an invalid state. Instead ConnectorBindings should Token.ThrowIfCancellationRequested when it's safe.
-      var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress));
+      var state = await Task.Run(() => Bindings.ReceiveStream(StreamState, Progress)).ConfigureAwait(true);
 
       if (state == null)
       {
@@ -1365,7 +1377,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       // Track receive operation
       var view = MainViewModel.RouterInstance.NavigationStack.Last() is StreamViewModel ? "Stream" : "Home";
-      LastUsed = DateTime.Now.ToString();
+      LastUsedTime = DateTime.UtcNow;
+
       Analytics.TrackEvent(
         StreamState.Client.Account,
         Analytics.Events.Receive,
@@ -1667,6 +1680,11 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   public void Dispose()
   {
     Client?.Dispose();
+  }
+
+  public async Task DownloadImage(Uri url)
+  {
+    throw new NotImplementedException();
   }
 
   #endregion

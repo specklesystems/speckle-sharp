@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -564,16 +564,6 @@ public partial class ConverterRhinoGh
     }
 
     var _instance = Doc.Objects.FindId(instanceId) as RH.InstanceObject;
-
-    // add application id
-    try
-    {
-      _instance.Attributes.SetUserString(ApplicationIdKey, instance.applicationId);
-    }
-    catch (Exception e)
-    {
-      appObj.Update(logItem: $"Could not set application id user string: {e.Message}");
-    }
 
     // update appobj
     appObj.Update(convertedItem: _instance);

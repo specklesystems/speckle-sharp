@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
 using Objects.Geometry;
-using Objects.Organization;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
@@ -50,14 +50,17 @@ public partial class ConverterNavisworks
           return null;
 
         // convertedIds should be populated with all the pseudoIds of nested children already converted in traversal
-        // the DescendantsAndSelf helper method means we don't need to keep recursing reference
+        // the DescendantsAndSelf helper method means we don't need to reference recursion
         // the "__" prefix is skipped in object serialization so we can use Base object to pass data back to the Connector
         var list = element.DescendantsAndSelf
           .Select(
             x =>
               ((Array)ToInwOaPath(x).ArrayData)
                 .ToArray<int>()
-                .Aggregate("", (current, value) => current + value.ToString().PadLeft(4, '0') + "-")
+                .Aggregate(
+                  "",
+                  (current, value) => current + value.ToString(CultureInfo.InvariantCulture).PadLeft(4, '0') + "-"
+                )
                 .TrimEnd('-')
           )
           .ToList();
@@ -108,38 +111,6 @@ public partial class ConverterNavisworks
     return CanConvertToSpeckle(item);
   }
 
-  public static List<Base> DescendantsAndSelf(Base element)
-  {
-    var descendants = new HashSet<Base>();
-
-    switch (element)
-    {
-      case Organization.Geometry geometry:
-        descendants.Add(geometry);
-        break;
-      case Collection collection:
-      {
-        var collectionProperties = collection
-          .GetType()
-          .GetProperties()
-          .Where(p => p.PropertyType == typeof(Collection));
-
-        foreach (var property in collectionProperties)
-        {
-          var childCollection = (Collection)property.GetValue(collection);
-
-          descendants.UnionWith(DescendantsAndSelf(childCollection));
-        }
-
-        break;
-      }
-      default:
-        throw new ArgumentException("Item must be a Geometry or ElementCollection object.");
-    }
-
-    return descendants.ToList();
-  }
-
   private static SavedViewpoint ReferenceOrGuidToSavedViewpoint(string referenceOrGuid)
   {
     SavedViewpoint savedViewpoint;
@@ -151,19 +122,19 @@ public partial class ConverterNavisworks
     else
     {
       var parts = referenceOrGuid.Split(':');
-      savedViewpoint =
-        parts.Length != 2 ? null : (SavedViewpoint)Doc.ResolveReference(new SavedItemReference(parts[0], parts[1]));
+      using var savedItemReference = new SavedItemReference(parts[0], parts[1]);
+      savedViewpoint = parts.Length != 2 ? null : (SavedViewpoint)Doc.ResolveReference(savedItemReference);
     }
 
     return savedViewpoint;
   }
 
-  public static Point ToPoint(InwLPos3f v)
+  private static Point ToPoint(InwLPos3f v)
   {
     return new Point(v.data1, v.data2, v.data3);
   }
 
-  public static Vector ToVector(InwLVec3f v)
+  private static Vector ToVector(InwLVec3f v)
   {
     return new Vector(v.data1, v.data2, v.data3);
   }
@@ -212,7 +183,7 @@ public partial class ConverterNavisworks
         {
           zoomValue = vp.FocalDistance * scaleFactor;
         }
-        catch (Exception err)
+        catch (NullReferenceException err)
         {
           Console.WriteLine($"No Focal Distance, Are you looking at anything?\n{err.Message}");
         }
@@ -266,32 +237,6 @@ public partial class ConverterNavisworks
     return view;
   }
 
-  private static Vector ToSpeckleVector(Vector3D forward)
-  {
-    return new Vector(forward.X, forward.Y, forward.Z);
-  }
-
-  private static Vector3D GetViewDir(Viewpoint vp)
-  {
-    var negZ = new Rotation3D(0, 0, -1, 0);
-    var tempRot = MultiplyRotation3D(negZ, vp.Rotation.Invert());
-    var viewDirRot = MultiplyRotation3D(vp.Rotation, tempRot);
-    var viewDir = new Vector3D(viewDirRot.A, viewDirRot.B, viewDirRot.C);
-    return viewDir.Normalize();
-  }
-
-  private static Rotation3D MultiplyRotation3D(Rotation3D first, Rotation3D second)
-  {
-    var result = new Rotation3D(
-      second.D * first.A + second.A * first.D + second.B * first.C - second.C * first.B,
-      second.D * first.B + second.B * first.D + second.C * first.A - second.A * first.C,
-      second.D * first.C + second.C * first.D + second.A * first.B - second.B * first.A,
-      second.D * first.D - second.A * first.A - second.B * first.B - second.C * first.C
-    );
-    result.Normalize();
-    return result;
-  }
-
   private static Base CategoryToSpeckle(ModelItem element)
   {
     var applicationId = PseudoIdFromModelItem(element);
@@ -305,7 +250,7 @@ public partial class ConverterNavisworks
     switch (elementCategoryType)
     {
       case "Geometry":
-        return new Organization.Geometry { applicationId = applicationId };
+        return new Collection { applicationId = applicationId, collectionType = "Geometry"};
       default:
         return new Collection { applicationId = applicationId, collectionType = elementCategoryType };
     }
@@ -317,9 +262,6 @@ public partial class ConverterNavisworks
       return null;
 
     var @base = CategoryToSpeckle(element);
-
-    var properties =
-      !bool.TryParse(Settings.FirstOrDefault(x => x.Key == "include-properties").Value, out var result) || result;
 
     // Geometry items have no children
     if (element.HasGeometry)
@@ -339,7 +281,7 @@ public partial class ConverterNavisworks
     if (element.Descendants.All(x => x.IsHidden))
       return null;
 
-    ((Collection)@base).name = element.DisplayName ?? null;
+    ((Collection)@base).name = element.DisplayName;
 
     var elements = element.Children.Select(ModelItemToSpeckle).Where(childBase => childBase != null).ToList();
 
@@ -366,11 +308,6 @@ public partial class ConverterNavisworks
       @base["displayValue"] = fragmentGeometry;
   }
 
-  public List<Base> ConvertToSpeckle(List<ModelItem> modelItems)
-  {
-    return modelItems.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
-  }
-
   private static bool CanConvertToSpeckle(ModelItem item)
   {
     // Only Geometry no children
@@ -394,10 +331,10 @@ public partial class ConverterNavisworks
       pathArray = @string
         .ToString()
         .Split('-')
-        .Select(x => int.TryParse(x, out var value) ? value : throw new Exception("malformed path pseudoId"))
+        .Select(x => int.TryParse(x, out var value) ? value : throw new FormatException("malformed path pseudoId"))
         .ToArray();
     }
-    catch
+    catch (FormatException)
     {
       return null;
     }

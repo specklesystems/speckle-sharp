@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Autodesk.Navisworks.Api;
@@ -20,7 +21,7 @@ internal static class ArrayExtension
 
 public partial class ConverterNavisworks
 {
-  public static string RootNodePseudoId = "___";
+  private const string RootNodePseudoId = "___";
 
   private static string PseudoIdFromModelItem(ModelItem element)
   {
@@ -34,22 +35,10 @@ public partial class ConverterNavisworks
     // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
     var pointer = ((Array)path.ArrayData)
       .ToArray<int>()
-      .Aggregate("", (current, value) => current + value.ToString().PadLeft(4, '0') + "-")
+      .Aggregate("", (current, value) => current + value.ToString(CultureInfo.InvariantCulture).PadLeft(4, '0') + "-")
       .TrimEnd('-');
 
     return pointer;
-  }
-
-  /// <summary>
-  ///   Checks is the Element is hidden or if any of its ancestors is hidden
-  /// </summary>
-  /// <param name="element"></param>
-  /// <returns></returns>
-  private static bool IsElementVisible(ModelItem element)
-  {
-    // Hidden status is stored at the earliest node in the hierarchy
-    // All of the the tree path nodes need to not be Hidden
-    return element.AncestorsAndSelf.All(x => x.IsHidden != true);
   }
 
   /// <summary>
