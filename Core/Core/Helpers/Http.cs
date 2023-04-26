@@ -68,8 +68,7 @@ public static class Http
       .HandleTransientHttpError()
       .WaitAndRetryAsync(
         delay ?? DefaultDelay(),
-        (ex, timeSpan, retryAttempt, context) =>
-        {
+        (ex, timeSpan, retryAttempt, context) => {
           //context.Remove("retryCount");
           //context.Add("retryCount", retryAttempt);
           //Log.Information(
@@ -119,8 +118,7 @@ public static class Http
       .Or<SocketException>()
       .WaitAndRetryAsync(
         DefaultDelay(),
-        (ex, timeSpan, retryAttempt, context) =>
-        {
+        (ex, timeSpan, retryAttempt, context) => {
           //Log.Information(
           //  ex,
           //  "The http request failed with {exceptionType} exception retrying after {cooldown} milliseconds. This is retry attempt {retryAttempt}",

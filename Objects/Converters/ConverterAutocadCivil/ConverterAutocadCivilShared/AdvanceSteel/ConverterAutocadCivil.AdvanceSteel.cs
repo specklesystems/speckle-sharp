@@ -2,22 +2,26 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.AdvanceSteel.CADAccess;
-using Autodesk.AdvanceSteel.ConstructionTypes;
-using Autodesk.AdvanceSteel.Modeler;
-using Autodesk.AutoCAD.DatabaseServices;
-using MathNet.Spatial.Euclidean;
-using Objects.BuiltElements.AdvanceSteel;
+
 using Speckle.Core.Models;
-using TriangleNet.Geometry;
-using TriangleNet.Topology;
-using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
-using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+
+using Autodesk.AutoCAD.DatabaseServices;
+using Autodesk.AdvanceSteel.CADAccess;
+using Autodesk.AdvanceSteel.Modeler;
+using Autodesk.AdvanceSteel.ConstructionTypes;
 using ASObjectId = Autodesk.AdvanceSteel.CADLink.Database.ObjectId;
-using MathPlane = MathNet.Spatial.Euclidean.Plane;
+using ASFilerObject = Autodesk.AdvanceSteel.CADAccess.FilerObject;
+using ASExtents = Autodesk.AdvanceSteel.Geometry.Extents;
+
+using Objects.BuiltElements.AdvanceSteel;
 using Mesh = Objects.Geometry.Mesh;
-using TriangleMesh = TriangleNet.Mesh;
+
+using MathNet.Spatial.Euclidean;
+using MathPlane = MathNet.Spatial.Euclidean.Plane;
+using TriangleNet.Geometry;
 using TriangleVertex = TriangleNet.Geometry.Vertex;
+using TriangleMesh = TriangleNet.Mesh;
+using TriangleNet.Topology;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -111,7 +115,7 @@ namespace Objects.Converter.AutocadCivil
 
       if (propInfo.ValueType.IsPrimitive || propInfo.ValueType == typeof(decimal))
       {
-        if (propInfo.UnitType.HasValue && value is double)
+        if(propInfo.UnitType.HasValue && value is double)
         {
           value = FromInternalUnits((double)value, propInfo.UnitType.Value);
         }
@@ -129,7 +133,7 @@ namespace Objects.Converter.AutocadCivil
         value = value.ToString();
         return true;
       }
-
+      
       value = ConvertValueToSpeckle(value, propInfo.UnitType, out var converted);
 
       return converted;

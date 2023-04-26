@@ -189,35 +189,35 @@ public class Base : DynamicBase
         count += CountDescendants(b, parsed);
         return count;
       case IDictionary d:
-        {
-          foreach (DictionaryEntry kvp in d)
-            if (kvp.Value is Base)
-            {
-              count++;
-              count += CountDescendants(kvp.Value as Base, parsed);
-            }
-            else
-            {
-              count += HandleObjectCount(kvp.Value, parsed);
-            }
+      {
+        foreach (DictionaryEntry kvp in d)
+          if (kvp.Value is Base)
+          {
+            count++;
+            count += CountDescendants(kvp.Value as Base, parsed);
+          }
+          else
+          {
+            count += HandleObjectCount(kvp.Value, parsed);
+          }
 
-          return count;
-        }
+        return count;
+      }
       case IEnumerable e when !(value is string):
-        {
-          foreach (var arrValue in e)
-            if (arrValue is Base)
-            {
-              count++;
-              count += CountDescendants(arrValue as Base, parsed);
-            }
-            else
-            {
-              count += HandleObjectCount(arrValue, parsed);
-            }
+      {
+        foreach (var arrValue in e)
+          if (arrValue is Base)
+          {
+            count++;
+            count += CountDescendants(arrValue as Base, parsed);
+          }
+          else
+          {
+            count += HandleObjectCount(arrValue, parsed);
+          }
 
-          return count;
-        }
+        return count;
+      }
       default:
         return count;
     }
