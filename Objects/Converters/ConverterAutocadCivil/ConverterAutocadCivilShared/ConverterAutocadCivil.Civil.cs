@@ -557,17 +557,16 @@ namespace Objects.Converter.AutocadCivil
       var polylines = new List<Polyline>();
 
       var polylinePoints = new Point3dCollection();
-      foreach (CivilDB.FeatureLinePoint point in featureline.FeatureLinePoints)
+      for (int i = 0; i < featureline.FeatureLinePoints.Count; i++)
       {
-        if (point.IsBreak && polylinePoints.Count > 0)
+        var point = featureline.FeatureLinePoints[i];
+        if (!point.IsBreak) { polylinePoints.Add(point.XYZ); }
+        if (polylinePoints.Count > 0 && (i == featureline.FeatureLinePoints.Count - 1 || point.IsBreak ))
         {
           var polyline = PolylineToSpeckle(new Polyline3d(Poly3dType.SimplePoly, polylinePoints, false));
           polylines.Add(polyline);
           polylinePoints.Clear();
-        }
-        else
-        {
-          polylinePoints.Add(point.XYZ);
+
         }
         points.Add(PointToSpeckle(point.XYZ));
       }
@@ -990,7 +989,8 @@ namespace Objects.Converter.AutocadCivil
           var mesh = ConvertToSpeckle(surface) as Mesh;
           if (mesh != null) surfaces.Add(mesh);
         }
-        catch { }
+        catch (Exception e) 
+        { }
       }
 
       _corridor["@alignments"] = alignments;
