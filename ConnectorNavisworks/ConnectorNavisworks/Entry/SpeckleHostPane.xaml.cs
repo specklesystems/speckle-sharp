@@ -1,16 +1,15 @@
 ﻿using System;
-using System.Windows.Controls;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Views;
 
 namespace Speckle.ConnectorNavisworks.Entry;
 
-public partial class SpeckleHostPane : UserControl
+public partial class SpeckleHostPane
 {
-  private const uint DLGC_WANTARROWS = 0x0001;
-  private const uint DLGC_HASSETSEL = 0x0008;
-  private const uint DLGC_WANTCHARS = 0x0080;
-  private const uint WM_GETDLGCODE = 0x0087;
+  private const uint DlgcWantarrows = 0x0001;
+  private const uint DlgcHasSetSel = 0x0008;
+  private const uint DlgcWantChars = 0x0080;
+  private const uint WmGetDlgCode = 0x0087;
 
   public SpeckleHostPane()
   {
@@ -30,9 +29,9 @@ public partial class SpeckleHostPane : UserControl
 
   private static IntPtr AvaloniaHost_MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
   {
-    if (msg != WM_GETDLGCODE)
+    if (msg != WmGetDlgCode)
       return IntPtr.Zero;
     handled = true;
-    return new IntPtr(DLGC_WANTCHARS | DLGC_WANTARROWS | DLGC_HASSETSEL);
+    return new IntPtr(DlgcWantChars | DlgcWantarrows | DlgcHasSetSel);
   }
 }

@@ -4,14 +4,11 @@ using System.Threading.Tasks;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
 
 public partial class ConnectorBindingsNavisworks
 {
-  public Dictionary<string, Base> StoredObjects = null;
-
   // There is no receive mode relevant for the Navisworks Connector at this time.
 
 
@@ -26,13 +23,13 @@ public partial class ConnectorBindingsNavisworks
 
   public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
   {
-    await Task.Delay(0);
+    await Task.Delay(0).ConfigureAwait(false);
     return null;
   }
 
   public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
   {
-    await Task.Delay(TimeSpan.FromMilliseconds(500));
+    await Task.Delay(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
     return state;
   }
 }

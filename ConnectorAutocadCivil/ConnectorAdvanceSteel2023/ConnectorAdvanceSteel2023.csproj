@@ -55,8 +55,8 @@
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="MathNet.Spatial" Version="0.6.0" />
-    <PackageReference Include="PH.AdvanceSteel.API" Version="2023.0.3" />
-    <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" />
+    <PackageReference Include="PH.AdvanceSteel.API" Version="2023.0.3" IncludeAssets="compile;build" PrivateAssets="all"/>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" IncludeAssets="compile;build" PrivateAssets="all"/>
   </ItemGroup>
   <ItemGroup>
     <Content Include="MyAddons.xml" />

@@ -109,8 +109,32 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects.ToDictionary(x => x.applicationId);
-    public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects.ToDictionary(x => x.applicationId);
+    //NOTE: not all objects come from Revit, so their applicationId might be null, in this case we fall back on the Id
+    //this fallback is only needed for a couple of ToNative conversions such as Floor, Ceiling, and Roof
+    public void SetContextObjects(List<ApplicationObject> objects)
+    {
+      ContextObjects = new(objects.Count);
+      foreach (var ao in objects)
+      {
+        var key = ao.applicationId ?? ao.OriginalId;
+        if (ContextObjects.ContainsKey(key))
+          continue;
+        ContextObjects.Add(key, ao);
+      }
+    }
+
+    public void SetPreviousContextObjects(List<ApplicationObject> objects)
+    {
+      PreviousContextObjects = new(objects.Count);
+      foreach (var ao in objects)
+      {
+        var key = ao.applicationId ?? ao.OriginalId;
+        if (ContextObjects.ContainsKey(key))
+          continue;
+        ContextObjects.Add(key, ao);
+      }
+    }
+
     public void SetConverterSettings(object settings)
     {
       Settings = settings as Dictionary<string, string>;
@@ -586,6 +610,9 @@ namespace Objects.Converter.Revit
         case BE.GridLine o:
           return GridLineToNative(o);
 
+        case DataTable o:
+          return DataTableToNative(o);
+
         case BE.Space o:
           return SpaceToNative(o);
         //Structural
@@ -749,6 +776,7 @@ namespace Objects.Converter.Revit
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
         Other.BlockInstance _ => true,
+        Organization.DataTable _ => true,
         _ => false,
       };
     }
