@@ -731,7 +731,7 @@ namespace Objects.Converter.Revit
             return new ElementMulticategoryFilter(Categories.columnCategories);
           else if (o.type == OSG.ElementType1D.Beam || o.type == OSG.ElementType1D.Brace)
             return new ElementMulticategoryFilter(Categories.beamCategories);
-          break;
+          else return null;
         case OSG.Element2D _:
         case Floor _:
           return new ElementMulticategoryFilter(Categories.floorCategories);
@@ -748,9 +748,8 @@ namespace Objects.Converter.Revit
               return new ElementCategoryFilter(cat.Id);
             }
           }
-          break;
+          return null;
       }
-      return null;
     }
 
     private List<ElementType> GetElementTypesThatPassFilter<T>(ElementFilter filter)
