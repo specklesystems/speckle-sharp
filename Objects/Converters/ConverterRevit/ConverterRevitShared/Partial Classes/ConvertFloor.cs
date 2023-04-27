@@ -337,8 +337,8 @@ namespace Objects.Converter.Revit
 
           return new OG.Ellipse(
             newCirclePlane,
-            (circle.radius ?? 0) * rad1ScaleCircle,
-            (circle.radius ?? 0) * rad2ScaleCircle,
+            radius * rad1ScaleCircle,
+            radius * rad2ScaleCircle,
             units: circle.units
           );
 
