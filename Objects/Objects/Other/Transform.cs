@@ -189,7 +189,7 @@ namespace Objects.Other
         matrix.M11, matrix.M12, matrix.M13, matrix.M14 * sf,
         matrix.M21, matrix.M22, matrix.M23, matrix.M24 * sf,
         matrix.M31, matrix.M32, matrix.M33, matrix.M34 * sf,
-        matrix.M41, matrix.M42, matrix.M43, matrix.M44 * sf
+        matrix.M41, matrix.M42, matrix.M43, matrix.M44
       };
     }
 
