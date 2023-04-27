@@ -60,7 +60,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRailing.topRail != null)
       {
-        var topRailType = GetElementType<FloorType>(speckleRailing.topRail, appObj, out bool isTopRailExactMatch);
+        var topRailType = GetElementType<TopRailType>(speckleRailing.topRail, appObj, out bool isTopRailExactMatch);
 
         if (GetParamValue<int>(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL) == 0)
           TrySetParam(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL, 1);
