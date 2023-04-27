@@ -22,8 +22,9 @@ internal sealed class GzipContent : HttpContent
     this.content = content;
 
     // Keep the original content's headers ...
-    foreach (KeyValuePair<string, IEnumerable<string>> header in content.Headers)
-      Headers.TryAddWithoutValidation(header.Key, header.Value);
+    if (content != null)
+      foreach (KeyValuePair<string, IEnumerable<string>> header in content.Headers)
+        Headers.TryAddWithoutValidation(header.Key, header.Value);
 
     // ... and let the server know we've Gzip-compressed the body of this request.
     Headers.ContentEncoding.Add("gzip");
@@ -39,7 +40,6 @@ internal sealed class GzipContent : HttpContent
       await content.CopyToAsync(gzip).ConfigureAwait(false);
     else
       await stringContent.CopyToAsync(gzip).ConfigureAwait(false);
-
     await gzip.FlushAsync().ConfigureAwait(false);
   }
 

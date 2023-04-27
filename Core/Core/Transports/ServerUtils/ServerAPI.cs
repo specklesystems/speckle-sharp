@@ -217,7 +217,7 @@ public class ServerApi : IDisposable, IServerApi
       var fileName = Path.GetFileName(filePath);
       var stream = File.OpenRead(filePath);
       streams.Add(stream);
-      using var fsc = new StreamContent(stream);
+      var fsc = new StreamContent(stream);
       var hash = id.Split(':')[1];
 
       multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
@@ -336,12 +336,9 @@ public class ServerApi : IDisposable, IServerApi
     string serializedPayload = JsonConvert.SerializeObject(payload);
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
     HttpResponseMessage response = null;
+    using StringContent stringContent = new(serializedPayload, Encoding.UTF8, "application/json");
     while (ShouldRetry(response))
-    {
-      using var stringContent = new StringContent(serializedPayload, Encoding.UTF8, "application/json");
       response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
-    }
-
     response.EnsureSuccessStatusCode();
 
     var hasObjectsJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -385,16 +382,15 @@ public class ServerApi : IDisposable, IServerApi
       _ctBuilder.Append("]");
       string _ct = _ctBuilder.ToString();
 
-      using var stringContent = new StringContent(_ct, Encoding.UTF8);
       if (CompressPayloads)
       {
-        using var content = new GzipContent(stringContent);
+        var content = new GzipContent(new StringContent(_ct, Encoding.UTF8));
         content.Headers.ContentType = new MediaTypeHeaderValue("application/gzip");
         multipart.Add(content, $"batch-{mpId}", $"batch-{mpId}");
       }
       else
       {
-        multipart.Add(stringContent, $"batch-{mpId}", $"batch-{mpId}");
+        multipart.Add(new StringContent(_ct, Encoding.UTF8), $"batch-{mpId}", $"batch-{mpId}");
       }
     }
     message.Content = multipart;
@@ -414,11 +410,10 @@ public class ServerApi : IDisposable, IServerApi
     var uri = new Uri($"/api/stream/{streamId}/blob/diff", UriKind.Relative);
 
     HttpResponseMessage response = null;
-    while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
-    {
-      using var stringContent = new StringContent(payload, Encoding.UTF8, "application/json");
+    using StringContent stringContent = new(payload, Encoding.UTF8, "application/json");
+    //TODO: can we get rid of this now we have polly?
+    while (ShouldRetry(response))
       response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
-    }
 
     response.EnsureSuccessStatusCode();
 

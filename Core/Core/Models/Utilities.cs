@@ -39,14 +39,18 @@ public static class Utilities
 
   public static string hashFile(string filePath, HashingFuctions func = HashingFuctions.SHA256)
   {
-    HashAlgorithm hashAlgorithm = SHA256.Create();
+    HashAlgorithm hashAlgorithm;
     if (func == HashingFuctions.MD5)
       hashAlgorithm = MD5.Create();
+    else
+      hashAlgorithm = SHA256.Create();
 
-    using var stream = File.OpenRead(filePath);
-    using var h = hashAlgorithm;
-    var hash = h.ComputeHash(stream);
-    return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
+    using (var stream = File.OpenRead(filePath))
+    {
+      var hash = hashAlgorithm.ComputeHash(stream);
+      hashAlgorithm.Dispose();
+      return BitConverter.ToString(hash).Replace("-", "").ToLowerInvariant().Substring(0, HashLength);
+    }
   }
 
   private static string sha256(string input)
@@ -163,13 +167,14 @@ public static class Utilities
   public static void SetApplicationProps(object o, Type t, Base props)
   {
     var propNames = props.GetDynamicMembers();
-    if (o == null || propNames.Count() == 0)
+    IEnumerable<string> names = propNames.ToList();
+    if (o == null || names.Any())
       return;
 
     var typeProperties = t.GetProperties().ToList();
     typeProperties.AddRange(t.BaseType.GetProperties().ToList());
     foreach (var propInfo in typeProperties)
-      if (propInfo.CanWrite && propNames.Contains(propInfo.Name))
+      if (propInfo.CanWrite && names.Contains(propInfo.Name))
       {
         var value = props[propInfo.Name];
         if (propInfo.PropertyType.BaseType.Name == "Enum")
