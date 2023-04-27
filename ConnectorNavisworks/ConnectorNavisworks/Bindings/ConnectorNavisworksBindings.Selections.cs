@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
-using static Speckle.ConnectorNavisworks.Utils;
+using static Speckle.ConnectorNavisworks.Utilities;
 using Application = Autodesk.Navisworks.Api.Application;
 using Cursor = System.Windows.Forms.Cursor;
 
@@ -21,8 +21,8 @@ public partial class ConnectorBindingsNavisworks
     Cursor.Current = Cursors.WaitCursor;
 
     // Current document, models and selected elements.
-    Doc = Application.ActiveDocument;
-    var appSelectedItems = Doc.CurrentSelection.SelectedItems;
+    _doc = Application.ActiveDocument;
+    var appSelectedItems = _doc.CurrentSelection.SelectedItems;
 
     // Storing as a Set for consistency with the converter's handling of fragments and paths.
     var selectedObjects = new HashSet<string>();
@@ -55,17 +55,5 @@ public partial class ConnectorBindingsNavisworks
     // Hidden status is stored at the earliest node in the hierarchy
     // All of the the tree path nodes need to not be Hidden
     return element.AncestorsAndSelf.All(x => x.IsHidden != true);
-  }
-
-  /// <summary>
-  ///   Checks is the Element is hidden or if any of its ancestors is hidden
-  /// </summary>
-  /// <param name="element"></param>
-  /// <returns></returns>
-  private static bool IsElementHidden(ModelItem element)
-  {
-    // Hidden status is stored at the earliest node in the hierarchy
-    // Any of the the tree path nodes Hidden then the element is hidden
-    return element.AncestorsAndSelf.Any(x => x.IsHidden);
   }
 }

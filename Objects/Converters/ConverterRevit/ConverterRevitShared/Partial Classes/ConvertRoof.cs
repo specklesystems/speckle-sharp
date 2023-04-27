@@ -177,11 +177,14 @@ namespace Objects.Converter.Revit
               slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
             };
 
-            GetSlopeArrowHack(footPrintRoof.Id, revitRoof.Document, out var tail, out var head, out double tailOffset, out double headOffset, out double slope);
-
-            // these two values are not null then the slope arrow exists and we need to capture that
-            if (tail != null && head != null)
+            var slopeArrow = GetSlopeArrow(footPrintRoof);
+            if (slopeArrow != null)
             {
+              var tail = GetSlopeArrowTail(slopeArrow, Doc);
+              var head = GetSlopeArrowHead(slopeArrow, Doc);
+              var tailOffset = GetSlopeArrowTailOffset(slopeArrow, Doc);
+              var headOffset = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out _);
+
               var newTail = new Geometry.Point(tail.x, tail.y, tailOffset);
               var newHead = new Geometry.Point(head.x, head.y, headOffset);
               profiles = GetProfiles(revitRoof, newTail, newHead);

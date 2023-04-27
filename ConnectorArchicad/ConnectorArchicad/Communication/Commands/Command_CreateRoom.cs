@@ -11,7 +11,8 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
-      [JsonProperty("zones")] private IEnumerable<ArchicadRoom> Datas { get; }
+      [JsonProperty("zones")]
+      private IEnumerable<ArchicadRoom> Datas { get; }
 
       public Parameters(IEnumerable<ArchicadRoom> datas)
       {

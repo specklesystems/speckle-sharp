@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -22,7 +22,6 @@ using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorRevit.UI
 {
-
   public partial class ConnectorBindingsRevit
   {
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
@@ -51,7 +50,12 @@ namespace Speckle.ConnectorRevit.UI
       Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);
+      await ConnectorHelpers.TryCommitReceived(
+        progress.CancellationToken,
+        state,
+        myCommit,
+        ConnectorRevitUtils.RevitAppName
+      );
 
       Preview.Clear();
       StoredObjects.Clear();
@@ -59,7 +63,6 @@ namespace Speckle.ConnectorRevit.UI
       Preview = FlattenCommitObject(commitObject, converter);
       foreach (var previewObj in Preview)
         progress.Report.Log(previewObj);
-
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work
@@ -74,7 +77,9 @@ namespace Speckle.ConnectorRevit.UI
       catch (Exception ex)
       {
         SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
-        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
+        progress.Report.LogOperationError(
+          new Exception("Could not update receive object with user types. Using default mapping.", ex)
+        );
       }
 
       var (success, exception) = await RevitTask.RunAsync(app =>
@@ -106,10 +111,16 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction {transactionName} {transactionType}", transactionName, t.GetType());
+          SpeckleLog.Logger.Error(
+            ex,
+            "Rolling back connector transaction {transactionName} {transactionType}",
+            transactionName,
+            t.GetType()
+          );
 
           string message = $"Fatal Error: {ex.Message}";
-          if (ex is OperationCanceledException) message = "Receive cancelled";
+          if (ex is OperationCanceledException)
+            message = "Receive cancelled";
           progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
 
           t.RollBack();
@@ -121,7 +132,8 @@ namespace Speckle.ConnectorRevit.UI
       if (!success)
       {
         //Don't wrap cancellation token (if it's ours!)
-        if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
+        if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested)
+          throw exception;
         throw new SpeckleException(exception.Message, exception);
       }
 
@@ -129,7 +141,10 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects)
+    private void DeleteObjects(
+      List<ApplicationObject> previouslyReceiveObjects,
+      List<ApplicationObject> newPlaceholderObjects
+    )
     {
       foreach (var obj in previouslyReceiveObjects)
       {
@@ -149,7 +164,8 @@ namespace Speckle.ConnectorRevit.UI
       conversionProgressDict["Conversion"] = 1;
 
       // Get setting to skip linked model elements if necessary
-      var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
+      var receiveLinkedModelsSetting =
+        CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
       foreach (var obj in Preview)
@@ -167,7 +183,11 @@ namespace Speckle.ConnectorRevit.UI
           Dispatcher.UIThread.MainLoop(s.Token);
 
           //skip element if is from a linked file and setting is off
-          if (!receiveLinkedModels && @base["isRevitLinkedModel"] != null && bool.Parse(@base["isRevitLinkedModel"].ToString()))
+          if (
+            !receiveLinkedModels
+            && @base["isRevitLinkedModel"] != null
+            && bool.Parse(@base["isRevitLinkedModel"].ToString())
+          )
             continue;
 
           var convRes = converter.ConvertToNative(@base);
@@ -202,6 +222,11 @@ namespace Speckle.ConnectorRevit.UI
 
       // get the active ui view
       var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+      if (view is TableView)
+      {
+        return;
+      }
+
       var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
       // "refresh" the active view
@@ -216,10 +241,10 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>A flattened list of objects to be converted ToNative</returns>
     private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-
       ApplicationObject CreateApplicationObject(Base current)
       {
-        if (!converter.CanConvertToNative(current)) return null;
+        if (!converter.CanConvertToNative(current))
+          return null;
 
         var appObj = new ApplicationObject(current.id, ConnectorRevitUtils.SimplifySpeckleType(current.speckle_type))
         {
@@ -235,7 +260,8 @@ namespace Speckle.ConnectorRevit.UI
 
       var traverseFunction = DefaultTraversal.CreateRevitTraversalFunc(converter);
 
-      var objectsToConvert = traverseFunction.Traverse(obj)
+      var objectsToConvert = traverseFunction
+        .Traverse(obj)
         .Select(tc => CreateApplicationObject(tc.current))
         .Where(appObject => appObject != null)
         .Reverse()
@@ -243,6 +269,5 @@ namespace Speckle.ConnectorRevit.UI
 
       return objectsToConvert;
     }
-
   }
 }

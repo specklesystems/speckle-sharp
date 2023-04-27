@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -161,7 +161,7 @@ public class ImportFamiliesDialogViewModel : ReactiveObject
       }
 
     _isTopBoxChecked = allChecked;
-    this.RaisePropertyChanged("IsTopBoxChecked");
+    this.RaisePropertyChanged(nameof(IsTopBoxChecked));
   }
 
   public class Symbol : ReactiveObject

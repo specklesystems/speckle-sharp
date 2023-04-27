@@ -8,7 +8,6 @@ namespace Archicad.Communication.Commands
 {
   sealed internal class CreateWindow : ICommand<IEnumerable<ApplicationObject>>
   {
-
     [JsonObject(MemberSerialization.OptIn)]
     public sealed class Parameters
     {
@@ -19,17 +18,15 @@ namespace Archicad.Communication.Commands
       {
         Datas = datas;
       }
-
     }
 
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result
     {
-
       [JsonProperty("applicationObjects")]
       public IEnumerable<ApplicationObject> ApplicationObjects { get; private set; }
-
     }
+
     private IEnumerable<ArchicadWindow> Datas { get; }
 
     public CreateWindow(IEnumerable<ArchicadWindow> datas)
@@ -42,6 +39,5 @@ namespace Archicad.Communication.Commands
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateWindow", new Parameters(Datas));
       return result == null ? null : result.ApplicationObjects;
     }
-
   }
 }

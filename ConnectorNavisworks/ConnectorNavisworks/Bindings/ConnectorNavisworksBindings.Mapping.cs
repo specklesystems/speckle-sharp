@@ -12,7 +12,7 @@ public partial class ConnectorBindingsNavisworks
   )
   {
     // TODO!
-    await Task.Delay(TimeSpan.FromMilliseconds(500));
+    await Task.Delay(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
     return new Dictionary<string, List<MappingValue>>();
   }
 }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -30,25 +30,60 @@ namespace Speckle.ConnectorRevit.UI
 
       var filters = new List<ISelectionFilter>
       {
-         new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." },
-        new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all elements belonging to the selected categories"},
-        new ListSelectionFilter {Slug="view", Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
-        new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
-          new PropertySelectionFilter
+        new AllSelectionFilter
         {
-          Slug="param",
+          Slug = "all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Sends all supported elements and project information."
+        },
+        new ManualSelectionFilter(),
+        new ListSelectionFilter
+        {
+          Slug = "category",
+          Name = "Category",
+          Icon = "Category",
+          Values = categories,
+          Description = "Adds all elements belonging to the selected categories"
+        },
+        new ListSelectionFilter
+        {
+          Slug = "view",
+          Name = "View",
+          Icon = "RemoveRedEye",
+          Values = views,
+          Description = "Adds all objects visible in the selected views"
+        },
+        new ListSelectionFilter
+        {
+          Slug = "project-info",
+          Name = "Project Information",
+          Icon = "Information",
+          Values = projectInfo,
+          Description = "Adds the selected project information such as levels, views and family names to the stream"
+        },
+        new PropertySelectionFilter
+        {
+          Slug = "param",
           Name = "Parameter",
-          Description="Adds all objects satisfying the selected parameter",
+          Description = "Adds all objects satisfying the selected parameter",
           Icon = "FilterList",
           Values = parameters,
-          Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
+          Operators = new List<string> { "equals", "contains", "is greater than", "is less than" }
         }
-
       };
       if (worksets.Any())
-        filters.Insert(4, new ListSelectionFilter { Slug = "workset", Name = "Workset", Icon = "Group", Values = worksets, Description = "Adds all elements belonging to the selected workset" });
-
+        filters.Insert(
+          4,
+          new ListSelectionFilter
+          {
+            Slug = "workset",
+            Name = "Workset",
+            Icon = "Group",
+            Values = worksets,
+            Description = "Adds all elements belonging to the selected workset"
+          }
+        );
 
       return filters;
     }
@@ -60,7 +95,10 @@ namespace Speckle.ConnectorRevit.UI
         return new List<string>();
       }
 
-      var selectedObjects = CurrentDoc.Selection.GetElementIds().Select(id => CurrentDoc.Document.GetElement(id).UniqueId).ToList();
+      var selectedObjects = CurrentDoc.Selection
+        .GetElementIds()
+        .Select(id => CurrentDoc.Document.GetElement(id).UniqueId)
+        .ToList();
       return selectedObjects;
     }
 
@@ -71,36 +109,34 @@ namespace Speckle.ConnectorRevit.UI
         return new List<string>();
       }
 
-      var collector = new FilteredElementCollector(CurrentDoc.Document, CurrentDoc.Document.ActiveView.Id).WhereElementIsNotElementType();
-      var elementIds = collector.ToElements().Select(el => el.UniqueId).ToList(); ;
+      var collector = new FilteredElementCollector(
+        CurrentDoc.Document,
+        CurrentDoc.Document.ActiveView.Id
+      ).WhereElementIsNotElementType();
+      var elementIds = collector.ToElements().Select(el => el.UniqueId).ToList();
+      ;
 
       return elementIds;
     }
 
     public override void SelectClientObjects(List<string> args, bool deselect = false)
     {
-      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))?.Where(x => x != null)?.Select(x => x.Id)?.ToList();
-      if (selection != null)
+      var selection = args.Select(x => CurrentDoc.Document.GetElement(x))
+        .Where(x => x != null && x.IsPhysicalElement())
+        .Select(x => x.Id)
+        ?.ToList();
+      if (!selection.Any())
+        return;
+
+      //merge two lists
+      if (!deselect)
       {
-        if (!deselect)
-        {
-          var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
-          if (currentSelection != null) currentSelection.AddRange(selection);
-          else currentSelection = selection;
-          try
-          {
-            CurrentDoc.Selection.SetElementIds(currentSelection);
-            CurrentDoc.ShowElements(currentSelection);
-          }
-          catch (Exception e) { }
-        }
-        else
-        {
-          var updatedSelection = CurrentDoc.Selection.GetElementIds().Where(x => !selection.Contains(x)).ToList();
-          CurrentDoc.Selection.SetElementIds(updatedSelection);
-          if (updatedSelection.Any()) CurrentDoc.ShowElements(updatedSelection);
-        }
+        var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
+        selection = currentSelection.Union(selection).ToList();
       }
+
+      CurrentDoc.Selection.SetElementIds(selection);
+      CurrentDoc.ShowElements(selection);
     }
 
     private List<Document> GetLinkedDocuments()
@@ -112,9 +148,13 @@ namespace Speckle.ConnectorRevit.UI
       if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
         return docs;
 
-
       //TODO: is the name the most safe way to look for it?
-      var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document).OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(RevitLinkType)).ToElements().Cast<RevitLinkType>().Select(x => x.Name.Replace(".rvt", ""));
+      var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document)
+        .OfCategory(BuiltInCategory.OST_RvtLinks)
+        .OfClass(typeof(RevitLinkType))
+        .ToElements()
+        .Cast<RevitLinkType>()
+        .Select(x => x.Name.Replace(".rvt", ""));
       foreach (Document revitDoc in RevitApp.Application.Documents)
       {
         if (revitDoc.IsLinked && linkedRVTs.Contains(revitDoc.Title))
@@ -140,17 +180,17 @@ namespace Speckle.ConnectorRevit.UI
       var selection = new List<Element>();
       try
       {
-
         switch (filter.Slug)
         {
-
           case "manual":
             selection = filter.Selection.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
             var linkedFiles = selection.Where(x => x is RevitLinkInstance).Cast<RevitLinkInstance>().ToList();
 
             foreach (var linkedFile in linkedFiles)
             {
-              var match = allDocs.FirstOrDefault(x => x.Title == linkedFile.Name.Split(new string[] { ".rvt" }, StringSplitOptions.None)[0]);
+              var match = allDocs.FirstOrDefault(
+                x => x.Title == linkedFile.Name.Split(new string[] { ".rvt" }, StringSplitOptions.None)[0]
+              );
               if (match != null)
                 selection.AddRange(match.SupportedElements());
             }
@@ -168,10 +208,12 @@ namespace Speckle.ConnectorRevit.UI
               //add for family document
               IList<ElementFilter> filters = new List<ElementFilter>()
               {
-              new ElementClassFilter(typeof(GenericForm)),
-              new ElementClassFilter(typeof(GeomCombination)),
+                new ElementClassFilter(typeof(GenericForm)),
+                new ElementClassFilter(typeof(GeomCombination)),
               };
-              selection.AddRange(new FilteredElementCollector(currentDoc).WherePasses(new LogicalOrFilter(filters)).ToElements());
+              selection.AddRange(
+                new FilteredElementCollector(currentDoc).WherePasses(new LogicalOrFilter(filters)).ToElements()
+              );
             }
             selection.AddRange(currentDoc.Views2D());
             selection.AddRange(currentDoc.Views3D());
@@ -199,10 +241,13 @@ namespace Speckle.ConnectorRevit.UI
             var categoryFilter = new LogicalOrFilter(elementFilters);
             foreach (var doc in allDocs)
             {
-              selection.AddRange(new FilteredElementCollector(doc)
-             .WhereElementIsNotElementType()
-             .WhereElementIsViewIndependent()
-             .WherePasses(categoryFilter).ToList());
+              selection.AddRange(
+                new FilteredElementCollector(doc)
+                  .WhereElementIsNotElementType()
+                  .WhereElementIsViewIndependent()
+                  .WherePasses(categoryFilter)
+                  .ToList()
+              );
             }
 
             return selection;
@@ -215,18 +260,30 @@ namespace Speckle.ConnectorRevit.UI
               .OfClass(typeof(View))
               .Where(x => viewFilter.Selection.Contains(x.Name));
 
+            if (!views.Where(v => v is not ViewSchedule).Any())
+            {
+              foreach (var view in views)
+              {
+                selection.Add(view);
+              }
+              return selection;
+            }
+
             foreach (var view in views)
             {
+              selection.Add(view);
               var ids = selection.Select(x => x.UniqueId);
 
               foreach (var doc in allDocs)
               {
-                selection.AddRange(new FilteredElementCollector(doc, view.Id)
-                .WhereElementIsNotElementType()
-                .WhereElementIsViewIndependent()
-                //.Where(x => x.IsPhysicalElement())
-                .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
-                .ToList());
+                selection.AddRange(
+                  new FilteredElementCollector(doc, view.Id)
+                    .WhereElementIsNotElementType()
+                    .WhereElementIsViewIndependent()
+                    //.Where(x => x.IsPhysicalElement())
+                    .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
+                    .ToList()
+                );
               }
             }
             return selection;
@@ -253,7 +310,10 @@ namespace Speckle.ConnectorRevit.UI
 
           case "workset":
             var worksetFilter = filter as ListSelectionFilter;
-            var worksets = new FilteredWorksetCollector(currentDoc).Where(x => worksetFilter.Selection.Contains(x.Name)).Select(x => x.Id).ToList();
+            var worksets = new FilteredWorksetCollector(currentDoc)
+              .Where(x => worksetFilter.Selection.Contains(x.Name))
+              .Select(x => x.Id)
+              .ToList();
             foreach (var doc in allDocs)
             {
               var collector = new FilteredElementCollector(doc);
@@ -287,24 +347,33 @@ namespace Speckle.ConnectorRevit.UI
                 switch (propFilter.PropertyOperator)
                 {
                   case "equals":
-                    query = query.Where(fi =>
-                      GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue);
+                    query = query.Where(
+                      fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)) == propFilter.PropertyValue
+                    );
                     break;
                   case "contains":
-                    query = query.Where(fi =>
-                      GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue));
+                    query = query.Where(
+                      fi =>
+                        GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue)
+                    );
                     break;
                   case "is greater than":
-                    query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-                                                fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                                fi.LookupParameter(propFilter.PropertyName)) >
-                                              double.Parse(propFilter.PropertyValue));
+                    query = query.Where(
+                      fi =>
+                        RevitVersionHelper.ConvertFromInternalUnits(
+                          fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                          fi.LookupParameter(propFilter.PropertyName)
+                        ) > double.Parse(propFilter.PropertyValue)
+                    );
                     break;
                   case "is less than":
-                    query = query.Where(fi => RevitVersionHelper.ConvertFromInternalUnits(
-                                                fi.LookupParameter(propFilter.PropertyName).AsDouble(),
-                                                fi.LookupParameter(propFilter.PropertyName)) <
-                                              double.Parse(propFilter.PropertyValue));
+                    query = query.Where(
+                      fi =>
+                        RevitVersionHelper.ConvertFromInternalUnits(
+                          fi.LookupParameter(propFilter.PropertyName).AsDouble(),
+                          fi.LookupParameter(propFilter.PropertyName)
+                        ) < double.Parse(propFilter.PropertyValue)
+                    );
                     break;
                 }
 
@@ -318,13 +387,9 @@ namespace Speckle.ConnectorRevit.UI
             return selection;
         }
       }
-      catch (Exception e)
-      {
-
-      }
+      catch (Exception e) { }
 
       return selection;
-
     }
 
     private string GetStringValue(Parameter p)

@@ -39,6 +39,5 @@ namespace Archicad.Communication.Commands
       var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects));
       return result == null ? null : result.ApplicationObjects;
     }
-
   }
 }

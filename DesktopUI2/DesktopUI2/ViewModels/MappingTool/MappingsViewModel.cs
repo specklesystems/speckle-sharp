@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -169,7 +169,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
   {
     try
     {
-      var model = await GetCommit();
+      var model = await GetCommit().ConfigureAwait(true);
 
       if (model == null)
         return;
@@ -204,7 +204,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
     string referencedObject = StreamSelector.SelectedBranch.commits.items.FirstOrDefault().referencedObject;
 
     var transport = new ServerTransport(StreamSelector.SelectedStream.Account, StreamSelector.SelectedStream.Stream.id);
-    return await Operations.Receive(referencedObject, transport, disposeTransports: true);
+    return await Operations.Receive(referencedObject, transport, disposeTransports: true).ConfigureAwait(true);
   }
 
   private void GetTypesAndLevels(Base model)
@@ -272,6 +272,32 @@ public class MappingsViewModel : ViewModelBase, IScreen
                 .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
                 .ToList();
               o.Families = wallFamiliesViewModels;
+              o.Levels = AvailableRevitLevels;
+              updatedSchemas.Add(o);
+              break;
+
+            case RevitProfileWallViewModel o:
+              var profileWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+              if (!profileWallFamilies.Any() || !AvailableRevitLevels.Any())
+                break;
+              var profileWallFamiliesViewModels = profileWallFamilies
+                .GroupBy(x => x.family)
+                .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
+                .ToList();
+              o.Families = profileWallFamiliesViewModels;
+              o.Levels = AvailableRevitLevels;
+              updatedSchemas.Add(o);
+              break;
+
+            case RevitFaceWallViewModel o:
+              var faceWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+              if (!faceWallFamilies.Any() || !AvailableRevitLevels.Any())
+                break;
+              var faceWallFamiliesViewModels = faceWallFamilies
+                .GroupBy(x => x.family)
+                .Select(g => new RevitFamily(g.Key.ToString(), g.Select(y => y.type).ToList()))
+                .ToList();
+              o.Families = faceWallFamiliesViewModels;
               o.Levels = AvailableRevitLevels;
               updatedSchemas.Add(o);
               break;

@@ -117,12 +117,17 @@ namespace Objects.Converter.Revit
       XYZ offset1 = VectorToNative(speckleStick.end1Offset ?? new Geometry.Vector(0, 0, 0));
       XYZ offset2 = VectorToNative(speckleStick.end2Offset ?? new Geometry.Vector(0, 0, 0));
 
+      var propertyName = speckleStick.property?.name;
+
+      //This only works for CSIC sections now for sure. Need to test on other sections
+      if (!string.IsNullOrEmpty(propertyName))
+        propertyName = propertyName.Replace('X', 'x');
+
       switch (speckleStick.type)
       {
         case ElementType1D.Beam:
           RevitBeam revitBeam = new RevitBeam();
-          //This only works for CSIC sections now for sure. Need to test on other sections
-          revitBeam.type = speckleStick.property.name.Replace('X', 'x');
+          revitBeam.type = propertyName;
           revitBeam.baseLine = speckleStick.baseLine;
 #if REVIT2020 || REVIT2021 || REVIT2022
           revitBeam.applicationId = speckleStick.applicationId;
@@ -133,7 +138,7 @@ namespace Objects.Converter.Revit
 
         case ElementType1D.Brace:
           RevitBrace revitBrace = new RevitBrace();
-          revitBrace.type = speckleStick.property.name.Replace('X', 'x');
+          revitBrace.type = propertyName;
           revitBrace.baseLine = speckleStick.baseLine;
 #if REVIT2020 || REVIT2021 || REVIT2022
           revitBrace.applicationId = speckleStick.applicationId;
@@ -144,7 +149,7 @@ namespace Objects.Converter.Revit
 
         case ElementType1D.Column:
           RevitColumn revitColumn = new RevitColumn();
-          revitColumn.type = speckleStick.property.name.Replace('X', 'x');
+          revitColumn.type = propertyName;
           revitColumn.baseLine = speckleStick.baseLine;
           revitColumn.units = speckleStick.units;
 #if REVIT2020 || REVIT2021 || REVIT2022
@@ -234,6 +239,7 @@ namespace Objects.Converter.Revit
       prop.profile = speckleSection;
       prop.material = GetStructuralMaterial(structMat);
       prop.name = revitStick.Document.GetElement(revitStick.GetElementId()).Name;
+      prop.applicationId = stickFamily.Symbol.UniqueId;
 
       var structuralElement = revitStick.Document.GetElement(revitStick.GetElementId());
       var mark = GetParamValue<string>(structuralElement, BuiltInParameter.ALL_MODEL_MARK);
@@ -286,7 +292,7 @@ namespace Objects.Converter.Revit
       SetEndReleases(revitStick, ref speckleElement1D);
 
       var prop = new Property1D();
-
+  
       var stickFamily = (Autodesk.Revit.DB.FamilySymbol)revitStick.Document.GetElement(revitStick.SectionTypeId);
 
       var speckleSection = GetSectionProfile(stickFamily);
@@ -553,7 +559,11 @@ namespace Objects.Converter.Revit
       }
       var materialName = material.MaterialClass;
       var materialType = GetMaterialType(materialName);
-      return GetStructuralMaterial(materialType, materialAsset, name);
+
+      var speckleMaterial = GetStructuralMaterial(materialType, materialAsset, name);
+      speckleMaterial.applicationId = material.UniqueId;
+
+      return speckleMaterial;
     }
 
     private StructuralMaterial GetStructuralMaterial(StructuralMaterialType materialType, StructuralAsset materialAsset, string name)

@@ -93,13 +93,18 @@ public class SpeckleLogConfiguration
 public static class SpeckleLog
 {
   private static ILogger? _logger;
-  private static bool _initialized;
 
-  public static ILogger Logger =>
-    _logger
-    ?? throw new SpeckleException(
-      $"The logger has not been initialized. Please call {typeof(SpeckleLog).FullName}.{nameof(Initialize)}"
-    );
+  public static ILogger Logger
+  {
+    get
+    {
+      if (_logger == null)
+        Initialize("Core", "unknown");
+      return _logger;
+    }
+  }
+
+  private static bool _initialized = false;
 
   /// <summary>
   /// Initialize logger configuration for a global Serilog.Log logger.

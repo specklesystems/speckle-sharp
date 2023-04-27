@@ -10,9 +10,10 @@ namespace AdvanceSteelAddinRegistrator
 {
   internal class Program
   {
-    const string path = "C:\\Program Files\\Autodesk\\AutoCAD 2023\\ADVS\\Addons\\";
-    private static string manifest = Path.Combine(path, "MyAddons.xml");
-    private static string addinPath = Path.Combine(path, "Speckle");
+    private static string _year = null;
+    static string manifestBasePath => $"C:\\Program Files\\Autodesk\\AutoCAD {_year}\\ADVS\\Addons\\";
+    static string addinPath => $"C:\\Program Files\\Autodesk\\Advance Steel Speckle Connector\\{_year}\\";
+    private static string manifest => Path.Combine(manifestBasePath, "MyAddons.xml");
     const string addinDllName = "SpeckleConnectorAdvanceSteel.dll";
     const string addinName = "Speckle";
 
@@ -23,15 +24,24 @@ namespace AdvanceSteelAddinRegistrator
       ErrorUpdatingXml = 2,
       ErrorWritingXml = 3,
       NoAdminRights = 4,
-      Unknown = 5
+      Unknown = 5,
+      NoYearArgument = 6
     }
+
     static int Main(string[] args)
     {
+      if (args == null || !args.Any() || args[0].Length != 4)
+      {
+        Console.WriteLine("Please provide a Year argument (eg: '202X')");
+        return (int)ExitCode.NoYearArgument;
+      }
+
+      _year = args[0];
+
       AddonsData addonsData = new AddonsData();
 
       try
       {
-
         if (File.Exists(manifest))
         {
           addonsData = ParseManifestFile();
@@ -49,31 +59,26 @@ namespace AdvanceSteelAddinRegistrator
           Console.WriteLine("Admin Rights required to continue.");
           return (int)ExitCode.NoAdminRights;
         }
-
         else if (ex.Message.Contains("updating"))
         {
           Console.WriteLine(ex.Message);
           return (int)ExitCode.ErrorUpdatingXml;
         }
-
         else if (ex.Message.Contains("parsing"))
         {
           Console.WriteLine(ex.Message);
           return (int)ExitCode.ErrorParsingXml;
         }
-
         else if (ex.Message.Contains("writing"))
         {
           Console.WriteLine(ex.Message);
           return (int)ExitCode.ErrorWritingXml;
         }
-
         else
         {
           Console.WriteLine(ex.Message);
           return (int)ExitCode.Unknown;
         }
-
       }
       return (int)ExitCode.Success;
     }
@@ -94,7 +99,9 @@ namespace AdvanceSteelAddinRegistrator
           return addonsData;
         }
 
-        addonsData.Addons = addonsData.Addons.Append(new AddonsDataAddon() { Name = addinName, FullPath = Path.Combine(addinPath, addinDllName) }).ToArray();
+        addonsData.Addons = addonsData.Addons
+          .Append(new AddonsDataAddon() { Name = addinName, FullPath = Path.Combine(addinPath, addinDllName) })
+          .ToArray();
       }
       catch (Exception ex)
       {
@@ -103,14 +110,11 @@ namespace AdvanceSteelAddinRegistrator
       return addonsData;
     }
 
-
     private static AddonsData ParseManifestFile()
     {
-
       AddonsData addonsData = null;
       try
       {
-
         using (var stream = new FileStream(manifest, FileMode.Open))
         {
           var serializer = new XmlSerializer(typeof(AddonsData));
@@ -123,7 +127,6 @@ namespace AdvanceSteelAddinRegistrator
       }
 
       return addonsData;
-
     }
 
     private static void WriteManifestFile(AddonsData addonsData)

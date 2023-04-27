@@ -39,7 +39,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
 //    ToolTip = "Command to send selection to the document stream, or everything if nothing is selected",
 //    DisplayName = "Quick\rSend"
 //)]
-internal class RibbonHandler : CommandHandlerPlugin
+internal sealed class RibbonHandler : CommandHandlerPlugin
 {
   public override CommandState CanExecuteCommand(string commandId)
   {
@@ -58,18 +58,18 @@ internal class RibbonHandler : CommandHandlerPlugin
     return state;
   }
 
-  public bool LoadPlugin(string plugin, bool notAutomatedCheck = true, string command = "")
+  private static void LoadPlugin(string plugin, bool notAutomatedCheck = true, string command = "")
   {
     if (notAutomatedCheck && NavisworksApp.IsAutomated)
-      return false;
+      return;
 
     if (plugin.Length == 0 || command.Length == 0)
-      return false;
+      return;
 
     var pluginRecord = NavisworksApp.Plugins.FindPlugin(plugin + ".Speckle");
 
     if (pluginRecord is null)
-      return false;
+      return;
 
     var loadedPlugin = pluginRecord.LoadedPlugin ?? pluginRecord.LoadPlugin();
 
@@ -92,8 +92,6 @@ internal class RibbonHandler : CommandHandlerPlugin
       MessageBox.Show(command + " Plugin not loaded.");
 #endif
     }
-
-    return pluginRecord.IsLoaded;
   }
 
   public override int ExecuteCommand(string commandId, params string[] parameters)

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -51,11 +51,16 @@ namespace Speckle.ConnectorRevit.UI
       var selectedObjects = GetSelectionFilterObjects(state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
-
       if (!selectedObjects.Any())
-        throw new InvalidOperationException("There are zero objects to send. Please use a filter, or set some via selection.");
+        throw new InvalidOperationException(
+          "There are zero objects to send. Please use a filter, or set some via selection."
+        );
 
-      converter.SetContextObjects(selectedObjects.Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId }).ToList());
+      converter.SetContextObjects(
+        selectedObjects
+          .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })
+          .ToList()
+      );
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -71,7 +76,10 @@ namespace Speckle.ConnectorRevit.UI
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
           // get the report object
           // for hosted elements, they may have already been converted and added to the converter report
-          var alreadyConverted = converter.Report.ReportObjects.TryGetValue(revitElement.UniqueId, out var applicationObject);
+          var alreadyConverted = converter.Report.ReportObjects.TryGetValue(
+            revitElement.UniqueId,
+            out var applicationObject
+          );
 
           var reportObj = alreadyConverted
             ? applicationObject
@@ -95,11 +103,15 @@ namespace Speckle.ConnectorRevit.UI
             if (!converter.CanConvertToSpeckle(revitElement))
             {
               if (revitElement is RevitLinkInstance)
-                reportObj.Update(status: ApplicationObject.State.Skipped,
-                  logItem: $"Enable linked model support from the settings to send this object");
+                reportObj.Update(
+                  status: ApplicationObject.State.Skipped,
+                  logItem: $"Enable linked model support from the settings to send this object"
+                );
               else
-                reportObj.Update(status: ApplicationObject.State.Skipped,
-                  logItem: $"Sending this object type is not supported yet");
+                reportObj.Update(
+                  status: ApplicationObject.State.Skipped,
+                  logItem: $"Sending this object type is not supported yet"
+                );
 
               progress.Report.Log(reportObj);
               continue;
@@ -120,7 +132,8 @@ namespace Speckle.ConnectorRevit.UI
 
             convertedCount++;
 
-            if (conversionResult == null) throw new SpeckleException($"Conversion of {reportObj.applicationId} (ToSpeckle) returned null");
+            if (conversionResult == null)
+              throw new SpeckleException($"Conversion of {reportObj.applicationId} (ToSpeckle) returned null");
 
             // here we are checking to see if we're receiving an object that has a host
             // but the host doesn't know that it is a host
@@ -152,8 +165,10 @@ namespace Speckle.ConnectorRevit.UI
                 // remove the speckleHost element that we added
                 conversionResult["speckleHost"] = null;
 
-                reportObj.Update(status: ApplicationObject.State.Created,
-                  logItem: $"Attached as hosted element to {host.applicationId}");
+                reportObj.Update(
+                  status: ApplicationObject.State.Created,
+                  logItem: $"Attached as hosted element to {host.applicationId}"
+                );
               }
             }
             //is an element type, nest it under Types instead
@@ -199,10 +214,15 @@ namespace Speckle.ConnectorRevit.UI
               }
             }
 
-            reportObj.Update(status: ApplicationObject.State.Created,
-              logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}");
+            reportObj.Update(
+              status: ApplicationObject.State.Created,
+              logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}"
+            );
           }
-          catch (OperationCanceledException) { throw; }
+          catch (OperationCanceledException)
+          {
+            throw;
+          }
           catch (Exception ex)
           {
             SpeckleLog.Logger.Warning(ex, "Object failed during conversion");
@@ -230,7 +250,7 @@ namespace Speckle.ConnectorRevit.UI
         onProgressAction: dict => progress.Update(dict),
         onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
-        );
+      );
 
       progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -243,11 +263,13 @@ namespace Speckle.ConnectorRevit.UI
         sourceApplication = ConnectorRevitUtils.RevitAppName,
       };
 
-      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+      if (state.PreviousCommitId != null)
+      {
+        actualCommit.parents = new List<string>() { state.PreviousCommitId };
+      }
 
       var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
       return commitId;
     }
-
   }
 }

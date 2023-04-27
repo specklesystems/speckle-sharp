@@ -1,4 +1,4 @@
-﻿namespace DesktopUI2.ViewModels.DesignViewModels;
+namespace DesktopUI2.ViewModels.DesignViewModels;
 
 public class DesignReportViewModel
 {

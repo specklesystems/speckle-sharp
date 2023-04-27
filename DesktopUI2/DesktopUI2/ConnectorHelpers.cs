@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Linq;
 using System.Threading;
@@ -41,30 +41,32 @@ public static class ConnectorHelpers
 
     var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
-    Base? commitObject = await Operations.Receive(
-      commit.referencedObject,
-      progress.CancellationToken,
-      transport,
-      onProgressAction: dict => progress.Update(dict),
-      onErrorAction: (s, ex) =>
-      {
-        //Don't wrap cancellation exceptions!
-        if (ex is OperationCanceledException)
-          throw ex;
-
-        //HACK: Sometimes, the task was cancelled, and Operations.Receive doesn't fail in a reliable way. In this case, the exception is often simply a symptom of a cancel.
-        if (progress.CancellationToken.IsCancellationRequested)
+    Base? commitObject = await Operations
+      .Receive(
+        commit.referencedObject,
+        progress.CancellationToken,
+        transport,
+        onProgressAction: dict => progress.Update(dict),
+        onErrorAction: (s, ex) =>
         {
-          SpeckleLog.Logger.Warning(ex, "A task was cancelled, ignoring potentially symptomatic exception");
-          progress.CancellationToken.ThrowIfCancellationRequested();
-        }
+          //Don't wrap cancellation exceptions!
+          if (ex is OperationCanceledException)
+            throw ex;
 
-        //Treat all operation errors as fatal
-        throw new SpeckleException($"Failed to receive commit: {commit.id} objects from server", ex);
-      },
-      onTotalChildrenCountKnown: c => progress.Max = c,
-      disposeTransports: true
-    );
+          //HACK: Sometimes, the task was cancelled, and Operations.Receive doesn't fail in a reliable way. In this case, the exception is often simply a symptom of a cancel.
+          if (progress.CancellationToken.IsCancellationRequested)
+          {
+            SpeckleLog.Logger.Warning(ex, "A task was cancelled, ignoring potentially symptomatic exception");
+            progress.CancellationToken.ThrowIfCancellationRequested();
+          }
+
+          //Treat all operation errors as fatal
+          throw new SpeckleException($"Failed to receive commit: {commit.id} objects from server", ex);
+        },
+        onTotalChildrenCountKnown: c => progress.Max = c,
+        disposeTransports: true
+      )
+      .ConfigureAwait(true);
 
     if (commitObject == null)
       throw new SpeckleException(
@@ -88,12 +90,14 @@ public static class ConnectorHelpers
     {
       if (state.CommitId == LatestCommitString) //if "latest", always make sure we get the latest commit
       {
-        var res = await state.Client.BranchGet(cancellationToken, state.StreamId, state.BranchName, 1);
+        var res = await state.Client
+          .BranchGet(cancellationToken, state.StreamId, state.BranchName, 1)
+          .ConfigureAwait(true);
         commit = res.commits.items.First();
       }
       else
       {
-        var res = await state.Client.CommitGet(cancellationToken, state.StreamId, state.CommitId);
+        var res = await state.Client.CommitGet(cancellationToken, state.StreamId, state.CommitId).ConfigureAwait(true);
         commit = res;
       }
     }
@@ -125,7 +129,7 @@ public static class ConnectorHelpers
   {
     try
     {
-      await client.CommitReceived(cancellationToken, commitReceivedInput);
+      await client.CommitReceived(cancellationToken, commitReceivedInput).ConfigureAwait(true);
     }
     catch (SpeckleException ex)
     {
@@ -152,7 +156,7 @@ public static class ConnectorHelpers
       message = commit.message,
       sourceApplication = sourceApplication
     };
-    await TryCommitReceived(cancellationToken, state.Client, commitReceivedInput, logLevel);
+    await TryCommitReceived(cancellationToken, state.Client, commitReceivedInput, logLevel).ConfigureAwait(true);
   }
 
   //TODO: should this just be how `CommitCreate` id implemented?
@@ -170,7 +174,7 @@ public static class ConnectorHelpers
   {
     try
     {
-      var commitId = await client.CommitCreate(cancellationToken, commitInput);
+      var commitId = await client.CommitCreate(cancellationToken, commitInput).ConfigureAwait(true);
       return commitId;
     }
     catch (OperationCanceledException)

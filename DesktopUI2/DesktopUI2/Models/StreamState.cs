@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using DesktopUI2.Models.Filters;
@@ -117,7 +117,7 @@ public class StreamState
   /// Last time the stream card was used to receive or send
   /// </summary>
   [JsonProperty]
-  public string LastUsed { get; set; }
+  public DateTime? LastUsed { get; set; }
 
   /// <summary>
   /// If a receiver, the last commit it received from
