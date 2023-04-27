@@ -305,8 +305,12 @@ namespace Objects.Converter.Revit
 
         for (var columnIndex = 0; columnIndex < rowInfo.columnCount; columnIndex++)
         {
-          var cellValue = revitSchedule.GetCellText(rowInfo.tableSection, rowInfo.rowIndex, columnIndex);
+          if (headersSetArray[columnIndex])
+          {
+            continue;
+          }
 
+          var cellValue = revitSchedule.GetCellText(rowInfo.tableSection, rowInfo.rowIndex, columnIndex);
           if (cellValue != columnHeaders[columnIndex])
           {
             continue;
