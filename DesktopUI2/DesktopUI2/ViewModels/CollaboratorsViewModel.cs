@@ -161,7 +161,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger.Warning(
+      SpeckleLog.Logger.Error(
         ex,
         "Swallowing exception in {methodName}: {exceptionMessage}",
         nameof(CanSaveCommand),
@@ -359,7 +359,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Warning(
+        SpeckleLog.Logger.Error(
           ex,
           "Swallowing exception in {methodName}: {exceptionMessage}",
           nameof(SaveCommand),
@@ -373,7 +373,7 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
     catch (Exception ex)
     {
-      SpeckleLog.Logger.Warning(
+      SpeckleLog.Logger.Error(
         ex,
         "Swallowing exception in {methodName}: {exceptionMessage}",
         nameof(SaveCommand),
