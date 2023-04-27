@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace ConverterRevitTests
   internal static class SpeckleUtils
   {
     public static SemaphoreSlim Throttler = new SemaphoreSlim(1,1);
-    internal async static Task<string> RunInTransaction(Action action, DB.Document doc, ConverterRevit converter, string transactionName = "transaction", bool ignoreWarnings = false)
+    internal async static Task<string> RunInTransaction(Action action, DB.Document doc, ConverterRevit converter = null, string transactionName = "transaction", bool ignoreWarnings = false)
     {
       var tcs = new TaskCompletionSource<string>();
 
@@ -28,7 +28,10 @@ namespace ConverterRevitTests
         g.Start();
         transaction.Start();
 
-        converter.SetContextDocument(transaction);
+        if (converter != null)
+        {
+          converter.SetContextDocument(transaction);
+        }
 
         if (ignoreWarnings)
         {
@@ -79,6 +82,9 @@ namespace ConverterRevitTests
         case ApplicationObject o:
           foreach (var item in o.Converted)
             DeleteElement(item);
+          break;
+        case DB.ViewSchedule _:
+          // don't delete a view schedule since we didn't create it in the first place
           break;
         case DB.Element o:
           try

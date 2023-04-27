@@ -67,7 +67,11 @@ autocadcivil:
       dllname: SpeckleConnectorAutocad.dll
       slug: civil3d
       context: innosetup
-
+  - build-connector:
+      slnname: ConnectorAutocadCivil
+      dllname: SpeckleConnectorAutocad.dll
+      slug: advancesteel
+      context: innosetup
 bentley:
   - build-connector:
       slnname: ConnectorBentley

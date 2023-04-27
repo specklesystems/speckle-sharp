@@ -24,7 +24,8 @@ public class Helpers
   public void TimeAgo_DisplaysTextCorrectly(int secondsAgo, string expectedText)
   {
     // Get current time and substract the input amount
-    var dateTime = DateTime.Now;
+    var dateTime = DateTime.UtcNow;
+
     dateTime = dateTime.Subtract(new TimeSpan(0, 0, secondsAgo));
 
     // Get the timeAgo text representation

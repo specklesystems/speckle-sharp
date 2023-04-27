@@ -109,8 +109,8 @@ public class Stream
 
   public bool isPublic { get; set; }
   public string role { get; set; }
-  public string createdAt { get; set; }
-  public string updatedAt { get; set; }
+  public DateTime createdAt { get; set; }
+  public DateTime updatedAt { get; set; }
   public string favoritedDate { get; set; }
 
   public int commentCount { get; set; }
@@ -198,7 +198,7 @@ public class Commit
   public string authorName { get; set; }
   public string authorId { get; set; }
   public string authorAvatar { get; set; }
-  public string createdAt { get; set; }
+  public DateTime createdAt { get; set; }
   public string sourceApplication { get; set; }
 
   public string referencedObject { get; set; }
@@ -225,7 +225,7 @@ public class ActivityItem
   public string streamId { get; set; }
   public string resourceId { get; set; }
   public string resourceType { get; set; }
-  public string time { get; set; }
+  public DateTime time { get; set; }
   public Info info { get; set; }
   public string message { get; set; }
 }
@@ -251,7 +251,7 @@ public class SpeckleObject
   public string speckleType { get; set; }
   public string applicationId { get; set; }
   public int totalChildrenCount { get; set; }
-  public string createdAt { get; set; }
+  public DateTime createdAt { get; set; }
 }
 
 public class Branch

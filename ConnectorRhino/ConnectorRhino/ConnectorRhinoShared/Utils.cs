@@ -335,6 +335,7 @@ public static class Formatting
 
   public static string TimeAgo(string timestamp)
   {
+    //TODO: this implementation is almost the same as Speckle.Core.Api.Helpers
     TimeSpan timeAgo;
     try
     {

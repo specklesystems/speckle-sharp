@@ -92,26 +92,30 @@ public class SpeckleLogConfiguration
 /// </summary>
 public static class SpeckleLog
 {
-  private static ILogger? _logger;
-  private static bool _initialized;
+    private static ILogger? _logger;
 
-  public static ILogger Logger =>
-    _logger
-    ?? throw new SpeckleException(
-      $"The logger has not been initialized. Please call {typeof(SpeckleLog).FullName}.{nameof(Initialize)}"
-    );
+    public static ILogger Logger
+    {
+      get 
+      { 
+        if(_logger == null) Initialize("Core", "unknown");
+        return _logger;
+      }
+    }
 
-  /// <summary>
-  /// Initialize logger configuration for a global Serilog.Log logger.
-  /// </summary>
-  public static void Initialize(
-    string hostApplicationName,
-    string? hostApplicationVersion,
-    SpeckleLogConfiguration? logConfiguration = null
-  )
-  {
-    if (_initialized)
-      return;
+    private static bool _initialized = false;
+
+    /// <summary>
+    /// Initialize logger configuration for a global Serilog.Log logger.
+    /// </summary>
+    public static void Initialize(
+      string hostApplicationName,
+      string? hostApplicationVersion,
+      SpeckleLogConfiguration? logConfiguration = null
+    )
+    {
+      if (_initialized)
+        return;
 
     logConfiguration ??= new SpeckleLogConfiguration();
 
