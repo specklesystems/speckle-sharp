@@ -16,16 +16,15 @@ namespace ConverterRevitTests
     public override string UpdatedTestFile => Globals.GetTestModel("ScheduleUpdated.rvt");
     public override string NewFile => Globals.GetTestModel("ScheduleToNative.rvt");
     public override List<BuiltInCategory> Categories => new() { BuiltInCategory.OST_Schedules };
-    public ScheduleFixture() : base ()
-    {
-    }
+
+    public ScheduleFixture()
+      : base() { }
   }
 
   public class ScheduleTests : SpeckleConversionTest, IClassFixture<ScheduleFixture>
   {
-    public ScheduleTests(ScheduleFixture fixture) : base(fixture)
-    {
-    }
+    public ScheduleTests(ScheduleFixture fixture)
+      : base(fixture) { }
 
     // This test doesn't work because our ToSpeckle test logic really isn't that good
     //[Fact]
@@ -57,23 +56,30 @@ namespace ConverterRevitTests
     {
       Assert.NotNull(destElem);
 
-      var sourceValueList = await RevitTask.RunAsync(app => {
-        return GetTextValuesFromSchedule(sourceElem);
-      }).ConfigureAwait(false);
+      var sourceValueList = await RevitTask
+        .RunAsync(app =>
+        {
+          return GetTextValuesFromSchedule(sourceElem);
+        })
+        .ConfigureAwait(false);
 
-      var destValueList = await RevitTask.RunAsync(app => {
-        return GetTextValuesFromSchedule(destElem);
-      }).ConfigureAwait(false);
+      var destValueList = await RevitTask
+        .RunAsync(app =>
+        {
+          return GetTextValuesFromSchedule(destElem);
+        })
+        .ConfigureAwait(false);
 
       var index = 0;
       for (var i = 0; i < sourceValueList.Count; i++)
-      {      
+      {
         try
         {
           // you can't unassign parameter values in Revit, so just ignore those
-          var emptyIndicies = Enumerable.Range(0, sourceValueList[i].Count)
-             .Where(j => string.IsNullOrWhiteSpace(sourceValueList[i][j]))
-             .ToList();
+          var emptyIndicies = Enumerable
+            .Range(0, sourceValueList[i].Count)
+            .Where(j => string.IsNullOrWhiteSpace(sourceValueList[i][j]))
+            .ToList();
 
           if (emptyIndicies.Any())
           {
@@ -85,7 +91,7 @@ namespace ConverterRevitTests
           }
           Assert.Equal(sourceValueList[i], destValueList[i]);
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
           throw;
         }

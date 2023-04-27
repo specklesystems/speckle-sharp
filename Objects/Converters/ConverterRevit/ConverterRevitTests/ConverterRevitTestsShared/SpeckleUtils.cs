@@ -15,8 +15,15 @@ namespace ConverterRevitTests
 {
   internal static class SpeckleUtils
   {
-    public static SemaphoreSlim Throttler = new SemaphoreSlim(1,1);
-    internal async static Task<string> RunInTransaction(Action action, DB.Document doc, ConverterRevit converter = null, string transactionName = "transaction", bool ignoreWarnings = false)
+    public static SemaphoreSlim Throttler = new SemaphoreSlim(1, 1);
+
+    internal async static Task<string> RunInTransaction(
+      Action action,
+      DB.Document doc,
+      ConverterRevit converter = null,
+      string transactionName = "transaction",
+      bool ignoreWarnings = false
+    )
     {
       var tcs = new TaskCompletionSource<string>();
 
@@ -89,10 +96,14 @@ namespace ConverterRevitTests
         case DB.Element o:
           try
           {
-            xru.RunInTransaction(() =>
-            {
-              o.Document.Delete(o.Id);
-            }, o.Document).Wait();
+            xru.RunInTransaction(
+                () =>
+                {
+                  o.Document.Delete(o.Id);
+                },
+                o.Document
+              )
+              .Wait();
           }
           // element already deleted, don't worry about it
           catch { }
@@ -104,7 +115,8 @@ namespace ConverterRevitTests
 
     internal static int GetSpeckleObjectTestNumber(DB.Element element)
     {
-      var param = element.Parameters.Cast<DB.Parameter>()
+      var param = element.Parameters
+        .Cast<DB.Parameter>()
         .Where(el => el.Definition.Name == "SpeckleObjectTestNumber")
         .FirstOrDefault();
 

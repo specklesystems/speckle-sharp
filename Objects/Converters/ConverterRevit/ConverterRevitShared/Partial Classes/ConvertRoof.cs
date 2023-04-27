@@ -17,7 +17,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject RoofToNative(Roof speckleRoof)
     {
       var docObj = GetExistingElementByApplicationId((speckleRoof).applicationId);
-      var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type) { applicationId = speckleRoof.applicationId };
+      var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type)
+      {
+        applicationId = speckleRoof.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
@@ -52,88 +55,107 @@ namespace Objects.Converter.Revit
       switch (speckleRoof)
       {
         case RevitExtrusionRoof speckleExtrusionRoof:
-          {
-            var referenceLine = LineToNative(speckleExtrusionRoof.referenceLine);
-            var norm = GetPerpendicular(referenceLine.GetEndPoint(0) - referenceLine.GetEndPoint(1)).Negate();
-            ReferencePlane plane = Doc.Create.NewReferencePlane(referenceLine.GetEndPoint(0),
-              referenceLine.GetEndPoint(1),
-              norm,
-              Doc.ActiveView);
-            //create floor without a type
-            var start = ScaleToNative(speckleExtrusionRoof.start, speckleExtrusionRoof.units);
-            var end = ScaleToNative(speckleExtrusionRoof.end, speckleExtrusionRoof.units);
-            revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
-            break;
-          }
+        {
+          var referenceLine = LineToNative(speckleExtrusionRoof.referenceLine);
+          var norm = GetPerpendicular(referenceLine.GetEndPoint(0) - referenceLine.GetEndPoint(1)).Negate();
+          ReferencePlane plane = Doc.Create.NewReferencePlane(
+            referenceLine.GetEndPoint(0),
+            referenceLine.GetEndPoint(1),
+            norm,
+            Doc.ActiveView
+          );
+          //create floor without a type
+          var start = ScaleToNative(speckleExtrusionRoof.start, speckleExtrusionRoof.units);
+          var end = ScaleToNative(speckleExtrusionRoof.end, speckleExtrusionRoof.units);
+          revitRoof = Doc.Create.NewExtrusionRoof(outline, plane, level, roofType, start, end);
+          break;
+        }
         case RevitFootprintRoof speckleFootprintRoof:
+        {
+          ModelCurveArray curveArray = new ModelCurveArray();
+          var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
+
+          // if the roof is a curtain roof then set the mullions at the borders
+          if (
+            revitFootprintRoof.CurtainGrids != null
+            && speckleFootprintRoof["elements"] is List<Base> elements
+            && elements.Count != 0
+          )
           {
-            ModelCurveArray curveArray = new ModelCurveArray();
-            var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
-
-            // if the roof is a curtain roof then set the mullions at the borders
-            if (revitFootprintRoof.CurtainGrids != null && speckleFootprintRoof["elements"] is List<Base> elements && elements.Count != 0)
+            // TODO: Create a new type instead of overriding the type. This could affect other elements
+            var param = roofType.get_Parameter(BuiltInParameter.AUTO_MULLION_BORDER1_GRID1);
+            var type = Doc.GetElement(param.AsElementId());
+            if (type == null)
             {
-              // TODO: Create a new type instead of overriding the type. This could affect other elements
-              var param = roofType.get_Parameter(BuiltInParameter.AUTO_MULLION_BORDER1_GRID1);
-              var type = Doc.GetElement(param.AsElementId());
-              if (type == null)
-              {
-                // assuming first mullion is the desired mullion for the whole roof...
-                GetElementType<MullionType>(elements.Where(b => b is BuiltElements.Revit.FamilyInstance f).First(), new ApplicationObject("", ""), out MullionType mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID2, mullionType);
-              }
+              // assuming first mullion is the desired mullion for the whole roof...
+              GetElementType<MullionType>(
+                elements.Where(b => b is BuiltElements.Revit.FamilyInstance f).First(),
+                new ApplicationObject("", ""),
+                out MullionType mullionType
+              );
+              TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
+              TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
+              TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
+              TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID2, mullionType);
             }
-            var poly = speckleFootprintRoof.outline as Polycurve;
-            bool hasSlopedSide = false;
-            if (poly != null)
-            {
-              for (var i = 0; i < curveArray.Size; i++)
-              {
-                var isSloped = ((Base)poly.segments[i])["isSloped"] as bool?;
-                var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
-                var offset = ((Base)poly.segments[i])["offset"] as double?;
-
-                if (isSloped != null)
-                {
-                  revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
-                  if (slopeAngle != null && isSloped == true)
-                  {
-                    // slope is set using actual slope (rise / run) for this method
-                    revitFootprintRoof.set_SlopeAngle(curveArray.get_Item(i), Math.Tan((double)slopeAngle * Math.PI / 180));
-                    hasSlopedSide = true;
-                  }
-                }
-
-                if (offset != null)
-                  revitFootprintRoof.set_Offset(curveArray.get_Item(i), ScaleToNative((double)offset, speckleFootprintRoof.units));
-              }
-            }
-
-            //this is for schema builder specifically
-            //if no roof edge has a slope defined but a slope angle is defined on the roof
-            //set each edge to have that slope
-            if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope != 0)
-            {
-              for (var i = 0; i < curveArray.Size; i++)
-                revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), true);
-
-              TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope);
-            }
-
-            if (speckleFootprintRoof.cutOffLevel != null)
-            {
-              var cutOffLevel = ConvertLevelToRevit(speckleFootprintRoof.cutOffLevel, out levelState);
-              TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
-            }
-
-            revitRoof = revitFootprintRoof;
-            break;
           }
+          var poly = speckleFootprintRoof.outline as Polycurve;
+          bool hasSlopedSide = false;
+          if (poly != null)
+          {
+            for (var i = 0; i < curveArray.Size; i++)
+            {
+              var isSloped = ((Base)poly.segments[i])["isSloped"] as bool?;
+              var slopeAngle = ((Base)poly.segments[i])["slopeAngle"] as double?;
+              var offset = ((Base)poly.segments[i])["offset"] as double?;
+
+              if (isSloped != null)
+              {
+                revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), isSloped == true);
+                if (slopeAngle != null && isSloped == true)
+                {
+                  // slope is set using actual slope (rise / run) for this method
+                  revitFootprintRoof.set_SlopeAngle(
+                    curveArray.get_Item(i),
+                    Math.Tan((double)slopeAngle * Math.PI / 180)
+                  );
+                  hasSlopedSide = true;
+                }
+              }
+
+              if (offset != null)
+                revitFootprintRoof.set_Offset(
+                  curveArray.get_Item(i),
+                  ScaleToNative((double)offset, speckleFootprintRoof.units)
+                );
+            }
+          }
+
+          //this is for schema builder specifically
+          //if no roof edge has a slope defined but a slope angle is defined on the roof
+          //set each edge to have that slope
+          if (!hasSlopedSide && speckleFootprintRoof.slope != null && speckleFootprintRoof.slope != 0)
+          {
+            for (var i = 0; i < curveArray.Size; i++)
+              revitFootprintRoof.set_DefinesSlope(curveArray.get_Item(i), true);
+
+            TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_SLOPE, (double)speckleFootprintRoof.slope);
+          }
+
+          if (speckleFootprintRoof.cutOffLevel != null)
+          {
+            var cutOffLevel = ConvertLevelToRevit(speckleFootprintRoof.cutOffLevel, out levelState);
+            TrySetParam(revitFootprintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM, cutOffLevel);
+          }
+
+          revitRoof = revitFootprintRoof;
+          break;
+        }
         default:
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: "Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof");
+          appObj.Update(
+            status: ApplicationObject.State.Failed,
+            logItem: "Roof type not supported, please try with RevitExtrusionRoof or RevitFootprintRoof"
+          );
           return appObj;
       }
 
@@ -169,44 +191,50 @@ namespace Objects.Converter.Revit
       {
         //assigning correct type for when going back in Revit
         case FootPrintRoof footPrintRoof:
+        {
+          var speckleFootprintRoof = new RevitFootprintRoof
           {
-            var speckleFootprintRoof = new RevitFootprintRoof
-            {
-              level = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_BASE_LEVEL_PARAM),
-              cutOffLevel = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM),
-              slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
-            };
+            level = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_BASE_LEVEL_PARAM),
+            cutOffLevel = ConvertAndCacheLevel(footPrintRoof, BuiltInParameter.ROOF_UPTO_LEVEL_PARAM),
+            slope = GetParamValue<double?>(footPrintRoof, BuiltInParameter.ROOF_SLOPE) //NOTE: can be null if the sides have different slopes
+          };
 
-            var slopeArrow = GetSlopeArrow(footPrintRoof);
-            if (slopeArrow != null)
-            {
-              var tail = GetSlopeArrowTail(slopeArrow, Doc);
-              var head = GetSlopeArrowHead(slopeArrow, Doc);
-              var tailOffset = GetSlopeArrowTailOffset(slopeArrow, Doc);
-              var headOffset = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out _);
+          var slopeArrow = GetSlopeArrow(footPrintRoof);
+          if (slopeArrow != null)
+          {
+            var tail = GetSlopeArrowTail(slopeArrow, Doc);
+            var head = GetSlopeArrowHead(slopeArrow, Doc);
+            var tailOffset = GetSlopeArrowTailOffset(slopeArrow, Doc);
+            var headOffset = GetSlopeArrowHeadOffset(slopeArrow, Doc, tailOffset, out _);
 
-              var newTail = new Geometry.Point(tail.x, tail.y, tailOffset);
-              var newHead = new Geometry.Point(head.x, head.y, headOffset);
-              profiles = GetProfiles(revitRoof, newTail, newHead);
-            }
-
-            speckleRoof = speckleFootprintRoof;
-            break;
+            var newTail = new Geometry.Point(tail.x, tail.y, tailOffset);
+            var newHead = new Geometry.Point(head.x, head.y, headOffset);
+            profiles = GetProfiles(revitRoof, newTail, newHead);
           }
+
+          speckleRoof = speckleFootprintRoof;
+          break;
+        }
         case ExtrusionRoof revitExtrusionRoof:
+        {
+          var speckleExtrusionRoof = new RevitExtrusionRoof
           {
-            var speckleExtrusionRoof = new RevitExtrusionRoof
-            {
-              start = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_START_PARAM),
-              end = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_END_PARAM)
-            };
-            var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
-            speckleExtrusionRoof.referenceLine =
-            new Line(PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate()), revitRoof.Document), PointToSpeckle(plane.Origin, revitRoof.Document), ModelUnits); //TODO: test!
-            speckleExtrusionRoof.level = ConvertAndCacheLevel(revitExtrusionRoof, BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM);
-            speckleRoof = speckleExtrusionRoof;
-            break;
-          }
+            start = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_START_PARAM),
+            end = GetParamValue<double>(revitExtrusionRoof, BuiltInParameter.EXTRUSION_END_PARAM)
+          };
+          var plane = revitExtrusionRoof.GetProfile().get_Item(0).SketchPlane.GetPlane();
+          speckleExtrusionRoof.referenceLine = new Line(
+            PointToSpeckle(plane.Origin.Add(plane.XVec.Normalize().Negate()), revitRoof.Document),
+            PointToSpeckle(plane.Origin, revitRoof.Document),
+            ModelUnits
+          ); //TODO: test!
+          speckleExtrusionRoof.level = ConvertAndCacheLevel(
+            revitExtrusionRoof,
+            BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM
+          );
+          speckleRoof = speckleExtrusionRoof;
+          break;
+        }
       }
       var elementType = revitRoof.Document.GetElement(revitRoof.GetTypeId()) as ElementType;
       speckleRoof.type = elementType.Name;
@@ -223,13 +251,28 @@ namespace Objects.Converter.Revit
           speckleRoof.voids = profiles.Skip(1).ToList();
       }
 
-      GetAllRevitParamsAndIds(speckleRoof, revitRoof,
-        new List<string> { "ROOF_CONSTRAINT_LEVEL_PARAM", "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM", "ROOF_SLOPE" });
+      GetAllRevitParamsAndIds(
+        speckleRoof,
+        revitRoof,
+        new List<string>
+        {
+          "ROOF_CONSTRAINT_LEVEL_PARAM",
+          "ROOF_BASE_LEVEL_PARAM",
+          "ROOF_UPTO_LEVEL_PARAM",
+          "EXTRUSION_START_PARAM",
+          "EXTRUSION_END_PARAM",
+          "ROOF_SLOPE"
+        }
+      );
 
-      speckleRoof.displayValue = GetElementDisplayValue(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine });
+      speckleRoof.displayValue = GetElementDisplayValue(
+        revitRoof,
+        new Options() { DetailLevel = ViewDetailLevel.Fine }
+      );
 
       GetHostedElements(speckleRoof, revitRoof, out List<string> hostedNotes);
-      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
+      if (hostedNotes.Any())
+        notes.AddRange(hostedNotes);
       return speckleRoof;
     }
 
@@ -242,99 +285,101 @@ namespace Objects.Converter.Revit
       switch (roof)
       {
         case FootPrintRoof footprint:
+        {
+          ModelCurveArrArray crvLoops = footprint.GetProfiles();
+          ModelCurve definesRoofSlope = null;
+          double roofSlope = 0;
+
+          // if headpoint and tailpoint are not null, it means that the user is using a
+          // slope arrow to define the slope. Slope arrows are not creatable via the api
+          // so we have to translate that into sloped segments.
+          // if the user's slope arrow is not perpendicular to the segment that it is attached to
+          // then it will not work (this is just a limitation of sloped segments in Revit)
+          // see this api wish https://forums.autodesk.com/t5/revit-ideas/api-access-to-create-amp-modify-slope-arrow/idi-p/6700081
+          if (tailPoint != null && headPoint != null)
           {
-            ModelCurveArrArray crvLoops = footprint.GetProfiles();
-            ModelCurve definesRoofSlope = null;
-            double roofSlope = 0;
-
-            // if headpoint and tailpoint are not null, it means that the user is using a 
-            // slope arrow to define the slope. Slope arrows are not creatable via the api
-            // so we have to translate that into sloped segments.
-            // if the user's slope arrow is not perpendicular to the segment that it is attached to 
-            // then it will not work (this is just a limitation of sloped segments in Revit)
-            // see this api wish https://forums.autodesk.com/t5/revit-ideas/api-access-to-create-amp-modify-slope-arrow/idi-p/6700081
-            if (tailPoint != null && headPoint != null)
-            {
-              for (var i = 0; i < crvLoops.Size; i++)
-              {
-                if (definesRoofSlope != null)
-                  break;
-
-                var crvLoop = crvLoops.get_Item(i);
-                var poly = new Polycurve(ModelUnits);
-                foreach (DB.ModelCurve curve in crvLoop)
-                {
-                  if (curve == null)
-                    continue;
-                  if (!(curve.Location is DB.LocationCurve c))
-                    continue;
-                  if (!(c.Curve is DB.Line line))
-                    continue;
-
-                  var start = PointToSpeckle(line.GetEndPoint(0), roof.Document);
-                  var end = PointToSpeckle(line.GetEndPoint(1), roof.Document);
-
-                  if (!IsBetween(start, end, tailPoint))
-                    continue;
-
-                  if (!CheckOrtho(start.x, start.y, end.x, end.y, tailPoint.x, tailPoint.y, headPoint.x, headPoint.y))
-                    break;
-
-                  definesRoofSlope = curve;
-                  var distance = Math.Sqrt((Math.Pow(headPoint.x - tailPoint.x, 2) + Math.Pow(headPoint.y - tailPoint.y, 2)));
-                  roofSlope = Math.Atan((headPoint.z - tailPoint.z) / distance) * 180 / Math.PI;
-                  break;
-                }
-              }
-            }
-
             for (var i = 0; i < crvLoops.Size; i++)
             {
+              if (definesRoofSlope != null)
+                break;
+
               var crvLoop = crvLoops.get_Item(i);
               var poly = new Polycurve(ModelUnits);
               foreach (DB.ModelCurve curve in crvLoop)
               {
                 if (curve == null)
                   continue;
+                if (!(curve.Location is DB.LocationCurve c))
+                  continue;
+                if (!(c.Curve is DB.Line line))
+                  continue;
 
-                var segment = CurveToSpeckle(curve.GeometryCurve, roof.Document) as Base; //it's a safe casting
-                if (definesRoofSlope != null && curve == definesRoofSlope)
-                {
-                  segment["slopeAngle"] = roofSlope;
-                  segment["isSloped"] = true;
-                  segment["offset"] = tailPoint.z;
-                }
-                else
-                {
-                  segment["slopeAngle"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_SLOPE);
-                  segment["isSloped"] = GetParamValue<bool>(curve, BuiltInParameter.ROOF_CURVE_IS_SLOPE_DEFINING);
-                  segment["offset"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_CURVE_HEIGHT_OFFSET);
-                }
-                poly.segments.Add(segment as ICurve);
+                var start = PointToSpeckle(line.GetEndPoint(0), roof.Document);
+                var end = PointToSpeckle(line.GetEndPoint(1), roof.Document);
 
-                //roud profiles are returned duplicated!
-                if (curve is ModelArc arc && RevitVersionHelper.IsCurveClosed(arc.GeometryCurve))
+                if (!IsBetween(start, end, tailPoint))
+                  continue;
+
+                if (!CheckOrtho(start.x, start.y, end.x, end.y, tailPoint.x, tailPoint.y, headPoint.x, headPoint.y))
                   break;
-              }
-              profiles.Add(poly);
-            }
 
-            break;
+                definesRoofSlope = curve;
+                var distance = Math.Sqrt(
+                  (Math.Pow(headPoint.x - tailPoint.x, 2) + Math.Pow(headPoint.y - tailPoint.y, 2))
+                );
+                roofSlope = Math.Atan((headPoint.z - tailPoint.z) / distance) * 180 / Math.PI;
+                break;
+              }
+            }
           }
-        case ExtrusionRoof extrusion:
+
+          for (var i = 0; i < crvLoops.Size; i++)
           {
-            var crvloop = extrusion.GetProfile();
+            var crvLoop = crvLoops.get_Item(i);
             var poly = new Polycurve(ModelUnits);
-            foreach (DB.ModelCurve curve in crvloop)
+            foreach (DB.ModelCurve curve in crvLoop)
             {
               if (curve == null)
                 continue;
 
-              poly.segments.Add(CurveToSpeckle(curve.GeometryCurve, roof.Document));
+              var segment = CurveToSpeckle(curve.GeometryCurve, roof.Document) as Base; //it's a safe casting
+              if (definesRoofSlope != null && curve == definesRoofSlope)
+              {
+                segment["slopeAngle"] = roofSlope;
+                segment["isSloped"] = true;
+                segment["offset"] = tailPoint.z;
+              }
+              else
+              {
+                segment["slopeAngle"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_SLOPE);
+                segment["isSloped"] = GetParamValue<bool>(curve, BuiltInParameter.ROOF_CURVE_IS_SLOPE_DEFINING);
+                segment["offset"] = GetParamValue<double>(curve, BuiltInParameter.ROOF_CURVE_HEIGHT_OFFSET);
+              }
+              poly.segments.Add(segment as ICurve);
+
+              //roud profiles are returned duplicated!
+              if (curve is ModelArc arc && RevitVersionHelper.IsCurveClosed(arc.GeometryCurve))
+                break;
             }
             profiles.Add(poly);
-            break;
           }
+
+          break;
+        }
+        case ExtrusionRoof extrusion:
+        {
+          var crvloop = extrusion.GetProfile();
+          var poly = new Polycurve(ModelUnits);
+          foreach (DB.ModelCurve curve in crvloop)
+          {
+            if (curve == null)
+              continue;
+
+            poly.segments.Add(CurveToSpeckle(curve.GeometryCurve, roof.Document));
+          }
+          profiles.Add(poly);
+          break;
+        }
       }
       return profiles;
     }
@@ -361,12 +406,12 @@ namespace Objects.Converter.Revit
 
     private bool CheckOrtho(double x1, double y1, double x2, double y2, double x3, double y3, double x4, double y4)
     {
-      double m1, m2;
+      double m1,
+        m2;
 
       // Both lines have infinite slope
       if (Math.Abs(x2 - x1) < TOLERANCE && Math.Abs(x4 - x3) < TOLERANCE)
         return false;
-
       // Only line 1 has infinite slope
       else if (Math.Abs(x2 - x1) < TOLERANCE)
       {
@@ -376,7 +421,6 @@ namespace Objects.Converter.Revit
         else
           return false;
       }
-
       // Only line 2 has infinite slope
       else if (Math.Abs(x4 - x3) < TOLERANCE)
       {
@@ -386,7 +430,6 @@ namespace Objects.Converter.Revit
         else
           return false;
       }
-
       else
       {
         // Find slopes of the lines

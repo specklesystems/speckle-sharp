@@ -17,31 +17,33 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModel("FamilyInstance.rvt");
     public override string UpdatedTestFile => Globals.GetTestModel("FamilyInstanceUpdated.rvt");
     public override string NewFile => Globals.GetTestModel("FamilyInstanceToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
-      BuiltInCategory.OST_Furniture,
-      BuiltInCategory.OST_Doors,
-      BuiltInCategory.OST_Walls,
-      BuiltInCategory.OST_Windows,
-      BuiltInCategory.OST_CeilingOpening,
-      BuiltInCategory.OST_ColumnOpening,
-      BuiltInCategory.OST_FloorOpening,
-      BuiltInCategory.OST_ShaftOpening,
-      BuiltInCategory.OST_StructuralFramingOpening,
-      BuiltInCategory.OST_SWallRectOpening,
-      BuiltInCategory.OST_ArcWallRectOpening,
-      BuiltInCategory.OST_FloorOpening,
-      BuiltInCategory.OST_SWallRectOpening,
-      BuiltInCategory.OST_Floors};
-    public FamilyInstanceFixture() : base()
-    {
-    }
+    public override List<BuiltInCategory> Categories =>
+      new List<BuiltInCategory>
+      {
+        BuiltInCategory.OST_Furniture,
+        BuiltInCategory.OST_Doors,
+        BuiltInCategory.OST_Walls,
+        BuiltInCategory.OST_Windows,
+        BuiltInCategory.OST_CeilingOpening,
+        BuiltInCategory.OST_ColumnOpening,
+        BuiltInCategory.OST_FloorOpening,
+        BuiltInCategory.OST_ShaftOpening,
+        BuiltInCategory.OST_StructuralFramingOpening,
+        BuiltInCategory.OST_SWallRectOpening,
+        BuiltInCategory.OST_ArcWallRectOpening,
+        BuiltInCategory.OST_FloorOpening,
+        BuiltInCategory.OST_SWallRectOpening,
+        BuiltInCategory.OST_Floors
+      };
+
+    public FamilyInstanceFixture()
+      : base() { }
   }
 
   public class FamilyInstanceTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFixture>
   {
-    public FamilyInstanceTests(FamilyInstanceFixture fixture) : base(fixture)
-    {
-    }
+    public FamilyInstanceTests(FamilyInstanceFixture fixture)
+      : base(fixture) { }
 
     //[Fact]
     //[Trait("Nested", "NestedToSpeckle")]
@@ -58,7 +60,6 @@ namespace ConverterRevitTests
     {
       await SpeckleToNative<DB.Element>(AssertNestedEqual);
     }
-
 
     [Fact]
     [Trait("FamilyInstance", "ToNativeUpdates")]
@@ -83,7 +84,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
-
       if (sourceElem is FamilyInstance fi && fi.Host != null && destElem is FamilyInstance fi2)
       {
         Assert.Equal(fi.Host.Name, fi2.Host.Name);
@@ -93,7 +93,6 @@ namespace ConverterRevitTests
       //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
       if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
         Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation);
-
 
       //walls
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
@@ -105,6 +104,5 @@ namespace ConverterRevitTests
     }
 
     #endregion
-
   }
 }

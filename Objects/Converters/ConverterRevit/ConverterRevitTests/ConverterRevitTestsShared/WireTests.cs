@@ -10,14 +10,13 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModel("Wire.rvt");
     public override string NewFile => Globals.GetTestModel("WireToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {BuiltInCategory.OST_Wire};
+    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Wire };
   }
 
   public class WireTests : SpeckleConversionTest, IClassFixture<WireFixture>
   {
-    public WireTests(WireFixture fixture) : base(fixture)
-    {
-    }
+    public WireTests(WireFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Wire", "ToSpeckle")]
@@ -25,7 +24,6 @@ namespace ConverterRevitTests
     {
       await NativeToSpeckle();
     }
-
 
     #region ToNative
 

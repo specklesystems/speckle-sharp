@@ -23,7 +23,10 @@ namespace Objects.Converter.Revit
   {
     public ApplicationObject NetworkToNative(Network speckleNetwork)
     {
-      var appObj = new ApplicationObject(speckleNetwork.id, speckleNetwork.speckle_type) { applicationId = speckleNetwork.applicationId };
+      var appObj = new ApplicationObject(speckleNetwork.id, speckleNetwork.speckle_type)
+      {
+        applicationId = speckleNetwork.applicationId
+      };
 
       speckleNetwork.elements.ForEach(e => e.network = speckleNetwork);
       speckleNetwork.links.ForEach(l => l.network = speckleNetwork);
@@ -42,13 +45,20 @@ namespace Objects.Converter.Revit
           foreach (var obj in convAppObj.Converted)
           {
             var nativeElement = obj as Element;
-            appObj.Update(status: ApplicationObject.State.Created, createdId: nativeElement.UniqueId, convertedItem: nativeElement);
+            appObj.Update(
+              status: ApplicationObject.State.Created,
+              createdId: nativeElement.UniqueId,
+              convertedItem: nativeElement
+            );
           }
           convertedElements.Add(networkElement.applicationId, convAppObj.Converted.First() as Element);
         }
         else
         {
-          appObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Receiving this object type is not supported in Revit");
+          appObj.Update(
+            status: ApplicationObject.State.Skipped,
+            logItem: $"Receiving this object type is not supported in Revit"
+          );
         }
       }
 
@@ -79,22 +89,37 @@ namespace Objects.Converter.Revit
           }
         }
 
-        var connections = networkElement.links.Cast<RevitNetworkLink>().ToDictionary(
-          l => l,
-          l => l.elements
-          .Cast<RevitNetworkElement>()
-          .FirstOrDefault(e => e.applicationId != networkElement.applicationId
-          && e.isCurveBased));
+        var connections = networkElement.links
+          .Cast<RevitNetworkLink>()
+          .ToDictionary(
+            l => l,
+            l =>
+              l.elements
+                .Cast<RevitNetworkElement>()
+                .FirstOrDefault(e => e.applicationId != networkElement.applicationId && e.isCurveBased)
+          );
 
         var connection1 = connections.FirstOrDefault(c => c.Key.fittingIndex == 1);
         var connection2 = connections.FirstOrDefault(c => c.Key.fittingIndex == 2);
         var connection3 = connections.FirstOrDefault(c => c.Key.fittingIndex == 3);
         var connection4 = connections.FirstOrDefault(c => c.Key.fittingIndex == 4);
 
-        var element1 = connection1.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection1.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 1).Value;
-        var element2 = connection2.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection2.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 2).Value;
-        var element3 = connection3.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection3.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 3).Value;
-        var element4 = connection4.Value != null ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection4.Value.applicationId).Value : tempCurves.FirstOrDefault(t => t.Key == 4).Value;
+        var element1 =
+          connection1.Value != null
+            ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection1.Value.applicationId).Value
+            : tempCurves.FirstOrDefault(t => t.Key == 1).Value;
+        var element2 =
+          connection2.Value != null
+            ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection2.Value.applicationId).Value
+            : tempCurves.FirstOrDefault(t => t.Key == 2).Value;
+        var element3 =
+          connection3.Value != null
+            ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection3.Value.applicationId).Value
+            : tempCurves.FirstOrDefault(t => t.Key == 3).Value;
+        var element4 =
+          connection4.Value != null
+            ? convertedMEPCurves.FirstOrDefault(e => e.Key == connection4.Value.applicationId).Value
+            : tempCurves.FirstOrDefault(t => t.Key == 4).Value;
 
         var connector1 = element1 != null ? GetConnectorByPoint(element1, PointToNative(connection1.Key.origin)) : null;
         var connector2 = element2 != null ? GetConnectorByPoint(element2, PointToNative(connection2.Key.origin)) : null;
@@ -110,7 +135,13 @@ namespace Objects.Converter.Revit
           familyInstance = Doc.Create.NewUnionFitting(connector1, connector2);
         else if (partType.Contains("Tee") && connector1 != null && connector2 != null && connector3 != null)
           familyInstance = Doc.Create.NewTeeFitting(connector1, connector2, connector3);
-        else if (partType.Contains("Cross") && connector1 != null && connector2 != null && connector3 != null && connector4 != null)
+        else if (
+          partType.Contains("Cross")
+          && connector1 != null
+          && connector2 != null
+          && connector3 != null
+          && connector4 != null
+        )
           familyInstance = Doc.Create.NewCrossFitting(connector1, connector2, connector3, connector4);
         else
         {
@@ -118,7 +149,11 @@ namespace Objects.Converter.Revit
           foreach (var obj in convAppObj.Converted)
           {
             var nativeElement = obj as Element;
-            appObj.Update(status: ApplicationObject.State.Created, createdId: nativeElement.UniqueId, convertedItem: nativeElement);
+            appObj.Update(
+              status: ApplicationObject.State.Created,
+              createdId: nativeElement.UniqueId,
+              convertedItem: nativeElement
+            );
           }
         }
 
@@ -128,7 +163,11 @@ namespace Objects.Converter.Revit
           familyInstance?.ChangeTypeId(familySymbol.Id);
           Doc.Delete(tempCurves.Select(c => c.Value.Id).ToList());
 
-          appObj.Update(status: ApplicationObject.State.Created, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
+          appObj.Update(
+            status: ApplicationObject.State.Created,
+            createdId: familyInstance.UniqueId,
+            convertedItem: familyInstance
+          );
         }
         else
         {
@@ -150,10 +189,12 @@ namespace Objects.Converter.Revit
           var origin = PointToNative(link.origin);
           var firstConnector = GetConnectorByPoint(firstElement, origin);
           var secondConnector = GetConnectorByPoint(secondElement, origin);
-          if (firstConnector != null
+          if (
+            firstConnector != null
             && secondConnector != null
             && !firstConnector.IsConnected
-            && !secondConnector.IsConnected)
+            && !secondConnector.IsConnected
+          )
           {
             firstConnector.ConnectTo(secondConnector);
           }
@@ -165,7 +206,12 @@ namespace Objects.Converter.Revit
 
     public Network NetworkToSpeckle(Element mepElement, out List<string> notes)
     {
-      Network speckleNetwork = new Network() { name = mepElement.Name, elements = new List<NetworkElement>(), links = new List<NetworkLink>() };
+      Network speckleNetwork = new Network()
+      {
+        name = mepElement.Name,
+        elements = new List<NetworkElement>(),
+        links = new List<NetworkLink>()
+      };
 
       GetNetworkElements(speckleNetwork, mepElement, out notes);
 
@@ -194,7 +240,9 @@ namespace Objects.Converter.Revit
         else
           continue;
 
-        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId)
+          ? Report.ReportObjects[element.UniqueId]
+          : new ApplicationObject(element.UniqueId, element.GetType().ToString());
 
         Base obj = null;
         bool connectorBasedCreation = false;
@@ -203,12 +251,20 @@ namespace Objects.Converter.Revit
           case DB.FamilyInstance fi:
             obj = FamilyInstanceToSpeckle(fi, out notes);
             // test if this family instance is a fitting
-            var fittingCategories = new List<BuiltInCategory> { BuiltInCategory.OST_PipeFitting, BuiltInCategory.OST_DuctFitting, BuiltInCategory.OST_CableTrayFitting, BuiltInCategory.OST_ConduitFitting };
+            var fittingCategories = new List<BuiltInCategory>
+            {
+              BuiltInCategory.OST_PipeFitting,
+              BuiltInCategory.OST_DuctFitting,
+              BuiltInCategory.OST_CableTrayFitting,
+              BuiltInCategory.OST_ConduitFitting
+            };
             if (fittingCategories.Any(c => (int)c == fi.Category.Id.IntegerValue))
             {
               connectorBasedCreation = IsConnectorBasedCreation(fi);
-              var partType = (PartType)fi.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE).AsInteger();
-              if (obj != null) obj["partType"] = partType.ToString();
+              var partType = (PartType)
+                fi.Symbol.Family.get_Parameter(BuiltInParameter.FAMILY_CONTENT_PART_TYPE).AsInteger();
+              if (obj != null)
+                obj["partType"] = partType.ToString();
             }
             break;
           case DB.Plumbing.Pipe pipe:
@@ -242,16 +298,21 @@ namespace Objects.Converter.Revit
           continue;
         }
 
-        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as connected element to {initialElement.UniqueId}");
-        @network.elements.Add(new RevitNetworkElement()
-        {
-          applicationId = element.UniqueId,
-          name = element.Name,
-          elements = obj,
-          linkIndices = new List<int>(),
-          isConnectorBased = connectorBasedCreation,
-          isCurveBased = element is MEPCurve
-        });
+        reportObj.Update(
+          status: ApplicationObject.State.Created,
+          logItem: $"Attached as connected element to {initialElement.UniqueId}"
+        );
+        @network.elements.Add(
+          new RevitNetworkElement()
+          {
+            applicationId = element.UniqueId,
+            name = element.Name,
+            elements = obj,
+            linkIndices = new List<int>(),
+            isConnectorBased = connectorBasedCreation,
+            isCurveBased = element is MEPCurve
+          }
+        );
         ConvertedObjectsList.Add(obj.applicationId);
 
         Report.Log(reportObj);
@@ -264,7 +325,12 @@ namespace Objects.Converter.Revit
         var ownerElement = @network.elements[ownerIndex];
         foreach (var connection in connections)
         {
-          var link = new RevitNetworkLink() { name = connection.Name, network = @network, elementIndices = new List<int>() };
+          var link = new RevitNetworkLink()
+          {
+            name = connection.Name,
+            network = @network,
+            elementIndices = new List<int>()
+          };
 
           link.elementIndices.Add(ownerIndex);
 
@@ -323,11 +389,16 @@ namespace Objects.Converter.Revit
     private bool IsConnectorBasedCreation(DB.FamilyInstance familyInstance)
     {
       var connectors = GetConnectors(familyInstance).Cast<Connector>().ToArray();
-      return connectors.All(c => connectors.All(c1 =>
-      (c1.Domain == Domain.DomainPiping && c1.PipeSystemType == c.PipeSystemType) ||
-      (c1.Domain == Domain.DomainHvac && c1.DuctSystemType == c.DuctSystemType) ||
-      (c1.Domain == Domain.DomainElectrical && c1.ElectricalSystemType == c.ElectricalSystemType) ||
-      (c1.Domain == Domain.DomainCableTrayConduit)));
+      return connectors.All(
+        c =>
+          connectors.All(
+            c1 =>
+              (c1.Domain == Domain.DomainPiping && c1.PipeSystemType == c.PipeSystemType)
+              || (c1.Domain == Domain.DomainHvac && c1.DuctSystemType == c.DuctSystemType)
+              || (c1.Domain == Domain.DomainElectrical && c1.ElectricalSystemType == c.ElectricalSystemType)
+              || (c1.Domain == Domain.DomainCableTrayConduit)
+          )
+      );
     }
 
     private static Dictionary<string, ApplicationObject> CachedContextObjects = null;
@@ -337,7 +408,11 @@ namespace Objects.Converter.Revit
       return CachedContextObjects.ContainsKey(element?.UniqueId);
     }
 
-    private void GetConnectionPairs(Element element, ref List<Tuple<Connector, Connector, Element>> connectionPairs, ref List<Element> elements)
+    private void GetConnectionPairs(
+      Element element,
+      ref List<Tuple<Connector, Connector, Element>> connectionPairs,
+      ref List<Element> elements
+    )
     {
       var refss = ConnectionPair.GetConnectionPairs(element);
 
@@ -347,15 +422,18 @@ namespace Objects.Converter.Revit
         var isConnected = r.IsConnected;
       }
       var refs = GetRefConnectionPairs(element);
-      var refConnectionPairs = GetRefConnectionPairs(element).
-        Where(e => e.Item2 == null || ContextObjects.ContainsKey(e.Item2.Owner.UniqueId)).ToList();
+      var refConnectionPairs = GetRefConnectionPairs(element)
+        .Where(e => e.Item2 == null || ContextObjects.ContainsKey(e.Item2.Owner.UniqueId))
+        .ToList();
       elements.Add(element);
       foreach (var refConnectionPair in refs)
       {
         var connectedElement = refConnectionPair.Item2?.Owner;
-        if (connectedElement != null
+        if (
+          connectedElement != null
           && !elements.Any(e => e.UniqueId.Equals(connectedElement.UniqueId))
-          && ContextObjects.ContainsKey(connectedElement.UniqueId))
+          && ContextObjects.ContainsKey(connectedElement.UniqueId)
+        )
         {
           connectionPairs.Add(Tuple.Create(refConnectionPair.Item1, refConnectionPair.Item2, element));
           GetConnectionPairs(connectedElement, ref connectionPairs, ref elements);
@@ -398,9 +476,9 @@ namespace Objects.Converter.Revit
 
     private static ConnectorSet GetConnectors(Element e)
     {
-      return e is MEPCurve curve ?
-        curve.ConnectorManager.Connectors :
-        (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
+      return e is MEPCurve curve
+        ? curve.ConnectorManager.Connectors
+        : (e as DB.FamilyInstance)?.MEPModel?.ConnectorManager?.Connectors ?? new ConnectorSet();
     }
 
     private Connector GetConnectorByPoint(Element element, XYZ point)
@@ -408,9 +486,13 @@ namespace Objects.Converter.Revit
       switch (element)
       {
         case MEPCurve o:
-          return o.ConnectorManager.Connectors.Cast<Connector>().FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
+          return o.ConnectorManager.Connectors
+            .Cast<Connector>()
+            .FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
         case DB.FamilyInstance o:
-          return o.MEPModel?.ConnectorManager.Connectors.Cast<Connector>().FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
+          return o.MEPModel?.ConnectorManager.Connectors
+            .Cast<Connector>()
+            .FirstOrDefault(c => c.Origin.IsAlmostEqualTo(point, 0.00001));
         default:
           return null;
       }
@@ -422,7 +504,9 @@ namespace Objects.Converter.Revit
       var start = PointToNative(link.origin);
       var end = start.Add(direction.Multiply(2));
 
-      var sfi = link.elements.FirstOrDefault(e => e.elements is BuiltElements.Revit.FamilyInstance)?.elements as BuiltElements.Revit.FamilyInstance;
+      var sfi =
+        link.elements.FirstOrDefault(e => e.elements is BuiltElements.Revit.FamilyInstance)?.elements
+        as BuiltElements.Revit.FamilyInstance;
       Level level = ConvertLevelToRevit(sfi.level, out ApplicationObject.State state);
 
       Domain domain = Enum.TryParse(link.domain, out domain) ? domain : Domain.DomainUndefined;
@@ -434,8 +518,14 @@ namespace Objects.Converter.Revit
       {
         case Domain.DomainHvac:
           curveType = GetDefaultMEPCurveType(Doc, typeof(DuctType), profile);
-          if (curveType == null) goto default;
-          var mechanicalSystemType = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(MechanicalSystemType)).ToElements().Cast<MechanicalSystemType>().FirstOrDefault(x => x.Name == link.systemType);
+          if (curveType == null)
+            goto default;
+          var mechanicalSystemType = new FilteredElementCollector(Doc)
+            .WhereElementIsElementType()
+            .OfClass(typeof(MechanicalSystemType))
+            .ToElements()
+            .Cast<MechanicalSystemType>()
+            .FirstOrDefault(x => x.Name == link.systemType);
           curve = Duct.Create(Doc, mechanicalSystemType.Id, curveType.Id, level.Id, start, end);
           if (curveType.Shape == ConnectorProfileType.Round)
           {
@@ -449,8 +539,14 @@ namespace Objects.Converter.Revit
           break;
         case Domain.DomainPiping:
           curveType = GetDefaultMEPCurveType(Doc, typeof(PipeType), profile);
-          if (curveType == null) goto default;
-          var pipingSystemType = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(PipingSystemType)).ToElements().Cast<PipingSystemType>().FirstOrDefault(x => x.Name == link.systemType);
+          if (curveType == null)
+            goto default;
+          var pipingSystemType = new FilteredElementCollector(Doc)
+            .WhereElementIsElementType()
+            .OfClass(typeof(PipingSystemType))
+            .ToElements()
+            .Cast<PipingSystemType>()
+            .FirstOrDefault(x => x.Name == link.systemType);
           curve = Pipe.Create(Doc, pipingSystemType.Id, curveType.Id, level.Id, start, end);
           curve.get_Parameter(BuiltInParameter.RBS_PIPE_DIAMETER_PARAM).Set(link.diameter);
           break;
@@ -458,7 +554,8 @@ namespace Objects.Converter.Revit
           if (profile == ConnectorProfileType.Rectangular)
           {
             curveType = GetDefaultMEPCurveType(Doc, typeof(CableTrayType), profile);
-            if (curveType == null) goto default;
+            if (curveType == null)
+              goto default;
             curve = CableTray.Create(Doc, curveType.Id, start, end, level.Id);
             curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM).Set(link.width);
             curve.get_Parameter(BuiltInParameter.RBS_CABLETRAY_HEIGHT_PARAM).Set(link.height);
@@ -466,7 +563,8 @@ namespace Objects.Converter.Revit
           else
           {
             curveType = GetDefaultMEPCurveType(Doc, typeof(ConduitType), profile);
-            if (curveType == null) goto default;
+            if (curveType == null)
+              goto default;
             curve = Conduit.Create(Doc, curveType.Id, start, end, level.Id);
             curve.get_Parameter(BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM).Set(link.diameter);
           }

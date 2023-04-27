@@ -10,14 +10,13 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModel("Pipe.rvt");
     public override string NewFile => Globals.GetTestModel("PipeToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {BuiltInCategory.OST_PipeCurves};
+    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_PipeCurves };
   }
 
   public class PipeTests : SpeckleConversionTest, IClassFixture<PipeFixture>
   {
-    public PipeTests(PipeFixture fixture) : base(fixture)
-    {
-    }
+    public PipeTests(PipeFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Pipe", "ToSpeckle")]

@@ -12,17 +12,17 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModel("Curve.rvt");
     public override string NewFile => Globals.GetTestModel("CurveToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines };
-    public CurveFixture() : base()
-    {
-    }
+    public override List<BuiltInCategory> Categories =>
+      new List<BuiltInCategory> { BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines };
+
+    public CurveFixture()
+      : base() { }
   }
 
   public class CurveTests : SpeckleConversionTest, IClassFixture<CurveFixture>
   {
-    public CurveTests(CurveFixture fixture) : base(fixture)
-    {
-    }
+    public CurveTests(CurveFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Curve", "ToSpeckle")]
@@ -55,7 +55,8 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.CURVE_ELEM_LENGTH);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.BUILDING_CURVE_GSTYLE);
 
-      if (((LocationCurve)sourceElem.Location).Curve.IsBound){
+      if (((LocationCurve)sourceElem.Location).Curve.IsBound)
+      {
         var sourceEnd = ((LocationCurve)sourceElem.Location).Curve.GetEndPoint(0);
         var destEnd = ((LocationCurve)destElem.Location).Curve.GetEndPoint(0);
 
@@ -66,6 +67,5 @@ namespace ConverterRevitTests
     }
 
     #endregion
-
   }
 }

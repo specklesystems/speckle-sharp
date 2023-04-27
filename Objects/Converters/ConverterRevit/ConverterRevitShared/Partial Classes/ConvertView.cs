@@ -14,8 +14,9 @@ namespace Objects.Converter.Revit
   {
     private List<string> excludedParameters = new List<string>()
     {
-      "VIEW_NAME", // param value is already stored in name prop of view and setting this param can cause errors 
+      "VIEW_NAME", // param value is already stored in name prop of view and setting this param can cause errors
     };
+
     public Base ViewToSpeckle(DB.View revitView)
     {
       switch (revitView)
@@ -31,6 +32,7 @@ namespace Objects.Converter.Revit
           return speckleView;
       }
     }
+
     public View View3DToSpeckle(DB.View3D revitView)
     {
       switch (revitView.ViewType)
@@ -86,17 +88,27 @@ namespace Objects.Converter.Revit
 
     public ApplicationObject ViewToNative(View3D speckleView)
     {
-      var appObj = new ApplicationObject(speckleView.id, speckleView.speckle_type) { applicationId = speckleView.applicationId };
+      var appObj = new ApplicationObject(speckleView.id, speckleView.speckle_type)
+      {
+        applicationId = speckleView.applicationId
+      };
 
       DB.View3D view = null;
       var viewNameSplit = speckleView.name.Split('-');
 
       // get orientation
       var up = new XYZ(speckleView.upDirection.x, speckleView.upDirection.y, speckleView.upDirection.z).Normalize(); //unit vector
-      var forward = new XYZ(speckleView.forwardDirection.x, speckleView.forwardDirection.y, speckleView.forwardDirection.z).Normalize();
+      var forward = new XYZ(
+        speckleView.forwardDirection.x,
+        speckleView.forwardDirection.y,
+        speckleView.forwardDirection.z
+      ).Normalize();
       if (Math.Round(up.DotProduct(forward), 3) != 0) // will throw error if vectors are not perpendicular
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: "The up and forward vectors for this view are not perpendicular.");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: "The up and forward vectors for this view are not perpendicular."
+        );
         return appObj;
       }
       var orientation = new ViewOrientation3D(PointToNative(speckleView.origin), up, forward);
@@ -104,10 +116,10 @@ namespace Objects.Converter.Revit
       var editViewName = EditViewName(speckleView.name, "SpeckleView");
       // get the existing view with this name, if there is one
       view = new FilteredElementCollector(Doc)
-          .WhereElementIsNotElementType()
-          .OfClass(typeof(DB.View3D))
-          .Cast<DB.View3D>()
-          .FirstOrDefault(o => o.Name == editViewName);
+        .WhereElementIsNotElementType()
+        .OfClass(typeof(DB.View3D))
+        .Cast<DB.View3D>()
+        .FirstOrDefault(o => o.Name == editViewName);
 
       if (view == null)
       {
@@ -130,7 +142,10 @@ namespace Objects.Converter.Revit
       }
       else if (view.IsLocked)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"View named {editViewName} is locked and cannot be modified.");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"View named {editViewName} is locked and cannot be modified."
+        );
         return appObj;
       }
       else
@@ -201,8 +216,7 @@ namespace Objects.Converter.Revit
         newName = prefix + "-" + name;
 
       // Check for invalid characters in view name
-      var results = new Regex("[\\{\\}\\[\\]\\:|;<>?`~]")
-        .Match(newName);
+      var results = new Regex("[\\{\\}\\[\\]\\:|;<>?`~]").Match(newName);
 
       // If none, fast exit
       if (results.Length <= 0)
@@ -231,12 +245,10 @@ namespace Objects.Converter.Revit
       var position = new Objects.Geometry.Point(speckleCamera[0], speckleCamera[1], speckleCamera[2]);
       var target = new Objects.Geometry.Point(speckleCamera[3], speckleCamera[4], speckleCamera[5]);
 
-
       var cameraTarget = PointToNative(target);
       var cameraPosition = PointToNative(position);
       var cameraDirection = (cameraTarget.Subtract(cameraPosition)).Normalize();
       var cameraUpVector = cameraDirection.CrossProduct(XYZ.BasisZ).CrossProduct(cameraDirection);
-
 
       return new ViewOrientation3D(cameraPosition, cameraUpVector, cameraDirection);
     }

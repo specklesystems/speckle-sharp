@@ -4,7 +4,6 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-
     private string _modelUnits;
 
 #if REVIT2020
@@ -160,7 +159,7 @@ namespace Objects.Converter.Revit
     {
       return ScaleToSpeckle(value, RevitLengthTypeId);
     }
-    
+
     public static double ScaleToSpeckle(double value, string units)
     {
       return ScaleToSpeckle(value, new ForgeTypeId(UnitsToNative(units)));

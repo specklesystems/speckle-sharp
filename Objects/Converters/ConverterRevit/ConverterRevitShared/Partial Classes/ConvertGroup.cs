@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
         // we can't prevent the other element (with same id) to be converted, like we do for hosted elements
         if (ContextObjects.ContainsKey(element.UniqueId))
           elIdsToConvert.RemoveAt(i);
-        // otherwise, add the elements to the ContextObjects before converting them because a group 
+        // otherwise, add the elements to the ContextObjects before converting them because a group
         // may contain a wall that has a window, so we still want the window to search through the contextObjects
         // and recognize that it's host, the wall, is listed in there and not to convert itself
         else

@@ -27,9 +27,7 @@ namespace Objects.Converter.Navisworks
       set => _data[row * 4 + col] = value;
     }
 
-
     public int Count => _data.Length;
-
 
     public IEnumerator<double> GetEnumerator()
     {
@@ -71,27 +69,19 @@ namespace Objects.Converter.Navisworks
       SetPoints(new List<PointD>());
     }
 
-
     public IReadOnlyList<double> Coords => _coords.AsReadOnly();
-
 
     private IReadOnlyList<int> Faces => _faces.AsReadOnly();
 
-
     public IReadOnlyList<TriangleD> Triangles => _triangles.AsReadOnly();
-
 
     public IReadOnlyList<LineD> Lines => _lines.AsReadOnly();
 
-
     public IReadOnlyList<PointD> Points => _points.AsReadOnly();
-
 
     public TransformationMatrix LocalToWorldTransformation { get; set; }
 
-
     private bool ElevationMode { get; set; }
-
 
     public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
     {
@@ -247,18 +237,13 @@ namespace Objects.Converter.Navisworks
       Selection = ComBridge.ToInwOpSelection(modelItemCollection);
     }
 
-
     public InwOpSelection Selection { get; set; }
-
 
     public ModelItem ModelItem { get; set; }
 
-
     private IReadOnlyCollection<InwOaFragment3> ModelFragments => ModelFragmentStack;
 
-
     public bool ElevationMode { get; set; }
-
 
     public IReadOnlyList<PrimitiveProcessor> GetUniqueGeometryFragments()
     {
@@ -343,12 +328,9 @@ namespace Objects.Converter.Navisworks
       Vertex3 = v3;
     }
 
-
     public Vector3D Vertex1 { get; set; }
 
-
     public Vector3D Vertex2 { get; set; }
-
 
     public Vector3D Vertex3 { get; set; }
   }
@@ -370,9 +352,7 @@ namespace Objects.Converter.Navisworks
       Vertex2 = v2;
     }
 
-
     public Vector3D Vertex1 { get; set; }
-
 
     public Vector3D Vertex2 { get; set; }
   }
@@ -387,7 +367,6 @@ namespace Objects.Converter.Navisworks
       Vertex1 = vertex1;
     }
 
-
     public Vector3D Vertex1 { get; set; }
   }
 
@@ -395,15 +374,11 @@ namespace Objects.Converter.Navisworks
   {
     private static Vector3D TransformVector3D { get; set; }
 
-
     public Vector SettingOutPoint { get; set; }
-
 
     public Vector TransformVector { get; set; }
 
-
     private BoundingBox3D ModelBoundingBox { get; set; }
-
 
     /// <summary>
     ///   ElevationMode is the indicator that the model is being handled as an XY ground plane
@@ -606,5 +581,5 @@ namespace Objects.Converter.Navisworks
 
 namespace Objects.Organization
 {
-  public class GeometryNode : Base {}
+  public class GeometryNode : Base { }
 }

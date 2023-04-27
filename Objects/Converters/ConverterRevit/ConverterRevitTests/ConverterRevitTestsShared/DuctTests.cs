@@ -14,13 +14,15 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModel("Duct.rvt");
     public override string NewFile => Globals.GetTestModel("DuctToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_DuctCurves };
-    public DuctFixture() : base() { }
+
+    public DuctFixture()
+      : base() { }
   }
+
   public class DuctTests : SpeckleConversionTest, IClassFixture<DuctFixture>
   {
-    public DuctTests(DuctFixture fixture) : base(fixture)
-    {
-    }
+    public DuctTests(DuctFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Duct", "ToSpeckle")]
@@ -52,6 +54,5 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_VELOCITY);
     }
     #endregion
-
   }
 }

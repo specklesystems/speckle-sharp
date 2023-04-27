@@ -13,16 +13,14 @@ namespace ConverterRevitTests
     public override string NewFile => Globals.GetTestModel("RoofToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Roofs };
 
-    public RoofFixture() : base()
-    {
-    }
+    public RoofFixture()
+      : base() { }
   }
 
   public class RoofTests : SpeckleConversionTest, IClassFixture<RoofFixture>
   {
-    public RoofTests(RoofFixture fixture) : base(fixture)
-    {
-    }
+    public RoofTests(RoofFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Roof", "ToSpeckle")]

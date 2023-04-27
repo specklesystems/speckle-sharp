@@ -12,18 +12,18 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModel("AdaptiveComponent.rvt");
     public override string NewFile => Globals.GetTestModel("AdaptiveComponentToNative.rvt");
+
     //USING GENERIC MODELS FOR AC, fine for testing
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_GenericModel };
-    public AdaptiveComponentFixture() : base ()
-    {
-    }
+
+    public AdaptiveComponentFixture()
+      : base() { }
   }
 
   public class AdaptiveComponentTests : SpeckleConversionTest, IClassFixture<AdaptiveComponentFixture>
   {
-    public AdaptiveComponentTests(AdaptiveComponentFixture fixture) : base (fixture)
-    { 
-    }
+    public AdaptiveComponentTests(AdaptiveComponentFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("AdaptiveComponent", "ToSpeckle")]
@@ -57,10 +57,9 @@ namespace ConverterRevitTests
 
       var dist = (sourceElem.Location as LocationPoint).Point.DistanceTo((destElem.Location as LocationPoint).Point);
 
-      Assert.True(dist<0.1);
+      Assert.True(dist < 0.1);
     }
 
     #endregion
-
   }
 }

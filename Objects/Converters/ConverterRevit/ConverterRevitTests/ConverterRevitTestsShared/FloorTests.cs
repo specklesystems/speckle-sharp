@@ -15,16 +15,14 @@ namespace ConverterRevitTests
     public override string NewFile => Globals.GetTestModel("FloorToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Floors };
 
-    public FloorFixture() : base()
-    {
-    }
+    public FloorFixture()
+      : base() { }
   }
 
   public class FloorTests : SpeckleConversionTest, IClassFixture<FloorFixture>
   {
-    public FloorTests(FloorFixture fixture) : base(fixture)
-    {
-    }
+    public FloorTests(FloorFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Floor", "ToSpeckle")]
@@ -46,7 +44,7 @@ namespace ConverterRevitTests
     [Trait("Floor", "Selection")]
     public async Task FloorSelectionToNative()
     {
-      await SelectionToNative<DB.Floor>(null,AssertFloorEqual);
+      await SelectionToNative<DB.Floor>(null, AssertFloorEqual);
     }
 
     private async Task AssertFloorEqual(DB.Floor sourceElem, DB.Floor destElem)
@@ -54,9 +52,12 @@ namespace ConverterRevitTests
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
 
-      var slopeArrow = await RevitTask.RunAsync(app => {
-        return ConverterRevit.GetSlopeArrow(sourceElem);
-      }).ConfigureAwait(false);
+      var slopeArrow = await RevitTask
+        .RunAsync(app =>
+        {
+          return ConverterRevit.GetSlopeArrow(sourceElem);
+        })
+        .ConfigureAwait(false);
 
       if (slopeArrow == null)
       {
@@ -67,9 +68,12 @@ namespace ConverterRevitTests
         var tailOffset = ConverterRevit.GetSlopeArrowTailOffset(slopeArrow, sourceElem.Document);
         _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var slope);
 
-        var newSlopeArrow = await RevitTask.RunAsync(app => {
-          return ConverterRevit.GetSlopeArrow(destElem);
-        }).ConfigureAwait(false);
+        var newSlopeArrow = await RevitTask
+          .RunAsync(app =>
+          {
+            return ConverterRevit.GetSlopeArrow(destElem);
+          })
+          .ConfigureAwait(false);
 
         Assert.NotNull(newSlopeArrow);
 
@@ -77,8 +81,14 @@ namespace ConverterRevitTests
         _ = ConverterRevit.GetSlopeArrowHeadOffset(slopeArrow, sourceElem.Document, tailOffset, out var newSlope);
         Assert.Equal(slope, newSlope);
 
-        var sourceOffset = ConverterRevit.GetParamValue<double>(sourceElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM);
-        Assert.Equal(sourceOffset + tailOffset, ConverterRevit.GetParamValue<double>(destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM));
+        var sourceOffset = ConverterRevit.GetParamValue<double>(
+          sourceElem,
+          BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM
+        );
+        Assert.Equal(
+          sourceOffset + tailOffset,
+          ConverterRevit.GetParamValue<double>(destElem, BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM)
+        );
       }
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLOOR_PARAM_IS_STRUCTURAL);

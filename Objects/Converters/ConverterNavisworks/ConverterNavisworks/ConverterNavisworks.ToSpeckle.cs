@@ -250,7 +250,7 @@ public partial class ConverterNavisworks
     switch (elementCategoryType)
     {
       case "Geometry":
-        return new Collection { applicationId = applicationId, collectionType = "Geometry"};
+        return new Collection { applicationId = applicationId, collectionType = "Geometry" };
       default:
         return new Collection { applicationId = applicationId, collectionType = elementCategoryType };
     }

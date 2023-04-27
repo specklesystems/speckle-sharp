@@ -12,30 +12,31 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModel("Opening.rvt");
     public override string NewFile => Globals.GetTestModel("OpeningToNative.rvt");
 
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
-      BuiltInCategory.OST_CeilingOpening,
-      BuiltInCategory.OST_ColumnOpening,
-      BuiltInCategory.OST_FloorOpening,
-      BuiltInCategory.OST_ShaftOpening,
-      BuiltInCategory.OST_StructuralFramingOpening,
-      BuiltInCategory.OST_SWallRectOpening,
-      BuiltInCategory.OST_ArcWallRectOpening,
-      BuiltInCategory.OST_Walls,
-      BuiltInCategory.OST_Floors,
-      BuiltInCategory.OST_Ceilings,
-      BuiltInCategory.OST_RoofOpening,
-      BuiltInCategory.OST_Roofs};
+    public override List<BuiltInCategory> Categories =>
+      new List<BuiltInCategory>
+      {
+        BuiltInCategory.OST_CeilingOpening,
+        BuiltInCategory.OST_ColumnOpening,
+        BuiltInCategory.OST_FloorOpening,
+        BuiltInCategory.OST_ShaftOpening,
+        BuiltInCategory.OST_StructuralFramingOpening,
+        BuiltInCategory.OST_SWallRectOpening,
+        BuiltInCategory.OST_ArcWallRectOpening,
+        BuiltInCategory.OST_Walls,
+        BuiltInCategory.OST_Floors,
+        BuiltInCategory.OST_Ceilings,
+        BuiltInCategory.OST_RoofOpening,
+        BuiltInCategory.OST_Roofs
+      };
 
-    public OpeningFixture() : base()
-    {
-    }
+    public OpeningFixture()
+      : base() { }
   }
 
   public class OpeningTests : SpeckleConversionTest, IClassFixture<OpeningFixture>
   {
-    public OpeningTests(OpeningFixture fixture) : base(fixture)
-    {
-    }
+    public OpeningTests(OpeningFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Opening", "ToSpeckle")]

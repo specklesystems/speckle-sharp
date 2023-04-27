@@ -172,13 +172,20 @@ namespace Objects.Converter.Revit
         speckleFloor.slope = (double)slopeParam;
 
         speckleFloor.slopeDirection = new Geometry.Line(tail, head);
-        if (speckleFloor["parameters"] is Base parameters && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam && offsetParam.value is double offset)
+        if (
+          speckleFloor["parameters"] is Base parameters
+          && parameters["FLOOR_HEIGHTABOVELEVEL_PARAM"] is BuiltElements.Revit.Parameter offsetParam
+          && offsetParam.value is double offset
+        )
         {
           offsetParam.value = offset + tailOffset;
         }
       }
 
-      speckleFloor.displayValue = GetElementDisplayValue(revitFloor, new Options() { DetailLevel = ViewDetailLevel.Fine });
+      speckleFloor.displayValue = GetElementDisplayValue(
+        revitFloor,
+        new Options() { DetailLevel = ViewDetailLevel.Fine }
+      );
 
       GetHostedElements(speckleFloor, revitFloor, out List<string> hostedNotes);
       if (hostedNotes.Any())
@@ -327,9 +334,13 @@ namespace Objects.Converter.Revit
 
           // this is the formula for an angle between two vectors
           // cos T = a . b / (|a| * |b|)
-          var rad1ScaleCircle = Vector.DotProduct(circle.plane.xdir, newCirclePlane.xdir) / (circle.plane.xdir.Length * newCirclePlane.xdir.Length);
+          var rad1ScaleCircle =
+            Vector.DotProduct(circle.plane.xdir, newCirclePlane.xdir)
+            / (circle.plane.xdir.Length * newCirclePlane.xdir.Length);
 
-          var rad2ScaleCircle = Vector.DotProduct(circle.plane.ydir, newCirclePlane.ydir) / (circle.plane.ydir.Length * newCirclePlane.ydir.Length);
+          var rad2ScaleCircle =
+            Vector.DotProduct(circle.plane.ydir, newCirclePlane.ydir)
+            / (circle.plane.ydir.Length * newCirclePlane.ydir.Length);
 
           return new OG.Ellipse(
             newCirclePlane,
@@ -387,15 +398,21 @@ namespace Objects.Converter.Revit
 
           // this is the formula for an angle between two vectors
           // cos T = a . b / (|a| * |b|)
-          var rad1Scale = Vector.DotProduct(ellipse.plane.xdir, newEllipsePlane.xdir) / (ellipse.plane.xdir.Length * newEllipsePlane.xdir.Length);
+          var rad1Scale =
+            Vector.DotProduct(ellipse.plane.xdir, newEllipsePlane.xdir)
+            / (ellipse.plane.xdir.Length * newEllipsePlane.xdir.Length);
 
-          var rad2Scale = Vector.DotProduct(ellipse.plane.ydir, newEllipsePlane.ydir) / (ellipse.plane.ydir.Length * newEllipsePlane.ydir.Length);
+          var rad2Scale =
+            Vector.DotProduct(ellipse.plane.ydir, newEllipsePlane.ydir)
+            / (ellipse.plane.ydir.Length * newEllipsePlane.ydir.Length);
 
           return new OG.Ellipse(
             newEllipsePlane,
             firstRadius * rad1Scale,
             secondRadius * rad2Scale,
-            ellipse.domain, ellipse.trimDomain, units: ellipse.units
+            ellipse.domain,
+            ellipse.trimDomain,
+            units: ellipse.units
           );
 
         case OG.Line line:
@@ -404,12 +421,14 @@ namespace Objects.Converter.Revit
               line.start.x,
               line.start.y,
               z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.start.units),
-              line.start.units),
+              line.start.units
+            ),
             new OG.Point(
               line.end.x,
               line.end.y,
               z * Speckle.Core.Kits.Units.GetConversionFactor(ModelUnits, line.end.units),
-              line.end.units),
+              line.end.units
+            ),
             line.units
           );
 
@@ -433,7 +452,7 @@ namespace Objects.Converter.Revit
             newPolycurve.segments.Add(GetFlattenedCurve(seg, z));
           return newPolycurve;
 
-          //case OG.Spiral spiral:
+        //case OG.Spiral spiral:
       }
       throw new NotSupportedException($"Trying to flatten unsupported curve type, {curve.GetType()}");
     }

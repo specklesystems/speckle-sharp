@@ -12,7 +12,10 @@ namespace Objects.Converter.Revit
     public ApplicationObject RailingToNative(BuiltElements.Revit.RevitRailing speckleRailing)
     {
       var revitRailing = GetExistingElementByApplicationId(speckleRailing.applicationId) as Railing;
-      var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type) { applicationId = speckleRailing.applicationId };
+      var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type)
+      {
+        applicationId = speckleRailing.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(revitRailing, appObj, out appObj))
@@ -64,9 +67,7 @@ namespace Objects.Converter.Revit
 
         if (railingType.TopRailType != topRailType.Id && topRailType != null)
           railingType.TopRailType = topRailType.Id;
-
       }
-
 
       if (isUpdate)
       {
@@ -81,7 +82,7 @@ namespace Objects.Converter.Revit
 
       if (speckleRailing.topRail != null)
       {
-        // This call to regenerate is to reflect the generation 
+        // This call to regenerate is to reflect the generation
         // of the TopRail element associated with the Railing element
         Doc.Regenerate();
 
@@ -108,11 +109,13 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleRailing, revitRailing, new List<string> { "STAIRS_RAILING_BASE_LEVEL_PARAM" });
 
-      speckleRailing.displayValue = GetElementDisplayValue(revitRailing, new Options() { DetailLevel = ViewDetailLevel.Fine });
+      speckleRailing.displayValue = GetElementDisplayValue(
+        revitRailing,
+        new Options() { DetailLevel = ViewDetailLevel.Fine }
+      );
 
       if (revitRailing.TopRail != ElementId.InvalidElementId)
       {
-
         if (ContextObjects.ContainsKey(revitRailing.UniqueId))
         {
           ContextObjects.Remove(revitRailing.UniqueId);
@@ -138,6 +141,5 @@ namespace Objects.Converter.Revit
       }
       return speckleRailing;
     }
-
   }
 }

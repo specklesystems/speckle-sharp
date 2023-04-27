@@ -9,23 +9,21 @@ using Xunit;
 
 namespace ConverterRevitTests
 {
-
   public class WallFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModel("Wall.rvt");
     public override string UpdatedTestFile => Globals.GetTestModel("WallUpdated.rvt");
     public override string NewFile => Globals.GetTestModel("WallToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Walls };
-    public WallFixture() : base()
-    {
-    }
+
+    public WallFixture()
+      : base() { }
   }
+
   public class WallTests : SpeckleConversionTest, IClassFixture<WallFixture>
   {
-
-    public WallTests(WallFixture fixture) : base(fixture)
-    {
-    }
+    public WallTests(WallFixture fixture)
+      : base(fixture) { }
 
     [Fact]
     [Trait("Wall", "ToSpeckle")]
@@ -33,7 +31,6 @@ namespace ConverterRevitTests
     {
       await NativeToSpeckle();
     }
-
 
     [Fact]
     [Trait("Wall", "ToNative")]
@@ -48,7 +45,6 @@ namespace ConverterRevitTests
     {
       await SpeckleToNativeUpdates<DB.Wall>(AssertWallEqual);
     }
-
 
     [Fact]
     [Trait("Wall", "Selection")]

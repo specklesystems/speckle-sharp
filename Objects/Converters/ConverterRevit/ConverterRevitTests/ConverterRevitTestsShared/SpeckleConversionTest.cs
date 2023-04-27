@@ -25,6 +25,7 @@ namespace ConverterRevitTests
       this.fixture = fixture;
       this.fixture.TestClassName = GetType().Name;
     }
+
     internal async Task NativeToSpeckle()
     {
       ConverterRevit converter = new ConverterRevit();
@@ -64,7 +65,11 @@ namespace ConverterRevitTests
     /// </summary>
     /// <typeparam name="T"></typeparam>
     /// <param name="assert"></param>
-    internal async Task<List<ApplicationObject>> SpeckleToNative<T>(Action<T, T> assert, Func<T, T, Task> assertAsync = null, UpdateData ud = null)
+    internal async Task<List<ApplicationObject>> SpeckleToNative<T>(
+      Action<T, T> assert,
+      Func<T, T, Task> assertAsync = null,
+      UpdateData ud = null
+    )
     {
       Document doc = null;
       IList<Element> elements = null;
@@ -113,12 +118,14 @@ namespace ConverterRevitTests
         }
       }
 
-
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(doc);
       //setting context objects for nested routine
-      converter.SetContextObjects(elements.Select(obj => new ApplicationObject (obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId }).ToList());
-
+      converter.SetContextObjects(
+        elements
+          .Select(obj => new ApplicationObject(obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId })
+          .ToList()
+      );
 
       var spkElems = new List<Base>();
       await RevitTask.RunAsync(() =>
@@ -134,52 +141,60 @@ namespace ConverterRevitTests
       if (appPlaceholders != null)
         converter.SetPreviousContextObjects(appPlaceholders);
 
-      converter.SetContextObjects(spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId}).ToList());
-
+      converter.SetContextObjects(
+        spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList()
+      );
 
       var resEls = new List<ApplicationObject>();
       //used to associate th nested Base objects with eh flat revit ones
       var flatSpkElems = new List<Base>();
 
-      await SpeckleUtils.RunInTransaction(() =>
-      {
-        //xru.RunInTransaction(() =>
-        //{
-        foreach (var el in spkElems)
+      await SpeckleUtils.RunInTransaction(
+        () =>
         {
-          object res = null;
-          try
+          //xru.RunInTransaction(() =>
+          //{
+          foreach (var el in spkElems)
           {
-            res = converter.ConvertToNative(el);
-          }
-          catch (Exception e)
-          {
-            converter.Report.LogConversionError(new Exception(e.Message, e));
-          }
+            object res = null;
+            try
+            {
+              res = converter.ConvertToNative(el);
+            }
+            catch (Exception e)
+            {
+              converter.Report.LogConversionError(new Exception(e.Message, e));
+            }
 
-          if (res is List<ApplicationObject> apls)
-          {
-            resEls.AddRange(apls);
-            flatSpkElems.Add(el);
-            if (el["elements"] == null) continue;
-            flatSpkElems.AddRange((el["elements"] as List<Base>).Where(b => converter.CanConvertToNative(b)));
+            if (res is List<ApplicationObject> apls)
+            {
+              resEls.AddRange(apls);
+              flatSpkElems.Add(el);
+              if (el["elements"] == null)
+                continue;
+              flatSpkElems.AddRange((el["elements"] as List<Base>).Where(b => converter.CanConvertToNative(b)));
+            }
+            else if (res is ApplicationObject appObj)
+            {
+              resEls.Add(appObj);
+              flatSpkElems.Add(el);
+            }
+            else if (res == null)
+            {
+              throw new Exception("Conversion returned null");
+            }
+            else
+            {
+              throw new Exception(
+                $"Conversion of Speckle object, of type {el.speckle_type}, to Revit returned unexpected type, {res.GetType().FullName}"
+              );
+            }
           }
-          else if (res is ApplicationObject appObj)
-          {
-            resEls.Add(appObj);
-            flatSpkElems.Add(el);
-          }
-          else if (res == null)
-          {
-            throw new Exception("Conversion returned null");
-          }
-          else
-          {
-            throw new Exception($"Conversion of Speckle object, of type {el.speckle_type}, to Revit returned unexpected type, {res.GetType().FullName}");
-          }
-        }
-        //}, fixture.NewDoc).Wait();
-      }, fixture.NewDoc, converter);
+          //}, fixture.NewDoc).Wait();
+        },
+        fixture.NewDoc,
+        converter
+      );
 
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
 
@@ -192,7 +207,7 @@ namespace ConverterRevitTests
         {
           await assertAsync.Invoke(sourceElem, destElement);
         }
-        
+
         if (!fixture.UpdateTestRunning)
           SpeckleUtils.DeleteElement(destElement);
       }
@@ -209,12 +224,16 @@ namespace ConverterRevitTests
     {
       fixture.UpdateTestRunning = true;
       var initialObjs = await SpeckleToNative(assert, assertAsync);
-      var updatedObjs = await SpeckleToNative(assert, assertAsync, new UpdateData
-      {
-        AppPlaceholders = initialObjs.Cast<ApplicationObject>().ToList(),
-        Doc = fixture.UpdatedDoc,
-        Elements = fixture.UpdatedRevitElements
-      });
+      var updatedObjs = await SpeckleToNative(
+        assert,
+        assertAsync,
+        new UpdateData
+        {
+          AppPlaceholders = initialObjs.Cast<ApplicationObject>().ToList(),
+          Doc = fixture.UpdatedDoc,
+          Elements = fixture.UpdatedRevitElements
+        }
+      );
       fixture.UpdateTestRunning = false;
 
       // delete the elements that were not being deleted during the update test
@@ -233,20 +252,24 @@ namespace ConverterRevitTests
       var revitEls = new List<object>();
       var resEls = new List<object>();
 
-      await SpeckleUtils.RunInTransaction(() =>
-      {
-        //xru.RunInTransaction(() =>
-        //{
-        foreach (var el in spkElems)
+      await SpeckleUtils.RunInTransaction(
+        () =>
         {
-          var res = converter.ConvertToNative(el);
-          if (res is List<ApplicationObject> apls)
-            resEls.AddRange(apls);
-          else
-            resEls.Add(el);
-        }
-        //}, fixture.NewDoc).Wait();
-      }, fixture.NewDoc, converter);
+          //xru.RunInTransaction(() =>
+          //{
+          foreach (var el in spkElems)
+          {
+            var res = converter.ConvertToNative(el);
+            if (res is List<ApplicationObject> apls)
+              resEls.AddRange(apls);
+            else
+              resEls.Add(el);
+          }
+          //}, fixture.NewDoc).Wait();
+        },
+        fixture.NewDoc,
+        converter
+      );
 
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
 
@@ -273,8 +296,13 @@ namespace ConverterRevitTests
 
       var elemAsFam = elem as FamilyInstance;
       // HACK: This is not reliable or acceptable as a testing strategy.
-      if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct ||
-            elemAsFam != null && AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(elem as FamilyInstance) ))
+      if (
+        !(
+          elem is DB.Architecture.Room
+          || elem is DB.Mechanical.Duct
+          || elemAsFam != null && AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(elem as FamilyInstance)
+        )
+      )
         Assert.Equal(elem.Name, spkElem["type"]);
 
       //Assert.NotNull(spkElem.baseGeometry);
@@ -323,15 +351,15 @@ namespace ConverterRevitTests
           Assert.Equal(expecedParam.AsString(), actual.get_Parameter(param).AsString());
           break;
         case StorageType.ElementId:
-          {
-            var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
-            var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
-            if (e1 is Level l1 && e2 is Level l2)
-              Assert.Equal(l1.Elevation, l2.Elevation, 3);
-            else if (e1 != null && e2 != null)
-              Assert.Equal(e1.Name, e2.Name);
-            break;
-          }
+        {
+          var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
+          var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
+          if (e1 is Level l1 && e2 is Level l2)
+            Assert.Equal(l1.Elevation, l2.Elevation, 3);
+          else if (e1 != null && e2 != null)
+            Assert.Equal(e1.Name, e2.Name);
+          break;
+        }
         case StorageType.None:
           break;
         default:
@@ -345,6 +373,5 @@ namespace ConverterRevitTests
     public Document Doc { get; set; }
     public IList<Element> Elements { get; set; }
     public List<ApplicationObject> AppPlaceholders { get; set; }
-
   }
 }
