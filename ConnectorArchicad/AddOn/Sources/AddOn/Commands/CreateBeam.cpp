@@ -3,14 +3,11 @@
 #include "ObjectState.hpp"
 #include "Utility.hpp"
 #include "Objects/Point.hpp"
-#include "RealNumber.h"
-#include "DGModule.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
 using namespace FieldNames;
 
-namespace AddOnCommands
-{
+namespace AddOnCommands {
 
 
 GS::String CreateBeam::GetFieldName () const
@@ -18,10 +15,12 @@ GS::String CreateBeam::GetFieldName () const
 	return FieldNames::Beams;
 }
 
+
 GS::UniString CreateBeam::GetUndoableCommandName () const
 {
 	return "CreateSpeckleBeam";
 }
+
 
 GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
@@ -164,7 +163,8 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			currentSegment.Get (Beam::BeamSegment::segmentData, assemblySegment);
 			Utility::CreateOneSegmentData (assemblySegment, memo.beamSegments[idx].assemblySegmentData, beamMask);
 
-			// The left overridden material name
+			// The left overridden material name - in case of circle or profiled segment the left surface is the extrusion surface, but the import does not work properly in API
+			memo.beamSegments[idx].leftMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::LeftMaterial)) {
 				memo.beamSegments[idx].leftMaterial.overridden = true;
 
@@ -182,10 +182,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						memo.beamSegments[idx].leftMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.attributeIndex);
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
 
 			// The top overridden material name
+			memo.beamSegments[idx].topMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::TopMaterial)) {
 				memo.beamSegments[idx].topMaterial.overridden = true;
 
@@ -203,10 +204,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						memo.beamSegments[idx].topMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.attributeIndex);
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
 
 			// The right overridden material name
+			memo.beamSegments[idx].rightMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::RightMaterial)) {
 				memo.beamSegments[idx].rightMaterial.overridden = true;
 
@@ -224,10 +226,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						memo.beamSegments[idx].rightMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.attributeIndex);
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
 
 			// The bottom overridden material name
+			memo.beamSegments[idx].bottomMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::BottomMaterial)) {
 				memo.beamSegments[idx].bottomMaterial.overridden = true;
 
@@ -245,10 +248,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						memo.beamSegments[idx].bottomMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.attributeIndex);
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
 
 			// The ends overridden material name
+			memo.beamSegments[idx].endsMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::EndsMaterial)) {
 				memo.beamSegments[idx].endsMaterial.overridden = true;
 
@@ -266,8 +270,8 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 						memo.beamSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
 					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.attributeIndex);
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
 
 			// The overridden materials are chained
 			if (currentSegment.Contains (Beam::BeamSegment::MaterialsChained))

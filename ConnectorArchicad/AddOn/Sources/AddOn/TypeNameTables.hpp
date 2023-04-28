@@ -19,6 +19,13 @@ extern const GS::HashTable<Int32, GS::UniString> beamFlagNames;
 extern const GS::HashTable<API_EdgeTrimID, GS::UniString> edgeAngleTypeNames;
 extern const GS::HashTable<API_SlabReferencePlaneLocationID, GS::UniString> referencePlaneLocationNames;
 
+extern const  GS::HashTable<API_RoofClassID, GS::UniString> roofClassNames;
+extern const  GS::HashTable<API_ShellClassID, GS::UniString> shellClassNames;
+extern const  GS::HashTable<API_ShellBaseCutBodyTypeID, GS::UniString> shellBaseCutBodyTypeNames;
+extern const  GS::HashTable<API_MorphingRuleID, GS::UniString> morphingRuleNames;
+extern const  GS::HashTable<API_ShellBaseContourEdgeTypeID, GS::UniString> shellBaseContourEdgeTypeNames;
+extern const  GS::HashTable<API_PolyRoofSegmentAngleTypeID, GS::UniString> polyRoofSegmentAngleTypeNames;
+
 extern const GS::HashTable<API_AssemblySegmentLengthTypeID, GS::UniString> segmentLengthTypeNames;
 extern const GS::HashTable<API_AssemblySegmentCutTypeID, GS::UniString> assemblySegmentCutTypeNames;
 extern const GS::HashTable<API_BHoleTypeID, GS::UniString> beamHoleTypeNames;

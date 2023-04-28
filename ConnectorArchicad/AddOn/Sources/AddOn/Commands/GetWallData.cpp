@@ -94,7 +94,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 
 	// The polygon of the wall
 	if (wall.type == APIWtyp_Poly)
-		os.Add (Shape, Objects::ElementShape (wall.poly, memo, z));
+		os.Add (Shape, Objects::ElementShape (wall.poly, memo, Objects::ElementShape::MemoMainPolygon, z));
 
 	// The thickness of the wall (first and second thickness for trapezoid walls)
 	if (wall.type == APIWtyp_Trapez) {

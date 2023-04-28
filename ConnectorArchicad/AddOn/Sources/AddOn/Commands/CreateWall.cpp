@@ -194,7 +194,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		element.wall.poly.nCoords = wallShape.VertexCount ();
 		element.wall.poly.nArcs = wallShape.ArcCount ();
 
-		wallShape.SetToMemo (memo);
+		wallShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	// The thickness of the wall

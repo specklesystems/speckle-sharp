@@ -62,7 +62,7 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 		element.zone.poly.nCoords = zoneShape.VertexCount ();
 		element.zone.poly.nArcs = zoneShape.ArcCount ();
 
-		zoneShape.SetToMemo (memo);
+		zoneShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	if (os.Contains (Room::Height)) {

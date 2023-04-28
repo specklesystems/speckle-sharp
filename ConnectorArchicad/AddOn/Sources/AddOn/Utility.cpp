@@ -217,6 +217,7 @@ void SetStoryLevelAndFloor (const double& inLevel, short& floorInd, double& leve
 		floorInd += GetActualStoryItem ().index;
 }
 
+
 GS::Array<API_Guid> GetWallSubelements (API_WallType& wall)
 {
 	GS::Array<API_Guid> result;
@@ -236,6 +237,7 @@ GS::Array<API_Guid> GetWallSubelements (API_WallType& wall)
 
 	return result;
 }
+
 
 GSErrCode GetSegmentData (const API_AssemblySegmentData& segmentData, GS::ObjectState& out)
 {
@@ -275,58 +277,6 @@ GSErrCode GetSegmentData (const API_AssemblySegmentData& segmentData, GS::Object
 		break;
 
 	}
-
-	return NoError;
-}
-
-
-GSErrCode GetOneSchemeData (const API_AssemblySegmentSchemeData& schemeData, GS::ObjectState& out)
-{
-	out.Add (AssemblySegmentSchemeData::lengthType, segmentLengthTypeNames.Get (schemeData.lengthType));
-	out.Add (AssemblySegmentSchemeData::fixedLength, schemeData.fixedLength);
-	out.Add (AssemblySegmentSchemeData::lengthProportion, schemeData.lengthProportion);
-
-	return NoError;
-}
-
-
-GSErrCode GetAllSchemeData (API_AssemblySegmentSchemeData* schemeData, GS::ObjectState& out)
-{
-	if (schemeData == nullptr) return Error;
-
-	GSSize schemesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(schemeData)) / sizeof (API_AssemblySegmentSchemeData);
-	DBASSERT (schemesCount == elem.column.nSchemes)
-
-		for (GSSize idx = 0; idx < schemesCount; ++idx) {
-			GS::ObjectState currentScheme;
-			Utility::GetOneSchemeData (schemeData[idx], currentScheme);
-			out.Add (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
-		}
-
-	return NoError;
-}
-
-
-GSErrCode GetOneCutData (const API_AssemblySegmentCutData& cutData, GS::ObjectState& out)
-{
-	out.Add (AssemblySegmentCutData::cutType, assemblySegmentCutTypeNames.Get (cutData.cutType));
-	out.Add (AssemblySegmentCutData::customAngle, cutData.customAngle);
-
-	return NoError;
-}
-
-GSErrCode GetAllCutData (API_AssemblySegmentCutData* cutData, GS::ObjectState& out)
-{
-	if (cutData == nullptr) return Error;
-
-	GSSize cutsCount = BMGetPtrSize (reinterpret_cast<GSPtr>(cutData)) / sizeof (API_AssemblySegmentCutData);
-	DBASSERT (cutsCount == elem.column.nCuts)
-
-		for (GSSize idx = 0; idx < cutsCount; ++idx) {
-			GS::ObjectState currentCut;
-			Utility::GetOneCutData (cutData[idx], currentCut);
-			out.Add (GS::String::SPrintf (AssemblySegment::CutName, idx + 1), currentCut);
-		}
 
 	return NoError;
 }
@@ -418,6 +368,33 @@ GSErrCode CreateOneSegmentData (GS::ObjectState& currentSegment, API_AssemblySeg
 }
 
 
+GSErrCode GetOneSchemeData (const API_AssemblySegmentSchemeData& schemeData, GS::ObjectState& out)
+{
+	out.Add (AssemblySegmentSchemeData::lengthType, segmentLengthTypeNames.Get (schemeData.lengthType));
+	out.Add (AssemblySegmentSchemeData::fixedLength, schemeData.fixedLength);
+	out.Add (AssemblySegmentSchemeData::lengthProportion, schemeData.lengthProportion);
+
+	return NoError;
+}
+
+
+GSErrCode GetAllSchemeData (API_AssemblySegmentSchemeData* schemeData, GS::ObjectState& out)
+{
+	if (schemeData == nullptr) return Error;
+
+	GSSize schemesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(schemeData)) / sizeof (API_AssemblySegmentSchemeData);
+	DBASSERT (schemesCount == elem.column.nSchemes)
+
+		for (GSSize idx = 0; idx < schemesCount; ++idx) {
+			GS::ObjectState currentScheme;
+			Utility::GetOneSchemeData (schemeData[idx], currentScheme);
+			out.Add (GS::String::SPrintf (AssemblySegment::SchemeName, idx + 1), currentScheme);
+		}
+
+	return NoError;
+}
+
+
 GSErrCode CreateOneSchemeData (GS::ObjectState& currentScheme, API_AssemblySegmentSchemeData& schemeData, API_Element& mask)
 {
 	UNUSED_PARAMETER (mask); // TODO: add ACAPI_ELEMENT_MASK_SET things
@@ -443,71 +420,6 @@ GSErrCode CreateOneSchemeData (GS::ObjectState& currentScheme, API_AssemblySegme
 				schemeData.fixedLength = 0.0;
 			}
 		}
-	}
-	return err;
-}
-
-
-GSErrCode CreateOneCutData (GS::ObjectState& currentCut, API_AssemblySegmentCutData& cutData, API_Element& mask)
-{
-	UNUSED_PARAMETER (mask); // TODO: add ACAPI_ELEMENT_MASK_SET things
-	GSErrCode err = NoError;
-
-	if (!currentCut.IsEmpty ()) {
-
-		if (currentCut.Contains (AssemblySegmentCutData::cutType)) {
-			API_AssemblySegmentCutTypeID realCutType = APIAssemblySegmentCut_Vertical;
-			GS::UniString structureName;
-			currentCut.Get (AssemblySegmentCutData::cutType, structureName);
-
-			GS::Optional<API_AssemblySegmentCutTypeID> tmpCutType = assemblySegmentCutTypeNames.FindValue (structureName);
-			if (tmpCutType.HasValue ())
-				realCutType = tmpCutType.Get ();
-			cutData.cutType = realCutType;
-		}
-		if (currentCut.Contains (AssemblySegmentCutData::customAngle)) {
-			currentCut.Get (AssemblySegmentCutData::customAngle, cutData.customAngle);
-		}
-	}
-	return err;
-}
-
-GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts, API_Element& element, API_Element& mask, API_ElementMemo* memo)
-{
-	GSErrCode err = NoError;
-	API_AssemblySegmentCutData defaultSegmentCut;
-	if (memo->assemblySegmentCuts != nullptr) {
-		defaultSegmentCut = memo->assemblySegmentCuts[0];
-
-#ifdef ServerMainVers_2600
-		switch (element.header.type.typeID) {
-#else
-		switch (element.header.typeID) {
-#endif
-		case API_BeamID:
-			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-			break;
-		case API_ColumnID:
-			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-		default: // In case if not beam or column
-			return Error;
-			break;
-		}
-
-	} else {
-		return Error;
-	}
-
-	GS::ObjectState allCuts;
-	if (os.Contains (AssemblySegment::CutData))
-		os.Get (AssemblySegment::CutData, allCuts);
-
-	for (GS::UInt32 idx = 0; idx < numberOfCuts; ++idx) {
-		GS::ObjectState currentCut;
-		allCuts.Get (GS::String::SPrintf (AssemblySegment::CutName, idx + 1), currentCut);
-
-		memo->assemblySegmentCuts[idx] = defaultSegmentCut;
-		Utility::CreateOneCutData (currentCut, memo->assemblySegmentCuts[idx], mask);
 	}
 	return err;
 }
@@ -556,6 +468,281 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
 		}
 	}
 	return err;
+}
+
+	
+GSErrCode GetOneCutData (const API_AssemblySegmentCutData& cutData, GS::ObjectState& out)
+{
+	out.Add (AssemblySegmentCutData::cutType, assemblySegmentCutTypeNames.Get (cutData.cutType));
+	out.Add (AssemblySegmentCutData::customAngle, cutData.customAngle);
+
+	return NoError;
+}
+
+
+GSErrCode GetAllCutData (API_AssemblySegmentCutData* cutData, GS::ObjectState& out)
+{
+	if (cutData == nullptr) return Error;
+
+	GSSize cutsCount = BMGetPtrSize (reinterpret_cast<GSPtr>(cutData)) / sizeof (API_AssemblySegmentCutData);
+
+	for (GSSize idx = 0; idx < cutsCount; ++idx) {
+		GS::ObjectState currentCut;
+		Utility::GetOneCutData (cutData[idx], currentCut);
+		out.Add (GS::String::SPrintf (AssemblySegment::CutName, idx + 1), currentCut);
+	}
+
+	return NoError;
+}
+
+
+GSErrCode CreateOneCutData (GS::ObjectState& currentCut, API_AssemblySegmentCutData& cutData, API_Element& mask)
+{
+	UNUSED_PARAMETER (mask); // TODO: add ACAPI_ELEMENT_MASK_SET things
+	GSErrCode err = NoError;
+
+	if (!currentCut.IsEmpty ()) {
+
+		if (currentCut.Contains (AssemblySegmentCutData::cutType)) {
+			API_AssemblySegmentCutTypeID realCutType = APIAssemblySegmentCut_Vertical;
+			GS::UniString structureName;
+			currentCut.Get (AssemblySegmentCutData::cutType, structureName);
+
+			GS::Optional<API_AssemblySegmentCutTypeID> tmpCutType = assemblySegmentCutTypeNames.FindValue (structureName);
+			if (tmpCutType.HasValue ())
+				realCutType = tmpCutType.Get ();
+			cutData.cutType = realCutType;
+		}
+		if (currentCut.Contains (AssemblySegmentCutData::customAngle)) {
+			currentCut.Get (AssemblySegmentCutData::customAngle, cutData.customAngle);
+		}
+	}
+	return err;
+}
+
+
+GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts, API_Element& element, API_Element& mask, API_ElementMemo* memo)
+{
+	GSErrCode err = NoError;
+	API_AssemblySegmentCutData defaultSegmentCut;
+	if (memo->assemblySegmentCuts != nullptr) {
+		defaultSegmentCut = memo->assemblySegmentCuts[0];
+
+#ifdef ServerMainVers_2600
+		switch (element.header.type.typeID) {
+#else
+		switch (element.header.typeID) {
+#endif
+		case API_BeamID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+			break;
+		case API_ColumnID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+		default: // In case if not beam or column
+			return Error;
+			break;
+		}
+
+	} else {
+		return Error;
+	}
+
+	GS::ObjectState allCuts;
+	if (os.Contains (AssemblySegment::CutData))
+		os.Get (AssemblySegment::CutData, allCuts);
+
+	for (GS::UInt32 idx = 0; idx < numberOfCuts; ++idx) {
+		GS::ObjectState currentCut;
+		allCuts.Get (GS::String::SPrintf (AssemblySegment::CutName, idx + 1), currentCut);
+
+		memo->assemblySegmentCuts[idx] = defaultSegmentCut;
+		Utility::CreateOneCutData (currentCut, memo->assemblySegmentCuts[idx], mask);
+	}
+	return err;
+}
+
+
+GSErrCode GetOneLevelEdgeData (const API_RoofSegmentData& levelEdgeData, GS::ObjectState& out)
+{
+	out.Add (RoofSegmentData::LevelAngle, levelEdgeData.angle);
+	out.Add (RoofSegmentData::EavesOverhang, levelEdgeData.eavesOverhang);
+
+	API_Attribute attribute;
+
+	// Top Material
+	BNZeroMemory (&attribute, sizeof (API_Attribute));
+	attribute.header.typeID = API_MaterialID;
+	attribute.header.index = levelEdgeData.topMaterial;
+
+	if (NoError == ACAPI_Attribute_Get (&attribute))
+		out.Add (RoofSegmentData::TopMaterial, GS::UniString{attribute.header.name});
+
+	// Bottom Material
+	BNZeroMemory (&attribute, sizeof (API_Attribute));
+	attribute.header.typeID = API_MaterialID;
+	attribute.header.index = levelEdgeData.bottomMaterial;
+
+	if (NoError == ACAPI_Attribute_Get (&attribute))
+		out.Add (RoofSegmentData::BottomMaterial, GS::UniString{attribute.header.name});
+
+	// Cover Fill Type
+	BNZeroMemory (&attribute, sizeof (API_Attribute));
+	attribute.header.typeID = API_FilltypeID;
+	attribute.header.index = levelEdgeData.coverFillType;
+
+	if (NoError == ACAPI_Attribute_Get (&attribute))
+		out.Add (RoofSegmentData::CoverFillType, GS::UniString{attribute.header.name});
+
+	// Angle Type
+	out.Add (RoofSegmentData::AngleType, polyRoofSegmentAngleTypeNames.Get (levelEdgeData.angleType));
+
+	return NoError;
+}
+
+
+GSErrCode GetOnePivotPolyEdgeData (const API_PivotPolyEdgeData& pivotPolyEdgeData, GS::ObjectState& out)
+{
+	out.Add (PivotPolyEdgeData::NumLevelEdgeData, pivotPolyEdgeData.nLevelEdgeData);
+
+	GS::ObjectState levelEdgeData;
+
+	for (GSSize idx = 0; idx < pivotPolyEdgeData.nLevelEdgeData; ++idx) {
+		GS::ObjectState currentLevelEdge;
+		Utility::GetOneLevelEdgeData (pivotPolyEdgeData.levelEdgeData[idx], currentLevelEdge);
+		levelEdgeData.Add (GS::String::SPrintf (LevelEdge::LevelEdgeName, idx + 1), currentLevelEdge);
+	}
+	out.Add (LevelEdge::LevelEdgeData, levelEdgeData);
+
+	return NoError;
+}
+
+
+GSErrCode GetAllPivotPolyEdgeData (API_PivotPolyEdgeData* pivotPolyEdgeData, GS::ObjectState& out)
+{
+	if (pivotPolyEdgeData == nullptr) return Error;
+
+	GSSize pivotPolyEdgesCount = BMGetPtrSize (reinterpret_cast<GSPtr>(pivotPolyEdgeData)) / sizeof (API_PivotPolyEdgeData);
+
+	for (GSSize idx = 1; idx < pivotPolyEdgesCount; ++idx) {
+		GS::ObjectState currentPivotPolyEdge;
+		Utility::GetOnePivotPolyEdgeData (pivotPolyEdgeData[idx], currentPivotPolyEdge);
+		out.Add (GS::String::SPrintf (PivotPolyEdge::EdgeName, idx), currentPivotPolyEdge);
+	}
+
+	return NoError;
+}
+
+
+GSErrCode CreateOneLevelEdgeData (GS::ObjectState& currentLevelEdge, API_RoofSegmentData& levelEdgeData)
+{
+	GSErrCode err = NoError;
+	if (!currentLevelEdge.IsEmpty ()) {
+
+		if (currentLevelEdge.Contains (RoofSegmentData::LevelAngle))
+			currentLevelEdge.Get (RoofSegmentData::LevelAngle, levelEdgeData.angle);
+
+		if (currentLevelEdge.Contains (RoofSegmentData::EavesOverhang))
+			currentLevelEdge.Get (RoofSegmentData::EavesOverhang, levelEdgeData.eavesOverhang);
+
+		GS::UniString attributeName;
+
+		// Top Material
+		if (currentLevelEdge.Contains (RoofSegmentData::TopMaterial)) {
+			currentLevelEdge.Get (RoofSegmentData::TopMaterial, attributeName);
+
+			if (!attributeName.IsEmpty ()) {
+				API_Attribute attribute;
+				BNZeroMemory (&attribute, sizeof (API_Attribute));
+				attribute.header.typeID = API_MaterialID;
+				CHCopyC (attributeName.ToCStr (), attribute.header.name);
+
+				if (NoError == ACAPI_Attribute_Get (&attribute))
+					levelEdgeData.topMaterial = attribute.header.index;
+			}
+		}
+
+		// Bottom Material
+		if (currentLevelEdge.Contains (RoofSegmentData::BottomMaterial)) {
+			currentLevelEdge.Get (RoofSegmentData::BottomMaterial, attributeName);
+
+			if (!attributeName.IsEmpty ()) {
+				API_Attribute attribute;
+				BNZeroMemory (&attribute, sizeof (API_Attribute));
+				attribute.header.typeID = API_MaterialID;
+				CHCopyC (attributeName.ToCStr (), attribute.header.name);
+
+				if (NoError == ACAPI_Attribute_Get (&attribute))
+					levelEdgeData.bottomMaterial = attribute.header.index;
+			}
+		}
+
+		// Cover Fill Type
+		if (currentLevelEdge.Contains (RoofSegmentData::CoverFillType)) {
+			currentLevelEdge.Get (RoofSegmentData::CoverFillType, attributeName);
+
+			if (!attributeName.IsEmpty ()) {
+				API_Attribute attribute;
+				BNZeroMemory (&attribute, sizeof (API_Attribute));
+				attribute.header.typeID = API_FilltypeID;
+				CHCopyC (attributeName.ToCStr (), attribute.header.name);
+
+				if (NoError == ACAPI_Attribute_Get (&attribute))
+					levelEdgeData.coverFillType = attribute.header.index;
+			}
+		}
+
+		// Angle Type
+		if (currentLevelEdge.Contains (RoofSegmentData::AngleType)) {
+			GS::UniString angleTypeName;
+			currentLevelEdge.Get (RoofSegmentData::AngleType, angleTypeName);
+
+			GS::Optional<API_PolyRoofSegmentAngleTypeID> type = polyRoofSegmentAngleTypeNames.FindValue (angleTypeName);
+			if (type.HasValue ())
+				levelEdgeData.angleType = type.Get ();
+		}
+
+	}
+
+	return err;
+}
+
+
+GSErrCode CreateOnePivotPolyEdgeData (GS::ObjectState& currentPivotPolyEdge, API_PivotPolyEdgeData& pivotPolyEdgeData)
+{
+	if (currentPivotPolyEdge.IsEmpty ())
+		return NoError;
+
+	if (currentPivotPolyEdge.Contains (PivotPolyEdgeData::NumLevelEdgeData))
+		currentPivotPolyEdge.Get (PivotPolyEdgeData::NumLevelEdgeData, pivotPolyEdgeData.nLevelEdgeData);
+
+	pivotPolyEdgeData.levelEdgeData = (API_RoofSegmentData*) BMAllocatePtr ((pivotPolyEdgeData.nLevelEdgeData) * sizeof (API_RoofSegmentData), ALLOCATE_CLEAR, 0);
+
+	GS::ObjectState levelEdgeData;
+	currentPivotPolyEdge.Get (LevelEdge::LevelEdgeData, levelEdgeData);
+
+	for (GSSize idx = 0; idx < pivotPolyEdgeData.nLevelEdgeData; ++idx) {
+		GS::ObjectState currentLevelEdge;
+		levelEdgeData.Get (GS::String::SPrintf (LevelEdge::LevelEdgeName, idx + 1), currentLevelEdge);
+
+		Utility::CreateOneLevelEdgeData (currentLevelEdge, pivotPolyEdgeData.levelEdgeData[idx]);
+	}
+
+	return NoError;
+}
+
+
+GSErrCode CreateAllPivotPolyEdgeData (GS::ObjectState& allPivotPolyEdges, GS::UInt32& numberOfPivotPolyEdges, API_ElementMemo * memo)
+{
+	memo->pivotPolyEdges = (API_PivotPolyEdgeData*) BMAllocatePtr ((numberOfPivotPolyEdges + 1) * sizeof (API_PivotPolyEdgeData), ALLOCATE_CLEAR, 0);
+
+	for (UInt32 idx = 1; idx <= numberOfPivotPolyEdges; ++idx) {
+		GS::ObjectState currentPivotPolyEdge;
+		allPivotPolyEdges.Get (GS::String::SPrintf (PivotPolyEdge::EdgeName, idx), currentPivotPolyEdge);
+
+		if (!currentPivotPolyEdge.IsEmpty ())
+			Utility::CreateOnePivotPolyEdgeData (currentPivotPolyEdge, memo->pivotPolyEdges[idx]);
+	}
+	return NoError;
 }
 
 
@@ -789,5 +976,39 @@ GSErrCode ImportHatchOrientation (const GS::ObjectState& os, API_HatchOrientatio
 	return NoError;
 }
 
+
+GSErrCode ExportTransform (API_Tranmat transform, GS::ObjectState& out)
+{
+	GS::ObjectState matrixOs;
+	for (GSSize idx1 = 0; idx1 < 3; ++idx1) {
+		for (GSSize idx2 = 0; idx2 < 4; ++idx2) {
+			matrixOs.Add (GS::String::SPrintf ("M%d%d", idx1 + 1, idx2 + 1), transform.tmx[idx1 * 4 + idx2]);
+		}
+	}
+
+	matrixOs.Add ("M41", 0.0);
+	matrixOs.Add ("M42", 0.0);
+	matrixOs.Add ("M43", 0.0);
+	matrixOs.Add ("M44", 1.0);
+
+	out.Add ("matrix", matrixOs);
+
+	return NoError;
+}
+
+
+GSErrCode ImportTransform (const GS::ObjectState& os, API_Tranmat& transform)
+{
+	GS::ObjectState matrixOs;
+	os.Get ("matrix", matrixOs);
+	
+	for (GSSize idx1 = 0; idx1 < 3; ++idx1) {
+		for (GSSize idx2 = 0; idx2 < 4; ++idx2) {
+			matrixOs.Get (GS::String::SPrintf ("M%d%d", idx1 + 1, idx2 + 1), transform.tmx[idx1 * 4 + idx2]);
+		}
+	}
+
+	return NoError;
+}
 
 }

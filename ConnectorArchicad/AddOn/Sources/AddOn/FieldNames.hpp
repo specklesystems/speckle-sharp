@@ -29,6 +29,8 @@ static const char* CreatedIds = "CreatedIds";
 
 static const char* FloorIndex = "floorIndex";
 static const char* Shape = "shape";
+static const char* Shape1 = "shape1";
+static const char* Shape2 = "shape2";
 
 static const char* Beams = "beams";
 static const char* Columns = "columns";
@@ -36,6 +38,7 @@ static const char* DirectShapes = "directShapes";
 static const char* Doors = "doors";
 static const char* Objects = "objects";
 static const char* Roofs = "roofs";
+static const char* Shells = "shells";
 static const char* Slabs = "slabs";
 static const char* Walls = "walls";
 static const char* Windows = "windows";
@@ -79,6 +82,33 @@ static const char* HoleData = "Holes";
 static const char* SegmentData = "Segments";
 static const char* SchemeData = "Schemes";
 static const char* CutData = "Cuts";
+}
+
+
+namespace PivotPolyEdge {
+static const char* EdgeName = "Roof Pivot Poly Edge #%d";
+static const char* EdgeData = "roofPivotPolyEdges";
+}
+
+
+namespace PivotPolyEdgeData {
+static const char* NumLevelEdgeData = "nLevelEdgeData";
+}
+
+
+namespace LevelEdge {
+static const char* LevelEdgeName = "Roof Level #%d";
+static const char* LevelEdgeData = "roofLevels";
+}
+
+
+namespace RoofSegmentData {
+static const char* LevelAngle = "edgeLevelAngle";
+static const char* TopMaterial = "topMaterial";
+static const char* BottomMaterial = "bottomMaterial";
+static const char* CoverFillType = "coverFillType";
+static const char* EavesOverhang = "eavesOverhang";
+static const char* AngleType = "angleType";
 }
 
 
@@ -426,6 +456,202 @@ static const char* botMat = "botMat";
 static const char* materialsChained = "materialsChained";
 }
 
+
+namespace Roof
+{
+// Geometry and positioning
+static const char* RoofClassName = "roofClassName";
+static const char* PlaneRoofAngle = "planeRoofAngle";
+static const char* BaseLine = "baseLine";
+static const char* BegC = "begC";
+static const char* EndC = "endC";
+static const char* PosSign = "posSign";
+static const char* PivotPolygon = "pivotPolygon";
+
+// Level
+static const char* levels = "levels";
+static const char* LevelNum = "levelNum";
+
+namespace RoofLevel {
+static const char* LevelName = "Level #%d";
+static const char* levelData = "levels";
+}
+
+namespace LevelData {
+static const char* LevelHeight = "levelHeight";
+static const char* LevelAngle = "levelAngle";
+}
+
+static const char* Thickness = "thickness";
+static const char* Structure = "structure";
+static const char* CompositeName = "compositeName";
+static const char* BuildingMaterialName = "buildingMaterialName";
+// Edge trims
+static const char* EdgeAngleType = "edgeAngleType";
+static const char* EdgeAngle = "edgeAngle";
+// Floor Plan and Section - Floor Plan Display
+static const char* DisplayOptionName = "displayOptionName";
+static const char* ViewDepthLimitationName = "showProjectionName";
+// Floor Plan and Section - Cut Surfaces
+static const char* SectContPen = "sectContPen";
+static const char* SectContLtype = "sectContLtype";
+static const char* CutFillPen = "cutFillPen";
+static const char* CutFillBackgroundPen = "cutFillBackgroundPen";
+// Floor Plan and Section - Outlines
+static const char* ContourPen = "contourPen";
+static const char* ContourLineType = "contourLineType";
+static const char* OverheadLinePen = "overheadLinePen";
+static const char* OverheadLinetype = "overheadLinetype";
+// Floor Plan and Section - Cover Fills
+static const char* UseFloorFill = "useFloorFill";
+static const char* FloorFillPen = "floorFillPen";
+static const char* FloorFillBGPen = "floorFillBGPen";
+static const char* FloorFillName = "floorFillName";
+static const char* Use3DHatching = "use3DHatching";
+static const char* UseFillLocBaseLine = "useFillLocBaseLine";
+static const char* UseSlantedFill = "useSlantedFill";
+static const char* HatchOrientation = "hatchOrientation";
+static const char* HatchOrientationOrigoX = "hatchOrientationOrigoX";
+static const char* HatchOrientationOrigoY = "hatchOrientationOrigoY";
+static const char* HatchOrientationXAxisX = "hatchOrientationXAxisX";
+static const char* HatchOrientationXAxisY = "hatchOrientationXAxisY";
+static const char* HatchOrientationYAxisX = "hatchOrientationYAxisX";
+static const char* HatchOrientationYAxisY = "hatchOrientationYAxisY";
+// Model
+static const char* TopMat = "topMat";
+static const char* SideMat = "sideMat";
+static const char* BotMat = "botMat";
+static const char* MaterialsChained = "materialsChained";
+static const char* TrimmingBodyName = "trimmingBodyName";
+}
+
+namespace Shell
+{
+// Geometry and positioning
+static const char* ShellClassName = "shellClassName";
+
+static const char* BasePlane = "basePlane";
+
+static const char* Flipped = "flipped";
+static const char* HasContour = "hasContour";
+static const char* NumHoles = "numHoles";
+static const char* ShellContourName = "shellContour #%d";
+static const char* ShellContourData = "shellContours";
+static const char* ShellContourPlane = "shellContourPlane";
+static const char* ShellContourPoly = "shellContourPoly";
+static const char* ShellContourHeight = "shellContourHeight";
+static const char* ShellContourID = "shellContourID";
+static const char* ShellContourSideTypeName = "sideTypeName";
+static const char* ShellContourSideAngle = "sideAngle";
+static const char* ShellContourEdgeTypeName = "edgeTypeName";
+static const char* ShellContourEdgeSideMaterial = "edgeSideMaterial";
+static const char* ShellContourEdgeName = "shellContourEdge #%d";
+static const char* ShellContourEdgeData = "shellContourEdges";
+static const char* DefaultEdgeType = "defaultEdgeType";
+
+static const char* SlantAngle = "slantAngle";
+static const char* RevolutionAngle = "revolutionAngle";
+static const char* DistortionAngle = "distortionAngle";
+static const char* SegmentedSurfaces = "segmentedSurfaces";
+static const char* ShapePlaneTilt = "shapePlaneTilt";
+static const char* BegPlaneTilt = "begPlaneTilt";
+static const char* EndPlaneTilt = "endPlaneTilt";
+static const char* AxisBase = "axisBase";
+static const char* Plane1 = "plane1";
+static const char* Plane2 = "plane2";
+static const char* BegC = "begC";
+static const char* BegAngle = "begAngle";
+static const char* ExtrusionVector = "extrusionVector";
+static const char* ShapeDirection = "shapeDirection";
+static const char* DistortionVector = "distortionVector";
+static const char* MorphingRuleName = "morphingRuleName";
+
+static const char* BegShapeEdge = "begShapeEdge";
+static const char* BegShapeEdgeTrimSideType = "begShapeEdgeTrimSideType";
+static const char* BegShapeEdgeTrimSideAngle = "begShapeEdgeTrimSideAngle";
+static const char* BegShapeEdgeSideMaterial = "begShapeEdgeSideMaterial";
+static const char* BegShapeEdgeType = "begShapeEdgeType";
+static const char* EndShapeEdge = "endShapeEdge";
+static const char* EndShapeEdgeTrimSideType = "endShapeEdgeTrimSideType";
+static const char* EndShapeEdgeTrimSideAngle = "endShapeEdgeTrimSideAngle";
+static const char* EndShapeEdgeSideMaterial = "endShapeEdgeSideMaterial";
+static const char* EndShapeEdgeType = "endShapeEdgeType";
+
+static const char* ExtrudedEdge1 = "extrudedEdge1";
+static const char* ExtrudedEdgeTrimSideType1 = "extrudedEdgeTrimSideType1";
+static const char* ExtrudedEdgeTrimSideAngle1 = "extrudedEdgeTrimSideAngle1";
+static const char* ExtrudedEdgeSideMaterial1 = "extrudedEdgeSideMaterial1";
+static const char* ExtrudedEdgeType1 = "extrudedEdgeType1";
+static const char* ExtrudedEdge2 = "extrudedEdge2";
+static const char* ExtrudedEdgeTrimSideType2 = "extrudedEdgeTrimSideType2";
+static const char* ExtrudedEdgeTrimSideAngle2 = "extrudedEdgeTrimSideAngle2";
+static const char* ExtrudedEdgeSideMaterial2 = "extrudedEdgeSideMaterial2";
+static const char* ExtrudedEdgeType2 = "extrudedEdgeType2";
+
+static const char* RevolvedEdge1 = "revolvedEdge1";
+static const char* RevolvedEdgeTrimSideType1 = "revolvedEdgeTrimSideType1";
+static const char* RevolvedEdgeTrimSideAngle1 = "revolvedEdgeTrimSideAngle1";
+static const char* RevolvedEdgeSideMaterial1 = "revolvedEdgeSideMaterial1";
+static const char* RevolvedEdgeType1 = "revolvedEdgeType1";
+static const char* RevolvedEdge2 = "revolvedEdge2";
+static const char* RevolvedEdgeTrimSideType2 = "revolvedEdgeTrimSideType2";
+static const char* RevolvedEdgeTrimSideAngle2 = "revolvedEdgeTrimSideAngle2";
+static const char* RevolvedEdgeSideMaterial2 = "revolvedEdgeSideMaterial2";
+static const char* RevolvedEdgeType2 = "revolvedEdgeType2";
+
+static const char* RuledEdge1 = "ruledEdge1";
+static const char* RuledEdgeTrimSideType1 = "ruledEdgeTrimSideType1";
+static const char* RuledEdgeTrimSideAngle1 = "ruledEdgeTrimSideAngle1";
+static const char* RuledEdgeSideMaterial1 = "ruledEdgeSideMaterial1";
+static const char* RuledEdgeType1 = "ruledEdgeType1";
+static const char* RuledEdge2 = "ruledEdge2";
+static const char* RuledEdgeTrimSideType2 = "ruledEdgeTrimSideType2";
+static const char* RuledEdgeTrimSideAngle2 = "ruledEdgeTrimSideAngle2";
+static const char* RuledEdgeSideMaterial2 = "ruledEdgeSideMaterial2";
+static const char* RuledEdgeType2 = "ruledEdgeType2";
+
+static const char* Thickness = "thickness";
+static const char* Structure = "structure";
+static const char* CompositeName = "compositeName";
+static const char* BuildingMaterialName = "buildingMaterialName";
+// Edge trims
+static const char* EdgeAngleType = "edgeAngleType";
+static const char* EdgeAngle = "edgeAngle";
+// Floor Plan and Section - Floor Plan Display
+static const char* DisplayOptionName = "displayOptionName";
+static const char* ViewDepthLimitationName = "showProjectionName";
+// Floor Plan and Section - Cut Surfaces
+static const char* SectContPen = "sectContPen";
+static const char* SectContLtype = "sectContLtype";
+static const char* CutFillPen = "cutFillPen";
+static const char* CutFillBackgroundPen = "cutFillBackgroundPen";
+// Floor Plan and Section - Outlines
+static const char* ContourPen = "contourPen";
+static const char* ContourLineType = "contourLineType";
+static const char* OverheadLinePen = "overheadLinePen";
+static const char* OverheadLinetype = "overheadLinetype";
+// Floor Plan and Section - Cover Fills
+static const char* UseFloorFill = "useFloorFill";
+static const char* FloorFillPen = "floorFillPen";
+static const char* FloorFillBGPen = "floorFillBGPen";
+static const char* FloorFillName = "floorFillName";
+static const char* Use3DHatching = "use3DHatching";
+static const char* UseFillLocBaseLine = "useFillLocBaseLine";
+static const char* UseSlantedFill = "useSlantedFill";
+static const char* HatchOrientation = "hatchOrientation";
+static const char* HatchOrientationOrigoX = "hatchOrientationOrigoX";
+static const char* HatchOrientationOrigoY = "hatchOrientationOrigoY";
+static const char* HatchOrientationXAxisX = "hatchOrientationXAxisX";
+static const char* HatchOrientationXAxisY = "hatchOrientationXAxisY";
+static const char* HatchOrientationYAxisX = "hatchOrientationYAxisX";
+static const char* HatchOrientationYAxisY = "hatchOrientationYAxisY";
+// Model
+static const char* TopMat = "topMat";
+static const char* SideMat = "sideMat";
+static const char* BotMat = "botMat";
+static const char* MaterialsChained = "materialsChained";
+static const char* TrimmingBodyName = "trimmingBodyName";
+}
 
 namespace Room
 {
