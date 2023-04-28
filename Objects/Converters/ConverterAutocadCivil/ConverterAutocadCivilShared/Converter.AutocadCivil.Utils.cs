@@ -273,37 +273,6 @@ namespace Objects.Converter.AutocadCivil
 
     #region units
 
-#if ADVANCESTEEL2023
-
-    private double _factorFromNative;
-    private double FactorFromNative
-    {
-      get
-      {
-        if (_factorFromNative.Equals(0.0))
-        {
-          _factorFromNative = 1 / DocumentManager.GetCurrentDocument().CurrentDatabase.Units.UnitOfDistance.Factor;
-        }
-
-        return _factorFromNative;
-      }
-    }
-
-    private string unitWeight;
-    private string UnitWeight
-    {
-      get
-      {
-        if (string.IsNullOrEmpty(unitWeight))
-        {
-          unitWeight = UnitsSet.GetUnit(eUnitType.kWeight).Symbol;
-        }
-        return unitWeight;
-      }
-    }
-
-#endif
-
     private string _modelUnits;
     public string ModelUnits
     {

@@ -289,19 +289,20 @@ namespace Objects.Converter.AutocadCivil
     {
       double valueScaled = value * GetUnitScaleFromNative(unitType);
 
-      if (unitType == eUnitType.kWeight)
-        valueScaled = RoundWeight(valueScaled);
+      if (unitType == eUnitType.kWeight || unitType == eUnitType.kVolume || unitType == eUnitType.kArea)
+        valueScaled = RoundBigDecimalNumbers(valueScaled);
 
       return valueScaled;
     }
 
-    private static double RoundWeight(double value)
+    private static double RoundBigDecimalNumbers(double value)
     {
-      return Math.Round(value, 5, MidpointRounding.AwayFromZero);
+      return Math.Round(value, 7, MidpointRounding.AwayFromZero);
     }
 
-    private UnitsSet _unitsSet;
+    #region Units
 
+    private UnitsSet _unitsSet;
     private UnitsSet UnitsSet
     {
       get
@@ -309,6 +310,10 @@ namespace Objects.Converter.AutocadCivil
         if (_unitsSet == null)
         {
           _unitsSet = DocumentManager.GetCurrentDocument().CurrentDatabase.Units;
+
+          var unitOriginal = _unitsSet.UnitOfArea;
+          _unitsSet.UnitOfArea = new Unit();
+          _unitsSet.UnitOfArea = unitOriginal;
         }
 
         return _unitsSet;
@@ -319,6 +324,61 @@ namespace Objects.Converter.AutocadCivil
     {
       return 1 / UnitsSet.GetUnit(unitType).Factor;
     }
+
+    private double _factorFromNative;
+    private double FactorFromNative
+    {
+      get
+      {
+        if (_factorFromNative.Equals(0.0))
+        {
+          _factorFromNative = 1 / DocumentManager.GetCurrentDocument().CurrentDatabase.Units.UnitOfDistance.Factor;
+        }
+
+        return _factorFromNative;
+      }
+    }
+
+    private string unitWeight;
+    private string UnitWeight
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitWeight))
+        {
+          unitWeight = UnitsSet.GetUnit(eUnitType.kWeight).Symbol;
+        }
+        return unitWeight;
+      }
+    }
+
+    private string unitVolume;
+    private string UnitVolume
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitVolume))
+        {
+          unitVolume = UnitsSet.GetUnit(eUnitType.kVolume).Symbol;
+        }
+        return unitVolume;
+      }
+    }
+
+    private string unitArea;
+    private string UnitArea
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitArea))
+        {
+          unitArea = UnitsSet.GetUnit(eUnitType.kArea).Symbol;
+        }
+        return unitArea;
+      }
+    }
+
+    #endregion
   }
 }
 #endif

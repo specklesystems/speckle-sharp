@@ -22,6 +22,8 @@ using TriangleNet.Geometry;
 using TriangleVertex = TriangleNet.Geometry.Vertex;
 using TriangleMesh = TriangleNet.Mesh;
 using TriangleNet.Topology;
+using Autodesk.AdvanceSteel.DocumentManagement;
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 
 namespace Objects.Converter.AutocadCivil
 {
@@ -71,6 +73,8 @@ namespace Objects.Converter.AutocadCivil
       SetUnits(@base);
 
       @base["weight unit"] = UnitWeight;
+      @base["area unit"] = UnitArea;
+      @base["volume unit"] = UnitVolume;
 
       return @base;
     }
@@ -148,7 +152,7 @@ namespace Objects.Converter.AutocadCivil
     {
       var modelerBody = atomicElement.GetModeler(Autodesk.AdvanceSteel.Modeler.BodyContext.eBodyContext.kMaxDetailed);
 
-      @base["volume"] = modelerBody.Volume;
+      @base["volume"] = FromInternalUnits(modelerBody.Volume, eUnitType.kVolume);
       @base["displayValue"] = new List<Mesh> { GetMeshFromModelerBody(modelerBody, atomicElement.GeomExtents) };
     }
 
