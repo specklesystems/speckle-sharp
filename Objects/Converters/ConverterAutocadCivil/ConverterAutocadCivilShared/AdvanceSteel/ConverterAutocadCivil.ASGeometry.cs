@@ -289,13 +289,37 @@ namespace Objects.Converter.AutocadCivil
     {
       double valueScaled = value * GetUnitScaleFromNative(unitType);
 
-      if (unitType == eUnitType.kWeight || unitType == eUnitType.kVolume || unitType == eUnitType.kArea)
-        valueScaled = RoundBigDecimalNumbers(valueScaled);
+      if (unitType == eUnitType.kWeight)
+      {
+        valueScaled = RoundBigDecimalNumbers(valueScaled, 5);
+      }
+      else if (unitType == eUnitType.kVolume)
+      {
+        if (valueScaled > 999)
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 3);
+        }
+        else
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 9);
+        }
+      }
+      else if (unitType == eUnitType.kArea)
+      {
+        if (valueScaled > 999)
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 2);
+        }
+        else
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 6);
+        }
+      }
 
       return valueScaled;
     }
 
-    private static double RoundBigDecimalNumbers(double value)
+    private static double RoundBigDecimalNumbers(double value, double digits)
     {
       return Math.Round(value, 7, MidpointRounding.AwayFromZero);
     }
