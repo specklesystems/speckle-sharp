@@ -319,9 +319,9 @@ namespace Objects.Converter.AutocadCivil
       return valueScaled;
     }
 
-    private static double RoundBigDecimalNumbers(double value, double digits)
+    private static double RoundBigDecimalNumbers(double value, int digits)
     {
-      return Math.Round(value, 7, MidpointRounding.AwayFromZero);
+      return Math.Round(value, digits, MidpointRounding.AwayFromZero);
     }
 
     #region Units
