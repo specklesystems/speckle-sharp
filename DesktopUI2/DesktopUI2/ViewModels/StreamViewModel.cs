@@ -1007,39 +1007,53 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private async void Client_OnCommentActivity(object sender, CommentItem e)
   {
-    await GetComments().ConfigureAwait(true);
-
-    var authorName = "you";
-    if (e.authorId != Client.Account.userInfo.id)
+    try
     {
-      var author = await Client.OtherUserGet(e.id).ConfigureAwait(true);
-      authorName = author.name;
-    }
+      await GetComments().ConfigureAwait(true);
 
-    bool openStream = true;
-    var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
-    if (svm != null && svm.Stream.id == Stream.id)
-      openStream = false;
+      var authorName = "you";
+      if (e.authorId != Client.Account.userInfo.id)
+      {
+        var author = await Client.OtherUserGet(e.authorId).ConfigureAwait(true);
+        if (author == null)
+          authorName = "Unknown";
+        else
+          authorName = author.name;
+      }
 
-    Dispatcher.UIThread.Post(() =>
-    {
-      MainUserControl.NotificationManager.Show(
-        new PopUpNotificationViewModel
-        {
-          Title = $"🆕 New comment by {authorName}:",
-          Message = e.rawText,
-          OnClick = () =>
+      bool openStream = true;
+      var svm = MainViewModel.RouterInstance.NavigationStack.Last() as StreamViewModel;
+      if (svm != null && svm.Stream.id == Stream.id)
+        openStream = false;
+
+      Dispatcher.UIThread.Post(() =>
+      {
+        MainUserControl.NotificationManager.Show(
+          new PopUpNotificationViewModel
           {
-            if (openStream)
-              MainViewModel.RouterInstance.Navigate.Execute(this);
+            Title = $"🆕 New comment by {authorName}:",
+            Message = e.rawText,
+            OnClick = () =>
+            {
+              if (openStream)
+                MainViewModel.RouterInstance.Navigate.Execute(this);
 
-            SelectedTab = 3;
-          },
-          Type = NotificationType.Success,
-          Expiration = TimeSpan.FromSeconds(15)
-        }
-      );
-    });
+              SelectedTab = 3;
+            },
+            Type = NotificationType.Success,
+            Expiration = TimeSpan.FromSeconds(15)
+          }
+        );
+      });
+    }
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Error(
+       ex,
+       "Failed to notify of Comment Activity {message}",
+       ex.Message
+     );
+    }
   }
 
   private async void Client_OnBranchChange(object sender, BranchInfo info)
@@ -1330,7 +1344,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       if (IsReceiver)
         await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress)).ConfigureAwait(true);
       else
-      //NOTE: do not wrap in a Task or it will crash Revit
+        //NOTE: do not wrap in a Task or it will crash Revit
         Bindings.PreviewSend(StreamState, Progress);
 
       GetReport();
