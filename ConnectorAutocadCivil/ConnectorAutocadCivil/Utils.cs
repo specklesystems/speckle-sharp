@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -30,7 +30,6 @@ namespace Speckle.ConnectorAutocadCivil
 {
   public static class Utils
   {
-
 #if AUTOCAD2021
     public static string VersionedAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2021);
     public static string AppName = HostApplications.AutoCAD.Name;
@@ -74,7 +73,8 @@ namespace Speckle.ConnectorAutocadCivil
     /// The Handle is a persisitent indentifier which is unique per drawing.
     /// The ObjectId is a non - persitent identifier(reassigned each time the drawing is opened) which is unique per session.
     /// </remarks>
-    public static List<string> ToStrings(this ObjectId[] ids) => ids.Select(o => o.Handle.ToString().Trim(new char[] { '(', ')' })).ToList();
+    public static List<string> ToStrings(this ObjectId[] ids) =>
+      ids.Select(o => o.Handle.ToString().Trim(new char[] { '(', ')' })).ToList();
 
     /// <summary>
     /// Retrieve handles of visible objects in a selection
@@ -128,7 +128,8 @@ namespace Speckle.ConnectorAutocadCivil
     {
       var db = (entity.Database == null) ? Application.DocumentManager.MdiActiveDocument.Database : entity.Database;
       Transaction tr = db.TransactionManager.TopTransaction;
-      if (tr == null) return ObjectId.Null;
+      if (tr == null)
+        return ObjectId.Null;
 
       BlockTableRecord btr = db.GetModelSpace(OpenMode.ForWrite);
       if (entity.IsNewObject)
@@ -165,7 +166,13 @@ namespace Speckle.ConnectorAutocadCivil
     /// <param name="type">Object class dxf name</param>
     /// <param name="layer">Object layer name</param>
     /// <returns></returns>
-    public static DBObject GetObject(this Handle handle, Transaction tr, out string type, out string layer, out string applicationId)
+    public static DBObject GetObject(
+      this Handle handle,
+      Transaction tr,
+      out string type,
+      out string layer,
+      out string applicationId
+    )
     {
       Document Doc = Application.DocumentManager.MdiActiveDocument;
       DBObject obj = null;
@@ -216,7 +223,6 @@ namespace Speckle.ConnectorAutocadCivil
           tr.Commit();
         }
       }
-
       else
       {
         PropertyInfo prop = obj.GetType().GetProperty("Visible");
@@ -393,7 +399,8 @@ namespace Speckle.ConnectorAutocadCivil
       using (Transaction tr = doc.Database.TransactionManager.StartTransaction())
       {
         BlockTable blckTbl = tr.GetObject(doc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
-        BlockTableRecord blckTblRcrd = tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
+        BlockTableRecord blckTblRcrd =
+          tr.GetObject(blckTbl[BlockTableRecord.ModelSpace], OpenMode.ForRead) as BlockTableRecord;
         foreach (ObjectId id in blckTblRcrd)
         {
           DBObject dbObj = tr.GetObject(id, OpenMode.ForRead);
@@ -442,7 +449,8 @@ namespace Speckle.ConnectorAutocadCivil
       public static string GetFromXData(Entity obj)
       {
         string appId = null;
-        if (!obj.IsReadEnabled) obj.UpgradeOpen();
+        if (!obj.IsReadEnabled)
+          obj.UpgradeOpen();
 
         ResultBuffer rb = obj.GetXDataForApplication(ApplicationIdKey);
         if (rb != null)
@@ -466,14 +474,23 @@ namespace Speckle.ConnectorAutocadCivil
       /// <param name="obj"></param>
       /// <param name="handle"></param>
       /// <returns></returns>
-      public static bool SetObjectCustomApplicationId(DBObject obj, string id, out string applicationId, string fileNameHash = null)
+      public static bool SetObjectCustomApplicationId(
+        DBObject obj,
+        string id,
+        out string applicationId,
+        string fileNameHash = null
+      )
       {
         applicationId = fileNameHash == null ? id : $"{fileNameHash}-{id}";
-        var rb = new ResultBuffer(new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey), new TypedValue(1000, applicationId));
+        var rb = new ResultBuffer(
+          new TypedValue((int)DxfCode.ExtendedDataRegAppName, ApplicationIdKey),
+          new TypedValue(1000, applicationId)
+        );
 
         try
         {
-          if (!obj.IsWriteEnabled) obj.UpgradeOpen();
+          if (!obj.IsWriteEnabled)
+            obj.UpgradeOpen();
           obj.XData = rb;
         }
         catch (Exception e)
@@ -486,19 +503,25 @@ namespace Speckle.ConnectorAutocadCivil
 
       /// <summary>
       /// Returns, if found, the corresponding doc element.
-      /// The doc object can be null if the user deleted it. 
+      /// The doc object can be null if the user deleted it.
       /// </summary>
       /// <param name="appId">Id of the application that originally created the element, in AutocadCivil it should be "{fileNameHash}-{handle}"</param>
       /// <returns>The element, if found, otherwise null</returns>
       /// <remarks>
-      /// Updating can be buggy because of limitations to how object handles are generated. 
+      /// Updating can be buggy because of limitations to how object handles are generated.
       /// See: https://forums.autodesk.com/t5/net/is-the-quot-objectid-quot-unique-in-a-drawing-file/m-p/6527799#M49953
       /// This is temporarily improved by attaching a custom application id xdata "{fileNameHash}-{handle}" to each object when sending, or checking against the fileNameHash on receive
       /// </remarks>
-      public static List<ObjectId> GetObjectsByApplicationId(Document doc, Transaction tr, string appId, string fileNameHash)
+      public static List<ObjectId> GetObjectsByApplicationId(
+        Document doc,
+        Transaction tr,
+        string appId,
+        string fileNameHash
+      )
       {
         var foundObjects = new List<ObjectId>();
-        if (appId == null) return foundObjects;
+        if (string.IsNullOrEmpty(appId))
+          return foundObjects;
         // first check for custom xdata application ids, because object handles tend to be duplicated
 
         // Create a TypedValue array to define the filter criteria
@@ -512,7 +535,7 @@ namespace Speckle.ConnectorAutocadCivil
 
         if (res.Status != PromptStatus.None && res.Status != PromptStatus.Error)
         {
-          // loop through all obj with an appId 
+          // loop through all obj with an appId
           foreach (var appIdObj in res.Value.GetObjectIds())
           {
             // get the db object from id
@@ -530,7 +553,8 @@ namespace Speckle.ConnectorAutocadCivil
             }
           }
         }
-        if (foundObjects.Any()) return foundObjects;
+        if (foundObjects.Any())
+          return foundObjects;
 
         // if no matching xdata appids were found, loop through handles instead
         var autocadAppIdParts = appId.Split('-');
@@ -558,7 +582,8 @@ namespace Speckle.ConnectorAutocadCivil
     /// <returns></returns>
     public static string ObjectDescriptor(DBObject obj)
     {
-      if (obj == null) return String.Empty;
+      if (obj == null)
+        return String.Empty;
       var simpleType = obj.GetType().Name;
       return $"{simpleType}";
     }
@@ -602,7 +627,10 @@ namespace Speckle.ConnectorAutocadCivil
       {
         handle = new Handle(Convert.ToInt64(str, 16));
       }
-      catch { return false; }
+      catch
+      {
+        return false;
+      }
       return true;
     }
 
@@ -623,7 +651,8 @@ namespace Speckle.ConnectorAutocadCivil
     {
       var units = styleBase["units"] as string;
       var color = styleBase["color"] as int?;
-      if (color == null) color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
+      if (color == null)
+        color = styleBase["diffuse"] as int?; // in case this is from a rendermaterial base
       var transparency = styleBase["opacity"] as double?;
       var lineType = styleBase["linetype"] as string;
       var lineWidth = styleBase["lineweight"] as double?;
@@ -632,13 +661,15 @@ namespace Speckle.ConnectorAutocadCivil
       {
         var systemColor = System.Drawing.Color.FromArgb((int)color);
         entity.Color = Color.FromRgb(systemColor.R, systemColor.G, systemColor.B);
-        var alpha = transparency != null 
-          ? (byte)(transparency * 255d) //render material
-          : systemColor.A; //display style
+        var alpha =
+          transparency != null
+            ? (byte)(transparency * 255d) //render material
+            : systemColor.A; //display style
         entity.Transparency = new Transparency(alpha);
       }
 
-      double conversionFactor = (units != null) ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters) : 1;
+      double conversionFactor =
+        (units != null) ? Units.GetConversionFactor(Units.GetUnitsFromString(units), Units.Millimeters) : 1;
       if (lineWidth != null)
         entity.LineWeight = GetLineWeight((double)lineWidth * conversionFactor);
 
@@ -686,7 +717,5 @@ namespace Speckle.ConnectorAutocadCivil
     }
 
 #endif
-
   }
-
 }

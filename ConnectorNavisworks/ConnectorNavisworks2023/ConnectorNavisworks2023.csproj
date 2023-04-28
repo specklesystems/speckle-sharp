@@ -62,7 +62,7 @@
 
 	<!-- NUGETS -->
 	<ItemGroup>
-	  <PackageReference Include="Speckle.Navisworks.API" Version="2023.0.0" />
+	  <PackageReference Include="Speckle.Navisworks.API" Version="2023.0.0" IncludeAssets="compile;build" PrivateAssets="all"/>
 	</ItemGroup>
 
 	<!--- Local Project Dependencies -->
