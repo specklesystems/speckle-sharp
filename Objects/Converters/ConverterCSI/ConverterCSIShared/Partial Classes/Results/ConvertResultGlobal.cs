@@ -1,4 +1,4 @@
-﻿using CSiAPIv1;
+using CSiAPIv1;
 using Objects.Structural.Geometry;
 using Objects.Structural.Results;
 using System;
@@ -47,7 +47,7 @@ namespace Objects.Converter.CSI
           speckleResultGlobal.reactionZZ = (float)RZ[0];
           speckleResultGlobal.effMassX = speckleResultGlobal.effMassXX = speckleResultGlobal.effMassY = speckleResultGlobal.effMassYY = speckleResultGlobal.effMassZ = speckleResultGlobal.effMassZZ = (float)ModalMass[0];
 
-          speckleResultGlobal.mode = (float)stepNum[0];
+          speckleResultGlobal.mode = (int)stepNum[0];
           speckleResultGlobal.frequency = (float)frequency[0];
         }
       }
