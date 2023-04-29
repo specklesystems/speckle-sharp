@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -621,8 +621,8 @@ namespace Objects.Converter.Revit
         {
           if (rotation != location.Rotation)
           {
-            var axis = DB.Line.CreateUnbound(new XYZ(location.Point.X, location.Point.Y, 0), new XYZ(location.Point.X, location.Point.Y, 1));
-            location.Rotate(axis, rotation - location.Rotation);
+            var axis = DB.Line.CreateUnbound(location.Point, XYZ.BasisZ);
+            location.Rotate(axis, location.Rotation - rotation);
           }
         }
         catch (Exception e)

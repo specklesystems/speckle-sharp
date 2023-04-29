@@ -3,16 +3,11 @@ using Objects.Converter.Revit;
 using Revit.Async;
 using Speckle.Core.Models;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using xUnitRevitUtils;
-
 using DB = Autodesk.Revit.DB;
-using DirectShape = Objects.BuiltElements.Revit.DirectShape;
 
 namespace ConverterRevitTests
 {
@@ -192,9 +187,11 @@ namespace ConverterRevitTests
         {
           await assertAsync.Invoke(sourceElem, destElement);
         }
-        
-        if (!fixture.UpdateTestRunning)
-          SpeckleUtils.DeleteElement(destElement);
+      }
+
+      if (!fixture.UpdateTestRunning)
+      {
+        SpeckleUtils.DeleteElement(resEls);
       }
 
       return resEls;
@@ -231,7 +228,6 @@ namespace ConverterRevitTests
       converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
       var revitEls = new List<object>();
-      var resEls = new List<object>();
 
       await SpeckleUtils.RunInTransaction(() =>
       {
@@ -241,9 +237,9 @@ namespace ConverterRevitTests
         {
           var res = converter.ConvertToNative(el);
           if (res is List<ApplicationObject> apls)
-            resEls.AddRange(apls);
+            revitEls.AddRange(apls);
           else
-            resEls.Add(el);
+            revitEls.Add(res);
         }
         //}, fixture.NewDoc).Wait();
       }, fixture.NewDoc, converter);
@@ -252,16 +248,15 @@ namespace ConverterRevitTests
 
       for (var i = 0; i < revitEls.Count; i++)
       {
-        var sourceElem = (T)(object)fixture.RevitElements[i];
-        var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
+        var sourceElem = (T)(object)fixture.Selection[i];
+        var destElement = (T)((ApplicationObject)revitEls[i]).Converted.FirstOrDefault();
         assert?.Invoke(sourceElem, destElement);
         if (assertAsync != null)
         {
           await assertAsync.Invoke(sourceElem, destElement);
         }
-        if (!fixture.UpdateTestRunning)
-          SpeckleUtils.DeleteElement(destElement);
       }
+      SpeckleUtils.DeleteElement(revitEls);
     }
 
     internal void AssertValidSpeckleElement(DB.Element elem, Base spkElem)
