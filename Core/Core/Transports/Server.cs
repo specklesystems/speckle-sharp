@@ -264,13 +264,13 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return;
 
     IS_WRITING = true;
-    var message = new HttpRequestMessage
+    using var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{StreamId}", UriKind.Relative),
       Method = HttpMethod.Post
     };
 
-    var multipart = new MultipartFormDataContent("--obj--");
+    using var multipart = new MultipartFormDataContent("--obj--");
 
     SavedObjectCount = 0;
     var addedMpCount = 0;
@@ -414,7 +414,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
       return null;
     }
 
-    var message = new HttpRequestMessage
+    using var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -439,7 +439,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
     }
 
     // Get root object
-    var rootHttpMessage = new HttpRequestMessage
+    using var rootHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{StreamId}/{hash}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -503,7 +503,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
     if (hashes.Count > 0)
     {
-      var childrenHttpMessage = new HttpRequestMessage
+      using var childrenHttpMessage = new HttpRequestMessage
       {
         RequestUri = new Uri($"/api/getobjects/{StreamId}", UriKind.Relative),
         Method = HttpMethod.Post
