@@ -198,7 +198,7 @@ dotnet_diagnostic.ca1002.severity = suggestion
 # Misc
 dotnet_diagnostic.ca1051.severity = none # Do not declare visible instance fields
 dotnet_diagnostic.ca1056.severity = suggestion
-dotnet_diagnostic.ca1062.severity = suggestion # Public method must check all parameters for null
+dotnet_diagnostic.ca1062.severity = none # Public method must check all parameters for null
 dotnet_diagnostic.ca1707.severity = none # Remove underscores in names
 dotnet_diagnostic.ca1822.severity = suggestion # Mark member as static
 
