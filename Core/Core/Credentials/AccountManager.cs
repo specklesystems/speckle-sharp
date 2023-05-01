@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -250,12 +250,12 @@ public static class AccountManager
 
         //the token has expired
         //TODO: once we get a token expired exception from the server use that instead
-        if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+        if (userServerInfo?.user == null || userServerInfo.serverInfo == null)
         {
           var tokenResponse = await GetRefreshedToken(account.refreshToken, url).ConfigureAwait(false);
           userServerInfo = await GetUserServerInfo(tokenResponse.token, url).ConfigureAwait(false);
 
-          if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+          if (userServerInfo?.user == null || userServerInfo.serverInfo == null)
             throw new SpeckleException("Could not refresh token");
 
           account.token = tokenResponse.token;

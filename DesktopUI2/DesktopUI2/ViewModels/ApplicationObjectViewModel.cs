@@ -28,7 +28,7 @@ public class ApplicationObjectViewModel : ReactiveObject
     Status = item.Status.ToString();
     ApplicationIds = isReceiver ? item.CreatedIds : new List<string> { item.OriginalId };
 
-    var logString = cleanLog.Count() != 0 ? string.Join(" ", Log) : "";
+    var logString = cleanLog.Count != 0 ? string.Join(" ", Log) : "";
     var createdIdsString = string.Join(" ", item.CreatedIds);
     SearchText = $"{Id} {Name} {Status} {logString} {createdIdsString}";
 

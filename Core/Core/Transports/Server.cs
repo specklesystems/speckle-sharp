@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -77,13 +77,7 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   public string TransportName { get; set; } = "RemoteTransport";
 
   public Dictionary<string, object> TransportContext =>
-    new()
-    {
-      { "name", TransportName },
-      { "type", GetType().Name },
-      { "streamId", StreamId },
-      { "serverUrl", BaseUri }
-    };
+    new() { { "name", TransportName }, { "type", GetType().Name }, { "streamId", StreamId }, { "serverUrl", BaseUri } };
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -501,7 +495,11 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
   {
     Stream childrenStream = null;
 
-    if (hashes.Count > 0)
+    if (hashes.Count <= 0)
+    {
+      childrenStream = new MemoryStream();
+    }
+    else
     {
       using var childrenHttpMessage = new HttpRequestMessage
       {
@@ -530,28 +528,23 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
       childrenStream = await childrenHttpResponse.Content.ReadAsStreamAsync().ConfigureAwait(false);
     }
-    else
-    {
-      childrenStream = new MemoryStream();
-    }
 
-    using (var stream = childrenStream)
-    using (var reader = new StreamReader(stream, Encoding.UTF8))
+    using var stream = childrenStream;
+    using var reader = new StreamReader(stream, Encoding.UTF8);
+
+    string line;
+    while ((line = reader.ReadLine()) != null)
     {
-      string line;
-      while ((line = reader.ReadLine()) != null)
+      if (CancellationToken.IsCancellationRequested)
       {
-        if (CancellationToken.IsCancellationRequested)
-        {
-          Queue = new ConcurrentQueue<(string, string, int)>();
-          return false;
-        }
-
-        var pcs = line.Split(new[] { '\t' }, 2);
-        targetTransport.SaveObject(pcs[0], pcs[1]);
-
-        OnProgressAction?.Invoke(TransportName, 1); // possibly make this more friendly
+        Queue = new ConcurrentQueue<(string, string, int)>();
+        return false;
       }
+
+      var pcs = line.Split(new[] { '\t' }, 2);
+      targetTransport.SaveObject(pcs[0], pcs[1]);
+
+      OnProgressAction?.Invoke(TransportName, 1); // possibly make this more friendly
     }
 
     return true;
