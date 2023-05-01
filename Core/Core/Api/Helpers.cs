@@ -104,9 +104,8 @@ public static class Helpers
       };
     }
 
-    var client = new Client(account);
-
-    var transport = new ServerTransport(client.Account, sw.StreamId);
+    using var client = new Client(account);
+    using var transport = new ServerTransport(client.Account, sw.StreamId);
 
     string objectId = "";
     Commit commit = null;
@@ -201,7 +200,7 @@ public static class Helpers
   {
     var sw = new StreamWrapper(stream);
 
-    var client = new Client(account ?? await sw.GetAccount().ConfigureAwait(false));
+    using var client = new Client(account ?? await sw.GetAccount().ConfigureAwait(false));
 
     var transport = new ServerTransport(client.Account, sw.StreamId);
     var branchName = string.IsNullOrEmpty(sw.BranchName) ? "main" : sw.BranchName;

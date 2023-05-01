@@ -84,9 +84,6 @@ public class MemoryTransport : ITransport, IDisposable, ICloneable
 
   public string GetObject(string hash)
   {
-    if (CancellationToken.IsCancellationRequested)
-      return null; // Check for cancellation
-
     var stopwatch = Stopwatch.StartNew();
     var ret = Objects.ContainsKey(hash) ? Objects[hash] : null;
     stopwatch.Stop();
