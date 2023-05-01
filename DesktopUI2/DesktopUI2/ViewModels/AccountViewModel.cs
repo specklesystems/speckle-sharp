@@ -162,7 +162,7 @@ public class AccountViewModel : ReactiveObject
   {
     using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(url));
 
-    HttpClient client = Http.GetHttpProxyClient();
+    using HttpClient client = Http.GetHttpProxyClient();
     var result = await client.SendAsync(request).ConfigureAwait(false);
 
     result.EnsureSuccessStatusCode();
