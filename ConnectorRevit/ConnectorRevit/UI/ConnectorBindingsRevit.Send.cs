@@ -77,12 +77,12 @@ namespace Speckle.ConnectorRevit.UI
             if (progress.CancellationToken.IsCancellationRequested)
               break;
 
-            bool alreadyConverted = GetOrCreateApplicationObject(
+            bool isAlreadyConverted = GetOrCreateApplicationObject(
               revitElement,
-              converter,
+              converter.Report,
               out ApplicationObject reportObj
             );
-            if (alreadyConverted)
+            if (isAlreadyConverted)
               continue;
 
             progress.Report.Log(reportObj);
@@ -106,7 +106,7 @@ namespace Speckle.ConnectorRevit.UI
             }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Warning(ex, "Object failed during conversion");
+              SpeckleLog.Logger.Error(ex, "Object failed during conversion");
               reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"{ex.Message}");
             }
 
@@ -167,19 +167,19 @@ namespace Speckle.ConnectorRevit.UI
 
     private static bool GetOrCreateApplicationObject(
       Element revitElement,
-      ISpeckleConverter converter,
+      ProgressReport report,
       out ApplicationObject reportObj
     )
     {
+      if (report.ReportObjects.TryGetValue(revitElement.UniqueId, out var applicationObject))
+      {
+        reportObj = applicationObject;
+        return true;
+      }
+      
       string descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
-      bool alreadyConverted = converter.Report.ReportObjects.TryGetValue(
-        revitElement.UniqueId,
-        out var applicationObject
-      );
-      reportObj = alreadyConverted
-        ? applicationObject!
-        : new(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
-      return alreadyConverted;
+      reportObj = new(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
+      return false;
     }
 
     private static void YeildToUIThread(TimeSpan delay)

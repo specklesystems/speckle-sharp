@@ -48,7 +48,7 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, Base extraProps)
     {
       // doesn't have a host that will convert the element, go ahead and do it now
       if (host == null || host is DB.Level)
@@ -65,10 +65,13 @@ namespace Objects.Converter.Revit
         // yet not know it.
         var hostedElementIds = GetHostedElementIds(host);
         var elementId = element.Id;
-        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        if (!hostedElementIds.Contains(elementId))
         {
-          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId };
-          ((dynamic)extraProps["speckleHost"])["category"] = host.Category.Name;
+          extraProps["speckleHost"] = new Base()
+          {
+            applicationId = host.UniqueId,
+            ["category"] = host.Category.Name,
+          };
         }
         else return false;
       }

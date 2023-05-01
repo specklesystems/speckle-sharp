@@ -27,9 +27,9 @@ namespace Objects.Converter.Revit
     {
       notes = new List<string>();
       Base @base = null;
-      Base extraProps = new Base();
+      Base extraProps = new();
 
-      if (!ShouldConvertHostedElement(revitFi, revitFi.Host, ref extraProps))
+      if (!ShouldConvertHostedElement(revitFi, revitFi.Host, extraProps))
         return null;
 
       //adaptive components
