@@ -33,71 +33,64 @@ namespace Speckle.ConnectorRevit.UI
     public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, string sourceApp)
     {
       // Get Settings for recieve on mapping 
-      var receiveMappingsModelsSetting = (CurrentSettings.FirstOrDefault(x => x.Slug == "receive-mappings") as MappingSeting);
-      var receiveMappings = receiveMappingsModelsSetting != null ? receiveMappingsModelsSetting.Selection : "";
+      if (CurrentSettings.FirstOrDefault(x => x.Slug == "receive-mappings") is not MappingSeting mappingSetting 
+        || mappingSetting.Selection == null 
+        || mappingSetting.Selection == noMapping)
+      {
+        return;
+      }
 
       Dictionary<string, List<MappingValue>> settingsMapping = null;
       bool isFirstTimeReceiving = false;
 
-      if (receiveMappingsModelsSetting.MappingJson != null)
-        settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(receiveMappingsModelsSetting.MappingJson);
-      else
-        isFirstTimeReceiving = true;
-
-      if (receiveMappings == noMapping || receiveMappings == null)
-        return;
+      if (mappingSetting.MappingJson != null)
+      {
+        settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(mappingSetting.MappingJson);
+      }
       else
       {
-        Dictionary<string, List<string>> hostTypesDict = GetHostTypes();
-        Dictionary<string, List<string>> incomingTypesDict = GetIncomingTypes(progress, sourceApp);
-
-        // if mappings already exist, update them and return true
-        bool newTypesExist = UpdateExistingMapping(settingsMapping, hostTypesDict, incomingTypesDict, progress);
-
-        Dictionary<string, List<MappingValue>> Mapping = settingsMapping;
-        if (Mapping == null)
-          Mapping = ReturnFirstPassMap(incomingTypesDict, hostTypesDict, progress);
-
-        try
-        {
-          // show custom mapping dialog if the settings corrospond to what is being received
-          if (newTypesExist || receiveMappings == everyReceive)
-          {
-            var vm = new MappingViewModel(Mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
-            MappingViewDialog mappingView = new MappingViewDialog
-            {
-              DataContext = vm
-            };
-
-            Mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
-
-            while (vm.DoneMapping == false)
-            {
-              hostTypesDict = await ImportFamilyTypes(hostTypesDict);
-
-              vm = new MappingViewModel(Mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
-              mappingView = new MappingViewDialog
-              {
-                DataContext = vm
-              };
-
-              Mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
-            }
-
-            // close the dialog
-            MainViewModel.CloseDialog();
-
-            receiveMappingsModelsSetting.MappingJson = JsonConvert.SerializeObject(Mapping);
-
-          }
-          // update the mapping object for the user mapped types
-          SetMappedValues(Mapping, progress, sourceApp);
-        }
-        catch (Exception ex)
-        {
-          progress.Report.Log($"Could not make new mapping {ex}");
-        }
+        isFirstTimeReceiving = true;
       }
+
+      var hostTypesDict = GetHostTypes();
+      var incomingTypesDict = GetIncomingTypes(progress, sourceApp);
+
+      // if mappings already exist, update them and return true
+      bool newTypesExist = UpdateExistingMapping(settingsMapping, hostTypesDict, incomingTypesDict, progress);
+      if (!newTypesExist && mappingSetting.Selection != everyReceive) { return; }
+
+      Dictionary<string, List<MappingValue>> mapping = settingsMapping;
+      mapping ??= ReturnFirstPassMap(incomingTypesDict, hostTypesDict, progress);
+
+      // show custom mapping dialog if the settings corrospond to what is being received
+      var vm = new MappingViewModel(mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
+      MappingViewDialog mappingView = new MappingViewDialog
+      {
+        DataContext = vm
+      };
+
+      mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>().ConfigureAwait(true);
+
+      while (vm.DoneMapping == false)
+      {
+        hostTypesDict = await ImportFamilyTypes(hostTypesDict).ConfigureAwait(true);
+
+        vm = new MappingViewModel(mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
+        mappingView = new MappingViewDialog
+        {
+          DataContext = vm
+        };
+
+        mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
+      }
+
+      // close the dialog
+      MainViewModel.CloseDialog();
+
+      mappingSetting.MappingJson = JsonConvert.SerializeObject(mapping);
+
+      // update the mapping object for the user mapped types
+      SetMappedValues(mapping, progress, sourceApp);
     }
 
     /// <summary>
@@ -147,24 +140,37 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>name of host type as string</returns>
     private string GetMappedValue(Dictionary<string, List<string>> hostTypes, string category, string speckleType)
     {
-      string mappedValue = "";
-      string hostCategory = "";
-      List<int> listVert = new List<int> { };
+      string hostCategory;
+      var listVert = new List<int>();
 
       // if this count is zero, then there aren't any types of this category loaded into the project
-      if (hostTypes.ContainsKey(category) && hostTypes[category].Count != 0)
+      if (hostTypes.TryGetValue(category, out List<string> typeValues))
+      {
+        if (typeValues.Count == 0)
+        {
+          return $"No families of the category \"{category}\"";
+        }
         hostCategory = category;
+      }
       else
-        hostCategory = TypeCatMisc;
+      {
+        _ = hostTypes.TryGetValue(category, out List<string> miscValues);
+        if (miscValues.Count == 0)
+        {
+          return $"No families of the category \"{category}\"";
+        }
+        else
+        {
+          hostCategory = TypeCatMisc;
+        }
+      }
 
       foreach (var revitType in hostTypes[hostCategory])
       {
         listVert.Add(LevenshteinDistance(speckleType, revitType));
       }
 
-      mappedValue = hostTypes[hostCategory][listVert.IndexOf(listVert.Min())];
-
-      return mappedValue;
+      return hostTypes[hostCategory][listVert.IndexOf(listVert.Min())];
     }
 
     /// <summary>
@@ -225,93 +231,93 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="obj"></param>
     /// <returns>name of category type as string</returns>
-    private string GetTypeCategory(object @object)
+    private string GetTypeCategory(Base @object)
     {
-      string speckleType = null;
-      Base obj = null;
+      var speckleType = @object.speckle_type.Split('.').LastOrDefault().ToLower();
+      return GetTypeCategory(speckleType, @object);
+    }
 
-      if (@object is Base baseObj)
+    /// <summary>
+    /// Gets the category of a given base object
+    /// </summary>
+    /// <param name="obj"></param>
+    /// <returns>name of category type as string</returns>
+    private string GetTypeCategory(string speckleType, Base obj = null)
+    {
+      try
       {
-        obj = baseObj;
-        speckleType = baseObj.speckle_type.Split('.').LastOrDefault().ToLower();
-      }
-      else if (@object is string s)
-      {
-        speckleType = s.ToLower();
-      }
-      else
-      {
-        throw new Exception("@object must be base obj or string obj");
-      }
-
-      switch (speckleType)
-      {
-        #region CSI
-        //case "CSIPier":
-        //case "CSISpandrel":
-        //case "CSIGridLines":
-        case "csielement1d":
-          switch ((int)obj["type"])
-          {
-            case (int)ElementType1D.Bar:
-            case (int)ElementType1D.Beam:
-            case (int)ElementType1D.Brace:
-            case (int)ElementType1D.Cable:
-              return TypeCatFraming;
-            case (int)ElementType1D.Column:
-              return TypeCatColumns;
-          }
-          return TypeCatMisc;
-        case "csielement2d":
-          if (obj.GetMemberNames().Contains("property") && obj["property"] is Base prop)
-          {
-            if (prop.GetMemberNames().Contains("type") && (int)obj["type"] is int type)
+        switch (speckleType)
+        {
+          #region CSI
+          //case "CSIPier":
+          //case "CSISpandrel":
+          //case "CSIGridLines":
+          case "csielement1d":
+            switch ((int)obj["type"])
             {
-              switch (type)
+              case (int)ElementType1D.Bar:
+              case (int)ElementType1D.Beam:
+              case (int)ElementType1D.Brace:
+              case (int)ElementType1D.Cable:
+                return TypeCatFraming;
+              case (int)ElementType1D.Column:
+                return TypeCatColumns;
+            }
+            return TypeCatMisc;
+          case "csielement2d":
+            if (obj.GetMemberNames().Contains("property") && obj["property"] is Base prop)
+            {
+              if (prop.GetMemberNames().Contains("type") && (int)obj["type"] is int type)
               {
-                case (int)PropertyType2D.Wall:
-                  return TypeCatWalls;
-                default:
-                  return TypeCatFloors;
+                switch (type)
+                {
+                  case (int)PropertyType2D.Wall:
+                    return TypeCatWalls;
+                  default:
+                    return TypeCatFloors;
+                }
               }
             }
-          }
-          return TypeCatMisc;
-        #endregion
+            return TypeCatMisc;
+          #endregion
 
-        #region General
-        case string a when a.Contains("beam"):
-        case string b when b.Contains("brace"):
-        case string c when c.Contains("framing"):
-          return TypeCatFraming;
+          #region General
+          case string a when a.Contains("beam"):
+          case string b when b.Contains("brace"):
+          case string c when c.Contains("framing"):
+            return TypeCatFraming;
 
-        case string a when a.Contains("column"):
-          return TypeCatColumns;
+          case string a when a.Contains("column"):
+            return TypeCatColumns;
 
-        case string a when a.Contains("material"):
-          return TypeCatMaterials;
+          case string a when a.Contains("material"):
+            return TypeCatMaterials;
 
-        case string a when a.Contains("floor"):
-          return TypeCatFloors;
+          case string a when a.Contains("floor"):
+            return TypeCatFloors;
 
-        case string a when a.Contains("wall"):
-          return TypeCatWalls;
-        #endregion
-        default:
-          return TypeCatMisc;
+          case string a when a.Contains("wall"):
+            return TypeCatWalls;
+            #endregion
+        }
       }
+      catch (Exception _)
+      {
+        // swallow exception for now
+      }
+      return TypeCatMisc;
     }
 
     /// <summary>
     /// Helper class for creating filters for all the different Revit types
     /// </summary>
-    private class customTypesFilter
+    private class CustomTypesFilter
     {
       public string key;
       public Type objectClass;
       public ICollection<BuiltInCategory> categories;
 
-      public customTypesFilter(string key, Type objectClass = null, ICollection<BuiltInCategory> categories = null)
+      public CustomTypesFilter(string key, Type objectClass = null, ICollection<BuiltInCategory> categories = null)
       {
         this.key = key;
         this.objectClass = objectClass;
@@ -326,40 +332,33 @@ namespace Speckle.ConnectorRevit.UI
     private Dictionary<string, List<string>> GetHostTypes()
     {
       var returnDict = new Dictionary<string, List<string>>();
-      var exclusionFilterIds = new List<ElementId>();
+      //var exclusionFilterIds = new List<ElementId>();
+      var collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
       foreach (var customType in allTypeCategories)
       {
-        var collector = new FilteredElementCollector(CurrentDoc.Document).WhereElementIsElementType();
-        FilteredElementCollector list = GetFilteredElements(customType, collector);
+        var list = GetFilteredElements(customType, collector);
 
-        var types = list.Select(o => o.Name).Distinct().ToList();
-        exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
-        returnDict[customType] = types;
+        var types = list.Select(o => o.Name).Distinct();
+        //exclusionFilterIds.AddRange(list.Select(o => o.Id).Distinct().ToList());
+        returnDict[customType] = types.ToList();
       }
       return returnDict;
     }
 
-    private customTypesFilter GetCustomTypeFilter(string category)
+    private CustomTypesFilter GetCustomTypeFilter(string category)
     {
-      switch (category)
+      return category switch
       {
-        case TypeCatMaterials:
-          return new customTypesFilter(TypeCatMaterials, typeof(Autodesk.Revit.DB.Material));
-        case TypeCatFloors:
-          return new customTypesFilter(TypeCatFloors, typeof(FloorType));
-        case TypeCatWalls:
-          return new customTypesFilter(TypeCatWalls, typeof(WallType));
-        case TypeCatFraming:
-          return new customTypesFilter(TypeCatFraming, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming });
-        case TypeCatColumns:
-          return new customTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns });
-        case TypeCatMisc:
-        default:
-          return new customTypesFilter(TypeCatMisc);
-      }
+        TypeCatMaterials => new CustomTypesFilter(TypeCatMaterials, typeof(Autodesk.Revit.DB.Material)),
+        TypeCatFloors => new CustomTypesFilter(TypeCatFloors, typeof(FloorType)),
+        TypeCatWalls => new CustomTypesFilter(TypeCatWalls, typeof(WallType)),
+        TypeCatFraming => new CustomTypesFilter(TypeCatFraming, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming }),
+        TypeCatColumns => new CustomTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns }),
+        _ => new CustomTypesFilter(TypeCatMisc),
+      };
     }
 
-    private FilteredElementCollector GetFilteredElements(string category, FilteredElementCollector? collector)
+    private FilteredElementCollector GetFilteredElements(string category, FilteredElementCollector collector)
     {
       if (!allTypeCategories.Contains(category))
         throw new Exception($"Category string {category} is not a recognized category");
@@ -393,31 +392,25 @@ namespace Speckle.ConnectorRevit.UI
     {
       var returnDict = new Dictionary<string, List<string>>();
       string typeCategory = null;
+      var cleanAppName = Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty);
 
       foreach (var obj in Preview)
       {
         var @object = StoredObjects[obj.OriginalId];
         string type = null;
 
-        switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
+        switch (cleanAppName)
         {
           case "etabs":
-            if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
+            typeCategory = GetTypeCategory(@object);
+            if (!returnDict.ContainsKey(typeCategory))
+              returnDict[typeCategory] = new List<string>();
+            if (@object.GetMembers().ContainsKey("property") && @object["property"] is Base prop)
             {
-              foreach (var el in els)
+              if (prop.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(prop["name"] as string))
               {
-                typeCategory = GetTypeCategory(el);
-                if (!returnDict.ContainsKey(typeCategory))
-                  returnDict[typeCategory] = new List<string>();
-
-                if (el.GetMemberNames().Contains("property") && el["property"] is Base prop)
-                {
-                  if (prop.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(prop["name"] as string))
-                  {
-                    if (!returnDict[typeCategory].Contains(prop["name"] as string))
-                      returnDict[typeCategory].Add(prop["name"] as string);
-                  }
-                }
+                if (!returnDict[typeCategory].Contains(prop["name"] as string))
+                  returnDict[typeCategory].Add(prop["name"] as string);
               }
             }
             break;
@@ -472,7 +465,8 @@ namespace Speckle.ConnectorRevit.UI
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "etabs":
-            if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
+            var nestedElements = @object["elements"] ?? @object["@elements"];
+            if (nestedElements is List<Base> els)
             {
               foreach (var el in els)
               {
@@ -549,10 +543,12 @@ namespace Speckle.ConnectorRevit.UI
     {
       // no existing mappings exist
       if (settingsMapping == null)
+      {
         return true;
+      }
 
       bool newTypesExist = false;
-      List<Base> objectsWithNewTypes = new List<Base>();
+      var objectsWithNewTypes = new List<Base>();
 
       foreach (var typeCategory in incomingTypesDict.Keys)
       {

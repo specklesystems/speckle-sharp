@@ -126,7 +126,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed to load Speckle Plugin for host app");
         var td = new TaskDialog("Error");
         td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
