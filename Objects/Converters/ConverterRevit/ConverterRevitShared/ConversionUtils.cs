@@ -141,10 +141,10 @@ namespace Objects.Converter.Revit
       if (convertedHostedElements.Any())
       {
         notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
-        if (@base["elements"] == null || !(@base["elements"] is List<Base>))
-          @base["elements"] = new List<Base>();
+        if (@base["@elements"] == null || !(@base["@elements"] is List<Base>))
+          @base["@elements"] = new List<Base>();
 
-        (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
+        (@base["@elements"] as List<Base>).AddRange(convertedHostedElements);
       }
     }
     public IList<ElementId> GetHostedElementIds(Element host)
@@ -177,11 +177,13 @@ namespace Objects.Converter.Revit
     {
       if (@base == null) return appObj;
 
-      var nestedElements = @base["elements"];
+      //we used to use "elements" but have now switched to "@elements"
+      //this extra check is for backwards compatibility
+      var nestedElements = @base["elements"] ?? @base["@elements"];
       if (nestedElements == null) return appObj;
 
       CurrentHostElement = host;
-      foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
+      foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
       {
         if (!CanConvertToNative(obj))
         {
@@ -978,7 +980,10 @@ namespace Objects.Converter.Revit
 
       //list of openings hosted in this speckle element
       var openings = new List<RevitOpening>();
-      if (speckleElement["elements"] != null && (speckleElement["elements"] is List<Base> elements))
+      //we used to use "elements" but have now switched to "@elements"
+      //this extra check is for backwards compatibility
+      var nestedElements = @speckleElement["elements"] ?? @speckleElement["@elements"];
+      if (nestedElements is List<Base> elements)
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set

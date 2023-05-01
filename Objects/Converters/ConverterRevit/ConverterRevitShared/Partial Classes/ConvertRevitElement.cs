@@ -37,7 +37,8 @@ namespace Objects.Converter.Revit
       speckleElement.displayValue = GetElementDisplayMesh(revitElement, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       GetHostedElements(speckleElement, revitElement, out notes);
-      var elements = speckleElement["elements"] as List<Base>;
+      
+      var elements = (speckleElement["elements"] ?? @speckleElement["@elements"]) as List<Base>;
       elements ??= new List<Base>();
 
       //Only send elements that have a mesh, if not we should probably support them properly via direct conversions

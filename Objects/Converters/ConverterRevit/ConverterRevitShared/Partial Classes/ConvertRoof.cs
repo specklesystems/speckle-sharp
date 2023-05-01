@@ -72,7 +72,8 @@ namespace Objects.Converter.Revit
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
 
             // if the roof is a curtain roof then set the mullions at the borders
-            if (revitFootprintRoof.CurtainGrids != null && speckleFootprintRoof["elements"] is List<Base> elements && elements.Count != 0)
+            var nestedElements = speckleFootprintRoof["elements"] ?? speckleFootprintRoof["@elements"];
+            if (revitFootprintRoof.CurtainGrids != null && nestedElements is List<Base> elements && elements.Count != 0)
             {
               // TODO: Create a new type instead of overriding the type. This could affect other elements
               var param = roofType.get_Parameter(BuiltInParameter.AUTO_MULLION_BORDER1_GRID1);
