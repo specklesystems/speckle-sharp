@@ -85,8 +85,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     {
       if (Utils.IsValidEmail(SearchQuery))
       {
-        var emailAcc = new AccountViewModel { Name = SearchQuery };
-        Users = new List<AccountViewModel> { emailAcc };
+        var emailAcc = new AccountViewModel {Name = SearchQuery};
+        Users = new List<AccountViewModel> {emailAcc};
 
         ShowProgress = false;
         DropDownOpen = true;
@@ -134,201 +134,252 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
   [DependsOn(nameof(AddedUsers))]
   private bool CanSaveCommand(object parameter)
   {
-    foreach (var user in AddedUsers)
+    try
     {
-      if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
-        return true;
-      if (
-        !_stream.Stream.collaborators.Any(x => x.id == user.Id)
-        && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
-      )
-        return true;
-      if (
-        !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role)
-        && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
-      )
-        return true;
+      foreach (var user in AddedUsers)
+      {
+        if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
+          return true;
+        if (
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id) &&
+          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
+        )
+          return true;
+        if (
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) &&
+          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
+        )
+          return true;
+      }
+
+      foreach (var user in _stream.Stream.collaborators)
+        if (!AddedUsers.Any(x => x.Id == user.id))
+          return true;
+      foreach (var user in _stream.Stream.pendingCollaborators)
+        if (!AddedUsers.Any(x => x.Id == user.id))
+          return true;
     }
-    foreach (var user in _stream.Stream.collaborators)
-      if (!AddedUsers.Any(x => x.Id == user.id))
-        return true;
-    foreach (var user in _stream.Stream.pendingCollaborators)
-      if (!AddedUsers.Any(x => x.Id == user.id))
-        return true;
+    catch (Exception ex)
+    {
+      SpeckleLog.Logger.Error(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(CanSaveCommand),
+        ex.Message
+      );
+    }
+
     return false;
   }
 
   private async void SaveCommand()
   {
-    if (!await Http.UserHasInternet().ConfigureAwait(true))
-    {
-      Dispatcher.UIThread.Post(
-        () =>
-          MainUserControl.NotificationManager.Show(
-            new PopUpNotificationViewModel
-            {
-              Title = "⚠️ Oh no!",
-              Message = "Could not reach the internet, are you connected?",
-              Type = NotificationType.Error
-            }
-          ),
-        DispatcherPriority.Background
-      );
-
-      return;
-    }
-
-    foreach (var user in AddedUsers)
-    {
-      //mismatch between roles set within the dropdown and existing ones
-      if (!user.Role.StartsWith("stream:"))
-        user.Role = "stream:" + user.Role;
-
-      //invite users by email
-      if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
-        try
-        {
-          await _stream.StreamState.Client
-            .StreamInviteCreate(
-              new StreamInviteCreateInput
-              {
-                email = user.Name,
-                streamId = _stream.StreamState.StreamId,
-                message = "I would like to share a model with you via Speckle!",
-                role = user.Role
-              }
-            )
-            .ConfigureAwait(true);
-          Analytics.TrackEvent(
-            _stream.StreamState.Client.Account,
-            Analytics.Events.DUIAction,
-            new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Invite Email" } }
-          );
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Error(ex, "Failed to invite user {exceptionMessage}", ex.Message);
-        }
-      //add new collaborators
-      else if (
-        !_stream.Stream.collaborators.Any(x => x.id == user.Id)
-        && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
-      )
-        try
-        {
-          await _stream.StreamState.Client
-            .StreamInviteCreate(
-              new StreamInviteCreateInput
-              {
-                userId = user.Id,
-                streamId = _stream.StreamState.StreamId,
-                message = "I would like to share a model with you via Speckle!",
-                role = user.Role
-              }
-            )
-            .ConfigureAwait(true);
-          Analytics.TrackEvent(
-            _stream.StreamState.Client.Account,
-            Analytics.Events.DUIAction,
-            new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Invite User" } }
-          );
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Error(ex, "Failed to invite collaborator {exceptionMessage}", ex.Message);
-        }
-      //update permissions, only if changed
-      else if (
-        !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role)
-        && !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
-      )
-        try
-        {
-          await _stream.StreamState.Client
-            .StreamUpdatePermission(
-              new StreamPermissionInput
-              {
-                userId = user.Id,
-                streamId = _stream.StreamState.StreamId,
-                role = user.Role
-              }
-            )
-            .ConfigureAwait(true);
-          Analytics.TrackEvent(
-            _stream.StreamState.Client.Account,
-            Analytics.Events.DUIAction,
-            new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Update Permissions" } }
-          );
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Error(ex, "Failed to update permissions {exceptionMessage}", ex.Message);
-        }
-    }
-
-    //remove collaborators
-    foreach (var user in _stream.Stream.collaborators)
-      if (!AddedUsers.Any(x => x.Id == user.id))
-        try
-        {
-          await _stream.StreamState.Client
-            .StreamRevokePermission(
-              new StreamRevokePermissionInput { userId = user.id, streamId = _stream.StreamState.StreamId }
-            )
-            .ConfigureAwait(true);
-          Analytics.TrackEvent(
-            _stream.StreamState.Client.Account,
-            Analytics.Events.DUIAction,
-            new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Remove User" } }
-          );
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Error(ex, "Failed to revoke permissions {exceptionMessage}", ex.Message);
-        }
-
-    //revoke invites
-    foreach (var user in _stream.Stream.pendingCollaborators)
-      if (!AddedUsers.Any(x => x.Id == user.id))
-        try
-        {
-          await _stream.StreamState.Client
-            .StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId)
-            .ConfigureAwait(true);
-          Analytics.TrackEvent(
-            _stream.StreamState.Client.Account,
-            Analytics.Events.DUIAction,
-            new Dictionary<string, object> { { "name", "Stream Share" }, { "method", "Cancel Invite" } }
-          );
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Error(ex, "Failed to revoke invites {exceptionMessage}", ex.Message);
-        }
-
     try
     {
-      _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId).ConfigureAwait(true);
-      var pc = await _stream.StreamState.Client
-        .StreamGetPendingCollaborators(_stream.StreamState.StreamId)
-        .ConfigureAwait(true);
-      _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
-      _stream.StreamState.CachedStream = _stream.Stream;
+      if (!await Http.UserHasInternet().ConfigureAwait(true))
+      {
+        Dispatcher.UIThread.Post(
+          () =>
+            MainUserControl.NotificationManager.Show(
+              new PopUpNotificationViewModel
+              {
+                Title = "⚠️ Oh no!",
+                Message = "Could not reach the internet, are you connected?",
+                Type = NotificationType.Error
+              }
+            ),
+          DispatcherPriority.Background
+        );
 
-      ReloadUsers();
+        return;
+      }
+
+      foreach (var user in AddedUsers)
+      {
+        //mismatch between roles set within the dropdown and existing ones
+        if (!user.Role.StartsWith("stream:"))
+          user.Role = "stream:" + user.Role;
+
+        //invite users by email
+        if (Utils.IsValidEmail(user.Name) && !_stream.Stream.pendingCollaborators.Any(x => x.title == user.Name))
+          try
+          {
+            await _stream.StreamState.Client
+              .StreamInviteCreate(
+                new StreamInviteCreateInput
+                {
+                  email = user.Name,
+                  streamId = _stream.StreamState.StreamId,
+                  message = "I would like to share a model with you via Speckle!",
+                  role = user.Role
+                }
+              )
+              .ConfigureAwait(true);
+            Analytics.TrackEvent(
+              _stream.StreamState.Client.Account,
+              Analytics.Events.DUIAction,
+              new Dictionary<string, object>
+              {
+                {"name", "Stream Share"},
+                {"method", "Invite Email"}
+              }
+            );
+          }
+          catch (Exception ex)
+          {
+            SpeckleLog.Logger.Error(ex, "Failed to invite user {exceptionMessage}", ex.Message);
+          }
+        //add new collaborators
+        else if (
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id) &&
+          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id)
+        )
+          try
+          {
+            await _stream.StreamState.Client
+              .StreamInviteCreate(
+                new StreamInviteCreateInput
+                {
+                  userId = user.Id,
+                  streamId = _stream.StreamState.StreamId,
+                  message = "I would like to share a model with you via Speckle!",
+                  role = user.Role
+                }
+              )
+              .ConfigureAwait(true);
+            Analytics.TrackEvent(
+              _stream.StreamState.Client.Account,
+              Analytics.Events.DUIAction,
+              new Dictionary<string, object>
+              {
+                {"name", "Stream Share"},
+                {"method", "Invite User"}
+              }
+            );
+          }
+          catch (Exception ex)
+          {
+            SpeckleLog.Logger.Error(ex, "Failed to invite collaborator {exceptionMessage}", ex.Message);
+          }
+        //update permissions, only if changed
+        else if (
+          !_stream.Stream.collaborators.Any(x => x.id == user.Id && x.role == user.Role) &&
+          !_stream.Stream.pendingCollaborators.Any(x => x.id == user.Id && x.role == user.Role)
+        )
+          try
+          {
+            await _stream.StreamState.Client
+              .StreamUpdatePermission(
+                new StreamPermissionInput
+                {
+                  userId = user.Id,
+                  streamId = _stream.StreamState.StreamId,
+                  role = user.Role
+                }
+              )
+              .ConfigureAwait(true);
+            Analytics.TrackEvent(
+              _stream.StreamState.Client.Account,
+              Analytics.Events.DUIAction,
+              new Dictionary<string, object>
+              {
+                {"name", "Stream Share"},
+                {"method", "Update Permissions"}
+              }
+            );
+          }
+          catch (Exception ex)
+          {
+            SpeckleLog.Logger.Error(ex, "Failed to update permissions {exceptionMessage}", ex.Message);
+          }
+      }
+
+      //remove collaborators
+      foreach (var user in _stream.Stream.collaborators)
+        if (!AddedUsers.Any(x => x.Id == user.id))
+          try
+          {
+            await _stream.StreamState.Client
+              .StreamRevokePermission(
+                new StreamRevokePermissionInput
+                {
+                  userId = user.id,
+                  streamId = _stream.StreamState.StreamId
+                }
+              )
+              .ConfigureAwait(true);
+            Analytics.TrackEvent(
+              _stream.StreamState.Client.Account,
+              Analytics.Events.DUIAction,
+              new Dictionary<string, object>
+              {
+                {"name", "Stream Share"},
+                {"method", "Remove User"}
+              }
+            );
+          }
+          catch (Exception ex)
+          {
+            SpeckleLog.Logger.Error(ex, "Failed to revoke permissions {exceptionMessage}", ex.Message);
+          }
+
+      //revoke invites
+      foreach (var user in _stream.Stream.pendingCollaborators)
+        if (!AddedUsers.Any(x => x.Id == user.id))
+          try
+          {
+            await _stream.StreamState.Client
+              .StreamInviteCancel(_stream.StreamState.StreamId, user.inviteId)
+              .ConfigureAwait(true);
+            Analytics.TrackEvent(
+              _stream.StreamState.Client.Account,
+              Analytics.Events.DUIAction,
+              new Dictionary<string, object>
+              {
+                {"name", "Stream Share"},
+                {"method", "Cancel Invite"}
+              }
+            );
+          }
+          catch (Exception ex)
+          {
+            SpeckleLog.Logger.Error(ex, "Failed to revoke invites {exceptionMessage}", ex.Message);
+          }
+
+      try
+      {
+        _stream.Stream = await _stream.StreamState.Client.StreamGet(_stream.StreamState.StreamId).ConfigureAwait(true);
+        var pc = await _stream.StreamState.Client
+          .StreamGetPendingCollaborators(_stream.StreamState.StreamId)
+          .ConfigureAwait(true);
+        _stream.Stream.pendingCollaborators = pc.pendingCollaborators;
+        _stream.StreamState.CachedStream = _stream.Stream;
+
+        ReloadUsers();
+      }
+      catch (Exception ex)
+      {
+        SpeckleLog.Logger.Error(
+          ex,
+          "Swallowing exception in {methodName}: {exceptionMessage}",
+          nameof(SaveCommand),
+          ex.Message
+        );
+      }
+
+      if (IsDialog)
+        MainViewModel.RouterInstance.NavigateBack.Execute();
     }
+
     catch (Exception ex)
     {
-      SpeckleLog.Logger.Warning(
+      SpeckleLog.Logger.Error(
         ex,
         "Swallowing exception in {methodName}: {exceptionMessage}",
         nameof(SaveCommand),
         ex.Message
       );
     }
-
-    if (IsDialog)
-      MainViewModel.RouterInstance.NavigateBack.Execute();
 
     this.RaisePropertyChanged(nameof(AddedUsers));
   }

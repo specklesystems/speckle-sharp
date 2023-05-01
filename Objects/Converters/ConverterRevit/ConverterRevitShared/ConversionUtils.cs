@@ -144,10 +144,10 @@ namespace Objects.Converter.Revit
       if (convertedHostedElements.Any())
       {
         notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
-        if (@base["elements"] == null || !(@base["elements"] is List<Base>))
-          @base["elements"] = new List<Base>();
+        if (@base["@elements"] == null || !(@base["@elements"] is List<Base>))
+          @base["@elements"] = new List<Base>();
 
-        (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
+        (@base["@elements"] as List<Base>).AddRange(convertedHostedElements);
       }
     }
     public IList<ElementId> GetHostedElementIds(Element host)
@@ -180,11 +180,13 @@ namespace Objects.Converter.Revit
     {
       if (@base == null) return appObj;
 
-      var nestedElements = @base["elements"];
+      //we used to use "elements" but have now switched to "@elements"
+      //this extra check is for backwards compatibility
+      var nestedElements = @base["elements"] ?? @base["@elements"];
       if (nestedElements == null) return appObj;
 
       CurrentHostElement = host;
-      foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
+      foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
       {
         if (!CanConvertToNative(obj))
         {
@@ -324,7 +326,7 @@ namespace Objects.Converter.Revit
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
+    public static T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
     {
       var rp = elem.get_Parameter(bip);
 
@@ -346,7 +348,7 @@ namespace Objects.Converter.Revit
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <returns></returns>
     /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
-    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
+    private static Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
     {
       var sp = new Parameter
       {
@@ -540,7 +542,7 @@ namespace Objects.Converter.Revit
 
     //Shared parameters use a GUID to be uniquely identified
     //Other parameters use a BuiltInParameter enum
-    private string GetParamInternalName(DB.Parameter rp)
+    private static string GetParamInternalName(DB.Parameter rp)
     {
       if (rp.IsShared)
         return rp.GUID.ToString();
@@ -1005,7 +1007,10 @@ namespace Objects.Converter.Revit
 
       //list of openings hosted in this speckle element
       var openings = new List<RevitOpening>();
-      if (speckleElement["elements"] != null && (speckleElement["elements"] is List<Base> elements))
+      //we used to use "elements" but have now switched to "@elements"
+      //this extra check is for backwards compatibility
+      var nestedElements = @speckleElement["elements"] ?? @speckleElement["@elements"];
+      if (nestedElements is List<Base> elements)
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
@@ -1363,7 +1368,7 @@ namespace Objects.Converter.Revit
       return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
     }
 
-    private static ModelLine GetSlopeArrow(Element element)
+    public static ModelLine GetSlopeArrow(Element element)
     {
       IList<ElementId> elementIds = null;
 #if !REVIT2020 && !REVIT2021
@@ -1400,11 +1405,11 @@ namespace Objects.Converter.Revit
       if (slopeArrow == null) return null;
       return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0), doc);
     }
-    public double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
+    public static double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
     {
       return GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_START_HEIGHT);
     }
-    public double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
+    public static double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
     {
       var specifyOffset = GetParamValue<int>(slopeArrow, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
       var lineLength = GetParamValue<double>(slopeArrow, BuiltInParameter.CURVE_ELEM_LENGTH);

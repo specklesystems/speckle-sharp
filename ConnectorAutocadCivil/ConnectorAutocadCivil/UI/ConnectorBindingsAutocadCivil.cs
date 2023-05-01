@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -62,7 +62,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
     // Not doing so results in botched conversions for any that require adding objects to Document model space before modifying (eg adding vertices and faces for meshes)
     // There's no easy way to access main thread from document object, therefore we are creating a control during Connector Bindings constructor (since it's called on main thread) that allows for invoking worker threads on the main thread
     public System.Windows.Forms.Control Control;
-    public ConnectorBindingsAutocad() : base()
+
+    public ConnectorBindingsAutocad()
+      : base()
     {
       Control = new System.Windows.Forms.Control();
       Control.CreateControl();
@@ -73,7 +75,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return new List<ReceiveMode> { ReceiveMode.Create, ReceiveMode.Update };
     }
 
-    #region local streams 
+    #region local streams
     public override void WriteStreamsToFile(List<StreamState> streams)
     {
       SpeckleStreamManager.WriteStreamStateList(Doc, streams);
@@ -89,11 +91,16 @@ namespace Speckle.ConnectorAutocadCivil.UI
     #endregion
 
     #region boilerplate
-    public override string GetHostAppNameVersion() => Utils.VersionedAppName.Replace("AutoCAD", "AutoCAD ").Replace("Civil3D", "Civil 3D ").Replace("AdvanceSteel", "Advance Steel "); //hack for ADSK store;
+    public override string GetHostAppNameVersion() =>
+      Utils.VersionedAppName
+        .Replace("AutoCAD", "AutoCAD ")
+        .Replace("Civil3D", "Civil 3D ")
+        .Replace("AdvanceSteel", "Advance Steel "); //hack for ADSK store;
 
     public override string GetHostAppName() => Utils.Slug;
 
-    private string GetDocPath(Document doc) => HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
+    private string GetDocPath(Document doc) =>
+      HostApplicationServices.Current.FindFile(doc?.Name, doc?.Database, FindFileHint.Default);
 
     public override string GetDocumentId()
     {
@@ -104,7 +111,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       }
       catch { }
       var docString = $"{(path != null ? path : "")}{(Doc != null ? Doc.Name : "")}";
-      var hash = !string.IsNullOrEmpty(docString) ? Core.Models.Utilities.hashString(docString, Core.Models.Utilities.HashingFuctions.MD5) : null;
+      var hash = !string.IsNullOrEmpty(docString)
+        ? Core.Models.Utilities.hashString(docString, Core.Models.Utilities.HashingFuctions.MD5)
+        : null;
       return hash;
     }
 
@@ -148,15 +157,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return new List<ISelectionFilter>()
       {
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="layer",  Name = "Layers", Icon = "LayersTriple", Description = "Selects objects based on their layers.", Values = GetLayers() },
-        new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Selects all document objects." }
+        new ListSelectionFilter
+        {
+          Slug = "layer",
+          Name = "Layers",
+          Icon = "LayersTriple",
+          Description = "Selects objects based on their layers.",
+          Values = GetLayers()
+        },
+        new AllSelectionFilter
+        {
+          Slug = "all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Selects all document objects."
+        }
       };
     }
 
     private List<ISetting> CurrentSettings { get; set; } // used to store the Stream State settings when sending/receiving
+
     // CAUTION: these strings need to have the same values as in the converter
     const string InternalOrigin = "Internal Origin (default)";
     const string UCS = "Current User Coordinate System";
+
     public override List<ISetting> GetSettings()
     {
       List<string> referencePoints = new List<string>() { InternalOrigin };
@@ -182,7 +206,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       return new List<ISetting>
       {
-        new ListBoxSetting {Slug = "reference-point", Name = "Reference Point", Icon ="LocationSearching", Values = referencePoints, Selection = InternalOrigin, Description = "Sends or receives stream objects in relation to this document point"},
+        new ListBoxSetting
+        {
+          Slug = "reference-point",
+          Name = "Reference Point",
+          Icon = "LocationSearching",
+          Values = referencePoints,
+          Selection = InternalOrigin,
+          Description = "Sends or receives stream objects in relation to this document point"
+        },
       };
     }
 
@@ -215,10 +247,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
               }
             }
         }
-        catch
-        {
-
-        }
+        catch { }
       }
       if (currentSelection.Count == 0)
         editor.SetImpliedSelection(new ObjectId[0]);
@@ -233,7 +262,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
       Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
     }
 
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
+      Dictionary<string, List<MappingValue>> Mapping
+    )
     {
       await Task.Delay(TimeSpan.FromMilliseconds(500));
       return new Dictionary<string, List<MappingValue>>();
@@ -241,20 +272,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     #endregion
 
-    #region receiving 
+    #region receiving
     public override bool CanPreviewReceive => false;
+
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       return null;
     }
+
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      if (Doc == null) throw new InvalidOperationException("No Document is open");
-      
+      if (Doc == null)
+        throw new InvalidOperationException("No Document is open");
+
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
 
       var stream = await state.Client.StreamGet(state.StreamId);
-      
+
       Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = commit;
 
@@ -265,7 +299,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
       try
       {
         if (Control.InvokeRequired)
-          Control.Invoke(new ReceivingDelegate(ConvertReceiveCommit), commitObject, converter, state, progress, stream, commit.id);
+          Control.Invoke(
+            new ReceivingDelegate(ConvertReceiveCommit),
+            commitObject,
+            converter,
+            state,
+            progress,
+            stream,
+            commit.id
+          );
         else
           ConvertReceiveCommit(commitObject, converter, state, progress, stream, commit.id);
       }
@@ -277,8 +319,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return state;
     }
 
-    delegate void ReceivingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id);
-    private void ConvertReceiveCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, Stream stream, string id)
+    delegate void ReceivingDelegate(
+      Base commitObject,
+      ISpeckleConverter converter,
+      StreamState state,
+      ProgressViewModel progress,
+      Stream stream,
+      string id
+    );
+
+    private void ConvertReceiveCommit(
+      Base commitObject,
+      ISpeckleConverter converter,
+      StreamState state,
+      ProgressViewModel progress,
+      Stream stream,
+      string id
+    )
     {
       using (DocumentLock l = Doc.LockDocument())
       {
@@ -317,7 +374,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
           }
           catch
           {
-            converter.Report.LogOperationError(new Exception($"Failed to remove existing layers or blocks starting with {commitPrefix} before importing new geometry."));
+            converter.Report.LogOperationError(
+              new Exception(
+                $"Failed to remove existing layers or blocks starting with {commitPrefix} before importing new geometry."
+              )
+            );
           }
 
           // clear previously stored objects
@@ -379,7 +440,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
               if (convertedFallback != null && convertedFallback.Count() > 0)
                 commitObj.Update(logItem: $"Creating with {convertedFallback.Count()} fallback values");
               else
-                commitObj.Update(status: ApplicationObject.State.Failed, logItem: $"Couldn't convert object or any fallback values");
+                commitObj.Update(
+                  status: ApplicationObject.State.Failed,
+                  logItem: $"Couldn't convert object or any fallback values"
+                );
             }
 
             // add to progress report
@@ -412,7 +476,12 @@ namespace Speckle.ConnectorAutocadCivil.UI
             switch (state.ReceiveMode)
             {
               case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-                existingObjs = ApplicationIdManager.GetObjectsByApplicationId(Doc, tr, commitObj.applicationId, fileNameHash);
+                existingObjs = ApplicationIdManager.GetObjectsByApplicationId(
+                  Doc,
+                  tr,
+                  commitObj.applicationId,
+                  fileNameHash
+                );
                 break;
               default:
                 layer = $"{commitPrefix}${commitObj.Container}";
@@ -423,17 +492,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
             if (commitObj.Convertible)
             {
               BakeObject(commitObj, converter, tr, layer, existingObjs);
-              commitObj.Status = !commitObj.CreatedIds.Any() ? ApplicationObject.State.Failed :
-                existingObjs.Count > 0 ? ApplicationObject.State.Updated :
-                ApplicationObject.State.Created;
+              commitObj.Status = !commitObj.CreatedIds.Any()
+                ? ApplicationObject.State.Failed
+                : existingObjs.Count > 0
+                  ? ApplicationObject.State.Updated
+                  : ApplicationObject.State.Created;
             }
             else
             {
               foreach (var fallback in commitObj.Fallback)
                 BakeObject(fallback, converter, tr, layer, existingObjs, commitObj);
-              commitObj.Status = commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count() == commitObj.Fallback.Count ?
-                ApplicationObject.State.Failed : existingObjs.Count > 0 ?
-                ApplicationObject.State.Updated : ApplicationObject.State.Created;
+              commitObj.Status =
+                commitObj.Fallback.Where(o => o.Status == ApplicationObject.State.Failed).Count()
+                == commitObj.Fallback.Count
+                  ? ApplicationObject.State.Failed
+                  : existingObjs.Count > 0
+                    ? ApplicationObject.State.Updated
+                    : ApplicationObject.State.Created;
             }
             Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
 
@@ -457,9 +532,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       void StoreObject(Base @base, ApplicationObject appObj)
       {
         if (StoredObjects.ContainsKey(@base.id))
-          appObj.Update(
-            logItem:
-            "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
+          appObj.Update(logItem: "Found another object in this commit with the same id. Skipped other object"); //TODO check if we are actually ignoring duplicates, since we are returning the app object anyway...
         else
           StoredObjects.Add(@base.id, @base);
       }
@@ -468,9 +541,14 @@ namespace Speckle.ConnectorAutocadCivil.UI
       {
         ApplicationObject NewAppObj()
         {
-          var speckleType = current.speckle_type.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
+          var speckleType = current.speckle_type
+            .Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries)
             .LastOrDefault();
-          return new ApplicationObject(current.id, speckleType) { applicationId = current.applicationId, Container = containerId };
+          return new ApplicationObject(current.id, speckleType)
+          {
+            applicationId = current.applicationId,
+            Container = containerId
+          };
         }
 
         // skip if it is the base commit collection
@@ -491,7 +569,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         if (fallbackMember != null)
         {
           var appObj = NewAppObj();
-          var fallbackObjects = GraphTraversal.TraverseMember(fallbackMember)
+          var fallbackObjects = GraphTraversal
+            .TraverseMember(fallbackMember)
             .Select(o => CreateApplicationObject(o, containerId));
           appObj.Fallback.AddRange(fallbackObjects);
 
@@ -505,21 +584,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
       string LayerId(TraversalContext context) => LayerIdRecurse(context, new StringBuilder()).ToString();
       StringBuilder LayerIdRecurse(TraversalContext context, StringBuilder stringBuilder)
       {
-        if (context.propName == null) return stringBuilder;
+        if (context.propName == null)
+          return stringBuilder;
 
         string objectLayerName = string.Empty;
         if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
         {
           objectLayerName = context.current["name"] as string;
         }
-        else if (context.propName.ToLower() != "elements")// this is for any other property on the collection. skip elements props in layer structure.
+        else if (context.propName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
         {
-          objectLayerName = context.propName[0] == '@'
-            ? context.propName.Substring(1)
-            : context.propName;
+          objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
         }
         LayerIdRecurse(context.parent, stringBuilder);
-        if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName)) { stringBuilder.Append('$'); }
+        if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
+        {
+          stringBuilder.Append('$');
+        }
         stringBuilder.Append(objectLayerName);
 
         return stringBuilder;
@@ -527,7 +608,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
 
-      var objectsToConvert = traverseFunction.Traverse(obj)
+      var objectsToConvert = traverseFunction
+        .Traverse(obj)
         .Select(tc => CreateApplicationObject(tc.current, LayerId(tc)))
         .Where(appObject => appObject != null)
         .Reverse() //just for the sake of matching the previous behaviour as close as possible
@@ -559,11 +641,23 @@ namespace Speckle.ConnectorAutocadCivil.UI
       return convertedList;
     }
 
-    private void BakeObject(ApplicationObject appObj, ISpeckleConverter converter, Transaction tr, string layer, List<ObjectId> toRemove, ApplicationObject parent = null)
+    private void BakeObject(
+      ApplicationObject appObj,
+      ISpeckleConverter converter,
+      Transaction tr,
+      string layer,
+      List<ObjectId> toRemove,
+      ApplicationObject parent = null
+    )
     {
       var obj = StoredObjects[appObj.OriginalId];
       int bakedCount = 0;
-      bool remove = appObj.Status == ApplicationObject.State.Created || appObj.Status == ApplicationObject.State.Updated || appObj.Status == ApplicationObject.State.Failed ? false : true;
+      bool remove =
+        appObj.Status == ApplicationObject.State.Created
+        || appObj.Status == ApplicationObject.State.Updated
+        || appObj.Status == ApplicationObject.State.Failed
+          ? false
+          : true;
 
       foreach (var convertedItem in appObj.Converted)
       {
@@ -581,8 +675,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
               {
                 // handle display - fallback to rendermaterial if no displaystyle exists
                 Base display = obj[@"displayStyle"] as Base;
-                if (display == null) display = obj[@"renderMaterial"] as Base;
-                if (display != null) Utils.SetStyle(display, o, LineTypeDictionary);
+                if (display == null)
+                  display = obj[@"renderMaterial"] as Base;
+                if (display != null)
+                  Utils.SetStyle(display, o, LineTypeDictionary);
 
                 // add property sets if this is Civil3D
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
@@ -628,7 +724,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
                   appObj.Update(logItem: bakeMessage);
                 continue;
               }
-
             }
             else
             {
@@ -760,7 +855,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           tr.AddNewlyCreatedDBObject(_layer, true);
         }
       }
-      catch { return false; }
+      catch
+      {
+        return false;
+      }
       return true;
     }
 
@@ -768,6 +866,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
     #region sending
     public override bool CanPreviewSend => true;
+
     public override async void PreviewSend(StreamState state, ProgressViewModel progress)
     {
       // report and converter
@@ -794,7 +893,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
           }
           if (obj == null)
           {
-            progress.Report.Log(new ApplicationObject(id, "unknown") { Status = ApplicationObject.State.Failed, Log = new List<string>() { "Could not find object in document" } });
+            progress.Report.Log(
+              new ApplicationObject(id, "unknown")
+              {
+                Status = ApplicationObject.State.Failed,
+                Log = new List<string>() { "Could not find object in document" }
+              }
+            );
             continue;
           }
 
@@ -809,7 +914,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
 #if ADVANCESTEEL2023
             UpdateASObject(appObj, obj);
 #endif
-            appObj.Update(status: ApplicationObject.State.Failed, logItem: "Object type conversion to Speckle not supported");
+            appObj.Update(
+              status: ApplicationObject.State.Failed,
+              logItem: "Object type conversion to Speckle not supported"
+            );
           }
 
           progress.Report.Log(appObj);
@@ -827,6 +935,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       Doc.Editor.SetImpliedSelection(new ObjectId[0]);
       SelectClientObjects(existingIds);
     }
+
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
       var converter = KitManager.GetDefaultKit().LoadConverter(Utils.VersionedAppName);
@@ -851,7 +960,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
       if (state.SelectedObjectIds.Count == 0)
       {
         throw new InvalidOperationException(
-          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something.");
+          "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."
+        );
       }
 
       var commitObject = new Base();
@@ -863,7 +973,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
       try
       {
         if (Control.InvokeRequired)
-          Control.Invoke(new Action(() => ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount)), new object[] { });
+          Control.Invoke(
+            new Action(() => ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount)),
+            new object[] { }
+          );
         else
           ConvertSendCommit(commitObject, converter, state, progress, ref convertedCount);
         progress.Report.Merge(converter.Report);
@@ -889,10 +1002,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
         onProgressAction: dict => progress.Update(dict),
         onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
         disposeTransports: true
-        );
-      
+      );
+
       progress.CancellationToken.ThrowIfCancellationRequested();
-      
+
       var actualCommit = new CommitCreateInput
       {
         streamId = streamId,
@@ -901,15 +1014,31 @@ namespace Speckle.ConnectorAutocadCivil.UI
         message = state.CommitMessage ?? $"Pushed {convertedCount} elements from {Utils.AppName}.",
         sourceApplication = Utils.VersionedAppName
       };
-      
-      if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
+
+      if (state.PreviousCommitId != null)
+      {
+        actualCommit.parents = new List<string>() { state.PreviousCommitId };
+      }
 
       var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
       return commitId;
     }
 
-    delegate void SendingDelegate(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount);
-    private void ConvertSendCommit(Base commitObject, ISpeckleConverter converter, StreamState state, ProgressViewModel progress, ref int convertedCount)
+    delegate void SendingDelegate(
+      Base commitObject,
+      ISpeckleConverter converter,
+      StreamState state,
+      ProgressViewModel progress,
+      ref int convertedCount
+    );
+
+    private void ConvertSendCommit(
+      Base commitObject,
+      ISpeckleConverter converter,
+      StreamState state,
+      ProgressViewModel progress,
+      ref int convertedCount
+    )
     {
       using (DocumentLock acLckDoc = Doc.LockDocument())
       {
@@ -965,14 +1094,20 @@ namespace Speckle.ConnectorAutocadCivil.UI
             // create applicationobject for reporting
             Base converted = null;
             var descriptor = Utils.ObjectDescriptor(obj);
-            ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor) { applicationId = autocadObjectHandle };
+            ApplicationObject reportObj = new ApplicationObject(autocadObjectHandle, descriptor)
+            {
+              applicationId = autocadObjectHandle
+            };
 
             if (!converter.CanConvertToSpeckle(obj))
             {
 #if ADVANCESTEEL2023
               UpdateASObject(reportObj, obj);
 #endif
-              reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"Sending this object type is not supported in {Utils.AppName}");
+              reportObj.Update(
+                status: ApplicationObject.State.Skipped,
+                logItem: $"Sending this object type is not supported in {Utils.AppName}"
+              );
               progress.Report.Log(reportObj);
               continue;
             }
@@ -989,7 +1124,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 continue;
               }
 
-              /* TODO: adding the extension dictionary / xdata per object 
+              /* TODO: adding the extension dictionary / xdata per object
               foreach (var key in obj.ExtensionDictionary)
                 converted[key] = obj.ExtensionDictionary.GetUserString(key);
               */
@@ -1001,18 +1136,42 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 converted["propertySets"] = propertySets;
 #endif
 
-              string containerName = obj is BlockReference ?
-                "Blocks" :
-                Utils.RemoveInvalidDynamicPropChars(layer); // remove invalid chars from layer name
+              string containerName = obj is BlockReference ? "Blocks" : Utils.RemoveInvalidDynamicPropChars(layer); // remove invalid chars from layer name
 
               if (commitObject[$"@{containerName}"] == null)
                 commitObject[$"@{containerName}"] = new List<Base>();
               ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
 
               // set application id
+              #region backwards compatibility
+              // this is just to overwrite old files with objects that have the unappended autocad native application id
+              bool isOldApplicationId(string appId)
+              {
+                if (string.IsNullOrEmpty(appId))
+                  return false;
+                return appId.Length == 5 ? true : false;
+              }
+              if (isOldApplicationId(applicationId))
+              {
+                ApplicationIdManager.SetObjectCustomApplicationId(
+                  obj,
+                  autocadObjectHandle,
+                  out applicationId,
+                  fileNameHash
+                );
+              }
+              #endregion
+
               if (applicationId == null) // this object didn't have an xdata appId field
               {
-                if (!ApplicationIdManager.SetObjectCustomApplicationId(obj, autocadObjectHandle, out applicationId, fileNameHash))
+                if (
+                  !ApplicationIdManager.SetObjectCustomApplicationId(
+                    obj,
+                    autocadObjectHandle,
+                    out applicationId,
+                    fileNameHash
+                  )
+                )
                 {
                   reportObj.Log.Add("Could not set application id xdata");
                 }
