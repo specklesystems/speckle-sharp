@@ -131,9 +131,9 @@ namespace Objects.Converter.Revit
       foreach (var ao in objects)
       {
         var key = ao.applicationId ?? ao.OriginalId;
-        if (ContextObjects.ContainsKey(key))
+        if (PreviousContextObjects.ContainsKey(key))
           continue;
-        ContextObjects.Add(key, ao);
+        PreviousContextObjects.Add(key, ao);
       }
     }
 
