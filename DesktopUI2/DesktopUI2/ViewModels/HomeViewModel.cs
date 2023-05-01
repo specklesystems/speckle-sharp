@@ -229,7 +229,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       if (StreamGetCancelTokenSource.IsCancellationRequested)
         return;
 
-      Streams = streams.OrderByDescending(x => DateTime.Parse(x.Stream.updatedAt)).ToList();
+      Streams = streams.OrderByDescending(x => x.Stream.updatedAt).ToList();
     }
     catch (Exception ex)
     {
@@ -588,7 +588,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     if (result)
       try
       {
-        var client = new Client(dialog.Account);
+        using var client = new Client(dialog.Account);
         var streamId = await client
           .StreamCreate(
             new StreamCreateInput
@@ -645,7 +645,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       {
         var sw = new StreamWrapper(result);
         var account = await sw.GetAccount().ConfigureAwait(true);
-        var client = new Client(account);
+        using var client = new Client(account);
         var stream = await client.StreamGet(sw.StreamId).ConfigureAwait(true);
         var streamState = new StreamState(account, stream);
         streamState.BranchName = sw.BranchName;

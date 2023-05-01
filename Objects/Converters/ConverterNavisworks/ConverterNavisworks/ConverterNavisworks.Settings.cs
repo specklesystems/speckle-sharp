@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using Autodesk.Navisworks.Api;
 
 namespace Objects.Converter.Navisworks;
@@ -18,9 +19,11 @@ public partial class ConverterNavisworks
   private const string ProxyOrigin = "Project Base Origin";
   private const string BBoxOrigin = "Boundingbox Origin";
 
-  public static Dictionary<string, string> Settings { get; } = new();
 
-  public Vector2D ProjectBasePoint
+  private static Dictionary<string, string> Settings { get; } = new();
+
+
+  private static Vector2D ProjectBasePoint
   {
     get
     {
@@ -30,11 +33,14 @@ public partial class ConverterNavisworks
       var x = Settings["x-coordinate"];
       var y = Settings["y-coordinate"];
 
-      return new Vector2D(Convert.ToDouble(x), Convert.ToDouble(y));
+      return new Vector2D(
+        Convert.ToDouble(x, CultureInfo.InvariantCulture),
+        Convert.ToDouble(y, CultureInfo.InvariantCulture)
+      );
     }
   }
 
-  public Transforms ModelTransform
+  private static Transforms ModelTransform
   {
     get
     {
@@ -42,15 +48,13 @@ public partial class ConverterNavisworks
         return Transforms.Default;
       var value = Settings["reference-point"];
 
-      switch (value)
+      return value switch
       {
-        case ProxyOrigin:
-          return Transforms.ProjectBasePoint;
-        case BBoxOrigin:
-          return Transforms.BoundingBox;
-        default:
-          return Transforms.Default;
-      }
+        ProxyOrigin => Transforms.ProjectBasePoint,
+        BBoxOrigin => Transforms.BoundingBox,
+        InternalOrigin => Transforms.Default,
+        _ => Transforms.Default
+      };
     }
   }
 

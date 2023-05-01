@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB.Electrical;
 using Xunit;

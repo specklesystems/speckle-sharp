@@ -28,22 +28,22 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="parameter">Speckle parameter</param>
     /// <returns></returns>
-    public static double ConvertToInternalUnits(Objects.BuiltElements.Revit.Parameter parameter)
+    public static double ConvertToInternalUnits(object value, string applicationUnit)
     {
 #if REVIT2020
-      Enum.TryParse(parameter.applicationUnit, out DisplayUnitType sourceUnit);
-      return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
+      Enum.TryParse(applicationUnit, out DisplayUnitType sourceUnit);
+      return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(value), sourceUnit);
 #else
       // if a commit is sent in <=2021 and received in 2022+, the application unit will be a different format
       // therefore we need to check if the applicationUnit is in the wrong format
       ForgeTypeId sourceUnit = null;
-      if (!string.IsNullOrEmpty(parameter.applicationUnit) && parameter.applicationUnit.Length >= 3 &&
-          parameter.applicationUnit.Substring(0, 3) == "DUT")
-        sourceUnit = DUTToForgeTypeId(parameter.applicationUnit);
+      if (!string.IsNullOrEmpty(applicationUnit) && applicationUnit.Length >= 3 &&
+          applicationUnit.Substring(0, 3) == "DUT")
+        sourceUnit = DUTToForgeTypeId(applicationUnit);
       else
-        sourceUnit = new ForgeTypeId(parameter.applicationUnit);
+        sourceUnit = new ForgeTypeId(applicationUnit);
 
-      return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(parameter.value), sourceUnit);
+      return UnitUtils.ConvertToInternalUnits(Convert.ToDouble(value), sourceUnit);
 #endif
     }
 

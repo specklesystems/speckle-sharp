@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
@@ -53,7 +53,6 @@ namespace ConverterRevitTests
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
       Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
-
     }
 
     #endregion

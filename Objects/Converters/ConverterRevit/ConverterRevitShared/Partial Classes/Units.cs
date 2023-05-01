@@ -68,9 +68,14 @@ namespace Objects.Converter.Revit
     /// <param name="value"></param>
     /// <param name="units"></param>
     /// <returns></returns>
-    public double ScaleToSpeckle(double value, string units = null)
+    public double ScaleToSpeckle(double value)
     {
-      return UnitUtils.ConvertFromInternalUnits(value, units == null ? RevitLengthTypeId : UnitsToNative(units));
+      return UnitUtils.ConvertFromInternalUnits(value, RevitLengthTypeId);
+    }
+
+    public static double ScaleToSpeckle(double value, string units)
+    {
+      return UnitUtils.ConvertFromInternalUnits(value, UnitsToNative(units));
     }
 
     private string UnitsToSpeckle(DisplayUnitType type)
@@ -99,7 +104,7 @@ namespace Objects.Converter.Revit
 
     }
 
-    private DisplayUnitType UnitsToNative(string units)
+    private static DisplayUnitType UnitsToNative(string units)
     {
       switch (units)
       {
@@ -151,9 +156,19 @@ namespace Objects.Converter.Revit
       return UnitUtils.ConvertToInternalUnits(value, new ForgeTypeId(UnitsToNative(units)));
     }
 
-    public double ScaleToSpeckle(double value, string units = null)
+    public double ScaleToSpeckle(double value)
     {
-      return UnitUtils.ConvertFromInternalUnits(value, units == null ? RevitLengthTypeId : new ForgeTypeId(UnitsToNative(units)));
+      return ScaleToSpeckle(value, RevitLengthTypeId);
+    }
+    
+    public static double ScaleToSpeckle(double value, string units)
+    {
+      return ScaleToSpeckle(value, new ForgeTypeId(UnitsToNative(units)));
+    }
+
+    public static double ScaleToSpeckle(double value, ForgeTypeId forgeTypeId)
+    {
+      return UnitUtils.ConvertFromInternalUnits(value, forgeTypeId);
     }
 
     //new units api introduced in 2021, bleah
@@ -173,7 +188,7 @@ namespace Objects.Converter.Revit
       throw new Speckle.Core.Logging.SpeckleException($"The Unit System \"{typeId}\" is unsupported.");
     }
 
-    public string UnitsToNative(string units)
+    public static string UnitsToNative(string units)
     {
       switch (units)
       {

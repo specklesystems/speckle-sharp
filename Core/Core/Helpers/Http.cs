@@ -165,7 +165,7 @@ public static class Http
     SpeckleLog.Logger.Information("HttpPinging {address}", address);
     try
     {
-      var _httpClient = GetHttpProxyClient();
+      using var _httpClient = GetHttpProxyClient();
       var response = await _httpClient.GetAsync(address).ConfigureAwait(false);
       return response.IsSuccessStatusCode;
     }
