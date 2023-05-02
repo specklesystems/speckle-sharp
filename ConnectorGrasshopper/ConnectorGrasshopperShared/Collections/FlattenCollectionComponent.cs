@@ -37,21 +37,36 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
     if (!DA.GetData(0, ref collection))
       return;
 
-    var flattened = FlattenCollection(collection);
+    var excludeTypeFromFullName = new List<string> { "rhino model" };
+    var flattened = FlattenCollection(collection, null, excludeTypeFromFullName);
+
     DA.SetDataList(0, flattened);
   }
 
-  public IEnumerable<Collection> FlattenCollection(Collection collection, string fullNamePrefix = null)
+  private static IEnumerable<Collection> FlattenCollection(
+    Collection collection,
+    string fullNamePrefix = null,
+    IReadOnlyCollection<string> excludeTypeFromFullName = null
+  )
   {
-    var fullName = fullNamePrefix == null ? collection.name : fullNamePrefix + "::" + collection.name;
+    var nameParts = new List<string>();
+    if (!string.IsNullOrEmpty(fullNamePrefix))
+      nameParts.Add(fullNamePrefix);
+    if (excludeTypeFromFullName == null || !excludeTypeFromFullName.Contains(collection.collectionType))
+      nameParts.Add(collection.name);
+
+    var nextPrefix = string.Join("::", nameParts);
     var elements = collection.elements.Where(e => e is not Collection);
     var innerCollections = collection.elements
       .Where(e => e is Collection)
       .Cast<Collection>()
-      .SelectMany(c => FlattenCollection(c, fullName));
+      .SelectMany(c => FlattenCollection(c, nextPrefix, excludeTypeFromFullName));
 
-    var newCollection = new Collection(collection.name, collection.collectionType) { elements = elements.ToList() };
-    newCollection["fullName"] = fullName;
+    var newCollection = new Collection(collection.name, collection.collectionType)
+    {
+      elements = elements.ToList(),
+      ["fullName"] = string.IsNullOrEmpty(nextPrefix) ? collection.name : nextPrefix
+    };
     return new List<Collection> { newCollection }.Concat(innerCollections);
   }
 }
