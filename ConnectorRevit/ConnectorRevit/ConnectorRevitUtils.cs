@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -26,6 +26,7 @@ namespace Speckle.ConnectorRevit
 
     private static List<string> _cachedParameters = null;
     private static List<string> _cachedViews = null;
+    private static List<string> _cachedScheduleViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
 
     private static Dictionary<string, Category> _categories { get; set; }
@@ -204,6 +205,17 @@ namespace Speckle.ConnectorRevit
       _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
       return _cachedViews;
     }
+    
+    private static async Task<List<string>> GetScheduleNamesAsync(Document doc)
+    {
+      var els = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfClass(typeof(ViewSchedule))
+        .ToElements();
+
+      _cachedScheduleViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
+      return _cachedScheduleViews;
+    }
 
     /// <summary>
     /// Each time it's called the cached parameters are return, and a new copy is cached
@@ -220,6 +232,17 @@ namespace Speckle.ConnectorRevit
       }
 
       return GetViewNamesAsync(doc).Result;
+    }
+    public static List<string> GetScheduleNames(Document doc)
+    {
+      if (_cachedScheduleViews != null)
+      {
+        //don't wait for it to finish
+        GetScheduleNamesAsync(doc);
+        return _cachedScheduleViews;
+      }
+
+      return GetScheduleNamesAsync(doc).Result;
     }
 
     public static bool IsPhysicalElement(this Element e)
