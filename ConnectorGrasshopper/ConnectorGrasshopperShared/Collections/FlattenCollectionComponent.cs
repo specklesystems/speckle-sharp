@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using Grasshopper.Kernel;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace ConnectorGrasshopper.Collections;
 
@@ -56,11 +58,15 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
       nameParts.Add(collection.name);
 
     var nextPrefix = string.Join("::", nameParts);
-    var elements = collection.elements.Where(e => e is not Collection);
-    var innerCollections = collection.elements
-      .Where(e => e is Collection)
-      .Cast<Collection>()
-      .SelectMany(c => FlattenCollection(c, nextPrefix, excludeTypeFromFullName));
+    var elements = new List<Base>();
+    var innerCollections = new List<Collection>();
+    foreach (Base e in collection.elements)
+    {
+      if (e is Collection c)
+        innerCollections.AddRange(FlattenCollection(c, nextPrefix, excludeTypeFromFullName));
+      else
+        elements.Add(e);
+    }
 
     var newCollection = new Collection(collection.name, collection.collectionType)
     {
