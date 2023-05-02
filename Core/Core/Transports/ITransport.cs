@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -39,12 +40,12 @@ public interface ITransport
   /// <summary>
   /// Used to report progress during the transport's longer operations.
   /// </summary>
-  public Action<string, int> OnProgressAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
 
   /// <summary>
   /// Used to report errors during the transport's longer operations.
   /// </summary>
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, Exception>? OnErrorAction { get; set; }
 
   /// <summary>
   /// Optional: signals to the transport that writes are about to begin.
@@ -88,12 +89,15 @@ public interface ITransport
   /// </summary>
   /// <param name="id">The id of the object you want to copy.</param>
   /// <param name="targetTransport">The transport you want to copy the object to.</param>
-  /// <param name="onTotalChildrenCountKnown">(Optional) an action that will be invoked once, when the amount of object children to be copied over is known.</param>
+  /// <param name="onTotalChildrenCountKnown">(Optional) an <see cref="Action{T}"/> that will be invoked once, when the number of object children to be copied over is known.</param>
   /// <returns>The string representation of the root object.</returns>
+  /// <exception cref="InvalidOperationException">The transport was in an invalid state</exception>
+  /// <exception cref="ArgumentException">The provided arguments are not valid</exception>
+  /// <exception cref="OperationCanceledException"></exception>
   public Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
-    Action<int> onTotalChildrenCountKnown = null
+    Action<int>? onTotalChildrenCountKnown = null
   );
 
   /// <summary>
