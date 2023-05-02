@@ -40,7 +40,8 @@ namespace Objects.Converter.Revit
       else
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
 
-      if (!GetElementType<RoofType>(speckleRoof, appObj, out RoofType roofType))
+      var roofType = GetElementType<RoofType>(speckleRoof, appObj, out bool _);
+      if (roofType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -80,11 +81,14 @@ namespace Objects.Converter.Revit
               if (type == null)
               {
                 // assuming first mullion is the desired mullion for the whole roof...
-                GetElementType<MullionType>(elements.Where(b => b is BuiltElements.Revit.FamilyInstance f).First(), new ApplicationObject("", ""), out MullionType mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID2, mullionType);
+                var mullionType = GetElementType<MullionType>(elements.Where(b => b is BuiltElements.Revit.FamilyInstance f).First(), appObj, out bool _);
+                if (mullionType != null)
+                {
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID2, mullionType);
+                }
               }
             }
             var poly = speckleFootprintRoof.outline as Polycurve;

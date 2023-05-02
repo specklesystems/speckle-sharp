@@ -55,7 +55,7 @@ namespace ConverterRevitTests
 
     internal async Task AssertSchedulesEqual(DB.ViewSchedule sourceElem, DB.ViewSchedule destElem)
     {
-      Assert.NotNull(destElem);
+      AssertElementEqual(sourceElem, destElem);
 
       var sourceValueList = await RevitTask.RunAsync(app => {
         return GetTextValuesFromSchedule(sourceElem);
