@@ -27,7 +27,7 @@ GS::UniString CreateShell::GetUndoableCommandName () const
 
 GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
   API_Element& element,
-  API_Element& mask,
+  API_Element& elementMask,
   API_ElementMemo& memo,
   GS::UInt64& memoMask,
   AttributeManager& /*attributeManager*/,
@@ -55,7 +55,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		if (type.HasValue ())
 			element.shell.shellClass = type.Get ();
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellClass);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellClass);
 	}
 
 	// Base plane transformation matrix
@@ -64,20 +64,20 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Shell::BasePlane, transformOs);
 
 		Utility::ImportTransform (transformOs, element.shell.basePlane);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, basePlane);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, basePlane);
 	}
 
 	if (os.Contains (Shell::Flipped)) {
 		os.Get (Shell::Flipped, element.shell.isFlipped);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, isFlipped);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, isFlipped);
 	}
 
 	if (os.Contains (Shell::ShellContourData)) {
 		os.Get (Shell::HasContour, element.shell.hasContour);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, hasContour);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, hasContour);
 
 		os.Get (Shell::NumHoles, element.shell.numHoles);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, numHoles);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, numHoles);
 
 		UInt32 countShellContour = element.shell.numHoles + (element.shell.hasContour ? 1 : 0);
 
@@ -102,23 +102,23 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 				shellContourPoly.SetToMemo (memo, Objects::ElementShape::MemoShellContour, idx);
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellContourData, poly.nSubPolys);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellContourData, poly.nCoords);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellContourData, poly.nArcs);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellContourData, poly.nSubPolys);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellContourData, poly.nCoords);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellContourData, poly.nArcs);
 
 				if (shellContour.Contains (Shell::ShellContourPlane)) {
 					GS::ObjectState transformOs;
 					shellContour.Get (Shell::ShellContourPlane, transformOs);
 
 					Utility::ImportTransform (transformOs, memo.shellContours[idx].plane);
-					ACAPI_ELEMENT_MASK_SET (mask, API_ShellContourData, plane);
+					ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellContourData, plane);
 				}
 
 				shellContour.Get (Shell::ShellContourHeight, memo.shellContours[idx].height);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellContourData, height);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellContourData, height);
 
 				shellContour.Get (Shell::ShellContourHeight, memo.shellContours[idx].id);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellContourData, id);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellContourData, id);
 			}
 		}
 	}
@@ -132,7 +132,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		GS::Optional<API_ShellBaseContourEdgeTypeID> type = shellBaseContourEdgeTypeNames.FindValue (defaultEdgeTypeName);
 		if (type.HasValue ()) {
 			element.shell.defEdgeType = type.Get ();
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, defEdgeType);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, defEdgeType);
 		}
 	}
 
@@ -157,53 +157,53 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 		if (os.Contains (Shell::SlantAngle)) {
 			os.Get (Shell::SlantAngle, element.shell.u.extrudedShell.slantAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.slantAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.slantAngle);
 		}
 
 		if (os.Contains (Shell::ShapePlaneTilt)) {
 			os.Get (Shell::ShapePlaneTilt, element.shell.u.extrudedShell.shapePlaneTilt);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shapePlaneTilt);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.shapePlaneTilt);
 		}
 
 		if (os.Contains (Shell::BegPlaneTilt)) {
 			os.Get (Shell::BegPlaneTilt, element.shell.u.extrudedShell.begPlaneTilt);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.begPlaneTilt);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begPlaneTilt);
 		}
 
 		if (os.Contains (Shell::EndPlaneTilt)) {
 			os.Get (Shell::EndPlaneTilt, element.shell.u.extrudedShell.endPlaneTilt);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.endPlaneTilt);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endPlaneTilt);
 		}
 
-		if (os.Contains (Shape)) {
-			os.Get (Shape, shellShape);
+		if (os.Contains (ElementBase::Shape)) {
+			os.Get (ElementBase::Shape, shellShape);
 			element.shell.u.extrudedShell.shellShape.nSubPolys = shellShape.SubpolyCount ();
 			element.shell.u.extrudedShell.shellShape.nCoords = shellShape.VertexCount ();
 			element.shell.u.extrudedShell.shellShape.nArcs = shellShape.ArcCount ();
 
 			shellShape.SetToMemo (memo, Objects::ElementShape::MemoShellPolygon1);
 
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape.nSubPolys);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape.nCoords);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shellShape.nArcs);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.shellShape.nSubPolys);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.shellShape.nCoords);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.shellShape.nArcs);
 		}
 
 		if (os.Contains (Shell::BegC)) {
 			os.Get (Shell::BegC, startPoint);
 			element.shell.u.extrudedShell.begC = startPoint.ToAPI_Coord3D ();
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.begC);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begC);
 		}
 
 		if (os.Contains (Shell::ExtrusionVector)) {
 			os.Get (Shell::ExtrusionVector, extrusionVector);
 			element.shell.u.extrudedShell.extrusionVector = extrusionVector.ToAPI_Vector3D ();
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrusionVector);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrusionVector);
 		}
 
 		if (os.Contains (Shell::ShapeDirection)) {
 			os.Get (Shell::ShapeDirection, shapeDirection);
 			element.shell.u.extrudedShell.shapeDirection = shapeDirection.ToAPI_Vector ();
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.shapeDirection);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.shapeDirection);
 		}
 
 		// Beg shape edge
@@ -218,12 +218,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (begShapeEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.extrudedShell.begShapeEdgeData.edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.begShapeEdgeData.edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			begShapeEdgeOs.Get (Shell::BegShapeEdgeTrimSideAngle, element.shell.u.extrudedShell.begShapeEdgeData.edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.begShapeEdgeData.edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (begShapeEdgeOs.Contains (Shell::BegShapeEdgeSideMaterial)) {
@@ -240,8 +240,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -251,7 +251,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (begShapeEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.extrudedShell.begShapeEdgeData.edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.begShapeEdgeData.edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.edgeType);
 			}
 		}
 
@@ -267,12 +267,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (endShapeEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.extrudedShell.endShapeEdgeData.edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.endShapeEdgeData.edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			endShapeEdgeOs.Get (Shell::EndShapeEdgeTrimSideAngle, element.shell.u.extrudedShell.endShapeEdgeData.edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.endShapeEdgeData.edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (endShapeEdgeOs.Contains (Shell::EndShapeEdgeSideMaterial)) {
@@ -289,8 +289,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -300,7 +300,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (endShapeEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.extrudedShell.endShapeEdgeData.edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.endShapeEdgeData.edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.edgeType);
 			}
 		}
 
@@ -316,12 +316,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (extrudedEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			extrudedEdgeOs1.Get (Shell::ExtrudedEdgeTrimSideAngle1, element.shell.u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (extrudedEdgeOs1.Contains (Shell::ExtrudedEdgeSideMaterial1)) {
@@ -338,8 +338,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -349,7 +349,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (extrudedEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.extrudedShell.extrudedEdgeDatas[0].edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].edgeType);
 			}
 		}
 
@@ -365,12 +365,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (extrudedEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			extrudedEdgeOs2.Get (Shell::ExtrudedEdgeTrimSideAngle1, element.shell.u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (extrudedEdgeOs2.Contains (Shell::ExtrudedEdgeSideMaterial1)) {
@@ -387,8 +387,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -398,7 +398,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (extrudedEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.extrudedShell.extrudedEdgeDatas[1].edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].edgeType);
 			}
 		}
 
@@ -407,53 +407,53 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 		if (os.Contains (Shell::SlantAngle)) {
 			os.Get (Shell::SlantAngle, element.shell.u.revolvedShell.slantAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.slantAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.slantAngle);
 		}
 
 		if (os.Contains (Shell::RevolutionAngle)) {
 			os.Get (Shell::RevolutionAngle, element.shell.u.revolvedShell.revolutionAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolutionAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolutionAngle);
 		}
 
 		if (os.Contains (Shell::DistortionAngle)) {
 			os.Get (Shell::DistortionAngle, element.shell.u.revolvedShell.distortionAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.distortionAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.distortionAngle);
 		}
 
 		if (os.Contains (Shell::SegmentedSurfaces)) {
 			os.Get (Shell::SegmentedSurfaces, element.shell.u.revolvedShell.segmentedSurfaces);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.segmentedSurfaces);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.segmentedSurfaces);
 		}
 
-		if (os.Contains (Shape)) {
-			os.Get (Shape, shellShape);
+		if (os.Contains (ElementBase::Shape)) {
+			os.Get (ElementBase::Shape, shellShape);
 			element.shell.u.revolvedShell.shellShape.nSubPolys = shellShape.SubpolyCount ();
 			element.shell.u.revolvedShell.shellShape.nCoords = shellShape.VertexCount ();
 			element.shell.u.revolvedShell.shellShape.nArcs = shellShape.ArcCount ();
 
 			shellShape.SetToMemo (memo, Objects::ElementShape::MemoShellPolygon1);
 
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.shellShape.nSubPolys);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.shellShape.nCoords);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.shellShape.nArcs);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.shellShape.nSubPolys);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.shellShape.nCoords);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.shellShape.nArcs);
 		}
 
 		if (os.Contains (Shell::AxisBase)) {
 			os.Get (Shell::AxisBase, transformAxisBaseOs);
 
 			Utility::ImportTransform (transformAxisBaseOs, element.shell.u.revolvedShell.axisBase);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.axisBase);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.axisBase);
 		}
 
 		if (os.Contains (Shell::DistortionVector)) {
 			os.Get (Shell::DistortionVector, distortionVector);
 			element.shell.u.revolvedShell.distortionVector = distortionVector.ToAPI_Vector ();
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.distortionVector);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.distortionVector);
 		}
 
 		if (os.Contains (Shell::BegAngle)) {
 			os.Get (Shell::BegAngle, element.shell.u.revolvedShell.begAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begAngle);
 		}
 
 		// Beg shape edge
@@ -468,12 +468,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (begShapeEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.revolvedShell.begShapeEdgeData.edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begShapeEdgeData.edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			begShapeEdgeOs.Get (Shell::BegShapeEdgeTrimSideAngle, element.shell.u.revolvedShell.begShapeEdgeData.edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begShapeEdgeData.edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (begShapeEdgeOs.Contains (Shell::BegShapeEdgeSideMaterial)) {
@@ -490,8 +490,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -501,7 +501,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (begShapeEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.revolvedShell.begShapeEdgeData.edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.begShapeEdgeData.edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.edgeType);
 			}
 		}
 
@@ -517,12 +517,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (endShapeEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.revolvedShell.endShapeEdgeData.edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.endShapeEdgeData.edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			endShapeEdgeOs.Get (Shell::EndShapeEdgeTrimSideAngle, element.shell.u.revolvedShell.endShapeEdgeData.edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.endShapeEdgeData.edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (endShapeEdgeOs.Contains (Shell::EndShapeEdgeSideMaterial)) {
@@ -539,8 +539,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -550,7 +550,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (endShapeEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.revolvedShell.endShapeEdgeData.edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.endShapeEdgeData.edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.edgeType);
 			}
 		}
 
@@ -566,12 +566,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (revolvedEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			revolvedEdgeOs1.Get (Shell::RevolvedEdgeTrimSideAngle1, element.shell.u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (revolvedEdgeOs1.Contains (Shell::RevolvedEdgeSideMaterial1)) {
@@ -588,8 +588,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -599,7 +599,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (revolvedEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.revolvedShell.revolvedEdgeDatas[0].edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].edgeType);
 			}
 		}
 
@@ -615,12 +615,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (revolvedEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.revolvedShell.revolvedEdgeDatas[1].edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			revolvedEdgeOs2.Get (Shell::RevolvedEdgeTrimSideAngle1, element.shell.u.revolvedShell.revolvedEdgeDatas[1].edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (revolvedEdgeOs2.Contains (Shell::RevolvedEdgeSideMaterial1)) {
@@ -637,8 +637,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -648,51 +648,51 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (revolvedEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.revolvedShell.revolvedEdgeDatas[1].edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].edgeType);
 			}
 		}
 
 		break;
 	case API_RuledShellID:
 
-		if (os.Contains (Shape1)) {
-			os.Get (Shape1, shellShape1);
+		if (os.Contains (ElementBase::Shape1)) {
+			os.Get (ElementBase::Shape1, shellShape1);
 			element.shell.u.ruledShell.shellShape1.nSubPolys = shellShape1.SubpolyCount ();
 			element.shell.u.ruledShell.shellShape1.nCoords = shellShape1.VertexCount ();
 			element.shell.u.ruledShell.shellShape1.nArcs = shellShape1.ArcCount ();
 
 			shellShape1.SetToMemo (memo, Objects::ElementShape::MemoShellPolygon1);
 
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape1.nSubPolys);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape1.nCoords);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape1.nArcs);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.shellShape1.nSubPolys);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.shellShape1.nCoords);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.shellShape1.nArcs);
 		}
 
 		if (os.Contains (Shell::Plane1)) {
 			os.Get (Shell::Plane1, transformPlaneOs1);
 
 			Utility::ImportTransform (transformPlaneOs1, element.shell.u.ruledShell.plane1);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.plane1);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.plane1);
 		}
 
-		if (os.Contains (Shape2)) {
-			os.Get (Shape2, shellShape2);
+		if (os.Contains (ElementBase::Shape2)) {
+			os.Get (ElementBase::Shape2, shellShape2);
 			element.shell.u.ruledShell.shellShape2.nSubPolys = shellShape2.SubpolyCount ();
 			element.shell.u.ruledShell.shellShape2.nCoords = shellShape2.VertexCount ();
 			element.shell.u.ruledShell.shellShape2.nArcs = shellShape2.ArcCount ();
 
 			shellShape2.SetToMemo (memo, Objects::ElementShape::MemoShellPolygon2);
 
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape2.nSubPolys);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape2.nCoords);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.shellShape2.nArcs);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.shellShape2.nSubPolys);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.shellShape2.nCoords);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.shellShape2.nArcs);
 		}
 
 		if (os.Contains (Shell::Plane2)) {
 			os.Get (Shell::Plane2, transformPlaneOs2);
 
 			Utility::ImportTransform (transformPlaneOs2, element.shell.u.ruledShell.plane2);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.plane2);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.plane2);
 		}
 
 		// Beg shape edge
@@ -707,12 +707,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (begShapeEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.ruledShell.begShapeEdgeData.edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.begShapeEdgeData.edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			begShapeEdgeOs.Get (Shell::BegShapeEdgeTrimSideAngle, element.shell.u.ruledShell.begShapeEdgeData.edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.begShapeEdgeData.edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (begShapeEdgeOs.Contains (Shell::BegShapeEdgeSideMaterial)) {
@@ -729,8 +729,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -740,7 +740,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (begShapeEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.ruledShell.begShapeEdgeData.edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.begShapeEdgeData.edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.edgeType);
 			}
 		}
 
@@ -756,12 +756,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (endShapeEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.ruledShell.endShapeEdgeData.edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.endShapeEdgeData.edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			endShapeEdgeOs.Get (Shell::EndShapeEdgeTrimSideAngle, element.shell.u.ruledShell.endShapeEdgeData.edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.endShapeEdgeData.edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (endShapeEdgeOs.Contains (Shell::EndShapeEdgeSideMaterial)) {
@@ -778,8 +778,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -789,7 +789,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (endShapeEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.ruledShell.endShapeEdgeData.edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.endShapeEdgeData.edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.edgeType);
 			}
 		}
 
@@ -805,12 +805,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (ruledEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			ruledEdgeOs1.Get (Shell::RuledEdgeTrimSideAngle1, element.shell.u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (ruledEdgeOs1.Contains (Shell::RuledEdgeSideMaterial1)) {
@@ -827,8 +827,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -838,7 +838,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (ruledEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.ruledShell.ruledEdgeDatas[0].edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].edgeType);
 			}
 		}
 
@@ -854,12 +854,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (ruledEdgeTrimSideTypeName);
 			if (type.HasValue ()) {
 				element.shell.u.ruledShell.ruledEdgeDatas[1].edgeTrim.sideType = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].edgeTrim.sideType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].edgeTrim.sideType);
 			}
 
 			// Edge trim side angle
 			ruledEdgeOs2.Get (Shell::RuledEdgeTrimSideAngle2, element.shell.u.ruledShell.ruledEdgeDatas[1].edgeTrim.sideAngle);
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].edgeTrim.sideAngle);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].edgeTrim.sideAngle);
 
 			// Overridden side material
 			if (ruledEdgeOs2.Contains (Shell::RuledEdgeSideMaterial2)) {
@@ -876,8 +876,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 						element.shell.u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
 				}
 
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.overridden);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -887,7 +887,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_ShellBaseContourEdgeTypeID> type2 = shellBaseContourEdgeTypeNames.FindValue (ruledEdgeTypeName);
 			if (type2.HasValue ()) {
 				element.shell.u.ruledShell.ruledEdgeDatas[1].edgeType = type2.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].edgeType);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].edgeType);
 			}
 		}
 
@@ -900,7 +900,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			GS::Optional<API_MorphingRuleID> type = morphingRuleNames.FindValue (morphingRuleName);
 			if (type.HasValue ()) {
 				element.shell.u.ruledShell.morphingRule = type.Get ();
-				ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, u.ruledShell.morphingRule);
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.morphingRule);
 			}
 		}
 
@@ -910,22 +910,17 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The floor index and level of the shell
-	if (os.Contains (FloorIndex)) {
-		os.Get (FloorIndex, element.header.floorInd);
-		Utility::SetStoryLevel (shellShape.Level (), element.header.floorInd, element.shell.shellBase.level);
+	if (os.Contains (ElementBase::Level)) {
+		GetStoryFromObjectState (os, shellShape.Level (), element.header.floorInd, element.shell.shellBase.level);
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.level);
-		ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-	} else {
-		Utility::SetStoryLevelAndFloor (shellShape.Level (), element.header.floorInd, element.shell.shellBase.level);
-
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.level);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.level);
 	}
 
 	// The thickness of the shell
 	if (os.Contains (Shell::Thickness)) {
 		os.Get (Shell::Thickness, element.shell.shellBase.thickness);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.thickness);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.thickness);
 	}
 
 	// The structure of the shell
@@ -937,7 +932,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		if (type.HasValue ())
 			element.shell.shellBase.modelElemStructureType = type.Get ();
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.modelElemStructureType);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.modelElemStructureType);
 	}
 
 	// The building material name of the shell.shellBase
@@ -955,7 +950,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.shell.shellBase.buildingMaterial = attribute.header.index;
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.buildingMaterial);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.buildingMaterial);
 	}
 
 	// The composite name of the shell.shellBase
@@ -974,7 +969,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 				element.shell.shellBase.composite = attribute.header.index;
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.composite);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.composite);
 
 	// The edge type of the shell
 	if (os.Contains (Shell::EdgeAngleType)) {
@@ -984,14 +979,14 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		GS::Optional<API_EdgeTrimID> type = edgeAngleTypeNames.FindValue (edgeAngleType);
 		if (type.HasValue ()) {
 			element.shell.shellBase.edgeTrim.sideType = type.Get ();
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.edgeTrim.sideType);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.edgeTrim.sideType);
 		}
 	}
 
 	// The edge angle of the shell
 	if (os.Contains (Shell::EdgeAngle)) {
 		os.Get (Shell::EdgeAngle, element.shell.shellBase.edgeTrim.sideAngle);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.edgeTrim.sideAngle);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.edgeTrim.sideAngle);
 	}
 
 	// Floor Plan and Section - Floor Plan Display
@@ -999,18 +994,18 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	// Show on Stories - Story visibility
 	bool isAutoOnStoryVisibility = false;
 	Utility::ImportVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.shell.shellBase.visibilityCont);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityCont.showOnHome);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityCont.showAllAbove);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityCont.showAllBelow);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityCont.showRelAbove);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityCont.showRelBelow);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showOnHome);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showAllAbove);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showAllBelow);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showRelAbove);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showRelBelow);
 
 	Utility::ImportVisibility (os, VisibilityFillData, isAutoOnStoryVisibility, element.shell.shellBase.visibilityFill);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityFill.showOnHome);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityFill.showAllAbove);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityFill.showAllBelow);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityFill.showRelAbove);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.visibilityFill.showRelBelow);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showOnHome);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showAllAbove);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showAllBelow);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showRelAbove);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showRelBelow);
 
 	// The display options (Projected, Projected with Overhead, Cut Only, Outlines Only, Overhead All or Symbolic Cut)
 	if (os.Contains (Shell::DisplayOptionName)) {
@@ -1020,7 +1015,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		GS::Optional<API_ElemDisplayOptionsID> type = displayOptionNames.FindValue (displayOptionName);
 		if (type.HasValue ()) {
 			element.shell.shellBase.displayOption = type.Get ();
-			ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.displayOption);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.displayOption);
 		}
 	}
 
@@ -1033,7 +1028,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		if (type.HasValue ())
 			element.shell.shellBase.viewDepthLimitation = type.Get ();
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.viewDepthLimitation);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.viewDepthLimitation);
 	}
 
 	// Floor Plan and Section - Cut Surfaces
@@ -1041,7 +1036,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	// The pen index and linetype name of shell section line
 	if (os.Contains (Shell::SectContPen)) {
 		os.Get (Shell::SectContPen, element.shell.shellBase.sectContPen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.sectContPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sectContPen);
 	}
 
 	if (os.Contains (Shell::SectContLtype)) {
@@ -1057,7 +1052,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.shell.shellBase.sectContLtype = attribute.header.index;
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.sectContLtype);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sectContLtype);
 	}
 
 	// Override cut fill pen
@@ -1065,8 +1060,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		element.shell.shellBase.penOverride.overrideCutFillPen = true;
 		os.Get (Shell::CutFillPen, element.shell.shellBase.penOverride.cutFillPen);
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.penOverride.overrideCutFillPen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.penOverride.cutFillPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.overrideCutFillPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.cutFillPen);
 	}
 
 	// Override cut fill backgound pen
@@ -1074,8 +1069,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		element.shell.shellBase.penOverride.overrideCutFillBackgroundPen = true;
 		os.Get (Shell::CutFillBackgroundPen, element.shell.shellBase.penOverride.cutFillBackgroundPen);
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.penOverride.overrideCutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.penOverride.cutFillBackgroundPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.overrideCutFillBackgroundPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.penOverride.cutFillBackgroundPen);
 	}
 
 	// Outlines
@@ -1083,7 +1078,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	// The pen index and linetype name of shell contour line
 	if (os.Contains (Shell::ContourPen)) {
 		os.Get (Shell::ContourPen, element.shell.shellBase.pen);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.pen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.pen);
 	}
 
 	if (os.Contains (Shell::ContourLineType)) {
@@ -1099,14 +1094,14 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.shell.shellBase.ltypeInd = attribute.header.index;
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.ltypeInd);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.ltypeInd);
 	}
 
 	// The pen index and linetype name of slab hidden contour line
 	if (os.Contains (Shell::OverheadLinePen)) {
 		os.Get (Shell::OverheadLinePen, element.shell.shellBase.aboveViewLinePen);
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.aboveViewLinePen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.aboveViewLinePen);
 	}
 
 	if (os.Contains (Shell::OverheadLinetype)) {
@@ -1122,33 +1117,33 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.shell.shellBase.aboveViewLineType = attribute.header.index;
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.aboveViewLineType);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.aboveViewLineType);
 	}
 
 	// Floor Plan and Section - Cover Fills
 	if (os.Contains (Shell::UseFloorFill))
 		os.Get (Shell::UseFloorFill, element.shell.shellBase.useFloorFill);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.useFloorFill);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useFloorFill);
 
 	if (os.Contains (Shell::Use3DHatching))
 		os.Get (Shell::Use3DHatching, element.shell.shellBase.use3DHatching);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.use3DHatching);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.use3DHatching);
 
 	if (os.Contains (Shell::UseFillLocBaseLine))
 		os.Get (Shell::UseFillLocBaseLine, element.shell.shellBase.useFillLocBaseLine);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.useFillLocBaseLine);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useFillLocBaseLine);
 
 	if (os.Contains (Shell::UseSlantedFill))
 		os.Get (Shell::UseSlantedFill, element.shell.shellBase.useSlantedFill);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.useSlantedFill);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useSlantedFill);
 
 	if (os.Contains (Shell::FloorFillPen))
 		os.Get (Shell::FloorFillPen, element.shell.shellBase.floorFillPen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.floorFillPen);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillPen);
 
 	if (os.Contains (Shell::FloorFillBGPen))
 		os.Get (Shell::FloorFillBGPen, element.shell.shellBase.floorFillBGPen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.floorFillBGPen);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillBGPen);
 
 	// Cover fill type
 	if (os.Contains (Shell::FloorFillName)) {
@@ -1164,36 +1159,36 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.shell.shellBase.floorFillInd = attribute.header.index;
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.floorFillInd);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillInd);
 	}
 
 	// Cover Fill Transformation
 	Utility::ImportHatchOrientation (os, element.shell.shellBase.hatchOrientation.type);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.hatchOrientation.type);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.type);
 
 	if (os.Contains (Shell::HatchOrientationOrigoX))
 		os.Get (Shell::HatchOrientationOrigoX, element.shell.shellBase.hatchOrientation.origo.x);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.hatchOrientation.origo.x);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.origo.x);
 
 	if (os.Contains (Shell::HatchOrientationOrigoY))
 		os.Get (Shell::HatchOrientationOrigoY, element.shell.shellBase.hatchOrientation.origo.y);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.hatchOrientation.origo.y);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.origo.y);
 
 	if (os.Contains (Shell::HatchOrientationXAxisX))
 		os.Get (Shell::HatchOrientationXAxisX, element.shell.shellBase.hatchOrientation.matrix00);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.hatchOrientation.matrix00);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix00);
 
 	if (os.Contains (Shell::HatchOrientationXAxisY))
 		os.Get (Shell::HatchOrientationXAxisY, element.shell.shellBase.hatchOrientation.matrix10);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.hatchOrientation.matrix10);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix10);
 
 	if (os.Contains (Shell::HatchOrientationYAxisX))
 		os.Get (Shell::HatchOrientationYAxisX, element.shell.shellBase.hatchOrientation.matrix01);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.hatchOrientation.matrix01);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix01);
 
 	if (os.Contains (Shell::HatchOrientationYAxisY))
 		os.Get (Shell::HatchOrientationYAxisY, element.shell.shellBase.hatchOrientation.matrix11);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.hatchOrientation.matrix11);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix11);
 
 	// Model
 
@@ -1212,8 +1207,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 				element.shell.shellBase.topMat.attributeIndex = attribute.header.index;
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.topMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.topMat.attributeIndex);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.topMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.topMat.attributeIndex);
 
 	if (os.Contains (Shell::SideMat)) {
 		element.shell.shellBase.sidMat.overridden = true;
@@ -1229,8 +1224,8 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 				element.shell.shellBase.sidMat.attributeIndex = attribute.header.index;
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.sidMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.sidMat.attributeIndex);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sidMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sidMat.attributeIndex);
 
 	if (os.Contains (Shell::BotMat)) {
 		element.shell.shellBase.botMat.overridden = true;
@@ -1246,14 +1241,14 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 				element.shell.shellBase.botMat.attributeIndex = attribute.header.index;
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.botMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.botMat.attributeIndex);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.botMat.overridden);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.botMat.attributeIndex);
 
 	// The overridden materials are chained
 	if (os.Contains (Shell::MaterialsChained)) {
 		os.Get (Shell::MaterialsChained, element.shell.shellBase.materialsChained);
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.materialsChained);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.materialsChained);
 	}
 
 	// Trimming Body (Editable, Contours Down, Pivot Lines Down, Upwards Extrusion or Downwards Extrusion)
@@ -1265,7 +1260,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		if (type.HasValue ())
 			element.shell.shellBase.cutBodyType = type.Get ();
 
-		ACAPI_ELEMENT_MASK_SET (mask, API_ShellType, shellBase.cutBodyType);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.cutBodyType);
 	}
 
 	return NoError;

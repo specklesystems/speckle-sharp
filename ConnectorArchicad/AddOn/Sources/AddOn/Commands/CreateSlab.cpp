@@ -364,6 +364,8 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 
 			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.slab.topMat.attributeIndex = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.attributeIndex);
+			}
 		}
 	}
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.overridden);

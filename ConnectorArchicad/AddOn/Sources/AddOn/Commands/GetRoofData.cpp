@@ -46,7 +46,7 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	os.Add (ElementBase::ApplicationId, APIGuidToString (element.roof.head.guid));
 
 	// Geometry and positioning
-	// The index of the roof's floor
+	// The story of the shell
 	API_StoryType story = Utility::GetStory (element.roof.head.floorInd);
 	os.Add (ElementBase::Level, Objects::Level (story));
 
@@ -60,7 +60,7 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	switch (element.roof.roofClass) {
 	case API_PlaneRoofID:
 		os.Add (Roof::RoofClassName, roofClassNames.Get (API_PlaneRoofID));
-		os.Add (Shape, Objects::ElementShape (element.roof.u.planeRoof.poly, memo, Objects::ElementShape::MemoMainPolygon, level));
+		os.Add (ElementBase::Shape, Objects::ElementShape (element.roof.u.planeRoof.poly, memo, Objects::ElementShape::MemoMainPolygon, level));
 		os.Add (Roof::PlaneRoofAngle, element.roof.u.planeRoof.angle);
 		os.Add (Roof::PosSign, element.roof.u.planeRoof.posSign);
 
@@ -72,7 +72,7 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	case API_PolyRoofID:
 
 		os.Add (Roof::RoofClassName, roofClassNames.Get (API_PolyRoofID));
-		os.Add (Shape, Objects::ElementShape (element.roof.u.polyRoof.contourPolygon, memo, Objects::ElementShape::MemoMainPolygon, level));
+		os.Add (ElementBase::Shape, Objects::ElementShape (element.roof.u.polyRoof.contourPolygon, memo, Objects::ElementShape::MemoMainPolygon, level));
 		os.Add (Roof::PivotPolygon, Objects::ElementShape (element.roof.u.polyRoof.pivotPolygon, memo, Objects::ElementShape::MemoAdditionalPolygon, level));
 
 		// Level num

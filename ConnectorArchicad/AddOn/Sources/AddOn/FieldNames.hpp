@@ -705,17 +705,6 @@ static const char* Units	= "units";
 }
 
 
-namespace Polyline
-{
-static const char* StartPoint	= "startPoint";
-static const char* EndPoint		= "endPoint";
-static const char* ArcAngle		= "arcAngle";
-static const char* Segments		= "polylineSegments";
-static const char* Contour		= "contourPolyline";
-static const char* Hole			= "holePolylines";
-}
-
-
 }
 
 

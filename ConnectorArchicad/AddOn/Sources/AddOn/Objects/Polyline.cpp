@@ -8,7 +8,7 @@ using namespace Objects;
 static const char* StartPointFieldName = "startPoint";
 static const char* EndPointFieldName = "endPoint";
 static const char* ArcAngleFieldName = "arcAngle";
-static const char* BodyFlagName = "bodyFlag";
+static const char* BodyFlagFieldName = "bodyFlag";
 static const char* PolylineSegmentsFieldName = "polylineSegments";
 static const char* ContourPolyFieldName = "contourPolyline";
 static const char* HolePolylinesFieldName = "holePolylines";
@@ -25,14 +25,14 @@ PolylineSegment::PolylineSegment (const Point3D& start, const Point3D& end, doub
 
 GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 {
-	os.Get (FieldNames::Polyline::StartPoint, startPoint);
-	os.Get (FieldNames::Polyline::EndPoint, endPoint);
-	os.Get (FieldNames::Polyline::ArcAngle, arcAngle);
+	os.Get (StartPointFieldName, startPoint);
+	os.Get (EndPointFieldName, endPoint);
+	os.Get (ArcAngleFieldName, arcAngle);
 
-	if (os.Contains (BodyFlagName)) {
-		bool bodyFlag = false;
-		os.Get (BodyFlagName, bodyFlag);
-		BodyFlag = bodyFlag;
+	if (os.Contains (BodyFlagFieldName)) {
+		bool bodyFlagIn = false;
+		os.Get (BodyFlagFieldName, bodyFlagIn);
+		bodyFlag = bodyFlagIn;
 	}
 
 	return NoError;
@@ -41,11 +41,11 @@ GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 
 GSErrCode PolylineSegment::Store (GS::ObjectState& os) const
 {
-	os.Add (FieldNames::Polyline::StartPointFieldName, startPoint);
-	os.Add (FieldNames::Polyline::EndPointFieldName, endPoint);
-	os.Add (FieldNames::Polyline::ArcAngleFieldName, arcAngle);
-	if (BodyFlag.HasValue ())
-		os.Add (BFieldNames::Polyline::odyFlagName, bodyFlag.Get ());
+	os.Add (StartPointFieldName, startPoint);
+	os.Add (EndPointFieldName, endPoint);
+	os.Add (ArcAngleFieldName, arcAngle);
+	if (bodyFlag.HasValue ())
+		os.Add (BodyFlagFieldName, bodyFlag.Get ());
 
 	return NoError;
 }
@@ -145,7 +145,7 @@ bool Polyline::IsClosed () const
 
 GSErrCode Polyline::Restore (const GS::ObjectState& os)
 {
-	os.Get (FieldNames::Polyline::Segments, mPolylineSegments);
+	os.Get (PolylineSegmentsFieldName, mPolylineSegments);
 
 	FillVertices ();
 
@@ -155,7 +155,7 @@ GSErrCode Polyline::Restore (const GS::ObjectState& os)
 
 GSErrCode Polyline::Store (GS::ObjectState& os) const
 {
-	os.Add (FieldNames::Polyline::Segments, mPolylineSegments);
+	os.Add (PolylineSegmentsFieldName, mPolylineSegments);
 
 	return NoError;
 }
@@ -371,7 +371,7 @@ void ElementShape::SetToMemo (API_ElementMemo& memo, MemoPolygonType memoPolygon
 			if (bodyFlags != nullptr) {
 				// set the start point's body flag
 				const PolylineSegment* segment = polylines[j].SegmentAt (k);
-				if (segment != nullptr && segment->BodyFlag.HasValue () && segment->BodyFlag.Get () == true) {
+				if (segment != nullptr && segment->bodyFlag.HasValue () && segment->bodyFlag.Get () == true) {
 					(*(*bodyFlags))[coIndex] = true;
 				}
 			}
@@ -411,10 +411,10 @@ void ElementShape::SetToMemo (API_ElementMemo& memo, MemoPolygonType memoPolygon
 
 GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 {
-	os.Get (FieldNames::Polyline::Contour, mContourPoly);
+	os.Get (ContourPolyFieldName, mContourPoly);
 
-	if (os.Contains (FieldNames::Polyline::Hole)) {
-		os.Get (FieldNames::Polyline::Hole, mHoles);
+	if (os.Contains (HolePolylinesFieldName)) {
+		os.Get (HolePolylinesFieldName, mHoles);
 	}
 
 	return NoError;
@@ -423,10 +423,10 @@ GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 
 GSErrCode ElementShape::Store (GS::ObjectState& os) const
 {
-	os.Add (FieldNames::Polyline::Contour, mContourPoly);
+	os.Add (ContourPolyFieldName, mContourPoly);
 
 	if (!mHoles.IsEmpty ())
-		os.Add (FieldNames::Polyline::Hole, mHoles);
+		os.Add (HolePolylinesFieldName, mHoles);
 
 	return NoError;
 }
