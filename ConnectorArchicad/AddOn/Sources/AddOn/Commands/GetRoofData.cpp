@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Polyline.hpp"
 #include "RealNumber.h"
 #include "FieldNames.hpp"
@@ -42,11 +43,12 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 		return err;
 
 	// The identifier of the roof
-	os.Add (ApplicationId, APIGuidToString (element.roof.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (element.roof.head.guid));
 
 	// Geometry and positioning
 	// The index of the roof's floor
-	os.Add (FloorIndex, element.roof.head.floorInd);
+	API_StoryType story = Utility::GetStory (element.roof.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	// The shape of the roof
 	double level = Utility::GetStoryLevel (element.roof.head.floorInd) + element.roof.shellBase.level;

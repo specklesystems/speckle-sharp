@@ -156,7 +156,7 @@ public class OneClickViewModel : ReactiveObject, IRoutableViewModel
   {
     // get default account
     var account = AccountManager.GetDefaultAccount();
-    var client = new Client(account);
+    using var client = new Client(account);
 
     SavedStreams = Bindings.GetStreamsInFile();
     var fileStream = SavedStreams

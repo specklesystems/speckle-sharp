@@ -39,7 +39,7 @@ public static class ConnectorHelpers
   {
     progress.CancellationToken.ThrowIfCancellationRequested();
 
-    var transport = new ServerTransport(state.Client.Account, state.StreamId);
+    using var transport = new ServerTransport(state.Client.Account, state.StreamId);
 
     Base? commitObject = await Operations
       .Receive(

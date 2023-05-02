@@ -73,6 +73,7 @@ public static partial class Operations
   )
   {
     transports ??= new List<ITransport>();
+    using var sqLiteTransport = new SQLiteTransport { TransportName = "LC" };
 
     if (transports.Count == 0 && useDefaultCache == false)
       throw new ArgumentException(
@@ -81,7 +82,9 @@ public static partial class Operations
       );
 
     if (useDefaultCache)
-      transports.Insert(0, new SQLiteTransport { TransportName = "LC" });
+    {
+      transports.Insert(0, sqLiteTransport);
+    }
 
     var transportContext = transports.ToDictionary(t => t.TransportName, t => t.TransportContext);
 

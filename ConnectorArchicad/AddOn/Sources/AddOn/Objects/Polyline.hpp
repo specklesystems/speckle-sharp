@@ -12,10 +12,10 @@ namespace Objects {
 
 class PolylineSegment {
 public:
-	Point3D				StartPoint;
-	Point3D				EndPoint;
-	double				ArcAngle;
-	GS::Optional<bool>	BodyFlag;
+	Point3D				startPoint;
+	Point3D				endPoint;
+	double				arcAngle;
+	GS::Optional<bool>	bodyFlag;
 
 	PolylineSegment () = default;
 	PolylineSegment (const Point3D& start, const Point3D& end, double angle = 0, GS::Optional<bool> bodyFlag = GS::NoValue);

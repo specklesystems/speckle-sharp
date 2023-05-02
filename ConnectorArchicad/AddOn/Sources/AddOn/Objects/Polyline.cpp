@@ -1,5 +1,6 @@
 #include "Polyline.hpp"
 #include "ObjectState.hpp"
+#include "FieldNames.hpp"
 
 
 using namespace Objects;
@@ -14,19 +15,19 @@ static const char* HolePolylinesFieldName = "holePolylines";
 
 
 PolylineSegment::PolylineSegment (const Point3D& start, const Point3D& end, double angle, GS::Optional<bool> bodyFlag /*= GS::NoValue*/)
-	: StartPoint (start)
-	, EndPoint (end)
-	, ArcAngle (angle)
-	, BodyFlag (bodyFlag)
+	: startPoint (start)
+	, endPoint (end)
+	, arcAngle (angle)
+	, bodyFlag (bodyFlag)
 {
 }
 
 
 GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 {
-	os.Get (StartPointFieldName, StartPoint);
-	os.Get (EndPointFieldName, EndPoint);
-	os.Get (ArcAngleFieldName, ArcAngle);
+	os.Get (FieldNames::Polyline::StartPoint, startPoint);
+	os.Get (FieldNames::Polyline::EndPoint, endPoint);
+	os.Get (FieldNames::Polyline::ArcAngle, arcAngle);
 
 	if (os.Contains (BodyFlagName)) {
 		bool bodyFlag = false;
@@ -40,11 +41,11 @@ GSErrCode PolylineSegment::Restore (const GS::ObjectState& os)
 
 GSErrCode PolylineSegment::Store (GS::ObjectState& os) const
 {
-	os.Add (StartPointFieldName, StartPoint);
-	os.Add (EndPointFieldName, EndPoint);
-	os.Add (ArcAngleFieldName, ArcAngle);
+	os.Add (FieldNames::Polyline::StartPointFieldName, startPoint);
+	os.Add (FieldNames::Polyline::EndPointFieldName, endPoint);
+	os.Add (FieldNames::Polyline::ArcAngleFieldName, arcAngle);
 	if (BodyFlag.HasValue ())
-		os.Add (BodyFlagName, BodyFlag.Get ());
+		os.Add (BFieldNames::Polyline::odyFlagName, bodyFlag.Get ());
 
 	return NoError;
 }
@@ -61,8 +62,8 @@ void Polyline::FillVertices ()
 {
 	mVertices.Clear ();
 	for (const PolylineSegment& segment : mPolylineSegments) {
-		Point3D sPoint = segment.StartPoint;
-		Point3D ePoint = segment.EndPoint;
+		Point3D sPoint = segment.startPoint;
+		Point3D ePoint = segment.endPoint;
 		bool sFound = false;
 		bool eFound = false;
 		for (UInt32 i = 1; i < mVertices.GetSize (); i++) {
@@ -89,7 +90,7 @@ int Polyline::ArcCount () const
 {
 	int count = 0;
 	for (const PolylineSegment& segment : mPolylineSegments) {
-		if (segment.ArcAngle != 0) {
+		if (segment.arcAngle != 0) {
 			count++;
 		}
 	}
@@ -121,7 +122,7 @@ const PolylineSegment* Polyline::ArcAt (int index) const
 
 	if (index < ArcCount () && index > -1) {
 		for (UInt32 i = 0; i < mPolylineSegments.GetSize (); i++) {
-			if (mPolylineSegments[i].ArcAngle != 0) {
+			if (mPolylineSegments[i].arcAngle != 0) {
 				if (count == index) {
 					return &(mPolylineSegments[i]);
 				}
@@ -138,13 +139,13 @@ bool Polyline::IsClosed () const
 	PolylineSegment first = mPolylineSegments.GetFirst ();
 	PolylineSegment last = mPolylineSegments.GetLast ();
 
-	return first.StartPoint == last.EndPoint;
+	return first.startPoint == last.endPoint;
 }
 
 
 GSErrCode Polyline::Restore (const GS::ObjectState& os)
 {
-	os.Get (PolylineSegmentsFieldName, mPolylineSegments);
+	os.Get (FieldNames::Polyline::Segments, mPolylineSegments);
 
 	FillVertices ();
 
@@ -154,7 +155,7 @@ GSErrCode Polyline::Restore (const GS::ObjectState& os)
 
 GSErrCode Polyline::Store (GS::ObjectState& os) const
 {
-	os.Add (PolylineSegmentsFieldName, mPolylineSegments);
+	os.Add (FieldNames::Polyline::Segments, mPolylineSegments);
 
 	return NoError;
 }
@@ -264,7 +265,7 @@ double ElementShape::Level () const
 
 	const Objects::Point3D* firstPoint = mContourPoly.PointAt (0);
 	if (firstPoint != nullptr)
-		z = firstPoint->Z;
+		z = firstPoint->z;
 
 	return z;
 }
@@ -351,11 +352,11 @@ void ElementShape::SetToMemo (API_ElementMemo& memo, MemoPolygonType memoPolygon
 		for (UInt32 k = 0; k < (UInt32) polylines[j].VertexCount (); ++k) {
 			const Point3D* point = polylines[j].PointAt (k);
 			if (point != nullptr) {
-				(*(*coords))[coIndex].x = point->X;
-				(*(*coords))[coIndex].y = point->Y;
+				(*(*coords))[coIndex].x = point->x;
+				(*(*coords))[coIndex].y = point->y;
 				bool fId = false;
 				for (UInt32 m = 1; m < coIndex; m++) {
-					if ((*(*coords))[m].x == point->X && (*(*coords))[m].y == point->Y) {
+					if ((*(*coords))[m].x == point->x && (*(*coords))[m].y == point->y) {
 						(*(*vertexIDs))[coIndex] = (*(*vertexIDs))[m];
 						fId = true;
 						break;
@@ -389,16 +390,16 @@ void ElementShape::SetToMemo (API_ElementMemo& memo, MemoPolygonType memoPolygon
 				UInt32 beg = 0, end = 0;
 				for (UInt32 k = 0; k < (UInt32) polylines[l].VertexCount () - 1; ++k) {
 					const Point3D* point = polylines[l].PointAt (k);
-					if (beg == 0 && point != nullptr && *(point) == arc->StartPoint)
+					if (beg == 0 && point != nullptr && *(point) == arc->startPoint)
 						beg = k + 1;
 					point = polylines[l].PointAt (k + 1);
-					if (end == 0 && point != nullptr && *(point) == arc->EndPoint)
+					if (end == 0 && point != nullptr && *(point) == arc->endPoint)
 						end = k + 2;
 				}
 				if (beg != 0 && end != 0) {
 					(**parcs)[iArc].begIndex = beg + offset;
 					(**parcs)[iArc].endIndex = end + offset;
-					(**parcs)[iArc].arcAngle = arc->ArcAngle;
+					(**parcs)[iArc].arcAngle = arc->arcAngle;
 					++iArc;
 				}
 			}
@@ -410,10 +411,10 @@ void ElementShape::SetToMemo (API_ElementMemo& memo, MemoPolygonType memoPolygon
 
 GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 {
-	os.Get (ContourPolyFieldName, mContourPoly);
+	os.Get (FieldNames::Polyline::Contour, mContourPoly);
 
-	if (os.Contains (HolePolylinesFieldName)) {
-		os.Get (HolePolylinesFieldName, mHoles);
+	if (os.Contains (FieldNames::Polyline::Hole)) {
+		os.Get (FieldNames::Polyline::Hole, mHoles);
 	}
 
 	return NoError;
@@ -422,10 +423,10 @@ GSErrCode ElementShape::Restore (const GS::ObjectState& os)
 
 GSErrCode ElementShape::Store (GS::ObjectState& os) const
 {
-	os.Add (ContourPolyFieldName, mContourPoly);
+	os.Add (FieldNames::Polyline::Contour, mContourPoly);
 
 	if (!mHoles.IsEmpty ())
-		os.Add (HolePolylinesFieldName, mHoles);
+		os.Add (FieldNames::Polyline::Hole, mHoles);
 
 	return NoError;
 }

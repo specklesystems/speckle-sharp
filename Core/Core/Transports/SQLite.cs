@@ -147,25 +147,21 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
     foreach (string objectId in objectIds)
       ret[objectId] = false;
 
-    using (var c = new SqliteConnection(ConnectionString))
-    {
+    using var c = new SqliteConnection(ConnectionString);
       c.Open();
+
       foreach (string objectId in objectIds)
       {
         if (CancellationToken.IsCancellationRequested)
           return ret;
-        var commandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
-        using (var command = new SqliteCommand(commandText, c))
-        {
+      const string commandText = "SELECT 1 FROM objects WHERE hash = @hash LIMIT 1 ";
+      using var command = new SqliteCommand(commandText, c);
           command.Parameters.AddWithValue("@hash", objectId);
-          using (var reader = command.ExecuteReader())
-          {
+      using var reader = command.ExecuteReader();
             bool rowFound = reader.Read();
             ret[objectId] = rowFound;
           }
-        }
-      }
-    }
+
     return ret;
   }
 
@@ -177,13 +173,12 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
     //foreach (var str in HexChars)
     //  foreach (var str2 in HexChars)
     //    cart.Add(str + str2);
-    if (CancellationToken.IsCancellationRequested)
-      return;
+    CancellationToken.ThrowIfCancellationRequested();
 
     using (var c = new SqliteConnection(ConnectionString))
     {
       c.Open();
-      var commandText =
+      const string commandText =
         @"
             CREATE TABLE IF NOT EXISTS objects(
               hash TEXT PRIMARY KEY,
@@ -195,27 +190,23 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
 
       // Insert Optimisations
 
-      SqliteCommand cmd;
-      cmd = new SqliteCommand("PRAGMA journal_mode='wal';", c);
-      cmd.ExecuteNonQuery();
+      using SqliteCommand cmd0 = new("PRAGMA journal_mode='wal';", c);
+      cmd0.ExecuteNonQuery();
 
       //Note / Hack: This setting has the potential to corrupt the db.
       //cmd = new SqliteCommand("PRAGMA synchronous=OFF;", Connection);
       //cmd.ExecuteNonQuery();
 
-      cmd = new SqliteCommand("PRAGMA count_changes=OFF;", c);
-      cmd.ExecuteNonQuery();
+      using SqliteCommand cmd1 = new("PRAGMA count_changes=OFF;", c);
+      cmd1.ExecuteNonQuery();
 
-      cmd = new SqliteCommand("PRAGMA temp_store=MEMORY;", c);
-      cmd.ExecuteNonQuery();
+      using SqliteCommand cmd2 = new("PRAGMA temp_store=MEMORY;", c);
+      cmd2.ExecuteNonQuery();
     }
 
     Connection = new SqliteConnection(ConnectionString);
     Connection.Open();
     ConnectionLock = new object();
-
-    if (CancellationToken.IsCancellationRequested)
-      return;
   }
 
   /// <summary>
@@ -333,14 +324,12 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
 
   private void ConsumeQueue()
   {
-    if (CancellationToken.IsCancellationRequested)
-    {
-      Queue = new ConcurrentQueue<(string, string, int)>();
-      return;
-    }
-
     var stopwatch = Stopwatch.StartNew();
     IS_WRITING = true;
+    try
+    {
+      CancellationToken.ThrowIfCancellationRequested();
+
     var i = 0;
     ValueTuple<string, string, int> result;
 
@@ -349,13 +338,12 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
     using (var c = new SqliteConnection(ConnectionString))
     {
       c.Open();
-      using (var t = c.BeginTransaction())
-      {
-        var commandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
+        using var t = c.BeginTransaction();
+        const string commandText = "INSERT OR IGNORE INTO objects(hash, content) VALUES(@hash, @content)";
 
         while (i < MAX_TRANSACTION_SIZE && Queue.TryPeek(out result))
-          using (var command = new SqliteCommand(commandText, c, t))
           {
+          using var command = new SqliteCommand(commandText, c, t);
             Queue.TryDequeue(out result);
             command.Parameters.AddWithValue("@hash", result.Item1);
             command.Parameters.AddWithValue("@content", result.Item2);
@@ -365,35 +353,27 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
           }
 
         t.Commit();
-        if (CancellationToken.IsCancellationRequested)
-        {
-          Queue = new ConcurrentQueue<(string, string, int)>();
-          IS_WRITING = false;
-          stopwatch.Stop();
-          Elapsed += stopwatch.Elapsed;
-          return;
-        }
+        CancellationToken.ThrowIfCancellationRequested();
       }
-    }
 
     if (OnProgressAction != null)
       OnProgressAction(TransportName, saved);
 
-    if (CancellationToken.IsCancellationRequested)
+      CancellationToken.ThrowIfCancellationRequested();
+
+      if (Queue.Count > 0)
+        ConsumeQueue();
+    }
+    catch (OperationCanceledException)
     {
       Queue = new ConcurrentQueue<(string, string, int)>();
-      IS_WRITING = false;
-      stopwatch.Stop();
-      Elapsed += stopwatch.Elapsed;
-      return;
     }
-
-    if (Queue.Count > 0)
-      ConsumeQueue();
-
+    finally
+    {
     stopwatch.Stop();
     Elapsed += stopwatch.Elapsed;
     IS_WRITING = false;
+    }
   }
 
   /// <summary>
@@ -453,8 +433,7 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
   /// <returns></returns>
   public string GetObject(string hash)
   {
-    if (CancellationToken.IsCancellationRequested)
-      return null;
+    CancellationToken.ThrowIfCancellationRequested();
     lock (ConnectionLock)
     {
       var stopwatch = Stopwatch.StartNew();
@@ -464,8 +443,6 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
         using (var reader = command.ExecuteReader())
           while (reader.Read())
           {
-            if (CancellationToken.IsCancellationRequested)
-              return null;
             return reader.GetString(1);
           }
       }

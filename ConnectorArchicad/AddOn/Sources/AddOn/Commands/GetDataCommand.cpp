@@ -17,7 +17,7 @@ GS::ObjectState GetDataCommand::Execute (const GS::ObjectState& parameters,
 	GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
-	parameters.Get (FieldNames::ApplicationIds, ids);
+	parameters.Get (FieldNames::ElementBase::ApplicationIds, ids);
 	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> (
 		[] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }
 	);

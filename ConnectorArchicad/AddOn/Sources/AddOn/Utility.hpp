@@ -18,6 +18,8 @@ GSErrCode GetBaseElementData (API_Element& elem, API_ElementMemo* memo = nullptr
 
 GS::Array<API_StoryType> GetStoryItems ();
 
+API_StoryType GetStory (short floorNumber);
+
 double GetStoryLevel (short floorNumber);
 
 void SetStoryLevelAndFloor (const double& inLevel, short& floorInd, double& level);
