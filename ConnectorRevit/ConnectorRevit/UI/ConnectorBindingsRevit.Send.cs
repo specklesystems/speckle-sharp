@@ -62,6 +62,7 @@ namespace Speckle.ConnectorRevit.UI
           .ToList()
       );
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
+      CommitObjectBuilder commitObjectBuilder = new();
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
@@ -97,8 +98,13 @@ namespace Speckle.ConnectorRevit.UI
               converter.Report.Log(reportObj); // Log object so converter can access
 
               Base result = ConvertToSpeckle(revitElement, converter);
-
-              HandleToSpeckleObject(result, commitObject, reportObj, revitElement);
+              
+              reportObj.Update(
+                status: ApplicationObject.State.Created,
+                logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
+              );
+              
+              commitObjectBuilder.IncludeObject(result, reportObj, revitElement);
             }
             catch (ConversionSkippedException ex)
             {
@@ -120,6 +126,7 @@ namespace Speckle.ConnectorRevit.UI
         })
         .ConfigureAwait(false);
 
+      
       progress.Report.Merge(converter.Report);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
@@ -129,6 +136,8 @@ namespace Speckle.ConnectorRevit.UI
         throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
+      commitObjectBuilder.BuildCommitObject(commitObject);
+    
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
       var objectId = await Operations
@@ -244,7 +253,7 @@ namespace Speckle.ConnectorRevit.UI
           };
           objs.Add(newBase);
         }
-
+ 
         // remove the speckleHost element that we added
         conversionResult["speckleHost"] = null;
 
@@ -275,16 +284,16 @@ namespace Speckle.ConnectorRevit.UI
         var objs = (List<Base>)(commitObject[category] ??= new List<Base>());
         var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
 
-                // here we are checking to see if we're converting a host that doesn't know it is a host
-                // and if dependent elements of that host have already been converted
-                if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)
-                {
-                  objs.RemoveAt(hostIndex);
-                  if (conversionResult["elements"] is List<Base> els)
-                    els.AddRange(elements);
-                  else
-                    conversionResult["elements"] = elements;
-                }
+        // here we are checking to see if we're converting a host that doesn't know it is a host
+        // and if dependent elements of that host have already been converted
+        if (hostIndex != -1 && objs[hostIndex]["elements"] is List<Base> elements)
+        {
+          objs.RemoveAt(hostIndex);
+          if (conversionResult["elements"] is List<Base> els)
+            els.AddRange(elements);
+          else
+            conversionResult["elements"] = elements;
+        }
 
         objs.Add(conversionResult);
       }
