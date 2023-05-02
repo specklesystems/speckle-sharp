@@ -12,9 +12,9 @@ namespace Objects {
 
 class PolylineSegment {
 public:
-	Point3D 	StartPoint;
-	Point3D 	EndPoint;
-	double 		ArcAngle;
+	Point3D 	startPoint;
+	Point3D 	endPoint;
+	double 		arcAngle;
 
 	PolylineSegment () = default;
 	PolylineSegment (const Point3D& start, const Point3D& end, double angle = 0);
