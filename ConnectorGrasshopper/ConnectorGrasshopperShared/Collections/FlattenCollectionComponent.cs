@@ -51,13 +51,8 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
     IReadOnlyCollection<string> excludeTypeFromFullName = null
   )
   {
-    var nameParts = new List<string>();
-    if (!string.IsNullOrEmpty(fullNamePrefix))
-      nameParts.Add(fullNamePrefix);
-    if (excludeTypeFromFullName == null || !excludeTypeFromFullName.Contains(collection.collectionType))
-      nameParts.Add(collection.name);
+    string nextPrefix = NextPrefix(collection, fullNamePrefix, excludeTypeFromFullName);
 
-    var nextPrefix = string.Join("::", nameParts);
     var elements = new List<Base>();
     var innerCollections = new List<Collection>();
     foreach (Base e in collection.elements)
@@ -73,6 +68,23 @@ public class FlattenCollectionComponent : GH_SpeckleComponent
       elements = elements.ToList(),
       ["fullName"] = string.IsNullOrEmpty(nextPrefix) ? collection.name : nextPrefix
     };
+
     return new List<Collection> { newCollection }.Concat(innerCollections);
+  }
+
+  private static string NextPrefix(
+    Collection collection,
+    string fullNamePrefix,
+    IReadOnlyCollection<string> excludeTypeFromFullName
+  )
+  {
+    var nameParts = new List<string>();
+    if (!string.IsNullOrEmpty(fullNamePrefix))
+      nameParts.Add(fullNamePrefix);
+    if (excludeTypeFromFullName == null || !excludeTypeFromFullName.Contains(collection.collectionType))
+      nameParts.Add(collection.name);
+
+    var nextPrefix = string.Join("::", nameParts);
+    return nextPrefix;
   }
 }
