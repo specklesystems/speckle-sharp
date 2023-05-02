@@ -8,6 +8,7 @@ using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+using FamilyInstance = Objects.BuiltElements.Revit.FamilyInstance;
 using Line = Objects.Geometry.Line;
 
 namespace Objects.Converter.Revit
@@ -72,8 +73,8 @@ namespace Objects.Converter.Revit
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
 
             // if the roof is a curtain roof then set the mullions at the borders
-            var nestedElements = speckleFootprintRoof["elements"] ?? speckleFootprintRoof["@elements"];
-            if (revitFootprintRoof.CurtainGrids != null && nestedElements is List<Base> elements && elements.Count != 0)
+            var nestedElements = speckleFootprintRoof.elements;
+            if (revitFootprintRoof.CurtainGrids != null && nestedElements is not null && nestedElements.Count != 0)
             {
               // TODO: Create a new type instead of overriding the type. This could affect other elements
               var param = roofType.get_Parameter(BuiltInParameter.AUTO_MULLION_BORDER1_GRID1);
@@ -81,7 +82,7 @@ namespace Objects.Converter.Revit
               if (type == null)
               {
                 // assuming first mullion is the desired mullion for the whole roof...
-                var mullionType = GetElementType<MullionType>(elements.Where(b => b is BuiltElements.Revit.FamilyInstance f).First(), appObj, out bool _);
+                var mullionType = GetElementType<MullionType>(nestedElements.First(b => b is FamilyInstance f), appObj, out bool _);
                 if (mullionType != null)
                 {
                   TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
