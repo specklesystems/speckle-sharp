@@ -676,11 +676,11 @@ public class NewVariableInputSendComponentWorker : WorkerInstance
         CancellationToken
       );
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
       // If we reach this, something happened that we weren't expecting...
-      SpeckleLog.Logger.Error(e, e.Message);
-      RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, e.ToFormattedString()));
+      SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
+      RuntimeMessages.Add((GH_RuntimeMessageLevel.Error, ex.ToFormattedString()));
       //Parent.Message = "Error";
       //((SendComponent)Parent).CurrentComponentState = "expired";
       Done();

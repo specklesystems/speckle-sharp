@@ -168,7 +168,7 @@ public class ExtendSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
     catch (Exception ex)
     {
       // If we reach this, something happened that we weren't expecting...
-      SpeckleLog.Logger.Error(ex, ex.Message);
+      SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Object could not be extended: " + ex.ToFormattedString());
       return null;
     }
