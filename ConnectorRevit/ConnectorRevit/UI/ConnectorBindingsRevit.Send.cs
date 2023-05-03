@@ -62,7 +62,7 @@ namespace Speckle.ConnectorRevit.UI
           .ToList()
       );
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
-      CommitObjectBuilder commitObjectBuilder = new();
+      CommitObjectBuilder commitObjectBuilder = new(false);
 
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 0;
@@ -104,7 +104,7 @@ namespace Speckle.ConnectorRevit.UI
                 logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
               );
               
-              commitObjectBuilder.IncludeObject(result, reportObj, revitElement);
+              commitObjectBuilder.IncludeObject(result, revitElement);
             }
             catch (ConversionSkippedException ex)
             {

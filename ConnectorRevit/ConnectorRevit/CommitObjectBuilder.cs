@@ -6,125 +6,123 @@ using System.Linq;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
 using Speckle.Core.Logging;
-using AppId = System.String;
 
 namespace Speckle.ConnectorRevit;
 
 public sealed class CommitObjectBuilder
 {
-  private const string Types = "__Types";
-  
-  public bool ByLevel { get; set; }
-  
-  private readonly IDictionary<string, Base> converted; //app id -> base
-  private readonly IDictionary<Base, AppId> elementHostRelationship; //child -> parent app id
-  private readonly IDictionary<Base, AppId> elementCategoryRelationship; //base -> cat name/level id
+  private const string Types = "Types";
+  private const string Root = "__Root";
+  private const string Elements = nameof(Collection.elements);
 
-  public CommitObjectBuilder()
-  {
-    converted = new Dictionary<string, Base>();
-    elementHostRelationship = new Dictionary<Base, string>();
-    elementCategoryRelationship = new Dictionary<Base, string>();
-  }
+  private readonly bool byLayer;
   
+  /// <summary>app id -> base </summary>
+  private readonly IDictionary<string, Base> converted;
+  
+  /// <summary>Base -> Tuple{Parent App Id, propName} ordered by priority</summary>
+  private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> parentInfos;
+
+  public CommitObjectBuilder(bool byLayer)
+  {
+    this.byLayer = byLayer;
+    converted = new Dictionary<string, Base>();
+    parentInfos = new Dictionary<Base, IList<(string?,string)>>();
+  }
+
+  private void AddRelationship(Base conversionResult, params (string? parentAppId, string propName)[] parentInfo)
+  {
+    converted.Add(conversionResult.applicationId, conversionResult);
+    parentInfos.Add(conversionResult, parentInfo );
+  }
+
   public void IncludeObject(
     Base conversionResult,
-    ApplicationObject reportObject,
     Element revitElement
   )
   {
-    converted.Add(reportObject.applicationId, conversionResult);
     
-    string category = conversionResult.GetType().Name switch
+    // Special case for ElementTyped objects, add them to "Types"
+    if (revitElement is ElementType)
+    {
+      var category = GetCategoryId(conversionResult, revitElement);
+      AddRelationship(conversionResult, (Types, category));
+      if (!converted.ContainsKey(Types))
+      {
+        AddRelationship(new() { applicationId = Types }, (Root, Types));
+      }
+      return;
+    }
+
+    
+    string collectionId = GetCategoryId(conversionResult, revitElement);
+    
+    Element? host = GetHost(revitElement);
+    
+    // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
+    AddRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
+
+    // Create collection if not already, ensure it gets added to the root object.
+    if (!converted.ContainsKey(collectionId))
+    {
+      Collection collection = new(collectionId, "Revit Category") { applicationId = collectionId };
+      AddRelationship(collection, (Root, Elements));
+    }
+  }
+
+  private static string GetCategoryId(Base conversionResult, Element revitElement)
+  {
+    return conversionResult.GetType().Name switch
     {
       "Network" => "Networks",
       "FreeformElement" => "FreeformElement",
       _ => ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)
     };
-    
-    // Special case for ElementTyped objects, add them to "Types"
-    if (revitElement is ElementType)
-    {
-      elementHostRelationship.Add(conversionResult, Types);
-      elementCategoryRelationship.Add(conversionResult, category);
-      return;
-    }
-    
-
-    Element? host = GetHost(revitElement);
-    if (host is not null)
-    {
-      elementHostRelationship.Add(conversionResult, host.UniqueId);
-    }
-    
-    elementCategoryRelationship.Add(conversionResult, category);
   }
 
   public void BuildCommitObject(Base rootCommitObject)
   {
-    Base types = new();
-    Dictionary<string, Collection> categories = new();
-    
-    void AddToHost(Base c, Base host)
-    {
-      var elements = (IList)(host["elements"]??= new List<Base>()); //TODO: we might want to ensure this is detached for everything!
-      elements.Add(c);
-    }
-    
-    void AddToCategory(Base c, string categoryName)
-    {
-      if (!categories.ContainsKey(categoryName))
-      {
-        categories.Add(categoryName, new Collection(categoryName, "Revit Category"));
-      }
-      categories[categoryName].elements.Add(c);
-    }
-
-    void AddToTypes(Base c, string categoryName)
-    {
-      var typesByCat = (IList)(types[categoryName] ??= new List<Base>());
-      typesByCat.Add(c);
-    }
-    
     foreach (Base c in converted.Values)
     {
       try
       {
-        if (elementHostRelationship.TryGetValue(c, out string? hostId) //Object has a host
-          && converted.TryGetValue(hostId, out Base? host)) //And we converted it
-        {
-          // Object has a host, and we converted it!
-          try
-          {
-            AddToHost(c, host);
-            continue;
-          }
-          catch (ArgumentException ex)
-          {
-            // We tried to add it to the host, but it was of the wrong type!
-            SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to commit object", c?.GetType());
-          }
-        }
-        
-        string categoryName = elementCategoryRelationship[c];
-        if (hostId == Types)
-        {
-          // Special case for ElementTypes
-          AddToTypes(c, categoryName);
-          continue;
-        }
-
-        //Object either had no host, or we didn't convert the host. Nest it under its category
-        AddToCategory(c, categoryName);
+        AddToRoot(c, rootCommitObject);
       }
       catch(Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, "Failed to add object {speckleType} to commit object", c?.GetType());
+        // This should never happen, we should be ensuring that at least one of the parents is valid.
+        SpeckleLog.Logger.Fatal(ex, "Failed to add object {speckleType} to commit object", c?.GetType());
       }
     }
-    
-    rootCommitObject["Types"] = types;
-    rootCommitObject["elements"] = categories.Values.ToList();
+  }
+
+  private void AddToRoot(Base current, Base rootCommitObject)
+  {
+    var parents = parentInfos[current];
+    foreach ((string? parentAppId, string propName) in parents)
+    {
+      if(parentAppId is null) continue;
+          
+      Base? parent;
+      if (parentAppId == Root) parent = rootCommitObject;
+      else converted.TryGetValue(parentAppId, out parent);
+          
+      if(parent is null)
+        continue;
+          
+      try
+      {
+        var elements = (IList)(parent[propName] ??= new List<Base>()); //TODO: we might want to ensure this is detached for everything!
+        elements.Add(current);
+        return;
+      }
+      catch(Exception ex)
+      {
+        // A parent was found, but it was invalid (Likely because of a type mismatch on a `elements` property)
+        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent.", current?.GetType());
+      }
+    }
+    throw new InvalidOperationException($"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!");
   }
 
   private static Element? GetHost(Element hostedElement)
