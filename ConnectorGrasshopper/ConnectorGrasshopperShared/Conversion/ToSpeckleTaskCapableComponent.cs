@@ -132,7 +132,7 @@ public class ToSpeckleTaskCapableComponent : SelectKitTaskCapableComponentBase<I
     catch (Exception ex)
     {
       // If we reach this, something happened that we weren't expecting...
-      SpeckleLog.Logger.Error(ex, ex.Message);
+      SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
       return new GH_SpeckleBase();
     }
