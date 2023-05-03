@@ -274,10 +274,18 @@ namespace ConverterRevitTests
       SpeckleUtils.CustomAssertions(elem, spkElem);
     }
 
-    internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
+    internal void AssertElementEqual(DB.Element sourceElem, DB.Element destElem)
     {
+      Assert.NotNull(sourceElem);
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
+      Assert.Equal(sourceElem.GetTypeId(), destElem.GetTypeId());
+      Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
+    }
+
+    internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
+    {
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);

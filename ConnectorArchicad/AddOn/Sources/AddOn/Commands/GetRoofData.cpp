@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "RealNumber.h"
 #include "FieldNames.hpp"
 using namespace FieldNames;
@@ -44,14 +45,15 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	// memo.coords;
 	// quantity.roof.volume;
 	// The identifier of the room
-	os.Add (ApplicationId, APIGuidToString (element.roof.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (element.roof.head.guid));
 	// GS::UniString roomName = roof.roomName;
 	// GS::UniString roomNum = roof.roomNoStr;
 	// os.Add(Room::Name, roomName);
 	// os.Add(Room::Number, roomNum);
 
 	// The index of the roof's floor
-	os.Add (FloorIndex, element.roof.head.floorInd);
+	API_StoryType story = Utility::GetStory (element.roof.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	return NoError;
 }

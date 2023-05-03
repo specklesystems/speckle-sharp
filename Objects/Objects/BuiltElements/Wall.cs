@@ -277,7 +277,7 @@ namespace Objects.BuiltElements.Archicad
     public ArchicadWall() { }
 
     // Wall geometry
-    public int? floorIndex { get; set; }
+    public ArchicadLevel level { get; set; }
 
     public double baseOffset { get; set; }
 

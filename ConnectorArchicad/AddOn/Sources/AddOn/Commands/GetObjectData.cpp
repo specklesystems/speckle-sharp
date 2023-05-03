@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
 #include "RealNumber.h"
 #include "FieldNames.hpp"
@@ -28,8 +29,10 @@ GS::ErrCode	GetObjectData::SerializeElementType (const API_Element& elem,
 	const API_ElementMemo& /*memo*/,
 	GS::ObjectState& os) const
 {
-	os.Add (ApplicationId, APIGuidToString (elem.object.head.guid));
-	os.Add (FloorIndex, elem.object.head.floorInd);
+	os.Add (ElementBase::ApplicationId, APIGuidToString (elem.object.head.guid));
+
+	API_StoryType story = Utility::GetStory (elem.object.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	double z = Utility::GetStoryLevel (elem.object.head.floorInd) + elem.object.level;
 	os.Add (Object::pos, Objects::Point3D (elem.object.pos.x, elem.object.pos.x, z));

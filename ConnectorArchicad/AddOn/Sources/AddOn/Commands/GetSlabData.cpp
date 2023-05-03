@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Polyline.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
@@ -28,15 +29,16 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 	GS::ObjectState& os) const
 {
 	// The identifier of the slab
-	os.Add (ApplicationId, APIGuidToString (element.slab.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (element.slab.head.guid));
 
 	// Geometry and positioning
 	// The index of the slab's floor
-	os.Add (FloorIndex, element.slab.head.floorInd);
+	API_StoryType story = Utility::GetStory (element.slab.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	// The shape of the slab
 	double level = Utility::GetStoryLevel (element.slab.head.floorInd) + element.slab.level;
-	os.Add (Shape, Objects::ElementShape (element.slab.poly, memo, level));
+	os.Add (ElementBase::Shape, Objects::ElementShape (element.slab.poly, memo, level));
 
 	// The thickness of the slab
 	os.Add (Slab::Thickness, element.slab.thickness);

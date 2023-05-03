@@ -32,6 +32,12 @@ class CreateCommand : public BaseCommand {
 								LibpartImportManager& libpartImportManager,
 								API_SubElement** marker = nullptr) const = 0;
 
+protected:
+	void					GetStoryFromObjectState (const GS::ObjectState& os,
+								const double& elementLevel,
+								short& floorIndex,
+								double& relativeLevel) const;
+
 public:
 	virtual GS::ObjectState	Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
