@@ -61,7 +61,7 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nCoords);
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nArcs);
 
-		zoneShape.SetToMemo (memo);
+		zoneShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	if (os.Contains (Room::Height)) {

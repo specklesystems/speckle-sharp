@@ -195,7 +195,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, poly.nCoords);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, poly.nArcs);
 
-		wallShape.SetToMemo (memo);
+		wallShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	// The thickness of the wall
