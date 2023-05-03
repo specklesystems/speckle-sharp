@@ -27,13 +27,12 @@ namespace ConverterRevitTests
     {
     }
 
-    // This test doesn't work because our ToSpeckle test logic really isn't that good
-    //[Fact]
-    //[Trait("Schedule", "ToSpeckle")]
-    //public async Task ScheduleToSpeckle()
-    //{
-    //  await NativeToSpeckle();
-    //}
+   [Fact]
+   [Trait("Schedule", "ToSpeckle")]
+    public async Task ScheduleToSpeckle()
+    {
+      await NativeToSpeckle();
+    }
 
     #region ToNative
 
