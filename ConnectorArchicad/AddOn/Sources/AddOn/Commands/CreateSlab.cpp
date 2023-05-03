@@ -404,7 +404,6 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 				element.slab.botMat.attributeIndex = attribute.header.index;
 				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.attributeIndex);
 			}
-
 		}
 	}
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.overridden);
