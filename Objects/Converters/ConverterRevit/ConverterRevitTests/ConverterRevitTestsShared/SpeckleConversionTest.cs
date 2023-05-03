@@ -268,19 +268,10 @@ namespace ConverterRevitTests
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);
-      //Assert.NotNull(spkElem["parameters"]);
-      Assert.NotNull(spkElem["elementId"]);
+      Assert.NotNull(spkElem["speckle_type"]);
+      Assert.NotNull(spkElem["applicationId"]);
 
-      var elemAsFam = elem as FamilyInstance;
-      // HACK: This is not reliable or acceptable as a testing strategy.
-      if (!(elem is DB.Architecture.Room || elem is DB.Mechanical.Duct ||
-            elemAsFam != null && AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(elem as FamilyInstance) ))
-        Assert.Equal(elem.Name, spkElem["type"]);
-
-      //Assert.NotNull(spkElem.baseGeometry);
-
-      //Assert.NotNull(spkElem.level);
-      //Assert.NotNull(spkRevit.displayMesh);
+      SpeckleUtils.CustomAssertions(elem, spkElem);
     }
 
     internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
