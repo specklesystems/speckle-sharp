@@ -148,12 +148,26 @@ GS::Array<API_StoryType> GetStoryItems ()
 }
 
 
-double GetStoryLevel (short floorNumber)
+API_StoryType GetStory (short floorIndex)
 {
 	const GS::Array<API_StoryType> stories = GetStoryItems ();
 
 	for (const auto& story : stories) {
-		if (story.index == floorNumber) {
+		if (story.index == floorIndex) {
+			return story;
+		}
+	}
+
+	return API_StoryType{};
+}
+
+
+double GetStoryLevel (short floorIndex)
+{
+	const GS::Array<API_StoryType> stories = GetStoryItems ();
+
+	for (const auto& story : stories) {
+		if (story.index == floorIndex) {
 			return story.level;
 		}
 	}
@@ -162,12 +176,12 @@ double GetStoryLevel (short floorNumber)
 }
 
 
-void SetStoryLevel (const double& inLevel, const short& floorInd, double& level)
+void SetStoryLevel (const double& inLevel, const short& floorIndex, double& level)
 {
 	const GS::Array<API_StoryType> stories = GetStoryItems ();
 	level = inLevel;
 	for (const auto& story : stories) {
-		if (story.index == floorInd) {
+		if (story.index == floorIndex) {
 			level = level - story.level;
 			break;
 		}

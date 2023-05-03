@@ -58,7 +58,7 @@ GS::String GetElementIds::GetName () const
 GS::ObjectState GetElementIds::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::UniString elementFilter;
-	parameters.Get (ElementFilter, elementFilter);
+	parameters.Get (ElementBase::ElementFilter, elementFilter);
 
 	GS::ObjectState retVal;
 
@@ -68,7 +68,7 @@ GS::ObjectState GetElementIds::Execute (const GS::ObjectState& parameters, GS::P
 	else if (elementFilter == "All")
 		elementGuids = GetAllElementGuids ();
 
-	const auto& listAdder = retVal.AddList<GS::UniString> (ApplicationIds);
+	const auto& listAdder = retVal.AddList<GS::UniString> (ElementBase::ApplicationIds);
 	for (const API_Guid& guid : elementGuids) {
 		listAdder (APIGuidToString (guid));
 	}

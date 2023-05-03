@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Plumbing;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using Curve = Objects.Geometry.Curve;
@@ -26,7 +27,8 @@ namespace Objects.Converter.Revit
         return appObj;
 
       // get system info
-      if (!GetElementType<DB.Plumbing.PipeType>(specklePipe, appObj, out DB.Plumbing.PipeType pipeType))
+      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe, appObj, out bool _);
+      if (pipeType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -65,19 +67,16 @@ namespace Objects.Converter.Revit
           DB.Plumbing.FlexPipeType flexPipeType = null;
           if (speckleRevitFlexPipe != null)
           {
-            if (!GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe, appObj, out flexPipeType))
-            {
-              appObj.Update(status: ApplicationObject.State.Failed);
-              return appObj;
-            }
+            flexPipeType = GetElementType<FlexPipeType>(speckleRevitFlexPipe, appObj, out bool _);
           }
           else
           {
-            if (!GetElementType<DB.Plumbing.FlexPipeType>(specklePipe, appObj, out flexPipeType))
-            {
-              appObj.Update(status: ApplicationObject.State.Failed);
-              return appObj;
-            }
+            flexPipeType = GetElementType<FlexPipeType>(specklePipe, appObj, out bool _);
+          }
+          if (flexPipeType == null)
+          {
+            appObj.Update(status: ApplicationObject.State.Failed);
+            return appObj;
           }
 
           // get points

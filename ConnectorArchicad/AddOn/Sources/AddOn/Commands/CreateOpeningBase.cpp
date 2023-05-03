@@ -20,7 +20,7 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& objectState, AP
 
 	// Check if parent exist
 	GS::String parentSpeckleId;
-	objectState.Get (FieldNames::ParentElementId, parentSpeckleId);
+	objectState.Get (FieldNames::ElementBase::ParentElementId, parentSpeckleId);
 
 	bool isConverted = false;
 	API_Guid parentArchicadId;
@@ -57,7 +57,7 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& objectState, AP
 
 GS::String CreateOpeningBase::GetFieldName () const
 {
-	return FieldNames::SubElements;
+	return FieldNames::ElementBase::SubElements;
 }
 
 

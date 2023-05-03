@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Polyline.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
@@ -47,30 +48,27 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	// Geometry and positioning
 	memoMask = APIMemoMask_Polygon | APIMemoMask_SideMaterials | APIMemoMask_EdgeTrims;
 
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nSubPolys);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nCoords);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nArcs);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
-	ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-
 	// The shape of the slab
 	Objects::ElementShape slabShape;
 
-	if (os.Contains (Shape)) {
-		os.Get (Shape, slabShape);
+	if (os.Contains (ElementBase::Shape)) {
+		os.Get (ElementBase::Shape, slabShape);
 		element.slab.poly.nSubPolys = slabShape.SubpolyCount ();
 		element.slab.poly.nCoords = slabShape.VertexCount ();
 		element.slab.poly.nArcs = slabShape.ArcCount ();
+
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nSubPolys);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nCoords);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nArcs);
 
 		slabShape.SetToMemo (memo);
 	}
 
 	// The floor index and level of the slab
-	if (os.Contains (FloorIndex)) {
-		os.Get (FloorIndex, element.header.floorInd);
-		Utility::SetStoryLevel (slabShape.Level (), element.header.floorInd, element.slab.level);
-	} else {
-		Utility::SetStoryLevelAndFloor (slabShape.Level (), element.header.floorInd, element.slab.level);
+	if (os.Contains (ElementBase::Level)) {
+		GetStoryFromObjectState (os, slabShape.Level (), element.header.floorInd, element.slab.level);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
+		ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
 	}
 
 	// The thickness of the slab
@@ -125,8 +123,8 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.slab.composite = attribute.header.index;
 		}
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, composite);
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, composite);
 
 	// The edge type of the slab
 	API_EdgeTrimID edgeType = APIEdgeTrim_Perpendicular;
@@ -194,9 +192,10 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Cut Surfaces
 
 	// The pen index and linetype name of slab section line
-	if (os.Contains (Slab::sectContPen))
+	if (os.Contains (Slab::sectContPen)) {
 		os.Get (Slab::sectContPen, element.slab.sectContPen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sectContPen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sectContPen);
+	}
 
 	if (os.Contains (Slab::sectContLtype)) {
 
@@ -218,24 +217,25 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	if (os.Contains (Slab::cutFillPen)) {
 		element.slab.penOverride.overrideCutFillPen = true;
 		os.Get (Slab::cutFillPen, element.slab.penOverride.cutFillPen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.overrideCutFillPen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.cutFillPen);
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.overrideCutFillPen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.cutFillPen);
 
 	// Override cut fill backgound pen
 	if (os.Contains (Slab::cutFillBackgroundPen)) {
 		element.slab.penOverride.overrideCutFillBackgroundPen = true;
 		os.Get (Slab::cutFillBackgroundPen, element.slab.penOverride.cutFillBackgroundPen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.overrideCutFillBackgroundPen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.cutFillBackgroundPen);
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.overrideCutFillBackgroundPen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, penOverride.cutFillBackgroundPen);
 
 	// Outlines
 
 	// The pen index and linetype name of slab contour line
-	if (os.Contains (Slab::contourPen))
+	if (os.Contains (Slab::contourPen)) {
 		os.Get (Slab::contourPen, element.slab.pen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, pen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, pen);
+	}
 
 	if (os.Contains (Slab::contourLineType)) {
 
@@ -254,9 +254,10 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The pen index and linetype name of slab hidden contour line
-	if (os.Contains (Slab::hiddenContourLinePen))
+	if (os.Contains (Slab::hiddenContourLinePen)) {
 		os.Get (Slab::hiddenContourLinePen, element.slab.hiddenContourLinePen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hiddenContourLinePen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hiddenContourLinePen);
+	}
 
 	if (os.Contains (Slab::hiddenContourLineType)) {
 
@@ -275,21 +276,25 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Floor Plan and Section - Cover Fills
-	if (os.Contains (Slab::useFloorFill))
+	if (os.Contains (Slab::useFloorFill)) {
 		os.Get (Slab::useFloorFill, element.slab.useFloorFill);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, useFloorFill);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, useFloorFill);
+	}
 
-	if (os.Contains (Slab::use3DHatching))
+	if (os.Contains (Slab::use3DHatching)) {
 		os.Get (Slab::use3DHatching, element.slab.use3DHatching);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, use3DHatching);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, use3DHatching);
+	}
 
-	if (os.Contains (Slab::floorFillPen))
+	if (os.Contains (Slab::floorFillPen)) {
 		os.Get (Slab::floorFillPen, element.slab.floorFillPen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillPen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillPen);
+	}
 
-	if (os.Contains (Slab::floorFillBGPen))
+	if (os.Contains (Slab::floorFillBGPen)) {
 		os.Get (Slab::floorFillBGPen, element.slab.floorFillBGPen);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillBGPen);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, floorFillBGPen);
+	}
 
 	// Cover fill type
 	if (os.Contains (Slab::floorFillName)) {
@@ -312,29 +317,35 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	Utility::ImportHatchOrientation (os, element.slab.hatchOrientation.type);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.type);
 
-	if (os.Contains (Slab::hatchOrientationOrigoX))
+	if (os.Contains (Slab::hatchOrientationOrigoX)) {
 		os.Get (Slab::hatchOrientationOrigoX, element.slab.hatchOrientation.origo.x);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.origo.x);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.origo.x);
+	}
 
-	if (os.Contains (Slab::hatchOrientationOrigoY))
+	if (os.Contains (Slab::hatchOrientationOrigoY)) {
 		os.Get (Slab::hatchOrientationOrigoY, element.slab.hatchOrientation.origo.y);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.origo.y);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.origo.y);
+	}
 
-	if (os.Contains (Slab::hatchOrientationXAxisX))
+	if (os.Contains (Slab::hatchOrientationXAxisX)) {
 		os.Get (Slab::hatchOrientationXAxisX, element.slab.hatchOrientation.matrix00);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix00);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix00);
+	}
 
-	if (os.Contains (Slab::hatchOrientationXAxisY))
+	if (os.Contains (Slab::hatchOrientationXAxisY)) {
 		os.Get (Slab::hatchOrientationXAxisY, element.slab.hatchOrientation.matrix10);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix10);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix10);
+	}
 
-	if (os.Contains (Slab::hatchOrientationYAxisX))
+	if (os.Contains (Slab::hatchOrientationYAxisX)) {
 		os.Get (Slab::hatchOrientationYAxisX, element.slab.hatchOrientation.matrix01);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix01);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix01);
+	}
 
-	if (os.Contains (Slab::hatchOrientationYAxisY))
+	if (os.Contains (Slab::hatchOrientationYAxisY)) {
 		os.Get (Slab::hatchOrientationYAxisY, element.slab.hatchOrientation.matrix11);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix11);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.matrix11);
+	}
 
 	// Model
 
@@ -352,9 +363,9 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.slab.topMat.attributeIndex = attribute.header.index;
 		}
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.overridden);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.attributeIndex);
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.attributeIndex);
 
 	if (os.Contains (Slab::sideMat)) {
 		element.slab.sideMat.overridden = true;
@@ -369,9 +380,9 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.slab.sideMat.attributeIndex = attribute.header.index;
 		}
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.overridden);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.attributeIndex);
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.attributeIndex);
 
 	if (os.Contains (Slab::botMat)) {
 		element.slab.botMat.overridden = true;
@@ -386,14 +397,15 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			if (NoError == ACAPI_Attribute_Get (&attribute))
 				element.slab.botMat.attributeIndex = attribute.header.index;
 		}
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.overridden);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.attributeIndex);
 	}
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.attributeIndex);
 
 	// The overridden materials are chained
-	if (os.Contains (Slab::materialsChained))
+	if (os.Contains (Slab::materialsChained)) {
 		os.Get (Slab::materialsChained, element.slab.materialsChained);
-	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, materialsChained);
+		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, materialsChained);
+	}
 
 	return NoError;
 }
