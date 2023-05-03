@@ -11,6 +11,7 @@ using Objects.Other;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
@@ -141,10 +142,15 @@ namespace Objects.Converter.Revit
       if (convertedHostedElements.Any())
       {
         notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
-        if (@base["@elements"] == null || !(@base["@elements"] is List<Base>))
-          @base["@elements"] = new List<Base>();
 
-        (@base["@elements"] as List<Base>).AddRange(convertedHostedElements);
+        if (@base.GetDetachedProp("elements") is List<Base> elements)
+        {
+          elements.AddRange(convertedHostedElements);
+        }
+        else
+        {
+          @base.SetDetachedProp("elements", convertedHostedElements);
+        }
       }
     }
     public IList<ElementId> GetHostedElementIds(Element host)

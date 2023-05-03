@@ -213,8 +213,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 
 				// Veneer thick
 				currentSegment.Get (Column::ColumnSegment::VenThick, memo.columnSegments[idx].venThick);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, venThick);
+			} else {
+				memo.columnSegments[idx].venThick = 0.0;
 			}
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, venThick);
 
 			// The extrusion overridden material name
 			if (currentSegment.Contains (Column::ColumnSegment::ExtrusionSurfaceMaterial)) {
@@ -360,20 +362,22 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Override cut fill pen
+	element.column.penOverride.overrideCutFillPen = false;
 	if (os.Contains (Column::OverrideCutFillPenIndex)) {
 		element.column.penOverride.overrideCutFillPen = true;
 		os.Get (Column::OverrideCutFillPenIndex, element.column.penOverride.cutFillPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillPen);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillPen);
 	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillPen);
 
 	// Override cut fill background pen
+	element.column.penOverride.overrideCutFillBackgroundPen = false;
 	if (os.Contains (Column::OverrideCutFillBackgroundPenIndex)) {
 		element.column.penOverride.overrideCutFillBackgroundPen = true;
 		os.Get (Column::OverrideCutFillBackgroundPenIndex, element.column.penOverride.cutFillBackgroundPen);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillBackgroundPen);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillBackgroundPen);
 	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillBackgroundPen);
 
 	// Floor Plan and Section - Outlines
 

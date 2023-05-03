@@ -38,7 +38,7 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 
 	// The shape of the slab
 	double level = Utility::GetStoryLevel (element.slab.head.floorInd) + element.slab.level;
-	os.Add (ElementBase::Shape, Objects::ElementShape (element.slab.poly, memo, level));
+	os.Add (ElementBase::Shape, Objects::ElementShape (element.slab.poly, memo, Objects::ElementShape::MemoMainPolygon, level));
 
 	// The thickness of the slab
 	os.Add (Slab::Thickness, element.slab.thickness);

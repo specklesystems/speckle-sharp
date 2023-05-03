@@ -17,6 +17,7 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
@@ -218,20 +219,27 @@ namespace Speckle.ConnectorRevit.UI
     {
       // here we are checking to see if we're receiving an object that has a host
       // but the host doesn't know that it is a host
-      if (conversionResult["speckleHost"] is Base host && host["category"] is string catName)
+      if (conversionResult["speckleHost"] is Base dummyHost && dummyHost["category"] is string catName)
       {
+        
         //ensure we use english names for hosted elements too!
         var cat = ConnectorRevitUtils.GetCategories(CurrentDoc.Document)[catName];
         catName = ConnectorRevitUtils.GetEnglishCategoryName(cat);
         var objs = (List<Base>)(commitObject[$"@{catName}"] ??= new List<Base>());
 
-        var hostIndex = objs.FindIndex(obj => obj.applicationId == host.applicationId);
+        var hostIndex = objs.FindIndex(obj => obj.applicationId == dummyHost.applicationId);
         // if the "host" is present, then it has already been converted and we need to
         // attach the current, dependent, elements as a hosted element
         if (hostIndex != -1)
         {
-          objs[hostIndex]["@elements"] ??= new List<Base>();
-          ((List<Base>)objs[hostIndex]["@elements"]).Add(conversionResult);
+          var host = objs[hostIndex];
+
+          if (host.GetDetachedProp("elements") is not List<Base> els)
+          {
+            els = new List<Base>();
+            host.SetDetachedProp("elements", els);
+          }
+          els.Add(conversionResult);
         }
         // if host is not present, then it hasn't been converted yet
         // create a placeholder that will be overridden later, but that will contain the hosted element
@@ -239,7 +247,7 @@ namespace Speckle.ConnectorRevit.UI
         {
           var newBase = new Base
           {
-            applicationId = host.applicationId,
+            applicationId = dummyHost.applicationId,
             ["@elements"] = new List<Base> { conversionResult }
           };
           objs.Add(newBase);
@@ -250,7 +258,7 @@ namespace Speckle.ConnectorRevit.UI
 
         reportObject.Update(
           status: ApplicationObject.State.Created,
-          logItem: $"Attached as hosted element to {host.applicationId}"
+          logItem: $"Attached as hosted element to {dummyHost.applicationId}"
         );
       }
       //is an element type, nest it under Types instead
@@ -275,16 +283,16 @@ namespace Speckle.ConnectorRevit.UI
         var objs = (List<Base>)(commitObject[category] ??= new List<Base>());
         var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
 
-                // here we are checking to see if we're converting a host that doesn't know it is a host
-                // and if dependent elements of that host have already been converted
-                if (hostIndex != -1 && objs[hostIndex]["@elements"] is List<Base> elements)
-                {
-                  objs.RemoveAt(hostIndex);
-                  if (conversionResult["@elements"] is List<Base> els)
-                    els.AddRange(elements);
-                  else
-                    conversionResult["@elements"] = elements;
-                }
+        // here we are checking to see if we're converting a host that doesn't know it is a host
+        // and if dependent elements of that host have already been converted
+        if (hostIndex != -1 && objs[hostIndex].GetDetachedProp("elements") is List<Base> elements)
+        {
+          objs.RemoveAt(hostIndex);
+          if (conversionResult.GetDetachedProp("elements") is List<Base> els)
+            els.AddRange(elements);
+          else
+            conversionResult.SetDetachedProp("elements", elements);
+        }
 
         objs.Add(conversionResult);
       }
