@@ -17,7 +17,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Models.Extensions;
 using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
@@ -63,12 +62,12 @@ namespace Speckle.ConnectorRevit.UI
           .ToList()
       );
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
-      CommitObjectBuilder commitObjectBuilder = new(false);
+      RevitCommitObjectBuilder commitObjectBuilder = new(false);
 
-      var conversionProgressDict = new ConcurrentDictionary<string, int>();
-      conversionProgressDict["Conversion"] = 0;
-
+      progress.Report = new ProgressReport();
       progress.Max = selectedObjects.Count;
+      
+      var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
       var convertedCount = 0;
 
       await RevitTask
@@ -204,7 +203,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         string skipMessage = revitElement switch
         {
-          RevitLinkInstance e => "Enable linked model support from the settings to send this object",
+          RevitLinkInstance => "Enable linked model support from the settings to send this object",
           _ => "Sending this object type is not supported yet"
         };
 
@@ -217,98 +216,6 @@ namespace Speckle.ConnectorRevit.UI
         throw new SpeckleException($"Conversion of {revitElement.UniqueId} (ToSpeckle) returned null");
 
       return conversionResult;
-    }
-
-    private static void HandleToSpeckleObject(
-      Base conversionResult,
-      Base commitObject,
-      ApplicationObject reportObject,
-      Element revitElement
-    )
-    {
-      // here we are checking to see if we're receiving an object that has a host
-      // but the host doesn't know that it is a host
-      if (conversionResult["speckleHost"] is Base dummyHost && dummyHost["category"] is string catName)
-      {
-        //ensure we use english names for hosted elements too!
-        var cat = ConnectorRevitUtils.GetCategories(CurrentDoc.Document)[catName];
-        catName = ConnectorRevitUtils.GetEnglishCategoryName(cat);
-        var objs = (List<Base>)(commitObject[$"@{catName}"] ??= new List<Base>());
-
-        var hostIndex = objs.FindIndex(obj => obj.applicationId == host.applicationId);
-        // if the "host" is present, then it has already been converted and we need to
-        // attach the current, dependent, elements as a hosted element
-        if (hostIndex != -1)
-        {
-          var host = objs[hostIndex];
-
-          if (host.GetDetachedProp("elements") is not List<Base> els)
-          {
-            els = new List<Base>();
-            host.SetDetachedProp("elements", els);
-          }
-          els.Add(conversionResult);
-        }
-        // if host is not present, then it hasn't been converted yet
-        // create a placeholder that will be overridden later, but that will contain the hosted element
-        else
-        {
-          var newBase = new Base
-          {
-            applicationId = dummyHost.applicationId,
-            ["@elements"] = new List<Base> { conversionResult }
-          };
-          objs.Add(newBase);
-        }
- 
-        // remove the speckleHost element that we added
-        conversionResult["speckleHost"] = null;
-
-        reportObject.Update(
-          status: ApplicationObject.State.Created,
-          logItem: $"Attached as hosted element to {dummyHost.applicationId}"
-        );
-      }
-      //is an element type, nest it under Types instead
-      else if (revitElement is ElementType)
-      {
-        var category = $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}";
-
-        var types = (Base)(commitObject["Types"] ??= new Base());
-        var c = (IList<Base>)(types[category] ??= new List<Base>());
-
-        c.Add(conversionResult);
-      }
-      else
-      {
-        var category = conversionResult.GetType().Name switch
-        {
-          "Network" => "@Networks",
-          "FreeformElement" => "@FreeformElement",
-          _ => $"@{ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)}"
-        };
-
-        var objs = (List<Base>)(commitObject[category] ??= new List<Base>());
-        var hostIndex = objs.FindIndex(obj => obj.applicationId == conversionResult.applicationId);
-
-        // here we are checking to see if we're converting a host that doesn't know it is a host
-        // and if dependent elements of that host have already been converted
-        if (hostIndex != -1 && objs[hostIndex].GetDetachedProp("elements") is List<Base> elements)
-        {
-          objs.RemoveAt(hostIndex);
-          if (conversionResult.GetDetachedProp("elements") is List<Base> els)
-            els.AddRange(elements);
-          else
-            conversionResult.SetDetachedProp("elements", elements);
-        }
-
-        objs.Add(conversionResult);
-      }
-
-      reportObject.Update(
-        status: ApplicationObject.State.Created,
-        logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(conversionResult.speckle_type)}"
-      );
     }
   }
 }

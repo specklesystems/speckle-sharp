@@ -6,34 +6,21 @@ using System.Linq;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
 using Speckle.Core.Logging;
+using Speckle.Core.Models.Extensions;
+using Splat;
 
 namespace Speckle.ConnectorRevit;
 
-public sealed class CommitObjectBuilder
+public sealed class RevitCommitObjectBuilder : CommitObjectBuilder
 {
   private const string Types = "Types";
-  private const string Root = "__Root";
   private const string Elements = nameof(Collection.elements);
 
-  private readonly bool byLayer;
+  private readonly bool byLevel;
   
-  /// <summary>app id -> base </summary>
-  private readonly IDictionary<string, Base> converted;
-  
-  /// <summary>Base -> Tuple{Parent App Id, propName} ordered by priority</summary>
-  private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> parentInfos;
-
-  public CommitObjectBuilder(bool byLayer)
+  public RevitCommitObjectBuilder(bool byLevel)
   {
-    this.byLayer = byLayer;
-    converted = new Dictionary<string, Base>();
-    parentInfos = new Dictionary<Base, IList<(string?,string)>>();
-  }
-
-  private void AddRelationship(Base conversionResult, params (string? parentAppId, string propName)[] parentInfo)
-  {
-    converted.Add(conversionResult.applicationId, conversionResult);
-    parentInfos.Add(conversionResult, parentInfo );
+    this.byLevel = byLevel;
   }
 
   public void IncludeObject(
@@ -55,7 +42,23 @@ public sealed class CommitObjectBuilder
     }
 
     
-    string collectionId = GetCategoryId(conversionResult, revitElement);
+    string collectionId;
+    string collectionType;
+    string collectionName;
+    if (byLevel)
+    {
+      var level = GetLevel(revitElement);
+      collectionId = level.UniqueId;
+      collectionName = level.Name;
+      collectionType = "Revit Level";
+    }
+    else
+    {
+      collectionId = GetCategoryId(conversionResult, revitElement);
+      collectionName = collectionId;
+      collectionType = "Revit Category";
+    }
+      
     
     Element? host = GetHost(revitElement);
     
@@ -65,7 +68,7 @@ public sealed class CommitObjectBuilder
     // Create collection if not already, ensure it gets added to the root object.
     if (!converted.ContainsKey(collectionId))
     {
-      Collection collection = new(collectionId, "Revit Category") { applicationId = collectionId };
+      Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
       AddRelationship(collection, (Root, Elements));
     }
   }
@@ -79,52 +82,12 @@ public sealed class CommitObjectBuilder
       _ => ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)
     };
   }
-
-  public void BuildCommitObject(Base rootCommitObject)
+  
+  private static Level? GetLevel(Element revitElement)
   {
-    foreach (Base c in converted.Values)
-    {
-      try
-      {
-        AddToRoot(c, rootCommitObject);
-      }
-      catch(Exception ex)
-      {
-        // This should never happen, we should be ensuring that at least one of the parents is valid.
-        SpeckleLog.Logger.Fatal(ex, "Failed to add object {speckleType} to commit object", c?.GetType());
-      }
-    }
+    return revitElement.Document.GetElement(revitElement.LevelId) as Level;
   }
-
-  private void AddToRoot(Base current, Base rootCommitObject)
-  {
-    var parents = parentInfos[current];
-    foreach ((string? parentAppId, string propName) in parents)
-    {
-      if(parentAppId is null) continue;
-          
-      Base? parent;
-      if (parentAppId == Root) parent = rootCommitObject;
-      else converted.TryGetValue(parentAppId, out parent);
-          
-      if(parent is null)
-        continue;
-          
-      try
-      {
-        var elements = (IList)(parent[propName] ??= new List<Base>()); //TODO: we might want to ensure this is detached for everything!
-        elements.Add(current);
-        return;
-      }
-      catch(Exception ex)
-      {
-        // A parent was found, but it was invalid (Likely because of a type mismatch on a `elements` property)
-        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent.", current?.GetType());
-      }
-    }
-    throw new InvalidOperationException($"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!");
-  }
-
+  
   private static Element? GetHost(Element hostedElement)
   {
     return hostedElement switch
