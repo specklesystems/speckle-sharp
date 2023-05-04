@@ -72,19 +72,19 @@ public static class BaseExtensions
             stack.Push(o);
             break;
           case IDictionary dictionary:
-          {
-            foreach (object obj in dictionary.Keys)
-              if (obj is Base b)
-                stack.Push(b);
-            break;
-          }
+            {
+              foreach (object obj in dictionary.Keys)
+                if (obj is Base b)
+                  stack.Push(b);
+              break;
+            }
           case IList collection:
-          {
-            foreach (object obj in collection)
-              if (obj is Base b)
-                stack.Push(b);
-            break;
-          }
+            {
+              foreach (object obj in collection)
+                if (obj is Base b)
+                  stack.Push(b);
+              break;
+            }
         }
     }
   }
@@ -150,5 +150,33 @@ public static class BaseExtensions
   public static string GetDetachedPropName(this Base speckleObject, string propName)
   {
     return speckleObject.GetMembers(DynamicBaseMemberType.Instance).ContainsKey(propName) ? propName : $"@{propName}";
+  }
+
+
+  /// <summary>
+  /// Returns a List of Elements contained inside a specific collection
+  /// This method can be used to migrate from the old commit structure (Revit) to the new one using Collections
+  /// </summary>
+  /// <param name="base">A root commit</param>
+  /// <param name="name">The name of the collection</param>
+  /// <returns></returns>
+  public static List<Base> GetCollectionElements(this Base @base, string name)
+  {
+    name = name.StartsWith("@") ? name.Replace("@", "") : name;
+    if (@base is Collection root)
+    {
+      var collection = root.elements.FirstOrDefault(el => el is Collection coll && coll.name == name) as Base;
+      if (collection != null && collection is Collection c)
+      {
+        if (c.elements != null)
+          return c.elements;
+        return new List<Base>() { };
+      }
+    }
+    var prop = @base?.GetDetachedProp(name) as List<Base>;
+    if (prop != null)
+      return prop;
+
+    return new List<Base>() { };
   }
 }
