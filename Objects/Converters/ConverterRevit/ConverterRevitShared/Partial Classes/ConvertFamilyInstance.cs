@@ -365,7 +365,7 @@ namespace Objects.Converter.Revit
           if (obj != null)
           {
             convertedSubElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
+            ConvertedObjects.Add(obj.applicationId);
           }
         }
       }
@@ -753,7 +753,7 @@ namespace Objects.Converter.Revit
         if (converted != null)
         {
           convertedSubElements.Add(converted);
-          ConvertedObjectsList.Add(converted.applicationId);
+          ConvertedObjects.Add(converted.applicationId);
         }
       }
 

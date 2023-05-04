@@ -136,7 +136,7 @@ namespace Objects.Converter.Revit
           //currently only the top level displayValue is visualized (or anything under 'elements')
           //if this leads to duplicated meshes in some cases, we might need to remove the display mesh form the TopRail element
           speckleRailing.displayValue.AddRange(speckleRailing.topRail.displayValue);
-          ConvertedObjectsList.Add(speckleRailing.topRail.applicationId);
+          ConvertedObjects.Add(speckleRailing.topRail.applicationId);
         }
       }
       return speckleRailing;

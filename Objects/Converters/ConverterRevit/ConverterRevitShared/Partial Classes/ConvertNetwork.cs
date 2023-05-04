@@ -253,7 +253,7 @@ namespace Objects.Converter.Revit
           isConnectorBased = connectorBasedCreation,
           isCurveBased = element is MEPCurve
         });
-        ConvertedObjectsList.Add(obj.applicationId);
+        ConvertedObjects.Add(obj.applicationId);
 
         Report.Log(reportObj);
       }
