@@ -10,7 +10,7 @@ namespace Archicad.Launcher
     {
       return new List<ISetting>
       {
-        new CheckBoxSetting {Slug = "receive - parametric", Name = "Receive parametric elements", Icon = "Link", IsChecked = false, Description = "Receive parametric elements where applicable"},
+        new CheckBoxSetting {Slug = "receive - parametric", Name = "Receive parametric elements", Icon = "Link", IsChecked = true, Description = "Receive parametric elements where applicable"},
       };
     }
   }

@@ -12,3 +12,7 @@
 'STR#'  32700 "Messages for conversion log" {
 /* [  1] */		"Could not create library part: %s"
 }
+
+'STR#'  ID_DEFAULT_STORY_FORMAT "Default story name format" {
+/* [  1] */		"%d. Story"
+}

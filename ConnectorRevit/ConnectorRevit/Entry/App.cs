@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -120,7 +120,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
         var td = new TaskDialog("Could not load Speckle");
         td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");

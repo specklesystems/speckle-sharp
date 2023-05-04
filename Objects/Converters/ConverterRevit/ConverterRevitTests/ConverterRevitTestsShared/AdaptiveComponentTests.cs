@@ -50,9 +50,7 @@ namespace ConverterRevitTests
 
     private void AdaptiveComponentEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
-
+      AssertElementEqual(sourceElem, destElem);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLEXIBLE_INSTANCE_FLIP);
 
       var dist = (sourceElem.Location as LocationPoint).Point.DistanceTo((destElem.Location as LocationPoint).Point);

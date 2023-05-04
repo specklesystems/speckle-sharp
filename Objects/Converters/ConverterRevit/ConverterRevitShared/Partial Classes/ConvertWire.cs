@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
@@ -26,7 +26,8 @@ namespace Objects.Converter.Revit
       var wiringType = speckleRevitWire?.wiringType == "Chamfer"
         ? DB.Electrical.WiringType.Chamfer
         : DB.Electrical.WiringType.Arc;
-      if (!GetElementType<DB.Electrical.WireType>(speckleWire, appObj, out DB.Electrical.WireType wireType))
+      var wireType = GetElementType<DB.Electrical.WireType>(speckleWire, appObj, out bool _);
+      if (wireType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;

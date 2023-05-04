@@ -11,6 +11,7 @@ using Objects.Other;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
@@ -144,10 +145,15 @@ namespace Objects.Converter.Revit
       if (convertedHostedElements.Any())
       {
         notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
-        if (@base["@elements"] == null || !(@base["@elements"] is List<Base>))
-          @base["@elements"] = new List<Base>();
 
-        (@base["@elements"] as List<Base>).AddRange(convertedHostedElements);
+        if (@base.GetDetachedProp("elements") is List<Base> elements)
+        {
+          elements.AddRange(convertedHostedElements);
+        }
+        else
+        {
+          @base.SetDetachedProp("elements", convertedHostedElements);
+        }
       }
     }
     public IList<ElementId> GetHostedElementIds(Element host)
@@ -639,141 +645,87 @@ namespace Objects.Converter.Revit
     #endregion
 
     #region  element types
-
-    private bool GetElementType<T>(string family, string type, ApplicationObject appObj, out T value)
+    
+    private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
     {
-      List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-
-      //match family and type
-      var match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
-      if (match != null)
-      {
-        if (match is FamilySymbol fs && !fs.IsActive)
-          fs.Activate();
-
-        value = (T)(object)match;
-        return true;
-      }
-
-      //match family
-      match = types.FirstOrDefault(x => x.FamilyName == family);
-      if (match != null)
-      {
-        appObj.Log.Add($"Missing type [{family} - {type}] was replaced with [{match.FamilyName} - {match.Name}]");
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-            fs.Activate();
-
-          value = (T)(object)match;
-          return true;
-        }
-      }
-
-      // get whatever we found, could be a different category!
-      if (types.Any())
-      {
-        match = types.FirstOrDefault();
-        appObj.Log.Add($"Missing family and type, the following family and type were used: {match.FamilyName} - {match.Name}");
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-            fs.Activate();
-
-          value = (T)(object)match;
-          return true;
-        }
-      }
-
-      appObj.Log.Add($"Could not find any family symbol to use.");
-      value = default(T);
-      return false;
-    }
-
-    private bool GetElementType<T>(Base element, ApplicationObject appObj, out T value)
-    {
-      List<ElementType> types = new List<ElementType>();
-      ElementFilter filter = GetCategoryFilter(element);
-
-      if (filter != null)
-        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
-      else
-        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
+      isExactMatch = false;
+      var filter = GetCategoryFilter(element);
+      var types = GetElementTypesThatPassFilter<T>(filter);
 
       if (types.Count == 0)
       {
-        var name = string.IsNullOrEmpty(element["category"] as string) ? typeof(T).Name : element["category"].ToString();
-        appObj.Log.Add($"Could not find any family to use for category {name}.");
-        value = default(T);
-        return false;
+        var name = typeof(T).Name;
+        if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
+          name = category;
+
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
+
+        return default;
       }
 
-      var family = element["family"] as string;
-      var type = element["type"] as string;
+      var family = (element["family"] as string)?.ToLower();
+      var type = GetTypeOfSpeckleObject(element)?.ToLower();
 
-      // if the object is structural, we keep the type name in a different location
-      if (element is OSG.Element1D element1D)
-        type = element1D.property.name.Replace('X', 'x');
-      else if (element is OSG.Element2D element2D)
-        type = element2D.property.name;
+      return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
+    }
 
+    private T GetElementType<T>(Base element, string family, string type, List<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
+    {
+      isExactMatch = false;
       ElementType match = null;
 
       if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-        match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
+      {
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family && x.Name?.ToLower() == type);
+        isExactMatch = match != null;
+      }
 
       //some elements only have one family so we didn't add such prop our schema
       if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-        match = types.FirstOrDefault(x => x.Name == type);
+      {
+        match = types.FirstOrDefault(x => x.Name?.ToLower() == type);
+        isExactMatch = match != null;
+      }
 
       // match the type only for when we auto assign it
       if (match == null && !string.IsNullOrEmpty(type))
       {
         match = types.FirstOrDefault(x =>
         {
-          var symbolType = x.GetParameters("Type");
-          var symbolTypeName = x.GetParameters("Type Name");
-          if (symbolType.ElementAtOrDefault(0) != null && symbolType[0].AsValueString()?.ToLower() == type.ToLower())
+          var symbolTypeParam = x.get_Parameter(DB.BuiltInParameter.ELEM_TYPE_PARAM);
+          var symbolTypeNameParam = x.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM);
+          if (symbolTypeParam != null && symbolTypeParam.AsValueString()?.ToLower() == type)
             return true;
-          else if (symbolTypeName.ElementAtOrDefault(0) != null && symbolTypeName[0].AsValueString()?.ToLower() == type.ToLower())
+          else if (symbolTypeNameParam != null && symbolTypeNameParam.AsValueString()?.ToLower() == type)
             return true;
           return false;
         });
+        isExactMatch = match != null;
       }
 
       if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
       {
-        match = types.FirstOrDefault(x => x.FamilyName == family);
-        if (match != null) //inform user that the type is different!
-          appObj.Log.Add($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
-
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family);
       }
+
       if (match == null) // okay, try something!
       {
         if (element is BuiltElements.Wall) // specifies the basic wall sub type as default
           match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
-        if (match == null)
-          match = types.First();
-        appObj.Log.Add($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+        match ??= types.First();
       }
+
+      if (!isExactMatch)
+        appObj.Update(logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
 
       if (match is FamilySymbol fs && !fs.IsActive)
         fs.Activate();
 
-      value = (T)(object)match;
-      return true;
+      return (T)(object)match;
     }
 
     private ElementFilter GetCategoryFilter(Base element)
     {
-      if (element is OSG.Element1D element1D)
-      {
-        if (element1D.type == OSG.ElementType1D.Column)
-          return new ElementMulticategoryFilter(Categories.columnCategories);
-        else if (element1D.type == OSG.ElementType1D.Beam || element1D.type == OSG.ElementType1D.Brace)
-          return new ElementMulticategoryFilter(Categories.beamCategories);
-      }
-
       switch (element)
       {
         case BuiltElements.Wall _:
@@ -785,23 +737,53 @@ namespace Objects.Converter.Revit
           return new ElementMulticategoryFilter(Categories.beamCategories);
         case Duct _:
           return new ElementMulticategoryFilter(Categories.ductCategories);
-        case Floor _:
+        case OSG.Element1D o:
+          if (o.type == OSG.ElementType1D.Column)
+            return new ElementMulticategoryFilter(Categories.columnCategories);
+          else if (o.type == OSG.ElementType1D.Beam || o.type == OSG.ElementType1D.Brace)
+            return new ElementMulticategoryFilter(Categories.beamCategories);
+          else return null;
         case OSG.Element2D _:
+        case Floor _:
           return new ElementMulticategoryFilter(Categories.floorCategories);
         case Pipe _:
           return new ElementMulticategoryFilter(Categories.pipeCategories);
         case Roof _:
           return new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
         default:
-          ElementFilter filter = null;
           if (element["category"] != null)
           {
             var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
             if (cat != null)
-              filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
+            {
+              return new ElementCategoryFilter(cat.Id);
+            }
           }
-          return filter;
+          return null;
       }
+    }
+
+    private List<ElementType> GetElementTypesThatPassFilter<T>(ElementFilter filter)
+    {
+      using var collector = new FilteredElementCollector(Doc);
+      if (filter != null)
+      {
+        return collector.WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
+      }
+      return collector.WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
+    }
+
+    private string GetTypeOfSpeckleObject(Base @base)
+    {
+      var type = @base["type"] as string;
+
+      // if the object is structural, we keep the type name in a different location
+      if (@base is OSG.Element1D element1D)
+        type = element1D.property.name.Replace('X', 'x');
+      else if (@base is OSG.Element2D element2D)
+        type = element2D.property.name;
+
+      return type;
     }
 
     #endregion

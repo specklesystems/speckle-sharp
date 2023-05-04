@@ -51,8 +51,7 @@ namespace ConverterRevitTests
 
     private async Task AssertFloorEqual(DB.Floor sourceElem, DB.Floor destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       var slopeArrow = await RevitTask.RunAsync(app => {
         return ConverterRevit.GetSlopeArrow(sourceElem);

@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
 #include "RealNumber.h"
 #include "DGModule.hpp"
@@ -47,58 +48,66 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 
 	// Positioning - geometry
 	Objects::Point3D origoPos;
-	if (os.Contains (Column::origoPos))
+	if (os.Contains (Column::origoPos)) {
 		os.Get (Column::origoPos, origoPos);
-	element.column.origoPos = origoPos.ToAPI_Coord ();
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, origoPos);
-
-
-	if (os.Contains (FloorIndex)) {
-		os.Get (FloorIndex, element.header.floorInd);
-		Utility::SetStoryLevel (origoPos.Z, element.header.floorInd, element.column.bottomOffset);
-	} else {
-		Utility::SetStoryLevelAndFloor (origoPos.Z, element.header.floorInd, element.column.bottomOffset);
+		element.column.origoPos = origoPos.ToAPI_Coord ();
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, origoPos);
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
 
-	if (os.Contains (Column::height))
+
+	if (os.Contains (ElementBase::Level)) {
+		GetStoryFromObjectState (os, origoPos.z, element.header.floorInd, element.column.bottomOffset);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, bottomOffset);
+	}
+
+	if (os.Contains (Column::height)) {
 		os.Get (Column::height, element.column.height);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, height);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, height);
+	}
 
 	// Positioning - story relation
-	if (os.Contains (Column::bottomOffset))
+	if (os.Contains (Column::bottomOffset)) {
 		os.Get (Column::bottomOffset, element.column.bottomOffset);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, bottomOffset);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, bottomOffset);
+	}
 
-	if (os.Contains (Column::topOffset))
+	if (os.Contains (Column::topOffset)) {
 		os.Get (Column::topOffset, element.column.topOffset);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, topOffset);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, topOffset);
+	}
 
-	if (os.Contains (Column::relativeTopStory))
+	if (os.Contains (Column::relativeTopStory)) {
 		os.Get (Column::relativeTopStory, element.column.relativeTopStory);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, relativeTopStory);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, relativeTopStory);
+	}
 
 	// Positioning - slanted column
-	if (os.Contains (Column::isSlanted))
+	if (os.Contains (Column::isSlanted)) {
 		os.Get (Column::isSlanted, element.column.isSlanted);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, isSlanted);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, isSlanted);
+	}
 
-	if (os.Contains (Column::slantAngle))
+	if (os.Contains (Column::slantAngle)) {
 		os.Get (Column::slantAngle, element.column.slantAngle);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, slantAngle);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, slantAngle);
+	}
 
-	if (os.Contains (Column::slantDirectionAngle))
+	if (os.Contains (Column::slantDirectionAngle)) {
 		os.Get (Column::slantDirectionAngle, element.column.slantDirectionAngle);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, slantDirectionAngle);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, slantDirectionAngle);
+	}
 
-	if (os.Contains (Column::isFlipped))
+	if (os.Contains (Column::isFlipped)) {
 		os.Get (Column::isFlipped, element.column.isFlipped);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, isFlipped);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, isFlipped);
+	}
 
 	// Positioning - wrapping
-	if (os.Contains (Column::Wrapping))
+	if (os.Contains (Column::Wrapping)) {
 		os.Get (Column::Wrapping, element.column.wrapping);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, wrapping);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, wrapping);
+	}
 
 	// Model - Defines the relation of column to zones (Zone Boundary, Reduce Zone Area Only, No Effect on Zones)
 	if (os.Contains (Column::ColumnRelationToZoneName)) {
@@ -113,29 +122,34 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// End Cuts
-	if (os.Contains (Column::nCuts))
+	if (os.Contains (Column::nCuts)) {
 		os.Get (Column::nCuts, element.column.nCuts);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nCuts);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nCuts);
+	}
 
 	Utility::CreateAllCutData (os, element.column.nCuts, element, elementMask, &memo);
 
 	// Reference Axis
-	if (os.Contains (Column::coreAnchor))
+	if (os.Contains (Column::coreAnchor)) {
 		os.Get (Column::coreAnchor, element.column.coreAnchor);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreAnchor);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreAnchor);
+	}
 
-	if (os.Contains (Column::axisRotationAngle))
+	if (os.Contains (Column::axisRotationAngle)) {
 		os.Get (Column::axisRotationAngle, element.column.axisRotationAngle);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, axisRotationAngle);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, axisRotationAngle);
+	}
 
 	// Segment
-	if (os.Contains (Column::nSegments))
+	if (os.Contains (Column::nSegments)) {
 		os.Get (Column::nSegments, element.column.nSegments);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nSegments);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nSegments);
+	}
 
-	if (os.Contains (Column::nProfiles))
+	if (os.Contains (Column::nProfiles)) {
 		os.Get (Column::nProfiles, element.column.nProfiles);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nProfiles);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nProfiles);
+	}
 
 	API_ColumnSegmentType defaultColumnSegment;
 	if (memo.columnSegments != nullptr) {
@@ -199,8 +213,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 
 				// Veneer thick
 				currentSegment.Get (Column::ColumnSegment::VenThick, memo.columnSegments[idx].venThick);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, venThick);
+			} else {
+				memo.columnSegments[idx].venThick = 0.0;
 			}
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnSegmentType, venThick);
 
 			// The extrusion overridden material name
 			if (currentSegment.Contains (Column::ColumnSegment::ExtrusionSurfaceMaterial)) {
@@ -253,9 +269,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 #pragma endregion
 
 	// Scheme
-	if (os.Contains (Column::nSchemes))
+	if (os.Contains (Column::nSchemes)) {
 		os.Get (Column::nSchemes, element.column.nSchemes);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nSchemes);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, nSchemes);
+	}
 
 	Utility::CreateAllSchemeData (os, element.column.nSchemes, element, elementMask, &memo);
 
@@ -298,9 +315,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Cut Surfaces
 
 	// The pen index of column core contour line
-	if (os.Contains (Column::corePen))
+	if (os.Contains (Column::corePen)) {
 		os.Get (Column::corePen, element.column.corePen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, corePen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, corePen);
+	}
 
 	// The linetype name of column core contour line
 	GS::UniString attributeName;
@@ -321,9 +339,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The pen index of column veneer contour line
-	if (os.Contains (Column::VeneerPenIndex))
+	if (os.Contains (Column::VeneerPenIndex)) {
 		os.Get (Column::VeneerPenIndex, element.column.venLinePen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, venLinePen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, venLinePen);
+	}
 
 	// The linetype name of column veneer contour line
 	if (os.Contains (Column::VeneerLinetypeName)) {
@@ -343,27 +362,30 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Override cut fill pen
+	element.column.penOverride.overrideCutFillPen = false;
 	if (os.Contains (Column::OverrideCutFillPenIndex)) {
 		element.column.penOverride.overrideCutFillPen = true;
 		os.Get (Column::OverrideCutFillPenIndex, element.column.penOverride.cutFillPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillPen);
 	}
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillPen);
 
 	// Override cut fill background pen
+	element.column.penOverride.overrideCutFillBackgroundPen = false;
 	if (os.Contains (Column::OverrideCutFillBackgroundPenIndex)) {
 		element.column.penOverride.overrideCutFillBackgroundPen = true;
 		os.Get (Column::OverrideCutFillBackgroundPenIndex, element.column.penOverride.cutFillBackgroundPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillBackgroundPen);
 	}
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.overrideCutFillBackgroundPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, penOverride.cutFillBackgroundPen);
 
 	// Floor Plan and Section - Outlines
 
 	// The pen index of column uncut contour line
-	if (os.Contains (Column::UncutLinePenIndex))
+	if (os.Contains (Column::UncutLinePenIndex)) {
 		os.Get (Column::UncutLinePenIndex, element.column.belowViewLinePen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, belowViewLinePen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, belowViewLinePen);
+	}
 
 	// The linetype name of column uncut contour line
 	if (os.Contains (Column::UncutLinetypeName)) {
@@ -383,9 +405,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The pen index of column overhead contour line
-	if (os.Contains (Column::OverheadLinePenIndex))
+	if (os.Contains (Column::OverheadLinePenIndex)) {
 		os.Get (Column::OverheadLinePenIndex, element.column.aboveViewLinePen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, aboveViewLinePen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, aboveViewLinePen);
+	}
 
 	// The linetype name of column overhead contour line
 	if (os.Contains (Column::OverheadLinetypeName)) {
@@ -405,9 +428,10 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The pen index of column hidden contour line
-	if (os.Contains (Column::HiddenLinePenIndex))
+	if (os.Contains (Column::HiddenLinePenIndex)) {
 		os.Get (Column::HiddenLinePenIndex, element.column.hiddenLinePen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, hiddenLinePen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, hiddenLinePen);
+	}
 
 	// The linetype name of column hidden contour line
 	if (os.Contains (Column::HiddenLinetypeName)) {
@@ -441,35 +465,42 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Core Symbol Lengths
-	if (os.Contains (Column::coreSymbolPar1))
+	if (os.Contains (Column::coreSymbolPar1)) {
 		os.Get (Column::coreSymbolPar1, element.column.coreSymbolPar1);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreSymbolPar1);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreSymbolPar1);
+	}
 
-	if (os.Contains (Column::coreSymbolPar2))
+	if (os.Contains (Column::coreSymbolPar2)) {
 		os.Get (Column::coreSymbolPar2, element.column.coreSymbolPar2);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreSymbolPar2);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreSymbolPar2);
+	}
 
 	// Core Symbol Pen
-	if (os.Contains (Column::CoreSymbolPenIndex))
+	if (os.Contains (Column::CoreSymbolPenIndex)) {
 		os.Get (Column::CoreSymbolPenIndex, element.column.coreSymbolPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreSymbolPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coreSymbolPen);
+	}
 
 	// Floor Plan and Section - Cover Fills
-	if (os.Contains (Column::useCoverFill))
+	if (os.Contains (Column::useCoverFill)) {
 		os.Get (Column::useCoverFill, element.column.useCoverFill);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, useCoverFill);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, useCoverFill);
+	}
 
-	if (os.Contains (Column::useCoverFillFromSurface))
+	if (os.Contains (Column::useCoverFillFromSurface)) {
 		os.Get (Column::useCoverFillFromSurface, element.column.useCoverFillFromSurface);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, useCoverFillFromSurface);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, useCoverFillFromSurface);
+	}
 
-	if (os.Contains (Column::coverFillForegroundPen))
+	if (os.Contains (Column::coverFillForegroundPen)) {
 		os.Get (Column::coverFillForegroundPen, element.column.coverFillForegroundPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillForegroundPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillForegroundPen);
+	}
 
-	if (os.Contains (Column::coverFillBackgroundPen))
+	if (os.Contains (Column::coverFillBackgroundPen)) {
 		os.Get (Column::coverFillBackgroundPen, element.column.coverFillBackgroundPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillBackgroundPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillBackgroundPen);
+	}
 
 	// Cover fill type
 	if (os.Contains (Column::coverFillType)) {
@@ -493,29 +524,35 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillOrientationComesFrom3D);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformationType);
 
-	if (os.Contains (Column::CoverFillTransformationOrigoX))
+	if (os.Contains (Column::CoverFillTransformationOrigoX)) {
 		os.Get (Column::CoverFillTransformationOrigoX, element.column.coverFillTransformation.origo.x);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.origo.x);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.origo.x);
+	}
 
-	if (os.Contains (Column::CoverFillTransformationOrigoY))
+	if (os.Contains (Column::CoverFillTransformationOrigoY)) {
 		os.Get (Column::CoverFillTransformationOrigoY, element.column.coverFillTransformation.origo.y);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.origo.y);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.origo.y);
+	}
 
-	if (os.Contains (Column::CoverFillTransformationXAxisX))
+	if (os.Contains (Column::CoverFillTransformationXAxisX)) {
 		os.Get (Column::CoverFillTransformationXAxisX, element.column.coverFillTransformation.xAxis.x);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.xAxis.x);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.xAxis.x);
+	}
 
-	if (os.Contains (Column::CoverFillTransformationXAxisY))
+	if (os.Contains (Column::CoverFillTransformationXAxisY)) {
 		os.Get (Column::CoverFillTransformationXAxisY, element.column.coverFillTransformation.xAxis.y);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.xAxis.y);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.xAxis.y);
+	}
 
-	if (os.Contains (Column::CoverFillTransformationYAxisX))
+	if (os.Contains (Column::CoverFillTransformationYAxisX)) {
 		os.Get (Column::CoverFillTransformationYAxisX, element.column.coverFillTransformation.yAxis.x);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.yAxis.x);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.yAxis.x);
+	}
 
-	if (os.Contains (Column::CoverFillTransformationYAxisY))
+	if (os.Contains (Column::CoverFillTransformationYAxisY)) {
 		os.Get (Column::CoverFillTransformationYAxisY, element.column.coverFillTransformation.yAxis.y);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.yAxis.y);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformation.yAxis.y);
+	}
 
 	return err;
 }
