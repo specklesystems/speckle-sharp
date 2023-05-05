@@ -37,9 +37,21 @@ namespace Objects.Converter.Revit
       }
 
       options ??= new Options();
-      var geom = (element is DB.FamilyInstance fInst && !isConvertedAsInstance) ?
-        fInst.GetOriginalGeometry(options) :
-        element.get_Geometry(options);
+
+      GeometryElement geom = null;
+      try
+      {
+        geom = (element is DB.FamilyInstance fInst && !isConvertedAsInstance) ?
+          fInst.GetOriginalGeometry(options) :
+          element.get_Geometry(options);
+      }
+      catch (Autodesk.Revit.Exceptions.ArgumentException)
+      {
+        options.ComputeReferences = !options.ComputeReferences;
+        geom = (element is DB.FamilyInstance fInst && !isConvertedAsInstance) ?
+          fInst.GetOriginalGeometry(options) :
+          element.get_Geometry(options);
+      }  
       
       if (element is DB.FamilyInstance _fInst && !isConvertedAsInstance)
       {
