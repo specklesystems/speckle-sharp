@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -239,7 +239,7 @@ public partial class ConverterNavisworks
 
   private static Base CategoryToSpeckle(ModelItem element)
   {
-    var applicationId = PseudoIdFromModelItem(element);
+    var applicationId = ApplicationIdEncoder.Encode(PseudoIdFromModelItem(element));
 
     var elementCategory = element.PropertyCategories.FindPropertyByName(
       PropertyCategoryNames.Item,
