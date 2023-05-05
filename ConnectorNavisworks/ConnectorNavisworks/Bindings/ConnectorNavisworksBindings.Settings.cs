@@ -13,7 +13,7 @@ public partial class ConnectorBindingsNavisworks
   private const string BBoxOrigin = "Boundingbox Origin";
 
   // used to store the Stream State settings when sending
-  private List<ISetting> CurrentSettings { get; set; }
+  private static List<ISetting> CurrentSettings { get; set; }
 
   public override List<ISetting> GetSettings()
   {
@@ -63,7 +63,21 @@ public partial class ConnectorBindingsNavisworks
         Name = "Include View",
         IsChecked = true,
         Description = "Include the current display view in the commit."
-      }
+      },
+      new CheckBoxSetting
+      {
+        Slug = "full-tree",
+        Name = "Include Full Hierarchy",
+        IsChecked = true,
+        Description = "Include the full root to leaf selection hierarchy of nodes in the commit."
+      },
+      new CheckBoxSetting
+      {
+      Slug = "store-hidden",
+      Name = "Preserve Hidden State",
+      IsChecked = true,
+      Description = "For Saved Selections, preserve the hidden state of Child Elements."
+    }
     };
   }
 }
