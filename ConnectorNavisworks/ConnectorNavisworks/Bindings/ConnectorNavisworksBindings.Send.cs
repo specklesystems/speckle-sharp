@@ -35,6 +35,11 @@ public partial class ConnectorBindingsNavisworks
 
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
+    if (progress == null)
+    {
+      throw new ArgumentException("No ProgressViewModel provided.");
+    }
+
     if (_doc.ActiveSheet == null)
       throw new InvalidOperationException("Your Document is empty. Nothing to Send.");
 
@@ -76,7 +81,7 @@ public partial class ConnectorBindingsNavisworks
       }
       catch
       {
-        throw new Exception("An error occurred retrieving objects from your saved selection source.");
+        throw new InvalidOperationException("An error occurred retrieving objects from your saved selection source.");
       }
 
       if (nodes != null)
@@ -112,7 +117,6 @@ public partial class ConnectorBindingsNavisworks
     var toConvertDictionary = new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
     state.SelectedObjectIds.ForEach(pseudoId =>
     {
-      //if (pseudoId != RootNodePseudoId)
       {
         toConvertDictionary.Add(pseudoId, ConversionState.ToConvert);
       }
@@ -286,6 +290,7 @@ public partial class ConnectorBindingsNavisworks
         commitObject,
         progress.CancellationToken,
         transports,
+        // This is somewhat fake but roughly represents the progress of the conversion
         onProgressAction: dict =>
         {
           if (dict.TryGetValue("RemoteTransport", out var rc) && rc > 0)
