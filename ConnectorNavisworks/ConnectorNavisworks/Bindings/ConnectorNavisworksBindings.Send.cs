@@ -5,7 +5,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop;
 using DesktopUI2;
 using DesktopUI2.Models;
@@ -109,8 +108,14 @@ public partial class ConnectorBindingsNavisworks
 
     progress.Max = totalObjects;
 
-    var commitObject = new Base { ["units"] = GetUnits(_doc) };
     var convertedObjects = new Dictionary<string, Tuple<Base, string>>();
+    var commitObject = new Collection
+    {
+      ["units"] = GetUnits(_doc),
+      collectionType = "Navisworks Model",
+      name = Application.ActiveDocument.Title,
+      applicationId = "Root"
+    };
 
     var toConvertDictionary = new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
     state.SelectedObjectIds.ForEach(pseudoId =>
@@ -140,6 +145,7 @@ public partial class ConnectorBindingsNavisworks
 
     _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
 
+    #region ConversionLoop
     while (toConvertDictionary.Any(kv => kv.Value == ConversionState.ToConvert))
     {
       double navisworksProgressState = Math.Min((float)progress.Value / progress.Max, 1);
@@ -193,16 +199,9 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      // commitObject["@elements"] ??= new List<Base>();
-
-      // ((List<Base>)commitObject["@elements"]).Add(converted);
-
       var parent = PointerToModelItem(pseudoId).Parent;
 
-      convertedObjects[pseudoId] = new Tuple<Base, string>(
-        converted,
-        parent != null ? GetPseudoId(PointerToModelItem(pseudoId).Parent) : null
-      );
+      convertedObjects[pseudoId] = new Tuple<Base, string>(converted, parent != null ? GetPseudoId(parent) : null);
 
       toConvertDictionary[pseudoId] = ConversionState.Converted;
 
@@ -210,7 +209,6 @@ public partial class ConnectorBindingsNavisworks
 
       progress.Update(conversionProgressDict);
 
-      //converted.applicationId = applicationId;
       if (converted["@SpeckleSchema"] is Base newSchemaBase)
       {
         newSchemaBase.applicationId = applicationId;
@@ -220,12 +218,11 @@ public partial class ConnectorBindingsNavisworks
       reportObject.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
       progress.Report.Log(reportObject);
     }
+    #endregion
 
-    var nest = NestDictionaryEntries(convertedObjects);
+    commitObject.elements = NestDictionaryEntries(convertedObjects);
 
-    var convertedCount = toConvertDictionary.Count(x => x.Value == ConversionState.Converted);
-
-    commitObject["@elements"] = nest;
+    var convertedCount = convertedObjects.Count;
 
     progressBar.Update(1.0);
 
@@ -279,18 +276,15 @@ public partial class ConnectorBindingsNavisworks
 
     #endregion
 
-    var totalConversions = convertedCount + conversionProgressDict["Conversion"];
-
     progressBar.BeginSubOperation(
       0,
-      $"Sending {convertedCount} objects and {conversionProgressDict["Conversion"]} children to Speckle."
+      $"Sending {commitObject.elements.Count} objects and {convertedCount - commitObject.elements.Count} children to Speckle."
     );
 
     _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", null } });
 
     progress.CancellationToken.ThrowIfCancellationRequested();
-
-    progress.Max = totalConversions;
+    progress.Max = convertedCount;
 
     var transports = new List<ITransport> { new ServerTransport(client.Account, streamId) };
 
@@ -304,7 +298,7 @@ public partial class ConnectorBindingsNavisworks
         {
           if (dict.TryGetValue("RemoteTransport", out var rc) && rc > 0)
           {
-            var p = (double)rc / 2 / totalConversions;
+            var p = (double)rc / 2 / convertedCount;
             if (p <= 1)
               progressBar.Update(p);
           }
@@ -329,7 +323,7 @@ public partial class ConnectorBindingsNavisworks
       streamId = streamId,
       objectId = objectId,
       branchName = state.BranchName,
-      message = state.CommitMessage ?? $"Sent {totalConversions} elements from {HostApplications.Navisworks.Name}.",
+      message = state.CommitMessage ?? $"Sent {convertedCount} elements from {HostApplications.Navisworks.Name}.",
       sourceApplication = HostAppNameVersion
     };
 
@@ -378,7 +372,7 @@ public partial class ConnectorBindingsNavisworks
     return result;
   }
 
-  public List<Base> NestDictionaryEntries(Dictionary<string, Tuple<Base, string>> dictionary)
+  private List<Base> NestDictionaryEntries(Dictionary<string, Tuple<Base, string>> dictionary)
   {
     // First, group the entries by their parent IDs
     var parentGroups = dictionary.Values.Where(b => !string.IsNullOrEmpty(b.Item2)).GroupBy(b => b.Item2);
