@@ -1,75 +1,103 @@
 ﻿#nullable enable
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
-using Speckle.Core.Logging;
-using Speckle.Core.Models.Extensions;
-using Splat;
 
 namespace Speckle.ConnectorRevit;
 
-public sealed class RevitCommitObjectBuilder : CommitObjectBuilder
+
+public enum CommitCollectionStrategy
+{
+  ByLevel,
+  ByCollection,
+}
+
+public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
 {
   private const string Types = "Types";
   private const string Elements = nameof(Collection.elements);
-
-  private readonly bool byLevel;
+  private readonly CommitCollectionStrategy commitCollectionStrategy;
   
-  public RevitCommitObjectBuilder(bool byLevel)
+  private IDictionary<string ,Collection> collections = new Dictionary<string ,Collection>();
+  
+  public RevitCommitObjectBuilder(CommitCollectionStrategy commitCollectionStrategy)
   {
-    this.byLevel = byLevel;
+    this.commitCollectionStrategy = commitCollectionStrategy;
   }
 
-  public void IncludeObject(
+  public override void BuildCommitObject(Base rootCommitObject)
+  {
+    var convertedObjects = converted.Values.ToArray();
+    foreach (var col in collections)
+    {
+      converted.Add(col.Key, col.Value);
+    }
+    
+    // Apply object -> object, and object -> collection relationships
+    ApplyRelationships(convertedObjects, rootCommitObject);
+    
+    var rootElements = (IList<Base>)(rootCommitObject["elements"] ??= new List<Base>());
+
+    //Finally, apply collection -> host relationships
+    foreach (var col in collections.Values)
+    {
+      if(!col.elements.Any()) continue;
+      rootElements.Add(col);
+    }
+  }
+
+  public override void IncludeObject(
     Base conversionResult,
-    Element revitElement
+    Element nativeElement
   )
   {
-    
+
     // Special case for ElementTyped objects, add them to "Types"
-    if (revitElement is ElementType)
+    if (nativeElement is ElementType)
     {
-      var category = GetCategoryId(conversionResult, revitElement);
-      AddRelationship(conversionResult, (Types, category));
+      var category = GetCategoryId(conversionResult, nativeElement);
+      SetRelationship(conversionResult, (Types, category));
       if (!converted.ContainsKey(Types))
       {
-        AddRelationship(new() { applicationId = Types }, (Root, Types));
+        SetRelationship(new() { applicationId = Types }, (Root, Types));
       }
+
       return;
     }
-
     
-    string collectionId;
-    string collectionType;
-    string collectionName;
-    if (byLevel)
+    string collectionId, collectionName, collectionType;
+    
+    switch (commitCollectionStrategy)
     {
-      var level = GetLevel(revitElement);
-      collectionId = level.UniqueId;
-      collectionName = level.Name;
-      collectionType = "Revit Level";
-    }
-    else
-    {
-      collectionId = GetCategoryId(conversionResult, revitElement);
-      collectionName = collectionId;
-      collectionType = "Revit Category";
+      case CommitCollectionStrategy.ByLevel:
+      {
+        Level? level = GetLevel(nativeElement);
+        collectionId = level?.UniqueId ?? Root;
+        collectionName = level?.Name;
+        collectionType = "Revit Level";
+        break;
+      }
+      case CommitCollectionStrategy.ByCollection:
+        collectionId = GetCategoryId(conversionResult, nativeElement);
+        collectionName = collectionId;
+        collectionType = "Revit Category";
+        break;
+      default:
+        throw new InvalidOperationException($"No case for {commitCollectionStrategy}");
     }
       
     
-    Element? host = GetHost(revitElement);
+    Element? host = GetHost(nativeElement);
     
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
-    AddRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
-
-    // Create collection if not already, ensure it gets added to the root object.
-    if (!converted.ContainsKey(collectionId))
+    SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
+    
+    if (!collections.ContainsKey(collectionId) && collectionId != Root)
     {
       Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
-      AddRelationship(collection, (Root, Elements));
+      collections.Add(collectionId, collection);
     }
   }
 
@@ -82,7 +110,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder
       _ => ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)
     };
   }
-  
+
   private static Level? GetLevel(Element revitElement)
   {
     return revitElement.Document.GetElement(revitElement.LevelId) as Level;

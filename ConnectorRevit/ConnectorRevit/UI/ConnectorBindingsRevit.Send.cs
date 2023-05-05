@@ -61,8 +61,8 @@ namespace Speckle.ConnectorRevit.UI
           .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })
           .ToList()
       );
-      var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Base();
-      RevitCommitObjectBuilder commitObjectBuilder = new(false);
+      var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Collection();
+      RevitCommitObjectBuilder commitObjectBuilder = new(CommitCollectionStrategy.ByLevel);
 
       progress.Report = new ProgressReport();
       progress.Max = selectedObjects.Count;
