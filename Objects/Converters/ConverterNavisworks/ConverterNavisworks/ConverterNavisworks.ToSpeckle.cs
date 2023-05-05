@@ -304,7 +304,7 @@ public partial class ConverterNavisworks
     var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
     if (fragmentGeometry != null && fragmentGeometry.Any())
-      @base["@displayValue"] = fragmentGeometry;
+      ((GeometryNode)@base).displayValue = fragmentGeometry.ToList();
   }
 
   private static bool CanConvertToSpeckle(ModelItem item)
