@@ -15,6 +15,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   private static Control _control;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
+  
+  private static Progress ProgressBar { get; set; }
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {

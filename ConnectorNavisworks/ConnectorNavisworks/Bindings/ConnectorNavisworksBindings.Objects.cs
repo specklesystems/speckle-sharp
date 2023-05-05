@@ -4,6 +4,7 @@ using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2.Models.Filters;
+using DesktopUI2.Models.Settings;
 using static System.Tuple;
 using static Speckle.ConnectorNavisworks.Utilities;
 using Cursor = System.Windows.Forms.Cursor;
@@ -108,28 +109,46 @@ public partial class ConnectorBindingsNavisworks
 
   private static IEnumerable<Tuple<string, int>> GetObjectsFromSelection(ISelectionFilter filter)
   {
-    // TODO: Handle a resorted selection Tree as this invalidates any saves filter selections. Effectively this could be:
-    // a) Delete any saved streams based on Manual Selection
-    // b) Change what is stored to allow for a cross check that the pseudoId still matches the original item at the path
-    // c) As a SelectionTree isChanging event load in all manual selection saved states and watch the changes and rewrite the result
-
-    // Manual Selection becomes a straightforward collection of the pseudoIds and a count of all visible descendant nodes
-    // The saved filter should store only the visible selected nodes
-
-    var selection = filter.Selection;
-    var uniqueIds = new Dictionary<string, int>();
-
-    for (var i = 0; i < selection.Count; i += 1)
+    bool fullTreeSetting;
+    ProgressBar.Update(0);
+    try
     {
-      var modelItem = PointerToModelItem(selection[i]);
-      if (modelItem == null)
-        continue;
-      if (!IsElementVisible(modelItem))
-        continue;
-      uniqueIds.Add(selection[i], VisibleDescendantsCount(modelItem));
+      fullTreeSetting = (CurrentSettings.Find(x => x.Slug == "full-tree") is CheckBoxSetting { IsChecked: true });
+    }
+    catch (ArgumentNullException)
+    {
+      fullTreeSetting = false;
     }
 
-    return uniqueIds.Select(kv => Create(kv.Key, kv.Value)).ToList();
+    var selection = filter.Selection;
+    var uniquePseudoIds = new HashSet<string>();
+    var items = selection.Select(PointerToModelItem).Where(IsElementVisible).ToList();
+
+    var ancestorCount = 0.0;
+
+    if (fullTreeSetting)
+    {
+      var ancestors = items.SelectMany(item => item.Ancestors).Distinct();
+      foreach (var ancestor in ancestors)
+      {
+        if (IsElementVisible(ancestor) && uniquePseudoIds.Add(GetPseudoId(ancestor)))
+        {
+          ancestorCount += 1;
+          yield return Create(GetPseudoId(ancestor), 1);
+        }
+      }
+    }
+
+    var descendantsAndSelves = items.SelectMany(item => item.DescendantsAndSelf.Where(IsElementVisible)).ToList();
+
+    foreach (var descendant in descendantsAndSelves.Where(descendant => uniquePseudoIds.Add(GetPseudoId(descendant))))
+    {
+      yield return Create(GetPseudoId(descendant), 1);
+      var done = uniquePseudoIds.Count / ((double)descendantsAndSelves.Count + ancestorCount);
+      ProgressBar.Update(done);
+    }
+
+    // ProgressBar.Update(1);
   }
 
   private static IEnumerable<Tuple<string, int>> GetObjectsFromSavedSets(ISelectionFilter filter)
