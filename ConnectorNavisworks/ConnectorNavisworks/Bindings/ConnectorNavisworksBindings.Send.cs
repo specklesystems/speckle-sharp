@@ -257,10 +257,25 @@ public partial class ConnectorBindingsNavisworks
     }
 
     if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting { IsChecked: true })
-      views.Add(Convert(_doc.CurrentViewpoint.ToViewpoint()));
+    {
+      var currentView = Convert(_doc.CurrentViewpoint.ToViewpoint());
+      var homeView = Convert(_doc.HomeView);
+
+      if (currentView != null)
+      {
+        currentView["name"] = "Active View";
+        views.Add(currentView);
+      }
+
+      if (homeView != null)
+      {
+        homeView["name"] = "Home View";
+        views.Add(homeView);
+      }
+    }
 
     if (views.Any())
-      commitObject["Views"] = views;
+      commitObject["views"] = views;
 
     #endregion
 
