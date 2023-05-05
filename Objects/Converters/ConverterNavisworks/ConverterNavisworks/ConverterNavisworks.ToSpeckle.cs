@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -282,14 +282,14 @@ public partial class ConverterNavisworks
 
     ((Collection)@base).name = element.DisplayName;
 
-    var elements = element.Children.Select(ModelItemToSpeckle).Where(childBase => childBase != null).ToList();
+    // var elements = element.Children.Select(ModelItemToSpeckle).Where(childBase => childBase != null).ToList();
 
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason
-    if (!elements.Any())
-      return null;
-
-    ((Collection)@base).elements = elements;
+    // if (!elements.Any())
+    //   return null;
+    //
+    // ((Collection)@base).elements = elements;
 
     AddItemProperties(element, @base);
 
