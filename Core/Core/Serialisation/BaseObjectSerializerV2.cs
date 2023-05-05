@@ -79,8 +79,9 @@ public class BaseObjectSerializerV2
     PropertyAttributeInfo inheritedDetachInfo = default
   )
   {
-    // handle null objects and also check for cancelation
-    if (obj == null || CancellationToken.IsCancellationRequested)
+    CancellationToken.ThrowIfCancellationRequested();
+
+    if (obj == null)
       return null;
 
     Type type = obj.GetType();
@@ -103,6 +104,7 @@ public class BaseObjectSerializerV2
       }
       return ret;
     }
+    //TODO: handle IReadonlyDictionary
 
     if (obj is IEnumerable e)
     {
@@ -296,14 +298,14 @@ public class BaseObjectSerializerV2
     }
   }
 
-  private string ComputeId(Dictionary<string, object> obj)
+  private static string ComputeId(Dictionary<string, object> obj)
   {
     string serialized = JsonConvert.SerializeObject(obj);
     string hash = Utilities.hashString(serialized);
     return hash;
   }
 
-  private string Dict2Json(Dictionary<string, object> obj)
+  private static string Dict2Json(Dictionary<string, object> obj)
   {
     string serialized = JsonConvert.SerializeObject(obj);
     return serialized;
@@ -336,7 +338,7 @@ public class BaseObjectSerializerV2
 
     _stopwatch.Start();
     if (!hasBlobTransport)
-      throw new Exception(
+      throw new InvalidOperationException(
         "Object tree contains a Blob (file), but the serialiser has no blob saving capable transports."
       );
   }
@@ -384,7 +386,7 @@ public class BaseObjectSerializerV2
     return ret;
   }
 
-  public struct PropertyAttributeInfo : IEquatable<PropertyAttributeInfo>
+  public struct PropertyAttributeInfo
   {
     public PropertyAttributeInfo(
       bool isDetachable,
@@ -403,30 +405,5 @@ public class BaseObjectSerializerV2
     public bool IsChunkable;
     public int ChunkSize;
     public JsonPropertyAttribute JsonPropertyInfo;
-
-    public override bool Equals(object obj)
-    {
-      throw new NotImplementedException();
-    }
-
-    public override int GetHashCode()
-    {
-      throw new NotImplementedException();
-    }
-
-    public static bool operator ==(PropertyAttributeInfo left, PropertyAttributeInfo right)
-    {
-      return left.Equals(right);
-    }
-
-    public static bool operator !=(PropertyAttributeInfo left, PropertyAttributeInfo right)
-    {
-      return !(left == right);
-    }
-
-    public bool Equals(PropertyAttributeInfo other)
-    {
-      throw new NotImplementedException();
-    }
   }
 }

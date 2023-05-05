@@ -70,7 +70,7 @@ public class ServerApi : IDisposable, IServerApi
     CancellationToken.ThrowIfCancellationRequested();
 
     // Get root object
-    var rootHttpMessage = new HttpRequestMessage
+    using var rootHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}/{objectId}/single", UriKind.Relative),
       Method = HttpMethod.Get
@@ -223,7 +223,7 @@ public class ServerApi : IDisposable, IServerApi
       multipartFormDataContent.Add(fsc, $"hash:{hash}", fileName);
     }
 
-    var message = new HttpRequestMessage
+    using var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/stream/{streamId}/blob", UriKind.Relative),
       Method = HttpMethod.Post,
@@ -253,7 +253,7 @@ public class ServerApi : IDisposable, IServerApi
     foreach (var blobId in blobIds)
       try
       {
-        var blobMessage = new HttpRequestMessage
+        using var blobMessage = new HttpRequestMessage
         {
           RequestUri = new Uri($"api/stream/{streamId}/blob/{blobId}", UriKind.Relative),
           Method = HttpMethod.Get
@@ -288,7 +288,7 @@ public class ServerApi : IDisposable, IServerApi
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var childrenHttpMessage = new HttpRequestMessage
+    using var childrenHttpMessage = new HttpRequestMessage
     {
       RequestUri = new Uri($"/api/getobjects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -336,10 +336,9 @@ public class ServerApi : IDisposable, IServerApi
     string serializedPayload = JsonConvert.SerializeObject(payload);
     var uri = new Uri($"/api/diff/{streamId}", UriKind.Relative);
     HttpResponseMessage response = null;
+    using StringContent stringContent = new(serializedPayload, Encoding.UTF8, "application/json");
     while (ShouldRetry(response))
-      response = await Client
-        .PostAsync(uri, new StringContent(serializedPayload, Encoding.UTF8, "application/json"), CancellationToken)
-        .ConfigureAwait(false);
+      response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
     response.EnsureSuccessStatusCode();
 
     var hasObjectsJson = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -360,7 +359,7 @@ public class ServerApi : IDisposable, IServerApi
 
     CancellationToken.ThrowIfCancellationRequested();
 
-    var message = new HttpRequestMessage
+    using var message = new HttpRequestMessage
     {
       RequestUri = new Uri($"/objects/{streamId}", UriKind.Relative),
       Method = HttpMethod.Post
@@ -411,10 +410,11 @@ public class ServerApi : IDisposable, IServerApi
     var uri = new Uri($"/api/stream/{streamId}/blob/diff", UriKind.Relative);
 
     HttpResponseMessage response = null;
-    while (ShouldRetry(response)) //TODO: can we get rid of this now we have polly?
-      response = await Client
-        .PostAsync(uri, new StringContent(payload, Encoding.UTF8, "application/json"), CancellationToken)
-        .ConfigureAwait(false);
+    using StringContent stringContent = new(payload, Encoding.UTF8, "application/json");
+    //TODO: can we get rid of this now we have polly?
+    while (ShouldRetry(response))
+      response = await Client.PostAsync(uri, stringContent, CancellationToken).ConfigureAwait(false);
+
     response.EnsureSuccessStatusCode();
 
     var responseString = await response.Content.ReadAsStringAsync().ConfigureAwait(false);

@@ -16,7 +16,7 @@ GS::ObjectState AddOnCommands::SelectElements::Execute (const GS::ObjectState& p
 	GSErrCode err = NoError;
 
 	GS::Array<GS::UniString> ids;
-	parameters.Get (FieldNames::ApplicationIds, ids);
+	parameters.Get (FieldNames::ElementBase::ApplicationIds, ids);
 
 	bool deselect;
 	parameters.Get ("deselect", deselect);

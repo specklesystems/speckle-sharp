@@ -9,10 +9,10 @@ namespace Objects
 
 class Point3D {
 public:
-	double X;
-	double Y;
-	double Z;
-	GS::UniString Units = "m";
+	double x;
+	double y;
+	double z;
+	GS::UniString units = "m";
 
 	Point3D ();
 	Point3D (double x, double y, double z);

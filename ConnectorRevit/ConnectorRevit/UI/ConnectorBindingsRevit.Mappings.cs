@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -405,7 +405,6 @@ namespace Speckle.ConnectorRevit.UI
             typeCategory = GetTypeCategory(@object);
             if (!returnDict.ContainsKey(typeCategory))
               returnDict[typeCategory] = new List<string>();
-
             if (@object.GetMembers().ContainsKey("property") && @object["property"] is Base prop)
             {
               if (prop.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(prop["name"] as string))
@@ -466,7 +465,8 @@ namespace Speckle.ConnectorRevit.UI
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
         {
           case "etabs":
-            if (@object.GetMembers().ContainsKey("elements") && @object["elements"] is List<Base> els)
+            var nestedElements = @object["elements"] ?? @object["@elements"];
+            if (nestedElements is List<Base> els)
             {
               foreach (var el in els)
               {

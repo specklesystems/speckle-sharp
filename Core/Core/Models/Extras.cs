@@ -89,12 +89,12 @@ public class ApplicationObject
 {
   public enum State
   {
+    Unknown = default,
     Created, // Speckle object created on send, or native objects created on receive
     Skipped, // Speckle or Application object is not going to be sent or received
     Updated, // Application object is replacing an existing object in the application
     Failed, // Tried to convert & send or convert & bake but something went wrong
     Removed, //Removed object from application
-    Unknown
   }
 
   public ApplicationObject(string id, string type)

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -110,7 +110,8 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
 
-      if (!GetElementType<DB.FamilySymbol>(speckleFi, appObj, out DB.FamilySymbol familySymbol))
+      var familySymbol = GetElementType<FamilySymbol>(speckleFi, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -149,8 +150,10 @@ namespace Objects.Converter.Revit
               (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
-            if (speckleFi.type != null && speckleFi.type != revitType.Name)
+            if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
+            {
               familyInstance.ChangeTypeId(familySymbol.Id);
+            }
 
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
@@ -362,7 +365,7 @@ namespace Objects.Converter.Revit
           if (obj != null)
           {
             convertedSubElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
+            ConvertedObjects.Add(obj.applicationId);
           }
         }
       }
@@ -491,7 +494,8 @@ namespace Objects.Converter.Revit
 
       // get the definition
       var definition = instance.definition as RevitSymbolElementType;
-      if (!GetElementType<FamilySymbol>(definition, appObj, out FamilySymbol familySymbol))
+      var familySymbol = GetElementType<FamilySymbol>(definition, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -521,8 +525,10 @@ namespace Objects.Converter.Revit
             (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
-            if (definition.type != null && definition.type != revitType.Name)
+            if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
+            {
               familyInstance.ChangeTypeId(familySymbol.Id);
+            }
 
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_LEVEL_PARAM, level);
             TrySetParam(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM, level);
@@ -747,7 +753,7 @@ namespace Objects.Converter.Revit
         if (converted != null)
         {
           convertedSubElements.Add(converted);
-          ConvertedObjectsList.Add(converted.applicationId);
+          ConvertedObjects.Add(converted.applicationId);
         }
       }
 
