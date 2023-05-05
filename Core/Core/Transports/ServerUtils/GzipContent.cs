@@ -33,15 +33,14 @@ internal sealed class GzipContent : HttpContent
   protected override async Task SerializeToStreamAsync(Stream stream, TransportContext context)
   {
     // Open a GZipStream that writes to the specified output stream.
-    using (GZipStream gzip = new(stream, CompressionMode.Compress, true))
-    {
-      // Copy all the input content to the GZip stream.
-      if (content != null)
-        await content.CopyToAsync(gzip).ConfigureAwait(false);
-      else
-        await new StringContent(string.Empty).CopyToAsync(gzip).ConfigureAwait(false);
-      await gzip.FlushAsync().ConfigureAwait(false);
-    }
+    using GZipStream gzip = new(stream, CompressionMode.Compress, true);
+    using var stringContent = new StringContent(string.Empty);
+    // Copy all the input content to the GZip stream.
+    if (content != null)
+      await content.CopyToAsync(gzip).ConfigureAwait(false);
+    else
+      await stringContent.CopyToAsync(gzip).ConfigureAwait(false);
+    await gzip.FlushAsync().ConfigureAwait(false);
   }
 
   protected override bool TryComputeLength(out long length)

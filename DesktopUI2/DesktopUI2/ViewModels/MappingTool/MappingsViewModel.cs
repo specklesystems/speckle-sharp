@@ -200,11 +200,18 @@ public class MappingsViewModel : ViewModelBase, IScreen
 
     ShowProgress = true;
 
-    var client = new Client(StreamSelector.SelectedStream.Account);
-    string referencedObject = StreamSelector.SelectedBranch.commits.items.FirstOrDefault().referencedObject;
+    using var client = new Client(StreamSelector.SelectedStream.Account);
+    Commit commit = StreamSelector.SelectedBranch.commits.items.FirstOrDefault();
+    if (commit == null)
+      throw new Exception(
+        $"Branch {StreamSelector.SelectedBranch.name} in stream {StreamSelector.SelectedStream.Stream.id} has no commits"
+      );
 
-    var transport = new ServerTransport(StreamSelector.SelectedStream.Account, StreamSelector.SelectedStream.Stream.id);
-    return await Operations.Receive(referencedObject, transport, disposeTransports: true).ConfigureAwait(true);
+    using var transport = new ServerTransport(
+      StreamSelector.SelectedStream.Account,
+      StreamSelector.SelectedStream.Stream.id
+    );
+    return await Operations.Receive(commit.referencedObject, transport, disposeTransports: true).ConfigureAwait(true);
   }
 
   private void GetTypesAndLevels(Base model)

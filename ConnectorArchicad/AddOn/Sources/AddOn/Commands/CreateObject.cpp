@@ -60,10 +60,11 @@ GSErrCode CreateObject::GetElementFromObjectState (const GS::ObjectState& os,
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ObjectType, libInd);
 
 	Objects::Point3D pos;
-	if (os.Contains (Object::pos))
+	if (os.Contains (Object::pos)) {
 		os.Get (Object::pos, pos);
-	element.object.pos = pos.ToAPI_Coord ();
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ObjectType, pos);
+		element.object.pos = pos.ToAPI_Coord ();
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ObjectType, pos);
+	}
 
 	memoMask = APIMemoMask_AddPars;
 

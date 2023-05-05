@@ -181,7 +181,7 @@ namespace Objects.Other.Revit
         .ToList();
 
       // add any dynamically attached elements on this instance
-      var elements = this["elements"] as List<object>;
+      var elements = (this["elements"] ?? this["@elements"]) as List<object>;
       if (elements != null)
         foreach (var element in elements)
         {

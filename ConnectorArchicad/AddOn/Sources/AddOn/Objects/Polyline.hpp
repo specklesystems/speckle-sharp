@@ -12,12 +12,13 @@ namespace Objects {
 
 class PolylineSegment {
 public:
-	Point3D 	StartPoint;
-	Point3D 	EndPoint;
-	double 		ArcAngle;
+	Point3D				startPoint;
+	Point3D				endPoint;
+	double				arcAngle;
+	GS::Optional<bool>	bodyFlag;
 
 	PolylineSegment () = default;
-	PolylineSegment (const Point3D& start, const Point3D& end, double angle = 0);
+	PolylineSegment (const Point3D& start, const Point3D& end, double angle = 0, GS::Optional<bool> bodyFlag = GS::NoValue);
 
 	GSErrCode		Restore (const GS::ObjectState& os);
 	GSErrCode		Store (GS::ObjectState& os) const;
@@ -36,11 +37,13 @@ public:
 	Polyline () = default;
 	Polyline (const GS::Array<PolylineSegment>& polylineSegments);
 
-	int							VertexCount () const;
-	int							ArcCount () const;
-	const Point3D* PointAt (int index) const;
-	const PolylineSegment* ArcAt (int index) const;
-	bool						IsClosed () const;
+	int						VertexCount () const;
+	int						ArcCount () const;
+
+	const Point3D* 			PointAt (int index) const;
+	const PolylineSegment* 	ArcAt (int index) const;
+	const PolylineSegment* 	SegmentAt (int index) const;
+	bool					IsClosed () const;
 
 	GSErrCode		Restore (const GS::ObjectState& os);
 	GSErrCode		Store (GS::ObjectState& os) const;
@@ -53,10 +56,18 @@ private:
 	GS::Array<Polyline> mHoles;
 
 public:
-	ElementShape () = default;
-	ElementShape (const API_Polygon& outlinePoly, const API_ElementMemo& memo, double level = 0);
+	enum MemoPolygonType {
+		MemoMainPolygon = 0,
+		MemoAdditionalPolygon,
+		MemoShellPolygon1,
+		MemoShellPolygon2,
+		MemoShellContour,
+	};
 
-	void SetToMemo (API_ElementMemo& memo);
+	ElementShape () = default;
+	ElementShape (const API_Polygon& outlinePoly, const API_ElementMemo& memo, MemoPolygonType memoPolygonType, double level = 0, UInt32 idx = 0);
+
+	void SetToMemo (API_ElementMemo& memo, MemoPolygonType memoPolygonType, UInt32 idx = 0);
 
 	int SubpolyCount () const;
 	int VertexCount () const;

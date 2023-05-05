@@ -14,7 +14,7 @@ public class DesignHomeViewModel
     Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
     if (acc == null)
       return;
-    var client = new Client(acc);
+    using var client = new Client(acc);
     FilteredStreams = client.StreamsGet().Result.Select(x => new StreamAccountWrapper(x, acc)).ToList();
 
     var d = new DesignSavedStreamsViewModel();

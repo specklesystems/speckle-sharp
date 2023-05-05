@@ -24,7 +24,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (!GetElementType<RailingType>(speckleRailing, appObj, out RailingType railingType))
+      var railingType = GetElementType<RailingType>(speckleRailing, appObj, out bool isExactMatch);
+      if (railingType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -52,17 +53,19 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (revitRailing.GetTypeId() != railingType.Id)
+      if (isExactMatch && revitRailing.GetTypeId() != railingType.Id)
+      {
         revitRailing.ChangeTypeId(railingType.Id);
+      }
 
       if (speckleRailing.topRail != null)
       {
-        GetElementType<TopRailType>(speckleRailing.topRail, appObj, out TopRailType topRailType);
+        var topRailType = GetElementType<TopRailType>(speckleRailing.topRail, appObj, out bool isTopRailExactMatch);
 
         if (GetParamValue<int>(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL) == 0)
           TrySetParam(railingType, BuiltInParameter.RAILING_SYSTEM_HAS_TOP_RAIL, 1);
 
-        if (railingType.TopRailType != topRailType.Id && topRailType != null)
+        if (topRailType != null && isTopRailExactMatch)
           railingType.TopRailType = topRailType.Id;
 
       }
@@ -133,7 +136,7 @@ namespace Objects.Converter.Revit
           //currently only the top level displayValue is visualized (or anything under 'elements')
           //if this leads to duplicated meshes in some cases, we might need to remove the display mesh form the TopRail element
           speckleRailing.displayValue.AddRange(speckleRailing.topRail.displayValue);
-          ConvertedObjectsList.Add(speckleRailing.topRail.applicationId);
+          ConvertedObjects.Add(speckleRailing.topRail.applicationId);
         }
       }
       return speckleRailing;

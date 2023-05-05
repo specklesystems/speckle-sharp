@@ -8,6 +8,7 @@ function (SetCompilerOptions target)
 			/Zc:wchar_t-
 			/wd4499
 			/wd4996
+			/wd4390
 		)
 	else ()
 		target_compile_options (${target} PUBLIC -Wall -Wextra -Werror
@@ -228,5 +229,3 @@ else ()
 	    )
 	endif ()
 endif ()
-
-

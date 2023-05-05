@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -99,6 +99,7 @@ public class Vector : Base, IHasBoundingBox, ITransformable<Vector>
   /// Gets the Euclidean length of this vector.
   /// </summary>
   /// <returns>Length of the vector.</returns>
+  [JsonIgnore]
   public double Length => Math.Sqrt(DotProduct(this, this));
 
   /// <inheritdoc/>

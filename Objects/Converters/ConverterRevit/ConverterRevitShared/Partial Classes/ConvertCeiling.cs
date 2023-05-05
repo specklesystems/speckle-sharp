@@ -1,4 +1,4 @@
-﻿
+
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -72,7 +72,8 @@ namespace Objects.Converter.Revit
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
       }
 
-      if (!GetElementType<CeilingType>(speckleCeiling, appObj, out CeilingType ceilingType))
+      var ceilingType = GetElementType<CeilingType>(speckleCeiling, appObj, out bool _);
+      if (ceilingType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;

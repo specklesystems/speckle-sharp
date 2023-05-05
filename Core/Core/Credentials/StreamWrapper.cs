@@ -259,7 +259,7 @@ public class StreamWrapper
     if (!hasInternet)
       throw new Exception("You are not connected to the internet.");
 
-    var client = new Client(acc);
+    using var client = new Client(acc);
     // First check if the stream exists
     try
     {
