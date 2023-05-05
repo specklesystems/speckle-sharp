@@ -7,7 +7,6 @@ using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
-
 namespace Speckle.ConnectorRevit
 {
   public static class ConnectorRevitUtils
@@ -32,26 +31,25 @@ namespace Speckle.ConnectorRevit
 
     public static Dictionary<string, Category> GetCategories(Document doc)
     {
-      if (_categories == null)
-      {
-        _categories = new Dictionary<string, Category>();
-        foreach (var bic in SupportedBuiltInCategories)
-        {
-          var category = Category.GetCategory(doc, bic);
-          if (category == null)
-            continue;
-          //some categories, in other languages (eg DEU) have duplicated names #542
-          if (_categories.ContainsKey(category.Name))
-          {
-            var spec = category.Id.ToString();
-            if (category.Parent != null)
-              spec = category.Parent.Name;
-            _categories.Add(category.Name + " (" + spec + ")", category);
-          }
+      if (_categories != null)
+        return _categories;
 
-          else
-            _categories.Add(category.Name, category);
+      _categories = new Dictionary<string, Category>();
+      foreach (var bic in SupportedBuiltInCategories)
+      {
+        var category = Category.GetCategory(doc, bic);
+        if (category == null)
+          continue;
+        //some categories, in other languages (eg DEU) have duplicated names #542
+        if (_categories.ContainsKey(category.Name))
+        {
+          var spec = category.Id.ToString();
+          if (category.Parent != null)
+            spec = category.Parent.Name;
+          _categories.Add($"{category.Name} ({spec})", category);
         }
+        else
+          _categories.Add(category.Name, category);
       }
 
       return _categories;
@@ -68,7 +66,8 @@ namespace Speckle.ConnectorRevit
     public static string GetEnglishCategoryName(Category category)
     {
       var builtInCategory = (BuiltInCategory)category.Id.IntegerValue;
-      var builtInCategoryName = builtInCategory.ToString()
+      var builtInCategoryName = builtInCategory
+        .ToString()
         .Replace("OST_IOS", "") //for OST_IOSModelGroups
         .Replace("OST_MEP", "") //for OST_MEPSpaces
         .Replace("OST_", "") //for any other OST_blablabla
@@ -82,13 +81,15 @@ namespace Speckle.ConnectorRevit
     public static List<Element> SupportedElements(this Document doc)
     {
       //get element types of supported categories
-      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id))
-        .Cast<ElementFilter>().ToList());
+      var categoryFilter = new LogicalOrFilter(
+        GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList()
+      );
 
       List<Element> elements = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
         .WhereElementIsViewIndependent()
-        .WherePasses(categoryFilter).ToList();
+        .WherePasses(categoryFilter)
+        .ToList();
 
       return elements;
     }
@@ -96,12 +97,14 @@ namespace Speckle.ConnectorRevit
     public static List<Element> SupportedTypes(this Document doc)
     {
       //get element types of supported categories
-      var categoryFilter = new LogicalOrFilter(GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id))
-        .Cast<ElementFilter>().ToList());
+      var categoryFilter = new LogicalOrFilter(
+        GetCategories(doc).Select(x => new ElementCategoryFilter(x.Value.Id)).Cast<ElementFilter>().ToList()
+      );
 
       List<Element> elements = new FilteredElementCollector(doc)
         .WhereElementIsElementType()
-        .WherePasses(categoryFilter).ToList();
+        .WherePasses(categoryFilter)
+        .ToList();
 
       return elements;
     }
@@ -112,10 +115,13 @@ namespace Speckle.ConnectorRevit
         .WhereElementIsNotElementType()
         .OfCategory(BuiltInCategory.OST_Views)
         .Cast<View>()
-        .Where(x => x.ViewType == ViewType.CeilingPlan ||
-                    x.ViewType == ViewType.FloorPlan ||
-                    x.ViewType == ViewType.Elevation ||
-                    x.ViewType == ViewType.Section)
+        .Where(
+          x =>
+            x.ViewType == ViewType.CeilingPlan
+            || x.ViewType == ViewType.FloorPlan
+            || x.ViewType == ViewType.Elevation
+            || x.ViewType == ViewType.Section
+        )
         .ToList();
 
       return views;
@@ -137,7 +143,8 @@ namespace Speckle.ConnectorRevit
     {
       List<Element> levels = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
-        .OfCategory(BuiltInCategory.OST_Levels).ToList();
+        .OfCategory(BuiltInCategory.OST_Levels)
+        .ToList();
 
       return levels;
     }
@@ -151,7 +158,9 @@ namespace Speckle.ConnectorRevit
 
     public static List<string> GetWorksets(Document doc)
     {
-      return new FilteredWorksetCollector(doc).Where(x => x.Kind == WorksetKind.UserWorkset).Select(x => x.Name)
+      return new FilteredWorksetCollector(doc)
+        .Where(x => x.Kind == WorksetKind.UserWorkset)
+        .Select(x => x.Name)
         .ToList();
     }
 
@@ -196,10 +205,7 @@ namespace Speckle.ConnectorRevit
 
     private static async Task<List<string>> GetViewNamesAsync(Document doc)
     {
-      var els = new FilteredElementCollector(doc)
-        .WhereElementIsNotElementType()
-        .OfClass(typeof(View))
-        .ToElements();
+      var els = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(View)).ToElements();
 
       _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
       return _cachedViews;
@@ -224,17 +230,22 @@ namespace Speckle.ConnectorRevit
 
     public static bool IsPhysicalElement(this Element e)
     {
-      if (e.Category == null) return false;
-      if (e.ViewSpecific) return false;
+      if (e.Category == null)
+        return false;
+      if (e.ViewSpecific)
+        return false;
       // exclude specific unwanted categories
-      if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones) return false;
+      if (((BuiltInCategory)e.Category.Id.IntegerValue) == BuiltInCategory.OST_HVAC_Zones)
+        return false;
       return e.Category.CategoryType == CategoryType.Model && e.Category.CanAddSubcategory;
     }
 
     public static bool IsElementSupported(this Element e)
     {
-      if (e.Category == null) return false;
-      if (e.ViewSpecific) return false;
+      if (e.Category == null)
+        return false;
+      if (e.ViewSpecific)
+        return false;
 
       if (SupportedBuiltInCategories.Contains((BuiltInCategory)e.Category.Id.IntegerValue))
         return true;
@@ -253,7 +264,9 @@ namespace Speckle.ConnectorRevit
 
     public static string ObjectDescriptor(Element obj)
     {
-      var simpleType = obj.GetType().ToString().Split(new string[] { "DB." }, StringSplitOptions.RemoveEmptyEntries)
+      var simpleType = obj.GetType()
+        .ToString()
+        .Split(new string[] { "DB." }, StringSplitOptions.RemoveEmptyEntries)
         .LastOrDefault();
       return string.IsNullOrEmpty(obj.Name) ? $"{simpleType}" : $"{simpleType} {obj.Name}";
     }

@@ -22,7 +22,7 @@ GS::ObjectState GetSubElementInfo::Execute (const GS::ObjectState& parameters, G
 {
 	GSErrCode err = NoError;
 	GS::UniString id;
-	parameters.Get (ApplicationId, id);
+	parameters.Get (ElementBase::ApplicationId, id);
 	API_Guid wallGuid = APIGuidFromString (id.ToCStr ());
 
 	GS::ObjectState result;
@@ -42,8 +42,8 @@ GS::ObjectState GetSubElementInfo::Execute (const GS::ObjectState& parameters, G
 			GS::UniString elemType = elementNames.Get (elementTypeId);
 
 			GS::ObjectState subelementModel;
-			subelementModel.Add (ApplicationId, guid);
-			subelementModel.Add (ElementType, elemType);
+			subelementModel.Add (ElementBase::ApplicationId, guid);
+			subelementModel.Add (ElementBase::ElementType, elemType);
 			listAdder (subelementModel);
 		}
 	}

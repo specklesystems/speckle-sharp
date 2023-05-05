@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -64,7 +64,7 @@ namespace Speckle.ConnectorRevit.Entry
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(ex, ex.Message);
+          SpeckleLog.Logger.Error(ex, "Failed to show dockable panel");
         }
       }
       else
@@ -126,7 +126,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle command for host app");
         var td = new TaskDialog("Error");
         td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
@@ -183,7 +183,7 @@ namespace Speckle.ConnectorRevit.Entry
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Fatal(ex, "Failed to create main window");
         var td = new TaskDialog("Error");
         td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
         td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");

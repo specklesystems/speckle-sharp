@@ -110,8 +110,11 @@ const GS::HashTable<Int32, GS::UniString> beamFlagNames
 
 const GS::HashTable<API_EdgeTrimID, GS::UniString> edgeAngleTypeNames
 {
+	{ APIEdgeTrim_Vertical,			"Vertical"},
+	{ APIEdgeTrim_Perpendicular,	"Perpendicular"},
+	{ APIEdgeTrim_Horizontal,		"Horizontal"},
 	{ APIEdgeTrim_CustomAngle,		"Custom Angle"},
-	{ APIEdgeTrim_Perpendicular,	"Perpendicular"}
+	{ APIEdgeTrim_AlignWithCut,		"Align with Cut"}
 };
 
 
@@ -121,6 +124,61 @@ const GS::HashTable<API_SlabReferencePlaneLocationID, GS::UniString> referencePl
 	{ APISlabRefPlane_CoreBottom,	"Core Bottom"},
 	{ APISlabRefPlane_CoreTop,		"Core Top"},
 	{ APISlabRefPlane_Top,			"Top"}
+};
+
+
+const GS::HashTable<API_RoofClassID, GS::UniString> roofClassNames
+{
+	{ API_PlaneRoofID,	"Single-Plane"},
+	{ API_PolyRoofID,	"Multi-Plane"}
+};
+
+
+const GS::HashTable<API_ShellClassID, GS::UniString> shellClassNames
+{
+	{ API_ExtrudedShellID,	"Extruded"},
+	{ API_RevolvedShellID,	"Revolved"},
+	{ API_RuledShellID,		"Ruled"}
+};
+
+
+const GS::HashTable<API_ShellBaseCutBodyTypeID, GS::UniString> shellBaseCutBodyTypeNames
+{
+	{ APIShellBaseCutBody_Editable,	"Editable"},
+	{ APIShellBaseCutBody_ContoursDown,	"Contours Down"},
+	{ APIShellBaseCutBody_PivotLinesDown,	"Pivot Lines Down"},
+	{ APIShellBaseCutBody_UpwardsExtrusion,	"Upwards Extrusion"},
+	{ APIShellBaseCutBody_DownwardsExtrusion,	"Downwards Extrusion"}
+};
+
+
+const GS::HashTable<API_ShellBaseContourEdgeTypeID, GS::UniString> shellBaseContourEdgeTypeNames
+{
+	{ APIShellBaseContour_Undefined,	"Undefined"},
+	{ APIShellBaseContour_Ridge,		"Ridge"},
+	{ APIShellBaseContour_Valley,		"Valley"},
+	{ APIShellBaseContour_Gable,		"Gable"},
+	{ APIShellBaseContour_Hip,			"Hip"},
+	{ APIShellBaseContour_Eaves,		"Eaves"},
+	{ APIShellBaseContour_Peak,			"Peak"},
+	{ APIShellBaseContour_SideWall,		"SideWall"},
+	{ APIShellBaseContour_EndWall,		"EndWall"},
+	{ APIShellBaseContour_RTDome,		"RTDome"},
+	{ APIShellBaseContour_RTHollow,		"RTHollow"}
+};
+
+
+const GS::HashTable<API_MorphingRuleID, GS::UniString> morphingRuleNames
+{
+	{ APIMorphingRule_Paired,	"Paired"},
+	{ APIMorphingRule_Smooth,	"Smooth"}
+};
+
+
+const GS::HashTable<API_PolyRoofSegmentAngleTypeID, GS::UniString> polyRoofSegmentAngleTypeNames
+{
+	{ APIPolyRoof_SegmentAngleTypeSloped,	"Sloped"},
+	{ APIPolyRoof_SegmentAngleTypeGable,	"Gable"}
 };
 
 
