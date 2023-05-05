@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.ComApi;
+using System.Text;
 
 namespace Objects.Converter.Navisworks;
 
@@ -51,5 +53,30 @@ public partial class ConverterNavisworks
     // Hidden status is stored at the earliest node in the hierarchy
     // Any of the the tree path nodes Hidden then the element is hidden
     return element.AncestorsAndSelf.Any(x => x.IsHidden);
+  }
+}
+
+public static class ApplicationIdEncoder
+{
+  public static string Encode(string id)
+  {
+    if (string.IsNullOrEmpty(id))
+    {
+      return null;
+    }
+
+    var bytes = Encoding.UTF8.GetBytes(id);
+    return Convert.ToBase64String(bytes);
+  }
+
+  public static string Decode(string encoded)
+  {
+    if (string.IsNullOrEmpty(encoded))
+    {
+      return null;
+    }
+
+    var bytes = Convert.FromBase64String(encoded);
+    return Encoding.UTF8.GetString(bytes);
   }
 }
