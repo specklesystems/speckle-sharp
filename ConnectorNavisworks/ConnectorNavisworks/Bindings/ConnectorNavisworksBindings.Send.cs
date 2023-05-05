@@ -101,7 +101,13 @@ public partial class ConnectorBindingsNavisworks
 
     progress.Max = totalObjects;
 
-    var commitObject = new Base { ["units"] = GetUnits(_doc) };
+    var commitObject = new Collection
+    {
+      ["units"] = GetUnits(_doc),
+      collectionType = "Navisworks Model",
+      name = Application.ActiveDocument.Title,
+      applicationId = "Root"
+    };
 
     var toConvertDictionary = new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
     state.SelectedObjectIds.ForEach(pseudoId =>
@@ -185,9 +191,9 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      commitObject["@elements"] ??= new List<Base>();
+      commitObject["elements"] ??= new List<Base>();
 
-      ((List<Base>)commitObject["@elements"]).Add(converted);
+      ((List<Base>)commitObject["elements"]).Add(converted);
 
       toConvertDictionary[pseudoId] = ConversionState.Converted;
 
