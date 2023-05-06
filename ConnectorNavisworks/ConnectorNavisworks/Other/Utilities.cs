@@ -172,72 +172,63 @@ public static class Utilities
       : string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
   }
 
-  internal static List<Base> NestDictionaryEntries(Dictionary<string, Tuple<Base, string>> dictionary)
+  internal static List<Base> BuildNestedObjectHierarchy(Dictionary<string, Tuple<Base, string>> dictionary)
   {
-    // First, group the entries by their parent IDs
-    var parentGroups = dictionary.Values.Where(b => !string.IsNullOrEmpty(b.Item2)).GroupBy(b => b.Item2);
+    var parentGroups = dictionary.Values.Where(x => !string.IsNullOrEmpty(x.Item2)).GroupBy(x => x.Item2);
 
-    // Create a new list for entries with no parent
     var rootSet = new HashSet<Base>();
 
-    // Iterate over the parent groups and construct nested Collections
     foreach (var group in parentGroups)
     {
-      // Find the parent Collection for this group
       if (!dictionary.TryGetValue(group.Key, out var parentTuple))
       {
-        // If the parent doesn't exist, add the child entries to the root list as bare objects
-        foreach ((Base @base, string parentId) in group)
+        foreach ((Base item, string parentId) in group)
         {
-          if (@base is Collection collection)
+          if (item is Collection collection)
           {
-            var childChildren = dictionary.Values.Where(b => b.Item2 == parentId).ToList();
-            collection.elements = childChildren.Select(b => b.Item1).ToList();
+            var childEntries = dictionary.Values.Where(x => x.Item2 == parentId).ToList();
+            collection.elements = childEntries.Select(x => x.Item1).ToList();
 
-            foreach (var ccg in childChildren.Where(ccg => ccg.Item1 is not Collection))
+            foreach (var childEntry in childEntries.Where(x => !(x.Item1 is Collection)))
             {
-              dictionary.Remove((string)ccg.Item1["applicationId"]);
+              dictionary.Remove((string)childEntry.Item1["applicationId"]);
             }
           }
 
-          rootSet.Add(@base);
+          rootSet.Add(item);
         }
+
         continue;
       }
 
       var parent = parentTuple.Item1;
 
-      // Create a new list for the child entries
       var childList = new List<Base>();
 
-      // Add each child entry to the child list and remove it from the dictionary
       foreach (var child in group)
       {
         if (child.Item1 is not Collection)
+        {
           dictionary.Remove((string)child.Item1["applicationId"]);
+        }
+
         childList.Add(child.Item1);
       }
 
-      // Set the parent's "elements" property to the child list
       ((Collection)parent).elements = childList;
     }
 
-    // now remove all the dictionary values that have a parent id also in the dictionary
-    // this will leave only the root elements in the dictionary
-
-    var objectsToRemove = dictionary.Values
-      .Where(b => !string.IsNullOrEmpty(b.Item2) && dictionary.ContainsKey(b.Item2))
+    var entriesToRemove = dictionary.Values
+      .Where(x => !string.IsNullOrEmpty(x.Item2) && dictionary.ContainsKey(x.Item2))
       .ToList();
 
-    foreach (Tuple<Base, string> removeCandidate in objectsToRemove)
+    foreach (var entryToRemove in entriesToRemove)
     {
-      dictionary.Remove((string)removeCandidate.Item1["applicationId"]);
+      dictionary.Remove((string)entryToRemove.Item1["applicationId"]);
     }
 
-    // Add any remaining entries in the dictionary to the root set as bare objects
-    rootSet.UnionWith(dictionary.Values.Select(t => t.Item1));
+    rootSet.UnionWith(dictionary.Values.Select(x => x.Item1));
 
-    // Convert the root set to a list and return it
     return rootSet.ToList();
   }
 }

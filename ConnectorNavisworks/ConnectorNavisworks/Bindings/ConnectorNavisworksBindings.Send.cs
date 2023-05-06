@@ -220,7 +220,7 @@ public partial class ConnectorBindingsNavisworks
     }
     #endregion
 
-    commitObject.elements = NestDictionaryEntries(convertedObjects);
+    commitObject.elements = BuildNestedObjectHierarchy(convertedObjects);
 
     var convertedCount = convertedObjects.Count;
 
