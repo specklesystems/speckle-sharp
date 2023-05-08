@@ -36,9 +36,7 @@ public partial class ConnectorBindingsNavisworks
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
     if (progress == null)
-    {
       throw new ArgumentException("No ProgressViewModel provided.");
-    }
 
     if (_doc.ActiveSheet == null)
       throw new InvalidOperationException("Your Document is empty. Nothing to Send.");

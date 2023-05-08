@@ -190,9 +190,7 @@ public static class Utilities
             collection.elements = childEntries.Select(x => x.Item1).ToList();
 
             foreach (var childEntry in childEntries.Where(x => !(x.Item1 is Collection)))
-            {
               dictionary.Remove((string)childEntry.Item1["applicationId"]);
-            }
           }
 
           rootSet.Add(item);
@@ -208,9 +206,7 @@ public static class Utilities
       foreach (var child in group)
       {
         if (child.Item1 is not Collection)
-        {
           dictionary.Remove((string)child.Item1["applicationId"]);
-        }
 
         childList.Add(child.Item1);
       }
@@ -223,9 +219,7 @@ public static class Utilities
       .ToList();
 
     foreach (var entryToRemove in entriesToRemove)
-    {
       dictionary.Remove((string)entryToRemove.Item1["applicationId"]);
-    }
 
     rootSet.UnionWith(dictionary.Values.Select(x => x.Item1));
 

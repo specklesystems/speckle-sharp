@@ -113,7 +113,7 @@ public partial class ConnectorBindingsNavisworks
     ProgressBar.Update(0);
     try
     {
-      fullTreeSetting = (CurrentSettings.Find(x => x.Slug == "full-tree") is CheckBoxSetting { IsChecked: true });
+      fullTreeSetting = CurrentSettings.Find(x => x.Slug == "full-tree") is CheckBoxSetting { IsChecked: true };
     }
     catch (ArgumentNullException)
     {
@@ -130,13 +130,11 @@ public partial class ConnectorBindingsNavisworks
     {
       var ancestors = items.SelectMany(item => item.Ancestors).Distinct();
       foreach (var ancestor in ancestors)
-      {
         if (IsElementVisible(ancestor) && uniquePseudoIds.Add(GetPseudoId(ancestor)))
         {
           ancestorCount += 1;
           yield return Create(GetPseudoId(ancestor), 1);
         }
-      }
     }
 
     var descendantsAndSelves = items.SelectMany(item => item.DescendantsAndSelf.Where(IsElementVisible)).ToList();
@@ -144,7 +142,7 @@ public partial class ConnectorBindingsNavisworks
     foreach (var descendant in descendantsAndSelves.Where(descendant => uniquePseudoIds.Add(GetPseudoId(descendant))))
     {
       yield return Create(GetPseudoId(descendant), 1);
-      var done = uniquePseudoIds.Count / ((double)descendantsAndSelves.Count + ancestorCount);
+      var done = uniquePseudoIds.Count / (descendantsAndSelves.Count + ancestorCount);
       ProgressBar.Update(done);
     }
 

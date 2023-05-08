@@ -15,8 +15,6 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   private static Control _control;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
-  
-  private static Progress ProgressBar { get; set; }
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
@@ -30,6 +28,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     _defaultKit = KitManager.GetDefaultKit();
     _navisworksConverter = _defaultKit?.LoadConverter(Utilities.VersionedAppName);
   }
+
+  private static Progress ProgressBar { get; set; }
 
   // Majority of interaction with Speckle will be through the saved selection and search Sets
 

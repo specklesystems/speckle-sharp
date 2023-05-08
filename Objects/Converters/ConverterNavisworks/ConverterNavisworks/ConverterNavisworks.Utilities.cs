@@ -1,11 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.ComApi;
-using System.Text;
 
 namespace Objects.Converter.Navisworks;
 
@@ -60,10 +59,7 @@ public static class ApplicationIdEncoder
 {
   public static string Encode(string id)
   {
-    if (string.IsNullOrEmpty(id))
-    {
-      return null;
-    }
+    if (string.IsNullOrEmpty(id)) return null;
 
     var bytes = Encoding.UTF8.GetBytes(id);
     return Convert.ToBase64String(bytes);
@@ -71,10 +67,7 @@ public static class ApplicationIdEncoder
 
   public static string Decode(string encoded)
   {
-    if (string.IsNullOrEmpty(encoded))
-    {
-      return null;
-    }
+    if (string.IsNullOrEmpty(encoded)) return null;
 
     var bytes = Convert.FromBase64String(encoded);
     return Encoding.UTF8.GetString(bytes);
