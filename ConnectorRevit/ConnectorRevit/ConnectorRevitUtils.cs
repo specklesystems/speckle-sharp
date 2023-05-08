@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -53,6 +53,15 @@ namespace Speckle.ConnectorRevit
       }
 
       return _categories;
+    }
+
+    public static List<ParameterFilterElement> GetFilters(Autodesk.Revit.DB.Document doc)
+    {
+      return new FilteredElementCollector(doc)
+        .OfClass(typeof(ParameterFilterElement))
+        .OfType<ParameterFilterElement>()
+        .OrderBy(x => x.Name)
+        .ToList();
     }
 
     /// <summary>
@@ -154,6 +163,11 @@ namespace Speckle.ConnectorRevit
     public static List<string> GetCategoryNames(Document doc)
     {
       return GetCategories(doc).Keys.OrderBy(x => x).ToList();
+    }
+
+    public static List<string> GetViewFilterNames(Document doc)
+    {
+      return GetFilters(doc).Select(x => x.Name).ToList();
     }
 
     public static List<string> GetWorksets(Document doc)

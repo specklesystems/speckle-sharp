@@ -123,6 +123,10 @@ namespace Objects.BuiltElements.Revit.RevitRoof
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_shellbasetype
+  */
   public class ArchicadShellBase : BuiltElements.Roof
   {
     public class Visibility : Base
@@ -187,6 +191,10 @@ namespace Objects.BuiltElements.Archicad
     public string trimmingBodyName { get; set; }
   }
 
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_rooftype
+  */
   public sealed class ArchicadRoof : ArchicadShellBase
   {
     public class BaseLine : Base
@@ -230,6 +238,10 @@ namespace Objects.BuiltElements.Archicad
     public Dictionary<string, PivotPolyEdge>? roofPivotPolyEdges { get; set; }
   }
 
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_shelltype
+  */
   public sealed class ArchicadShell : ArchicadShellBase
   {
     public class ShellContourEdgeData : Base
