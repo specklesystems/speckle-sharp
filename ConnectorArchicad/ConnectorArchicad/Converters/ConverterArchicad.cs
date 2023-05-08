@@ -62,6 +62,7 @@ namespace Objects.Converter.Archicad
         Objects.BuiltElements.Column _ => true,
         Objects.BuiltElements.Floor _ => true,
         Objects.BuiltElements.Ceiling _ => true,
+        Objects.BuiltElements.Roof _ => true,
         Objects.BuiltElements.Room _ => true,
         Objects.BuiltElements.Wall _ => true,
 

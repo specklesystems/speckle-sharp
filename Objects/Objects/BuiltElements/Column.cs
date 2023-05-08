@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
@@ -146,7 +146,7 @@ namespace Objects.BuiltElements.Archicad
     public ArchicadColumn() { }
 
     // Wall geometry
-    public int? floorIndex { get; set; }
+    public ArchicadLevel level { get; set; }
     public Point origoPos { get; set; }
     public double height { get; set; }
 

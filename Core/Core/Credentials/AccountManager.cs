@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -95,10 +95,10 @@ public static class AccountManager
   {
     try
     {
-      var httpClient = Http.GetHttpProxyClient();
+      using var httpClient = Http.GetHttpProxyClient();
       httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
 
-      var client = new GraphQLHttpClient(
+      using var client = new GraphQLHttpClient(
         new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
         new NewtonsoftJsonSerializer(),
         httpClient
@@ -250,12 +250,12 @@ public static class AccountManager
 
         //the token has expired
         //TODO: once we get a token expired exception from the server use that instead
-        if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+        if (userServerInfo?.user == null || userServerInfo.serverInfo == null)
         {
           var tokenResponse = await GetRefreshedToken(account.refreshToken, url).ConfigureAwait(false);
           userServerInfo = await GetUserServerInfo(tokenResponse.token, url).ConfigureAwait(false);
 
-          if (userServerInfo == null || userServerInfo.user == null || userServerInfo.serverInfo == null)
+          if (userServerInfo?.user == null || userServerInfo.serverInfo == null)
             throw new SpeckleException("Could not refresh token");
 
           account.token = tokenResponse.token;
@@ -341,10 +341,9 @@ public static class AccountManager
 
     Process.Start(new ProcessStartInfo($"{server}/authn/verify/sca/{challenge}") { UseShellExecute = true });
 
-    var listener = new HttpListener();
-
     var task = Task.Run(() =>
     {
+      using var listener = new HttpListener();
       var localUrl = "http://localhost:29363/";
       listener.Prefixes.Add(localUrl);
       listener.Start();
@@ -375,10 +374,6 @@ public static class AccountManager
     });
 
     var completedTask = await Task.WhenAny(task, Task.Delay(timeout)).ConfigureAwait(false);
-
-    //ensure the listener is closed even if the task has timed out or failed
-    if (listener.IsListening)
-      listener.Abort();
 
     // this is means the task timed out
     if (completedTask != task)
@@ -544,7 +539,7 @@ public static class AccountManager
         challenge
       };
 
-      var content = new StringContent(JsonConvert.SerializeObject(body));
+      using var content = new StringContent(JsonConvert.SerializeObject(body));
       content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
       var response = await client.PostAsync($"{server}/auth/token", content).ConfigureAwait(false);
 
@@ -573,7 +568,7 @@ public static class AccountManager
         refreshToken
       };
 
-      var content = new StringContent(JsonConvert.SerializeObject(body));
+      using var content = new StringContent(JsonConvert.SerializeObject(body));
       content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
       var response = await client.PostAsync($"{server}/auth/token", content).ConfigureAwait(false);
 
