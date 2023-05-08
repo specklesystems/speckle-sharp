@@ -35,20 +35,23 @@ namespace Speckle.ConnectorRevit.UI
          new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." },
         new ManualSelectionFilter(),
         new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all elements belonging to the selected categories"},
-        new ListSelectionFilter {Slug="filters", Name = "Filters", Icon = "Filters", Values = viewFilters, Description="Adds all elements belonging to the selected filters"},
-        new ListSelectionFilter {Slug="view", Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" },
-        new ListSelectionFilter {Slug="project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description="Adds the selected project information such as levels, views and family names to the stream"},
+
+        new ListSelectionFilter { Slug = "view", Name = "View", Icon = "RemoveRedEye", Values = views, Description = "Adds all objects visible in the selected views" },
+        new ListSelectionFilter { Slug = "project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description = "Adds the selected project information such as levels, views and family names to the stream" },
           new PropertySelectionFilter
-        {
-          Slug="param",
-          Name = "Parameter",
-          Description="Adds all objects satisfying the selected parameter",
-          Icon = "FilterList",
-          Values = parameters,
-          Operators = new List<string> {"equals", "contains", "is greater than", "is less than"}
-        }
+          {
+            Slug = "param",
+            Name = "Parameter",
+            Description = "Adds all objects satisfying the selected parameter",
+            Icon = "FilterList",
+            Values = parameters,
+            Operators = new List<string> { "equals", "contains", "is greater than", "is less than" }
+          }
 
       };
+
+      if (viewFilters.Any())
+        filters.Insert(3, new ListSelectionFilter { Slug = "filter", Name = "Filters", Icon = "FilterList", Values = viewFilters, Description = "Adds all elements that pass the selected filters" });
       if (worksets.Any())
         filters.Insert(4, new ListSelectionFilter { Slug = "workset", Name = "Workset", Icon = "Group", Values = worksets, Description = "Adds all elements belonging to the selected workset" });
 
@@ -85,18 +88,18 @@ namespace Speckle.ConnectorRevit.UI
       var selection = args.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null && x.IsPhysicalElement()).Select(x => x.Id)?.ToList();
       if (!selection.Any())
         return;
-      
+
       //merge two lists
       if (!deselect)
       {
         var currentSelection = CurrentDoc.Selection.GetElementIds().ToList();
         selection = currentSelection.Union(selection).ToList();
       }
-  
-        CurrentDoc.Selection.SetElementIds(selection);
-        CurrentDoc.ShowElements(selection);
-     
-      
+
+      CurrentDoc.Selection.SetElementIds(selection);
+      CurrentDoc.ShowElements(selection);
+
+
     }
 
     private List<Document> GetLinkedDocuments()
@@ -207,7 +210,7 @@ namespace Speckle.ConnectorRevit.UI
             {
               List<Element> elements = new List<Element>();
               var viewFilters = ConnectorRevitUtils.GetFilters(doc)
-                .Where(x=>rvtFilters.Selection.Contains(x.Name));
+                .Where(x => rvtFilters.Selection.Contains(x.Name));
               foreach (ParameterFilterElement filterElement in viewFilters)
               {
                 ICollection<ElementId> cates = filterElement.GetCategories();
@@ -234,13 +237,13 @@ namespace Speckle.ConnectorRevit.UI
                     .WherePasses(cateFilter)
                     .ToList());
                 }
-               
+
               }
               if (elements.Count > 0)
               {
                 selection.AddRange(elements.GroupBy(x => x.Id.IntegerValue).Select(x => x.First()).ToList());
               }
-               
+
             }
             return selection;
           case "view":
