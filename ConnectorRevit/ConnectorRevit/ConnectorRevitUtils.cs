@@ -23,7 +23,6 @@ namespace Speckle.ConnectorRevit
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
-    private static List<string> _cachedParameters = null;
     private static List<string> _cachedViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
 
@@ -176,45 +175,6 @@ namespace Speckle.ConnectorRevit
         .Where(x => x.Kind == WorksetKind.UserWorkset)
         .Select(x => x.Name)
         .ToList();
-    }
-
-    private static async Task<List<string>> GetParameterNamesAsync(Document doc)
-    {
-      var els = new FilteredElementCollector(doc)
-        .WhereElementIsNotElementType()
-        .WhereElementIsViewIndependent()
-        .Where(x => x.IsPhysicalElement());
-
-      List<string> parameters = new List<string>();
-
-      foreach (var e in els)
-      {
-        foreach (Parameter p in e.Parameters)
-        {
-          if (!parameters.Contains(p.Definition.Name))
-            parameters.Add(p.Definition.Name);
-        }
-      }
-
-      _cachedParameters = parameters.OrderBy(x => x).ToList();
-      return _cachedParameters;
-    }
-
-    /// <summary>
-    /// Each time it's called the cached parameters are returned, and a new copy is cached
-    /// </summary>
-    /// <param name="doc"></param>
-    /// <returns></returns>
-    public static List<string> GetParameterNames(Document doc)
-    {
-      if (_cachedParameters != null)
-      {
-        //don't wait for it to finish
-        GetParameterNamesAsync(doc);
-        return _cachedParameters;
-      }
-
-      return GetParameterNamesAsync(doc).Result;
     }
 
     private static async Task<List<string>> GetViewNamesAsync(Document doc)

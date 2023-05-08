@@ -15,7 +15,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       var categories = new List<string>();
       var viewFilters = new List<string>();
-      var parameters = new List<string>();
+
       var views = new List<string>();
       var worksets = new List<string>();
       var projectInfo = new List<string> { "Project Info", "Levels", "Views 2D", "Views 3D", "Families & Types" };
@@ -25,7 +25,6 @@ namespace Speckle.ConnectorRevit.UI
         //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
         categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
         viewFilters = ConnectorRevitUtils.GetViewFilterNames(CurrentDoc.Document);
-        parameters = ConnectorRevitUtils.GetParameterNames(CurrentDoc.Document);
         views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
         worksets = ConnectorRevitUtils.GetWorksets(CurrentDoc.Document);
       }
@@ -35,19 +34,8 @@ namespace Speckle.ConnectorRevit.UI
          new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." },
         new ManualSelectionFilter(),
         new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all elements belonging to the selected categories"},
-
         new ListSelectionFilter { Slug = "view", Name = "View", Icon = "RemoveRedEye", Values = views, Description = "Adds all objects visible in the selected views" },
-        new ListSelectionFilter { Slug = "project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description = "Adds the selected project information such as levels, views and family names to the stream" },
-          new PropertySelectionFilter
-          {
-            Slug = "param",
-            Name = "Parameter",
-            Description = "Adds all objects satisfying the selected parameter",
-            Icon = "FilterList",
-            Values = parameters,
-            Operators = new List<string> { "equals", "contains", "is greater than", "is less than" }
-          }
-
+        new ListSelectionFilter { Slug = "project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description = "Adds the selected project information such as levels, views and family names to the stream" }
       };
 
       if (viewFilters.Any())
