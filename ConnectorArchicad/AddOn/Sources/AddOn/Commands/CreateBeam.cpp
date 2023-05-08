@@ -28,9 +28,10 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& beamMask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
@@ -39,7 +40,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 #else
 	element.header.typeID = API_BeamID;
 #endif
-	err = Utility::GetBaseElementData (element, &memo);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 

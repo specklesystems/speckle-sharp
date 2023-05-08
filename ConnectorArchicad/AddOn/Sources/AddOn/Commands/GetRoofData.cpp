@@ -288,7 +288,7 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 
 GS::String GetRoofData::GetName () const
 {
-	return GetRoofDataCommandName
+	return GetRoofDataCommandName;
 }
 
 
