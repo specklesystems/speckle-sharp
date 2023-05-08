@@ -9,8 +9,10 @@
 /* [  1] */		"ALPHA Speckle Connector ^E3 ^ES ^EE ^EI ^ED ^ET ^10001"
 }
 
-'STR#'  32700 "Messages for conversion log" {
-/* [  1] */		"Could not create library part: %s"
+'STR#' ID_LOG_MESSAGES "Messages for conversion log" {
+/* [  1] */		"Could not find library part: %T."
+/* [  2] */		"Could not find attribute: %T."
+/* [  3] */		"Could not find default marker."
 }
 
 'STR#'  ID_DEFAULT_STORY_FORMAT "Default story name format" {

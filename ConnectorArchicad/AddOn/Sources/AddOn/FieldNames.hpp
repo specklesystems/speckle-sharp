@@ -16,6 +16,7 @@ static const char* StateRemoved = "Removed";
 static const char* StateUnknown = "Unknown";
 static const char* OriginalId = "OriginalId";
 static const char* CreatedIds = "CreatedIds";
+static const char* Log = "Log";
 }
 
 namespace ElementBase

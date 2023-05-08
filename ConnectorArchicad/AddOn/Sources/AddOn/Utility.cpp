@@ -4,6 +4,7 @@
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
+#include "ResourceIds.hpp"
 using namespace FieldNames;
 
 namespace Utility {
@@ -32,7 +33,7 @@ bool ElementExists (const API_Guid& guid)
 }
 
 
-GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo /*= nullptr*/, API_SubElement** marker /*= nullptr*/)
+GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo, API_SubElement** marker, GS::Array<GS::UniString>& log)
 {
 	GSErrCode err = NoError;
 	API_Guid guid = element.header.guid;
@@ -79,8 +80,10 @@ GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo /*= nu
 			if (libPart.location != nullptr)
 				delete libPart.location;
 
-			if (err != NoError)
+			if (err != NoError) {
+				log.Push (ComposeLogMessage (ID_LOG_MESSAGE_DEFAULT_MARKER_SEARCH_ERROR));
 				return err;
+			}
 
 			double a = .0, b = .0;
 			Int32 addParNum = 0;
