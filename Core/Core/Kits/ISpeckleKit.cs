@@ -47,22 +47,3 @@ public interface ISpeckleKit
   /// <exception cref="KitException">Thrown if the requested converter failed to load</exception>
   public ISpeckleConverter LoadConverter(string app);
 }
-
-public class KitException : Exception
-{
-  public KitException(string message, ISpeckleKit kit, Exception? innerException = null)
-    : base(message, innerException)
-  {
-    Kit = kit;
-  }
-
-  public KitException() { }
-
-  public KitException(string message)
-    : base(message) { }
-
-  public KitException(string message, Exception innerException)
-    : base(message, innerException) { }
-
-  public ISpeckleKit Kit { get; }
-}

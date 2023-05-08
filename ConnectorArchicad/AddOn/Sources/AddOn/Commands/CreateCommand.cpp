@@ -7,6 +7,7 @@
 #include "OnExit.hpp"
 #include "ExchangeManager.hpp"
 #include "Database.hpp"
+#include "Objects/Level.hpp"
 
 
 using namespace FieldNames;
@@ -31,6 +32,15 @@ GSErrCode CreateCommand::ModifyExistingElement (API_Element& element,
 	GS::UInt64 memoMask) const
 {
 	return ACAPI_Element_Change (&element, &elementMask, &memo, memoMask, true);
+}
+
+
+void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const double& elementLevel, short& floorIndex, double& relativeLevel) const
+{
+	Objects::Level level;
+	os.Get (ElementBase::Level, level);
+	Utility::SetStoryLevelAndFloor (elementLevel, level.floorIndex, relativeLevel);
+	floorIndex = level.floorIndex;
 }
 
 
@@ -64,7 +74,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 
 			GS::String speckleId;
 			{
-				objectState.Get (Id, speckleId);
+				objectState.Get (ElementBase::Id, speckleId);
 				
 				if (speckleId.IsEmpty())
 					return Error;
@@ -84,7 +94,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 				// otherwise try to use applicationId
 				else {
 					GS::UniString applicationId;
-					objectState.Get (ApplicationId, applicationId);
+					objectState.Get (ElementBase::ApplicationId, applicationId);
 					element.header.guid = APIGuidFromString (applicationId.ToCStr ());
 				}
 			}
@@ -103,7 +113,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 
 			if (err == NoError) {
 				GS::UniString applicationId = APIGuidToString (element.header.guid);
-				applicationObject.Add (ApplicationId, applicationId);
+				applicationObject.Add (ElementBase::ApplicationId, applicationId);
 				GS::Array<GS::UniString> createdIds;
 				createdIds.Push (applicationId);
 				applicationObject.Add (ApplicationObject::CreatedIds, createdIds);

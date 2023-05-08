@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
 #include "RealNumber.h"
 #include "FieldNames.hpp"
@@ -40,10 +41,11 @@ GS::ErrCode GetBeamData::SerializeElementType (const API_Element& elem,
 	GS::ObjectState& os) const
 {
 	// The identifier of the beam
-	os.Add (ApplicationId, APIGuidToString (elem.beam.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (elem.beam.head.guid));
 
 	// Positioning
-	os.Add (FloorIndex, elem.beam.head.floorInd);
+	API_StoryType story = Utility::GetStory (elem.beam.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	double z = Utility::GetStoryLevel (elem.beam.head.floorInd) + elem.beam.level;
 	os.Add (Beam::begC, Objects::Point3D (elem.beam.begC.x, elem.beam.begC.y, z));

@@ -234,7 +234,7 @@ static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>&applicati
 	GS::ObjectState result;
 	const auto modelInserter = result.AddList<GS::ObjectState> (Models);
 	for (const auto& applicationId : applicationIds) {
-		modelInserter (GS::ObjectState{ApplicationId, APIGuidToString (applicationId), Model::Model, CalculateModelOfElement (modelViewer, applicationId)});
+		modelInserter (GS::ObjectState{ElementBase::ApplicationId, APIGuidToString (applicationId), Model::Model, CalculateModelOfElement (modelViewer, applicationId)});
 	}
 
 	return result;
@@ -250,7 +250,7 @@ GS::String GetModelForElements::GetName () const
 GS::ObjectState GetModelForElements::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIds, ids);
+	parameters.Get (ElementBase::ApplicationIds, ids);
 
 	return StoreModelOfElements (ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }));
 }

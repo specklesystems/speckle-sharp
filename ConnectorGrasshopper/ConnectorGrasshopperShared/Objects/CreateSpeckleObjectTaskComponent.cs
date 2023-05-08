@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using ConnectorGrasshopper.Extras;
 using ConnectorGrasshopper.Properties;
 using Grasshopper.Kernel;
+using Serilog.Context;
+using Serilog.Core;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
@@ -209,7 +211,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, ex.Message);
+              SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -220,7 +222,7 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
             }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, ex.Message);
+              SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
               AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
@@ -236,10 +238,10 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
               else
                 @base[key] = value;
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(e, e.Message);
-              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{e.ToFormattedString()}");
+              SpeckleLog.Logger.Warning(ex, "Exception while creating speckle object");
+              AddRuntimeMessage(GH_RuntimeMessageLevel.Error, $"{ex.ToFormattedString()}");
               hasErrors = true;
             }
           }
@@ -250,11 +252,11 @@ public class CreateSpeckleObjectTaskComponent : SelectKitTaskCapableComponentBas
 
       return @base;
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
       // If we reach this, something happened that we weren't expecting...
-      SpeckleLog.Logger.Error(e, e.Message);
-      AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + e.ToFormattedString());
+      SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
     }
 
     return new Base();
