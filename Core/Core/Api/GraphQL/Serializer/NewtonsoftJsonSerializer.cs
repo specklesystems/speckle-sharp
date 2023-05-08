@@ -51,12 +51,12 @@ public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
     return DeserializeFromUtf8Stream<WebsocketMessageWrapper>(stream);
   }
 
-  public GraphQLWebSocketResponse<GraphQLResponse<TResponse>> DeserializeToWebsocketResponse<TResponse>(byte[] bytes)
+  public GraphQLWebSocketResponse<TResponse> DeserializeToWebsocketResponse<TResponse>(byte[] bytes)
   {
-    return JsonConvert.DeserializeObject<GraphQLWebSocketResponse<GraphQLResponse<TResponse>>>(
-      Encoding.UTF8.GetString(bytes),
-      JsonSerializerSettings
-    );
+    return JsonConvert.DeserializeObject<GraphQLWebSocketResponse<TResponse>>(
+    Encoding.UTF8.GetString(bytes),
+    JsonSerializerSettings
+  );
   }
 
   public Task<GraphQLResponse<TResponse>> DeserializeFromUtf8StreamAsync<TResponse>(
@@ -80,4 +80,5 @@ public class NewtonsoftJsonSerializer : IGraphQLWebsocketJsonSerializer
     var serializer = JsonSerializer.Create(JsonSerializerSettings);
     return Task.FromResult(serializer.Deserialize<T>(reader));
   }
+
 }
