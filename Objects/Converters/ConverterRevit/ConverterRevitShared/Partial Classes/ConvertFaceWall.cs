@@ -71,7 +71,8 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       Reference faceRef = GetFaceRef(mass);
 
-      if (!GetElementType<WallType>(speckleWall, appObj, out WallType wallType))
+      var wallType = GetElementType<WallType>(speckleWall, appObj, out bool _);
+      if (wallType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -125,7 +126,8 @@ namespace Objects.Converter.Revit
           Doc.Delete(existing.Id);
         }
 
-        if (!GetElementType<WallType>(speckleWall, appObj, out var wallType)) 
+        var wallType = GetElementType<WallType>(speckleWall, appObj, out bool _);
+        if (wallType == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed);
           return appObj;

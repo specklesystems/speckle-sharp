@@ -4,14 +4,11 @@
 #include "Utility.hpp"
 #include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
-#include "RealNumber.h"
-#include "DGModule.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
 using namespace FieldNames;
 
-namespace AddOnCommands
-{
+namespace AddOnCommands {
 
 
 GS::String CreateBeam::GetFieldName () const
@@ -19,19 +16,22 @@ GS::String CreateBeam::GetFieldName () const
 	return FieldNames::Beams;
 }
 
+
 GS::UniString CreateBeam::GetUndoableCommandName () const
 {
 	return "CreateSpeckleBeam";
 }
+
 
 GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
 	API_Element& beamMask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
@@ -40,7 +40,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 #else
 	element.header.typeID = API_BeamID;
 #endif
-	err = Utility::GetBaseElementData (element, &memo);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -177,7 +177,8 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			currentSegment.Get (Beam::BeamSegment::segmentData, assemblySegment);
 			Utility::CreateOneSegmentData (assemblySegment, memo.beamSegments[idx].assemblySegmentData, beamMask);
 
-			// The left overridden material name
+			// The left overridden material name - in case of circle or profiled segment the left surface is the extrusion surface, but the import does not work properly in API
+			memo.beamSegments[idx].leftMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::LeftMaterial)) {
 				memo.beamSegments[idx].leftMaterial.overridden = true;
 
@@ -191,14 +192,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attrName.ToCStr (), attrib.header.name);
 					err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError)
+					if (err == NoError) {
 						memo.beamSegments[idx].leftMaterial.attributeIndex = attrib.header.index;
-					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.attributeIndex);
+						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.attributeIndex);
+					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, leftMaterial.overridden);
 
 			// The top overridden material name
+			memo.beamSegments[idx].topMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::TopMaterial)) {
 				memo.beamSegments[idx].topMaterial.overridden = true;
 
@@ -212,14 +215,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attrName.ToCStr (), attrib.header.name);
 					err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError)
+					if (err == NoError) {
 						memo.beamSegments[idx].topMaterial.attributeIndex = attrib.header.index;
-					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.attributeIndex);
+						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.attributeIndex);
+					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, topMaterial.overridden);
 
 			// The right overridden material name
+			memo.beamSegments[idx].rightMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::RightMaterial)) {
 				memo.beamSegments[idx].rightMaterial.overridden = true;
 
@@ -233,14 +238,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attrName.ToCStr (), attrib.header.name);
 					err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError)
+					if (err == NoError) {
 						memo.beamSegments[idx].rightMaterial.attributeIndex = attrib.header.index;
-					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.attributeIndex);
+						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.attributeIndex);
+					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, rightMaterial.overridden);
 
 			// The bottom overridden material name
+			memo.beamSegments[idx].bottomMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::BottomMaterial)) {
 				memo.beamSegments[idx].bottomMaterial.overridden = true;
 
@@ -254,14 +261,16 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attrName.ToCStr (), attrib.header.name);
 					err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError)
+					if (err == NoError) {
 						memo.beamSegments[idx].bottomMaterial.attributeIndex = attrib.header.index;
-					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.attributeIndex);
+						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.attributeIndex);
+					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, bottomMaterial.overridden);
 
 			// The ends overridden material name
+			memo.beamSegments[idx].endsMaterial.overridden = false;
 			if (currentSegment.Contains (Beam::BeamSegment::EndsMaterial)) {
 				memo.beamSegments[idx].endsMaterial.overridden = true;
 
@@ -275,17 +284,19 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 					CHCopyC (attrName.ToCStr (), attrib.header.name);
 					err = ACAPI_Attribute_Get (&attrib);
 
-					if (err == NoError)
+					if (err == NoError) {
 						memo.beamSegments[idx].endsMaterial.attributeIndex = attrib.header.index;
-					ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.attributeIndex);
+						ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.attributeIndex);
+					}
 				}
-				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
 			}
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, endsMaterial.overridden);
 
 			// The overridden materials are chained
-			if (currentSegment.Contains (Beam::BeamSegment::MaterialsChained))
+			if (currentSegment.Contains (Beam::BeamSegment::MaterialsChained)) {
 				currentSegment.Get (Beam::BeamSegment::MaterialsChained, memo.beamSegments[idx].materialsChained);
-			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, materialsChained);
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamSegmentType, materialsChained);
+			}
 		}
 	}
 #pragma endregion
@@ -378,10 +389,10 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Beam::UncutProjectionModeName, uncutProjectionModeName);
 
 		GS::Optional<API_ElemProjectionModesID> type = projectionModeNames.FindValue (uncutProjectionModeName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.beam.uncutProjectionMode = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, uncutProjectionMode);
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, uncutProjectionMode);
+		}
 	}
 
 	// Overhead projection mode (Symbolic, Projected)
@@ -390,10 +401,10 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Beam::OverheadProjectionModeName, overheadProjectionModeName);
 
 		GS::Optional<API_ElemProjectionModesID> type = projectionModeNames.FindValue (overheadProjectionModeName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.beam.overheadProjectionMode = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, overheadProjectionMode);
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, overheadProjectionMode);
+		}
 	}
 
 	// Show projection (To Floor Plan Range, To Absolute Display Limit, Entire Element)
@@ -402,10 +413,10 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Beam::ViewDepthLimitationName, viewDepthLimitationName);
 
 		GS::Optional<API_ElemViewDepthLimitationsID> type = viewDepthLimitationNames.FindValue (viewDepthLimitationName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.beam.viewDepthLimitation = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, viewDepthLimitation);
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, viewDepthLimitation);
+		}
 	}
 
 	// Floor Plan and Section - Cut Surfaces
@@ -428,10 +439,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.beam.cutContourLineType = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, cutContourLineType);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, cutContourLineType);
 	}
 
 	// Override cut fill pen
@@ -458,10 +470,10 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Beam::UncutLinePenIndex, beamVisibleLinesName);
 
 		GS::Optional<API_BeamVisibleLinesID> type = beamVisibleLinesNames.FindValue (beamVisibleLinesName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.beam.showContourLines = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, showContourLines);
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, showContourLines);
+		}
 	}
 
 	// The pen index of beam uncut contour line
@@ -481,10 +493,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.beam.belowViewLineType = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, belowViewLineType);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, belowViewLineType);
 	}
 
 	// The pen index of beam overhead contour line
@@ -504,10 +517,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.beam.aboveViewLineType = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, aboveViewLineType);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, aboveViewLineType);
 	}
 
 	// The pen index of beam hidden contour line
@@ -527,10 +541,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.beam.hiddenLineType = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, hiddenLineType);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, hiddenLineType);
 	}
 
 	// Floor Plan and Section - Symbol
@@ -541,10 +556,10 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Beam::ShowReferenceAxisIndex, beamVisibleLinesName);
 
 		GS::Optional<API_BeamVisibleLinesID> type = beamVisibleLinesNames.FindValue (beamVisibleLinesName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.beam.showReferenceAxis = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, showReferenceAxis);
+			ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, showReferenceAxis);
+		}
 	}
 
 	// Reference Axis Pen
@@ -564,10 +579,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.beam.refLtype = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, refLtype);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, refLtype);
 	}
 
 	// Floor Plan and Section - Cover Fills
@@ -602,10 +618,11 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_FilltypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.beam.coverFillType = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, coverFillType);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, coverFillType);
 	}
 
 	// Cover Fill Transformation

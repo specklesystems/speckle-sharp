@@ -159,9 +159,10 @@ namespace Objects.Converter.Revit
       var columnHeaders = new List<string>();
 
       DefineColumnMetadata(revitSchedule, speckleTable, originalTableIds, columnHeaders);
-      PopulateDataTableRows(revitSchedule, speckleTable, originalTableIds, skippedIndicies);
 
-      speckleTable.headerRowIndex = Math.Max(0, GetTableHeaderIndex(revitSchedule, skippedIndicies, columnHeaders.FirstOrDefault()));
+      var headerIndexArray = GetTableHeaderIndexArray(revitSchedule, columnHeaders);
+
+      PopulateDataTableRows(revitSchedule, speckleTable, originalTableIds, headerIndexArray, columnHeaders);
 
       if (!revitSchedule.Definition.ShowHeaders)
       {
@@ -231,73 +232,105 @@ namespace Objects.Converter.Revit
       speckleTable.DefineColumn(columnMetadata);
     }
 
-    private void PopulateDataTableRows(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, Dictionary<SectionType, List<int>> skippedIndicies)
+    private void PopulateDataTableRows(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, int[] columnHeaderIndexArray, List<string> columnHeaders)
     {
+      var minHeaderIndex = columnHeaderIndexArray.Min();
+      var maxHeaderIndex = columnHeaderIndexArray.Max();
+      speckleTable.headerRowIndex = maxHeaderIndex;
       foreach (var rowInfo in RevitScheduleUtils.ScheduleRowIteration(revitSchedule))
       {
-        try
+        var rowValues = new List<string>();
+
+        if (rowInfo.masterRowIndex == maxHeaderIndex)
         {
-          var rowAdded = AddRowToSpeckleTable(
-            revitSchedule,
-            speckleTable,
-            originalTableIds,
-            rowInfo.tableSection,
-            rowInfo.section,
-            rowInfo.columnCount,
-            rowInfo.rowIndex
-          );
-          if (!rowAdded)
+          rowValues = columnHeaders;
+        }
+        else
+        {
+          rowValues = GetRowValues(revitSchedule, rowInfo.tableSection, rowInfo.columnCount, rowInfo.rowIndex);
+        }
+
+        if (rowInfo.masterRowIndex >= minHeaderIndex && rowInfo.masterRowIndex < maxHeaderIndex)
+        {
+          for (var i = 0; i < rowInfo.columnCount; i++)
           {
-            if (!skippedIndicies.ContainsKey(rowInfo.tableSection))
+            if (columnHeaderIndexArray[i] == rowInfo.masterRowIndex)
             {
-              skippedIndicies.Add(rowInfo.tableSection, new List<int>());
+              rowValues[i] = string.Empty;
             }
-            skippedIndicies[rowInfo.tableSection].Add(rowInfo.rowIndex);
           }
         }
-        catch (Autodesk.Revit.Exceptions.ArgumentOutOfRangeException ex)
+
+        var rowAdded = AddRowToSpeckleTable(
+          revitSchedule,
+          speckleTable,
+          originalTableIds,
+          rowInfo.tableSection,
+          rowInfo.section,
+          rowValues,
+          rowInfo.rowIndex
+        );
+        if (!rowAdded && rowInfo.masterRowIndex < maxHeaderIndex)
         {
+          speckleTable.headerRowIndex--;
         }
       }
     }
 
-    private int GetTableHeaderIndex(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies, string firstColumnHeader)
+    private int[] GetTableHeaderIndexArray(ViewSchedule revitSchedule, List<string> columnHeaders)
     {
       if (!revitSchedule.Definition.ShowHeaders)
       {
         return RevitScheduleUtils.ExecuteInTemporaryTransaction(() =>
         {
           revitSchedule.Definition.ShowHeaders = true;
-          return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies, firstColumnHeader);
+          return GetHeaderIndexArrayFromScheduleWithHeaders(revitSchedule, columnHeaders);
         }, Doc);
       }
 
-      return GetHeaderIndexFromScheduleWithHeaders(revitSchedule, skippedIndicies, firstColumnHeader);
+      return GetHeaderIndexArrayFromScheduleWithHeaders(revitSchedule, columnHeaders);
     }
 
-    private static int GetHeaderIndexFromScheduleWithHeaders(ViewSchedule revitSchedule, Dictionary<SectionType, List<int>> skippedIndicies, string firstColumnHeader)
+    private static int[] GetHeaderIndexArrayFromScheduleWithHeaders(ViewSchedule revitSchedule, List<string> columnHeaders)
     {
-      foreach (var rowInfo in RevitScheduleUtils.ScheduleRowIteration(revitSchedule, skippedIndicies))
+      string nextCellValue = null;
+      var headerIndexArray = new int[columnHeaders.Count];
+      var headersSetArray = new bool[columnHeaders.Count];
+      foreach (var rowInfo in RevitScheduleUtils.ScheduleRowIteration(revitSchedule))
       {
-        var cellValue = revitSchedule.GetCellText(rowInfo.tableSection, rowInfo.rowIndex, 0);
-        if (cellValue != firstColumnHeader)
+        if (rowInfo.columnCount != columnHeaders.Count)
         {
           continue;
         }
-        return rowInfo.masterRowIndex;
+
+        for (var columnIndex = 0; columnIndex < rowInfo.columnCount; columnIndex++)
+        {
+          if (headersSetArray[columnIndex])
+          {
+            continue;
+          }
+
+          var cellValue = revitSchedule.GetCellText(rowInfo.tableSection, rowInfo.rowIndex, columnIndex);
+          if (cellValue != columnHeaders[columnIndex])
+          {
+            continue;
+          }
+
+          headerIndexArray[columnIndex] = rowInfo.masterRowIndex;
+          headersSetArray[columnIndex] = true;
+
+          if (!headersSetArray.Where(o => o == false).Any())
+          {
+            return headerIndexArray;
+          }
+        }
       }
-      return -1;
+      return Enumerable.Repeat(0, columnHeaders.Count).ToArray();
     }
 
-    private bool AddRowToSpeckleTable(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, SectionType tableSection, TableSectionData section, int columnCount, int rowIndex)
+    private bool AddRowToSpeckleTable(ViewSchedule revitSchedule, DataTable speckleTable, ICollection<ElementId> originalTableIds, SectionType tableSection, TableSectionData section, List<string> rowValues, int rowIndex)
     {
-      var rowData = new List<string>();
-      for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
-      {
-        rowData.Add(revitSchedule.GetCellText(tableSection, rowIndex, columnIndex));
-      }
-
-      if (!rowData.Where(s => !string.IsNullOrEmpty(s)).Any())
+      if (!rowValues.Where(s => !string.IsNullOrEmpty(s)).Any())
       {
         return false;
       }
@@ -306,7 +339,7 @@ namespace Objects.Converter.Revit
 
       try
       {
-        speckleTable.AddRow(metadata: metadata, objects: rowData.ToArray());
+        speckleTable.AddRow(metadata: metadata, objects: rowValues.ToArray());
       }
       catch (ArgumentException)
       {
@@ -315,6 +348,17 @@ namespace Objects.Converter.Revit
       }
 
       return true;
+    }
+
+    private static List<string> GetRowValues(ViewSchedule revitSchedule, SectionType tableSection, int columnCount, int rowIndex)
+    {
+      var rowData = new List<string>();
+      for (var columnIndex = 0; columnIndex < columnCount; columnIndex++)
+      {
+        rowData.Add(revitSchedule.GetCellText(tableSection, rowIndex, columnIndex));
+      }
+
+      return rowData;
     }
     #endregion
 
@@ -393,7 +437,8 @@ namespace Objects.Converter.Revit
             tableSection = tableSection,
             section = section,
             rowIndex = rowIndex, 
-            columnCount = columnCount 
+            columnCount = columnCount,
+            masterRowIndex = masterRowIndex
           };
 
           if (skippedIndicies == null || !skippedIndicies.TryGetValue(tableSection, out var indicies) || !indicies.Contains(rowIndex))

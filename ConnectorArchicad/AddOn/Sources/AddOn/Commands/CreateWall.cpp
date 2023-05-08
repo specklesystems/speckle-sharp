@@ -33,9 +33,10 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err;
 
@@ -45,7 +46,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	element.header.typeID = API_WallID;
 #endif
 
-	err = Utility::GetBaseElementData (element, &memo);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -195,7 +196,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, poly.nCoords);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, poly.nArcs);
 
-		wallShape.SetToMemo (memo);
+		wallShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	// The thickness of the wall

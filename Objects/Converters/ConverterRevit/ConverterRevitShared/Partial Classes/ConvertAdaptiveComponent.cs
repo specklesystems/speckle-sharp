@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -21,12 +21,15 @@ namespace Objects.Converter.Revit
         return appObj;
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
-      if (!GetElementType<FamilySymbol>(speckleAc, appObj, out FamilySymbol familySymbol))
+
+      var familySymbol = GetElementType<FamilySymbol>(speckleAc, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
-      if (familySymbol.FamilyName != familyName)
+
+      if (!isExactMatch)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find adaptive component {familyName}");
         return appObj;

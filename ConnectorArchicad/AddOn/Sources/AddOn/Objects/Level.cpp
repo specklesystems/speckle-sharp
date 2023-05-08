@@ -23,6 +23,7 @@ Level::Level (short floorID, short floorIndex, const GS::UniString& name, double
 {
 }
 
+
 Objects::Level::Level (const API_StoryType& story)
 	: floorID(story.floorId), floorIndex(story.index), name(story.uName), elevation(story.level)
 {
@@ -32,6 +33,7 @@ Objects::Level::Level (const API_StoryType& story)
 		name = GS::UniString::Printf (storyNameFormat, floorIndex);
 	}
 }
+
 
 Objects::Level::Level (const Level& other)
 	: floorID(other.floorID), floorIndex(other.floorIndex), name(other.name), elevation(other.elevation)
@@ -65,6 +67,7 @@ Level& Level::operator=(const Level& other)
 	return *this;
 }
 
+
 GSErrCode Level::Restore (const GS::ObjectState& os)
 {
 	os.Get (FieldNames::ElementBase::ApplicationId, floorID);
@@ -75,6 +78,7 @@ GSErrCode Level::Restore (const GS::ObjectState& os)
 
 	return NoError;
 }
+
 
 GSErrCode Level::Store (GS::ObjectState& os) const
 {

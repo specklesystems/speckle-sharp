@@ -140,6 +140,10 @@ namespace Objects.BuiltElements.Revit
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_columntype
+  */
   public class ArchicadColumn : Column
   {
     [SchemaInfo("ArchicadColumn", "Creates an Archicad Column by curve.", "Archicad", "Structure")]

@@ -54,12 +54,17 @@ public class Loader : GH_AssemblyPriority
         .GetMethod("Init", BindingFlags.Public | BindingFlags.Static)
         .Invoke(null, new object[] { version, HostApplications.Grasshopper.Slug });
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
       // This is here to ensure that other older versions of core (which did not have the Setup class) don't bork our connector initialisation.
       // The only way this can happen right now is if a 3rd party plugin includes the Core dll in their distribution (which they shouldn't ever do).
       // Recommended practice is to assume that our connector would be installed alongside theirs.
-      SpeckleLog.Logger.Error(e, e.Message);
+      SpeckleLog.Logger.Error(
+        ex,
+        "Swallowing exception in {methodName}: {exceptionMessage}",
+        nameof(PriorityLoad),
+        ex.Message
+      );
     }
 
     Instances.CanvasCreated += OnCanvasCreated;
@@ -241,9 +246,14 @@ public class Loader : GH_AssemblyPriority
           else
             Process.Start(new ProcessStartInfo("https://speckle.systems/download") { UseShellExecute = true });
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(e, e.Message);
+          SpeckleLog.Logger.Fatal(
+            ex,
+            "Swallowing exception in {methodName}: {exceptionMessage}",
+            nameof(AddSpeckleMenu),
+            ex.Message
+          );
         }
       }
     );
@@ -318,7 +328,7 @@ public class Loader : GH_AssemblyPriority
       {
         if (task.Exception != null)
         {
-          SpeckleLog.Logger.Error(task.Exception, task.Exception.Message);
+          SpeckleLog.Logger.Error(task.Exception, "An exception occurred while fetching Kits");
           var errItem = new ToolStripMenuItem("An error occurred while fetching Kits");
           errItem.DropDown.Items.Add(task.Exception.ToFormattedString());
 

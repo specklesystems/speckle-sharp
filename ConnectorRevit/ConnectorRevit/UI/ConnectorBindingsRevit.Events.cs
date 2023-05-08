@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -39,7 +39,12 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-
+        SpeckleLog.Logger.Fatal(
+          ex,
+          "Swallowing exception in {methodName}: {exceptionMessage}",
+          nameof(WriteStreamsToFile),
+          ex.Message
+        );
       }
     }
 
@@ -110,7 +115,12 @@ namespace Speckle.ConnectorRevit.UI
           }
           catch (Exception ex)
           {
-            SpeckleLog.Logger.Error(ex, ex.Message);
+            SpeckleLog.Logger.Fatal(
+              ex,
+              "Swallowing exception in {methodName}: {exceptionMessage}",
+              nameof(ShowImportExportAlert),
+              ex.Message
+            );
           }
         };
         dialog.WindowStartupLocation = WindowStartupLocation.CenterScreen;
@@ -352,7 +362,7 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(ex, "Failed to open view");
         MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
         {
           Title = "📷 Open View Error",

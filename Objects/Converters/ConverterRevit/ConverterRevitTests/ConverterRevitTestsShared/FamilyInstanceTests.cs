@@ -69,8 +69,7 @@ namespace ConverterRevitTests
 
     internal void AssertNestedEqual(DB.Element sourceElem, DB.Element destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       //family instance
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_LEVEL_PARAM);

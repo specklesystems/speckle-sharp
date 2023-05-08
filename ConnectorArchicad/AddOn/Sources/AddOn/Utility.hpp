@@ -3,6 +3,7 @@
 
 #include "APIEnvir.h"
 #include "ACAPinc.h"
+#include "ResourceIds.hpp"
 
 
 namespace Utility {
@@ -14,7 +15,7 @@ bool ElementExists (const API_Guid& guid);
 
 bool IsElement3D (const API_Guid& guid);
 
-GSErrCode GetBaseElementData (API_Element& elem, API_ElementMemo* memo = nullptr, API_SubElement** marker = nullptr);
+GSErrCode GetBaseElementData (API_Element& elem, API_ElementMemo* memo, API_SubElement** marker, GS::Array<GS::UniString>& log);
 
 GS::Array<API_StoryType> GetStoryItems ();
 
@@ -44,6 +45,14 @@ GSErrCode GetAllCutData (API_AssemblySegmentCutData*, GS::ObjectState&);
 GSErrCode CreateOneCutData (GS::ObjectState&, API_AssemblySegmentCutData&, API_Element&);
 GSErrCode CreateAllCutData (const GS::ObjectState&, GS::UInt32&, API_Element&, API_Element&, API_ElementMemo*);
 
+// API_PivotPolyEdgeData
+GSErrCode GetOneLevelEdgeData (const API_RoofSegmentData& levelEdgeData, GS::ObjectState& out);
+GSErrCode GetOnePivotPolyEdgeData (const API_PivotPolyEdgeData& pivotPolyEdgeData, GS::ObjectState& out);
+GSErrCode GetAllPivotPolyEdgeData (API_PivotPolyEdgeData* pivotPolyEdgeData, GS::ObjectState& out);
+GSErrCode CreateOneLevelEdgeData (GS::ObjectState& currentLevelEdge, API_RoofSegmentData& levelEdgeData);
+GSErrCode CreateOnePivotPolyEdgeData (GS::ObjectState& currentPivotPolyEdge, API_PivotPolyEdgeData& pivotPolyEdgeData);
+GSErrCode CreateAllPivotPolyEdgeData (GS::ObjectState& allPivotPolyEdges, GS::UInt32& numberOfPivotPolyEdges, API_ElementMemo* memo);
+
 // Visibility
 GSErrCode GetVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::UniString& visibilityString);
 GSErrCode ExportVisibility (bool isAutoOnStoryVisibility, API_StoryVisibility visibility, GS::ObjectState& os, const char* fieldName, bool exportVisibilityValues = false);
@@ -57,6 +66,19 @@ GSErrCode ImportCoverFillTransformation (const GS::ObjectState& os, bool& coverF
 // Hatch Orientation
 GSErrCode ExportHatchOrientation (API_HatchOrientationTypeID hatchOrientationType, GS::ObjectState& os);
 GSErrCode ImportHatchOrientation (const GS::ObjectState& os, API_HatchOrientationTypeID& hatchOrientationType);
+
+// Transformation matrix
+GSErrCode ExportTransform (API_Tranmat transform, GS::ObjectState& out);
+GSErrCode ImportTransform (const GS::ObjectState& os, API_Tranmat& transform);
+
+// Conversion logging
+template<typename... Args>
+GS::UniString ComposeLogMessage (const Int32 resourceIndex, Args... args)
+{
+	GS::UniString errMsgFromatString;
+	RSGetIndString (&errMsgFromatString, ID_LOG_MESSAGES, resourceIndex, ACAPI_GetOwnResModule ());
+	return GS::UniString::Printf (errMsgFromatString, args...);
+}
 
 }
 

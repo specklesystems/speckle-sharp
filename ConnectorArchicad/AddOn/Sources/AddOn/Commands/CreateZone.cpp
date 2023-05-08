@@ -31,10 +31,10 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& mask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
-
+	GS::Array<GS::UniString>& log) const
 {
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_ZoneID;
@@ -42,7 +42,7 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 	element.header.typeID = API_ZoneID;
 #endif
 
-	GSErrCode err = Utility::GetBaseElementData (element, &memo);
+	GSErrCode err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -61,7 +61,7 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nCoords);
 		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nArcs);
 
-		zoneShape.SetToMemo (memo);
+		zoneShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	if (os.Contains (Room::Height)) {
@@ -92,7 +92,7 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 
 GS::String CreateZone::GetName () const
 {
-	return CreateZoneCommandName
+	return CreateZoneCommandName;
 }
 
 

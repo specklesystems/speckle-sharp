@@ -14,6 +14,7 @@ namespace Speckle.ConnectorRevit.UI
     public override List<ISelectionFilter> GetSelectionFilters()
     {
       var categories = new List<string>();
+      var viewFilters = new List<string>();
       var parameters = new List<string>();
       var views = new List<string>();
       var schedules = new List<string>();
@@ -24,6 +25,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         //selectionCount = CurrentDoc.Selection.GetElementIds().Count();
         categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
+        viewFilters = ConnectorRevitUtils.GetViewFilterNames(CurrentDoc.Document);
         parameters = ConnectorRevitUtils.GetParameterNames(CurrentDoc.Document);
         views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
         schedules = ConnectorRevitUtils.GetScheduleNames(CurrentDoc.Document);
@@ -35,6 +37,7 @@ namespace Speckle.ConnectorRevit.UI
          new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." },
         new ManualSelectionFilter(),
         new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all elements belonging to the selected categories"},
+        new ListSelectionFilter {Slug="filters", Name = "Filters", Icon = "Filters", Values = viewFilters, Description="Adds all elements belonging to the selected filters"},
         new ListSelectionFilter {Slug="view", Name = "View", Icon = "RemoveRedEye", Values = views, Description="Adds all objects visible in the selected views" }
       };
 
@@ -206,9 +209,49 @@ namespace Speckle.ConnectorRevit.UI
              .WhereElementIsViewIndependent()
              .WherePasses(categoryFilter).ToList());
             }
-
             return selection;
-
+          case "filters":
+            var rvtFilters = filter as ListSelectionFilter;
+            foreach (Document doc in allDocs)
+            {
+              List<Element> elements = new List<Element>();
+              var viewFilters = ConnectorRevitUtils.GetFilters(doc)
+                .Where(x=>rvtFilters.Selection.Contains(x.Name));
+              foreach (ParameterFilterElement filterElement in viewFilters)
+              {
+                ICollection<ElementId> cates = filterElement.GetCategories();
+                IList<ElementFilter> eleFilters = new List<ElementFilter>();
+                foreach (var cat in cates)
+                {
+                  eleFilters.Add(new ElementCategoryFilter(cat));
+                }
+                var cateFilter = new LogicalOrFilter(eleFilters);
+                ElementFilter elementFilter = filterElement.GetElementFilter();
+                if (elementFilter != null)
+                {
+                  elements.AddRange(new FilteredElementCollector(doc)
+                    .WhereElementIsNotElementType()
+                    .WhereElementIsViewIndependent()
+                    .WherePasses(cateFilter)
+                    .WherePasses(elementFilter).ToList());
+                }
+                else
+                {
+                  elements.AddRange(new FilteredElementCollector(doc)
+                    .WhereElementIsNotElementType()
+                    .WhereElementIsViewIndependent()
+                    .WherePasses(cateFilter)
+                    .ToList());
+                }
+               
+              }
+              if (elements.Count > 0)
+              {
+                selection.AddRange(elements.GroupBy(x => x.Id.IntegerValue).Select(x => x.First()).ToList());
+              }
+               
+            }
+            return selection;
           case "view":
             var viewFilter = filter as ListSelectionFilter;
 
@@ -339,14 +382,19 @@ namespace Speckle.ConnectorRevit.UI
             }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, ex.Message);
+              SpeckleLog.Logger.Error(
+                ex,
+                "Swallowing exception in {methodName}: {exceptionMessage}",
+                nameof(GetSelectionFilterObjects),
+                ex.Message
+              );
             }
             return selection;
         }
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-
+        SpeckleLog.Logger.Error(ex, "Failed to filter objects");
       }
 
       return selection;

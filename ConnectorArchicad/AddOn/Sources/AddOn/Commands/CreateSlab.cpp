@@ -31,9 +31,10 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& mask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_SlabID;
@@ -41,7 +42,7 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	element.header.typeID = API_SlabID;
 #endif
 
-	GSErrCode err = Utility::GetBaseElementData (element, &memo);
+	GSErrCode err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -61,7 +62,7 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nCoords);
 		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, poly.nArcs);
 
-		slabShape.SetToMemo (memo);
+		slabShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	// The floor index and level of the slab
@@ -151,9 +152,10 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	BMpFree (reinterpret_cast<GSPtr> (memo.sideMaterials));
 
 	memo.edgeTrims = (API_EdgeTrim**) BMAllocateHandle ((element.slab.poly.nCoords + 1) * sizeof (API_EdgeTrim), ALLOCATE_CLEAR, 0);
-	memo.sideMaterials = (API_OverriddenAttribute*) BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0);
+	//Ignore memo side materials because of export and import do not work properly
+	//memo.sideMaterials = (API_OverriddenAttribute*) BMAllocatePtr ((element.slab.poly.nCoords + 1) * sizeof (API_OverriddenAttribute), ALLOCATE_CLEAR, 0);
 	for (Int32 k = 1; k <= element.slab.poly.nCoords; ++k) {
-		memo.sideMaterials[k] = element.slab.sideMat;
+		//memo.sideMaterials[k] = element.slab.sideMat;
 
 		(*(memo.edgeTrims))[k].sideType = edgeType;
 		(*(memo.edgeTrims))[k].sideAngle = (edgeAngle.HasValue ()) ? edgeAngle.Get () : PI / 2;
@@ -350,6 +352,7 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	// Model
 
 	// Overridden materials
+	element.slab.topMat.overridden = false;
 	if (os.Contains (Slab::topMat)) {
 		element.slab.topMat.overridden = true;
 		os.Get (Slab::topMat, attributeName);
@@ -360,13 +363,15 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.slab.topMat.attributeIndex = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.attributeIndex);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.overridden);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.attributeIndex);
 	}
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, topMat.overridden);
 
+	element.slab.sideMat.overridden = false;
 	if (os.Contains (Slab::sideMat)) {
 		element.slab.sideMat.overridden = true;
 		os.Get (Slab::sideMat, attributeName);
@@ -377,13 +382,15 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.slab.sideMat.attributeIndex = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.attributeIndex);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.overridden);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.attributeIndex);
 	}
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, sideMat.overridden);
 
+	element.slab.botMat.overridden = false;
 	if (os.Contains (Slab::botMat)) {
 		element.slab.botMat.overridden = true;
 		os.Get (Slab::botMat, attributeName);
@@ -394,12 +401,13 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.slab.botMat.attributeIndex = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.attributeIndex);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.overridden);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.attributeIndex);
 	}
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, botMat.overridden);
 
 	// The overridden materials are chained
 	if (os.Contains (Slab::materialsChained)) {

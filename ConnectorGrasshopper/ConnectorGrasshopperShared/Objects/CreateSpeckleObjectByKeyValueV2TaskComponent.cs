@@ -116,7 +116,7 @@ public class CreateSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
     catch (Exception ex)
     {
       // If we reach this, something happened that we weren't expecting...
-      SpeckleLog.Logger.Error(ex, ex.Message);
+      SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Could not create Speckle object: " + ex.ToFormattedString());
       return null;
     }

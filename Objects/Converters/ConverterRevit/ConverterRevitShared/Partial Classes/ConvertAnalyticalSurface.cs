@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
@@ -57,7 +57,7 @@ namespace Objects.Converter.Revit
     public ApplicationObject AnalyticalSurfaceToNative(Element2D speckleElement)
     {
       var appObj = new ApplicationObject(speckleElement.id, speckleElement.speckle_type) { applicationId = speckleElement.applicationId };
-      if (!(speckleElement.property is Property2D prop2D))
+      if (speckleElement.property is not Property2D prop2D)
       {
         appObj.Update(status: ApplicationObject.State.Failed, logItem: "\"Property\" cannot be null");
         return appObj;
@@ -67,7 +67,8 @@ namespace Objects.Converter.Revit
       appObj = CreatePhysicalMember(speckleElement);
       // TODO: set properties?
 #else
-      if (!GetElementType(speckleElement, appObj, out DB.ElementType elementType))
+      var elementType = GetElementType<ElementType>(speckleElement, appObj, out bool isExactMatch);
+      if (elementType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -88,18 +89,18 @@ namespace Objects.Converter.Revit
 
       if (docObj != null && docObj is AnalyticalPanel analyticalMember)
       {
+        isUpdate = true;
+        revitMember = analyticalMember;
+
         // TODO check if there are openings in the panel
         var polycurve = PolycurveFromTopology(speckleElement.topology);
         var curveArray = CurveToNative(polycurve, true);
         var curveLoop = CurveArrayToCurveLoop(curveArray);
         analyticalMember.SetOuterContour(curveLoop);
 
-        //update type
-        isUpdate = true;
-        revitMember = analyticalMember;
-
-        if (analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+        if (isExactMatch && analyticalToPhysicalManager.HasAssociation(revitMember.Id))
         {
+          //update type
           var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
           physicalMember = Doc.GetElement(physicalMemberId);
 
