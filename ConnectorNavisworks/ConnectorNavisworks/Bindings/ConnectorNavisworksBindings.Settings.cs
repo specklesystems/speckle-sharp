@@ -68,16 +68,17 @@ public partial class ConnectorBindingsNavisworks
       {
         Slug = "full-tree",
         Name = "Include Full Hierarchy",
-        IsChecked = true,
+        IsChecked = false,
         Description = "Include the full root to leaf selection hierarchy of nodes in the commit."
-      },
-      new CheckBoxSetting
-      {
-      Slug = "store-hidden",
-      Name = "Preserve Hidden State",
-      IsChecked = true,
-      Description = "For Saved Selections, preserve the hidden state of Child Elements."
-    }
+      }
+      // ,
+      //   new CheckBoxSetting
+      //   {
+      //   Slug = "store-hidden",
+      //   Name = "Preserve Hidden State",
+      //   IsChecked = true,
+      //   Description = "For Saved Selections, preserve the hidden state of Child Elements."
+      // }
     };
   }
 }
