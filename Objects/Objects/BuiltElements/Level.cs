@@ -87,6 +87,10 @@ namespace Objects.BuiltElements.Revit
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_storytype
+  */
   public class ArchicadLevel : Level
   {
     public short index { get; set; }
