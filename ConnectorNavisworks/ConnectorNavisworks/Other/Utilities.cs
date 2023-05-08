@@ -172,14 +172,26 @@ public static class Utilities
       : string.Join("-", arrayData.Select(x => x.ToString().PadLeft(4, '0')));
   }
 
+  /// <summary>
+  /// Builds a nested object hierarchy from a dictionary, where each entry in the dictionary
+  /// represents an object and its parent's identifier.
+  /// </summary>
+  /// <param name="dictionary">
+  /// A dictionary containing objects and their parent identifiers as a tuple.
+  /// The key of the dictionary is the object identifier, and the value is a tuple of (object, parent identifier).
+  /// </param>
+  /// <returns>A list of root objects, each containing its nested children objects.</returns>
   internal static List<Base> BuildNestedObjectHierarchy(Dictionary<string, Tuple<Base, string>> dictionary)
   {
+    // Group dictionary entries by their parent identifier
     var parentGroups = dictionary.Values.Where(x => !string.IsNullOrEmpty(x.Item2)).GroupBy(x => x.Item2);
 
+    // Initialize a HashSet to store root objects
     var rootSet = new HashSet<Base>();
 
     foreach (var group in parentGroups)
     {
+      // If parent not found, add all items in the group to rootSet
       if (!dictionary.TryGetValue(group.Key, out var parentTuple))
       {
         foreach ((Base item, string parentId) in group)
@@ -189,6 +201,7 @@ public static class Utilities
             var childEntries = dictionary.Values.Where(x => x.Item2 == parentId).ToList();
             collection.elements = childEntries.Select(x => x.Item1).ToList();
 
+            // Remove child entries from the dictionary that are not collections
             foreach (var childEntry in childEntries.Where(x => !(x.Item1 is Collection)))
               dictionary.Remove((string)childEntry.Item1["applicationId"]);
           }
@@ -199,10 +212,12 @@ public static class Utilities
         continue;
       }
 
+      // Get the parent object and create a list for its children
       var parent = parentTuple.Item1;
 
       var childList = new List<Base>();
 
+      // Iterate through the children and add them to the child list
       foreach (var child in group)
       {
         if (child.Item1 is not Collection)
@@ -211,9 +226,11 @@ public static class Utilities
         childList.Add(child.Item1);
       }
 
+      // Assign the child list to the parent object
       ((Collection)parent).elements = childList;
     }
 
+    // Identify and remove entries that have a non-empty parent identifier and exist in the dictionary
     var entriesToRemove = dictionary.Values
       .Where(x => !string.IsNullOrEmpty(x.Item2) && dictionary.ContainsKey(x.Item2))
       .ToList();
@@ -221,6 +238,7 @@ public static class Utilities
     foreach (var entryToRemove in entriesToRemove)
       dictionary.Remove((string)entryToRemove.Item1["applicationId"]);
 
+    // Add remaining dictionary values to the root set
     rootSet.UnionWith(dictionary.Values.Select(x => x.Item1));
 
     return rootSet.ToList();
