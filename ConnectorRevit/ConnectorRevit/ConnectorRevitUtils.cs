@@ -220,11 +220,12 @@ namespace Speckle.ConnectorRevit
 
     private static async Task<List<string>> GetViewNamesAsync(Document doc)
     {
+      using var scheduleExclusionFilter = new ElementClassFilter(typeof(ViewSchedule), true);
       var els = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
         .OfClass(typeof(View))
+        .WherePasses(scheduleExclusionFilter)
         .Cast<View>()
-        .Where(x => !IsViewRevisionSchedule(x.Name))
         .Where(x => !x.IsTemplate)
         .ToList();
       _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
@@ -232,7 +233,7 @@ namespace Speckle.ConnectorRevit
     }
     private static bool IsViewRevisionSchedule(string input)
     {
-      string pattern =  @"<[\w\s]+>(\s*\d+)?";
+      string pattern =  @"<.+>(\s*\d+)?";
       Regex rgx = new Regex(pattern);
       return rgx.IsMatch(input);
     }
@@ -242,7 +243,8 @@ namespace Speckle.ConnectorRevit
       var els = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
         .OfClass(typeof(ViewSchedule))
-        .ToElements();
+        .Where(view => !IsViewRevisionSchedule(view.Name))
+        .ToList();
 
       _cachedScheduleViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
       return _cachedScheduleViews;
