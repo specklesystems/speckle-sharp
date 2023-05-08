@@ -219,8 +219,13 @@ namespace Speckle.ConnectorRevit
 
     private static async Task<List<string>> GetViewNamesAsync(Document doc)
     {
-      var els = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(View)).ToElements();
-
+      var els = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfClass(typeof(View))
+        .Cast<View>()
+        .Where(x => !x.Name.Contains($"<Revision Schedule>"))
+        .Where(x => !x.IsTemplate)
+        .ToList();
       _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
       return _cachedViews;
     }
