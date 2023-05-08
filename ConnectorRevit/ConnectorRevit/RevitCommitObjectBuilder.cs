@@ -7,7 +7,6 @@ using Autodesk.Revit.DB;
 
 namespace Speckle.ConnectorRevit;
 
-
 public enum CommitCollectionStrategy
 {
   ByLevel,
@@ -19,9 +18,9 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
   private const string Types = "Types";
   private const string Elements = nameof(Collection.elements);
   private readonly CommitCollectionStrategy commitCollectionStrategy;
-  
-  private IDictionary<string ,Collection> collections = new Dictionary<string ,Collection>();
-  
+
+  private IDictionary<string, Collection> collections = new Dictionary<string, Collection>();
+
   public RevitCommitObjectBuilder(CommitCollectionStrategy commitCollectionStrategy)
   {
     this.commitCollectionStrategy = commitCollectionStrategy;
@@ -34,26 +33,23 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
     {
       converted.Add(col.Key, col.Value);
     }
-    
+
     // Apply object -> object, and object -> collection relationships
     ApplyRelationships(convertedObjects, rootCommitObject);
-    
+
     var rootElements = (IList<Base>)(rootCommitObject["elements"] ??= new List<Base>());
 
     //Finally, apply collection -> host relationships
     foreach (var col in collections.Values)
     {
-      if(!col.elements.Any()) continue;
+      if (!col.elements.Any())
+        continue;
       rootElements.Add(col);
     }
   }
 
-  public override void IncludeObject(
-    Base conversionResult,
-    Element nativeElement
-  )
+  public override void IncludeObject(Base conversionResult, Element nativeElement)
   {
-
     // Special case for ElementTyped objects, add them to "Types"
     if (nativeElement is ElementType)
     {
@@ -66,9 +62,11 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
 
       return;
     }
-    
-    string collectionId, collectionName, collectionType;
-    
+
+    string collectionId,
+      collectionName,
+      collectionType;
+
     switch (commitCollectionStrategy)
     {
       case CommitCollectionStrategy.ByLevel:
@@ -87,13 +85,12 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       default:
         throw new InvalidOperationException($"No case for {commitCollectionStrategy}");
     }
-      
-    
+
     Element? host = GetHost(nativeElement);
-    
+
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
     SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
-    
+
     if (!collections.ContainsKey(collectionId) && collectionId != Root)
     {
       Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
@@ -115,7 +112,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
   {
     return revitElement.Document.GetElement(revitElement.LevelId) as Level;
   }
-  
+
   private static Element? GetHost(Element hostedElement)
   {
     return hostedElement switch
@@ -127,17 +124,16 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       Autodesk.Revit.DB.DisplacementElement i => i.Document.GetElement(i.ParentId),
       Autodesk.Revit.DB.Architecture.ContinuousRail i => i.Document.GetElement(i.HostRailingId),
       Autodesk.Revit.DB.Architecture.BuildingPad i => i.Document.GetElement(i.HostId),
-      Autodesk.Revit.DB.Architecture.Railing i => i.HasHost? i.Document.GetElement(i.HostId) : null, //TODO: Check if this HasHost is required
+      Autodesk.Revit.DB.Architecture.Railing i => i.HasHost ? i.Document.GetElement(i.HostId) : null, //TODO: Check if this HasHost is required
 #if REVIT2019 || REVIT2020 || REVIT2021 || REVIT2022
       Autodesk.Revit.DB.Structure.LoadBase i => i.HostElement,
 #else
-        Autodesk.Revit.DB.Structure.LoadBase i => i.IsHosted? i.Document.GetElement(i.HostElementId) : null, //TODO: Check if this IsHosted is required
+      Autodesk.Revit.DB.Structure.LoadBase i => i.IsHosted ? i.Document.GetElement(i.HostElementId) : null, //TODO: Check if this IsHosted is required
 #endif
       Autodesk.Revit.DB.Structure.FabricSheet i => i.Document.GetElement(i.HostId),
       Autodesk.Revit.DB.Structure.FabricArea i => i.Document.GetElement(i.HostId),
-        
+
       _ => null
     };
   }
-
 }

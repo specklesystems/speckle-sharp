@@ -62,17 +62,19 @@ namespace Speckle.ConnectorRevit.UI
           .ToList()
       );
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Collection();
-      RevitCommitObjectBuilder commitObjectBuilder = new(CommitCollectionStrategy.ByLevel);
+      RevitCommitObjectBuilder commitObjectBuilder = new(CommitCollectionStrategy.ByCollection);
 
       progress.Report = new ProgressReport();
       progress.Max = selectedObjects.Count;
-      
+
       var conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
       var convertedCount = 0;
 
       await RevitTask
         .RunAsync(_ =>
         {
+          using var _d0 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+
           foreach (var revitElement in selectedObjects)
           {
             if (progress.CancellationToken.IsCancellationRequested)
@@ -89,7 +91,6 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(reportObj);
 
             //Add context to logger
-            using var _d0 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
             using var _d1 = LogContext.PushProperty("elementType", revitElement.GetType());
             using var _d2 = LogContext.PushProperty("elementCategory", revitElement.Category.Name);
 
@@ -98,13 +99,14 @@ namespace Speckle.ConnectorRevit.UI
               converter.Report.Log(reportObj); // Log object so converter can access
 
               Base result = ConvertToSpeckle(revitElement, converter);
-              
+
               reportObj.Update(
                 status: ApplicationObject.State.Created,
                 logItem: $"Sent as {ConnectorRevitUtils.SimplifySpeckleType(result.speckle_type)}"
               );
-              
+
               commitObjectBuilder.IncludeObject(result, revitElement);
+              convertedCount++;
             }
             catch (ConversionSkippedException ex)
             {
@@ -119,14 +121,11 @@ namespace Speckle.ConnectorRevit.UI
             conversionProgressDict["Conversion"]++;
             progress.Update(conversionProgressDict);
 
-            convertedCount++;
-
             YeildToUIThread(TimeSpan.FromMilliseconds(1));
           }
         })
         .ConfigureAwait(false);
 
-      
       progress.Report.Merge(converter.Report);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
@@ -137,7 +136,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       commitObjectBuilder.BuildCommitObject(commitObject);
-    
+
       var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
       var objectId = await Operations
@@ -185,7 +184,7 @@ namespace Speckle.ConnectorRevit.UI
         reportObj = applicationObject;
         return true;
       }
-      
+
       string descriptor = ConnectorRevitUtils.ObjectDescriptor(revitElement);
       reportObj = new(revitElement.UniqueId, descriptor) { applicationId = revitElement.UniqueId };
       return false;
