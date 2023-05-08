@@ -92,14 +92,14 @@ public class ToNativeTaskCapableComponent : SelectKitTaskCapableComponentBase<IG
     {
       return Utilities.TryConvertItemToNative(item, Converter, true);
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
       // If we reach this, something happened that we weren't expecting...
-      if (e is AggregateException aggregateException)
-        e = aggregateException.Flatten();
+      if (ex is AggregateException aggregateException)
+        ex = aggregateException.Flatten();
 
-      SpeckleLog.Logger.Error(e, e.Message);
-      AddRuntimeMessage(GH_RuntimeMessageLevel.Error, e.ToFormattedString());
+      SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
+      AddRuntimeMessage(GH_RuntimeMessageLevel.Error, ex.ToFormattedString());
       return new GH_SpeckleBase();
     }
   }

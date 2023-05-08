@@ -50,9 +50,7 @@ namespace ConverterRevitTests
 
     private void DirectShapeEqual(DB.DirectShape sourceElem, DB.DirectShape destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
-      Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
+      AssertElementEqual(sourceElem, destElem);
     }
 
     #endregion

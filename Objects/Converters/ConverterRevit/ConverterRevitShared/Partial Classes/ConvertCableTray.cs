@@ -22,7 +22,8 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj, out appObj))
         return appObj;
 
-      if (!GetElementType<CableTrayType>(speckleCableTray, appObj, out CableTrayType cableTrayType))
+      var cableTrayType = GetElementType<CableTrayType>(speckleCableTray, appObj, out bool _);
+      if (cableTrayType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;

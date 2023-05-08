@@ -382,12 +382,20 @@ namespace Speckle.ConnectorRevit.UI
             }
             catch (Exception ex)
             {
-              SpeckleLog.Logger.Error(ex, ex.Message);
+              SpeckleLog.Logger.Error(
+                ex,
+                "Swallowing exception in {methodName}: {exceptionMessage}",
+                nameof(GetSelectionFilterObjects),
+                ex.Message
+              );
             }
             return selection;
         }
       }
-      catch (Exception e) { }
+      catch (Exception ex)
+      {
+        SpeckleLog.Logger.Error(ex, "Failed to filter objects");
+      }
 
       return selection;
     }

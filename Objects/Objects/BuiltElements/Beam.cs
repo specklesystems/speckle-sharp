@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
@@ -120,10 +120,9 @@ namespace Objects.BuiltElements.Archicad
     public ArchicadBeam() { }
 
     // Positioning
-    public int floorIndex { get; set; }
+    public ArchicadLevel level { get; set; }
     public Point begC { get; set; }
     public Point endC { get; set; }
-    public double level { get; set; }
     public bool isSlanted { get; set; }
     public double slantAngle { get; set; }
     public string beamShape { get; set; }

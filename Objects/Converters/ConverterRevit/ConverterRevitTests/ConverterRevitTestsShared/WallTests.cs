@@ -55,8 +55,7 @@ namespace ConverterRevitTests
 
     private void AssertWallEqual(DB.Wall sourceElem, DB.Wall destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_OFFSET);

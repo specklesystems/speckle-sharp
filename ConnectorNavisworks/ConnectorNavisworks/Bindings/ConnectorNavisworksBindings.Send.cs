@@ -295,7 +295,7 @@ public partial class ConnectorBindingsNavisworks
       objectId = objectId,
       branchName = state.BranchName,
       message = state.CommitMessage ?? $"Sent {totalConversions} elements from {HostApplications.Navisworks.Name}.",
-      sourceApplication = HostApplications.Navisworks.Slug
+      sourceApplication = HostAppNameVersion
     };
 
     var commitId = await ConnectorHelpers

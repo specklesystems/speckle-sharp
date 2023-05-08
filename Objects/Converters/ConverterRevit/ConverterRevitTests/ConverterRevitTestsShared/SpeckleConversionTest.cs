@@ -291,30 +291,24 @@ namespace ConverterRevitTests
     {
       Assert.NotNull(elem);
       Assert.NotNull(spkElem);
-      //Assert.NotNull(spkElem["parameters"]);
-      Assert.NotNull(spkElem["elementId"]);
+      Assert.NotNull(spkElem["speckle_type"]);
+      Assert.NotNull(spkElem["applicationId"]);
 
-      var elemAsFam = elem as FamilyInstance;
-      // HACK: This is not reliable or acceptable as a testing strategy.
-      if (
-        !(
-          elem is DB.Architecture.Room
-          || elem is DB.Mechanical.Duct
-          || elemAsFam != null && AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(elem as FamilyInstance)
-        )
-      )
-        Assert.Equal(elem.Name, spkElem["type"]);
+      SpeckleUtils.CustomAssertions(elem, spkElem);
+    }
 
-      //Assert.NotNull(spkElem.baseGeometry);
-
-      //Assert.NotNull(spkElem.level);
-      //Assert.NotNull(spkRevit.displayMesh);
+    internal void AssertElementEqual(DB.Element sourceElem, DB.Element destElem)
+    {
+      Assert.NotNull(sourceElem);
+      Assert.NotNull(destElem);
+      Assert.Equal(sourceElem.Name, destElem.Name);
+      Assert.Equal(sourceElem.GetTypeId(), destElem.GetTypeId());
+      Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
     }
 
     internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);

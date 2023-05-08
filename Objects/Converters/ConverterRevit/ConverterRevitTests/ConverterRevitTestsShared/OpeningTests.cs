@@ -66,8 +66,7 @@ namespace ConverterRevitTests
       if (!(sourceElem is DB.Opening))
         return;
 
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);

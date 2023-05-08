@@ -57,7 +57,8 @@ namespace Objects.Converter.Revit
       level ??= ConvertLevelToRevit(LevelFromCurve(baseLine), out ApplicationObject.State levelState);
       var isUpdate = false;
 
-      if (!GetElementType<FamilySymbol>(speckleStick, appObj, out DB.FamilySymbol familySymbol))
+      var familySymbol = GetElementType<FamilySymbol>(speckleStick, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -77,17 +78,20 @@ namespace Objects.Converter.Revit
         else
           analyticalMember.SetCurve(baseLine);
 
-        //update type
-        analyticalMember.SectionTypeId = familySymbol.Id;
-        isUpdate = true;
-        revitMember = analyticalMember;
-
-        if (analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+        if (isExactMatch)
         {
-          var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
-          physicalMember = (DB.FamilyInstance)Doc.GetElement(physicalMemberId);
-          if (physicalMember.Symbol != familySymbol)
-            physicalMember.Symbol = familySymbol;
+          //update type
+          analyticalMember.SectionTypeId = familySymbol.Id;
+          isUpdate = true;
+          revitMember = analyticalMember;
+
+          if (analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+          {
+            var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
+            physicalMember = (DB.FamilyInstance)Doc.GetElement(physicalMemberId);
+            if (physicalMember.Symbol != familySymbol)
+              physicalMember.Symbol = familySymbol;
+          }
         }
       }
 

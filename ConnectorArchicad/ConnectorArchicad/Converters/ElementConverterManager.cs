@@ -17,6 +17,8 @@ using Ceiling = Objects.BuiltElements.Ceiling;
 using Column = Objects.BuiltElements.Column;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Floor;
+using Roof = Objects.BuiltElements.Roof;
+using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 
@@ -149,6 +151,8 @@ namespace Archicad
         return Converters[typeof(Window)];
       if (elementType.IsSubclassOf(typeof(Floor)) || elementType.IsSubclassOf(typeof(Ceiling)))
         return Converters[typeof(Floor)];
+      if (elementType.IsSubclassOf(typeof(Roof)))
+        return Converters[typeof(Roof)];
       if (elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)))
         return Converters[typeof(Objects.BuiltElements.Room)];
 

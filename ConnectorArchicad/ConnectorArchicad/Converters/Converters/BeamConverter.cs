@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
@@ -16,7 +15,10 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Beam);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var beams = new List<Objects.BuiltElements.Archicad.ArchicadBeam>();
       foreach (var tc in elements)
@@ -41,7 +43,7 @@ namespace Archicad.Converters
 
               beams.Add(newBeam);
             }
-                      
+
             break;
         }
       }
@@ -51,14 +53,16 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
-      IEnumerable<Objects.BuiltElements.Archicad.ArchicadBeam> data =
-        await AsyncCommandProcessor.Execute(
-          new Communication.Commands.GetBeamData(elementModels.Select(e => e.applicationId)),
-          token);
+      IEnumerable<Objects.BuiltElements.Archicad.ArchicadBeam> data = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetBeamData(elementModels.Select(e => e.applicationId)),
+        token
+      );
       if (data is null)
       {
         return new List<Base>();
@@ -69,9 +73,9 @@ namespace Archicad.Converters
       {
         // downgrade (always): Objects.BuiltElements.Archicad.ArchicadBeam --> Objects.BuiltElements.Beam
         {
-          beam.displayValue =
-            Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == beam.applicationId)
-              .model);
+          beam.displayValue = Operations.ModelConverter.MeshesToSpeckle(
+            elementModels.First(e => e.applicationId == beam.applicationId).model
+          );
           beam.baseLine = new Line(beam.begC, beam.endC);
           beams.Add(beam);
         }

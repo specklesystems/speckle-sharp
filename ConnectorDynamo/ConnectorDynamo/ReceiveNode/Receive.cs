@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -186,7 +186,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <param name="inPorts"></param>
     /// <param name="outPorts"></param>
     [JsonConstructor]
-    private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts) : base(inPorts, outPorts)
+    private Receive(IEnumerable<PortModel> inPorts, IEnumerable<PortModel> outPorts)
+      : base(inPorts, outPorts)
     {
       if (inPorts.Count() == 1)
       {
@@ -213,7 +214,6 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// </summary>
     public Receive()
     {
-
       AddInputs();
       AddOutputs();
 
@@ -310,8 +310,7 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
           }
         }
 
-        var data = Functions.Functions.Receive(Stream, _cancellationToken.Token, ProgressAction,
-          ErrorAction);
+        var data = Functions.Functions.Receive(Stream, _cancellationToken.Token, ProgressAction, ErrorAction);
 
         if (data != null)
         {
@@ -466,7 +465,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       var astId = valuesNode.GetAstIdentifierForOutputIndex(valuesIndex).Name;
       var inputMirror = engine.GetMirror(astId);
 
-      if (inputMirror?.GetData() == null) return default(T);
+      if (inputMirror?.GetData() == null)
+        return default(T);
 
       var data = inputMirror.GetData();
 
@@ -503,7 +503,12 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(
+          ex,
+          "Swallowing exception in {methodName}: {exceptionMessage}",
+          nameof(CheckIfBehind),
+          ex.Message
+        );
       }
     }
 
@@ -522,7 +527,12 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(
+          ex,
+          "Swallowing exception in {methodName}: {exceptionMessage}",
+          nameof(GetExpiredObjectCount),
+          ex.Message
+        );
       }
     }
 
@@ -567,7 +577,8 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
 
     private void OnCommitChange(object sender, CommitInfo e)
     {
-      if (e.branchName != (Stream.BranchName ?? "main")) return;
+      if (e.branchName != (Stream.BranchName ?? "main"))
+        return;
 
       Task.Run(async () => GetExpiredObjectCount(e.objectId));
       if (AutoUpdate)
@@ -599,11 +610,11 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
     /// <returns></returns>
     public override IEnumerable<AssociativeNode> BuildOutputAst(List<AssociativeNode> inputAstNodes)
     {
-
       if (!InPorts[0].IsConnected || !_hasOutput || string.IsNullOrEmpty(LastCommitId))
       {
-        return OutPorts.Enumerate().Select(output =>
-          AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
+        return OutPorts
+          .Enumerate()
+          .Select(output => AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(output.Index), new NullNode()));
       }
 
       _hasOutput = false;
@@ -611,11 +622,13 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       var primitiveNode = AstFactory.BuildStringNode(LastCommitId);
       var dataFunctionCall = AstFactory.BuildFunctionCall(
         new Func<string, object>(Functions.Functions.ReceiveData),
-        new List<AssociativeNode> { primitiveNode });
+        new List<AssociativeNode> { primitiveNode }
+      );
 
       var infoFunctionCall = AstFactory.BuildFunctionCall(
         new Func<string, string>(Functions.Functions.ReceiveInfo),
-        new List<AssociativeNode> { primitiveNode });
+        new List<AssociativeNode> { primitiveNode }
+      );
 
       associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(0), dataFunctionCall));
       associativeNodes.Add(AstFactory.BuildAssignment(GetAstIdentifierForOutputIndex(1), infoFunctionCall));

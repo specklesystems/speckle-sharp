@@ -36,8 +36,7 @@ namespace ConverterRevitTests
 
     private void AssertPipeEqual(DB.Pipe sourceElem, DB.Pipe destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.CURVE_ELEM_LENGTH);

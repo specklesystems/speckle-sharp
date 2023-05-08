@@ -26,13 +26,12 @@ namespace ConverterRevitTests
     public ScheduleTests(ScheduleFixture fixture)
       : base(fixture) { }
 
-    // This test doesn't work because our ToSpeckle test logic really isn't that good
-    //[Fact]
-    //[Trait("Schedule", "ToSpeckle")]
-    //public async Task ScheduleToSpeckle()
-    //{
-    //  await NativeToSpeckle();
-    //}
+   [Fact]
+   [Trait("Schedule", "ToSpeckle")]
+    public async Task ScheduleToSpeckle()
+    {
+      await NativeToSpeckle();
+    }
 
     #region ToNative
 
@@ -54,7 +53,7 @@ namespace ConverterRevitTests
 
     internal async Task AssertSchedulesEqual(DB.ViewSchedule sourceElem, DB.ViewSchedule destElem)
     {
-      Assert.NotNull(destElem);
+      AssertElementEqual(sourceElem, destElem);
 
       var sourceValueList = await RevitTask
         .RunAsync(app =>

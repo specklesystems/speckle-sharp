@@ -36,8 +36,7 @@ namespace ConverterRevitTests
 
     private void AssertWireEqual(DB.Wire sourceElem, DB.Wire destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_ELEC_WIRE_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FABRIC_WIRE_LENGTH);

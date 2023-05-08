@@ -70,7 +70,8 @@ namespace Objects.Converter.Revit
       var convertedMEPCurves = convertedElements.Where(e => e.Value is MEPCurve).ToArray();
       foreach (var networkElement in connectorBasedCreationElements)
       {
-        if (!GetElementType(networkElement.elements, appObj, out FamilySymbol familySymbol))
+        var familySymbol = GetElementType<FamilySymbol>(networkElement.elements, appObj, out bool _);
+        if (familySymbol == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed);
           continue;
@@ -298,22 +299,17 @@ namespace Objects.Converter.Revit
           continue;
         }
 
-        reportObj.Update(
-          status: ApplicationObject.State.Created,
-          logItem: $"Attached as connected element to {initialElement.UniqueId}"
-        );
-        @network.elements.Add(
-          new RevitNetworkElement()
-          {
-            applicationId = element.UniqueId,
-            name = element.Name,
-            elements = obj,
-            linkIndices = new List<int>(),
-            isConnectorBased = connectorBasedCreation,
-            isCurveBased = element is MEPCurve
-          }
-        );
-        ConvertedObjectsList.Add(obj.applicationId);
+        reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as connected element to {initialElement.UniqueId}");
+        @network.elements.Add(new RevitNetworkElement()
+        {
+          applicationId = element.UniqueId,
+          name = element.Name,
+          elements = obj,
+          linkIndices = new List<int>(),
+          isConnectorBased = connectorBasedCreation,
+          isCurveBased = element is MEPCurve
+        });
+        ConvertedObjects.Add(obj.applicationId);
 
         Report.Log(reportObj);
       }

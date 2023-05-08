@@ -59,7 +59,8 @@ namespace Objects.Converter.Revit
       var outline = CurveToNative(flattenedOutline, true);
       UnboundCurveIfSingle(outline);
 
-      if (!GetElementType<FloorType>(speckleFloor, appObj, out FloorType floorType))
+      var floorType = GetElementType<FloorType>(speckleFloor, appObj, out bool _);
+      if (floorType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;

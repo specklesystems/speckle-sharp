@@ -54,24 +54,26 @@ namespace Objects.Converter.Archicad
 
     public bool CanConvertToNativeImplemented(Base @object)
     {
-      return @object
-        switch
+      return @object switch
       {
         // Speckle BIM elements
         Objects.BuiltElements.Beam _ => true,
         Objects.BuiltElements.Column _ => true,
         Objects.BuiltElements.Floor _ => true,
         Objects.BuiltElements.Ceiling _ => true,
+        Objects.BuiltElements.Roof _ => true,
         Objects.BuiltElements.Room _ => true,
         Objects.BuiltElements.Wall _ => true,
 
         // Archicad elements
-        Objects.BuiltElements.Archicad.ArchicadDoor => true,
+        Objects.BuiltElements.Archicad.ArchicadDoor
+          => true,
         Objects.BuiltElements.Archicad.ArchicadWindow => true,
         Objects.BuiltElements.Archicad.DirectShape _ => true,
 
         // Revit elements
-        Objects.BuiltElements.Revit.FamilyInstance => true,
+        Objects.BuiltElements.Revit.FamilyInstance
+          => true,
         Objects.Other.Revit.RevitInstance => true,
 
         // Speckle geomtries
@@ -80,12 +82,11 @@ namespace Objects.Converter.Archicad
 
         _ => false
       };
-     }
+    }
 
     public bool CanConvertToNativeNotImplemented(Base @object)
     {
-      return @object
-        switch
+      return @object switch
       {
         // Project info
         Objects.Organization.ModelInfo _ => true,
@@ -111,9 +112,7 @@ namespace Objects.Converter.Archicad
     /// </summary>
     public List<ApplicationObject> PreviousContextObjects { get; set; } = new List<ApplicationObject>();
 
-    public void SetContextDocument(object doc)
-    {
-    }
+    public void SetContextDocument(object doc) { }
 
     public void SetContextObjects(List<ApplicationObject> objects) => ContextObjects = objects;
 
@@ -145,9 +144,7 @@ namespace Objects.Converter.Archicad
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects) => PreviousContextObjects = objects;
 
-    public void SetConverterSettings(object settings)
-    {
-    }
+    public void SetConverterSettings(object settings) { }
 
     public ConverterArchicad(ConversionOptions conversionOptions)
     {

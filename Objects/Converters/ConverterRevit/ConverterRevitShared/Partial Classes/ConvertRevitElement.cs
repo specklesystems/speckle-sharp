@@ -37,7 +37,8 @@ namespace Objects.Converter.Revit
       speckleElement.category = revitElement.Category.Name;
 
       GetHostedElements(speckleElement, revitElement, out notes);
-      var elements = speckleElement["elements"] as List<Base>;
+      
+      var elements = (speckleElement["elements"] ?? @speckleElement["@elements"]) as List<Base>;
       elements ??= new List<Base>();
 
       // get the displayvalue of this revit element

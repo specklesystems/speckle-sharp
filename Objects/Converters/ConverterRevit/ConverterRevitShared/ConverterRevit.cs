@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
     /// <summary>
     /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
     /// </summary>
-    public List<string> ConvertedObjectsList { get; set; } = new List<string>();
+    public ISet<string> ConvertedObjects { get; private set; } = new HashSet<string>();
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
@@ -133,9 +133,9 @@ namespace Objects.Converter.Revit
       foreach (var ao in objects)
       {
         var key = ao.applicationId ?? ao.OriginalId;
-        if (ContextObjects.ContainsKey(key))
+        if (PreviousContextObjects.ContainsKey(key))
           continue;
-        ContextObjects.Add(key, ao);
+        PreviousContextObjects.Add(key, ao);
       }
     }
 
