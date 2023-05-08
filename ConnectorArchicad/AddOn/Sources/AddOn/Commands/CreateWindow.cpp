@@ -34,9 +34,10 @@ GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& curren
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& /*memoMask*/,
+	API_SubElement** marker,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** marker /*= nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
@@ -48,14 +49,14 @@ GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& curren
 
 	*marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));
-	err = Utility::GetBaseElementData (element, &memo, marker);
+	err = Utility::GetBaseElementData (element, &memo, marker, log);
 	if (err != NoError)
 		return err;
 
 	if (!CheckEnvironment (currentWindow, element))
 		return Error;
 
-	err = GetOpeningBaseFromObjectState<API_WindowType> (currentWindow, element.window, elementMask);
+	err = GetOpeningBaseFromObjectState<API_WindowType> (currentWindow, element.window, elementMask, log);
 
 	return err;
 }
