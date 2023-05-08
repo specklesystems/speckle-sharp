@@ -29,9 +29,10 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker = nullptr*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
@@ -40,7 +41,7 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 #else
 	element.header.typeID = API_RoofID;
 #endif
-	err = Utility::GetBaseElementData (element, &memo);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 

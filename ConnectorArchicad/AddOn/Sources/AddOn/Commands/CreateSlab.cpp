@@ -31,9 +31,10 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& mask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 #ifdef ServerMainVers_2600
 	element.header.type.typeID = API_SlabID;
@@ -41,7 +42,7 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	element.header.typeID = API_SlabID;
 #endif
 
-	GSErrCode err = Utility::GetBaseElementData (element, &memo);
+	GSErrCode err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 

@@ -16,9 +16,10 @@ class CreateSlab : public CreateCommand {
 							API_Element& elementMask,
 							API_ElementMemo& memo,
 							GS::UInt64& memoMask,
+							API_SubElement** marker,
 							AttributeManager& attributeManager,
 							LibpartImportManager& libpartImportManager,
-							API_SubElement** marker = nullptr) const override;
+							GS::Array<GS::UniString>& log) const override;
 
 public:
 	virtual GS::String	GetName () const override;
