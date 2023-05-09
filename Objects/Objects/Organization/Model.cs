@@ -8,11 +8,11 @@ namespace Objects.Organization;
 /// Represents a model from an authoring application and can be used as the root commit object when sending.
 /// It contains <see cref="ModelInfo"/> and <see cref="Setting"/> objects
 /// </summary>
-public class Model : Base
+public class Model : Collection
 {
   public Model() { }
 
-  public Model(ModelInfo info, List<Setting> settings = null)
+  public Model(ModelInfo info, List<Setting>? settings = null)
   {
     this.info = info;
     this.settings = settings;
@@ -24,7 +24,8 @@ public class Model : Base
   /// </summary>
   public ModelInfo info { get; set; }
 
-  public List<Setting> settings { get; set; }
+  [System.Obsolete("These are not being used")]
+  public List<Setting>? settings { get; set; }
 }
 
 /// <summary>

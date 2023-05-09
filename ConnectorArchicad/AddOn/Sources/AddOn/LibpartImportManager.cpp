@@ -241,11 +241,13 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 
 				Int32 startPointId = pointIds[start], endPointId = pointIds[end];
 				GS::Pair<Int32, Int32> edge (startPointId, endPointId);
+				GS::Pair<Int32, Int32> inverseEdge (endPointId, startPointId);
 
 				bool smooth = false;
 				bool hidden = false;
-				if (edges.ContainsKey (edge)) {
-					switch (edges[edge]) {
+				GS::UShort edgeStatus;
+				if (edges.Get (edge, &edgeStatus) || edges.Get(inverseEdge, &edgeStatus)) {
+					switch (edgeStatus) {
 					case ModelInfo::HiddenEdge:
 						hidden = true;
 						break;
@@ -267,7 +269,7 @@ GSErrCode LibpartImportManager::CreateLibraryPart (const ModelInfo& modelInfo,
 			ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 
 			for (UInt32 i = 0; i < pointsCount; i++) {
-				line = GS::String::SPrintf (", %d", edgeIndex + i);
+				line = GS::String::SPrintf (",%s%d", ((i + 1) % 10 == 0 ? GS::EOL : " "), edgeIndex + i);
 				ACAPI_LibPart_WriteSection (line.GetLength(), line.ToCStr());
 			}
 
