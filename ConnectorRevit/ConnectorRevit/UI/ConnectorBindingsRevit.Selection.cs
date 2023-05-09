@@ -17,6 +17,7 @@ namespace Speckle.ConnectorRevit.UI
       var viewFilters = new List<string>();
 
       var views = new List<string>();
+      var schedules = new List<string>();
       var worksets = new List<string>();
       var projectInfo = new List<string> { "Project Info", "Levels", "Views 2D", "Views 3D", "Families & Types" };
 
@@ -26,6 +27,7 @@ namespace Speckle.ConnectorRevit.UI
         categories = ConnectorRevitUtils.GetCategoryNames(CurrentDoc.Document);
         viewFilters = ConnectorRevitUtils.GetViewFilterNames(CurrentDoc.Document);
         views = ConnectorRevitUtils.GetViewNames(CurrentDoc.Document);
+        schedules = ConnectorRevitUtils.GetScheduleNames(CurrentDoc.Document);
         worksets = ConnectorRevitUtils.GetWorksets(CurrentDoc.Document);
       }
 
@@ -35,13 +37,19 @@ namespace Speckle.ConnectorRevit.UI
         new ManualSelectionFilter(),
         new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all elements belonging to the selected categories"},
         new ListSelectionFilter { Slug = "view", Name = "View", Icon = "RemoveRedEye", Values = views, Description = "Adds all objects visible in the selected views" },
-        new ListSelectionFilter { Slug = "project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description = "Adds the selected project information such as levels, views and family names to the stream" }
       };
 
+      if (schedules.Any())
+        filters.Add(new ListSelectionFilter { Slug = "schedule", Name = "Schedule", Icon = "Table", Values = schedules, Description = "Sends the selected schedule as a DataTable" });
+
       if (viewFilters.Any())
-        filters.Insert(3, new ListSelectionFilter { Slug = "filter", Name = "Filters", Icon = "FilterList", Values = viewFilters, Description = "Adds all elements that pass the selected filters" });
+        filters.Add(new ListSelectionFilter { Slug = "filter", Name = "Filters", Icon = "FilterList", Values = viewFilters, Description = "Adds all elements that pass the selected filters" });
+
       if (worksets.Any())
-        filters.Insert(4, new ListSelectionFilter { Slug = "workset", Name = "Workset", Icon = "Group", Values = worksets, Description = "Adds all elements belonging to the selected workset" });
+        filters.Add(new ListSelectionFilter { Slug = "workset", Name = "Workset", Icon = "Group", Values = worksets, Description = "Adds all elements belonging to the selected workset" });
+
+      filters.Add(new ListSelectionFilter { Slug = "project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description = "Adds the selected project information such as levels, views and family names to the stream" });
+
 
 
       return filters;
@@ -265,6 +273,20 @@ namespace Speckle.ConnectorRevit.UI
                 .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
                 .ToList());
               }
+            }
+            return selection;
+
+          case "schedule":
+            var scheduleFilter = filter as ListSelectionFilter;
+
+            var schedules = new FilteredElementCollector(currentDoc)
+              .WhereElementIsNotElementType()
+              .OfClass(typeof(ViewSchedule))
+              .Where(x => scheduleFilter.Selection.Contains(x.Name));
+
+            foreach (var schedule in schedules)
+            {
+              selection.Add(schedule);
             }
             return selection;
 

@@ -24,6 +24,7 @@ namespace Speckle.ConnectorRevit
 #endif
 
     private static List<string> _cachedViews = null;
+    private static List<string> _cachedScheduleViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
 
     private static Dictionary<string, Category> _categories { get; set; }
@@ -62,7 +63,7 @@ namespace Speckle.ConnectorRevit
         .OrderBy(x => x.Name)
         .ToList();
     }
-
+    
     /// <summary>
     /// We want to display a user-friendly category names when grouping objects
     /// For this we are simplifying the BuiltIn one as otherwise, by using the display value, we'd be getting localized category names
@@ -179,10 +180,34 @@ namespace Speckle.ConnectorRevit
 
     private static async Task<List<string>> GetViewNamesAsync(Document doc)
     {
-      var els = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(View)).ToElements();
-
+      using var scheduleExclusionFilter = new ElementClassFilter(typeof(ViewSchedule), true);
+      var els = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfClass(typeof(View))
+        .WherePasses(scheduleExclusionFilter)
+        .Cast<View>()
+        .Where(x => !x.IsTemplate)
+        .ToList();
       _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
       return _cachedViews;
+    }
+    private static bool IsViewRevisionSchedule(string input)
+    {
+      string pattern =  @"<.+>(\s*\d+)?";
+      Regex rgx = new Regex(pattern);
+      return rgx.IsMatch(input);
+    }
+    
+    private static async Task<List<string>> GetScheduleNamesAsync(Document doc)
+    {
+      var els = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfClass(typeof(ViewSchedule))
+        .Where(view => !IsViewRevisionSchedule(view.Name))
+        .ToList();
+
+      _cachedScheduleViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
+      return _cachedScheduleViews;
     }
 
     /// <summary>
@@ -200,6 +225,17 @@ namespace Speckle.ConnectorRevit
       }
 
       return GetViewNamesAsync(doc).Result;
+    }
+    public static List<string> GetScheduleNames(Document doc)
+    {
+      if (_cachedScheduleViews != null)
+      {
+        //don't wait for it to finish
+        GetScheduleNamesAsync(doc);
+        return _cachedScheduleViews;
+      }
+
+      return GetScheduleNamesAsync(doc).Result;
     }
 
     public static bool IsPhysicalElement(this Element e)
