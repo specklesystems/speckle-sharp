@@ -200,7 +200,7 @@ namespace Speckle.ConnectorRevit.UI
              .WherePasses(categoryFilter).ToList());
             }
             return selection;
-          case "filters":
+          case "filter":
             var rvtFilters = filter as ListSelectionFilter;
             foreach (Document doc in allDocs)
             {
