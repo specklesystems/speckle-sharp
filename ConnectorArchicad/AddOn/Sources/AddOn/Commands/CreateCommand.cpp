@@ -56,6 +56,9 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 
 		GS::Array<GS::ObjectState> applicationObjects;
 
+		AttributeManager* attributeManager = AttributeManager::GetInstance ();
+		LibpartImportManager* libpartImportManager = LibpartImportManager::GetInstance ();
+
 		Utility::Database db;
 		db.SwitchToFloorPlan ();
 
@@ -99,7 +102,8 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 				}
 			}
 
-			GSErrCode err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, *AttributeManager::GetInstance (), *LibpartImportManager::GetInstance (), &marker);
+			GS::Array<GS::UniString> log;
+			GSErrCode err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, &marker, *attributeManager, *libpartImportManager, log);
 			if (err == NoError) {
 				if (elementExists) {
 					err = ModifyExistingElement (element, elementMask, memo, memoMask);
@@ -126,6 +130,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 				ExchangeManager::GetInstance().UpdateState (speckleId, element.header.guid);
 			} else {
 				applicationObject.Add (ApplicationObject::Status, ApplicationObject::StateFailed);
+				applicationObject.Add (ApplicationObject::Log, log);
 			}
 
 			applicationObjects.Push (applicationObject);

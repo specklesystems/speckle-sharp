@@ -82,7 +82,7 @@ GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
 
 GS::String GetRoomData::GetName () const
 {
-	return GetRoomDataCommandName
+	return GetRoomDataCommandName;
 }
 
 

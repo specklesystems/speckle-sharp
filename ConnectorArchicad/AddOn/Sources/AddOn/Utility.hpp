@@ -3,6 +3,7 @@
 
 #include "APIEnvir.h"
 #include "ACAPinc.h"
+#include "ResourceIds.hpp"
 
 
 namespace Utility {
@@ -14,7 +15,7 @@ bool ElementExists (const API_Guid& guid);
 
 bool IsElement3D (const API_Guid& guid);
 
-GSErrCode GetBaseElementData (API_Element& elem, API_ElementMemo* memo = nullptr, API_SubElement** marker = nullptr);
+GSErrCode GetBaseElementData (API_Element& elem, API_ElementMemo* memo, API_SubElement** marker, GS::Array<GS::UniString>& log);
 
 GS::Array<API_StoryType> GetStoryItems ();
 
@@ -69,6 +70,15 @@ GSErrCode ImportHatchOrientation (const GS::ObjectState& os, API_HatchOrientatio
 // Transformation matrix
 GSErrCode ExportTransform (API_Tranmat transform, GS::ObjectState& out);
 GSErrCode ImportTransform (const GS::ObjectState& os, API_Tranmat& transform);
+
+// Conversion logging
+template<typename... Args>
+GS::UniString ComposeLogMessage (const Int32 resourceIndex, Args... args)
+{
+	GS::UniString errMsgFromatString;
+	RSGetIndString (&errMsgFromatString, ID_LOG_MESSAGES, resourceIndex, ACAPI_GetOwnResModule ());
+	return GS::UniString::Printf (errMsgFromatString, args...);
+}
 
 }
 

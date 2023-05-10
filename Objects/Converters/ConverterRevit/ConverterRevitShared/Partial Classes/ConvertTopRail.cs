@@ -9,9 +9,6 @@ namespace Objects.Converter.Revit
   {
     private RevitTopRail TopRailToSpeckle(TopRail revitTopRail)
     {
-      if (!ShouldConvertHostedElement(revitTopRail, Doc.GetElement(revitTopRail.HostRailingId)))
-        return null;
-
       var topRailType = revitTopRail.Document.GetElement(revitTopRail.GetTypeId()) as TopRailType;
       var speckleTopRail = new RevitTopRail
       {

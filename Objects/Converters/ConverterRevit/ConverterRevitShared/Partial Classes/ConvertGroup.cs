@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -21,8 +21,7 @@ namespace Objects.Converter.Revit
       @base["name"] = revitGroup.Name;
       @base["type"] = "group";
       @base["level"] = ConvertAndCacheLevel(revitGroup, BuiltInParameter.GROUP_LEVEL);
-
-      var convertedHostedElements = new List<Base>();
+      
 
       // loop backward through the list so you can remove elements as you go through it
       for (int i = elIdsToConvert.Count - 1; i >= 0; i--)

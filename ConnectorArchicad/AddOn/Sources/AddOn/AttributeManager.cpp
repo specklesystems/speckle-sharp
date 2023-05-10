@@ -66,6 +66,47 @@ GSErrCode AttributeManager::GetMaterial (const ModelInfo::Material& material, AP
 			attribute.material.emissionRGB.f_green = material.GetEmissionColor ().green / 65535.0;
 			attribute.material.emissionRGB.f_blue = material.GetEmissionColor ().blue / 65535.0;
 
+			API_Attribute fill;
+			GS::UniString fillName;
+			GetDefaultFill (fill, fillName);
+			attribute.material.ifill = fill.header.index;
+
+			err = ACAPI_Attribute_Create (&attribute, 0);
+			if (NoError == err) {
+				cache.Add (key, attribute);
+			}
+		}
+
+		return err;
+	}
+}
+
+
+GSErrCode AttributeManager::GetFill (GS::UniString& fillName, API_Attribute& attribute)
+{
+	char typeId = API_FilltypeID;
+	GS::UniString key = fillName + typeId;
+
+	if (cache.Get (key, &attribute)) {
+		return NoError;
+	} else {
+		BNZeroMemory (&attribute, sizeof (API_Attribute));
+
+		attribute.header.uniStringNamePtr = &fillName;
+		attribute.header.typeID = API_FilltypeID;
+
+		GSErrCode err = ACAPI_Attribute_Get (&attribute);
+		if (NoError == err) {
+			cache.Add (key, attribute);
+		}
+
+		if (APIERR_BADNAME == err) {
+			attribute.header.flags = APIFill_ScaleWithPlan | APIFill_ForPoly | APIFill_ForCover;
+
+			attribute.filltype.subType = APIFill_Symbol;
+			attribute.filltype.hXSpac = 1.0;
+			attribute.filltype.hYSpac = 1.0;
+
 			err = ACAPI_Attribute_Create (&attribute, 0);
 			if (NoError == err) {
 				cache.Add (key, attribute);
@@ -93,4 +134,12 @@ GSErrCode AttributeManager::GetDefaultMaterial (API_Attribute& attribute, GS::Un
 	ModelInfo::Material material (name, 0, ambientColor, emissionColor);
 
 	return GetMaterial (material, attribute);
+}
+
+
+GSErrCode AttributeManager::GetDefaultFill (API_Attribute& attribute, GS::UniString& name)
+{
+	name = "Default Speckle Fill";
+
+	return GetFill (name, attribute);
 }

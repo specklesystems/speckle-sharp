@@ -26,10 +26,6 @@ namespace Objects.Converter.Revit
     {
       notes = new List<string>();
       Base @base = null;
-      Base extraProps = new Base();
-
-      if (!ShouldConvertHostedElement(revitFi, revitFi.Host, ref extraProps))
-        return null;
 
       //adaptive components
       if (AdaptiveComponentInstanceUtils.IsAdaptiveComponentInstance(revitFi))
@@ -38,6 +34,7 @@ namespace Objects.Converter.Revit
       //these elements come when the curtain wall is generated
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
+      bool? isUGridLine = null;
       if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
       {
         if (SubelementIds.Contains(revitFi.Id))
@@ -46,7 +43,7 @@ namespace Objects.Converter.Revit
         {
           var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
           // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
-          extraProps["isUGridLine"] = Math.Abs(direction.X) > Math.Abs(direction.Y) ? true : false;
+          isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
         }
         else
           //TODO: sort these so we consistently get sub-elements from the wall element in case also sub-elements are sent
@@ -87,8 +84,8 @@ namespace Objects.Converter.Revit
       } 
 
       // add additional props to base object
-      foreach (var prop in extraProps.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
-        @base[prop] = extraProps[prop];
+      if (isUGridLine.HasValue) 
+        @base["isUGridLine"] = isUGridLine.Value;
 
       return @base;
     }

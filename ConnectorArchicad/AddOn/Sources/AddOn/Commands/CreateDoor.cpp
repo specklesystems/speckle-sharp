@@ -1,6 +1,5 @@
 #include "CreateDoor.hpp"
 #include "CreateOpeningBase.hpp"
-#include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
 #include "Objects/Point.hpp"
@@ -34,9 +33,10 @@ GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& currentD
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& /*memoMask*/,
+	API_SubElement** marker,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** marker /*= nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
@@ -48,14 +48,14 @@ GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& currentD
 
 	* marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));
-	err = Utility::GetBaseElementData (element, &memo, marker);
+	err = Utility::GetBaseElementData (element, &memo, marker, log);
 	if (err != NoError)
 		return err;
 
 	if (!CheckEnvironment (currentDoor, element))
 		return Error;
 
-	err = GetOpeningBaseFromObjectState<API_DoorType> (currentDoor, element.door, elementMask);
+	err = GetOpeningBaseFromObjectState<API_DoorType> (currentDoor, element.door, elementMask, log);
 
 	return err;
 }

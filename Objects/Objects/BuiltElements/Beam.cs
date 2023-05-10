@@ -114,6 +114,10 @@ namespace Objects.BuiltElements.TeklaStructures
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_beamtype
+  */
   public class ArchicadBeam : Beam
   {
     [SchemaInfo("ArchicadBeam", "Creates an Archicad beam by curve.", "Archicad", "Structure")]
