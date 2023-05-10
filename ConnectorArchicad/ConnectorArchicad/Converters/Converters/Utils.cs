@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Archicad.Model;
 using Objects;
@@ -11,9 +11,14 @@ namespace Archicad.Converters
 {
   public static class Utils
   {
-    public static Point VertexToPoint (MeshModel.Vertex vertex)
+    public static Point VertexToPoint(MeshModel.Vertex vertex)
     {
       return new Point { x = vertex.x, y = vertex.y , z = vertex.z };
+    }
+
+    public static Vector VertexToVector(MeshModel.Vertex vertex)
+    {
+      return new Vector { x = vertex.x, y = vertex.y, z = vertex.z };
     }
 
     public static Point ScaleToNative(Point point, string? units = null)

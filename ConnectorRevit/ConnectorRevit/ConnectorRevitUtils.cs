@@ -23,8 +23,8 @@ namespace Speckle.ConnectorRevit
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
-    private static List<string> _cachedParameters = null;
     private static List<string> _cachedViews = null;
+    private static List<string> _cachedScheduleViews = null;
     public static List<SpeckleException> ConversionErrors { get; set; }
 
     private static Dictionary<string, Category> _categories { get; set; }
@@ -63,7 +63,7 @@ namespace Speckle.ConnectorRevit
         .OrderBy(x => x.Name)
         .ToList();
     }
-
+    
     /// <summary>
     /// We want to display a user-friendly category names when grouping objects
     /// For this we are simplifying the BuiltIn one as otherwise, by using the display value, we'd be getting localized category names
@@ -178,51 +178,36 @@ namespace Speckle.ConnectorRevit
         .ToList();
     }
 
-    private static async Task<List<string>> GetParameterNamesAsync(Document doc)
+    private static async Task<List<string>> GetViewNamesAsync(Document doc)
+    {
+      using var scheduleExclusionFilter = new ElementClassFilter(typeof(ViewSchedule), true);
+      var els = new FilteredElementCollector(doc)
+        .WhereElementIsNotElementType()
+        .OfClass(typeof(View))
+        .WherePasses(scheduleExclusionFilter)
+        .Cast<View>()
+        .Where(x => !x.IsTemplate)
+        .ToList();
+      _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
+      return _cachedViews;
+    }
+    private static bool IsViewRevisionSchedule(string input)
+    {
+      string pattern =  @"<.+>(\s*\d+)?";
+      Regex rgx = new Regex(pattern);
+      return rgx.IsMatch(input);
+    }
+    
+    private static async Task<List<string>> GetScheduleNamesAsync(Document doc)
     {
       var els = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
-        .WhereElementIsViewIndependent()
-        .Where(x => x.IsPhysicalElement());
+        .OfClass(typeof(ViewSchedule))
+        .Where(view => !IsViewRevisionSchedule(view.Name))
+        .ToList();
 
-      List<string> parameters = new List<string>();
-
-      foreach (var e in els)
-      {
-        foreach (Parameter p in e.Parameters)
-        {
-          if (!parameters.Contains(p.Definition.Name))
-            parameters.Add(p.Definition.Name);
-        }
-      }
-
-      _cachedParameters = parameters.OrderBy(x => x).ToList();
-      return _cachedParameters;
-    }
-
-    /// <summary>
-    /// Each time it's called the cached parameters are returned, and a new copy is cached
-    /// </summary>
-    /// <param name="doc"></param>
-    /// <returns></returns>
-    public static List<string> GetParameterNames(Document doc)
-    {
-      if (_cachedParameters != null)
-      {
-        //don't wait for it to finish
-        GetParameterNamesAsync(doc);
-        return _cachedParameters;
-      }
-
-      return GetParameterNamesAsync(doc).Result;
-    }
-
-    private static async Task<List<string>> GetViewNamesAsync(Document doc)
-    {
-      var els = new FilteredElementCollector(doc).WhereElementIsNotElementType().OfClass(typeof(View)).ToElements();
-
-      _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
-      return _cachedViews;
+      _cachedScheduleViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
+      return _cachedScheduleViews;
     }
 
     /// <summary>
@@ -240,6 +225,17 @@ namespace Speckle.ConnectorRevit
       }
 
       return GetViewNamesAsync(doc).Result;
+    }
+    public static List<string> GetScheduleNames(Document doc)
+    {
+      if (_cachedScheduleViews != null)
+      {
+        //don't wait for it to finish
+        GetScheduleNamesAsync(doc);
+        return _cachedScheduleViews;
+      }
+
+      return GetScheduleNamesAsync(doc).Result;
     }
 
     public static bool IsPhysicalElement(this Element e)
