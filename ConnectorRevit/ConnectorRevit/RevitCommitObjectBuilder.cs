@@ -62,10 +62,10 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
 
       return;
     }
-
+    
     string collectionId,
-      collectionName,
-      collectionType;
+           collectionName,
+           collectionType;
 
     switch (commitCollectionStrategy)
     {
@@ -88,8 +88,10 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
 
     Element? host = GetHost(nativeElement);
 
+    if (conversionResult.GetType().Name is "Network") host = null; //WORKAROUND: we don't support hosting on networks.
+    
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
-    SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
+    SetRelationship(conversionResult, nativeElement.UniqueId, (host?.UniqueId, Elements), (collectionId, Elements));
 
     if (!collections.ContainsKey(collectionId) && collectionId != Root)
     {
@@ -98,7 +100,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
     }
   }
 
-  private static string GetCategoryId(Base conversionResult, Element revitElement)
+  private static string GetCategoryId(Base  , Element revitElement)
   {
     return conversionResult.GetType().Name switch
     {

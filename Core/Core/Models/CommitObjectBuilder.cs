@@ -56,7 +56,14 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   {
     ApplyRelationships(converted.Values, rootCommitObject);
   }
-  
+
+  /// <inheritdoc cref="SetRelationship(Speckle.Core.Models.Base,string,ValueTuple{string, string}[])"/>
+  /// <overload>appId set from <paramref name="conversionResult"/></overload>
+  protected void SetRelationship(Base conversionResult, params (string? parentAppId, string propName)[] parentInfo)
+  {
+    SetRelationship(conversionResult, conversionResult.applicationId, parentInfo);
+  }
+
   /// <summary>
   /// Sets information on how a given object should be nested in the commit tree.
   /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
@@ -64,15 +71,15 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// </summary>
   /// <param name="conversionResult">The object to be nested</param>
   /// <param name="parentInfo">Information about how the object ideally should be nested, in order of priority</param>
-  protected void SetRelationship(Base conversionResult, params (string? parentAppId, string propName)[] parentInfo)
+  protected void SetRelationship(Base conversionResult, string appId, params (string? parentAppId, string propName)[] parentInfo)
   {
-    if (!converted.ContainsKey(conversionResult.applicationId))
+    if (!converted.ContainsKey(appId))
     {
-      converted[conversionResult.applicationId] = conversionResult;
+      converted[appId] = conversionResult;
     }
     else
     {
-      converted.Add(conversionResult.applicationId, conversionResult);
+      converted.Add(appId, conversionResult);
     }
 
     if (!parentInfos.ContainsKey(conversionResult))
