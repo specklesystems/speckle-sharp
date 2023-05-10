@@ -62,7 +62,7 @@ namespace Archicad
             {
               ApplicationObject obj = dict[contextObject.OriginalId];
 
-              contextObject.Update(status: obj.Status, createdIds: obj.CreatedIds);
+              contextObject.Update(status: obj.Status, createdIds: obj.CreatedIds, log: obj.Log);
               progress.Report.UpdateReportObject(contextObject);
             }
           }
