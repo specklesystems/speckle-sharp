@@ -63,6 +63,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       return;
     }
     
+    // Define which collection this element should be nested under
     string collectionId,
            collectionName,
            collectionType;
@@ -85,22 +86,27 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       default:
         throw new InvalidOperationException($"No case for {commitCollectionStrategy}");
     }
-
-    Element? host = GetHost(nativeElement);
-
-    if (conversionResult.GetType().Name is "Network") host = null; //WORKAROUND: we don't support hosting on networks.
     
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
-    SetRelationship(conversionResult, nativeElement.UniqueId, (host?.UniqueId, Elements), (collectionId, Elements));
+    Element? host = GetHost(nativeElement);
 
+    if (conversionResult.GetType().Name is "Network")
+    {
+      //WORKAROUND: we don't support hosting networks.
+      host = null; 
+    }
+    
+    // Create collection if not already
     if (!collections.ContainsKey(collectionId) && collectionId != Root)
     {
       Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
       collections.Add(collectionId, collection);
     }
+    
+    SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
   }
 
-  private static string GetCategoryId(Base  , Element revitElement)
+  private static string GetCategoryId(Base conversionResult, Element revitElement)
   {
     return conversionResult.GetType().Name switch
     {
