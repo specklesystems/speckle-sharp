@@ -5,11 +5,13 @@
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
 #include "Objects/Point.hpp"
+#include "Utility.hpp"
+#include "ResourceIds.hpp"
 
 namespace AddOnCommands {
 
 template<typename T>
-GSErrCode GetOpeningBaseFromObjectState (const GS::ObjectState& os, T& element, API_Element& mask)
+GSErrCode GetOpeningBaseFromObjectState (const GS::ObjectState& os, T& element, API_Element& mask, GS::Array<GS::UniString>& log)
 {
 	GSErrCode err = NoError;
 
@@ -44,6 +46,8 @@ GSErrCode GetOpeningBaseFromObjectState (const GS::ObjectState& os, T& element, 
 
 			if (err == NoError)
 				element.openingBase.mat = attrib.header.index;
+			else
+				log.Push (Utility::ComposeLogMessage (ID_LOG_MESSAGE_ATTRIBUTE_SEARCH_ERROR, attrName.ToPrintf ()));
 		}
 	}
 
@@ -59,6 +63,8 @@ GSErrCode GetOpeningBaseFromObjectState (const GS::ObjectState& os, T& element, 
 			err = ACAPI_LibPart_Search (&libPart, false, true);
 			if (err == NoError)
 				element.openingBase.libInd = libPart.index;
+			else
+				log.Push (Utility::ComposeLogMessage (ID_LOG_MESSAGE_LIBPART_SEARCH_ERROR, libPartName.ToPrintf ()));
 		}
 	}
 
