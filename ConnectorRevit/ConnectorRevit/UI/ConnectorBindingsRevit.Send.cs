@@ -106,7 +106,12 @@ namespace Speckle.ConnectorRevit.UI
               );
               if (result.applicationId != reportObj.applicationId)
               {
-                SpeckleLog.Logger.Information("Conversion result of type {elementType} has a different application Id ({actualId}) to the report object {expectedId}", revitElement.GetType(), result.applicationId, reportObj.applicationId);
+                SpeckleLog.Logger.Information(
+                  "Conversion result of type {elementType} has a different application Id ({actualId}) to the report object {expectedId}",
+                  revitElement.GetType(),
+                  result.applicationId,
+                  reportObj.applicationId
+                );
                 result.applicationId = reportObj.applicationId;
               }
               commitObjectBuilder.IncludeObject(result, revitElement);

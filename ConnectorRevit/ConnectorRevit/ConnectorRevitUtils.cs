@@ -63,7 +63,7 @@ namespace Speckle.ConnectorRevit
         .OrderBy(x => x.Name)
         .ToList();
     }
-    
+
     /// <summary>
     /// We want to display a user-friendly category names when grouping objects
     /// For this we are simplifying the BuiltIn one as otherwise, by using the display value, we'd be getting localized category names
@@ -191,13 +191,14 @@ namespace Speckle.ConnectorRevit
       _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
       return _cachedViews;
     }
+
     private static bool IsViewRevisionSchedule(string input)
     {
-      string pattern =  @"<.+>(\s*\d+)?";
+      string pattern = @"<.+>(\s*\d+)?";
       Regex rgx = new Regex(pattern);
       return rgx.IsMatch(input);
     }
-    
+
     private static async Task<List<string>> GetScheduleNamesAsync(Document doc)
     {
       var els = new FilteredElementCollector(doc)
@@ -226,6 +227,7 @@ namespace Speckle.ConnectorRevit
 
       return GetViewNamesAsync(doc).Result;
     }
+
     public static List<string> GetScheduleNames(Document doc)
     {
       if (_cachedScheduleViews != null)

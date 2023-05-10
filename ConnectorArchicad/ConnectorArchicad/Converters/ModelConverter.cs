@@ -24,10 +24,10 @@ namespace Archicad.Operations
       foreach (var poly in meshModel.polygons)
       {
         var meshIndex = poly.material;
-        meshes[meshIndex].vertices.AddRange(poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id]))
-          .ToList());
-        meshes[meshIndex].faces
-          .AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
+        meshes[meshIndex].vertices.AddRange(
+          poly.pointIds.SelectMany(id => FlattenPoint(meshModel.vertices[id])).ToList()
+        );
+        meshes[meshIndex].faces.AddRange(PolygonToSpeckle(poly, vertCount[meshIndex]));
         vertCount[meshIndex] += poly.pointIds.Count;
       }
 
@@ -90,7 +90,8 @@ namespace Archicad.Operations
           var neigPolygonsByEdgesToCheckIfSmooth = new List<Tuple<Tuple<int, int>, Polygon>>();
 
           var n = mesh.faces[i];
-          if (n < 3) n += 3;
+          if (n < 3)
+            n += 3;
           for (var j = i + 1; j <= i + n; ++j)
           {
             int vertexIdx = ToMergedVertexIndex(mesh.faces[j]);
@@ -104,7 +105,9 @@ namespace Archicad.Operations
               if (neigbourPolygonIdxs.Count > 2)
                 meshModel.edges[edge] = EdgeStatus.HiddenEdge;
               else
-                neigPolygonsByEdgesToCheckIfSmooth.Add(new Tuple<Tuple<int, int>, Polygon>(edge, meshModel.polygons[neigbourPolygonIdxs[0]]));
+                neigPolygonsByEdgesToCheckIfSmooth.Add(
+                  new Tuple<Tuple<int, int>, Polygon>(edge, meshModel.polygons[neigbourPolygonIdxs[0]])
+                );
             }
             else
             {
@@ -209,7 +212,8 @@ namespace Archicad.Operations
       for (var i = 0; i < polygon.Count; i++)
       {
         var n = polygon[i];
-        if (n < 3) n += 3;
+        if (n < 3)
+          n += 3;
         result.Add(new MeshModel.Polygon { pointIds = polygon.GetRange(i + 1, n) });
         i += n;
       }
@@ -239,7 +243,12 @@ namespace Archicad.Operations
       Model.MeshModel.Material.Color ConvertColor(System.Drawing.Color color)
       {
         // In AC the Colors are encoded in ushort
-        return new Model.MeshModel.Material.Color { red = color.R * 256, green = color.G * 256, blue = color.B * 256 };
+        return new Model.MeshModel.Material.Color
+        {
+          red = color.R * 256,
+          green = color.G * 256,
+          blue = color.B * 256
+        };
       }
 
       return new Model.MeshModel.Material
@@ -253,8 +262,11 @@ namespace Archicad.Operations
 
     private static bool IsHiddenEdge(Tuple<int, int> edge, Polygon polygon1, Polygon polygon2, MeshModel meshModel)
     {
-      Vector normal1, normal2;
-      Vector vertex1, vertex2, vertex3;
+      Vector normal1,
+        normal2;
+      Vector vertex1,
+        vertex2,
+        vertex3;
       int thirdVertexIdx;
 
       vertex1 = Utils.VertexToVector(meshModel.vertices[edge.Item1]);
@@ -263,7 +275,7 @@ namespace Archicad.Operations
       do
       {
         vertex3 = Utils.VertexToVector(meshModel.vertices[polygon1.pointIds[thirdVertexIdx]]);
-      normal1 = Vector.CrossProduct(vertex2 - vertex1, vertex3 - vertex1);
+        normal1 = Vector.CrossProduct(vertex2 - vertex1, vertex3 - vertex1);
         thirdVertexIdx++;
       } while (normal1.Length == 0);
       normal1.Normalize();
@@ -274,7 +286,7 @@ namespace Archicad.Operations
       do
       {
         vertex3 = Utils.VertexToVector(meshModel.vertices[polygon2.pointIds[thirdVertexIdx]]);
-      normal2 = Vector.CrossProduct(vertex2 - vertex1, vertex3 - vertex1);
+        normal2 = Vector.CrossProduct(vertex2 - vertex1, vertex3 - vertex1);
         thirdVertexIdx++;
       } while (normal2.Length == 0);
       normal2.Normalize();

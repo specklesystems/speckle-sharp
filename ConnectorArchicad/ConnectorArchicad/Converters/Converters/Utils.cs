@@ -13,12 +13,22 @@ namespace Archicad.Converters
   {
     public static Point VertexToPoint(MeshModel.Vertex vertex)
     {
-      return new Point { x = vertex.x, y = vertex.y , z = vertex.z };
+      return new Point
+      {
+        x = vertex.x,
+        y = vertex.y,
+        z = vertex.z
+      };
     }
 
     public static Vector VertexToVector(MeshModel.Vertex vertex)
     {
-      return new Vector { x = vertex.x, y = vertex.y, z = vertex.z };
+      return new Vector
+      {
+        x = vertex.x,
+        y = vertex.y,
+        z = vertex.z
+      };
     }
 
     public static Point ScaleToNative(Point point, string? units = null)
@@ -39,7 +49,12 @@ namespace Archicad.Converters
       units ??= point.units;
       var scale = Units.GetConversionFactor(units, Units.Meters);
 
-      return new MeshModel.Vertex { x = point.x * scale, y = point.y * scale, z = point.z * scale };
+      return new MeshModel.Vertex
+      {
+        x = point.x * scale,
+        y = point.y * scale,
+        z = point.z * scale
+      };
     }
 
     public static Polycurve PolycurveToSpeckle(ElementShape.Polyline archiPolyline)
@@ -51,9 +66,11 @@ namespace Archicad.Converters
       };
       foreach (var segment in archiPolyline.polylineSegments)
       {
-        poly.segments.Add(segment.arcAngle == 0
-          ? new Line(segment.startPoint, segment.endPoint)
-          : new Arc(segment.startPoint, segment.endPoint, segment.arcAngle));
+        poly.segments.Add(
+          segment.arcAngle == 0
+            ? new Line(segment.startPoint, segment.endPoint)
+            : new Arc(segment.startPoint, segment.endPoint, segment.arcAngle)
+        );
       }
 
       return poly;
@@ -85,8 +102,11 @@ namespace Archicad.Converters
 
     public static ElementShape.PolylineSegment ArcToNative(Arc arc)
     {
-      return new ElementShape.PolylineSegment(ScaleToNative(arc.startPoint), ScaleToNative(arc.endPoint),
-        arc.angleRadians);
+      return new ElementShape.PolylineSegment(
+        ScaleToNative(arc.startPoint),
+        ScaleToNative(arc.endPoint),
+        arc.angleRadians
+      );
     }
 
     public static ElementShape.Polyline? CurveToNative(ICurve curve)

@@ -14,7 +14,7 @@ namespace Speckle.Core.Models;
 /// <remarks>
 /// It is designed to be inherited by a host app specific implementation,
 /// to give connectors flexibility in constructing their objects.
-/// Inheritors should also create some function to add 
+/// Inheritors should also create some function to add
 /// </remarks>
 /// <example>
 /// <see cref=""/>
@@ -23,17 +23,17 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 {
   /// <summary>Special appId symbol for the root object</summary>
   protected const string Root = "__Root";
-  
+
   /// <summary>app id -> base</summary>
   protected readonly IDictionary<string, Base> converted;
-  
+
   /// <summary>Base -> Tuple{Parent App Id, propName} ordered by priority</summary>
   private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> parentInfos;
-  
+
   protected CommitObjectBuilder()
   {
     converted = new Dictionary<string, Base>();
-    parentInfos = new Dictionary<Base, IList<(string?,string)>>();
+    parentInfos = new Dictionary<Base, IList<(string?, string)>>();
   }
 
   /// <summary>
@@ -43,9 +43,9 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// <param name="conversionResult"></param>
   /// <param name="nativeElement"></param>
   public abstract void IncludeObject(Base conversionResult, TNativeObjectData nativeElement);
-  
+
   /// <summary>
-  /// Iterates through the converted objects applying 
+  /// Iterates through the converted objects applying
   /// </summary>
   /// <remarks>
   /// Can be overriden to adjust exactly which objects get automatically applied,
@@ -56,7 +56,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   {
     ApplyRelationships(converted.Values, rootCommitObject);
   }
-  
+
   /// <summary>
   /// Sets information on how a given object should be nested in the commit tree.
   /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
@@ -99,14 +99,14 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       {
         ApplyRelationship(c, rootCommitObject);
       }
-      catch(Exception ex)
+      catch (Exception ex)
       {
         // This should never happen, we should be ensuring that at least one of the parents is valid.
         SpeckleLog.Logger.Fatal(ex, "Failed to add object {speckleType} to commit object", c?.GetType());
       }
     }
   }
-  
+
   /// <summary>
   /// Will attempt to find and nest the <paramref name="current"/> object
   /// under the first valid parent according to the <see cref="parentInfos"/> <see cref="converted"/> dictionary.
@@ -116,7 +116,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// 1. Is non null
   /// 2. Is in the <see cref="converted"/> dictionary
   /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="parentInfos"/> item
-  /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type 
+  /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type
   /// </remarks>
   /// <param name="current"></param>
   /// <param name="rootCommitObject"></param>
@@ -126,11 +126,14 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     var parents = parentInfos[current];
     foreach ((string? parentAppId, string propName) in parents)
     {
-      if (parentAppId is null) continue;
+      if (parentAppId is null)
+        continue;
 
       Base? parent;
-      if (parentAppId == Root) parent = rootCommitObject;
-      else converted.TryGetValue(parentAppId, out parent);
+      if (parentAppId == Root)
+        parent = rootCommitObject;
+      else
+        converted.TryGetValue(parentAppId, out parent);
 
       if (parent is null)
         continue;
@@ -153,6 +156,8 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       }
     }
 
-    throw new InvalidOperationException($"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!");
+    throw new InvalidOperationException(
+      $"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!"
+    );
   }
 }

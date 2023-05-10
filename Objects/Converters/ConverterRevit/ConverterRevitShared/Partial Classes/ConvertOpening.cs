@@ -18,7 +18,10 @@ namespace Objects.Converter.Revit
       var baseCurves = CurveToNative(speckleOpening.outline);
 
       var docObj = GetExistingElementByApplicationId(speckleOpening.applicationId);
-      var appObj = new ApplicationObject(speckleOpening.id, speckleOpening.speckle_type) { applicationId = speckleOpening.applicationId };
+      var appObj = new ApplicationObject(speckleOpening.id, speckleOpening.speckle_type)
+      {
+        applicationId = speckleOpening.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
@@ -32,70 +35,82 @@ namespace Objects.Converter.Revit
       switch (speckleOpening)
       {
         case RevitWallOpening rwo:
+        {
+          // Prevent host element overriding as this will propagate upwards to other hosted elements in a wall :)
+          string elementId = null;
+          var hostElement = CurrentHostElement;
+          if (!(hostElement is Wall))
           {
-            // Prevent host element overriding as this will propagate upwards to other hosted elements in a wall :)
-            string elementId = null;
-            var hostElement = CurrentHostElement;
-            if (!(hostElement is Wall))
+            // Try with the opening wall if it exists
+            if (rwo.host == null)
             {
-              // Try with the opening wall if it exists
-              if (rwo.host == null)
-              {
-                appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Host wall was null");
-                return appObj;
-              }
-              Element existingElement;
-              try
-              {
-                existingElement = GetExistingElementByApplicationId(rwo.host.applicationId);
-              }
-              catch (Exception e)
-              {
-                appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find the host wall: {e.Message}");
-                return appObj;
-              }
-
-              if (!(existingElement is Wall wall))
-              {
-                appObj.Update(status: ApplicationObject.State.Failed, logItem: $"The host is not a wall");
-                return appObj;
-              }
-
-              hostElement = wall;
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Host wall was null");
+              return appObj;
             }
-
-            var poly = rwo.outline as Polyline;
-            if (poly == null || !((poly.GetPoints().Count == 5 && poly.closed) || (poly.GetPoints().Count == 4 && !poly.closed)))
+            Element existingElement;
+            try
             {
-              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Curve outline for wall opening must be a rectangle-shaped polyline");
+              existingElement = GetExistingElementByApplicationId(rwo.host.applicationId);
+            }
+            catch (Exception e)
+            {
+              appObj.Update(
+                status: ApplicationObject.State.Failed,
+                logItem: $"Could not find the host wall: {e.Message}"
+              );
               return appObj;
             }
 
-            var points = poly.GetPoints().Select(PointToNative).ToList();
-            revitOpening = Doc.Create.NewOpening((Wall)hostElement, points[0], points[2]);
-            break;
+            if (!(existingElement is Wall wall))
+            {
+              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"The host is not a wall");
+              return appObj;
+            }
+
+            hostElement = wall;
           }
+
+          var poly = rwo.outline as Polyline;
+          if (
+            poly == null
+            || !((poly.GetPoints().Count == 5 && poly.closed) || (poly.GetPoints().Count == 4 && !poly.closed))
+          )
+          {
+            appObj.Update(
+              status: ApplicationObject.State.Failed,
+              logItem: $"Curve outline for wall opening must be a rectangle-shaped polyline"
+            );
+            return appObj;
+          }
+
+          var points = poly.GetPoints().Select(PointToNative).ToList();
+          revitOpening = Doc.Create.NewOpening((Wall)hostElement, points[0], points[2]);
+          break;
+        }
 
         case RevitVerticalOpening rvo:
+        {
+          if (CurrentHostElement == null)
           {
-            if (CurrentHostElement == null)
-            {
-              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Hosted vertical openings require a host family");
-              return appObj;
-            }
-            revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
-            break;
+            appObj.Update(
+              status: ApplicationObject.State.Failed,
+              logItem: $"Hosted vertical openings require a host family"
+            );
+            return appObj;
           }
+          revitOpening = Doc.Create.NewOpening(CurrentHostElement, baseCurves, true);
+          break;
+        }
 
         case RevitShaft rs:
-          {
-            var bottomLevel = ConvertLevelToRevit(rs.bottomLevel, out ApplicationObject.State bottomState);
-            var topLevel = ConvertLevelToRevit(rs.topLevel, out ApplicationObject.State topState);
-            revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
-            TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height, rs.units);
+        {
+          var bottomLevel = ConvertLevelToRevit(rs.bottomLevel, out ApplicationObject.State bottomState);
+          var topLevel = ConvertLevelToRevit(rs.topLevel, out ApplicationObject.State topState);
+          revitOpening = Doc.Create.NewOpening(bottomLevel, topLevel, baseCurves);
+          TrySetParam(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM, rs.height, rs.units);
 
-            break;
-          }
+          break;
+        }
 
         default:
           if (CurrentHostElement as Wall != null)
@@ -103,7 +118,10 @@ namespace Objects.Converter.Revit
             var speckleOpeningOutline = speckleOpening.outline as Polyline;
             if (speckleOpeningOutline == null)
             {
-              appObj.Update(status: ApplicationObject.State.Failed, logItem: "Outline must be a rectangle-shaped polyline");
+              appObj.Update(
+                status: ApplicationObject.State.Failed,
+                logItem: "Outline must be a rectangle-shaped polyline"
+              );
               return appObj;
             }
             var points = speckleOpeningOutline.GetPoints().Select(PointToNative).ToList();
@@ -120,7 +138,11 @@ namespace Objects.Converter.Revit
       if (speckleOpening is RevitOpening ro)
         SetInstanceParameters(revitOpening, ro);
 
-      appObj.Update(status: ApplicationObject.State.Created, createdId: revitOpening.UniqueId, convertedItem: revitOpening);
+      appObj.Update(
+        status: ApplicationObject.State.Created,
+        createdId: revitOpening.UniqueId,
+        convertedItem: revitOpening
+      );
       return appObj;
     }
 
@@ -178,8 +200,11 @@ namespace Objects.Converter.Revit
 
       speckleOpening["type"] = revitOpening.Name;
 
-      GetAllRevitParamsAndIds(speckleOpening, revitOpening,
-        new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" });
+      GetAllRevitParamsAndIds(
+        speckleOpening,
+        revitOpening,
+        new List<string> { "WALL_BASE_CONSTRAINT", "WALL_HEIGHT_TYPE", "WALL_USER_HEIGHT_PARAM" }
+      );
       return speckleOpening;
     }
   }

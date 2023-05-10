@@ -120,7 +120,6 @@ namespace Objects.BuiltElements.Revit.RevitRoof
   }
 }
 
-
 namespace Objects.BuiltElements.Archicad
 {
   /*

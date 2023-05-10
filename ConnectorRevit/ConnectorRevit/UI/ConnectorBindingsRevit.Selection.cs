@@ -33,24 +33,78 @@ namespace Speckle.ConnectorRevit.UI
 
       var filters = new List<ISelectionFilter>
       {
-         new AllSelectionFilter {Slug="all",  Name = "Everything", Icon = "CubeScan", Description = "Sends all supported elements and project information." },
+        new AllSelectionFilter
+        {
+          Slug = "all",
+          Name = "Everything",
+          Icon = "CubeScan",
+          Description = "Sends all supported elements and project information."
+        },
         new ManualSelectionFilter(),
-        new ListSelectionFilter {Slug="category", Name = "Category", Icon = "Category", Values = categories, Description="Adds all elements belonging to the selected categories"},
-        new ListSelectionFilter { Slug = "view", Name = "View", Icon = "RemoveRedEye", Values = views, Description = "Adds all objects visible in the selected views" },
+        new ListSelectionFilter
+        {
+          Slug = "category",
+          Name = "Category",
+          Icon = "Category",
+          Values = categories,
+          Description = "Adds all elements belonging to the selected categories"
+        },
+        new ListSelectionFilter
+        {
+          Slug = "view",
+          Name = "View",
+          Icon = "RemoveRedEye",
+          Values = views,
+          Description = "Adds all objects visible in the selected views"
+        },
       };
 
       if (schedules.Any())
-        filters.Add(new ListSelectionFilter { Slug = "schedule", Name = "Schedule", Icon = "Table", Values = schedules, Description = "Sends the selected schedule as a DataTable" });
+        filters.Add(
+          new ListSelectionFilter
+          {
+            Slug = "schedule",
+            Name = "Schedule",
+            Icon = "Table",
+            Values = schedules,
+            Description = "Sends the selected schedule as a DataTable"
+          }
+        );
 
       if (viewFilters.Any())
-        filters.Add(new ListSelectionFilter { Slug = "filter", Name = "Filters", Icon = "FilterList", Values = viewFilters, Description = "Adds all elements that pass the selected filters" });
+        filters.Add(
+          new ListSelectionFilter
+          {
+            Slug = "filter",
+            Name = "Filters",
+            Icon = "FilterList",
+            Values = viewFilters,
+            Description = "Adds all elements that pass the selected filters"
+          }
+        );
 
       if (worksets.Any())
-        filters.Add(new ListSelectionFilter { Slug = "workset", Name = "Workset", Icon = "Group", Values = worksets, Description = "Adds all elements belonging to the selected workset" });
+        filters.Add(
+          new ListSelectionFilter
+          {
+            Slug = "workset",
+            Name = "Workset",
+            Icon = "Group",
+            Values = worksets,
+            Description = "Adds all elements belonging to the selected workset"
+          }
+        );
 
-      filters.Add(new ListSelectionFilter { Slug = "project-info", Name = "Project Information", Icon = "Information", Values = projectInfo, Description = "Adds the selected project information such as levels, views and family names to the stream" });
-
-
+      filters.Add(
+        new ListSelectionFilter
+        {
+          Slug = "project-info",
+          Name = "Project Information",
+          Icon = "Information",
+          Values = projectInfo,
+          Description = "Adds the selected project information such as levels, views and family names to the stream"
+        }
+      );
 
       return filters;
     }
@@ -104,8 +158,6 @@ namespace Speckle.ConnectorRevit.UI
 
       CurrentDoc.Selection.SetElementIds(selection);
       CurrentDoc.ShowElements(selection);
-
-
     }
 
     private List<Document> GetLinkedDocuments()
@@ -224,8 +276,7 @@ namespace Speckle.ConnectorRevit.UI
             foreach (Document doc in allDocs)
             {
               List<Element> elements = new List<Element>();
-              var viewFilters = ConnectorRevitUtils.GetFilters(doc)
-                .Where(x => rvtFilters.Selection.Contains(x.Name));
+              var viewFilters = ConnectorRevitUtils.GetFilters(doc).Where(x => rvtFilters.Selection.Contains(x.Name));
               foreach (ParameterFilterElement filterElement in viewFilters)
               {
                 ICollection<ElementId> cates = filterElement.GetCategories();
@@ -238,27 +289,30 @@ namespace Speckle.ConnectorRevit.UI
                 ElementFilter elementFilter = filterElement.GetElementFilter();
                 if (elementFilter != null)
                 {
-                  elements.AddRange(new FilteredElementCollector(doc)
-                    .WhereElementIsNotElementType()
-                    .WhereElementIsViewIndependent()
-                    .WherePasses(cateFilter)
-                    .WherePasses(elementFilter).ToList());
+                  elements.AddRange(
+                    new FilteredElementCollector(doc)
+                      .WhereElementIsNotElementType()
+                      .WhereElementIsViewIndependent()
+                      .WherePasses(cateFilter)
+                      .WherePasses(elementFilter)
+                      .ToList()
+                  );
                 }
                 else
                 {
-                  elements.AddRange(new FilteredElementCollector(doc)
-                    .WhereElementIsNotElementType()
-                    .WhereElementIsViewIndependent()
-                    .WherePasses(cateFilter)
-                    .ToList());
+                  elements.AddRange(
+                    new FilteredElementCollector(doc)
+                      .WhereElementIsNotElementType()
+                      .WhereElementIsViewIndependent()
+                      .WherePasses(cateFilter)
+                      .ToList()
+                  );
                 }
-
               }
               if (elements.Count > 0)
               {
                 selection.AddRange(elements.GroupBy(x => x.Id.IntegerValue).Select(x => x.First()).ToList());
               }
-
             }
             return selection;
           case "view":

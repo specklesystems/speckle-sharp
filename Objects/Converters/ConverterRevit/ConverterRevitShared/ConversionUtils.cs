@@ -68,11 +68,7 @@ namespace Objects.Converter.Revit
         var elementId = element.Id;
         if (!hostedElementIds.Contains(elementId))
         {
-          extraProps["speckleHost"] = new Base()
-          {
-            applicationId = host.UniqueId,
-            ["category"] = host.Category.Name,
-          };
+          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId, ["category"] = host.Category.Name, };
         }
         else
           return false;
@@ -205,7 +201,8 @@ namespace Objects.Converter.Revit
       //we used to use "elements" but have now switched to "@elements"
       //this extra check is for backwards compatibility
       var nestedElements = @base["elements"] ?? @base["@elements"];
-      if (nestedElements == null) return appObj;
+      if (nestedElements == null)
+        return appObj;
 
       CurrentHostElement = host;
       foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
@@ -693,7 +690,7 @@ namespace Objects.Converter.Revit
     #endregion
 
     #region  element types
-    
+
     private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
     {
       isExactMatch = false;
@@ -706,7 +703,10 @@ namespace Objects.Converter.Revit
         if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
           name = category;
 
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Could not find any loaded family to use for category {name}."
+        );
 
         return default;
       }
@@ -717,7 +717,14 @@ namespace Objects.Converter.Revit
       return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
     }
 
-    private T GetElementType<T>(Base element, string family, string type, List<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
+    private T GetElementType<T>(
+      Base element,
+      string family,
+      string type,
+      List<ElementType> types,
+      ApplicationObject appObj,
+      out bool isExactMatch
+    )
     {
       isExactMatch = false;
       ElementType match = null;
@@ -764,7 +771,9 @@ namespace Objects.Converter.Revit
       }
 
       if (!isExactMatch)
-        appObj.Update(logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+        appObj.Update(
+          logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}"
+        );
 
       if (match is FamilySymbol fs && !fs.IsActive)
         fs.Activate();
@@ -790,7 +799,8 @@ namespace Objects.Converter.Revit
             return new ElementMulticategoryFilter(Categories.columnCategories);
           else if (o.type == OSG.ElementType1D.Beam || o.type == OSG.ElementType1D.Brace)
             return new ElementMulticategoryFilter(Categories.beamCategories);
-          else return null;
+          else
+            return null;
         case OSG.Element2D _:
         case Floor _:
           return new ElementMulticategoryFilter(Categories.floorCategories);
@@ -818,7 +828,13 @@ namespace Objects.Converter.Revit
       using var collector = new FilteredElementCollector(Doc);
       if (filter != null)
       {
-        return collector.WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
+        return collector
+          .WhereElementIsElementType()
+          .OfClass(typeof(T))
+          .WherePasses(filter)
+          .ToElements()
+          .Cast<ElementType>()
+          .ToList();
       }
       return collector.WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
     }

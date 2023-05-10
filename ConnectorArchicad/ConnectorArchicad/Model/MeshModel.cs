@@ -9,7 +9,7 @@ namespace Archicad.Model
 {
   public sealed class MeshModel
   {
-    public enum EdgeStatus 
+    public enum EdgeStatus
     {
       HiddenEdge = 1, // invisible
       SmoothEdge = 2, // visible if countour bit
@@ -20,7 +20,11 @@ namespace Archicad.Model
 
     public class MeshModelEdgeConverter : JsonConverter<Dictionary<Tuple<int, int>, EdgeStatus>>
     {
-      public override void WriteJson(JsonWriter writer, Dictionary<Tuple<int, int>, EdgeStatus> value, JsonSerializer serializer)
+      public override void WriteJson(
+        JsonWriter writer,
+        Dictionary<Tuple<int, int>, EdgeStatus> value,
+        JsonSerializer serializer
+      )
       {
         StringBuilder jsonString = new StringBuilder();
         jsonString.Append("[");
@@ -45,11 +49,17 @@ namespace Archicad.Model
           jsonString.Append(((byte)entry.Value).ToString());
           jsonString.Append(" }");
         }
-        jsonString.Append ("]");
+        jsonString.Append("]");
         writer.WriteRawValue(jsonString.ToString());
       }
 
-      public override Dictionary<Tuple<int, int>, EdgeStatus> ReadJson(JsonReader reader, Type objectType, Dictionary<Tuple<int, int>, EdgeStatus> existingValue, bool hasExistingValue, JsonSerializer serializer)
+      public override Dictionary<Tuple<int, int>, EdgeStatus> ReadJson(
+        JsonReader reader,
+        Type objectType,
+        Dictionary<Tuple<int, int>, EdgeStatus> existingValue,
+        bool hasExistingValue,
+        JsonSerializer serializer
+      )
       {
         return new Dictionary<Tuple<int, int>, EdgeStatus>();
       }
@@ -85,7 +95,6 @@ namespace Archicad.Model
         public int green { get; set; }
 
         public int blue { get; set; }
-
       }
 
       #endregion
@@ -125,7 +134,7 @@ namespace Archicad.Model
     [JsonConverter(typeof(MeshModelEdgeConverter))]
     public Dictionary<Tuple<int, int>, EdgeStatus> edges { get; set; } = new Dictionary<Tuple<int, int>, EdgeStatus>();
 
-    public bool IsCoplanar (Polygon polygon)
+    public bool IsCoplanar(Polygon polygon)
     {
       Vector vector1 = Archicad.Converters.Utils.VertexToVector(vertices[polygon.pointIds[0]]);
       Vector vector2 = Archicad.Converters.Utils.VertexToVector(vertices[polygon.pointIds[1]]);

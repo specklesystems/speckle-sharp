@@ -21,7 +21,6 @@ namespace Objects.Converter.Revit
       @base["name"] = revitGroup.Name;
       @base["type"] = "group";
       @base["level"] = ConvertAndCacheLevel(revitGroup, BuiltInParameter.GROUP_LEVEL);
-      
 
       // loop backward through the list so you can remove elements as you go through it
       for (int i = elIdsToConvert.Count - 1; i >= 0; i--)
