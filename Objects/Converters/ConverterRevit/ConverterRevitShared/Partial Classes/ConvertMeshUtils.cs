@@ -41,22 +41,23 @@ namespace Objects.Converter.Revit
       GeometryElement geom = null;
       try
       {
-        geom = (element is DB.FamilyInstance fInst && !isConvertedAsInstance) ?
-          fInst.GetOriginalGeometry(options) :
-          element.get_Geometry(options);
+        geom = element.get_Geometry(options);
       }
       catch (Autodesk.Revit.Exceptions.ArgumentException)
       {
-        options.ComputeReferences = !options.ComputeReferences;
+        options.ComputeReferences = false;
+        geom = element.get_Geometry(options);
+      }
+
+      /* Previously we were differentiating between point based fam instance that were being converted as instances vs not
+      if (element is DB.FamilyInstance _fInst && !isConvertedAsInstance)
+      {
         geom = (element is DB.FamilyInstance fInst && !isConvertedAsInstance) ?
           fInst.GetOriginalGeometry(options) :
           element.get_Geometry(options);
-      }  
-      
-      if (element is DB.FamilyInstance _fInst && !isConvertedAsInstance)
-      {
         geom = geom.GetTransformed(_fInst.GetTransform());
       }
+      */
 
       // retrieves all meshes and solids from a geometry element
       var solids = new List<Solid>();
