@@ -43,7 +43,7 @@ namespace Speckle.ConnectorRevit.UI
         filters.Add(new ListSelectionFilter { Slug = "schedule", Name = "Schedule", Icon = "Table", Values = schedules, Description = "Sends the selected schedule as a DataTable" });
 
       if (viewFilters.Any())
-        filters.Add(new ListSelectionFilter { Slug = "filter", Name = "Filters", Icon = "FilterList", Values = viewFilters, Description = "Adds all elements that pass the selected filters" });
+        filters.Add(new ListSelectionFilter { Slug = "filters", Name = "Filters", Icon = "FilterList", Values = viewFilters, Description = "Adds all elements that pass the selected filters" });
 
       if (worksets.Any())
         filters.Add(new ListSelectionFilter { Slug = "workset", Name = "Workset", Icon = "Group", Values = worksets, Description = "Adds all elements belonging to the selected workset" });
