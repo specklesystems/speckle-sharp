@@ -195,9 +195,7 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      commitObject["elements"] ??= new List<Base>();
-
-      ((List<Base>)commitObject["elements"]).Add(converted);
+      commitObject.elements.Add(converted);
 
       toConvertDictionary[pseudoId] = ConversionState.Converted;
 
