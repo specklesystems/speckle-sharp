@@ -11,7 +11,7 @@ public class GH_SpeckleCollection : GH_Goo<Collection>
   public override string ToString() => $"Speckle Collection [{m_value?.name ?? "No name"}]";
 
   public override bool IsValid => m_value != null;
-  public override string TypeName => nameof(GH_SpeckleCollection);
+  public override string TypeName => "Speckle Collection";
   public override string TypeDescription => "Represents a collection object from Speckle";
 
   public override bool CastFrom(object source)
