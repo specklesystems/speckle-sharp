@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -17,31 +16,6 @@ using Vector = Objects.Geometry.Vector;
 
 namespace Objects.Converter.Navisworks
 {
-  public class TransformationMatrix : IReadOnlyList<double>
-  {
-    private readonly double[] _data = new double[16];
-
-    public double this[int row, int col]
-    {
-      get => _data[row * 4 + col];
-      set => _data[row * 4 + col] = value;
-    }
-
-    public int Count => _data.Length;
-
-    public IEnumerator<double> GetEnumerator()
-    {
-      return ((IEnumerable<double>)_data).GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-      return GetEnumerator();
-    }
-
-    public double this[int index] => _data[index];
-  }
-
   public class PrimitiveProcessor : InwSimplePrimitivesCB
   {
     private readonly List<double> _coords = new();
@@ -79,20 +53,26 @@ namespace Objects.Converter.Navisworks
 
     public IReadOnlyList<PointD> Points => _points.AsReadOnly();
 
-    public TransformationMatrix LocalToWorldTransformation { get; set; }
+    public IEnumerable<double> LocalToWorldTransformation { get; set; }
 
     private bool ElevationMode { get; set; }
 
     public void Line(InwSimpleVertex v1, InwSimpleVertex v2)
     {
-      using var vD1 = SetElevationModeVector(
+      if (v1 == null || v2 == null)
+        return;
+
+#pragma warning disable CA2000
+      var vD1 = SetElevationModeVector(
         ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
         ElevationMode
       );
-      using var vD2 = SetElevationModeVector(
+      var vD2 = SetElevationModeVector(
         ApplyTransformation(VectorFromVertex(v2), LocalToWorldTransformation),
         ElevationMode
       );
+#pragma warning restore CA2000
+
       try
       {
         var line = new LineD(vD1, vD2);
@@ -110,6 +90,8 @@ namespace Objects.Converter.Navisworks
 
     public void Point(InwSimpleVertex v1)
     {
+      if (v1 == null)
+        return;
       var vD1 = SetElevationModeVector(
         ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
         ElevationMode
@@ -125,6 +107,9 @@ namespace Objects.Converter.Navisworks
 
     public void Triangle(InwSimpleVertex v1, InwSimpleVertex v2, InwSimpleVertex v3)
     {
+      if (v1 == null || v2 == null || v3 == null)
+        return;
+
       var vD1 = SetElevationModeVector(
         ApplyTransformation(VectorFromVertex(v1), LocalToWorldTransformation),
         ElevationMode
@@ -145,7 +130,7 @@ namespace Objects.Converter.Navisworks
       AddTriangle(new TriangleD(vD1, vD2, vD3));
     }
 
-    private void SetCoords(ReadOnlyCollection<double> coords)
+    private void SetCoords(IEnumerable<double> coords)
     {
       _coords.Clear();
       _coords.AddRange(coords);
@@ -206,8 +191,9 @@ namespace Objects.Converter.Navisworks
       return elevationMode ? v : new Vector3D(v.X, -v.Z, v.Y);
     }
 
-    private static Vector3D ApplyTransformation(Vector3 vector3, IReadOnlyList<double> matrix)
+    private static Vector3D ApplyTransformation(Vector3 vector3, IEnumerable<double> matrixStore)
     {
+      var matrix = matrixStore.ToList();
       var t1 = matrix[3] * vector3.X + matrix[7] * vector3.Y + matrix[11] * vector3.Z + matrix[15];
       var vectorDoubleX = (matrix[0] * vector3.X + matrix[4] * vector3.Y + matrix[8] * vector3.Z + matrix[12]) / t1;
       var vectorDoubleY = (matrix[1] * vector3.X + matrix[5] * vector3.Y + matrix[9] * vector3.Z + matrix[13]) / t1;
@@ -241,11 +227,11 @@ namespace Objects.Converter.Navisworks
 
     public ModelItem ModelItem { get; set; }
 
-    private IReadOnlyCollection<InwOaFragment3> ModelFragments => ModelFragmentStack;
+    private IEnumerable<InwOaFragment3> ModelFragments => ModelFragmentStack;
 
     public bool ElevationMode { get; set; }
 
-    public IReadOnlyList<PrimitiveProcessor> GetUniqueGeometryFragments()
+    public IEnumerable<PrimitiveProcessor> GetUniqueGeometryFragments()
     {
       var processors = new List<PrimitiveProcessor>();
 
@@ -262,7 +248,7 @@ namespace Objects.Converter.Navisworks
 
           var localToWorldTransform = (InwLTransform3f3)fragment.GetLocalToWorldMatrix();
 
-          processor.LocalToWorldTransformation = LocalToWorldTransformationMatrix(localToWorldTransform);
+          processor.LocalToWorldTransformation = ConvertArrayToDouble((Array)localToWorldTransform.Matrix);
 
           fragment.GenerateSimplePrimitives(nwEVertexProperty.eNORMAL, processor);
         }
@@ -273,37 +259,12 @@ namespace Objects.Converter.Navisworks
       return processors;
     }
 
-    private static TransformationMatrix LocalToWorldTransformationMatrix(InwLTransform3f3 localToWorldTransform)
-    {
-      double[] matrix = ((IEnumerable<object>)localToWorldTransform.Matrix).Cast<double>().ToArray();
-
-      return new TransformationMatrix
-      {
-        [0, 0] = matrix[0],
-        [0, 1] = matrix[1],
-        [0, 2] = matrix[2],
-        [0, 3] = matrix[3],
-        [1, 0] = matrix[4],
-        [1, 1] = matrix[5],
-        [1, 2] = matrix[6],
-        [1, 3] = matrix[7],
-        [2, 0] = matrix[8],
-        [2, 1] = matrix[9],
-        [2, 2] = matrix[10],
-        [2, 3] = matrix[11],
-        [3, 0] = matrix[12],
-        [3, 1] = matrix[13],
-        [3, 2] = matrix[14],
-        [3, 3] = matrix[15]
-      };
-    }
-
     private static bool IsSameFragmentPath(Array a1, Array a2)
     {
       return a1.Length == a2.Length && a1.Cast<int>().SequenceEqual(a2.Cast<int>());
     }
 
-    public static double[] ConvertArrayToDouble(Array arr)
+    private static double[] ConvertArrayToDouble(Array arr)
     {
       if (arr.Rank != 1)
         throw new ArgumentException("The input array must have a rank of 1.");
@@ -358,7 +319,7 @@ namespace Objects.Converter.Navisworks
   }
 
   /// <summary>
-  ///   A Line where each end point vertex is in turn stored with double values as opposed to floats
+  ///   A Point where the vertex is stored with double values as opposed to floats
   /// </summary>
   public class PointD
   {
@@ -367,6 +328,7 @@ namespace Objects.Converter.Navisworks
       Vertex1 = vertex1;
     }
 
+    // ReSharper disable once UnusedAutoPropertyAccessor.Global
     public Vector3D Vertex1 { get; set; }
   }
 
@@ -539,9 +501,6 @@ namespace Objects.Converter.Navisworks
 
     private void SetTransformVector3D()
     {
-      if (TransformVector3D != null)
-        return;
-
       Vector3D transform;
 
       switch (ModelTransform)
@@ -577,9 +536,4 @@ namespace Objects.Converter.Navisworks
       };
     }
   }
-}
-
-namespace Objects.Organization
-{
-  public class GeometryNode : Base { }
 }

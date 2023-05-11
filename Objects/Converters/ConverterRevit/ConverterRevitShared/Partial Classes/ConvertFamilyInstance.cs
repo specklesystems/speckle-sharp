@@ -12,6 +12,7 @@ using Point = Objects.Geometry.Point;
 using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using Vector = Objects.Geometry.Vector;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.Revit
 {
@@ -718,19 +719,24 @@ namespace Objects.Converter.Revit
       if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
         familyInstance.flipFacing();
 
-      // rotation about the z axis
-      var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
+      var desiredAngle = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
+      // TODO: does the family instance always have this basisX when created?
+      var currentAngle = new Vector(1, 0, 0);
+
+      // rotation about the z axis (signed)
+      var rotation = Math.Atan2(
+        Vector.DotProduct(Vector.CrossProduct(desiredAngle, currentAngle), new Vector(0, 0, 1)),
+        Vector.DotProduct(desiredAngle, currentAngle)
+      );
+
       if (familyInstance.Location is LocationPoint location)
       {
         try // some point based families don't have a rotation, so keep this in a try catch
         {
           if (rotation != location.Rotation)
           {
-            var axis = DB.Line.CreateUnbound(
-              new XYZ(location.Point.X, location.Point.Y, 0),
-              new XYZ(location.Point.X, location.Point.Y, 1)
-            );
-            location.Rotate(axis, rotation - location.Rotation);
+            using var axis = DB.Line.CreateUnbound(location.Point, XYZ.BasisZ);
+            location.Rotate(axis, location.Rotation - rotation);
           }
         }
         catch (Exception e)
