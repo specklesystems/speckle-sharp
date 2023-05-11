@@ -13,6 +13,7 @@ using Point = Objects.Geometry.Point;
 using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using Vector = Objects.Geometry.Vector;
+using Objects.BuiltElements.Revit;
 
 namespace Objects.Converter.Revit
 {
@@ -40,7 +41,9 @@ namespace Objects.Converter.Revit
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
-        else if (Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category))
+        else if (
+          Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category)
+        )
         {
           var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
           // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
@@ -61,7 +64,10 @@ namespace Objects.Converter.Revit
       }
 
       //columns
-      if (@base == null && Categories.columnCategories.Contains(revitFi.Category) || revitFi.StructuralType == StructuralType.Column)
+      if (
+        @base == null && Categories.columnCategories.Contains(revitFi.Category)
+        || revitFi.StructuralType == StructuralType.Column
+      )
         @base = ColumnToSpeckle(revitFi, out notes);
 
       // elements
@@ -73,8 +79,10 @@ namespace Objects.Converter.Revit
       // point based, convert these as revit instances
       if (@base == null)
       {
-        if ((revitFi.Host!=null && revitFi.HostFace!=null) ||
-          ((BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_StructuralFoundation)) // don't know why, but the transforms on structural foundation elements are really messed up 
+        if (
+          (revitFi.Host != null && revitFi.HostFace != null)
+          || ((BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_StructuralFoundation)
+        ) // don't know why, but the transforms on structural foundation elements are really messed up
         {
           @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
         }
@@ -82,7 +90,7 @@ namespace Objects.Converter.Revit
         {
           @base = RevitInstanceToSpeckle(revitFi, out notes, null);
         }
-      } 
+      }
 
       // add additional props to base object
       if (isUGridLine.HasValue) 
@@ -101,7 +109,10 @@ namespace Objects.Converter.Revit
       var isUpdate = false;
 
       var docObj = GetExistingElementByApplicationId(speckleFi.applicationId);
-      var appObj = new ApplicationObject(speckleFi.id, speckleFi.speckle_type) { applicationId = speckleFi.applicationId };
+      var appObj = new ApplicationObject(speckleFi.id, speckleFi.speckle_type)
+      {
+        applicationId = speckleFi.applicationId
+      };
 
       // skip if element already exists in doc & receive mode is set to ignore
       if (IsIgnore(docObj, appObj, out appObj))
@@ -132,9 +143,13 @@ namespace Objects.Converter.Revit
             //the element will be created @ 0m
             //but when this element is updated (let's say with no changes), it will jump @ 10m (unless there is a level change)!
             //to avoid this behavior we're always setting the previous location Z coordinate when updating an element
-            //this means the Z coord of an element will only be set by its Level 
+            //this means the Z coord of an element will only be set by its Level
             //and by additional parameters as sill height, base offset etc
-            var newLocationPoint = new XYZ(basePoint.X, basePoint.Y, (familyInstance.Location as LocationPoint).Point.Z);
+            var newLocationPoint = new XYZ(
+              basePoint.X,
+              basePoint.Y,
+              (familyInstance.Location as LocationPoint).Point.Z
+            );
 
             (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
@@ -166,7 +181,7 @@ namespace Objects.Converter.Revit
       //create family instance
       if (familyInstance == null)
       {
-        //If the current host element is not null, it means we're coming from inside a nested conversion. 
+        //If the current host element is not null, it means we're coming from inside a nested conversion.
         if (CurrentHostElement != null)
         {
           var isUGridLine = speckleFi["isUGridLine"] as bool? != null ? (bool)speckleFi["isUGridLine"] : false;
@@ -195,12 +210,18 @@ namespace Objects.Converter.Revit
         if (speckleFi.rotation != (familyInstance.Location as LocationPoint).Rotation)
         {
           var axis = DB.Line.CreateBound(new XYZ(basePoint.X, basePoint.Y, 0), new XYZ(basePoint.X, basePoint.Y, 1000));
-          (familyInstance.Location as LocationPoint).Rotate(axis, speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation);
+          (familyInstance.Location as LocationPoint).Rotate(
+            axis,
+            speckleFi.rotation - (familyInstance.Location as LocationPoint).Rotation
+          );
         }
       }
       catch { }
 
-      if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.TwoLevelsBased && speckleFi["topLevel"] is Objects.BuiltElements.Level topLevel)
+      if (
+        familySymbol.Family.FamilyPlacementType == FamilyPlacementType.TwoLevelsBased
+        && speckleFi["topLevel"] is Objects.BuiltElements.Level topLevel
+      )
       {
         var revitTopLevel = ConvertLevelToRevit(topLevel, out ApplicationObject.State topLevelState);
         TrySetParam(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM, revitTopLevel);
@@ -208,17 +229,25 @@ namespace Objects.Converter.Revit
 
       SetInstanceParameters(familyInstance, speckleFi);
       if (speckleFi.mirrored)
-        appObj.Update(logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so.");
+        appObj.Update(
+          logItem: $"Element with id {familyInstance.Id} should be mirrored, but a Revit API limitation prevented us from doing so."
+        );
 
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
       return appObj;
     }
 
-    private DB.FamilyInstance CreateHostedFamilyInstance(ApplicationObject appObj, DB.FamilySymbol familySymbol, XYZ insertionPoint, DB.Level level, bool isUGridLine = false)
+    private DB.FamilyInstance CreateHostedFamilyInstance(
+      ApplicationObject appObj,
+      DB.FamilySymbol familySymbol,
+      XYZ insertionPoint,
+      DB.Level level,
+      bool isUGridLine = false
+    )
     {
       DB.FamilyInstance familyInstance = null;
-      //If the current host element is not null, it means we're coming from inside a nested conversion. 
+      //If the current host element is not null, it means we're coming from inside a nested conversion.
 
       if (level == null)
         level = Doc.GetElement(CurrentHostElement.LevelId) as DB.Level;
@@ -228,13 +257,22 @@ namespace Objects.Converter.Revit
 
       if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.OneLevelBasedHosted)
       {
-        familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+        familyInstance = Doc.Create.NewFamilyInstance(
+          insertionPoint,
+          familySymbol,
+          CurrentHostElement,
+          level,
+          StructuralType.NonStructural
+        );
       }
       else if (familySymbol.Family.FamilyPlacementType == FamilyPlacementType.WorkPlaneBased)
       {
         if (CurrentHostElement == null)
         {
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Object is work plane based but does not have a host element");
+          appObj.Update(
+            status: ApplicationObject.State.Failed,
+            logItem: $"Object is work plane based but does not have a host element"
+          );
           return null;
         }
         if (CurrentHostElement is Element el)
@@ -268,7 +306,10 @@ namespace Objects.Converter.Revit
         else if (CurrentHostElement is DB.Floor floor)
         {
           // TODO: support hosted elements on floors. Should be very similar to above implementation
-          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Work Plane based families on floors to be supported soon");
+          appObj.Update(
+            status: ApplicationObject.State.Failed,
+            logItem: $"Work Plane based families on floors to be supported soon"
+          );
           return null;
         }
       }
@@ -293,7 +334,10 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}");
+        appObj.Update(
+          status: ApplicationObject.State.Failed,
+          logItem: $"Unsupported FamilyPlacementType {familySymbol.Family.FamilyPlacementType}"
+        );
         return null;
       }
       // try a catch all solution as a last resort
@@ -301,7 +345,13 @@ namespace Objects.Converter.Revit
       {
         try
         {
-          familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+          familyInstance = Doc.Create.NewFamilyInstance(
+            insertionPoint,
+            familySymbol,
+            CurrentHostElement,
+            level,
+            StructuralType.NonStructural
+          );
         }
         catch { }
       }
@@ -379,9 +429,13 @@ namespace Objects.Converter.Revit
 
     #endregion
 
-    private void GetReferencePlane(GeometryElement geomElement, XYZ basePoint, ref Reference faceRef, ref double planeDist)
+    private void GetReferencePlane(
+      GeometryElement geomElement,
+      XYZ basePoint,
+      ref Reference faceRef,
+      ref double planeDist
+    )
     {
-
       foreach (var geom in geomElement)
       {
         if (geom is Solid solid)
@@ -395,8 +449,14 @@ namespace Objects.Converter.Revit
               // some family instance base points may lie on the intersection of faces
               // this makes it so family instance families can only be placed on the
               // faces of walls
-              double D = planarFace.FaceNormal.X * planarFace.Origin.X + planarFace.FaceNormal.Y * planarFace.Origin.Y + planarFace.FaceNormal.Z * planarFace.Origin.Z;
-              double PointD = planarFace.FaceNormal.X * basePoint.X + planarFace.FaceNormal.Y * basePoint.Y + planarFace.FaceNormal.Z * basePoint.Z;
+              double D =
+                planarFace.FaceNormal.X * planarFace.Origin.X
+                + planarFace.FaceNormal.Y * planarFace.Origin.Y
+                + planarFace.FaceNormal.Z * planarFace.Origin.Z;
+              double PointD =
+                planarFace.FaceNormal.X * basePoint.X
+                + planarFace.FaceNormal.Y * basePoint.Y
+                + planarFace.FaceNormal.Z * basePoint.Z;
               double value = Math.Abs(D - PointD);
               double newPlaneDist = Math.Abs(D - PointD);
               if (newPlaneDist < planeDist)
@@ -420,7 +480,11 @@ namespace Objects.Converter.Revit
 
 
     // transforms
-    private Other.Transform TransformToSpeckle(Transform transform, Document doc, bool skipDocReferencePointTransform = false)
+    private Other.Transform TransformToSpeckle(
+      Transform transform,
+      Document doc,
+      bool skipDocReferencePointTransform = false
+    )
     {
       var externalTransform = transform;
 
@@ -438,9 +502,24 @@ namespace Objects.Converter.Revit
       var t = new Vector(tX, tY, tZ, ModelUnits);
 
       // basis vectors
-      var vX = new Vector(externalTransform.BasisX.X, externalTransform.BasisX.Y, externalTransform.BasisX.Z, ModelUnits);
-      var vY = new Vector(externalTransform.BasisY.X, externalTransform.BasisY.Y, externalTransform.BasisY.Z, ModelUnits);
-      var vZ = new Vector(externalTransform.BasisZ.X, externalTransform.BasisZ.Y, externalTransform.BasisZ.Z, ModelUnits);
+      var vX = new Vector(
+        externalTransform.BasisX.X,
+        externalTransform.BasisX.Y,
+        externalTransform.BasisX.Z,
+        ModelUnits
+      );
+      var vY = new Vector(
+        externalTransform.BasisY.X,
+        externalTransform.BasisY.Y,
+        externalTransform.BasisY.Z,
+        ModelUnits
+      );
+      var vZ = new Vector(
+        externalTransform.BasisZ.X,
+        externalTransform.BasisZ.Y,
+        externalTransform.BasisZ.Z,
+        ModelUnits
+      );
 
       // get the scale: TODO: do revit transforms ever have scaling?
       var scale = (float)transform.Scale;
@@ -453,7 +532,8 @@ namespace Objects.Converter.Revit
       var _transform = new Transform(Transform.Identity);
 
       // translation
-      if (transform.matrix.M44 == 0) return _transform;
+      if (transform.matrix.M44 == 0)
+        return _transform;
       var tX = ScaleToNative(transform.matrix.M14 / transform.matrix.M44, transform.units);
       var tY = ScaleToNative(transform.matrix.M24 / transform.matrix.M44, transform.units);
       var tZ = ScaleToNative(transform.matrix.M34 / transform.matrix.M44, transform.units);
@@ -502,7 +582,13 @@ namespace Objects.Converter.Revit
       var transform = TransformToNative(instance.transform);
       DB.Level level = ConvertLevelToRevit(instance.level, out ApplicationObject.State levelState);
       var insertionPoint = transform.OfPoint(XYZ.Zero);
-      FamilyPlacementType placement = Enum.TryParse<FamilyPlacementType>(definition.placementType, true, out FamilyPlacementType placementType) ? placementType : FamilyPlacementType.Invalid;
+      FamilyPlacementType placement = Enum.TryParse<FamilyPlacementType>(
+        definition.placementType,
+        true,
+        out FamilyPlacementType placementType
+      )
+        ? placementType
+        : FamilyPlacementType.Invalid;
 
       // check for existing and update if so
       if (docObj != null)
@@ -518,7 +604,11 @@ namespace Objects.Converter.Revit
           {
             familyInstance = (DB.FamilyInstance)docObj;
 
-            var newLocationPoint = new XYZ(insertionPoint.X, insertionPoint.Y, (familyInstance.Location as LocationPoint).Point.Z);
+            var newLocationPoint = new XYZ(
+              insertionPoint.X,
+              insertionPoint.Y,
+              (familyInstance.Location as LocationPoint).Point.Z
+            );
             (familyInstance.Location as LocationPoint).Point = newLocationPoint;
 
             // check for a type change
@@ -545,7 +635,13 @@ namespace Objects.Converter.Revit
         switch (placement)
         {
           case FamilyPlacementType.OneLevelBasedHosted when CurrentHostElement != null:
-            familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, CurrentHostElement, level, StructuralType.NonStructural);
+            familyInstance = Doc.Create.NewFamilyInstance(
+              insertionPoint,
+              familySymbol,
+              CurrentHostElement,
+              level,
+              StructuralType.NonStructural
+            );
             break;
 
           case FamilyPlacementType.WorkPlaneBased when CurrentHostElement != null:
@@ -565,7 +661,10 @@ namespace Objects.Converter.Revit
             }
             catch (Exception e)
             {
-              appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not create WorkPlaneBased hosted instance: {e.Message}");
+              appObj.Update(
+                status: ApplicationObject.State.Failed,
+                logItem: $"Could not create WorkPlaneBased hosted instance: {e.Message}"
+              );
               return appObj;
             }
             // parameters
@@ -597,7 +696,12 @@ namespace Objects.Converter.Revit
             break;
 
           default:
-            familyInstance = Doc.Create.NewFamilyInstance(insertionPoint, familySymbol, level, StructuralType.NonStructural);
+            familyInstance = Doc.Create.NewFamilyInstance(
+              insertionPoint,
+              familySymbol,
+              level,
+              StructuralType.NonStructural
+            );
             break;
         }
       }
@@ -616,16 +720,24 @@ namespace Objects.Converter.Revit
       if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
         familyInstance.flipFacing();
 
-      // rotation about the z axis
-      var rotation = transform.BasisX.AngleTo(XYZ.BasisX);
+      var desiredAngle = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
+      // TODO: does the family instance always have this basisX when created?
+      var currentAngle = new Vector(1, 0, 0);
+
+      // rotation about the z axis (signed)
+      var rotation = Math.Atan2(
+        Vector.DotProduct(Vector.CrossProduct(desiredAngle, currentAngle), new Vector(0, 0, 1)),
+        Vector.DotProduct(desiredAngle, currentAngle)
+      );
+
       if (familyInstance.Location is LocationPoint location)
       {
         try // some point based families don't have a rotation, so keep this in a try catch
         {
           if (rotation != location.Rotation)
           {
-            var axis = DB.Line.CreateUnbound(new XYZ(location.Point.X, location.Point.Y, 0), new XYZ(location.Point.X, location.Point.Y, 1));
-            location.Rotate(axis, rotation - location.Rotation);
+            using var axis = DB.Line.CreateUnbound(location.Point, XYZ.BasisZ);
+            location.Rotate(axis, location.Rotation - rotation);
           }
         }
         catch (Exception e)
@@ -638,12 +750,17 @@ namespace Objects.Converter.Revit
       // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
       if (instance.mirrored)
       {
-        Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null ;
+        Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
         var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
-        
+
         try
         {
-          ElementTransformUtils.MirrorElements(Doc, elementToMirror, DB.Plane.CreateByNormalAndOrigin(transform.BasisY, insertionPoint), false);
+          ElementTransformUtils.MirrorElements(
+            Doc,
+            elementToMirror,
+            DB.Plane.CreateByNormalAndOrigin(transform.BasisY, insertionPoint),
+            false
+          );
         }
         catch (Exception e)
         {
@@ -662,7 +779,12 @@ namespace Objects.Converter.Revit
       return appObj;
     }
 
-    public RevitInstance RevitInstanceToSpeckle(DB.FamilyInstance instance, out List<string> notes, Transform parentTransform, bool useParentTransform = false)
+    public RevitInstance RevitInstanceToSpeckle(
+      DB.FamilyInstance instance,
+      out List<string> notes,
+      Transform parentTransform,
+      bool useParentTransform = false
+    )
     {
       notes = new List<string>();
 
@@ -676,7 +798,11 @@ namespace Objects.Converter.Revit
       var transform = TransformToSpeckle(localTransform, instance.Document, useParentTransform);
 
       // get the definition base of this instance
-      RevitSymbolElementType definition = GetRevitInstanceDefinition(instance, out List<string> definitionNotes, instanceTransform);
+      RevitSymbolElementType definition = GetRevitInstanceDefinition(
+        instance,
+        out List<string> definitionNotes,
+        instanceTransform
+      );
       notes.AddRange(definitionNotes);
 
       var _instance = new RevitInstance();
@@ -707,10 +833,16 @@ namespace Objects.Converter.Revit
     /// <param name="parentTransform"></param>
     /// <returns></returns>
     /// <remarks>TODO: could potentially optimize this for symbols with the same displayvalues by caching previously converted symbols</remarks>
-    private RevitSymbolElementType GetRevitInstanceDefinition(DB.FamilyInstance instance, out List<string> notes, Transform parentTransform)
+    private RevitSymbolElementType GetRevitInstanceDefinition(
+      DB.FamilyInstance instance,
+      out List<string> notes,
+      Transform parentTransform
+    )
     {
       notes = new List<string>();
-      var symbol = ElementTypeToSpeckle(instance.Document.GetElement(instance.GetTypeId()) as ElementType) as RevitSymbolElementType;
+      var symbol =
+        ElementTypeToSpeckle(instance.Document.GetElement(instance.GetTypeId()) as ElementType)
+        as RevitSymbolElementType;
       if (symbol == null)
       {
         notes.Add($"Could not convert element type as FamilySymbol");
@@ -741,7 +873,8 @@ namespace Objects.Converter.Revit
         {
           case DB.FamilyInstance o:
             converted = RevitInstanceToSpeckle(o, out notes, parentTransform, true);
-            if (converted == null) goto default;
+            if (converted == null)
+              goto default;
             break;
           default:
             converted = ConvertToSpeckle(subElem);
