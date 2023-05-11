@@ -84,9 +84,6 @@ namespace Objects.Converter.Revit
             && elements.Count != 0
           )
           {
-            ModelCurveArray curveArray = new ModelCurveArray();
-            var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
-
             // if the roof is a curtain roof then set the mullions at the borders
             var nestedElements = speckleFootprintRoof.elements;
             if (revitFootprintRoof.CurtainGrids != null && nestedElements is not null && nestedElements.Count != 0)

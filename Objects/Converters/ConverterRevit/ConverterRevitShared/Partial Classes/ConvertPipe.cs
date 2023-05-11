@@ -6,7 +6,6 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Plumbing;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
-using Curve = Objects.Geometry.Curve;
 using DB = Autodesk.Revit.DB;
 
 using Speckle.Core.Models;

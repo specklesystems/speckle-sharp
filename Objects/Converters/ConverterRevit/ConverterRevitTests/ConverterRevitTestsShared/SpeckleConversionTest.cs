@@ -248,9 +248,10 @@ namespace ConverterRevitTests
       converter.SetContextDocument(fixture.NewDoc);
       var revitEls = new List<object>();
 
-      await SpeckleUtils.RunInTransaction(
-        () =>
-        {
+      await SpeckleUtils.RunInTransaction(() =>
+      {
+        foreach (var el in spkElems)
+        { 
           var res = converter.ConvertToNative(el);
           if (res is List<ApplicationObject> apls)
             revitEls.AddRange(apls);
