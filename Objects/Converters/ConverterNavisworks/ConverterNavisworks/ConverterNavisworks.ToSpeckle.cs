@@ -5,12 +5,11 @@ using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
+using Objects.Core.Models;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
-
-// ReSharper disable RedundantExplicitArraySize
 
 namespace Objects.Converter.Navisworks;
 
@@ -100,7 +99,7 @@ public partial class ConverterNavisworks
       return CanConvertToSpeckle(modelItem);
 
     // is expecting @object to be a pseudoId string
-    if (!(@object is string pseudoId))
+    if (@object is not string pseudoId)
       return false;
 
     if (pseudoId == RootNodePseudoId)
@@ -247,13 +246,11 @@ public partial class ConverterNavisworks
     );
     var elementCategoryType = elementCategory.Value.ToNamedConstant().DisplayName;
 
-    switch (elementCategoryType)
+    return elementCategoryType switch
     {
-      case "Geometry":
-        return new Collection { applicationId = applicationId, collectionType = "Geometry"};
-      default:
-        return new Collection { applicationId = applicationId, collectionType = elementCategoryType };
-    }
+      "Geometry" => new GeometryNode { applicationId = applicationId },
+      _ => new Collection { applicationId = applicationId, collectionType = elementCategoryType }
+    };
   }
 
   private static Base ModelItemToSpeckle(ModelItem element)
@@ -305,7 +302,7 @@ public partial class ConverterNavisworks
     var fragmentGeometry = TranslateFragmentGeometry(geometry);
 
     if (fragmentGeometry != null && fragmentGeometry.Any())
-      @base["displayValue"] = fragmentGeometry;
+      @base["@displayValue"] = fragmentGeometry;
   }
 
   private static bool CanConvertToSpeckle(ModelItem item)
