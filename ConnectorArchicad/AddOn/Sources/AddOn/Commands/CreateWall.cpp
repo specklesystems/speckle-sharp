@@ -268,7 +268,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		if (type.HasValue ())
 			element.wall.referenceLineLocation = type.Get ();
 
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, type);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, referenceLineLocation);
 	}
 
 	// The offset of the wall’s base line from reference line
@@ -302,7 +302,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Story visibility
-	Utility::ImportVisibility (os, "", element.wall.isAutoOnStoryVisibility, element.wall.visibility);
+	Utility::CreateVisibility (os, "", element.wall.isAutoOnStoryVisibility, element.wall.visibility);
 
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, isAutoOnStoryVisibility);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, visibility.showOnHome);

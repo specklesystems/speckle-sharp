@@ -29,7 +29,7 @@ GS::UniString CreateWindow::GetUndoableCommandName () const
 }
 
 
-GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& currentWindow,
+GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
@@ -53,10 +53,12 @@ GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& curren
 	if (err != NoError)
 		return err;
 
-	if (!CheckEnvironment (currentWindow, element))
+	if (!CheckEnvironment (os, element))
 		return Error;
 
-	err = GetOpeningBaseFromObjectState<API_WindowType> (currentWindow, element.window, elementMask, log);
+	GetDoorWindowFromObjectState<API_WindowType> (os, element.window, elementMask, log);
+
+	err = GetOpeningBaseFromObjectState<API_WindowType> (os, element.window, elementMask, log);
 
 	return err;
 }

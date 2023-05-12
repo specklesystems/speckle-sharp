@@ -28,7 +28,7 @@ GS::UniString CreateDoor::GetUndoableCommandName () const
 }
 
 
-GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& currentDoor,
+GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
@@ -52,10 +52,12 @@ GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& currentD
 	if (err != NoError)
 		return err;
 
-	if (!CheckEnvironment (currentDoor, element))
+	if (!CheckEnvironment (os, element))
 		return Error;
 
-	err = GetOpeningBaseFromObjectState<API_DoorType> (currentDoor, element.door, elementMask, log);
+	GetDoorWindowFromObjectState<API_DoorType> (os, element.door, elementMask, log);
+
+	err = GetOpeningBaseFromObjectState<API_DoorType> (os, element.door, elementMask, log);
 
 	return err;
 }

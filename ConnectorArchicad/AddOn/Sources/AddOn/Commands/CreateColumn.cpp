@@ -280,7 +280,7 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Story visibility
-	Utility::ImportVisibility (os, "", element.column.isAutoOnStoryVisibility, element.column.visibility);
+	Utility::CreateVisibility (os, "", element.column.isAutoOnStoryVisibility, element.column.visibility);
 
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, isAutoOnStoryVisibility);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, visibility.showOnHome);
@@ -521,7 +521,7 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Cover Fill Transformation
-	Utility::ImportCoverFillTransformation (os, element.column.coverFillOrientationComesFrom3D, element.column.coverFillTransformationType);
+	Utility::CreateCoverFillTransformation (os, element.column.coverFillOrientationComesFrom3D, element.column.coverFillTransformationType);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillOrientationComesFrom3D);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformationType);
 
