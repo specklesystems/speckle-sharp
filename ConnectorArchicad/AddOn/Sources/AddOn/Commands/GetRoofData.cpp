@@ -138,18 +138,18 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 	// Show on Stories - Story visibility
 	{
 		GS::UniString visibilityFillString;
-		Utility::GetVisibility (false, element.roof.shellBase.visibilityFill, visibilityFillString);
+		Utility::GetPredefinedVisibility (false, element.roof.shellBase.visibilityFill, visibilityFillString);
 
 		GS::UniString visibilityContString;
-		Utility::GetVisibility (false, element.roof.shellBase.visibilityCont, visibilityContString);
+		Utility::GetPredefinedVisibility (false, element.roof.shellBase.visibilityCont, visibilityContString);
 
 		if (visibilityFillString == visibilityContString && visibilityFillString != CustomStoriesValueName) {
 			os.Add (ShowOnStories, visibilityContString);
 		} else {
 			os.Add (ShowOnStories, CustomStoriesValueName);
 
-			Utility::ExportVisibility (false, element.roof.shellBase.visibilityFill, os, VisibilityFillData, true);
-			Utility::ExportVisibility (false, element.roof.shellBase.visibilityCont, os, VisibilityContData, true);
+			Utility::GetVisibility (false, element.roof.shellBase.visibilityFill, os, VisibilityFillData, true);
+			Utility::GetVisibility (false, element.roof.shellBase.visibilityCont, os, VisibilityContData, true);
 		}
 	}
 
@@ -225,7 +225,7 @@ GS::ErrCode GetRoofData::SerializeElementType (const API_Element& element,
 		}
 
 		// Hatch Orientation
-		Utility::ExportHatchOrientation (element.roof.shellBase.hatchOrientation.type, os);
+		Utility::GetHatchOrientation (element.roof.shellBase.hatchOrientation.type, os);
 
 		if (element.roof.shellBase.hatchOrientation.type == API_HatchRotated || element.roof.shellBase.hatchOrientation.type == API_HatchDistorted) {
 			os.Add (Roof::HatchOrientationOrigoX, element.roof.shellBase.hatchOrientation.origo.x);

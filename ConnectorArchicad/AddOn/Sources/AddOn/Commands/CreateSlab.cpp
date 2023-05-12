@@ -36,13 +36,10 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	LibpartImportManager& /*libpartImportManager*/,
 	GS::Array<GS::UniString>& log) const
 {
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_SlabID;
-#else
-	element.header.typeID = API_SlabID;
-#endif
-
-	GSErrCode err = Utility::GetBaseElementData (element, &memo, nullptr, log);
+	GSErrCode err = NoError;
+	
+	Utility::SetElementType (element.header, API_SlabID);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -177,14 +174,14 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 
 	// Show on Stories - Story visibility
 	bool isAutoOnStoryVisibility = false;
-	Utility::ImportVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.slab.visibilityCont);
+	Utility::CreateVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.slab.visibilityCont);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont.showOnHome);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont.showAllAbove);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont.showAllBelow);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont.showRelAbove);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityCont.showRelBelow);
 
-	Utility::ImportVisibility (os, VisibilityFillData, isAutoOnStoryVisibility, element.slab.visibilityFill);
+	Utility::CreateVisibility (os, VisibilityFillData, isAutoOnStoryVisibility, element.slab.visibilityFill);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityFill.showOnHome);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityFill.showAllAbove);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, visibilityFill.showAllBelow);
@@ -316,7 +313,7 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Cover Fill Transformation
-	Utility::ImportHatchOrientation (os, element.slab.hatchOrientation.type);
+	Utility::CreateHatchOrientation (os, element.slab.hatchOrientation.type);
 	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, hatchOrientation.type);
 
 	if (os.Contains (Slab::hatchOrientationOrigoX)) {

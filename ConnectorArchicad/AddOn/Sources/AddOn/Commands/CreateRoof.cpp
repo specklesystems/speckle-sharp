@@ -36,11 +36,7 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_RoofID;
-#else
-	element.header.typeID = API_RoofID;
-#endif
+	Utility::SetElementType (element.header, API_RoofID);
 	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
@@ -51,10 +47,10 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Roof::RoofClassName, roofClassName);
 
 		GS::Optional<API_RoofClassID> type = roofClassNames.FindValue (roofClassName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.roof.roofClass = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, roofClass);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, roofClass);
+		}
 	}
 
 	// Geometry and positioning
@@ -80,11 +76,11 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			element.roof.u.planeRoof.poly.nArcs = roofShape.ArcCount ();
 
 			roofShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
-		}
 
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.planeRoof.poly.nSubPolys);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.planeRoof.poly.nCoords);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.planeRoof.poly.nArcs);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.planeRoof.poly.nSubPolys);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.planeRoof.poly.nCoords);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.planeRoof.poly.nArcs);
+		}
 
 		if (os.Contains (Roof::PlaneRoofAngle)) {
 			os.Get (Roof::PlaneRoofAngle, element.roof.u.planeRoof.angle);
@@ -118,11 +114,11 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			element.roof.u.polyRoof.contourPolygon.nArcs = roofShape.ArcCount ();
 
 			roofShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
-		}
 
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.contourPolygon.nSubPolys);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.contourPolygon.nCoords);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.contourPolygon.nArcs);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.contourPolygon.nSubPolys);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.contourPolygon.nCoords);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.contourPolygon.nArcs);
+		}
 
 		// Pivot Polygon
 		if (os.Contains (Roof::PivotPolygon)) {
@@ -132,11 +128,12 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			element.roof.u.polyRoof.pivotPolygon.nArcs = pivotPolygon.ArcCount ();
 
 			pivotPolygon.SetToMemo (memo, Objects::ElementShape::MemoAdditionalPolygon);
+
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.pivotPolygon.nSubPolys);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.pivotPolygon.nCoords);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.pivotPolygon.nArcs);
 		}
 
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.pivotPolygon.nSubPolys);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.pivotPolygon.nCoords);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, u.polyRoof.pivotPolygon.nArcs);
 
 		if (os.Contains (Roof::LevelNum)) {
 			os.Get (Roof::LevelNum, element.roof.u.polyRoof.levelNum);
@@ -189,7 +186,7 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.level);
 	}
-	
+
 	// The thickness of the roof
 	if (os.Contains (Roof::Thickness)) {
 		os.Get (Roof::Thickness, element.roof.shellBase.thickness);
@@ -202,10 +199,10 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Roof::Structure, structureName);
 
 		GS::Optional<API_ModelElemStructureType> type = structureTypeNames.FindValue (structureName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.roof.shellBase.modelElemStructureType = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.modelElemStructureType);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.modelElemStructureType);
+		}
 	}
 
 	// The building material name of the roof.shellBase
@@ -221,10 +218,11 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_BuildingMaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.roof.shellBase.buildingMaterial = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.buildingMaterial);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.buildingMaterial);
 	}
 
 	// The composite name of the roof.shellBase
@@ -239,11 +237,12 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_CompWallID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.roof.shellBase.composite = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.composite);
+			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.composite);
 
 	// The edge type of the roof
 	if (os.Contains (Roof::EdgeAngleType)) {
@@ -267,14 +266,14 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 
 	// Show on Stories - Story visibility
 	bool isAutoOnStoryVisibility = false;
-	Utility::ImportVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.roof.shellBase.visibilityCont);
+	Utility::CreateVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.roof.shellBase.visibilityCont);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityCont.showOnHome);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityCont.showAllAbove);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityCont.showAllBelow);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityCont.showRelAbove);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityCont.showRelBelow);
 
-	Utility::ImportVisibility (os, VisibilityFillData, isAutoOnStoryVisibility, element.roof.shellBase.visibilityFill);
+	Utility::CreateVisibility (os, VisibilityFillData, isAutoOnStoryVisibility, element.roof.shellBase.visibilityFill);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityFill.showOnHome);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityFill.showAllAbove);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.visibilityFill.showAllBelow);
@@ -299,10 +298,10 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Roof::ViewDepthLimitationName, viewDepthLimitationName);
 
 		GS::Optional<API_ElemViewDepthLimitationsID> type = viewDepthLimitationNames.FindValue (viewDepthLimitationName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.roof.shellBase.viewDepthLimitation = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.viewDepthLimitation);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.viewDepthLimitation);
+		}
 	}
 
 	// Floor Plan and Section - Cut Surfaces
@@ -323,10 +322,11 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.roof.shellBase.sectContLtype = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.sectContLtype);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.sectContLtype);
 	}
 
 	// Override cut fill pen
@@ -365,10 +365,11 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.roof.shellBase.ltypeInd = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.ltypeInd);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.ltypeInd);
 	}
 
 	// The pen index and linetype name of slab hidden contour line
@@ -388,36 +389,43 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.roof.shellBase.aboveViewLineType = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.aboveViewLineType);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.aboveViewLineType);
 	}
 
 	// Floor Plan and Section - Cover Fills
-	if (os.Contains (Roof::UseFloorFill))
+	if (os.Contains (Roof::UseFloorFill)) {
 		os.Get (Roof::UseFloorFill, element.roof.shellBase.useFloorFill);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.useFloorFill);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.useFloorFill);
+	}
 
-	if (os.Contains (Roof::Use3DHatching))
+	if (os.Contains (Roof::Use3DHatching)) {
 		os.Get (Roof::Use3DHatching, element.roof.shellBase.use3DHatching);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.use3DHatching);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.use3DHatching);
+	}
 
-	if (os.Contains (Roof::UseFillLocBaseLine))
+	if (os.Contains (Roof::UseFillLocBaseLine)) {
 		os.Get (Roof::UseFillLocBaseLine, element.roof.shellBase.useFillLocBaseLine);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.useFillLocBaseLine);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.useFillLocBaseLine);
+	}
 
-	if (os.Contains (Roof::UseSlantedFill))
+	if (os.Contains (Roof::UseSlantedFill)) {
 		os.Get (Roof::UseSlantedFill, element.roof.shellBase.useSlantedFill);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.useSlantedFill);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.useSlantedFill);
+	}
 
-	if (os.Contains (Roof::FloorFillPen))
+	if (os.Contains (Roof::FloorFillPen)) {
 		os.Get (Roof::FloorFillPen, element.roof.shellBase.floorFillPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.floorFillPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.floorFillPen);
+	}
 
-	if (os.Contains (Roof::FloorFillBGPen))
+	if (os.Contains (Roof::FloorFillBGPen)) {
 		os.Get (Roof::FloorFillBGPen, element.roof.shellBase.floorFillBGPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.floorFillBGPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.floorFillBGPen);
+	}
 
 	// Cover fill type
 	if (os.Contains (Roof::FloorFillName)) {
@@ -430,39 +438,46 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_FilltypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.roof.shellBase.floorFillInd = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.floorFillInd);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.floorFillInd);
 	}
 
 	// Cover Fill Transformation
-	Utility::ImportHatchOrientation (os, element.roof.shellBase.hatchOrientation.type);
+	Utility::CreateHatchOrientation (os, element.roof.shellBase.hatchOrientation.type);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.type);
 
-	if (os.Contains (Roof::HatchOrientationOrigoX))
+	if (os.Contains (Roof::HatchOrientationOrigoX)) {
 		os.Get (Roof::HatchOrientationOrigoX, element.roof.shellBase.hatchOrientation.origo.x);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.origo.x);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.origo.x);
+	}
 
-	if (os.Contains (Roof::HatchOrientationOrigoY))
+	if (os.Contains (Roof::HatchOrientationOrigoY)) {
 		os.Get (Roof::HatchOrientationOrigoY, element.roof.shellBase.hatchOrientation.origo.y);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.origo.y);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.origo.y);
+	}
 
-	if (os.Contains (Roof::HatchOrientationXAxisX))
+	if (os.Contains (Roof::HatchOrientationXAxisX)) {
 		os.Get (Roof::HatchOrientationXAxisX, element.roof.shellBase.hatchOrientation.matrix00);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix00);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix00);
+	}
 
-	if (os.Contains (Roof::HatchOrientationXAxisY))
+	if (os.Contains (Roof::HatchOrientationXAxisY)) {
 		os.Get (Roof::HatchOrientationXAxisY, element.roof.shellBase.hatchOrientation.matrix10);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix10);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix10);
+	}
 
-	if (os.Contains (Roof::HatchOrientationYAxisX))
+	if (os.Contains (Roof::HatchOrientationYAxisX)) {
 		os.Get (Roof::HatchOrientationYAxisX, element.roof.shellBase.hatchOrientation.matrix01);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix01);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix01);
+	}
 
-	if (os.Contains (Roof::HatchOrientationYAxisY))
+	if (os.Contains (Roof::HatchOrientationYAxisY)) {
 		os.Get (Roof::HatchOrientationYAxisY, element.roof.shellBase.hatchOrientation.matrix11);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix11);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.hatchOrientation.matrix11);
+	}
 
 	// Model
 
@@ -537,10 +552,10 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Roof::TrimmingBodyName, trimmingBodyName);
 
 		GS::Optional<API_ShellBaseCutBodyTypeID> type = shellBaseCutBodyTypeNames.FindValue (trimmingBodyName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.roof.shellBase.cutBodyType = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.cutBodyType);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.cutBodyType);
+		}
 	}
 
 	return NoError;

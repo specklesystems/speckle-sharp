@@ -1,6 +1,7 @@
 #include "GetDataCommand.hpp"
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
+#include "Utility.hpp"
 
 
 namespace AddOnCommands
@@ -35,11 +36,8 @@ GS::ObjectState GetDataCommand::Execute (const GS::ObjectState& parameters,
 			continue;
 		}
 
-#ifdef ServerMainVers_2600
-		if (element.header.type.typeID != GetElemTypeID ())
-#else
-		if (element.header.typeID != GetElemTypeID ())
-#endif
+		API_ElemTypeID elementType = Utility::GetElementType (element.header);
+		if (elementType != GetElemTypeID ())
 		{
 			continue;
 		}

@@ -24,6 +24,7 @@
 #define GetRoomDataCommandName					"GetRoomData";
 #define GetRoofDataCommandName					"GetRoofData";
 #define GetShellDataCommandName					"GetShellData";
+#define GetSkylightCommandName					"GetSkylightData";
 #define GetProjectInfoCommandName				"GetProjectInfo";
 #define GetSubelementInfoCommandName			"GetSubelementInfo";
 #define CreateDirectShapeCommandName 			"CreateDirectShape";
@@ -34,6 +35,7 @@
 #define CreateColumnCommandName					"CreateColumn";
 #define CreateObjectCommandName                 "CreateObject";
 #define CreateSlabCommandName					"CreateSlab";
+#define CreateSkylightCommandName				"CreateSkylight";
 #define CreateRoofCommandName					"CreateRoof";
 #define CreateShellCommandName					"CreateShell";
 #define CreateZoneCommandName					"CreateZone";

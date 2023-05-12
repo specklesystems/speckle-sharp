@@ -164,7 +164,7 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Show on Stories - Story visibility
-	Utility::ExportVisibility (elem.column.isAutoOnStoryVisibility, elem.column.visibility, os, ShowOnStories);
+	Utility::GetVisibility (elem.column.isAutoOnStoryVisibility, elem.column.visibility, os, ShowOnStories);
 
 	// The display options (Projected, Projected with Overhead, Cut Only, Outlines Only, Overhead All or Symbolic Cut)
 	os.Add (Column::DisplayOptionName, displayOptionNames.Get (elem.column.displayOption));
@@ -273,7 +273,7 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 		}
 
 		// Cover Fill Transformation
-		Utility::ExportCoverFillTransformation (elem.column.coverFillOrientationComesFrom3D, elem.column.coverFillTransformationType, os);
+		Utility::GetCoverFillTransformation (elem.column.coverFillOrientationComesFrom3D, elem.column.coverFillTransformationType, os);
 
 		if ((elem.column.coverFillTransformationType == API_CoverFillTransformationType_Rotated || elem.column.coverFillTransformationType == API_CoverFillTransformationType_Distorted) && !elem.column.coverFillOrientationComesFrom3D) {
 			os.Add (Column::CoverFillTransformationOrigoX, elem.column.coverFillTransformation.origo.x);

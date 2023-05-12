@@ -35,11 +35,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_BeamID;
-#else
-	element.header.typeID = API_BeamID;
-#endif
+	Utility::SetElementType (element.header, API_BeamID);
 	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
@@ -362,7 +358,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Show on Stories - Story visibility
-	Utility::ImportVisibility (os, "", element.beam.isAutoOnStoryVisibility, element.beam.visibility);
+	Utility::CreateVisibility (os, "", element.beam.isAutoOnStoryVisibility, element.beam.visibility);
 
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, isAutoOnStoryVisibility);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, visibility.showOnHome);
@@ -626,7 +622,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Cover Fill Transformation
-	Utility::ImportCoverFillTransformation (os, element.beam.coverFillOrientationComesFrom3D, element.beam.coverFillTransformationType);
+	Utility::CreateCoverFillTransformation (os, element.beam.coverFillOrientationComesFrom3D, element.beam.coverFillTransformationType);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, coverFillOrientationComesFrom3D);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, coverFillTransformationType);
 

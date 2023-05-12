@@ -1,4 +1,4 @@
-﻿#include "CreateZone.hpp"
+#include "CreateZone.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
@@ -36,13 +36,10 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 	LibpartImportManager& /*libpartImportManager*/,
 	GS::Array<GS::UniString>& log) const
 {
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_ZoneID;
-#else
-	element.header.typeID = API_ZoneID;
-#endif
-
-	GSErrCode err = Utility::GetBaseElementData (element, &memo, nullptr, log);
+	GSErrCode err = NoError;
+	
+	Utility::SetElementType (element.header, API_ZoneID);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 

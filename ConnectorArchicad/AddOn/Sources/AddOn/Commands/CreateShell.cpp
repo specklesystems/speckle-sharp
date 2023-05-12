@@ -37,12 +37,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_ShellID;
-#else
-	element.header.typeID = API_ShellID;
-#endif
-
+	Utility::SetElementType (element.header, API_ShellID);
 	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
@@ -53,10 +48,10 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Shell::ShellClassName, shellClassName);
 
 		GS::Optional<API_ShellClassID> type = shellClassNames.FindValue (shellClassName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.shell.shellClass = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellClass);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellClass);
+		}
 	}
 
 	// Base plane transformation matrix
@@ -64,7 +59,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		GS::ObjectState transformOs;
 		os.Get (Shell::BasePlane, transformOs);
 
-		Utility::ImportTransform (transformOs, element.shell.basePlane);
+		Utility::CreateTransform (transformOs, element.shell.basePlane);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, basePlane);
 	}
 
@@ -84,7 +79,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 		if (countShellContour > 0) {
 
-			memo.shellContours = (API_ShellContourData*)BMAllocatePtr(countShellContour * sizeof(API_ShellContourData), ALLOCATE_CLEAR, 0);
+			memo.shellContours = (API_ShellContourData*) BMAllocatePtr (countShellContour * sizeof (API_ShellContourData), ALLOCATE_CLEAR, 0);
 
 			GS::ObjectState shellContours;
 			os.Get (Shell::ShellContourData, shellContours);
@@ -111,7 +106,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					GS::ObjectState transformOs;
 					shellContour.Get (Shell::ShellContourPlane, transformOs);
 
-					Utility::ImportTransform (transformOs, memo.shellContours[idx].plane);
+					Utility::CreateTransform (transformOs, memo.shellContours[idx].plane);
 					ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellContourData, plane);
 				}
 
@@ -237,12 +232,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.begShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -286,12 +281,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.endShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -335,12 +330,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[0].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -384,12 +379,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.extrudedShell.extrudedEdgeDatas[1].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -442,7 +437,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		if (os.Contains (Shell::AxisBase)) {
 			os.Get (Shell::AxisBase, transformAxisBaseOs);
 
-			Utility::ImportTransform (transformAxisBaseOs, element.shell.u.revolvedShell.axisBase);
+			Utility::CreateTransform (transformAxisBaseOs, element.shell.u.revolvedShell.axisBase);
 			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.axisBase);
 		}
 
@@ -487,12 +482,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.begShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -536,12 +531,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.endShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -585,12 +580,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[0].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -634,12 +629,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.revolvedShell.revolvedEdgeDatas[1].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -672,7 +667,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		if (os.Contains (Shell::Plane1)) {
 			os.Get (Shell::Plane1, transformPlaneOs1);
 
-			Utility::ImportTransform (transformPlaneOs1, element.shell.u.ruledShell.plane1);
+			Utility::CreateTransform (transformPlaneOs1, element.shell.u.ruledShell.plane1);
 			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.plane1);
 		}
 
@@ -692,7 +687,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		if (os.Contains (Shell::Plane2)) {
 			os.Get (Shell::Plane2, transformPlaneOs2);
 
-			Utility::ImportTransform (transformPlaneOs2, element.shell.u.ruledShell.plane2);
+			Utility::CreateTransform (transformPlaneOs2, element.shell.u.ruledShell.plane2);
 			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.plane2);
 		}
 
@@ -726,12 +721,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.begShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -775,12 +770,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.endShapeEdgeData.sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -824,12 +819,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[0].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -873,12 +868,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 					attribute.header.typeID = API_MaterialID;
 					CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-					if (NoError == ACAPI_Attribute_Get (&attribute))
+					if (NoError == ACAPI_Attribute_Get (&attribute)) {
 						element.shell.u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex = attribute.header.index;
+						ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex);
+					}
 				}
-
 				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.overridden);
-				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, u.ruledShell.ruledEdgeDatas[1].sideMaterial.attributeIndex);
 			}
 
 			// Edge type
@@ -948,10 +943,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_BuildingMaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.buildingMaterial = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.buildingMaterial);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.buildingMaterial);
 	}
 
 	// The composite name of the shell.shellBase
@@ -966,11 +962,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_CompWallID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.composite = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.composite);
+			}
 		}
 	}
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.composite);
 
 	// The edge type of the shell
 	if (os.Contains (Shell::EdgeAngleType)) {
@@ -994,14 +991,14 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 
 	// Show on Stories - Story visibility
 	bool isAutoOnStoryVisibility = false;
-	Utility::ImportVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.shell.shellBase.visibilityCont);
+	Utility::CreateVisibility (os, VisibilityContData, isAutoOnStoryVisibility, element.shell.shellBase.visibilityCont);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showOnHome);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showAllAbove);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showAllBelow);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showRelAbove);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityCont.showRelBelow);
 
-	Utility::ImportVisibility (os, VisibilityFillData, isAutoOnStoryVisibility, element.shell.shellBase.visibilityFill);
+	Utility::CreateVisibility (os, VisibilityFillData, isAutoOnStoryVisibility, element.shell.shellBase.visibilityFill);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showOnHome);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showAllAbove);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.visibilityFill.showAllBelow);
@@ -1092,10 +1089,11 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.ltypeInd = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.ltypeInd);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.ltypeInd);
 	}
 
 	// The pen index and linetype name of slab hidden contour line
@@ -1115,36 +1113,43 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_LinetypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.aboveViewLineType = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.aboveViewLineType);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.aboveViewLineType);
 	}
 
 	// Floor Plan and Section - Cover Fills
-	if (os.Contains (Shell::UseFloorFill))
+	if (os.Contains (Shell::UseFloorFill)) {
 		os.Get (Shell::UseFloorFill, element.shell.shellBase.useFloorFill);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useFloorFill);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useFloorFill);
+	}
 
-	if (os.Contains (Shell::Use3DHatching))
+	if (os.Contains (Shell::Use3DHatching)) {
 		os.Get (Shell::Use3DHatching, element.shell.shellBase.use3DHatching);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.use3DHatching);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.use3DHatching);
+	}
 
-	if (os.Contains (Shell::UseFillLocBaseLine))
+	if (os.Contains (Shell::UseFillLocBaseLine)) {
 		os.Get (Shell::UseFillLocBaseLine, element.shell.shellBase.useFillLocBaseLine);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useFillLocBaseLine);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useFillLocBaseLine);
+	}
 
-	if (os.Contains (Shell::UseSlantedFill))
+	if (os.Contains (Shell::UseSlantedFill)) {
 		os.Get (Shell::UseSlantedFill, element.shell.shellBase.useSlantedFill);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useSlantedFill);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.useSlantedFill);
+	}
 
-	if (os.Contains (Shell::FloorFillPen))
+	if (os.Contains (Shell::FloorFillPen)) {
 		os.Get (Shell::FloorFillPen, element.shell.shellBase.floorFillPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillPen);
+	}
 
-	if (os.Contains (Shell::FloorFillBGPen))
+	if (os.Contains (Shell::FloorFillBGPen)) {
 		os.Get (Shell::FloorFillBGPen, element.shell.shellBase.floorFillBGPen);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillBGPen);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillBGPen);
+	}
 
 	// Cover fill type
 	if (os.Contains (Shell::FloorFillName)) {
@@ -1157,43 +1162,51 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_FilltypeID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.floorFillInd = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillInd);
+			}
 		}
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.floorFillInd);
 	}
 
 	// Cover Fill Transformation
-	Utility::ImportHatchOrientation (os, element.shell.shellBase.hatchOrientation.type);
+	Utility::CreateHatchOrientation (os, element.shell.shellBase.hatchOrientation.type);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.type);
 
-	if (os.Contains (Shell::HatchOrientationOrigoX))
+	if (os.Contains (Shell::HatchOrientationOrigoX)) {
 		os.Get (Shell::HatchOrientationOrigoX, element.shell.shellBase.hatchOrientation.origo.x);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.origo.x);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.origo.x);
+	}
 
-	if (os.Contains (Shell::HatchOrientationOrigoY))
+	if (os.Contains (Shell::HatchOrientationOrigoY)) {
 		os.Get (Shell::HatchOrientationOrigoY, element.shell.shellBase.hatchOrientation.origo.y);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.origo.y);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.origo.y);
+	}
 
-	if (os.Contains (Shell::HatchOrientationXAxisX))
+	if (os.Contains (Shell::HatchOrientationXAxisX)) {
 		os.Get (Shell::HatchOrientationXAxisX, element.shell.shellBase.hatchOrientation.matrix00);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix00);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix00);
+	}
 
-	if (os.Contains (Shell::HatchOrientationXAxisY))
+	if (os.Contains (Shell::HatchOrientationXAxisY)) {
 		os.Get (Shell::HatchOrientationXAxisY, element.shell.shellBase.hatchOrientation.matrix10);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix10);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix10);
+	}
 
-	if (os.Contains (Shell::HatchOrientationYAxisX))
+	if (os.Contains (Shell::HatchOrientationYAxisX)) {
 		os.Get (Shell::HatchOrientationYAxisX, element.shell.shellBase.hatchOrientation.matrix01);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix01);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix01);
+	}
 
-	if (os.Contains (Shell::HatchOrientationYAxisY))
+	if (os.Contains (Shell::HatchOrientationYAxisY)) {
 		os.Get (Shell::HatchOrientationYAxisY, element.shell.shellBase.hatchOrientation.matrix11);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix11);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.hatchOrientation.matrix11);
+	}
 
 	// Model
 
 	// Overridden materials
+	element.shell.shellBase.topMat.overridden = false;
 	if (os.Contains (Shell::TopMat)) {
 		element.shell.shellBase.topMat.overridden = true;
 		os.Get (Shell::TopMat, attributeName);
@@ -1204,13 +1217,15 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.topMat.attributeIndex = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.topMat.attributeIndex);
+			}
 		}
 	}
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.topMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.topMat.attributeIndex);
 
+	element.shell.shellBase.sidMat.overridden = false;
 	if (os.Contains (Shell::SideMat)) {
 		element.shell.shellBase.sidMat.overridden = true;
 		os.Get (Shell::SideMat, attributeName);
@@ -1221,13 +1236,15 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.sidMat.attributeIndex = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sidMat.attributeIndex);
+			}
 		}
 	}
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sidMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.sidMat.attributeIndex);
 
+	element.shell.shellBase.botMat.overridden = false;
 	if (os.Contains (Shell::BotMat)) {
 		element.shell.shellBase.botMat.overridden = true;
 		os.Get (Shell::BotMat, attributeName);
@@ -1238,12 +1255,13 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 			attribute.header.typeID = API_MaterialID;
 			CHCopyC (attributeName.ToCStr (), attribute.header.name);
 
-			if (NoError == ACAPI_Attribute_Get (&attribute))
+			if (NoError == ACAPI_Attribute_Get (&attribute)) {
 				element.shell.shellBase.botMat.attributeIndex = attribute.header.index;
+				ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.botMat.attributeIndex);
+			}
 		}
 	}
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.botMat.overridden);
-	ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.botMat.attributeIndex);
 
 	// The overridden materials are chained
 	if (os.Contains (Shell::MaterialsChained)) {
@@ -1258,10 +1276,10 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 		os.Get (Shell::TrimmingBodyName, trimmingBodyName);
 
 		GS::Optional<API_ShellBaseCutBodyTypeID> type = shellBaseCutBodyTypeNames.FindValue (trimmingBodyName);
-		if (type.HasValue ())
+		if (type.HasValue ()) {
 			element.shell.shellBase.cutBodyType = type.Get ();
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.cutBodyType);
+			ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.cutBodyType);
+		}
 	}
 
 	return NoError;
