@@ -133,10 +133,9 @@ namespace Objects.Converter.Revit
       // so we need to pass in the view we want in order to get the correct geometry
       // TODO: we need to make sure we are passing in the correct view
       var connectionHandlerFilter = new ElementClassFilter(typeof(DB.Structure.StructuralConnectionHandler));
-      if (revitBeam.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitBeam.GetDependentElements(connectionHandlerFilter).Any())
-        speckleBeam.displayValue = GetElementDisplayMesh(revitBeam, new Options() { View = Doc.ActiveView, ComputeReferences = true });
-      else
-        speckleBeam.displayValue = GetElementMesh(revitBeam);
+      var options = revitBeam.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitBeam.GetDependentElements(connectionHandlerFilter).Any() ?
+        new Options() { View = Doc.ActiveView, ComputeReferences = true } : SolidDisplayValueOptions;
+      speckleBeam.displayValue = GetElementDisplayValue(revitBeam, options);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
