@@ -37,11 +37,7 @@ GSErrCode CreateDirectShape::GetElementFromObjectState (const GS::ObjectState& o
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_MorphID;
-#else
-	element.header.typeID = API_MorphID;
-#endif
+	Utility::SetElementType (element.header, API_MorphID);
 	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;

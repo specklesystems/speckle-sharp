@@ -1,4 +1,4 @@
-﻿#ifndef TYPE_NAME_TABLES_HPP
+#ifndef TYPE_NAME_TABLES_HPP
 #define TYPE_NAME_TABLES_HPP
 
 #include "APIEnvir.h"
@@ -32,6 +32,10 @@ extern const GS::HashTable<API_BHoleTypeID, GS::UniString> beamHoleTypeNames;
 extern const GS::HashTable<API_BeamVisibleLinesID, GS::UniString> beamVisibleLinesNames;
 extern const GS::HashTable<API_BeamShapeTypeID, GS::UniString> beamShapeTypeNames;
 extern const GS::HashTable<API_WindowDoorDirectionTypes, GS::UniString> windowDoorDirectionTypeNames;
+extern const GS::HashTable<API_VerticalLinkID, GS::UniString> verticalLinkTypeNames;
+
+extern const GS::HashTable<API_SkylightFixModeID, GS::UniString> skylightFixModeNames;
+extern const GS::HashTable<API_SkylightAnchorID, GS::UniString> skylightAnchorNames;
 
 extern const GS::HashTable<API_VeneerTypeID, GS::UniString> venTypeNames;
 

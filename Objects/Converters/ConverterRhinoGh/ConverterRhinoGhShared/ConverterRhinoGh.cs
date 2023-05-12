@@ -72,6 +72,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   public RhinoDoc Doc { get; private set; }
 
   public Dictionary<string, BlockDefinition> BlockDefinitions { get; private set; } = new();
+  public Dictionary<string, InstanceDefinition> InstanceDefinitions { get; private set; } = new();
 
   public List<ApplicationObject> ContextObjects { get; set; } = new();
 

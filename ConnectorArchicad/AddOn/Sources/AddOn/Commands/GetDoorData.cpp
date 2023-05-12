@@ -13,7 +13,6 @@ using namespace FieldNames;
 namespace AddOnCommands {
 
 
-
 GS::String GetDoorData::GetFieldName () const
 {
 	return Doors;
@@ -33,7 +32,9 @@ GS::ErrCode	GetDoorData::SerializeElementType (const API_Element& element,
 	os.Add (ElementBase::ApplicationId, APIGuidToString (element.header.guid));
 	os.Add (ElementBase::ParentElementId, APIGuidToString (element.door.owner));
 
-	GetOpeningBaseData<API_DoorType> (element.door, os);
+	AddOnCommands::GetDoorWindowData<API_DoorType> (element.door, os);
+
+	AddOnCommands::GetOpeningBaseData<API_DoorType> (element.door, os);
 
 	return NoError;
 }

@@ -43,6 +43,7 @@ public class Element2D : Base, IDisplayValue<List<Mesh>>
 
   [DetachProperty]
   public List<Node> topology { get; set; }
+  public List<Polycurve> openings { get; set; }
 
   public string units { get; set; }
 

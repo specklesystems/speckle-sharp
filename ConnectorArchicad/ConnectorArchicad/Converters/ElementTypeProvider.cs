@@ -10,6 +10,7 @@ using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Shell = Objects.BuiltElements.Archicad.ArchicadShell;
 using Wall = Objects.BuiltElements.Archicad.ArchicadWall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
+using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 
 namespace Archicad
 {
@@ -24,7 +25,8 @@ namespace Archicad
       { "Beam", typeof(Beam) },
       { "Column", typeof(Column) },
       { "Door", typeof(Door) },
-      { "Window", typeof(Window) }
+      { "Window", typeof(Window) },
+      { "Skylight", typeof(Skylight) }
 
     };
 
