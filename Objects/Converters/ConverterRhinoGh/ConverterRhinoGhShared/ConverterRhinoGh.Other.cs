@@ -330,8 +330,22 @@ public partial class ConverterRhinoGh
         : definition.id;
     if (ReceiveMode == ReceiveMode.Create)
       definitionName = $"{commitInfo} - " + definitionName;
-    if (Doc.InstanceDefinitions.Find(definitionName) is RH.InstanceDefinition def)
-      return def;
+
+    // check if this has been converted and cached already
+    if (InstanceDefinitions.ContainsKey(definitionName))
+      return InstanceDefinitions[definitionName];
+
+    // update existing def of the same name if necessary
+    var existingDef = Doc.InstanceDefinitions.Find(definitionName);
+    if (existingDef is not null && ReceiveMode == ReceiveMode.Update)
+    {
+      if (!Doc.InstanceDefinitions.Delete(existingDef))
+      {
+        notes.Add($"Existing definition {definitionName} was not updated.");
+        InstanceDefinitions.Add(definitionName, existingDef);
+        return existingDef;
+      }
+    }
 
     // get definition geometry to traverse and base point
     Point3d basePoint = Point3d.Origin;
@@ -444,7 +458,7 @@ public partial class ConverterRhinoGh
       return null;
     }
 
-    // add definition to the doc
+    // add definition to the doc, and instancedefinition cache
     int definitionIndex = Doc.InstanceDefinitions.Add(definitionName, string.Empty, basePoint, converted, attributes);
     if (definitionIndex < 0)
     {
@@ -452,6 +466,7 @@ public partial class ConverterRhinoGh
       return null;
     }
     var blockDefinition = Doc.InstanceDefinitions[definitionIndex];
+    InstanceDefinitions.Add(definitionName, blockDefinition);
 
     return blockDefinition;
   }
