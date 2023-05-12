@@ -33,7 +33,7 @@ API_ElemTypeID GetElementType (const API_Guid& guid)
 }
 
 
-void SetElementType (API_Elem_Head header, const API_ElemTypeID& elementType)
+void SetElementType (API_Elem_Head& header, const API_ElemTypeID& elementType)
 {
 #ifdef ServerMainVers_2600
 	header.type.typeID = elementType;

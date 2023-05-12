@@ -11,7 +11,7 @@ namespace Utility {
 
 API_ElemTypeID GetElementType (const API_Elem_Head& header);
 API_ElemTypeID GetElementType (const API_Guid& guid);
-void SetElementType (API_Elem_Head header, const API_ElemTypeID& elementType);
+void SetElementType (API_Elem_Head& header, const API_ElemTypeID& elementType);
 
 bool ElementExists (const API_Guid& guid);
 
