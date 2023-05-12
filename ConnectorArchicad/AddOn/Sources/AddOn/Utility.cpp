@@ -10,6 +10,16 @@ using namespace FieldNames;
 namespace Utility {
 
 
+API_ElemTypeID GetElementType (const API_Elem_Head& header)
+{
+#ifdef ServerMainVers_2600
+	return header.type.typeID;
+#else
+	return header.typeID;
+#endif
+}
+
+
 API_ElemTypeID GetElementType (const API_Guid& guid)
 {
 	API_Elem_Head elemHead = {};
@@ -24,6 +34,16 @@ API_ElemTypeID GetElementType (const API_Guid& guid)
 #endif
 
 	return API_ZombieElemID;
+}
+
+
+void SetElementType (API_Elem_Head header, const API_ElemTypeID& elementType)
+{
+#ifdef ServerMainVers_2600
+	header.type.typeID = elementType;
+#else
+	header.typeID = elementType;
+#endif
 }
 
 
@@ -239,7 +259,9 @@ GS::Array<API_Guid> GetElementSubelements (API_Element& element)
 {
 	GS::Array<API_Guid> result;
 
-	if (element.header.type.typeID == API_WallID) {
+	API_ElemTypeID elementType = GetElementType(element.header);
+				
+	if (elementType == API_WallID) {
 		if (element.wall.hasDoor) {
 			GS::Array<API_Guid> doors;
 			GSErrCode err = ACAPI_Element_GetConnectedElements (element.header.guid, API_DoorID, &doors);
@@ -252,7 +274,7 @@ GS::Array<API_Guid> GetElementSubelements (API_Element& element)
 			if (err == NoError)
 				result.Append (windows);
 		}
-	} else if ((element.header.type.typeID == API_RoofID) || (element.header.type.typeID == API_ShellID)) {
+	} else if ((elementType == API_RoofID) || (elementType == API_ShellID)) {
 		GS::Array<API_Guid> skylights;
 		GSErrCode err = ACAPI_Element_GetConnectedElements (element.header.guid, API_SkylightID, &skylights);
 		if (err == NoError)

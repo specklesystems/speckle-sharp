@@ -36,30 +36,15 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& os, API_Element
 	GSErrCode err = NoError;
 
 	if (isParentWall) {
-
-#ifdef ServerMainVers_2600
-		elem.header.type = API_WallID;
-#else
-		elem.header.typeID = API_WallID;
-#endif
+		Utility::SetElementType (elem.header, API_WallID);
 
 		if (elem.wall.type == APIWtyp_Poly) {
 			return false;
 		}
 	} else if (isParentRoof) {
-
-#ifdef ServerMainVers_2600
-		elem.header.type = API_RoofID;
-#else
-		elem.header.typeID = API_RoofID;
-#endif
+		Utility::SetElementType (elem.header, API_RoofID);
 	} else if (isParentShell) {
-
-#ifdef ServerMainVers_2600
-		elem.header.type = API_ShellID;
-#else
-		elem.header.typeID = API_ShellID;
-#endif
+		Utility::SetElementType (elem.header, API_ShellID);
 	}
 
 	elem.header.guid = parentArchicadId;
@@ -69,11 +54,12 @@ bool CreateOpeningBase::CheckEnvironment (const GS::ObjectState& os, API_Element
 		return false;
 
 	// Set its parent
-	if (element.header.type == API_DoorID) {
+	API_ElemTypeID elementType = Utility::GetElementType (elem.header);
+	if (elementType == API_DoorID) {
 		element.door.owner = parentArchicadId;
-	} else if (element.header.type == API_WindowID) {
+	} else if (elementType == API_WindowID) {
 		element.window.owner = parentArchicadId;
-	} else if (element.header.type == API_SkylightID) {
+	} else if (elementType == API_SkylightID) {
 		element.skylight.owner = parentArchicadId;
 	}
 

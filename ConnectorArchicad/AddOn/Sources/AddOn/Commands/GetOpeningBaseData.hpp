@@ -8,6 +8,8 @@
 #include "Objects/Point.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
+#include "Utility.hpp"
+
 
 // GSRoot
 #include "ObjectState.hpp"
@@ -48,14 +50,16 @@ GSErrCode GetOpeningBaseData (const T& element, GS::ObjectState& os)
 	os.Add (OpeningBase::oSide, element.openingBase.oSide);
 	os.Add (OpeningBase::refSide, element.openingBase.refSide);
 
+	API_ElemTypeID elementType = Utility::GetElementType (element.head);
+	
 	// Vertical Link type and story index
-	if (element.head.type.typeID == API_WindowID || element.head.type.typeID == API_DoorID) {
+	if (elementType == API_WindowID || elementType == API_DoorID) {
 		os.Add (OpeningBase::VerticalLinkTypeName, verticalLinkTypeNames.Get (element.openingBase.verticalLink.linkType));
 		os.Add (OpeningBase::VerticalLinkStoryIndex, element.openingBase.verticalLink.linkValue);
 	}
 
 	// Wall cut using
-	if (element.head.type.typeID == API_WindowID) {
+	if (elementType == API_WindowID) {
 		os.Add (OpeningBase::WallCutUsing, element.openingBase.wallCutUsing);
 	}
 
