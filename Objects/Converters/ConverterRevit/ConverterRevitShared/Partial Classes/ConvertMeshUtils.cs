@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,16 +10,18 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    public Options SolidDisplayValueOptions = new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true };
+
     /// <summary>
     /// Retreives the meshes on an element to use as the speckle displayvalue
     /// </summary>
     /// <param name="element"></param>
-    /// <param name="doNotTransformWithReferencePoint">For instances, determines if the retrieved geometry should be transformed by the selected document reference point.</param>
+    /// <param name="isConvertedAsInstance">Some FamilyInstance elements are treated as proper Instance objects, while others are not. For those being converted as Instance objects, retrieve their display value untransformed by the instance transform or by the selected document reference point.</param>
     /// <returns></returns>
     /// <remarks>
     /// See https://www.revitapidocs.com/2023/e0f15010-0e19-6216-e2f0-ab7978145daa.htm for a full Geometry Object inheritance
     /// </remarks>
-    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool doNotTransformWithReferencePoint = false)
+    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool isConvertedAsInstance = false)
     {
       var displayMeshes = new List<Mesh>();
 
@@ -28,14 +30,24 @@ namespace Objects.Converter.Revit
       {
         foreach (var id in g.GetMemberIds())
         {
-          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, doNotTransformWithReferencePoint);
+          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance);
           displayMeshes.AddRange(groupMeshes);
         }
         return displayMeshes;
       }
 
       options ??= new Options();
-      var geom = element.get_Geometry(options);
+
+      GeometryElement geom = null;
+      try
+      {
+        geom = element.get_Geometry(options);
+      }
+      catch (Autodesk.Revit.Exceptions.ArgumentException)
+      {
+        options.ComputeReferences = false;
+        geom = element.get_Geometry(options);
+      }
 
       // retrieves all meshes and solids from a geometry element
       var solids = new List<Solid>();
@@ -55,7 +67,7 @@ namespace Objects.Converter.Revit
               meshes.Add(mesh);
               break;
             case GeometryInstance instance:
-              var instanceGeo = doNotTransformWithReferencePoint ? instance.GetSymbolGeometry() : instance.GetInstanceGeometry();
+              var instanceGeo = isConvertedAsInstance ? instance.GetSymbolGeometry() : instance.GetInstanceGeometry();
               SortGeometry(instanceGeo);
               break;
             case GeometryElement element:
@@ -66,8 +78,8 @@ namespace Objects.Converter.Revit
       }
 
       // convert meshes and solids
-      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, doNotTransformWithReferencePoint));
-      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, doNotTransformWithReferencePoint));
+      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, isConvertedAsInstance));
+      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, isConvertedAsInstance));
 
       return displayMeshes;
     }
@@ -78,7 +90,7 @@ namespace Objects.Converter.Revit
     /// <param name="meshes"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    public List<Mesh> ConvertMeshesByRenderMaterial(List<DB.Mesh> meshes, Document d, bool doNotTransformWithReferencePoint = false)
+    private List<Mesh> ConvertMeshesByRenderMaterial(List<DB.Mesh> meshes, Document d, bool doNotTransformWithReferencePoint = false)
     {
       MeshBuildHelper buildHelper = new MeshBuildHelper();
 
@@ -98,7 +110,7 @@ namespace Objects.Converter.Revit
     /// <param name="solids"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    public List<Mesh> ConvertSolidsByRenderMaterial(IEnumerable<Solid> solids, Document d, bool doNotTransformWithReferencePoint = false)
+    private List<Mesh> ConvertSolidsByRenderMaterial(IEnumerable<Solid> solids, Document d, bool doNotTransformWithReferencePoint = false)
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
 
@@ -169,182 +181,5 @@ namespace Objects.Converter.Revit
         faces.Add((int)triangle.get_Index(2) + faceIndexOffset);
       }
     }
-
-    #region old display value mesh methods: to be replaced by the `GetElementDisplayValue()`
-
-    public List<Mesh> GetElementMesh(DB.Element element)
-    {
-      var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
-      if (allSolids.Any())
-      {
-        return ConvertSolidsByRenderMaterial(allSolids, element.Document);
-      }
-      else //it's a mesh!
-      {
-        var geom = element.get_Geometry(new Options());
-        return GetMeshes(geom, element.Document);
-      }
-    }
-
-    /// <summary>
-    /// Returns a mesh representing the provided element, if possible.
-    /// </summary>
-    /// <param name="elem">Element you want a mesh from.</param>
-    /// <param name="opt">The view options to use</param>
-    /// <param name="useOriginGeom4FamilyInstance">Whether to refer to the orignal geometry of the family (if it's a family).</param>
-    /// <returns></returns>
-    public List<Mesh> GetElementDisplayMesh(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false, DB.Transform adjustedTransform = null)
-    {
-      List<Solid> solids = new List<Solid>();
-
-      if (elem is Group g)
-      {
-        foreach (var id in g.GetMemberIds())
-        {
-          var subSolids = GetElementSolids(elem.Document.GetElement(id), opt, useOriginGeom4FamilyInstance);
-          if (subSolids != null && subSolids.Any())
-            solids.AddRange(subSolids);
-        }
-      }
-      else
-        solids = GetElementSolids(elem, opt, useOriginGeom4FamilyInstance);
-
-      return ConvertSolidsByRenderMaterial(solids, elem.Document);
-    }
-
-    /// <summary>
-    /// Gets all the solids from an element (digs into them too!). see: https://forums.autodesk.com/t5/revit-api-forum/getting-beam-column-and-wall-geometry/td-p/8138893
-    /// </summary>
-    /// <param name="elem"></param>
-    /// <param name="opt"></param>
-    /// <param name="useOriginGeom4FamilyInstance"></param>
-    /// <returns></returns>
-    public List<Solid> GetElementSolids(DB.Element elem, Options opt = null, bool useOriginGeom4FamilyInstance = false)
-    {
-      List<Solid> solids = new List<Solid>();
-
-      if (null == elem) return solids;
-
-      opt ??= new Options();
-
-      GeometryElement gElem;
-      try
-      {
-        if (useOriginGeom4FamilyInstance && elem is DB.FamilyInstance fInst)
-        {
-          // we transform the geometry to instance coordinate to reflect actual geometry
-          gElem = fInst.GetOriginalGeometry(opt);
-          DB.Transform trf = fInst.GetTransform();
-          if (!trf.IsIdentity)
-            gElem = gElem.GetTransformed(trf);
-        }
-        else
-        {
-          gElem = elem.get_Geometry(opt);
-        }
-
-        if (gElem == null) return solids;
-
-        solids.AddRange(gElem.SelectMany(GetSolids));
-      }
-      catch (Exception ex)
-      {
-        // In Revit, sometime get the geometry will failed.
-        string error = ex.Message;
-      }
-      return solids;
-    }
-
-    private List<Mesh> GetMeshes(GeometryElement geom, Document d)
-    {
-      MeshBuildHelper buildHelper = new MeshBuildHelper();
-      foreach (var element in geom)
-      {
-        if (element is DB.Mesh mesh)
-        {
-          var revitMaterial = d.GetElement(mesh.MaterialElementId) as DB.Material;
-          Mesh speckleMesh = buildHelper.GetOrCreateMesh(revitMaterial, ModelUnits);
-
-          ConvertMeshData(mesh, speckleMesh.faces, speckleMesh.vertices, d);
-        }
-      }
-      return buildHelper.GetAllValidMeshes();
-    }
-
-    /// <summary>
-    /// Get meshes from fabrication parts which have different geometry hierarchy than other revit elements.
-    /// </summary>
-    /// <param name="element"></param>
-    /// <param name="subElements"></param>
-    /// <returns></returns>
-    public List<Mesh> GetFabricationMeshes(Element element, List<Element> subElements = null)
-    {
-      //Search for solids on geometry element level
-      var allSolids = GetElementSolids(element, opt: new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true });
-
-      List<Mesh> meshes = new List<Mesh>();
-
-      var geom = element.get_Geometry(new Options());
-      if (geom == null)
-        return null;
-
-      foreach (GeometryInstance instance in geom)
-      {
-        //Get instance geometry from fabrication part geometry
-        var symbolGeometry = instance.GetInstanceGeometry();
-
-        //Get meshes
-        var symbolMeshes = GetMeshes(symbolGeometry, element.Document);
-        meshes.AddRange(symbolMeshes);
-
-        //Get solids
-        var symbolSolids = GetSolids(symbolGeometry);
-        allSolids.AddRange(symbolSolids);
-      }
-
-
-      if (subElements != null)
-        foreach (var sb in subElements)
-          allSolids.AddRange(GetElementSolids(sb));
-
-      //Convert solids to meshes
-      meshes.AddRange(ConvertSolidsByRenderMaterial(allSolids, element.Document));
-
-      return meshes;
-    }
-
-    /// <summary>
-    /// Extracts solids from a geometry object. see: https://forums.autodesk.com/t5/revit-api-forum/getting-beam-column-and-wall-geometry/td-p/8138893
-    /// </summary>
-    /// <param name="gObj"></param>
-    /// <returns></returns>
-    private List<Solid> GetSolids(GeometryObject gObj)
-    {
-      List<Solid> solids = new List<Solid>();
-
-      void Iterate(GeometryObject geometryObject)
-      {
-        if (geometryObject is Solid gSolid) // already solid
-        {
-          if (gSolid.Faces.Size > 0 && Math.Abs(gSolid.SurfaceArea) > 0) // skip invalid solid
-            solids.Add(gSolid);
-        }
-        else if (geometryObject is GeometryInstance gInstance) // find solids from GeometryInstance
-        {
-          foreach (var g in gInstance.GetInstanceGeometry()) Iterate(g);
-        }
-        else if (geometryObject is GeometryElement gElement) // find solids from GeometryElement
-        {
-          foreach (var g in gElement) Iterate(g);
-        }
-      }
-
-      Iterate(gObj);
-
-      return solids;
-    }
-
-    #endregion
-
   }
 }

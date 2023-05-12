@@ -30,7 +30,7 @@ namespace Objects.Converter.Revit
       GetHostedElements(speckleCeiling, revitCeiling, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes); //TODO: what are we doing here?
 
-      speckleCeiling.displayValue = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleCeiling.displayValue = GetElementDisplayValue(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       return speckleCeiling;
     }

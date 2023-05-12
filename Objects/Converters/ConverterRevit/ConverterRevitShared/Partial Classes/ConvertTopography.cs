@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
     {
       var speckleTopo = new RevitTopography();
-      speckleTopo.displayValue = GetElementMesh(revitTopo);
+      speckleTopo.displayValue = GetElementDisplayValue(revitTopo, SolidDisplayValueOptions);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
       return speckleTopo;
     }
