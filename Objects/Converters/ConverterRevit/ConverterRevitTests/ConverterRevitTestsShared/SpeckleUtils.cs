@@ -129,15 +129,16 @@ namespace ConverterRevitTests
 
       return param.AsInteger();
     }
+
     internal static void CustomAssertions(DB.Element element, Base @base)
     {
-      var parameters = element.Parameters.Cast<DB.Parameter>()
-        .Where(el => el.Definition.Name.StartsWith("ToSpeckle"));
+      var parameters = element.Parameters.Cast<DB.Parameter>().Where(el => el.Definition.Name.StartsWith("ToSpeckle"));
 
       foreach (var param in parameters)
       {
         var parts = param.Definition.Name.Split('-');
-        if (parts.Length != 3) continue;
+        if (parts.Length != 3)
+          continue;
 
         var assertionType = parts[1];
         var prop = parts[2];
