@@ -40,13 +40,9 @@ GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type = API_DoorID;
-#else
-	element.header.typeID = API_DoorID;
-#endif
+	Utility::SetElementType (element.header, API_DoorID);
 
-	* marker = new API_SubElement ();
+	*marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));
 	err = Utility::GetBaseElementData (element, &memo, marker, log);
 	if (err != NoError)

@@ -41,11 +41,7 @@ GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type = API_WindowID;
-#else
-	element.header.typeID = API_WindowID;
-#endif
+	Utility::SetElementType (element.header, API_WindowID);
 
 	*marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));

@@ -41,11 +41,7 @@ GSErrCode CreateSkylight::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type = API_SkylightID;
-#else
-	element.header.typeID = API_SkylightID;
-#endif
+	Utility::SetElementType (element.header, API_SkylightID);
 
 	*marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));

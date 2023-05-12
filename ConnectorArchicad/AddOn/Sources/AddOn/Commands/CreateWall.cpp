@@ -40,12 +40,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_WallID;
-#else
-	element.header.typeID = API_WallID;
-#endif
-
+	Utility::SetElementType (element.header, API_WallID);
 	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;

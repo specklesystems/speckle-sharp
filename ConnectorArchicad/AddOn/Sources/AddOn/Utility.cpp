@@ -27,11 +27,7 @@ API_ElemTypeID GetElementType (const API_Guid& guid)
 
 	GSErrCode error = ACAPI_Element_GetHeader (&elemHead);
 	if (error == NoError)
-#ifdef ServerMainVers_2600
-		return elemHead.type.typeID;
-#else
-		return elemHead.typeID;
-#endif
+		return GetElementType (elemHead);
 
 	return API_ZombieElemID;
 }
@@ -57,12 +53,8 @@ GSErrCode GetBaseElementData (API_Element& element, API_ElementMemo* memo, API_S
 {
 	GSErrCode err = NoError;
 	API_Guid guid = element.header.guid;
-#ifdef ServerMainVers_2600
-	API_ElemTypeID type = element.header.type.typeID;
-#else
-	API_ElemTypeID type = element.header.typeID;
-#endif
 
+	API_ElemTypeID type = GetElementType (element.header);
 	if (type == API_ZombieElemID)
 		return Error;
 
@@ -481,20 +473,17 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
 	API_AssemblySegmentSchemeData defaultSegmentScheme;
 	if (memo->assemblySegmentSchemes != nullptr) {
 		defaultSegmentScheme = memo->assemblySegmentSchemes[0];
-#ifdef ServerMainVers_2600
-		switch (element.header.type.typeID) {
-#else
-		switch (element.header.typeID) {
-#endif
-		case API_BeamID:
-			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-			break;
-		case API_ColumnID:
-			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-			break;
-		default:  // In case if not beam or column
-			return Error;
-			break;
+
+		switch (Utility::GetElementType (element.header)) {
+			case API_BeamID:
+				memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+				break;
+			case API_ColumnID:
+				memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+				break;
+			default:  // In case if not beam or column
+				return Error;
+				break;
 		}
 	} else {
 		return Error;
@@ -574,19 +563,15 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 	if (memo->assemblySegmentCuts != nullptr) {
 		defaultSegmentCut = memo->assemblySegmentCuts[0];
 
-#ifdef ServerMainVers_2600
-		switch (element.header.type.typeID) {
-#else
-		switch (element.header.typeID) {
-#endif
-		case API_BeamID:
-			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-			break;
-		case API_ColumnID:
-			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-		default: // In case if not beam or column
-			return Error;
-			break;
+		switch (GetElementType (element.header)) {
+			case API_BeamID:
+				memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+				break;
+			case API_ColumnID:
+				memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+			default: // In case if not beam or column
+				return Error;
+				break;
 		}
 
 	} else {

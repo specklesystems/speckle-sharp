@@ -37,12 +37,7 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_ShellID;
-#else
-	element.header.typeID = API_ShellID;
-#endif
-
+	Utility::SetElementType (element.header, API_ShellID);
 	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
