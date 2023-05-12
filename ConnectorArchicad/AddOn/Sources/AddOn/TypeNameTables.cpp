@@ -227,6 +227,39 @@ const GS::HashTable<API_WindowDoorDirectionTypes, GS::UniString> windowDoorDirec
 };
 
 
+const GS::HashTable<API_VerticalLinkID, GS::UniString> verticalLinkTypeNames
+{
+	{ API_NoLink,						"No Link"},
+	{ API_LinkSillToWallBottom,			"Link Sill To Wall Bottom"},
+	{ API_LinkSillToStory,				"Link Sill To Story"},
+	{ API_LinkHeaderToWallBottom,		"Link Header To Wall Bottom"},
+	{ API_LinkHeaderToStory,			"Link Header To Story"},
+	{ API_LinkSkylightToRoofPivot,		"Link Skylight To Roof Pivot"},
+	{ API_LinkSkylightToStory,			"Link Skylight To Story"},
+	{ API_LinkSkylightToShellBase,		"Link Skylight To Shell Base"},
+	{ API_LinkSillToWallTop,			"Link Sill To Wall Top"},
+	{ API_LinkHeaderToWallTop,			"Link Header To Wall Top"}
+};
+
+
+const GS::HashTable<API_SkylightFixModeID, GS::UniString> skylightFixModeNames
+{
+	{ APISkylightFixMode_Horizontal,	"Horizontal"},
+	{ APISkylightFixMode_Vertical,		"Vertical"}
+};
+
+
+const GS::HashTable<API_SkylightAnchorID, GS::UniString> skylightAnchorNames
+{
+	{ APISkylightAnchor_BC,		"Bottom center"},
+	{ APISkylightAnchor_BL,		"Bottom left"},
+	{ APISkylightAnchor_BR,		"Bottom right"},
+	{ APISkylightAnchor_TC,		"Top center"},
+	{ APISkylightAnchor_TL,		"Top left"},
+	{ APISkylightAnchor_TR,		"Top right"}
+};
+
+
 const GS::HashTable<API_VeneerTypeID, GS::UniString> venTypeNames
 {
 	{ APIVeneer_Core,		"Core"},

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Other;
@@ -138,6 +138,7 @@ namespace Objects.BuiltElements.Archicad
     }
 
     // Geometry and positioning
+    public Level level { get; set; }
     public double? thickness { get; set; }
     public string structure { get; set; }
     public string? compositeName { get; set; }
@@ -225,7 +226,6 @@ namespace Objects.BuiltElements.Archicad
     }
 
     // Geometry and positioning
-    public int? floorIndex { get; set; }
     public string roofClassName { get; set; }
     public double? planeRoofAngle { get; set; }
     public ElementShape shape { get; set; }
@@ -261,7 +261,6 @@ namespace Objects.BuiltElements.Archicad
     }
 
     // Geometry and positioning
-    public int? floorIndex { get; set; }
     public string shellClassName { get; set; }
     public Transform basePlane { get; set; }
     public bool flipped { get; set; }

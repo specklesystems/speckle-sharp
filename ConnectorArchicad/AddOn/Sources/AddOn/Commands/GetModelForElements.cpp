@@ -3,6 +3,7 @@
 #include "Sight.hpp"
 #include "ModelInfo.hpp"
 #include "FieldNames.hpp"
+#include "Utility.hpp"
 using namespace FieldNames;
 
 
@@ -177,17 +178,13 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& applicationId)
 		return GS::Array<API_Guid> ();
 	}
 
-#ifdef ServerMainVers_2600
-	switch (header.type.typeID) {
-#else
-	switch (header.typeID) {
-#endif
-	case API_CurtainWallID:					return GetCurtainWallSubElements (applicationId);
-	case API_StairID:						return GetStairSubElements (applicationId);
-	case API_RailingID:						return GetRailingSubElements (applicationId);
-	case API_BeamID:						return GetBeamSubElements (applicationId);
-	case API_ColumnID:						return GetColumnSubElements (applicationId);
-	default:								return GS::Array<API_Guid> { applicationId };
+	switch (Utility::GetElementType (header)) {
+		case API_CurtainWallID:					return GetCurtainWallSubElements (applicationId);
+		case API_StairID:						return GetStairSubElements (applicationId);
+		case API_RailingID:						return GetRailingSubElements (applicationId);
+		case API_BeamID:						return GetBeamSubElements (applicationId);
+		case API_ColumnID:						return GetColumnSubElements (applicationId);
+		default:								return GS::Array<API_Guid> { applicationId };
 	}
 }
 

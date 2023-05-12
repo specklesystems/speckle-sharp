@@ -69,6 +69,7 @@ namespace Objects.Converter.Archicad
         Objects.BuiltElements.Archicad.ArchicadDoor
           => true,
         Objects.BuiltElements.Archicad.ArchicadWindow => true,
+        Objects.BuiltElements.Archicad.ArchicadSkylight => true,
         Objects.BuiltElements.Archicad.DirectShape _ => true,
 
         // Revit elements
