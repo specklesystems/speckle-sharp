@@ -81,7 +81,7 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleElement.applicationId);
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       AnalyticalPanel revitMember = null;

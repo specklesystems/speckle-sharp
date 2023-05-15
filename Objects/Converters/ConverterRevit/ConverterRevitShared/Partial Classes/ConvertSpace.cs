@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleSpace.id, speckleSpace.speckle_type) { applicationId = speckleSpace.applicationId };
       
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(revitSpace, appObj, out appObj))
+      if (IsIgnore(revitSpace, appObj))
         return appObj;
 
       var levelState = ApplicationObject.State.Unknown;

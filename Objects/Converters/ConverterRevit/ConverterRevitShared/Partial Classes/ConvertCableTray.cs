@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type) { applicationId = speckleCableTray.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       var cableTrayType = GetElementType<CableTrayType>(speckleCableTray, appObj, out bool _);

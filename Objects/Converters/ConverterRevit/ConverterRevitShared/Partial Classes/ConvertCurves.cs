@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(id, speckle_type) { applicationId = applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObjs.FirstOrDefault(), appObj, out appObj))
+      if (IsIgnore(docObjs.FirstOrDefault(), appObj))
         return appObj;
 
       foreach (var docObj in docObjs)

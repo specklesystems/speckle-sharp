@@ -115,7 +115,7 @@ namespace Objects.Converter.Revit
       };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       var familySymbol = GetElementType<FamilySymbol>(speckleFi, appObj, out bool isExactMatch);
@@ -566,7 +566,7 @@ namespace Objects.Converter.Revit
       var isUpdate = false;
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       // get the definition

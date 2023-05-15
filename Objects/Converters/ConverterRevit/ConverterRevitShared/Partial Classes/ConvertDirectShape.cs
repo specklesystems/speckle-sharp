@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
         new ApplicationObject(speckleDs.id, speckleDs.speckle_type) { applicationId = speckleDs.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(existingDS, appObj, out appObj))
+      if (IsIgnore(existingDS, appObj))
         return appObj;
 
       var converted = new List<GeometryObject>();
