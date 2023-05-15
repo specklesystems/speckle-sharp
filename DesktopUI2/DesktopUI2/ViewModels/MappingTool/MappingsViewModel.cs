@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -219,21 +220,32 @@ public class MappingsViewModel : ViewModelBase, IScreen
     var revitTypes = new List<RevitElementType>();
     try
     {
-      var types = model["Types"] as Base;
+      var types = model["Types"] as Base ?? model["Types"] as Base;
 
       foreach (var baseCategory in types.GetMembers())
         try
         {
-          var elementTypes = (baseCategory.Value as List<object>).Cast<RevitElementType>().ToList();
+          var elementTypes = ((IList)baseCategory.Value).Cast<RevitElementType>().ToList();
           if (!elementTypes.Any())
             continue;
 
           revitTypes.AddRange(elementTypes);
         }
-        catch (Exception ex) { }
+        catch (Exception ex)
+        {
+          SpeckleLog.Logger.Error(
+            ex,
+            "Swallowing exception in {methodName}: {exceptionMessage}",
+            nameof(GetTypesAndLevels),
+            ex.Message
+          );
+        }
 
       AvailableRevitTypes = revitTypes;
-      AvailableRevitLevels = (model["@Levels"] as List<object>).Cast<RevitLevel>().Select(x => x.name).ToList();
+      AvailableRevitLevels = (model["Levels"] as IList ?? (IList)model["@Levels"])
+        .Cast<RevitLevel>()
+        .Select(x => x.name)
+        .ToList();
     }
     catch (Exception ex)
     {
