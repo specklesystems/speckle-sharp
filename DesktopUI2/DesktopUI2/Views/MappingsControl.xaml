@@ -263,6 +263,7 @@
                         <ContentControl.DataTemplates>
                           <!--  Default = empty  -->
                           <DataTemplate DataType="{x:Type s:RevitDefaultWallViewModel}" />
+                          <DataTemplate DataType="{x:Type s:RevitDefaultFloorViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultBeamViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultBraceViewModel}" />
                           <DataTemplate DataType="{x:Type s:RevitDefaultColumnViewModel}" />

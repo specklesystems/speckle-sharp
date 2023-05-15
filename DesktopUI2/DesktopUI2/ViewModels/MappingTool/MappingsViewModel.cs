@@ -259,6 +259,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
           schema is DirectShapeFreeformViewModel
           || schema is RevitTopographyViewModel
           || schema is RevitDefaultWallViewModel
+          || schema is RevitDefaultFloorViewModel
           || schema is RevitDefaultBeamViewModel
           || schema is RevitDefaultBraceViewModel
           || schema is RevitDefaultColumnViewModel
