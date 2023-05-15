@@ -28,7 +28,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
-    <DefineConstants>$(DefinesConstants);MAC</DefineConstants>
+    <DefineConstants>$(DefineConstants);MAC</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
