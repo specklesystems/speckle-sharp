@@ -104,6 +104,17 @@ public class SerializerNonBreakingChanges : PrimitiveTestFixture
     var res = from.SerializeAsTAndDeserialize<EnumValueMock>();
     Assert.That(res.value, Is.EqualTo(testCase));
   }
+
+  [Test]
+  [TestCaseSource(nameof(Float64TestCases))]
+  [TestCaseSource(nameof(Float32TestCases))]
+  public void DoubleToDouble(double testCase)
+  {
+    var from = new DoubleValueMock { value = testCase };
+
+    var res = from.SerializeAsTAndDeserialize<DoubleValueMock>();
+    Assert.That(res.value, Is.EqualTo(testCase));
+  }
 }
 
 /// <summary>
@@ -213,15 +224,13 @@ public abstract class SerializerMock : Base
 
   public override string speckle_type => _speckle_type;
 
-  public void SerializeAs<T>()
-    where T : Base, new()
+  public void SerializeAs<T>() where T : Base, new()
   {
     T target = new();
     _speckle_type = target.speckle_type;
   }
 
-  internal TTo SerializeAsTAndDeserialize<TTo>()
-    where TTo : Base, new()
+  internal TTo SerializeAsTAndDeserialize<TTo>() where TTo : Base, new()
   {
     SerializeAs<TTo>();
 
@@ -241,11 +250,38 @@ public abstract class PrimitiveTestFixture
   public static int[] Int32TestCases = { int.MinValue, int.MaxValue };
   public static long[] Int64TestCases = { long.MaxValue, long.MinValue };
 
-  public static double[] Float64TestCases = { default, double.Epsilon, double.MaxValue, double.MinValue };
+  public static double[] Float64TestCases =
+  {
+    default,
+    double.Epsilon,
+    double.MaxValue,
+    double.MinValue,
+    double.PositiveInfinity,
+    double.NegativeInfinity,
+    double.NaN
+  };
 
-  public static float[] Float32TestCases = { default, float.Epsilon, float.MaxValue, float.MinValue };
+  public static float[] Float32TestCases =
+  {
+    default,
+    float.Epsilon,
+    float.MaxValue,
+    float.MinValue,
+    float.PositiveInfinity,
+    float.NegativeInfinity,
+    float.NaN
+  };
 
-  public static Half[] Float16TestCases = { default, Half.Epsilon, Half.MaxValue, Half.MinValue };
+  public static Half[] Float16TestCases =
+  {
+    default,
+    Half.Epsilon,
+    Half.MaxValue,
+    Half.MinValue,
+    Half.PositiveInfinity,
+    Half.NegativeInfinity,
+    Half.NaN
+  };
   public static float[] FloatIntegralTestCases = { 0, 1, int.MaxValue, int.MinValue };
 
   public static MyEnum[] MyEnums => Enum.GetValues(typeof(MyEnum)).Cast<MyEnum>().ToArray();

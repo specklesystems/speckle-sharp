@@ -87,18 +87,18 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 	// Show on Stories - Story visibility
 	{
 		GS::UniString visibilityFillString;
-		Utility::GetVisibility (false, element.slab.visibilityFill, visibilityFillString);
+		Utility::GetPredefinedVisibility (false, element.slab.visibilityFill, visibilityFillString);
 
 		GS::UniString visibilityContString;
-		Utility::GetVisibility (false, element.slab.visibilityCont, visibilityContString);
+		Utility::GetPredefinedVisibility (false, element.slab.visibilityCont, visibilityContString);
 
 		if (visibilityFillString == visibilityContString && visibilityFillString != CustomStoriesValueName) {
 			os.Add (ShowOnStories, visibilityContString);
 		} else {
 			os.Add (ShowOnStories, CustomStoriesValueName);
 
-			Utility::ExportVisibility (false, element.slab.visibilityFill, os, VisibilityFillData, true);
-			Utility::ExportVisibility (false, element.slab.visibilityCont, os, VisibilityContData, true);
+			Utility::GetVisibility (false, element.slab.visibilityFill, os, VisibilityFillData, true);
+			Utility::GetVisibility (false, element.slab.visibilityCont, os, VisibilityContData, true);
 		}
 	}
 
@@ -166,7 +166,7 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 		}
 
 		// Hatch Orientation
-		Utility::ExportHatchOrientation (element.slab.hatchOrientation.type, os);
+		Utility::GetHatchOrientation (element.slab.hatchOrientation.type, os);
 
 		if (element.slab.hatchOrientation.type == API_HatchRotated || element.slab.hatchOrientation.type == API_HatchDistorted) {
 			os.Add (Slab::hatchOrientationOrigoX, element.slab.hatchOrientation.origo.x);

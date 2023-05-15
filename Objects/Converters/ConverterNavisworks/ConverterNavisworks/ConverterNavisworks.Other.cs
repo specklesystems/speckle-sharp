@@ -18,6 +18,7 @@ public partial class ConverterNavisworks
 
   private static RenderMaterial TranslateMaterial(ModelItem geom)
   {
+    // Already there anticipating other options becoming possible
     var materialSettings = new { Mode = "original" };
 
     Color renderColor;

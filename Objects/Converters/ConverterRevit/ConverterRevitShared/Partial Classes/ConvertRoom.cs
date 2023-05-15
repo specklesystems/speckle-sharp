@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -57,7 +57,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleRoom, revitRoom);
 
-      speckleRoom.displayValue = GetElementDisplayMesh(revitRoom);
+      speckleRoom.displayValue = GetElementDisplayValue(revitRoom);
 
       return speckleRoom;
     }

@@ -30,6 +30,7 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />

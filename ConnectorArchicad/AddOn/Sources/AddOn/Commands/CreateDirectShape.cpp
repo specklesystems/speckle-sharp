@@ -30,18 +30,15 @@ GSErrCode CreateDirectShape::GetElementFromObjectState (const GS::ObjectState& o
 	API_Element& /*elementMask*/,
 	API_ElementMemo& memo,
 	GS::UInt64& /*memoMask*/,
+	API_SubElement** /*marker*/,
 	AttributeManager& attributeManager,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_MorphID;
-#else
-	element.header.typeID = API_MorphID;
-#endif
-	err = Utility::GetBaseElementData (element, &memo);
+	Utility::SetElementType (element.header, API_MorphID);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 

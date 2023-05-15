@@ -43,7 +43,7 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 
 	// Base plane transformation matrix
 	GS::ObjectState transformOs;
-	Utility::ExportTransform (element.shell.basePlane, transformOs);
+	Utility::GetTransform (element.shell.basePlane, transformOs);
 	os.Add (Shell::BasePlane, transformOs);
 
 	os.Add (Shell::Flipped, element.shell.isFlipped);
@@ -84,7 +84,7 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 			currentContourOs.Add (Shell::ShellContourPoly, Objects::ElementShape (memo.shellContours[idx].poly, memo, Objects::ElementShape::MemoShellContour, level, idx));
 
 			GS::ObjectState transformOs;
-			Utility::ExportTransform (memo.shellContours[idx].plane, transformOs);
+			Utility::GetTransform (memo.shellContours[idx].plane, transformOs);
 			currentContourOs.Add (Shell::ShellContourPlane, transformOs);
 
 			currentContourOs.Add (Shell::ShellContourHeight, memo.shellContours[idx].height);
@@ -192,7 +192,7 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		os.Add (Shell::SegmentedSurfaces, element.shell.u.revolvedShell.segmentedSurfaces);
 		os.Add (ElementBase::Shape, Objects::ElementShape (element.shell.u.revolvedShell.shellShape, memo, Objects::ElementShape::MemoShellPolygon1, level));
 
-		Utility::ExportTransform (element.shell.u.revolvedShell.axisBase, transformAxisBaseOs);
+		Utility::GetTransform (element.shell.u.revolvedShell.axisBase, transformAxisBaseOs);
 		os.Add (Shell::AxisBase, transformAxisBaseOs);
 
 		os.Add (Shell::DistortionVector, Objects::Vector3D (element.shell.u.revolvedShell.distortionVector));
@@ -264,12 +264,12 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		os.Add (Shell::ShellClassName, shellClassNames.Get (API_RuledShellID));
 		os.Add (ElementBase::Shape1, Objects::ElementShape (element.shell.u.ruledShell.shellShape1, memo, Objects::ElementShape::MemoShellPolygon1, level));
 
-		Utility::ExportTransform (element.shell.u.ruledShell.plane1, transformPlaneOs1);
+		Utility::GetTransform (element.shell.u.ruledShell.plane1, transformPlaneOs1);
 		os.Add (Shell::Plane1, transformPlaneOs1);
 
 		os.Add (ElementBase::Shape2, Objects::ElementShape (element.shell.u.ruledShell.shellShape2, memo, Objects::ElementShape::MemoShellPolygon2, level));
 
-		Utility::ExportTransform (element.shell.u.ruledShell.plane2, transformPlaneOs2);
+		Utility::GetTransform (element.shell.u.ruledShell.plane2, transformPlaneOs2);
 		os.Add (Shell::Plane2, transformPlaneOs2);
 
 		// Beg shape edge
@@ -379,18 +379,18 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 	// Show on Stories - Story visibility
 	{
 		GS::UniString visibilityFillString;
-		Utility::GetVisibility (false, element.shell.shellBase.visibilityFill, visibilityFillString);
+		Utility::GetPredefinedVisibility (false, element.shell.shellBase.visibilityFill, visibilityFillString);
 
 		GS::UniString visibilityContString;
-		Utility::GetVisibility (false, element.shell.shellBase.visibilityCont, visibilityContString);
+		Utility::GetPredefinedVisibility (false, element.shell.shellBase.visibilityCont, visibilityContString);
 
 		if (visibilityFillString == visibilityContString && visibilityFillString != CustomStoriesValueName) {
 			os.Add (ShowOnStories, visibilityContString);
 		} else {
 			os.Add (ShowOnStories, CustomStoriesValueName);
 
-			Utility::ExportVisibility (false, element.shell.shellBase.visibilityFill, os, VisibilityFillData, true);
-			Utility::ExportVisibility (false, element.shell.shellBase.visibilityCont, os, VisibilityContData, true);
+			Utility::GetVisibility (false, element.shell.shellBase.visibilityFill, os, VisibilityFillData, true);
+			Utility::GetVisibility (false, element.shell.shellBase.visibilityCont, os, VisibilityContData, true);
 		}
 	}
 
@@ -466,7 +466,7 @@ GS::ErrCode	GetShellData::SerializeElementType (const API_Element& element,
 		}
 
 		// Hatch Orientation
-		Utility::ExportHatchOrientation (element.shell.shellBase.hatchOrientation.type, os);
+		Utility::GetHatchOrientation (element.shell.shellBase.hatchOrientation.type, os);
 
 		if (element.shell.shellBase.hatchOrientation.type == API_HatchRotated || element.shell.shellBase.hatchOrientation.type == API_HatchDistorted) {
 			os.Add (Shell::HatchOrientationOrigoX, element.shell.shellBase.hatchOrientation.origo.x);

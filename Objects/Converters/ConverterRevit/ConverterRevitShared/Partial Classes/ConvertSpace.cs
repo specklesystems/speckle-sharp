@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
 using System;
@@ -107,7 +107,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleSpace, revitSpace);
 
-      speckleSpace.displayValue = GetElementDisplayMesh(revitSpace);
+      speckleSpace.displayValue = GetElementDisplayValue(revitSpace);
 
       return speckleSpace;
     }
