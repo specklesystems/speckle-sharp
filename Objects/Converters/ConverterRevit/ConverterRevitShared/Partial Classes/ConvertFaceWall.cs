@@ -23,7 +23,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleWall.id, speckleWall.speckle_type) { applicationId = speckleWall.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(revitWall, appObj, out appObj))
+      if (IsIgnore(revitWall, appObj))
         return appObj;
 
       if (speckleWall.surface == null)
@@ -112,7 +112,7 @@ namespace Objects.Converter.Revit
         var existing = GetExistingElementByApplicationId(speckleWall.applicationId) as FaceWall;
 
         // skip if element already exists in doc & receive mode is set to ignore
-        if (IsIgnore(existing, appObj, out appObj))
+        if (IsIgnore(existing, appObj))
           return appObj;
 
         if (speckleWall.brep == null)

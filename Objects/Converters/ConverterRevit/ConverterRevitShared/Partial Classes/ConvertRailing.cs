@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRailing.id, speckleRailing.speckle_type) { applicationId = speckleRailing.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(revitRailing, appObj, out appObj))
+      if (IsIgnore(revitRailing, appObj))
         return appObj;
 
       if (speckleRailing.path == null)

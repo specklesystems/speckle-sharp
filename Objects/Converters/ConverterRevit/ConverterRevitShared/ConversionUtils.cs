@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -859,16 +859,22 @@ namespace Objects.Converter.Revit
     /// <param name="appObj"></param>
     /// <param name="updatedAppObj">The updated appObj if method returns true, the original appObj if false</param>
     /// <returns></returns>
-    public bool IsIgnore(Element docObj, ApplicationObject appObj, out ApplicationObject updatedAppObj)
+    public bool IsIgnore(Element docObj, ApplicationObject appObj)
     {
-      updatedAppObj = appObj;
-      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
+      if (docObj != null)
       {
-        updatedAppObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
-        return true;
+        if (ReceiveMode == ReceiveMode.Ignore)
+        {
+          appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+          return true;
+        }
+        else if (docObj.Pinned)
+        {
+          appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: "Element is pinned and cannot be updated");
+          return true;
+        }
       }
-      else
-        return false;
+      return false;
     }
     #endregion
 
@@ -1333,7 +1339,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(@base.id, @base.speckle_type) { applicationId = @base.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       // otherwise just create new one 
