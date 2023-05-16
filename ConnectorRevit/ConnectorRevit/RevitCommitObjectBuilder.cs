@@ -56,7 +56,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       case ElementType:
       {
         var category = GetCategoryId(conversionResult, nativeElement);
-        SetRelationship(conversionResult, (Types,  category));
+        SetRelationship(conversionResult, (Types, category));
         if (!converted.ContainsKey(Types))
         {
           SetRelationship(new() { applicationId = Types }, (Root, Types));
@@ -66,17 +66,18 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       }
       // Special cases for non-geometry, we want to nest under the root object, not in a collection
       case View:
+      case Level:
       case ProjectInfo:
       case Autodesk.Revit.DB.Material:
         var propName = GetCategoryId(conversionResult, nativeElement);
         SetRelationship(conversionResult, (Root, propName));
         return;
     }
-    
+
     // Define which collection this element should be nested under
     string collectionId,
-           collectionName,
-           collectionType;
+      collectionName,
+      collectionType;
 
     switch (commitCollectionStrategy)
     {
@@ -96,23 +97,23 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       default:
         throw new InvalidOperationException($"No case for {commitCollectionStrategy}");
     }
-    
+
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
     Element? host = GetHost(nativeElement);
 
     if (conversionResult.GetType().Name is "Network")
     {
       //WORKAROUND: we don't support hosting networks.
-      host = null; 
+      host = null;
     }
-    
+
     // Create collection if not already
     if (!collections.ContainsKey(collectionId) && collectionId != Root)
     {
       Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
       collections.Add(collectionId, collection);
     }
-    
+
     SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
   }
 

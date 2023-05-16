@@ -26,9 +26,9 @@
     <DefineConstants>$(DefineConstants);RHINO7</DefineConstants>
     <OutputType>Library</OutputType>
   </PropertyGroup>
-  
+
   <PropertyGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
-    <DefineConstants>$(DefinesConstants);MAC</DefineConstants>
+    <DefineConstants>$(DefineConstants);MAC</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$([MSBuild]::IsOSPlatform(Windows))">
@@ -36,32 +36,40 @@
     <StartAction>Program</StartAction>
   </PropertyGroup>
 
-  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems" Label="Shared" />
+  <Import Project="..\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems"
+    Label="Shared"/>
 
   <ItemGroup>
-    <EmbeddedResource Include="EmbeddedResources\**\*" />
+    <EmbeddedResource Include="EmbeddedResources\**\*"/>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build" PrivateAssets="all" />
-    <PackageReference Include="RhinoWindows" Version="7.4.21078.1001" IncludeAssets="compile;build" PrivateAssets="all" />
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+    <PackageReference Include="RhinoCommon" Version="7.4.21078.1001" IncludeAssets="compile;build"
+      PrivateAssets="all"/>
+    <PackageReference Include="RhinoWindows" Version="7.4.21078.1001" IncludeAssets="compile;build"
+      PrivateAssets="all"/>
+    <PackageReference Include="System.Resources.Extensions" Version="7.0.0"/>
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference
+      Include="..\..\ConnectorGrasshopper\ConnectorGrasshopper7\ConnectorGrasshopper7.csproj"/>
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj"/>
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
   </ItemGroup>
-  
+
   <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
+    <Reference Include="PresentationCore"/>
+    <Reference Include="PresentationFramework"/>
   </ItemGroup>
 
   <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
-  <ItemGroup Condition="'$([MSBuild]::IsOSPlatform(OSX))' == 'true'">
-    <None Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib" CopyToOutputDirectory="PreserveNewest" Visible="false" />
-    <None Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib" CopyToOutputDirectory="PreserveNewest" Visible="false" />
+  <ItemGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
+    <None
+      Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib"
+      CopyToOutputDirectory="PreserveNewest" Visible="false"/>
+    <None
+      Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib"
+      CopyToOutputDirectory="PreserveNewest" Visible="false"/>
   </ItemGroup>
 </Project>

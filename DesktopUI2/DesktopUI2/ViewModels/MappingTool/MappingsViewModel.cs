@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -219,21 +220,33 @@ public class MappingsViewModel : ViewModelBase, IScreen
     var revitTypes = new List<RevitElementType>();
     try
     {
-      var types = model["Types"] as Base;
+      // TODO: refactor with null check!!!! if a selected stream branch doesn't have types or levels in the latest commit, model["types"] and model["levels"] will be null
+      var types = model["Types"] as Base ?? model["Types"] as Base;
 
-      foreach (var baseCategory in types.GetMembers())
+      foreach (var baseCategory in types.GetMembers()) // TODO: refactor! this line throws on null (see above)
         try
         {
-          var elementTypes = (baseCategory.Value as List<object>).Cast<RevitElementType>().ToList();
+          var elementTypes = ((IList)baseCategory.Value).Cast<RevitElementType>().ToList();
           if (!elementTypes.Any())
             continue;
 
           revitTypes.AddRange(elementTypes);
         }
-        catch (Exception ex) { }
+        catch (Exception ex)
+        {
+          SpeckleLog.Logger.Error(
+            ex,
+            "Swallowing exception in {methodName}: {exceptionMessage}",
+            nameof(GetTypesAndLevels),
+            ex.Message
+          );
+        }
 
       AvailableRevitTypes = revitTypes;
-      AvailableRevitLevels = (model["@Levels"] as List<object>).Cast<RevitLevel>().Select(x => x.name).ToList();
+      AvailableRevitLevels = (model["Levels"] as IList ?? (IList)model["@Levels"])
+        .Cast<RevitLevel>()
+        .Select(x => x.name)
+        .ToList();
     }
     catch (Exception ex)
     {
@@ -259,6 +272,7 @@ public class MappingsViewModel : ViewModelBase, IScreen
           schema is DirectShapeFreeformViewModel
           || schema is RevitTopographyViewModel
           || schema is RevitDefaultWallViewModel
+          || schema is RevitDefaultFloorViewModel
           || schema is RevitDefaultBeamViewModel
           || schema is RevitDefaultBraceViewModel
           || schema is RevitDefaultColumnViewModel
