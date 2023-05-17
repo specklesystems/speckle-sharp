@@ -199,6 +199,9 @@ public static class SpeckleLog
         o.Dsn = logConfiguration.sentryDns;
         o.Debug = false;
         o.Environment = env;
+        o.Release = "SpeckleCore@" + Assembly.GetExecutingAssembly().GetName().Version;
+        o.AttachStacktrace = true;
+        o.StackTraceMode = StackTraceMode.Enhanced;
         // Set traces_sample_rate to 1.0 to capture 100% of transactions for performance monitoring.
         // We recommend adjusting this value in production.
         o.TracesSampleRate = 1.0;
