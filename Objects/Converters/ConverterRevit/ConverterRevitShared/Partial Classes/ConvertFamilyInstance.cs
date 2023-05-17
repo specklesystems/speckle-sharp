@@ -14,6 +14,7 @@ using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using Vector = Objects.Geometry.Vector;
 using Objects.BuiltElements.Revit;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -712,6 +713,29 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
+      //if (instance.mirrored)
+      //{
+      //  // mirroring
+      //  // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
+      //  Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+      //  var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
+
+      //  try
+      //  {
+      //    ElementTransformUtils.MirrorElements(
+      //      Doc,
+      //      elementToMirror,
+      //      DB.Plane.CreateByNormalAndOrigin(transform.BasisY, insertionPoint),
+      //      false
+      //    );
+      //  }
+      //  catch (Exception e)
+      //  {
+      //    appObj.Update(logItem: $"Instance could not be mirrored: {e.Message}");
+      //  }
+      //  group?.UngroupMembers();
+      //}
+
       // face flipping
       Doc.Regenerate(); //required for face flipping to work!
       if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
@@ -746,10 +770,10 @@ namespace Objects.Converter.Revit
         }
       }
 
-      // mirroring
-      // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
       if (instance.mirrored)
       {
+        // mirroring
+        // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
         Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
         var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
 
@@ -766,10 +790,7 @@ namespace Objects.Converter.Revit
         {
           appObj.Update(logItem: $"Instance could not be mirrored: {e.Message}");
         }
-        if (group != null)
-        {
-          group.UngroupMembers();
-        }
+        group?.UngroupMembers();
       }
 
       SetInstanceParameters(familyInstance, instance);
