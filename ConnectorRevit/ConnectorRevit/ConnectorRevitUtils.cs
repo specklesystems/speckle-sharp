@@ -199,7 +199,8 @@ namespace Speckle.ConnectorRevit
       var els = new FilteredElementCollector(doc)
         .WhereElementIsNotElementType()
         .OfClass(typeof(View))
-        .ToElements();
+        .Where(view => !(view as View).IsTemplate)
+        .ToList();
 
       _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
       return _cachedViews;
