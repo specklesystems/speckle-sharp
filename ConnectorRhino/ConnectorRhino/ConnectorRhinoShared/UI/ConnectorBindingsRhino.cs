@@ -554,6 +554,8 @@ public class ConnectorBindingsRhino : ConnectorBindings
 
           #region layer creation
 
+          RhinoDoc.LayerTableEvent -= RhinoDoc_LayerChange;
+
           // sort by depth and create all the containers as layers first
           var layers = new Dictionary<string, Layer>();
           var containers = Preview
@@ -602,6 +604,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
 
             layers.Add(layer.FullPath, layer);
           }
+          RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange;
           #endregion
 
           foreach (var previewObj in Preview)
