@@ -17,22 +17,24 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
 {
   private const string Types = "Types";
   private const string Elements = nameof(Collection.elements);
-  private readonly CommitCollectionStrategy commitCollectionStrategy;
 
-  private IDictionary<string, Collection> collections = new Dictionary<string, Collection>();
+  private readonly CommitCollectionStrategy _commitCollectionStrategy;
+
+  private readonly IDictionary<string, Collection> _collections = new Dictionary<string, Collection>();
 
   public RevitCommitObjectBuilder(CommitCollectionStrategy commitCollectionStrategy)
   {
-    this.commitCollectionStrategy = commitCollectionStrategy;
+    this._commitCollectionStrategy = commitCollectionStrategy;
   }
 
   public override void BuildCommitObject(Base rootCommitObject)
   {
     var convertedObjects = converted.Values.ToArray();
-    foreach (var col in collections)
+    foreach (var col in _collections)
     {
       converted.Add(col.Key, col.Value);
     }
+    converted.Add(Types, new());
 
     // Apply object -> object, and object -> collection relationships
     ApplyRelationships(convertedObjects, rootCommitObject);
@@ -40,12 +42,14 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
     var rootElements = (IList<Base>)(rootCommitObject["elements"] ??= new List<Base>());
 
     //Finally, apply collection -> host relationships
-    foreach (var col in collections.Values)
+    foreach (var col in _collections.Values)
     {
       if (!col.elements.Any())
         continue;
       rootElements.Add(col);
     }
+
+    rootCommitObject[$"@{Types}"] = converted[Types];
   }
 
   public override void IncludeObject(Base conversionResult, Element nativeElement)
@@ -57,11 +61,6 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       {
         var category = GetCategoryId(conversionResult, nativeElement);
         SetRelationship(conversionResult, (Types, category));
-        if (!converted.ContainsKey(Types))
-        {
-          SetRelationship(new() { applicationId = Types }, (Root, Types));
-        }
-
         return;
       }
       // Special cases for non-geometry, we want to nest under the root object, not in a collection
@@ -79,7 +78,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
       collectionName,
       collectionType;
 
-    switch (commitCollectionStrategy)
+    switch (_commitCollectionStrategy)
     {
       case CommitCollectionStrategy.ByLevel:
       {
@@ -95,7 +94,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
         collectionType = "Revit Category";
         break;
       default:
-        throw new InvalidOperationException($"No case for {commitCollectionStrategy}");
+        throw new InvalidOperationException($"No case for {_commitCollectionStrategy}");
     }
 
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
@@ -108,10 +107,10 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>
     }
 
     // Create collection if not already
-    if (!collections.ContainsKey(collectionId) && collectionId != Root)
+    if (!_collections.ContainsKey(collectionId) && collectionId != Root)
     {
       Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
-      collections.Add(collectionId, collection);
+      _collections.Add(collectionId, collection);
     }
 
     SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
