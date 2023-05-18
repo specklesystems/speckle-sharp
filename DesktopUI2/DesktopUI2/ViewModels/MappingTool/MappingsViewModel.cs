@@ -240,7 +240,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     try
     {
       // TODO: refactor with null check!!!! if a selected stream branch doesn't have types or levels in the latest commit, model["types"] and model["levels"] will be null
-      var types = model["Types"] as Base ?? model["Types"] as Base;
+      var types = model["Types"] as Base ?? model["@Types"] as Base;
 
       foreach (var baseCategory in types.GetMembers()) // TODO: refactor! this line throws on null (see above)
         try
