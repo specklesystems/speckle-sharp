@@ -22,6 +22,7 @@ using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
+using Sentry.Extensibility;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
@@ -114,7 +115,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   {
     try
     {
-      if (_selectedSavedStream != null)
+      if (_selectedSavedStream != null && !_selectedSavedStream.Progress.IsProgressing)
         _selectedSavedStream.GetBranchesAndRestoreState();
     }
     catch (Exception ex)
