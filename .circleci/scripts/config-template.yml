@@ -91,7 +91,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false
+            dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
       - run-tests:
           title: Core Unit Tests
           project: Core/Tests/TestsUnit.csproj
