@@ -91,7 +91,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
+            dotnet build SDK.slnf -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
       - run-tests:
           title: Core Unit Tests
           project: Core/Tests/TestsUnit.csproj
@@ -190,7 +190,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
                   $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
-                  dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:Version=$semver /p:FileVersion=$version
+                  dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -r win-x64 --self-contained /p:WarningLevel=0 /p:Version=$semver /p:FileVersion=$version
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -335,7 +335,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
                   VER=$(echo "$SEMVER" | sed -e 's/-.*//')
                   VERSION=$(echo $VER.$WORKFLOW_NUM)
-                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER /p:FileVersion=$VERSION
+                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER /p:FileVersion=$VERSION
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
             - run:
@@ -419,7 +419,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c "<< parameters.build-config >>" -v q -p:WarningLevel=0 -p:Version=$SEMVER -p:FileVersion=$VERSION -p:IsDesktopBuild=false
+            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c "<< parameters.build-config >>" -p:WarningLevel=0 -p:Version=$SEMVER -p:FileVersion=$VERSION -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
