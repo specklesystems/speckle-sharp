@@ -710,6 +710,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
+      Doc.Regenerate(); //required for mirroring and face flipping to work!
+
       if (instance.mirrored)
       {
         // mirroring
@@ -734,7 +736,6 @@ namespace Objects.Converter.Revit
       }
 
       // face flipping must happen after mirroring
-      Doc.Regenerate(); //required for face flipping to work!
       if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
         familyInstance.flipHand();
 
