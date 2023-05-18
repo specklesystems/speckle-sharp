@@ -46,6 +46,8 @@ commands:
             echo 'export SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')' >> "$BASH_ENV"
             echo 'export VER=$(echo "$SEMVER" | sed -e 's/-.*//')' >> "$BASH_ENV"
             echo 'export VERSION=$(echo $VER.$WORKFLOW_NUM)' >> "$BASH_ENV"
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
 
   packandpublish:
     steps:
@@ -92,6 +94,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
             dotnet build SDK.slnf -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
+          environment:
+            WORKFLOW_NUM: << pipeline.number >>
       - run-tests:
           title: Core Unit Tests
           project: Core/Tests/TestsUnit.csproj
@@ -238,6 +242,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Upload new version
           command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            VER=$(echo "$SEMVER" | sed -e 's/-.*//')
+            VERSION=$(echo $VER.$WORKFLOW_NUM)
             /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >> -o << parameters.os >> -a << parameters.arch >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -295,8 +303,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Create installer target dir
           command: |
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
       - when:
           condition: << parameters.build-with-mono >>
           steps:
@@ -308,6 +314,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   VER=$(echo "$SEMVER" | sed -e 's/-.*//')
                   VERSION=$(echo $VER.$WORKFLOW_NUM)
                   msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
+                environment:
+                  WORKFLOW_NUM: << pipeline.number >>
             # Compress build files
             - run:
                 name: Zip Objects Kit files
@@ -407,11 +415,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - attach_workspace:
           at: ./
       - run:
-          name: Set environment variables
+          name: Create installer target directory
           command: |
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
-          environment:
-            WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Build
           command: |
