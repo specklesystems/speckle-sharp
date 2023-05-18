@@ -268,8 +268,8 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     catch (Exception ex)
     {
       Dispatcher.UIThread.Post(() => Dialogs.ShowMapperDialog("No types available",
-        "The selected stream does not contain any Revit types.\nMake sure to send Project Information > Families & Types from Revit\nusing the latest version of the connector.\n\nAnd no worries, you can keep using Speckle Mapper with default types!",
-        Material.Dialog.Icons.DialogIconKind.Warning));
+        "The selected stream does not contain any Revit types.\nMake sure to send Project Information > Families & Types from Revit\nusing the latest version of the connector.\n\n👉 And no worries, you can keep using Speckle Mapper with default types!",
+        Material.Dialog.Icons.DialogIconKind.Info));
       SpeckleLog.Logger.Warning(ex, "Could not get types: {exceptionMessage}", ex.Message);
       return;
     }
@@ -285,7 +285,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     {
       Dispatcher.UIThread.Post(() => Dialogs.ShowMapperDialog("No levels available",
         "The selected stream does not contain any Revit levels.\nMake sure to send Project Information > Levels from Revit\nusing the latest version of the connector.",
-        Material.Dialog.Icons.DialogIconKind.Warning));
+        Material.Dialog.Icons.DialogIconKind.Info));
       SpeckleLog.Logger.Warning(ex, "Could not get levels: {exceptionMessage}", ex.Message);
     }
   }
