@@ -22,6 +22,7 @@ using Material.Icons.Avalonia;
 using Material.Styles.Themes;
 using Material.Styles.Themes.Base;
 using ReactiveUI;
+using Sentry.Extensibility;
 using Speckle.Core.Api;
 using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
@@ -332,8 +333,9 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         return;
 
       //prevent subscriptions from being registered multiple times
-      _subscribedClientsStreamAddRemove.ForEach(x => x.Dispose());
-      _subscribedClientsStreamAddRemove.Clear();
+      //DISABLED: https://github.com/specklesystems/speckle-sharp/issues/2574
+      //_subscribedClientsStreamAddRemove.ForEach(x => x.Dispose());
+      //_subscribedClientsStreamAddRemove.Clear();
 
       Accounts = AccountManager.GetAccounts().Select(x => new AccountViewModel(x)).ToList();
 
@@ -357,16 +359,17 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
         );
       }
 
-      foreach (var account in Accounts)
-      {
-        account.Client.SubscribeUserStreamAdded();
-        account.Client.OnUserStreamAdded += Client_OnUserStreamAdded;
+      //DISABLED: https://github.com/specklesystems/speckle-sharp/issues/2574
+      //foreach (var account in Accounts)
+      //{
+      //  account.Client.SubscribeUserStreamAdded();
+      //  account.Client.OnUserStreamAdded += Client_OnUserStreamAdded;
 
-        account.Client.SubscribeUserStreamRemoved();
-        account.Client.OnUserStreamRemoved += Client_OnUserStreamRemoved;
+      //  account.Client.SubscribeUserStreamRemoved();
+      //  account.Client.OnUserStreamRemoved += Client_OnUserStreamRemoved;
 
-        _subscribedClientsStreamAddRemove.Add(account.Client);
-      }
+      //  _subscribedClientsStreamAddRemove.Add(account.Client);
+      //}
     }
     catch (Exception ex)
     {
