@@ -34,16 +34,23 @@ commands:
   cached-checkout:
     steps:
       - checkout
+  set-version-vars:
+    steps:
+      - run:
+          name: Set version environment variables
+          command: |
+            echo 'export TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)' >> "$Bash_ENV"
+            echo 'export SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')' >> "$Bash_ENV"
+            echo 'export VER=$(echo "$SEMVER" | sed -e 's/-.*//')' >> "$Bash_ENV"
+            echo 'export VERSION=$(echo $VER.$WORKFLOW_NUM)' >> "$Bash_ENV"
 
   packandpublish:
     steps:
+      - set-version-vars
       - run:
           name: Build nuget packages
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]+//')
-            VERSION=$(echo "$SEMVER" | sed -e 's/[a-zA-Z]*\///')
-            dotnet pack All.sln -p:Version=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
+            dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -160,7 +167,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
                   $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$semver
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /p:Configuration=Release /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$semver /p:FileVersion=$version
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
       - unless:
@@ -173,7 +180,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                   $semver = if($tag.Contains('/')) {$tag.Split("/")[0] } else { $tag }
                   $ver = if($semver.Contains('-')) {$semver.Split("-")[0] } else { $semver }
                   $version = "$($ver).$($env:WORKFLOW_NUM)"
-                  dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:Version=$semver
+                  dotnet publish << parameters.slnname >>/<< parameters.slnname >>/<< parameters.projname >>.csproj -c Release -v q -r win-x64 --self-contained /p:WarningLevel=0 /p:Version=$semver /p:FileVersion=$version
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -215,14 +222,13 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - attach_workspace:
           at: ./
+      - set-version-vars
       - run:
           name: Install Manager Feed CLI
           command: dotnet tool install --global Speckle.Manager.Feed
       - run:
           name: Upload new version
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             /root/.dotnet/tools/Speckle.Manager.Feed deploy -s << parameters.slug >> -v ${SEMVER} -u https://releases.speckle.dev/installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >> -o << parameters.os >> -a << parameters.arch >> -f speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<< parameters.slug >>-${SEMVER}.<< parameters.extension >>
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -276,14 +282,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
                 name: Install mono
                 command: |
                   HOMEBREW_NO_AUTO_UPDATE=1 HOMEBREW_NO_INSTALL_CLEANUP=1 brew install mono mono-libgdiplus
+      - set-version-vars
       - run:
-          name: Set environment variables
+          name: Create installer target dir
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            VER=$(echo "$SEMVER" | sed -e 's/-beta//')
-            VERSION=$(echo $VER.$WORKFLOW_NUM)
-            CHANNEL=$(if [[ "$VERSION" == *"-"* ]]; then echo $(cut -d "-" -f2 \<\<\< $VERSION); else echo latest; fi)
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -293,9 +295,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Build << parameters.slnname >>
                 command: |
-                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER
+                  msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
             # Compress build files
             - run:
                 name: Zip Objects Kit files
@@ -319,9 +319,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Publish x64 and arm64
                 command: |
-                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
-                  SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER
+                  $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -v q -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER /p:FileVersion=$VERSION
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
             - run:
@@ -352,8 +350,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Copy to installer location
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -396,12 +392,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             mkdir -p speckle-sharp-ci-tools/Installers/<< parameters.slug >>
           environment:
             WORKFLOW_NUM: << pipeline.number >>
+      - set-version-vars
       - run:
           name: Build
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
-            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c "<< parameters.build-config >>" -v q -p:WarningLevel=0 -p:Version=$SEMVER -p:IsDesktopBuild=false
+            dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c "<< parameters.build-config >>" -v q -p:WarningLevel=0 -p:Version=$SEMVER -p:FileVersion=$VERSION -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
@@ -441,8 +436,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Copy to installer location
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
           environment:
             WORKFLOW_NUM: << pipeline.number >>
