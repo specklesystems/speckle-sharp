@@ -10,39 +10,42 @@ namespace Speckle.Core.Models;
 /// <summary>
 /// Abstract Builder class for a root commit <see cref="Base"/> object.
 /// </summary>
-/// <typeparam name="TNativeObjectData">The native object data type needed as input for building <see cref="_parentInfos"/></typeparam>
+/// <typeparam name="TNativeObjectData">The native object data type needed as input for building <see cref="parentInfos"/></typeparam>
 /// <remarks>
 /// It is designed to be inherited by a host app specific implementation,
 /// to give connectors flexibility in constructing their objects.
-/// Inheritors should also create some function to add
+/// Inheritors should also create some function to add 
 /// </remarks>
+/// <example>
+/// <see cref=""/>
+/// </example>
 public abstract class CommitObjectBuilder<TNativeObjectData>
 {
   /// <summary>Special appId symbol for the root object</summary>
   protected const string Root = "__Root";
-
+  
   /// <summary>app id -> base</summary>
   protected readonly IDictionary<string, Base> converted;
-
+  
   /// <summary>Base -> Tuple{Parent App Id, propName} ordered by priority</summary>
-  private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> _parentInfos;
-
+  private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> parentInfos;
+  
   protected CommitObjectBuilder()
   {
     converted = new Dictionary<string, Base>();
-    _parentInfos = new Dictionary<Base, IList<(string?, string)>>();
+    parentInfos = new Dictionary<Base, IList<(string?,string)>>();
   }
 
   /// <summary>
-  /// Given the parameters, builds connector specific <see cref="_parentInfos"/>
+  /// Given the parameters, builds connector specific <see cref="parentInfos"/>
   /// to be applied when <see cref="BuildCommitObject"/> is called.
   /// </summary>
   /// <param name="conversionResult"></param>
   /// <param name="nativeElement"></param>
   public abstract void IncludeObject(Base conversionResult, TNativeObjectData nativeElement);
-
+  
   /// <summary>
-  /// Iterates through the converted objects applying
+  /// Iterates through the converted objects applying 
   /// </summary>
   /// <remarks>
   /// Can be overriden to adjust exactly which objects get automatically applied,
@@ -53,7 +56,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   {
     ApplyRelationships(converted.Values, rootCommitObject);
   }
-
+  
   /// <summary>
   /// Sets information on how a given object should be nested in the commit tree.
   /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
@@ -76,13 +79,13 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       }
     }
 
-    if (!_parentInfos.ContainsKey(conversionResult))
+    if (!parentInfos.ContainsKey(conversionResult))
     {
-      _parentInfos[conversionResult] = parentInfo;
+      parentInfos[conversionResult] = parentInfo;
     }
     else
     {
-      _parentInfos.Add(conversionResult, parentInfo);
+      parentInfos.Add(conversionResult, parentInfo);
     }
   }
 
@@ -100,41 +103,38 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       {
         ApplyRelationship(c, rootCommitObject);
       }
-      catch (Exception ex)
+      catch(Exception ex)
       {
         // This should never happen, we should be ensuring that at least one of the parents is valid.
         SpeckleLog.Logger.Fatal(ex, "Failed to add object {speckleType} to commit object", c?.GetType());
       }
     }
   }
-
+  
   /// <summary>
   /// Will attempt to find and nest the <paramref name="current"/> object
-  /// under the first valid parent according to the <see cref="_parentInfos"/> <see cref="converted"/> dictionary.
+  /// under the first valid parent according to the <see cref="parentInfos"/> <see cref="converted"/> dictionary.
   /// </summary>
   /// <remarks>
   /// A parent is considered valid if
   /// 1. Is non null
   /// 2. Is in the <see cref="converted"/> dictionary
-  /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="_parentInfos"/> item
-  /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type
+  /// 3. Has (or can dynamically accept) a <see cref="IList"/> typed property with the propName specified by the <see cref="parentInfos"/> item
+  /// 4. Said <see cref="IList"/> can accept the <see cref="current"/> object's type 
   /// </remarks>
   /// <param name="current"></param>
   /// <param name="rootCommitObject"></param>
-  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <see cref="current"/> given <see cref="_parentInfos"/></exception>
+  /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <see cref="current"/> given <see cref="parentInfos"/></exception>
   protected void ApplyRelationship(Base current, Base rootCommitObject)
   {
-    var parents = _parentInfos[current];
+    var parents = parentInfos[current];
     foreach ((string? parentAppId, string propName) in parents)
     {
-      if (parentAppId is null)
-        continue;
+      if (parentAppId is null) continue;
 
       Base? parent;
-      if (parentAppId == Root)
-        parent = rootCommitObject;
-      else
-        converted.TryGetValue(parentAppId, out parent);
+      if (parentAppId == Root) parent = rootCommitObject;
+      else converted.TryGetValue(parentAppId, out parent);
 
       if (parent is null)
         continue;
@@ -157,8 +157,6 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       }
     }
 
-    throw new InvalidOperationException(
-      $"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!"
-    );
+    throw new InvalidOperationException($"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!");
   }
 }

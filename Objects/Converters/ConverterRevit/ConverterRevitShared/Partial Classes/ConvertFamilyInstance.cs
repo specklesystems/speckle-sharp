@@ -14,7 +14,6 @@ using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using Vector = Objects.Geometry.Vector;
 using Objects.BuiltElements.Revit;
-using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -713,10 +712,44 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
+      // face flipping
+      Doc.Regenerate(); //required for face flipping to work!
+      if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
+        familyInstance.flipHand();
+
+      if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
+        familyInstance.flipFacing();
+
+      var desiredAngle = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
+      // TODO: does the family instance always have this basisX when created?
+      var currentAngle = new Vector(1, 0, 0);
+
+      // rotation about the z axis (signed)
+      var rotation = Math.Atan2(
+        Vector.DotProduct(Vector.CrossProduct(desiredAngle, currentAngle), new Vector(0, 0, 1)),
+        Vector.DotProduct(desiredAngle, currentAngle)
+      );
+
+      if (familyInstance.Location is LocationPoint location)
+      {
+        try // some point based families don't have a rotation, so keep this in a try catch
+        {
+          if (rotation != location.Rotation)
+          {
+            using var axis = DB.Line.CreateUnbound(location.Point, XYZ.BasisZ);
+            location.Rotate(axis, location.Rotation - rotation);
+          }
+        }
+        catch (Exception e)
+        {
+          appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
+        }
+      }
+
+      // mirroring
+      // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
       if (instance.mirrored)
       {
-        // mirroring
-        // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
         Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
         var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
 
@@ -733,40 +766,9 @@ namespace Objects.Converter.Revit
         {
           appObj.Update(logItem: $"Instance could not be mirrored: {e.Message}");
         }
-        group?.UngroupMembers();
-      }
-
-      // face flipping must happen after mirroring
-      Doc.Regenerate(); //required for face flipping to work!
-      if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
-        familyInstance.flipHand();
-
-      if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
-        familyInstance.flipFacing();
-
-      var currentTransform = familyInstance.GetTotalTransform();
-      var desiredBasisX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
-      var currentBasisX = new Vector(currentTransform.BasisX.X, currentTransform.BasisX.Y, currentTransform.BasisX.Z);
-
-      // rotation about the z axis (signed)
-      var rotation = Math.Atan2(
-        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX), new Vector(0, 0, 1)),
-        Vector.DotProduct(desiredBasisX, currentBasisX)
-      );
-
-      if (familyInstance.Location is LocationPoint location)
-      {
-        try // some point based families don't have a rotation, so keep this in a try catch
+        if (group != null)
         {
-          if (rotation != location.Rotation)
-          {
-            using var axis = DB.Line.CreateUnbound(location.Point, XYZ.BasisZ);
-            location.Rotate(axis, -rotation);
-          }
-        }
-        catch (Exception e)
-        {
-          appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
+          group.UngroupMembers();
         }
       }
 

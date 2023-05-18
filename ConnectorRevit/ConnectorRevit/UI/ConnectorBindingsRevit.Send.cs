@@ -177,7 +177,7 @@ namespace Speckle.ConnectorRevit.UI
       return commitId;
     }
 
-    public static bool GetOrCreateApplicationObject(
+    private static bool GetOrCreateApplicationObject(
       Element revitElement,
       ProgressReport report,
       out ApplicationObject reportObj
