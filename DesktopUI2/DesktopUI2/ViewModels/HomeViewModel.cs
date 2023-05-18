@@ -115,7 +115,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
   {
     try
     {
-      if (_selectedSavedStream != null)
+      if (_selectedSavedStream != null && !_selectedSavedStream.Progress.IsProgressing)
         _selectedSavedStream.GetBranchesAndRestoreState();
     }
     catch (Exception ex)
