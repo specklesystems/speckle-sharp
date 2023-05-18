@@ -15,6 +15,7 @@ using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementTyp
 using Vector = Objects.Geometry.Vector;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Logging;
+using Objects.BuiltElements;
 
 namespace Objects.Converter.Revit
 {
@@ -282,8 +283,9 @@ namespace Objects.Converter.Revit
           GeometryElement geomElement = el.get_Geometry(op);
           Reference faceRef = null;
           var planeDist = double.MaxValue;
+          var normalDist = double.MaxValue;
 
-          GetReferencePlane(geomElement, insertionPoint, ref faceRef, ref planeDist);
+          GetReferencePlane(geomElement, insertionPoint, null, ref faceRef, ref planeDist, ref normalDist);
 
           XYZ norm = new XYZ(0, 0, 0);
           familyInstance = Doc.Create.NewFamilyInstance(faceRef, insertionPoint, norm, familySymbol);
@@ -430,47 +432,102 @@ namespace Objects.Converter.Revit
     private void GetReferencePlane(
       GeometryElement geomElement,
       XYZ basePoint,
+      Transform transform,
       ref Reference faceRef,
-      ref double planeDist
+      ref double planeDist,
+      ref double normalDist
     )
     {
       foreach (var geom in geomElement)
       {
         if (geom is Solid solid)
         {
-          FaceArray faceArray = solid.Faces;
-
-          foreach (Face face in faceArray)
-          {
-            if (face is PlanarFace planarFace)
-            {
-              // some family instance base points may lie on the intersection of faces
-              // this makes it so family instance families can only be placed on the
-              // faces of walls
-              double D =
-                planarFace.FaceNormal.X * planarFace.Origin.X
-                + planarFace.FaceNormal.Y * planarFace.Origin.Y
-                + planarFace.FaceNormal.Z * planarFace.Origin.Z;
-              double PointD =
-                planarFace.FaceNormal.X * basePoint.X
-                + planarFace.FaceNormal.Y * basePoint.Y
-                + planarFace.FaceNormal.Z * basePoint.Z;
-              double value = Math.Abs(D - PointD);
-              double newPlaneDist = Math.Abs(D - PointD);
-              if (newPlaneDist < planeDist)
-              {
-                planeDist = newPlaneDist;
-                faceRef = planarFace.Reference;
-              }
-            }
-          }
+          FindPlaneFromSolid(basePoint, transform, ref faceRef, ref planeDist, ref normalDist, solid);
         }
         else if (geom is GeometryInstance geomInst)
         {
-          GeometryElement transformedGeom = geomInst.GetInstanceGeometry(geomInst.Transform);
-          GetReferencePlane(transformedGeom, basePoint, ref faceRef, ref planeDist);
+          GeometryElement transformedGeom = geomInst.GetSymbolGeometry();
+          //Doc.Regenerate();
+          GetReferencePlane(transformedGeom, basePoint, transform, ref faceRef, ref planeDist, ref normalDist);
         }
       }
+    }
+
+    private void FindPlaneFromSolid(XYZ basePoint, Transform transform, ref Reference faceRef, ref double planeDist, ref double normalDist, Solid solid)
+    {
+      FaceArray faceArray = solid.Faces;
+
+      var normalAlignedFaces = new List<PlanarFace>();
+      foreach (Face face in faceArray)
+      {
+        if (face is not PlanarFace planarFace) continue;
+
+        if (transform == null)
+        {
+          normalAlignedFaces.Add(planarFace);
+          continue;
+        }
+
+        var newNormalDist = Math.Round(planarFace.FaceNormal.DistanceTo(transform.BasisZ), 4);
+        if (newNormalDist < normalDist)
+        {
+          normalDist = newNormalDist;
+          normalAlignedFaces = new List<PlanarFace>() { planarFace };
+        }
+        else if (newNormalDist == normalDist)
+        {
+          normalAlignedFaces.Add(planarFace);
+        }
+      }
+
+      foreach (var planarFace in normalAlignedFaces)
+      {
+        double newPlaneDist = ComputePlaneDistance(planarFace.Origin, planarFace.FaceNormal, basePoint);
+        if (newPlaneDist < planeDist)
+        {
+          planeDist = newPlaneDist;
+          faceRef = planarFace.Reference;
+        }
+        // some family instance base points may lie on the intersection of faces
+        // this makes it so family instance families can only be placed on the
+        // faces of walls
+        //double D =
+        //  planarFace.FaceNormal.X * planarFace.Origin.X
+        //  + planarFace.FaceNormal.Y * planarFace.Origin.Y
+        //  + planarFace.FaceNormal.Z * planarFace.Origin.Z;
+        //double PointD =
+        //  planarFace.FaceNormal.X * basePoint.X
+        //  + planarFace.FaceNormal.Y * basePoint.Y
+        //  + planarFace.FaceNormal.Z * basePoint.Z;
+        //double value = Math.Abs(D - PointD);
+        //double newPlaneDist = Math.Abs(D - PointD);
+        //if (newPlaneDist < planeDist)
+        //{
+        //  planeDist = newPlaneDist;
+        //  faceRef = planarFace.Reference;
+        //}
+      }
+    }
+
+    private double ComputePlaneDistance(XYZ planeOrigin, XYZ planeNormal, XYZ point)
+    {
+      // D = nx*ox + ny+oy nz+oz
+      // where planeNormal = {nx,ny,nz} and planeOrigin = {ox,oy,oz}
+      double D = planeNormal.X * planeOrigin.X + planeNormal.Y * planeOrigin.Y + planeNormal.Z * planeOrigin.Z;
+      double PointD = planeNormal.X * point.X + planeNormal.Y * point.Y + planeNormal.Z * point.Z;
+      double value = Math.Abs(D - PointD);
+
+      //Report.Log($"point {point}");
+      return value;
+    }
+
+    private bool NormalsAlign(XYZ normal1, XYZ normal2)
+    {
+      var isXNormAligned = Math.Abs(Math.Abs(normal1.X) - Math.Abs(normal2.X)) < TOLERANCE;
+      var isYNormAligned = Math.Abs(Math.Abs(normal1.Y) - Math.Abs(normal2.Y)) < TOLERANCE;
+      var isZNormAligned = Math.Abs(Math.Abs(normal1.Z) - Math.Abs(normal2.Z)) < TOLERANCE;
+
+      return isXNormAligned && isYNormAligned && isZNormAligned;
     }
 
     #region new instancing
@@ -651,7 +708,8 @@ namespace Objects.Converter.Revit
             }
             Reference faceRef = null;
             var planeDist = double.MaxValue;
-            GetReferencePlane(geomElement, insertionPoint, ref faceRef, ref planeDist);
+            var normalDist = double.MaxValue;
+            GetReferencePlane(geomElement, insertionPoint, transform, ref faceRef, ref planeDist, ref normalDist);
             XYZ norm = new XYZ(0, 0, 0);
             try
             {
@@ -712,6 +770,27 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate(); //required for mirroring and face flipping to work!
 
+      var currentTransform = familyInstance.GetTotalTransform();
+
+      ElementTransformUtils.MoveElement(familyInstance.Document,
+        familyInstance.Id,
+        new XYZ(
+          insertionPoint.X - currentTransform.Origin.X,
+          insertionPoint.Y - currentTransform.Origin.Y,
+          insertionPoint.Z - currentTransform.Origin.Z)
+        );
+
+      //Doc.Regenerate();
+      currentTransform = familyInstance.GetTransform();
+      var translation = new XYZ(
+          insertionPoint.X - currentTransform.Origin.X,
+          insertionPoint.Y - currentTransform.Origin.Y,
+          insertionPoint.Z - currentTransform.Origin.Z
+        );
+      ElementTransformUtils.MoveElement(familyInstance.Document,
+        familyInstance.Id,
+        translation);
+
       if (instance.mirrored != familyInstance.Mirrored)
       {
         // mirroring
@@ -742,7 +821,7 @@ namespace Objects.Converter.Revit
       if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
         familyInstance.flipFacing();
 
-      var currentTransform = familyInstance.GetTotalTransform();
+      currentTransform = familyInstance.GetTotalTransform();
       var desiredBasisX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
       var currentBasisX = new Vector(currentTransform.BasisX.X, currentTransform.BasisX.Y, currentTransform.BasisX.Z);
 
@@ -767,6 +846,26 @@ namespace Objects.Converter.Revit
           appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
         }
       }
+
+      currentTransform = familyInstance.GetTotalTransform();
+
+      ElementTransformUtils.MoveElement(familyInstance.Document,
+        familyInstance.Id,
+        new XYZ(
+          insertionPoint.X - currentTransform.Origin.X,
+          insertionPoint.Y - currentTransform.Origin.Y,
+          insertionPoint.Z - currentTransform.Origin.Z)
+        );
+
+      //Doc.Regenerate();
+      currentTransform = familyInstance.GetTransform();
+      ElementTransformUtils.MoveElement(familyInstance.Document,
+        familyInstance.Id,
+        new XYZ(
+          insertionPoint.X - currentTransform.Origin.X,
+          insertionPoint.Y - currentTransform.Origin.Y,
+          insertionPoint.Z - currentTransform.Origin.Z)
+        );
 
       SetInstanceParameters(familyInstance, instance);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
