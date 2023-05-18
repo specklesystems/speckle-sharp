@@ -447,7 +447,6 @@ namespace Objects.Converter.Revit
         else if (geom is GeometryInstance geomInst)
         {
           GeometryElement transformedGeom = geomInst.GetSymbolGeometry();
-          //Doc.Regenerate();
           GetReferencePlane(transformedGeom, basePoint, transform, ref faceRef, ref planeDist, ref normalDist);
         }
       }
@@ -488,24 +487,6 @@ namespace Objects.Converter.Revit
           planeDist = newPlaneDist;
           faceRef = planarFace.Reference;
         }
-        // some family instance base points may lie on the intersection of faces
-        // this makes it so family instance families can only be placed on the
-        // faces of walls
-        //double D =
-        //  planarFace.FaceNormal.X * planarFace.Origin.X
-        //  + planarFace.FaceNormal.Y * planarFace.Origin.Y
-        //  + planarFace.FaceNormal.Z * planarFace.Origin.Z;
-        //double PointD =
-        //  planarFace.FaceNormal.X * basePoint.X
-        //  + planarFace.FaceNormal.Y * basePoint.Y
-        //  + planarFace.FaceNormal.Z * basePoint.Z;
-        //double value = Math.Abs(D - PointD);
-        //double newPlaneDist = Math.Abs(D - PointD);
-        //if (newPlaneDist < planeDist)
-        //{
-        //  planeDist = newPlaneDist;
-        //  faceRef = planarFace.Reference;
-        //}
       }
     }
 
@@ -519,15 +500,6 @@ namespace Objects.Converter.Revit
 
       //Report.Log($"point {point}");
       return value;
-    }
-
-    private bool NormalsAlign(XYZ normal1, XYZ normal2)
-    {
-      var isXNormAligned = Math.Abs(Math.Abs(normal1.X) - Math.Abs(normal2.X)) < TOLERANCE;
-      var isYNormAligned = Math.Abs(Math.Abs(normal1.Y) - Math.Abs(normal2.Y)) < TOLERANCE;
-      var isZNormAligned = Math.Abs(Math.Abs(normal1.Z) - Math.Abs(normal2.Z)) < TOLERANCE;
-
-      return isXNormAligned && isYNormAligned && isZNormAligned;
     }
 
     #region new instancing
@@ -780,17 +752,6 @@ namespace Objects.Converter.Revit
           insertionPoint.Z - currentTransform.Origin.Z)
         );
 
-      //Doc.Regenerate();
-      currentTransform = familyInstance.GetTransform();
-      var translation = new XYZ(
-          insertionPoint.X - currentTransform.Origin.X,
-          insertionPoint.Y - currentTransform.Origin.Y,
-          insertionPoint.Z - currentTransform.Origin.Z
-        );
-      ElementTransformUtils.MoveElement(familyInstance.Document,
-        familyInstance.Id,
-        translation);
-
       if (instance.mirrored != familyInstance.Mirrored)
       {
         // mirroring
@@ -827,45 +788,23 @@ namespace Objects.Converter.Revit
 
       // rotation about the z axis (signed)
       var rotation = Math.Atan2(
-        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX), new Vector(0, 0, 1)),
+        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX), 
+        new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)),
         Vector.DotProduct(desiredBasisX, currentBasisX)
       );
 
-      if (familyInstance.Location is LocationPoint location)
+      if (Math.Abs(rotation) > TOLERANCE && familyInstance.Location is LocationPoint location)
       {
         try // some point based families don't have a rotation, so keep this in a try catch
         {
-          if (rotation != location.Rotation)
-          {
-            using var axis = DB.Line.CreateUnbound(location.Point, XYZ.BasisZ);
-            location.Rotate(axis, -rotation);
-          }
+          using var axis = DB.Line.CreateUnbound(location.Point, currentTransform.BasisZ);
+          location.Rotate(axis, -rotation);
         }
         catch (Exception e)
         {
           appObj.Update(logItem: $"Could not rotate created instance: {e.Message}");
         }
       }
-
-      currentTransform = familyInstance.GetTotalTransform();
-
-      ElementTransformUtils.MoveElement(familyInstance.Document,
-        familyInstance.Id,
-        new XYZ(
-          insertionPoint.X - currentTransform.Origin.X,
-          insertionPoint.Y - currentTransform.Origin.Y,
-          insertionPoint.Z - currentTransform.Origin.Z)
-        );
-
-      //Doc.Regenerate();
-      currentTransform = familyInstance.GetTransform();
-      ElementTransformUtils.MoveElement(familyInstance.Document,
-        familyInstance.Id,
-        new XYZ(
-          insertionPoint.X - currentTransform.Origin.X,
-          insertionPoint.Y - currentTransform.Origin.Y,
-          insertionPoint.Z - currentTransform.Origin.Z)
-        );
 
       SetInstanceParameters(familyInstance, instance);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
