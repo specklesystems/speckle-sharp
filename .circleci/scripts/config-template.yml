@@ -74,7 +74,6 @@ commands:
           name: << parameters.title >>
           command: dotnet test << parameters.project >>
             -c Release
-            -v q
             --logger:"junit;LogFileName={assembly}.results.xml"
             --results-directory=TestResults
             --collect:"XPlat Code Coverage" -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover
@@ -87,7 +86,12 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - cached-checkout
       - run:
           name: Build SDK Projects
-          command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false
+          command: |
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)
+            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            VER=$(echo "$SEMVER" | sed -e 's/-.*//')
+            VERSION=$(echo $VER.$WORKFLOW_NUM)
+            dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false
       - run-tests:
           title: Core Unit Tests
           project: Core/Tests/TestsUnit.csproj
