@@ -12,6 +12,7 @@ using Avalonia.Controls.Notifications;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using DesktopUI2.ViewModels;
+using DesktopUI2.ViewModels.MappingTool;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog;
@@ -30,6 +31,12 @@ public static class Dialogs
   {
     Dialog d = new(title, message, icon);
     await d.ShowDialog().ConfigureAwait(true);
+  }
+
+  public static async void ShowMapperDialog(string title, string message, DialogIconKind icon)
+  {
+    Dialog d = new(title, message, icon);
+    await d.ShowDialog(MappingsViewModel.Instance).ConfigureAwait(true);
   }
 
   public static IDialogWindow<DialogResult> SendReceiveDialog(string header, object dataContext)
