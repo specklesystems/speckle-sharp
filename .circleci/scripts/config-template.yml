@@ -42,20 +42,20 @@ commands:
       - run:
           name: Set version environment variables
           command: |
-            echo 'export TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)' >> "$BASH_ENV"
+            echo 'export TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)' >> "$BASH_ENV"
             echo 'export SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')' >> "$BASH_ENV"
             echo 'export VER=$(echo "$SEMVER" | sed -e 's/-.*//')' >> "$BASH_ENV"
-            echo 'export VERSION=$(echo $VER)' >> "$BASH_ENV"
+            echo 'export VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)' >> "$BASH_ENV"
 
   packandpublish:
     steps:
       - run:
           name: Build nuget packages
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-            VERSION=$(echo $VER)
+            VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
             dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -87,10 +87,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Build SDK Projects
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-            VERSION=$(echo $VER)
+            VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
             dotnet build SDK.slnf -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
       - run-tests:
           title: Core Unit Tests
@@ -303,10 +303,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Build << parameters.slnname >>
                 command: |
-                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)
                   SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
                   VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-                  VERSION=$(echo $VER)
+                  VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
                   msbuild << parameters.slnname >>/<< parameters.slnname >>.sln /r /p:Configuration='<< parameters.build-config >>' /p:WarningLevel=0 /p:IsDesktopBuild=false /p:Version=$SEMVER /p:FileVersion=$VERSION
             # Compress build files
             - run:
@@ -331,10 +331,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             - run:
                 name: Publish x64 and arm64
                 command: |
-                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+                  TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)
                   SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
                   VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-                  VERSION=$(echo $VER)
+                  VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
                   $HOME/.dotnet/dotnet publish << parameters.slnname >>/<< parameters.projname >>/<< parameters.projname >>.csproj -c Release -r osx-x64 --self-contained /p:WarningLevel=0 /p:Version=$SEMVER /p:FileVersion=$VERSION
                 environment:
                   WORKFLOW_NUM: << pipeline.number >>
@@ -366,10 +366,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Copy to installer location
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-            VERSION=$(echo $VER)
+            VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
             cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -415,10 +415,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Build
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-            VERSION=$(echo $VER)
+            VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
             dotnet build << parameters.slnname >>/<< parameters.slnname >>.slnf -c "<< parameters.build-config >>" -p:WarningLevel=0 -p:Version=$SEMVER -p:FileVersion=$VERSION -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
@@ -459,10 +459,10 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - run:
           name: Copy to installer location
           command: |
-            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
+            TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$CIRCLE_BUILD_NUM"; fi;)
             SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
-            VERSION=$(echo $VER)
+            VERSION=$(echo $VER.$CIRCLE_BUILD_NUM)
             cp speckle-sharp-ci-tools/Mac/<<parameters.installername>>/bin/Release/net6.0/osx-x64/publish/<<parameters.slug>>.zip speckle-sharp-ci-tools/Installers/<< parameters.slug >>/<<parameters.slug>>-$SEMVER.zip
           environment:
             WORKFLOW_NUM: << pipeline.number >>
