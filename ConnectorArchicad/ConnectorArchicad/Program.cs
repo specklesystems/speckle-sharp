@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.ReactiveUI;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
+using Speckle.Core.Logging;
 
 namespace Archicad.Launcher
 {
@@ -37,6 +38,8 @@ namespace Archicad.Launcher
       Communication.ConnectionManager.Instance.Start(portNumber);
 
       Bindings = new ArchicadBinding(archicadVersion);
+      Setup.Init(Bindings.GetHostAppName(), Bindings.GetHostAppNameVersion());
+      
       CreateOrFocusSpeckle(args);
       // BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
     }
