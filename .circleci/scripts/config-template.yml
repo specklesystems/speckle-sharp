@@ -39,10 +39,12 @@ commands:
       - run:
           name: Set version environment variables
           command: |
+            $BASH_ENV
             echo 'export TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)' >> "$BASH_ENV"
             echo 'export SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')' >> "$BASH_ENV"
             echo 'export VER=$(echo "$SEMVER" | sed -e 's/-.*//')' >> "$BASH_ENV"
             echo 'export VERSION=$(echo $VER.$WORKFLOW_NUM)' >> "$BASH_ENV"
+            $BASH_ENV
 
   packandpublish:
     steps:
