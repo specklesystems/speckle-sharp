@@ -712,7 +712,7 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate(); //required for mirroring and face flipping to work!
 
-      if (instance.mirrored)
+      if (instance.mirrored != familyInstance.Mirrored)
       {
         // mirroring
         // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
