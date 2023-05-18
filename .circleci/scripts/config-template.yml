@@ -39,10 +39,10 @@ commands:
       - run:
           name: Set version environment variables
           command: |
-            echo 'export TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)' >> "$Bash_ENV"
-            echo 'export SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')' >> "$Bash_ENV"
-            echo 'export VER=$(echo "$SEMVER" | sed -e 's/-.*//')' >> "$Bash_ENV"
-            echo 'export VERSION=$(echo $VER.$WORKFLOW_NUM)' >> "$Bash_ENV"
+            echo 'export TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999.$WORKFLOW_NUM"; fi;)' >> "$BASH_ENV"
+            echo 'export SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')' >> "$BASH_ENV"
+            echo 'export VER=$(echo "$SEMVER" | sed -e 's/-.*//')' >> "$BASH_ENV"
+            echo 'export VERSION=$(echo $VER.$WORKFLOW_NUM)' >> "$BASH_ENV"
 
   packandpublish:
     steps:
@@ -79,6 +79,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - image: mcr.microsoft.com/dotnet/sdk:6.0
     steps:
       - cached-checkout
+      - set-version-vars
       - run:
           name: Build SDK Projects
           command: dotnet build SDK.slnf -c Release -v m -p:WarningLevel=0 -p:IsDesktopBuild=false
