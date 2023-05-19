@@ -79,9 +79,11 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 	// The floor index and level of the zone
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, zoneShape.Level (), element.header.floorInd, element.zone.roomBaseLev);
-		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomBaseLev);
-		ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+	} else {
+		Utility::SetStoryLevelAndFloor (zoneShape.Level (), element.header.floorInd, element.zone.roomBaseLev);
 	}
+	ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomBaseLev);
+	ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
 
 	return NoError;
 }

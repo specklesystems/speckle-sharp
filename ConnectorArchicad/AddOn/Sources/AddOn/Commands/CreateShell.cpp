@@ -908,10 +908,12 @@ GSErrCode CreateShell::GetElementFromObjectState (const GS::ObjectState& os,
 	// The floor index and level of the shell
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, shellShape.Level (), element.header.floorInd, element.shell.shellBase.level);
-
+	}
+	else {
+		Utility::SetStoryLevelAndFloor (shellShape.Level (), element.header.floorInd, element.shell.shellBase.level);
+	}
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
 		ACAPI_ELEMENT_MASK_SET (elementMask, API_ShellType, shellBase.level);
-	}
 
 	// The thickness of the shell
 	if (os.Contains (Shell::Thickness)) {

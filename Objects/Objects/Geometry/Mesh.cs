@@ -79,6 +79,17 @@ public class Mesh : Base, IHasBoundingBox, IHasVolume, IHasArea, ITransformable<
   public double volume { get; set; }
 
   /// <inheritdoc/>
+  public bool Transform(Transform transform)
+  {
+    // transform vertices
+    vertices = GetPoints().SelectMany(vertex => { 
+      vertex.TransformTo(transform, out Point transformedVertex); return transformedVertex.ToList();
+    }).ToList();
+
+    return true;
+  }
+
+  /// <inheritdoc/>
   public bool TransformTo(Transform transform, out Mesh mesh)
   {
     // transform vertices
