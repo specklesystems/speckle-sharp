@@ -81,9 +81,13 @@ namespace Objects.Converter.Revit
       if (@base == null)
       {
         if (
-          (revitFi.Host != null && revitFi.HostFace != null)
-          || ((BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_StructuralFoundation)
-        ) // don't know why, but the transforms on structural foundation elements are really messed up
+          (BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_StructuralFoundation // don't know why, but the transforms on structural foundation elements are really messed up
+          || (
+            (BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_GenericModel
+            && revitFi.HostFace != null
+            && revitFi.HasModifiedGeometry()
+          ) // don't know why, but the transforms on face-based generic model instances are really messed up
+        )
         {
           @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
         }
