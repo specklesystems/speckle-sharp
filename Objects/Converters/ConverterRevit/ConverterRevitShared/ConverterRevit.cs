@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
@@ -56,6 +57,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     public Dictionary<string, ApplicationObject> PreviousContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
 
+    public IReceivedObjectsCache PreviouslyReceivedObjects { get; set; }
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
@@ -102,7 +104,13 @@ namespace Objects.Converter.Revit
     public void SetContextDocument(object doc)
     {
       if (doc is Transaction t)
+      {
         T = t;
+      }
+      else if (doc is IReceivedObjectsCache cache)
+      {
+        PreviouslyReceivedObjects = cache;
+      }
       else
       {
         Doc = (Document)doc;
