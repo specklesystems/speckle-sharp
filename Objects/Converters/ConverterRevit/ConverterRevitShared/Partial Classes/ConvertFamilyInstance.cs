@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
       }
 
       // add additional props to base object
-      if (isUGridLine.HasValue) 
+      if (isUGridLine.HasValue)
         @base["isUGridLine"] = isUGridLine.Value;
 
       return @base;
