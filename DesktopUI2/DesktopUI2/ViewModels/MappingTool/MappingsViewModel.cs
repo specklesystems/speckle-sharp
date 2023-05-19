@@ -240,9 +240,10 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     try
     {
       // TODO: refactor with null check!!!! if a selected stream branch doesn't have types or levels in the latest commit, model["types"] and model["levels"] will be null
-      var types = model["Types"] as Base ?? model["Types"] as Base;
-
-      foreach (var baseCategory in types.GetMembers()) // TODO: refactor! this line throws on null (see above)
+      var types = model["Types"] as Base ?? model["@Types"] as Base;
+      // TODO: refactor! this line throws on null (see above)
+      foreach (var baseCategory in types.GetMembers())
+      {
         try
         {
           var elementTypes = ((IList)baseCategory.Value).Cast<RevitElementType>().ToList();
@@ -260,8 +261,25 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             ex.Message
           );
         }
-
+      }
       AvailableRevitTypes = revitTypes;
+    }
+    catch (Exception ex)
+    {
+      Dispatcher.UIThread.Post(
+        () =>
+          Dialogs.ShowMapperDialog(
+            "No types available",
+            "The selected stream does not contain any Revit types.\nMake sure to send Project Information > Families & Types from Revit\nusing the latest version of the connector.\n\nAnd no worries, you can keep using Speckle Mapper with default types!",
+            Material.Dialog.Icons.DialogIconKind.Warning
+          )
+      );
+      SpeckleLog.Logger.Warning(ex, "Could not get types: {exceptionMessage}", ex.Message);
+      return;
+    }
+
+    try
+    {
       AvailableRevitLevels = (model["Levels"] as IList ?? (IList)model["@Levels"])
         .Cast<RevitLevel>()
         .Select(x => x.name)
@@ -269,10 +287,15 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     }
     catch (Exception ex)
     {
-      Dispatcher.UIThread.Post(() => Dialogs.ShowMapperDialog("No types available",
-        "The selected stream does not contain any Revit types.\nMake sure to send Project Information > Families & Types from Revit\nusing the latest version of the connector.",
-        Material.Dialog.Icons.DialogIconKind.Warning));
-      SpeckleLog.Logger.Error(ex, "Could not get types and levels: {exceptionMessage}", ex.Message);
+      Dispatcher.UIThread.Post(
+        () =>
+          Dialogs.ShowMapperDialog(
+            "No levels available",
+            "The selected stream does not contain any Revit levels.\nMake sure to send Project Information > Levels from Revit\nusing the latest version of the connector.",
+            Material.Dialog.Icons.DialogIconKind.Warning
+          )
+      );
+      SpeckleLog.Logger.Warning(ex, "Could not get levels: {exceptionMessage}", ex.Message);
     }
   }
 
