@@ -81,9 +81,13 @@ namespace Objects.Converter.Revit
       if (@base == null)
       {
         if (
-          (revitFi.Host != null && revitFi.HostFace != null)
-          || ((BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_StructuralFoundation)
-        ) // don't know why, but the transforms on structural foundation elements are really messed up
+          (BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_StructuralFoundation // don't know why, but the transforms on structural foundation elements are really messed up
+          || (
+            (BuiltInCategory)revitFi.Category.Id.IntegerValue == BuiltInCategory.OST_GenericModel
+            && revitFi.HostFace != null
+            && revitFi.HasModifiedGeometry()
+          ) // don't know why, but the transforms on face-based generic model instances are really messed up
+        )
         {
           @base = PointBasedFamilyInstanceToSpeckle(revitFi, basePoint, out notes);
         }
@@ -648,9 +652,17 @@ namespace Objects.Converter.Revit
           case FamilyPlacementType.WorkPlaneBased when CurrentHostElement != null:
             Options op = new Options() { ComputeReferences = true };
             GeometryElement geomElement = CurrentHostElement.get_Geometry(op);
-            if (geomElement == null) // not sure why some wall host geom fails, try the generic method if so
+            if (geomElement == null)
             {
-              goto default;
+              // if host geom was null, then regenerate document and that should fix it
+              Doc.Regenerate();
+              geomElement = CurrentHostElement.get_Geometry(op);
+              // if regenerating didn't fix it then try generic method
+              // TODO: this won't be correct, maybe we should just throw an error?
+              if (geomElement == null)
+              {
+                goto default;
+              }
             }
             Reference faceRef = null;
             var planeDist = double.MaxValue;
@@ -713,7 +725,9 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (instance.mirrored)
+      Doc.Regenerate(); //required for mirroring and face flipping to work!
+
+      if (instance.mirrored != familyInstance.Mirrored)
       {
         // mirroring
         // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
@@ -737,7 +751,6 @@ namespace Objects.Converter.Revit
       }
 
       // face flipping must happen after mirroring
-      Doc.Regenerate(); //required for face flipping to work!
       if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
         familyInstance.flipHand();
 
@@ -750,19 +763,17 @@ namespace Objects.Converter.Revit
 
       // rotation about the z axis (signed)
       var rotation = Math.Atan2(
-        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX), new Vector(0, 0, 1)),
+        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
+        new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)),
         Vector.DotProduct(desiredBasisX, currentBasisX)
       );
 
-      if (familyInstance.Location is LocationPoint location)
+      if (Math.Abs(rotation) > TOLERANCE && familyInstance.Location is LocationPoint location)
       {
         try // some point based families don't have a rotation, so keep this in a try catch
         {
-          if (rotation != location.Rotation)
-          {
-            using var axis = DB.Line.CreateUnbound(location.Point, XYZ.BasisZ);
-            location.Rotate(axis, -rotation);
-          }
+          using var axis = DB.Line.CreateUnbound(location.Point, currentTransform.BasisZ);
+          location.Rotate(axis, -rotation);
         }
         catch (Exception e)
         {
