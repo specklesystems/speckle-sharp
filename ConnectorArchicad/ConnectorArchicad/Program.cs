@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Linq;
 using Avalonia;
@@ -38,8 +38,8 @@ namespace Archicad.Launcher
       Communication.ConnectionManager.Instance.Start(portNumber);
 
       Bindings = new ArchicadBinding(archicadVersion);
-      Setup.Init(Bindings.GetHostAppName(), Bindings.GetHostAppNameVersion());
-      
+      Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
+
       CreateOrFocusSpeckle(args);
       // BuildAvaloniaApp().StartWithClassicDesktopLifetime(args, Avalonia.Controls.ShutdownMode.OnMainWindowClose);
     }
