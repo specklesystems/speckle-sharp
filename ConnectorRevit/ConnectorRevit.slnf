@@ -9,6 +9,7 @@
       "ConnectorRevit\\ConnectorRevit\\ConnectorRevitShared.shproj",
       "ConnectorRevit\\RevitSharedResources\\RevitSharedResources2023\\RevitSharedResources2023.csproj",
       "ConnectorRevit\\RevitSharedResources\\RevitSharedResources\\RevitSharedResources.shproj",
+      "ConnectorRevit\\RevitSharedResources\\RevitSharedResources\\RevitSharedResources2022\\RevitSharedResources2022.csproj",
       "Core\\Core\\Core.csproj",
       "Core\\IntegrationTests\\TestsIntegration.csproj",
       "Core\\Tests\\TestsUnit.csproj",
