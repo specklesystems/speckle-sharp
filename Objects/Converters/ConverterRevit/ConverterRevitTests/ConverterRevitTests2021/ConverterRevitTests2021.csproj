@@ -49,6 +49,7 @@
         <PackageReference Include="Revit.Async" Version="2.0.1" />
     </ItemGroup>
     <ItemGroup>
+        <ProjectReference Include="..\..\..\..\..\ConnectorRevit\ConnectorRevit2021\ConnectorRevit2021.csproj" />
         <ProjectReference Include="..\..\..\..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\..\Objects\Objects.csproj" />
         <ProjectReference Include="..\..\ConverterRevit2021\ConverterRevit2021.csproj" />
