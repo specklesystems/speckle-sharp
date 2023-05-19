@@ -14,14 +14,21 @@ public class DialogUserControl : UserControl, ICloseable
 
   public event EventHandler Closed;
 
-  public Task ShowDialog()
+  private IDialogHost _host;
+
+  public Task ShowDialog(IDialogHost host = null)
   {
-    return ShowDialog<object>();
+    return ShowDialog<object>(host);
   }
 
-  public Task<TResult> ShowDialog<TResult>()
+  public Task<TResult> ShowDialog<TResult>(IDialogHost host = null)
   {
-    MainViewModel.Instance.DialogBody = this;
+    _host = host;
+
+    if (_host == null && MainViewModel.Instance != null)
+      _host = MainViewModel.Instance;
+
+    _host.DialogBody = this;
 
     var result = new TaskCompletionSource<TResult>();
 
@@ -39,7 +46,7 @@ public class DialogUserControl : UserControl, ICloseable
   public void Close(object dialogResult)
   {
     _dialogResult = dialogResult;
-    MainViewModel.Instance.DialogBody = null;
+    _host.DialogBody = null;
     Closed?.Invoke(this, null);
   }
 }
