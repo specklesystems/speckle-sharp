@@ -55,9 +55,8 @@ namespace Objects.Converter.Revit
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public Dictionary<string, ApplicationObject> PreviousContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
-
     public IReceivedObjectsCache PreviouslyReceivedObjects { get; set; }
+
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
@@ -135,14 +134,14 @@ namespace Objects.Converter.Revit
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects)
     {
-      PreviousContextObjects = new(objects.Count);
-      foreach (var ao in objects)
-      {
-        var key = ao.applicationId ?? ao.OriginalId;
-        if (PreviousContextObjects.ContainsKey(key))
-          continue;
-        PreviousContextObjects.Add(key, ao);
-      }
+      //PreviousContextObjects = new(objects.Count);
+      //foreach (var ao in objects)
+      //{
+      //  var key = ao.applicationId ?? ao.OriginalId;
+      //  if (PreviousContextObjects.ContainsKey(key))
+      //    continue;
+      //  PreviousContextObjects.Add(key, ao);
+      //}
     }
 
     public void SetConverterSettings(object settings)

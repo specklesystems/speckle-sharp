@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -8,11 +8,13 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
 using ConnectorRevit.Revit;
+using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
+using RevitSharedResources.Interfaces;
 using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -63,7 +65,8 @@ namespace Speckle.ConnectorRevit.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work
-      converter.SetPreviousContextObjects(previouslyReceiveObjects);
+      var previousObjectsCache = new StreamStateCache(state, previouslyReceiveObjects);
+      converter.SetContextDocument(previousObjectsCache);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
@@ -94,10 +97,10 @@ namespace Speckle.ConnectorRevit.UI
         {
           converter.SetContextDocument(t);
 
-          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress, previousObjectsCache);
 
           if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
+            DeleteObjects(previousObjectsCache, newPlaceholderObjects, state.StreamId);
 
           state.ReceivedObjects = newPlaceholderObjects;
           t.Commit();
@@ -129,20 +132,25 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects)
+    private void DeleteObjects(IReceivedObjectsCache previousObjects, List<ApplicationObject> newPlaceholderObjects, string streamId)
     {
-      foreach (var obj in previouslyReceiveObjects)
+      var appIds = previousObjects.GetApplicationIds(CurrentDoc.Document, streamId).ToList();
+      for (var i = appIds.Count - 1; i >= 0; i--)
       {
-        if (obj.CreatedIds.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        var appId = appIds[i];
+        if (string.IsNullOrEmpty(appId)
+          || newPlaceholderObjects.Any(x => x.applicationId == appId))
           continue;
 
-        var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
-        if (element != null)
-          CurrentDoc.Document.Delete(element.Id);
+        var elementToDelete = previousObjects
+          .GetExistingElementFromApplicationId(CurrentDoc.Document, appId);
+
+        if (elementToDelete != null) CurrentDoc.Document.Delete(elementToDelete.Id);
+        previousObjects.RemoveSpeckleId(CurrentDoc.Document, appId);
       }
     }
 
-    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, IReceivedObjectsCache previousObjectsCache)
     {
       var placeholders = new List<ApplicationObject>();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -151,7 +159,6 @@ namespace Speckle.ConnectorRevit.UI
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-
       foreach (var obj in Preview)
       {
         var @base = StoredObjects[obj.OriginalId];
@@ -176,6 +183,15 @@ namespace Speckle.ConnectorRevit.UI
           switch (convRes)
           {
             case ApplicationObject o:
+              var convertedElements = o.Converted.OfType<Element>().ToList();
+              if (convertedElements.Count == 1)
+              {
+                previousObjectsCache.AddReceivedElement(convertedElements.First(), @base);
+              }
+              else if (convertedElements.Count > 1)
+              {
+                previousObjectsCache.AddReceivedElements(convertedElements, @base);
+              }
               placeholders.Add(o);
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);

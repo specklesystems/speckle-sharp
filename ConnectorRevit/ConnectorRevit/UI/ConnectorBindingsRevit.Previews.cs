@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExternalService;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
@@ -29,6 +29,7 @@ using Avalonia.Threading;
 using Autodesk.Revit.DB.DirectContext3D;
 using Revit.Async;
 using DynamicData;
+using ConnectorRevit.Storage;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -76,7 +77,7 @@ namespace Speckle.ConnectorRevit.UI
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
               {
                 t.Start();
-                applicationObjects = ConvertReceivedObjects(converter, progress);
+                applicationObjects = ConvertReceivedObjects(converter, progress, new StreamStateCache(state, new List<ApplicationObject>()));
                 t.Commit();
               }
 
