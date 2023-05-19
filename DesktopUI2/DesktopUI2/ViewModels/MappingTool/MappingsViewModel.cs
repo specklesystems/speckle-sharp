@@ -7,11 +7,9 @@ using System.Reactive;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Metadata;
-using Avalonia.Threading;
 using Avalonia.VisualTree;
 using DesktopUI2.Models;
 using DesktopUI2.Views;
-using DesktopUI2.Views.Windows.Dialogs;
 using Objects.BuiltElements.Revit;
 using ReactiveUI;
 using Speckle.Core.Api;
@@ -21,11 +19,9 @@ using Speckle.Core.Transports;
 
 namespace DesktopUI2.ViewModels.MappingTool;
 
-public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
+public class MappingsViewModel : ViewModelBase, IScreen
 {
   private int _count;
-
-  private UserControl _dialogBody;
 
   private List<SchemaGroup> _existingSchemas;
 
@@ -41,19 +37,15 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
 
   private bool _showProgress;
 
-  public bool DialogVisible => _dialogBody != null;
-
-  public double DialogOpacity => _dialogBody != null ? 1 : 0;
-
-  public UserControl DialogBody
+  public MappingsViewModel()
   {
-    get => _dialogBody;
-    set
-    {
-      this.RaiseAndSetIfChanged(ref _dialogBody, value);
-      this.RaisePropertyChanged(nameof(DialogVisible));
-      this.RaisePropertyChanged(nameof(DialogOpacity));
-    }
+    Init();
+  }
+
+  public MappingsViewModel(MappingsBindings bindings)
+  {
+    Bindings = bindings;
+    Init();
   }
 
   public string TitleFull => "Speckle Mappings";
@@ -78,6 +70,8 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
   public static RoutingState RouterInstance { get; private set; }
 
   public ReactiveCommand<Unit, Unit> GoBack => Router.NavigateBack;
+
+  public static MappingsViewModel Instance { get; private set; }
 
   public bool ShowProgress
   {
@@ -111,19 +105,6 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
 
   public StreamSelectorViewModel StreamSelector { get; private set; } = new();
   public RoutingState Router { get; private set; }
-
-  public static MappingsViewModel Instance { get; private set; }
-
-  public MappingsViewModel()
-  {
-    Init();
-  }
-
-  public MappingsViewModel(MappingsBindings bindings)
-  {
-    Bindings = bindings;
-    Init();
-  }
 
   public void Init()
   {
@@ -241,9 +222,8 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     {
       // TODO: refactor with null check!!!! if a selected stream branch doesn't have types or levels in the latest commit, model["types"] and model["levels"] will be null
       var types = model["Types"] as Base ?? model["@Types"] as Base;
-      // TODO: refactor! this line throws on null (see above)
-      foreach (var baseCategory in types.GetMembers())
-      {
+
+      foreach (var baseCategory in types.GetMembers()) // TODO: refactor! this line throws on null (see above)
         try
         {
           var elementTypes = ((IList)baseCategory.Value).Cast<RevitElementType>().ToList();
@@ -261,21 +241,8 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
             ex.Message
           );
         }
-      }
+
       AvailableRevitTypes = revitTypes;
-
-    }
-    catch (Exception ex)
-    {
-      Dispatcher.UIThread.Post(() => Dialogs.ShowMapperDialog("No types available",
-        "The selected stream does not contain any Revit types.\nMake sure to send Project Information > Families & Types from Revit\nusing the latest version of the connector.\n\n👉 And no worries, you can keep using Speckle Mapper with default types!",
-        Material.Dialog.Icons.DialogIconKind.Info));
-      SpeckleLog.Logger.Warning(ex, "Could not get types: {exceptionMessage}", ex.Message);
-      return;
-    }
-
-    try
-    {
       AvailableRevitLevels = (model["Levels"] as IList ?? (IList)model["@Levels"])
         .Cast<RevitLevel>()
         .Select(x => x.name)
@@ -283,10 +250,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
     }
     catch (Exception ex)
     {
-      Dispatcher.UIThread.Post(() => Dialogs.ShowMapperDialog("No levels available",
-        "The selected stream does not contain any Revit levels.\nMake sure to send Project Information > Levels from Revit\nusing the latest version of the connector.",
-        Material.Dialog.Icons.DialogIconKind.Info));
-      SpeckleLog.Logger.Warning(ex, "Could not get levels: {exceptionMessage}", ex.Message);
+      SpeckleLog.Logger.Error(ex, "Could not get types and levels: {exceptionMessage}", ex.Message);
     }
   }
 

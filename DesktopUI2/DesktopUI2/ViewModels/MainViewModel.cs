@@ -6,7 +6,6 @@ using Avalonia;
 using Avalonia.Controls;
 using DesktopUI2.Models;
 using DesktopUI2.Views.Pages;
-using DesktopUI2.Views.Windows.Dialogs;
 using Material.Styles.Themes;
 using ReactiveUI;
 using Speckle.Core.Credentials;
@@ -15,7 +14,7 @@ using Splat;
 
 namespace DesktopUI2.ViewModels;
 
-public class MainViewModel : ViewModelBase, IScreen, IDialogHost
+public class MainViewModel : ViewModelBase, IScreen
 {
   private UserControl _dialogBody;
 
