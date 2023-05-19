@@ -251,6 +251,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       Notifications.Clear();
 
       if (hasUpdate)
+      {
         Notifications.Add(
           new NotificationViewModel
           {
@@ -260,8 +261,10 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
             IconColor = Brushes.Gold
           }
         );
+      }
 
       foreach (var account in Accounts)
+      {
         try
         {
           var result = await account.Client.GetAllPendingInvites().ConfigureAwait(true);
@@ -275,6 +278,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
           SpeckleLog.Logger.Error(e, "Could not fetch invites");
         }
+      }
 
       this.RaisePropertyChanged(nameof(Notifications));
     }
