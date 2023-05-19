@@ -65,9 +65,12 @@ GSErrCode CreateSlab::GetElementFromObjectState (const GS::ObjectState& os,
 	// The floor index and level of the slab
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, slabShape.Level (), element.header.floorInd, element.slab.level);
-		ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
-		ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (slabShape.Level (), element.header.floorInd, element.slab.level);
+	}
+	ACAPI_ELEMENT_MASK_SET (mask, API_SlabType, level);
+	ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
 
 	// The thickness of the slab
 	if (os.Contains (Slab::Thickness)) {

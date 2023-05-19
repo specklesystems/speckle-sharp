@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -36,7 +36,7 @@ namespace Archicad.Converters
               shape = Utils.PolycurvesToElementShape(room.outline, room.voids),
               name = room.name,
               number = room.number,
-              basePoint = Utils.ScaleToNative(room.basePoint)
+              basePoint = (room.basePoint != null) ? Utils.ScaleToNative(room.basePoint) : new Point()
             };
 
             rooms.Add(newRoom);

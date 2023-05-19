@@ -21,6 +21,11 @@ namespace Archicad.Converters
       return new Vector { x = vertex.x, y = vertex.y, z = vertex.z };
     }
 
+    public static System.Numerics.Vector3 VertexToVector3(MeshModel.Vertex vertex)
+    {
+      return new System.Numerics.Vector3 { X = (float)vertex.x, Y = (float)vertex.y, Z = (float)vertex.z };
+    }
+
     public static Point ScaleToNative(Point point, string? units = null)
     {
       units ??= point.units;

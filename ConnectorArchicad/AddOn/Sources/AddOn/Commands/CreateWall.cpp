@@ -67,9 +67,12 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	// The floor index and bottom offset of the wall
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, startPoint.z, element.header.floorInd, element.wall.bottomOffset);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, bottomOffset);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (startPoint.z, element.header.floorInd, element.wall.bottomOffset);
+	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, bottomOffset);
 
 	// The profile type of the wall
 	short profileType = 0;

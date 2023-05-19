@@ -58,9 +58,12 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, startPoint.z, element.header.floorInd, element.beam.offset);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_Elem_Head, floorInd);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, offset);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (startPoint.z, element.header.floorInd, element.beam.offset);
+	}
+	ACAPI_ELEMENT_MASK_SET (beamMask, API_Elem_Head, floorInd);
+	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, offset);
 
 	if (os.Contains (Beam::level)) {
 		os.Get (Beam::level, element.beam.level);

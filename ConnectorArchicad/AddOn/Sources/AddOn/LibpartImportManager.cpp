@@ -73,6 +73,20 @@ static GSErrCode CreateSubFolder (const GS::UniString& name, IO::Location& locat
 }
 
 
+
+GSErrCode LibpartImportManager::GetLibpartFromCache (const GS::Array<GS::UniString> modelIds,
+	API_LibPart& libPart)
+{
+	GS::UInt64 checksum = GenerateFingerPrint (modelIds);
+	GSErrCode err = Error;
+	if (cache.Get (checksum, &libPart)) {
+		err = NoError;
+	}
+
+	return err;
+}
+
+
 GSErrCode LibpartImportManager::GetLibpart (const ModelInfo& modelInfo,
 	AttributeManager& attributeManager,
 	API_LibPart& libPart)
