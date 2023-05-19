@@ -1,6 +1,8 @@
 using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit;
 using Revit.Async;
+using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
@@ -112,14 +114,38 @@ namespace ConverterRevitTests
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(doc);
       //setting context objects for nested routine
-      converter.SetContextObjects(elements.Select(obj => new ApplicationObject (obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId }).ToList());
+      var contextObjects = elements.Select(obj => new ApplicationObject(obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId }).ToList();
+      converter.SetContextObjects(contextObjects);
 
 
       var spkElems = new List<Base>();
       await RevitTask.RunAsync(() =>
       {
-        spkElems = elements.Select(x => converter.ConvertToSpeckle(x)).Where(x => x != null).ToList();
-      });
+        foreach (var elem in elements)
+        {
+          bool isAlreadyConverted = ConnectorBindingsRevit.GetOrCreateApplicationObject(
+              elem,
+              converter.Report,
+              out ApplicationObject reportObj
+            );
+          if (isAlreadyConverted)
+            continue;
+
+          Base conversionResult = null;
+          try
+          {
+            conversionResult = converter.ConvertToSpeckle(elem);
+          }
+          catch
+          {
+
+          }
+          if (conversionResult != null)
+          {
+            spkElems.Add(conversionResult);
+          }
+        }
+      }).ConfigureAwait(false);
 
       converter = new ConverterRevit();
       converter.ReceiveMode = Speckle.Core.Kits.ReceiveMode.Update;

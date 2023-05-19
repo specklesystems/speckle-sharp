@@ -26,7 +26,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandMac.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMappingsCommandMac.cs" />
   </ItemGroup>
+
   <ItemGroup Condition="'$(Configuration)'=='Debug' Or '$(Configuration)'=='Release'">
+
     <Page Include="$(MSBuildThisFileDirectory)UI\DuiPanel.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -47,10 +49,9 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
+
+   <ItemGroup>
     <None Include="$(MSBuildThisFileDirectory)Resources\icon.ico" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)Resources\mapper.ico" />
-  </ItemGroup>
+
 </Project>
