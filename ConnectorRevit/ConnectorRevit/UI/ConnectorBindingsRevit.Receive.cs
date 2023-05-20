@@ -100,7 +100,7 @@ namespace Speckle.ConnectorRevit.UI
           var newPlaceholderObjects = ConvertReceivedObjects(converter, progress, previousObjectsCache);
 
           if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previousObjectsCache, newPlaceholderObjects, state.StreamId);
+            DeleteObjects(previousObjectsCache, newPlaceholderObjects);
 
           state.ReceivedObjects = newPlaceholderObjects;
           t.Commit();
@@ -132,9 +132,9 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(IReceivedObjectsCache previousObjects, List<ApplicationObject> newPlaceholderObjects, string streamId)
+    private void DeleteObjects(IReceivedObjectsCache previousObjects, List<ApplicationObject> newPlaceholderObjects)
     {
-      var appIds = previousObjects.GetApplicationIds(CurrentDoc.Document, streamId).ToList();
+      var appIds = previousObjects.GetApplicationIds().ToList();
       for (var i = appIds.Count - 1; i >= 0; i--)
       {
         var appId = appIds[i];
@@ -146,7 +146,7 @@ namespace Speckle.ConnectorRevit.UI
           .GetExistingElementFromApplicationId(CurrentDoc.Document, appId);
 
         if (elementToDelete != null) CurrentDoc.Document.Delete(elementToDelete.Id);
-        previousObjects.RemoveSpeckleId(CurrentDoc.Document, appId);
+        previousObjects.RemoveSpeckleId(appId);
       }
     }
 

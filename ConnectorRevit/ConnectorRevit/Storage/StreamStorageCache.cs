@@ -26,29 +26,24 @@ namespace ConnectorRevit.Storage
     }
     public void AddReceivedElement(Element element, Base @base)
     {
-      previousContextObjects.Add(@base.applicationId, new ApplicationObject(@base.id, @base.speckle_type) 
+      previousContextObjects[@base.applicationId] = new ApplicationObject(@base.id, @base.speckle_type) 
       { 
         applicationId = @base.applicationId,
         CreatedIds = new List<string> { element.UniqueId },
         Converted = new List<object> { element },
-      });
+      };
     }
     public void AddReceivedElements(List<Element> elements, Base @base)
     {
-      previousContextObjects.Add(@base.applicationId, new ApplicationObject(@base.id, @base.speckle_type)
+      previousContextObjects[@base.applicationId] = new ApplicationObject(@base.id, @base.speckle_type)
       {
         applicationId = @base.applicationId,
         CreatedIds = elements.Select(e => e.UniqueId).ToList(),
         Converted = elements.Cast<object>().ToList(),
-      });
+      };
     }
 
-    public ICollection<string> GetAllApplicationIds(Document doc)
-    {
-      throw new NotImplementedException();
-    }
-
-    public IEnumerable<string> GetApplicationIds(Document doc, string streamId)
+    public IEnumerable<string> GetApplicationIds()
     {
       foreach (var kvp in previousContextObjects)
       {
@@ -56,55 +51,38 @@ namespace ConnectorRevit.Storage
       }
     }
 
-    public Element GetExistingElementFromApplicationId(Document doc, string applicationId)
+    public Element? GetExistingElementFromApplicationId(Document doc, string applicationId)
     {
-      Element element = null;
-      if (!previousContextObjects.ContainsKey(applicationId))
+      if (previousContextObjects.TryGetValue(applicationId, out var appObj))
       {
-        //element was not cached in a PreviousContex but might exist in the model
-        //eg: user sends some objects, moves them, receives them 
-        element = doc.GetElement(applicationId);
-      }
-      else
-      {
-        var @ref = previousContextObjects[applicationId];
         //return the cached object, if it's still in the model
-        if (@ref.CreatedIds.Any())
-          element = doc.GetElement(@ref.CreatedIds.First());
+        if (appObj.CreatedIds.Any()) return doc.GetElement(appObj.CreatedIds.First());
       }
 
-      return element;
+      //element was not cached in a PreviousContex but might exist in the model
+      //eg: user sends some objects, moves them, receives them 
+      return doc.GetElement(applicationId);
     }
 
     public IEnumerable<Element?> GetExistingElementsFromApplicationId(Document doc, string applicationId)
     {
-      if (!previousContextObjects.ContainsKey(applicationId))
+      if (previousContextObjects.TryGetValue(applicationId, out var appObj))
       {
-        //element was not cached in a PreviousContex but might exist in the model
-        //eg: user sends some objects, moves them, receives them 
-        yield return doc.GetElement(applicationId);
-      }
-      else
-      {
-        var @ref = previousContextObjects[applicationId];
-        //return the cached objects, if they are still in the model
-        foreach (var id in @ref.CreatedIds)
+        //return the cached object, if it's still in the model
+        foreach (var id in appObj.CreatedIds)
         {
           yield return doc.GetElement(id);
         }
       }
+
+      //element was not cached in a PreviousContex but might exist in the model
+      //eg: user sends some objects, moves them, receives them 
+      yield return doc.GetElement(applicationId);
     }
 
-    public void RemoveSpeckleId(Document doc, string applicationId)
+    public void RemoveSpeckleId(string applicationId)
     {
       previousContextObjects.Remove(applicationId);
-    }
-
-    public void Save()
-    {
-      // not needed here but I suspect will be needed for different 
-      // don't talk to me about the interface segragation principle
-      // I invented the inteface segregation principle
     }
   }
 }

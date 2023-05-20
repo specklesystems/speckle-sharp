@@ -11,9 +11,7 @@ namespace RevitSharedResources.Interfaces
     public IEnumerable<Element> GetExistingElementsFromApplicationId(Document doc, string applicationId);
     public void AddReceivedElement(Element element, Base @base);
     public void AddReceivedElements(List<Element> element, Base @base);
-    public void RemoveSpeckleId(Document doc, string applicationId);
-    public void Save();
-    public ICollection<string> GetAllApplicationIds(Document doc);
-    public IEnumerable<string> GetApplicationIds(Document doc, string streamId);
+    public void RemoveSpeckleId(string applicationId);
+    public IEnumerable<string> GetApplicationIds();
   }
 }
