@@ -12,11 +12,12 @@ namespace ConnectorRevit.Storage
   {
     private StreamState streamState { get; }
     private Dictionary<string, ApplicationObject> previousContextObjects;
-    public StreamStateCache(StreamState state, List<ApplicationObject> objects)
+    public StreamStateCache(StreamState state)
     {
       this.streamState = state;
-      previousContextObjects = new(objects.Count);
-      foreach (var ao in objects)
+      var previousObjects = state.ReceivedObjects;
+      previousContextObjects = new(previousObjects.Count);
+      foreach (var ao in previousObjects)
       {
         var key = ao.applicationId ?? ao.OriginalId;
         if (previousContextObjects.ContainsKey(key))

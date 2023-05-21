@@ -41,7 +41,6 @@ namespace Speckle.ConnectorRevit.UI
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
-      var previouslyReceiveObjects = state.ReceivedObjects;
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
@@ -65,7 +64,7 @@ namespace Speckle.ConnectorRevit.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work
-      var previousObjectsCache = new StreamStateCache(state, previouslyReceiveObjects);
+      var previousObjectsCache = new StreamStateCache(state);
       converter.SetContextDocument(previousObjectsCache);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
