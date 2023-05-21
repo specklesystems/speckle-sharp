@@ -1,21 +1,16 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using DesktopUI2.Models;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
-  internal class StreamStateCache : IReceivedObjectsCache
+  public class StreamStateCache : IReceivedObjectsCache
   {
-    private StreamState streamState { get; }
     private Dictionary<string, ApplicationObject> previousContextObjects;
-    public StreamStateCache(StreamState state)
+    public StreamStateCache(List<ApplicationObject> previousObjects)
     {
-      this.streamState = state;
-      var previousObjects = state.ReceivedObjects;
       previousContextObjects = new(previousObjects.Count);
       foreach (var ao in previousObjects)
       {

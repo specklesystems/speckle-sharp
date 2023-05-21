@@ -64,7 +64,7 @@ namespace Speckle.ConnectorRevit.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work
-      var previousObjectsCache = new StreamStateCache(state);
+      var previousObjectsCache = new StreamStateCache(state.ReceivedObjects);
       converter.SetContextDocument(previousObjectsCache);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);

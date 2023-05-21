@@ -1,4 +1,5 @@
 using Autodesk.Revit.DB;
+using ConnectorRevit.Storage;
 using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit;
 using Revit.Async;
@@ -122,6 +123,7 @@ namespace ConverterRevitTests
         .Select(obj => new ApplicationObject(obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId })
         .ToList();
       converter.SetContextObjects(contextObjects);
+      converter.SetContextDocument(new StreamStateCache(new List<ApplicationObject>()));
 
       var spkElems = new List<Base>();
       await RevitTask
@@ -157,7 +159,14 @@ namespace ConverterRevitTests
       converter.SetContextDocument(fixture.NewDoc);
       //setting context objects for update routine
       if (appPlaceholders != null)
-        converter.SetPreviousContextObjects(appPlaceholders);
+      {
+        var previousObjectsCache = new StreamStateCache(appPlaceholders);
+        converter.SetContextDocument(previousObjectsCache);
+      }
+      else
+      {
+        converter.SetContextDocument(new StreamStateCache(new List<ApplicationObject>()));
+      }
 
       converter.SetContextObjects(
         spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList()
@@ -320,7 +329,7 @@ namespace ConverterRevitTests
       Assert.NotNull(sourceElem);
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
-      Assert.Equal(sourceElem.GetTypeId(), destElem.GetTypeId());
+      Assert.Equal(sourceElem.Document.GetElement(sourceElem.GetTypeId()).Name, destElem.Document.GetElement(destElem.GetTypeId()).Name);
       Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
     }
 
