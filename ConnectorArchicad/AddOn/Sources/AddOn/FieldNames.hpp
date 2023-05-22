@@ -41,6 +41,7 @@ static const char* Columns = "columns";
 static const char* DirectShapes = "directShapes";
 static const char* Doors = "doors";
 static const char* Objects = "objects";
+static const char* MeshModels = "meshModels";
 static const char* Roofs = "roofs";
 static const char* Shells = "shells";
 static const char* Skylights = "skylights";
@@ -436,6 +437,7 @@ namespace Object
 {
 // Main
 static const char* pos = "pos";
+static const char* transform = "transform";
 }
 
 
@@ -718,6 +720,7 @@ static const char* AmbientColor = "ambientColor";
 static const char* EmissionColor = "emissionColor";
 static const char* Material = "material";
 static const char* Model = "model";
+static const char* ModelIds = "modelIds";
 static const char* Ids = "ids";
 static const char* Edges = "edges";
 }

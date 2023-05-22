@@ -54,9 +54,12 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, origoPos.z, element.header.floorInd, element.column.bottomOffset);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, bottomOffset);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (origoPos.z, element.header.floorInd, element.column.bottomOffset);
+	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, bottomOffset);
 
 	if (os.Contains (Column::height)) {
 		os.Get (Column::height, element.column.height);

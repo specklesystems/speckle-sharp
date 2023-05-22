@@ -182,10 +182,12 @@ GSErrCode CreateRoof::GetElementFromObjectState (const GS::ObjectState& os,
 	// The floor index and level of the roof
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, roofShape.Level (), element.header.floorInd, element.roof.shellBase.level);
-
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.level);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (roofShape.Level (), element.header.floorInd, element.roof.shellBase.level);
+	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_RoofType, shellBase.level);
 
 	// The thickness of the roof
 	if (os.Contains (Roof::Thickness)) {

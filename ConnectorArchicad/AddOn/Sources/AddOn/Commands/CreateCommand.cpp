@@ -75,40 +75,46 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 					ACAPI_DisposeElemMemoHdls (&marker->memo);
 			});
 
+			GSErrCode err = NoError;
+
 			GS::String speckleId;
 			{
 				objectState.Get (ElementBase::Id, speckleId);
 				
 				if (speckleId.IsEmpty())
-					return Error;
+					err = Error;
 			}
-			
-			bool isConverted = false;
-			API_Guid convertedArchicadId;
-			ExchangeManager::GetInstance().GetState (speckleId, isConverted, convertedArchicadId);
-			
-			bool elementExists = isConverted && Utility::ElementExists (convertedArchicadId);
-			
-			{
-				// if already converted and element exists, use that
-				if (elementExists) {
-					element.header.guid = convertedArchicadId;
-				}
-				// otherwise try to use applicationId
-				else {
-					GS::UniString applicationId;
-					objectState.Get (ElementBase::ApplicationId, applicationId);
-					element.header.guid = APIGuidFromString (applicationId.ToCStr ());
-				}
-			}
-
+	
+			bool elementExists = false;
 			GS::Array<GS::UniString> log;
-			GSErrCode err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, &marker, *attributeManager, *libpartImportManager, log);
+			
 			if (err == NoError) {
-				if (elementExists) {
-					err = ModifyExistingElement (element, elementMask, memo, memoMask);
-				} else {
-					err = CreateNewElement (element, memo, marker);
+				bool isConverted = false;
+				API_Guid convertedArchicadId;
+				ExchangeManager::GetInstance().GetState (speckleId, isConverted, convertedArchicadId);
+				
+				elementExists = isConverted && Utility::ElementExists (convertedArchicadId);
+				
+				{
+					// if already converted and element exists, use that
+					if (elementExists) {
+						element.header.guid = convertedArchicadId;
+					}
+					// otherwise try to use applicationId
+					else {
+						GS::UniString applicationId;
+						objectState.Get (ElementBase::ApplicationId, applicationId);
+						element.header.guid = APIGuidFromString (applicationId.ToCStr ());
+					}
+				}
+				
+				err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, &marker, *attributeManager, *libpartImportManager, log);
+				if (err == NoError) {
+					if (elementExists) {
+						err = ModifyExistingElement (element, elementMask, memo, memoMask);
+					} else {
+						err = CreateNewElement (element, memo, marker);
+					}
 				}
 			}
 

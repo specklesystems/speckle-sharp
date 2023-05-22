@@ -91,26 +91,86 @@ namespace Archicad.Operations
 
           var n = mesh.faces[i];
           if (n < 3) n += 3;
-          for (var j = i + 1; j <= i + n; ++j)
-          {
-            int vertexIdx = ToMergedVertexIndex(mesh.faces[j]);
-            int nextVertexIdx = ToMergedVertexIndex((j == i + n) ? mesh.faces[i + 1] : mesh.faces[j + 1]);
-            polygon.pointIds.Add(vertexIdx);
 
-            var edge = new Tuple<int, int>(vertexIdx, nextVertexIdx);
+          int firstVertexIdx = i + 1;
+          int lastVertexIdx = i + n;
+
+          int startVertexIdx = firstVertexIdx;
+          int endVertexIdx = startVertexIdx;
+
+          bool stop = false;
+          while (!stop)
+          {
+            // calculate startVertexIdx - skip similar vertices for startVertexIdx
+            {
+              var mergedVertexIndexToSkip = ToMergedVertexIndex(mesh.faces[startVertexIdx]);
+
+              while (true)
+              {
+                bool looped = false;
+
+                // get the next index
+                var nextVertexIndex = startVertexIdx + 1;
+                if (nextVertexIndex > lastVertexIdx)
+                {
+                  nextVertexIndex = firstVertexIdx;
+                  looped = true;
+                }
+
+                if (mergedVertexIndexToSkip == ToMergedVertexIndex(mesh.faces[nextVertexIndex]))
+                {
+                  if (looped)
+                  {
+                    stop = true;
+                    break;
+                  }
+
+                  startVertexIdx = nextVertexIndex;
+                }
+                else {
+                  break;
+                }
+              }
+
+              if (stop)
+                break;
+            }
+
+            // calculate endVertexIdx
+            if (startVertexIdx == lastVertexIdx)
+            {
+              endVertexIdx = firstVertexIdx;
+              stop = true;
+            }
+            else
+              endVertexIdx = startVertexIdx + 1;
+
+            // get merged indices
+            int startMergedVertexIdx = ToMergedVertexIndex(mesh.faces[startVertexIdx]);
+            int endMergedVertexIdx = ToMergedVertexIndex(mesh.faces[endVertexIdx]);
+            polygon.pointIds.Add(startMergedVertexIdx);
+
+            // process the edge
+            var edge = new Tuple<int, int>(startMergedVertexIdx, endMergedVertexIdx);
             if (TryGetNeigPolygonListByEdge(ref edge, out List<int> neigbourPolygonIdxs))
             {
-              neigbourPolygonIdxs.Add(meshModel.polygons.Count);
-              if (neigbourPolygonIdxs.Count > 2)
-                meshModel.edges[edge] = EdgeStatus.HiddenEdge;
-              else
-                neigPolygonsByEdgesToCheckIfSmooth.Add(new Tuple<Tuple<int, int>, Polygon>(edge, meshModel.polygons[neigbourPolygonIdxs[0]]));
+              if (!neigbourPolygonIdxs.Contains(meshModel.polygons.Count))
+              {
+                neigbourPolygonIdxs.Add(meshModel.polygons.Count);
+
+                if (neigbourPolygonIdxs.Count > 2)
+                  meshModel.edges[edge] = EdgeStatus.HiddenEdge;
+                else
+                  neigPolygonsByEdgesToCheckIfSmooth.Add(new Tuple<Tuple<int, int>, Polygon>(edge, meshModel.polygons[neigbourPolygonIdxs[0]]));
+              }
             }
             else
             {
               neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
               meshModel.edges.Add(edge, EdgeStatus.VisibleEdge);
             }
+
+            startVertexIdx = endVertexIdx;
           }
 
           foreach (var neigPolygonByEdge in neigPolygonsByEdgesToCheckIfSmooth)
@@ -126,30 +186,34 @@ namespace Archicad.Operations
             polygon.material = meshModel.materials.Count - 1;
           }
 
-          if (meshModel.IsCoplanar(polygon))
+          // check result polygon
+          if (polygon.pointIds.Count >= 3)
           {
-            meshModel.polygons.Add(polygon);
-          }
-          else
-          {
-            var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh, includeIndicators: false);
-            for (int triangleStartIdx = 0; triangleStartIdx < triangleFaces.Count; triangleStartIdx += 3)
+            if (meshModel.IsCoplanar(polygon))
             {
-              var triangle = new Polygon { material = polygon.material };
-              for (int triangleVertexIdx = 0; triangleVertexIdx < 3; triangleVertexIdx++)
+              meshModel.polygons.Add(polygon);
+            }
+            else
+            {
+              var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh, includeIndicators: false);
+              for (int triangleStartIdx = 0; triangleStartIdx < triangleFaces.Count; triangleStartIdx += 3)
               {
-                int edgeStartIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + triangleVertexIdx]);
-                int edgeEndIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + ((triangleVertexIdx + 1) % 3)]);
-                var edge = new Tuple<int, int>(edgeStartIdx, edgeEndIdx);
-
-                if (!TryGetNeigPolygonListByEdge(ref edge, out List<int> neigPolygonIdxs))
+                var triangle = new Polygon { material = polygon.material };
+                for (int triangleVertexIdx = 0; triangleVertexIdx < 3; triangleVertexIdx++)
                 {
-                  neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
-                  meshModel.edges.Add(edge, EdgeStatus.HiddenEdge);
+                  int edgeStartIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + triangleVertexIdx]);
+                  int edgeEndIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + ((triangleVertexIdx + 1) % 3)]);
+                  var edge = new Tuple<int, int>(edgeStartIdx, edgeEndIdx);
+
+                  if (!TryGetNeigPolygonListByEdge(ref edge, out List<int> neigPolygonIdxs))
+                  {
+                    neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
+                    meshModel.edges.Add(edge, EdgeStatus.HiddenEdge);
+                  }
+                  triangle.pointIds.Add(edgeStartIdx);
                 }
-                triangle.pointIds.Add(edgeStartIdx);
+                meshModel.polygons.Add(triangle);
               }
-              meshModel.polygons.Add(triangle);
             }
           }
 
@@ -251,35 +315,41 @@ namespace Archicad.Operations
       };
     }
 
+
+    private static System.Numerics.Vector3 GetOrientedNormal (Tuple<int, int> edge, Polygon polygon, MeshModel meshModel)
+    {
+      System.Numerics.Vector3 normal = new System.Numerics.Vector3 ();
+      System.Numerics.Vector3 vertex0, vertex1, vertex2;
+
+      vertex0 = Utils.VertexToVector3(meshModel.vertices[polygon.pointIds[0]]);
+
+      int orientation = 0;
+      int count = polygon.pointIds.Count;
+      for (int first = count - 1, second = 0; second < count; first = second++)
+      { 
+        vertex1 = Utils.VertexToVector3(meshModel.vertices[polygon.pointIds[first]]);
+        vertex2 = Utils.VertexToVector3(meshModel.vertices[polygon.pointIds[second]]);
+
+        normal += System.Numerics.Vector3.Cross (vertex1 - vertex0, vertex2 - vertex0);
+
+        if (polygon.pointIds[first] == edge.Item1 && polygon.pointIds[second] == edge.Item2)
+          orientation = 1;
+        if (polygon.pointIds[first] == edge.Item2 && polygon.pointIds[second] == edge.Item1)
+          orientation = -1;
+      }
+
+      return normal * orientation;
+    }
+
     private static bool IsHiddenEdge(Tuple<int, int> edge, Polygon polygon1, Polygon polygon2, MeshModel meshModel)
     {
-      Vector normal1, normal2;
-      Vector vertex1, vertex2, vertex3;
-      int thirdVertexIdx;
+      System.Numerics.Vector3 normal1 = GetOrientedNormal(edge, polygon1, meshModel);
+      System.Numerics.Vector3 normal2 = -GetOrientedNormal(edge, polygon2, meshModel);
 
-      vertex1 = Utils.VertexToVector(meshModel.vertices[edge.Item1]);
-      vertex2 = Utils.VertexToVector(meshModel.vertices[edge.Item2]);
-      thirdVertexIdx = 0;
-      do
-      {
-        vertex3 = Utils.VertexToVector(meshModel.vertices[polygon1.pointIds[thirdVertexIdx]]);
-      normal1 = Vector.CrossProduct(vertex2 - vertex1, vertex3 - vertex1);
-        thirdVertexIdx++;
-      } while (normal1.Length == 0);
-      normal1.Normalize();
+      normal1 = System.Numerics.Vector3.Normalize(normal1);
+      normal2 = System.Numerics.Vector3.Normalize(normal2);
 
-      vertex1 = Utils.VertexToVector(meshModel.vertices[edge.Item2]);
-      vertex2 = Utils.VertexToVector(meshModel.vertices[edge.Item1]);
-      thirdVertexIdx = 0;
-      do
-      {
-        vertex3 = Utils.VertexToVector(meshModel.vertices[polygon2.pointIds[thirdVertexIdx]]);
-      normal2 = Vector.CrossProduct(vertex2 - vertex1, vertex3 - vertex1);
-        thirdVertexIdx++;
-      } while (normal2.Length == 0);
-      normal2.Normalize();
-
-      var angleCos = Math.Abs(Vector.DotProduct(normal1, normal2));
+      var angleCos = System.Numerics.Vector3.Dot(normal1, normal2);
 
       return angleCos > angleCosLimit;
     }

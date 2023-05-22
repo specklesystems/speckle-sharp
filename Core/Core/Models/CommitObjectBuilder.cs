@@ -153,7 +153,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       catch (Exception ex)
       {
         // A parent was found, but it was invalid (Likely because of a type mismatch on a `elements` property)
-        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent.", current?.GetType());
+        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent", current?.GetType());
       }
     }
 
