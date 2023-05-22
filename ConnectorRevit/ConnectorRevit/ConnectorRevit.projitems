@@ -40,6 +40,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Storage\ConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit .Settings.cs" />

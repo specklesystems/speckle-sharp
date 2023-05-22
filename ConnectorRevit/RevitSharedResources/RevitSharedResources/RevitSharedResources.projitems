@@ -9,6 +9,7 @@
     <Import_RootNamespace>RevitSharedResources</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IReceivedObjectsCache.cs" />
   </ItemGroup>
 </Project>

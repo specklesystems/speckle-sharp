@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using DesktopUI2.Models;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 
@@ -8,9 +9,12 @@ namespace ConnectorRevit.Storage
 {
   public class StreamStateCache : IReceivedObjectsCache
   {
+    private StreamState streamState;
     private Dictionary<string, ApplicationObject> previousContextObjects;
-    public StreamStateCache(List<ApplicationObject> previousObjects)
+    public StreamStateCache(StreamState state)
     {
+      streamState = state;
+      var previousObjects = state.ReceivedObjects;
       previousContextObjects = new(previousObjects.Count);
       foreach (var ao in previousObjects)
       {
@@ -20,31 +24,29 @@ namespace ConnectorRevit.Storage
         previousContextObjects.Add(key, ao);
       }
     }
-    public void AddReceivedElement(Element element, Base @base)
+
+    public void AddConvertedElements(IConvertedObjectsCache convertedObjects)
     {
-      previousContextObjects[@base.applicationId] = new ApplicationObject(@base.id, @base.speckle_type) 
-      { 
-        applicationId = @base.applicationId,
-        CreatedIds = new List<string> { element.UniqueId },
-        Converted = new List<object> { element },
-      };
-    }
-    public void AddReceivedElements(List<Element> elements, Base @base)
-    {
-      previousContextObjects[@base.applicationId] = new ApplicationObject(@base.id, @base.speckle_type)
+      var newContextObjects = new List<ApplicationObject>();
+      foreach (var @base in convertedObjects.GetConvertedBaseObjects())
       {
-        applicationId = @base.applicationId,
-        CreatedIds = elements.Select(e => e.UniqueId).ToList(),
-        Converted = elements.Cast<object>().ToList(),
-      };
+        var elements = convertedObjects.GetConvertedObjectsFromApplicationId(@base.applicationId);
+        newContextObjects.Add(new ApplicationObject(@base.id, @base.speckle_type)
+        {
+          applicationId = @base.applicationId,
+          CreatedIds = elements
+            .Where(e => e is Element element)
+            .Select(element => ((Element)element).UniqueId)
+            .ToList(),
+          Converted = elements.ToList()
+        });
+      }
+      streamState.ReceivedObjects = newContextObjects;
     }
 
-    public IEnumerable<string> GetApplicationIds()
+    public HashSet<string> GetApplicationIds()
     {
-      foreach (var kvp in previousContextObjects)
-      {
-        yield return kvp.Value.applicationId;
-      }
+      return previousContextObjects.Keys.ToHashSet();
     }
 
     public Element? GetExistingElementFromApplicationId(Document doc, string applicationId)
@@ -78,7 +80,7 @@ namespace ConnectorRevit.Storage
 
     public void RemoveSpeckleId(string applicationId)
     {
-      previousContextObjects.Remove(applicationId);
+      //previousContextObjects.Remove(applicationId);
     }
   }
 }

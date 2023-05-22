@@ -64,8 +64,8 @@ namespace Speckle.ConnectorRevit.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work
-      var previousObjectsCache = new StreamStateCache(state.ReceivedObjects);
-      converter.SetContextDocument(previousObjectsCache);
+      var previousObjects = new StreamStateCache(state);
+      converter.SetContextDocument(previousObjects);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
@@ -96,12 +96,12 @@ namespace Speckle.ConnectorRevit.UI
         {
           converter.SetContextDocument(t);
 
-          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress, previousObjectsCache);
+          var convertedObjects = ConvertReceivedObjects(converter, progress);
 
           if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previousObjectsCache, newPlaceholderObjects);
+            DeleteObjects(previousObjects, convertedObjects);
 
-          state.ReceivedObjects = newPlaceholderObjects;
+          previousObjects.AddConvertedElements(convertedObjects);
           t.Commit();
           g.Assimilate();
           return (true, null);
@@ -131,14 +131,12 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(IReceivedObjectsCache previousObjects, List<ApplicationObject> newPlaceholderObjects)
+    private void DeleteObjects(IReceivedObjectsCache previousObjects, IConvertedObjectsCache convertedObjects)
     {
-      var appIds = previousObjects.GetApplicationIds().ToList();
-      for (var i = appIds.Count - 1; i >= 0; i--)
+      var previousAppIds = previousObjects.GetApplicationIds();
+      foreach (var appId in previousAppIds)
       {
-        var appId = appIds[i];
-        if (string.IsNullOrEmpty(appId)
-          || newPlaceholderObjects.Any(x => x.applicationId == appId))
+        if (string.IsNullOrEmpty(appId) || convertedObjects.ContainsApplicationId(appId))
           continue;
 
         var elementToDelete = previousObjects
@@ -149,9 +147,9 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, IReceivedObjectsCache previousObjectsCache)
+    private IConvertedObjectsCache ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
-      var placeholders = new List<ApplicationObject>();
+      var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
@@ -182,16 +180,10 @@ namespace Speckle.ConnectorRevit.UI
           switch (convRes)
           {
             case ApplicationObject o:
-              var convertedElements = o.Converted.OfType<Element>().ToList();
-              if (convertedElements.Count == 1)
+              if (o.Converted.Count >= 1)
               {
-                previousObjectsCache.AddReceivedElement(convertedElements.First(), @base);
+                convertedObjectsCache.AddReceivedElements(o.Converted, @base);
               }
-              else if (convertedElements.Count > 1)
-              {
-                previousObjectsCache.AddReceivedElements(convertedElements, @base);
-              }
-              placeholders.Add(o);
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);
               break;
@@ -207,7 +199,7 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
 
-      return placeholders;
+      return convertedObjectsCache;
     }
 
     private void RefreshView()
