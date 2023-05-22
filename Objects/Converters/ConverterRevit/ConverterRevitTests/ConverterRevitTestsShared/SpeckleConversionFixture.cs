@@ -3,13 +3,14 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Speckle.Newtonsoft.Json;
 using Xunit;
 using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
 {
-  public class SpeckleConversionFixture : IAsyncLifetime
+  public abstract class SpeckleConversionFixture : IAsyncLifetime
   {
     public Document SourceDoc { get; set; }
     public Document UpdatedDoc { get; set; }
@@ -18,21 +19,46 @@ namespace ConverterRevitTests
     public IList<DB.Element> UpdatedRevitElements { get; set; }
     public List<DB.Element> Selection { get; set; }
     public string TemplateFile => Globals.GetTestModel("template.rte");
-    public bool UpdateTestRunning { get; set; } = false;
+    public bool UpdateTestRunning { get; set; }
     public string TestClassName { get; set; }
-
+    public virtual string TestName { get; }
+    public virtual string Category { get; }
     public virtual string TestFile { get; }
     public virtual string UpdatedTestFile { get; }
     public virtual string NewFile { get; }
+    public virtual string ExpectedFailuresFile { get; }
+    private Dictionary<string, List<string>> expectedFailures;
+    public Dictionary<string, List<string>> ExpectedFailures
+    {
+      get
+      {
+        if (expectedFailures != null) return expectedFailures;
+
+        expectedFailures = ExpectedFailuresUtils.DeserializeFile(ExpectedFailuresFile);
+        return expectedFailures;
+      }
+    }
     public virtual List<BuiltInCategory> Categories { get; }
 
+    public Dictionary<string, List<BuiltInCategory>> CategoriesDict = new()
+    {
+      { "beam", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_StructuralFraming
+        }
+      }
+    };
     public SpeckleConversionFixture()
     {
     }
 
     public void Initialize()
     {
-      ElementMulticategoryFilter filter = new ElementMulticategoryFilter(Categories);
+      if (!CategoriesDict.TryGetValue(Category.ToLower(), out var categories))
+      {
+        throw new System.Exception($"Category, {Category.ToLower()} is not a recognized category");
+      }
+      ElementMulticategoryFilter filter = new ElementMulticategoryFilter(categories);
 
       //get selection before opening docs, if any
       Selection = xru.GetActiveSelection().ToList();
@@ -84,6 +110,18 @@ namespace ConverterRevitTests
       {
         SpeckleUtils.Throttler.Release();
       }
+    }
+  }
+
+  internal static class ExpectedFailuresUtils
+  {
+    public static Dictionary<string, List<string>> DeserializeFile(string file)
+    {
+      using StreamReader r = new StreamReader(file);
+      string json = r.ReadToEnd();
+      var res = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
+
+      return res;
     }
   }
 }
