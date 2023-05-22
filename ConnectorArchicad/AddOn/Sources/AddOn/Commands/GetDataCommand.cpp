@@ -1,6 +1,7 @@
 #include "GetDataCommand.hpp"
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
+#include "Utility.hpp"
 
 
 namespace AddOnCommands
@@ -17,7 +18,7 @@ GS::ObjectState GetDataCommand::Execute (const GS::ObjectState& parameters,
 	GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
-	parameters.Get (FieldNames::ApplicationIds, ids);
+	parameters.Get (FieldNames::ElementBase::ApplicationIds, ids);
 	GS::Array<API_Guid> elementGuids = ids.Transform<API_Guid> (
 		[] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }
 	);
@@ -35,11 +36,8 @@ GS::ObjectState GetDataCommand::Execute (const GS::ObjectState& parameters,
 			continue;
 		}
 
-#ifdef ServerMainVers_2600
-		if (element.header.type.typeID != GetElemTypeID ())
-#else
-		if (element.header.typeID != GetElemTypeID ())
-#endif
+		API_ElemTypeID elementType = Utility::GetElementType (element.header);
+		if (elementType != GetElemTypeID ())
 		{
 			continue;
 		}

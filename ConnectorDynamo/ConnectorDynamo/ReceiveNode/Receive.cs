@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -503,7 +503,12 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(
+          ex,
+          "Swallowing exception in {methodName}: {exceptionMessage}",
+          nameof(CheckIfBehind),
+          ex.Message
+        );
       }
     }
 
@@ -522,7 +527,12 @@ namespace Speckle.ConnectorDynamo.ReceiveNode
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, ex.Message);
+        SpeckleLog.Logger.Error(
+          ex,
+          "Swallowing exception in {methodName}: {exceptionMessage}",
+          nameof(GetExpiredObjectCount),
+          ex.Message
+        );
       }
     }
 

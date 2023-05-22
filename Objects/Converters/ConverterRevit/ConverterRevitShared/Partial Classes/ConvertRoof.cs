@@ -8,6 +8,7 @@ using Objects.BuiltElements.Revit.RevitRoof;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
+using FamilyInstance = Objects.BuiltElements.Revit.FamilyInstance;
 using Line = Objects.Geometry.Line;
 
 namespace Objects.Converter.Revit
@@ -20,7 +21,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRoof.id, speckleRoof.speckle_type) { applicationId = speckleRoof.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (speckleRoof.outline == null)
@@ -40,7 +41,8 @@ namespace Objects.Converter.Revit
       else
         level = ConvertLevelToRevit(LevelFromCurve(outline.get_Item(0)), out levelState);
 
-      if (!GetElementType<RoofType>(speckleRoof, appObj, out RoofType roofType))
+      var roofType = GetElementType<RoofType>(speckleRoof, appObj, out bool _);
+      if (roofType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -71,7 +73,8 @@ namespace Objects.Converter.Revit
             var revitFootprintRoof = Doc.Create.NewFootPrintRoof(outline, level, roofType, out curveArray);
 
             // if the roof is a curtain roof then set the mullions at the borders
-            if (revitFootprintRoof.CurtainGrids != null && speckleFootprintRoof["elements"] is List<Base> elements && elements.Count != 0)
+            var nestedElements = speckleFootprintRoof.elements;
+            if (revitFootprintRoof.CurtainGrids != null && nestedElements is not null && nestedElements.Count != 0)
             {
               // TODO: Create a new type instead of overriding the type. This could affect other elements
               var param = roofType.get_Parameter(BuiltInParameter.AUTO_MULLION_BORDER1_GRID1);
@@ -79,11 +82,14 @@ namespace Objects.Converter.Revit
               if (type == null)
               {
                 // assuming first mullion is the desired mullion for the whole roof...
-                GetElementType<MullionType>(elements.Where(b => b is BuiltElements.Revit.FamilyInstance f).First(), new ApplicationObject("", ""), out MullionType mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
-                TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID2, mullionType);
+                var mullionType = GetElementType<MullionType>(nestedElements.First(b => b is FamilyInstance f), appObj, out bool _);
+                if (mullionType != null)
+                {
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID1, mullionType);
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER1_GRID2, mullionType);
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID1, mullionType);
+                  TrySetParam(roofType, BuiltInParameter.AUTO_MULLION_BORDER2_GRID2, mullionType);
+                }
               }
             }
             var poly = speckleFootprintRoof.outline as Polycurve;
@@ -226,7 +232,10 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleRoof, revitRoof,
         new List<string> { "ROOF_CONSTRAINT_LEVEL_PARAM", "ROOF_BASE_LEVEL_PARAM", "ROOF_UPTO_LEVEL_PARAM", "EXTRUSION_START_PARAM", "EXTRUSION_END_PARAM", "ROOF_SLOPE" });
 
-      speckleRoof.displayValue = GetElementDisplayMesh(revitRoof, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleRoof.displayValue = GetElementDisplayValue(
+        revitRoof,
+        new Options() { DetailLevel = ViewDetailLevel.Fine }
+      );
 
       GetHostedElements(speckleRoof, revitRoof, out List<string> hostedNotes);
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);

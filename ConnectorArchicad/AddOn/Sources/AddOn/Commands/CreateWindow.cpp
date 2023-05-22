@@ -29,33 +29,32 @@ GS::UniString CreateWindow::GetUndoableCommandName () const
 }
 
 
-GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& currentWindow,
+GSErrCode CreateWindow::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& /*memoMask*/,
+	API_SubElement** marker,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** marker /*= nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type = API_WindowID;
-#else
-	element.header.typeID = API_WindowID;
-#endif
+	Utility::SetElementType (element.header, API_WindowID);
 
 	*marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));
-	err = Utility::GetBaseElementData (element, &memo, marker);
+	err = Utility::GetBaseElementData (element, &memo, marker, log);
 	if (err != NoError)
 		return err;
 
-	if (!CheckEnvironment (currentWindow, element))
+	if (!CheckEnvironment (os, element))
 		return Error;
 
-	err = GetOpeningBaseFromObjectState<API_WindowType> (currentWindow, element.window, elementMask);
+	GetDoorWindowFromObjectState<API_WindowType> (os, element.window, elementMask, log);
+
+	err = GetOpeningBaseFromObjectState<API_WindowType> (os, element.window, elementMask, log);
 
 	return err;
 }

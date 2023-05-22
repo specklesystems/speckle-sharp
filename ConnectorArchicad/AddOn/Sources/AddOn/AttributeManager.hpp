@@ -19,7 +19,9 @@ public:
 	static void					DeleteInstance ();
 
 	GSErrCode	GetMaterial (const ModelInfo::Material& material, API_Attribute& attribute);
+	GSErrCode	GetFill (GS::UniString& fillName, API_Attribute& attribute);
 	GSErrCode	GetDefaultMaterial (API_Attribute& attribute, GS::UniString& name);
+	GSErrCode	GetDefaultFill (API_Attribute& attribute, GS::UniString& name);
 };
 
 #endif

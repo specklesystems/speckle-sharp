@@ -1,7 +1,8 @@
-﻿#include "CreateZone.hpp"
+#include "CreateZone.hpp"
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Polyline.hpp"
 #include "FieldNames.hpp"
 #include "AngleData.h"
@@ -30,39 +31,34 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& mask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
-
+	GS::Array<GS::UniString>& log) const
 {
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_ZoneID;
-#else
-	element.header.typeID = API_ZoneID;
-#endif
-
-	GSErrCode err = Utility::GetBaseElementData (element, &memo);
+	GSErrCode err = NoError;
+	
+	Utility::SetElementType (element.header, API_ZoneID);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
 	memoMask = APIMemoMask_Polygon;
 
-	ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nSubPolys);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nCoords);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nArcs);
-	ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomBaseLev);
-	ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
-
 	// The shape of the zone
 	Objects::ElementShape zoneShape;
 
-	if (os.Contains (Shape)) {
-		os.Get (Shape, zoneShape);
+	if (os.Contains (ElementBase::Shape)) {
+		os.Get (ElementBase::Shape, zoneShape);
 		element.zone.poly.nSubPolys = zoneShape.SubpolyCount ();
 		element.zone.poly.nCoords = zoneShape.VertexCount ();
 		element.zone.poly.nArcs = zoneShape.ArcCount ();
 
-		zoneShape.SetToMemo (memo);
+		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nSubPolys);
+		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nCoords);
+		ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, poly.nArcs);
+
+		zoneShape.SetToMemo (memo, Objects::ElementShape::MemoMainPolygon);
 	}
 
 	if (os.Contains (Room::Height)) {
@@ -81,19 +77,21 @@ GSErrCode CreateZone::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// The floor index and level of the zone
-	if (os.Contains (FloorIndex)) {
-		os.Get (FloorIndex, element.header.floorInd);
-		Utility::SetStoryLevel (zoneShape.Level (), element.header.floorInd, element.zone.roomBaseLev);
+	if (os.Contains (ElementBase::Level)) {
+		GetStoryFromObjectState (os, zoneShape.Level (), element.header.floorInd, element.zone.roomBaseLev);
 	} else {
 		Utility::SetStoryLevelAndFloor (zoneShape.Level (), element.header.floorInd, element.zone.roomBaseLev);
 	}
+	ACAPI_ELEMENT_MASK_SET (mask, API_ZoneType, roomBaseLev);
+	ACAPI_ELEMENT_MASK_SET (mask, API_Elem_Head, floorInd);
+
 	return NoError;
 }
 
 
 GS::String CreateZone::GetName () const
 {
-	return CreateZoneCommandName
+	return CreateZoneCommandName;
 }
 
 

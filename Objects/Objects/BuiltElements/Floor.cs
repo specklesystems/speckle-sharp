@@ -1,3 +1,4 @@
+﻿using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Utils;
@@ -80,10 +81,14 @@ namespace Objects.BuiltElements.Revit
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_slabtype
+  */
   public sealed class ArchicadFloor : Floor
   {
     // Geometry and positioning
-    public int? floorIndex { get; set; }
+    public ArchicadLevel level { get; set; }
     public double? thickness { get; set; }
     public ElementShape shape { get; set; }
     public string structure { get; set; }

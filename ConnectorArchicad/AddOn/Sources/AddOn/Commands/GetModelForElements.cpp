@@ -3,6 +3,7 @@
 #include "Sight.hpp"
 #include "ModelInfo.hpp"
 #include "FieldNames.hpp"
+#include "Utility.hpp"
 using namespace FieldNames;
 
 
@@ -177,17 +178,13 @@ static GS::Array<API_Guid> CheckForSubelements (const API_Guid& applicationId)
 		return GS::Array<API_Guid> ();
 	}
 
-#ifdef ServerMainVers_2600
-	switch (header.type.typeID) {
-#else
-	switch (header.typeID) {
-#endif
-	case API_CurtainWallID:					return GetCurtainWallSubElements (applicationId);
-	case API_StairID:						return GetStairSubElements (applicationId);
-	case API_RailingID:						return GetRailingSubElements (applicationId);
-	case API_BeamID:						return GetBeamSubElements (applicationId);
-	case API_ColumnID:						return GetColumnSubElements (applicationId);
-	default:								return GS::Array<API_Guid> { applicationId };
+	switch (Utility::GetElementType (header)) {
+		case API_CurtainWallID:					return GetCurtainWallSubElements (applicationId);
+		case API_StairID:						return GetStairSubElements (applicationId);
+		case API_RailingID:						return GetRailingSubElements (applicationId);
+		case API_BeamID:						return GetBeamSubElements (applicationId);
+		case API_ColumnID:						return GetColumnSubElements (applicationId);
+		default:								return GS::Array<API_Guid> { applicationId };
 	}
 }
 
@@ -234,7 +231,7 @@ static GS::ObjectState StoreModelOfElements (const GS::Array<API_Guid>&applicati
 	GS::ObjectState result;
 	const auto modelInserter = result.AddList<GS::ObjectState> (Models);
 	for (const auto& applicationId : applicationIds) {
-		modelInserter (GS::ObjectState{ApplicationId, APIGuidToString (applicationId), Model::Model, CalculateModelOfElement (modelViewer, applicationId)});
+		modelInserter (GS::ObjectState{ElementBase::ApplicationId, APIGuidToString (applicationId), Model::Model, CalculateModelOfElement (modelViewer, applicationId)});
 	}
 
 	return result;
@@ -250,7 +247,7 @@ GS::String GetModelForElements::GetName () const
 GS::ObjectState GetModelForElements::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::Array<GS::UniString> ids;
-	parameters.Get (ApplicationIds, ids);
+	parameters.Get (ElementBase::ApplicationIds, ids);
 
 	return StoreModelOfElements (ids.Transform<API_Guid> ([] (const GS::UniString& idStr) { return APIGuidFromString (idStr.ToCStr ()); }));
 }

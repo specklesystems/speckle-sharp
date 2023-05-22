@@ -123,7 +123,7 @@ public class BaseObjectDeserializerV2
   private object DeserializeTransportObjectProxy(string objectJson)
   {
     // Try background work
-    Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson);
+    Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson); //BUG: Because we don't guarantee this task will ever be awaited, this may lead to unobserved exceptions!
     if (bgResult != null)
       return bgResult;
 
@@ -133,6 +133,8 @@ public class BaseObjectDeserializerV2
 
   public object DeserializeTransportObject(string objectJson)
   {
+    if (objectJson is null)
+      throw new ArgumentNullException(nameof(objectJson), $"Cannot deserialize {nameof(objectJson)}, value was null");
     // Apparently this automatically parses DateTimes in strings if it matches the format:
     // JObject doc1 = JObject.Parse(objectJson);
 
@@ -221,20 +223,20 @@ public class BaseObjectDeserializerV2
 
         if (dict[TypeDiscriminator] as string == "reference" && dict.ContainsKey("referencedId"))
         {
-          string objId = dict["referencedId"] as string;
+          string objId = (string)dict["referencedId"];
           object deserialized = null;
           lock (DeserializedObjects)
-            if (DeserializedObjects.ContainsKey(objId))
-              deserialized = DeserializedObjects[objId];
-          if (deserialized != null && deserialized is Task<object>)
+            if (DeserializedObjects.TryGetValue(objId, out object o))
+              deserialized = o;
+          if (deserialized is Task<object> task)
           {
             try
             {
-              deserialized = ((Task<object>)deserialized).Result;
+              deserialized = task.Result;
             }
-            catch (AggregateException aggregateEx)
+            catch (AggregateException ex)
             {
-              throw aggregateEx.InnerException;
+              throw new Exception("Failed to deserialize reference object", ex);
             }
             lock (DeserializedObjects)
               DeserializedObjects[objId] = deserialized;
@@ -253,7 +255,7 @@ public class BaseObjectDeserializerV2
 
         return Dict2Base(dict);
       default:
-        throw new Exception("Json value not supported: " + doc.Type);
+        throw new ArgumentException("Json value not supported: " + doc.Type, nameof(doc));
     }
   }
 

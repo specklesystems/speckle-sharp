@@ -17,7 +17,7 @@ using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using static Autodesk.Navisworks.Api.Interop.LcOpRegistry;
 using static Autodesk.Navisworks.Api.Interop.LcUOption;
-using static Speckle.ConnectorNavisworks.Utils;
+using static Speckle.ConnectorNavisworks.Utilities;
 using Application = Autodesk.Navisworks.Api.Application;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
@@ -29,13 +29,18 @@ public partial class ConnectorBindingsNavisworks
   // Stub - Preview send is not supported
   public override async void PreviewSend(StreamState state, ProgressViewModel progress)
   {
-    await Task.Delay(TimeSpan.FromMilliseconds(500));
+    await Task.Delay(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
     // TODO!
   }
 
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
-    if (Doc.ActiveSheet == null)
+    if (progress == null)
+    {
+      throw new ArgumentException("No ProgressViewModel provided.");
+    }
+
+    if (_doc.ActiveSheet == null)
       throw new InvalidOperationException("Your Document is empty. Nothing to Send.");
 
     var filteredObjects = new List<Tuple<string, int>>();
@@ -49,17 +54,17 @@ public partial class ConnectorBindingsNavisworks
       Application.EndProgress();
     });
 
-    DefaultKit = KitManager.GetDefaultKit();
+    _defaultKit = KitManager.GetDefaultKit();
 
-    NavisworksConverter = DefaultKit.LoadConverter(VersionedAppName);
+    _navisworksConverter = _defaultKit.LoadConverter(VersionedAppName);
 
     CurrentSettings = state.Settings;
 
     var settings = state.Settings.ToDictionary(setting => setting.Slug, setting => setting.Selection);
-    NavisworksConverter.SetContextDocument(Doc);
-    NavisworksConverter.SetConverterSettings(settings);
+    _navisworksConverter.SetContextDocument(_doc);
+    _navisworksConverter.SetConverterSettings(settings);
 
-    NavisworksConverter.Report.ReportObjects.Clear();
+    _navisworksConverter.Report.ReportObjects.Clear();
 
     var streamId = state.StreamId;
     var client = state.Client;
@@ -76,7 +81,7 @@ public partial class ConnectorBindingsNavisworks
       }
       catch
       {
-        throw new Exception("An error occurred retrieving objects from your saved selection source.");
+        throw new InvalidOperationException("An error occurred retrieving objects from your saved selection source.");
       }
 
       if (nodes != null)
@@ -87,7 +92,7 @@ public partial class ConnectorBindingsNavisworks
 
     if (filteredObjects.Count == 0)
     {
-      if (state.Filter != null && state.Filter.Slug == "all")
+      if (state.Filter is { Slug: "all" })
         throw new InvalidOperationException("Everything Mode is not yet implemented. Send stopped.");
       throw new InvalidOperationException(
         "Zero objects selected; send stopped. Please select some objects, or check that your filter can actually select something."
@@ -101,12 +106,17 @@ public partial class ConnectorBindingsNavisworks
 
     progress.Max = totalObjects;
 
-    var commitObject = new Base { ["units"] = GetUnits(Doc) };
+    var commitObject = new Collection
+    {
+      ["units"] = GetUnits(_doc),
+      collectionType = "Navisworks Model",
+      name = Application.ActiveDocument.Title,
+      applicationId = "Root"
+    };
 
     var toConvertDictionary = new SortedDictionary<string, ConversionState>(new PseudoIdComparer());
     state.SelectedObjectIds.ForEach(pseudoId =>
     {
-      //if (pseudoId != RootNodePseudoId)
       {
         toConvertDictionary.Add(pseudoId, ConversionState.ToConvert);
       }
@@ -130,7 +140,7 @@ public partial class ConnectorBindingsNavisworks
       }
     }
 
-    NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
+    _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
 
     while (toConvertDictionary.Any(kv => kv.Value == ConversionState.ToConvert))
     {
@@ -148,7 +158,7 @@ public partial class ConnectorBindingsNavisworks
       var pseudoId = nextToConvert.Key;
       var descriptor = ObjectDescriptor(pseudoId);
 
-      var alreadyConverted = NavisworksConverter.Report.ReportObjects.TryGetValue(pseudoId, out var applicationObject);
+      var alreadyConverted = _navisworksConverter.Report.ReportObjects.TryGetValue(pseudoId, out var applicationObject);
 
       var reportObject = alreadyConverted
         ? applicationObject
@@ -161,7 +171,7 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      if (!NavisworksConverter.CanConvertToSpeckle(pseudoId))
+      if (!_navisworksConverter.CanConvertToSpeckle(pseudoId))
       {
         reportObject.Update(
           status: ApplicationObject.State.Skipped,
@@ -173,7 +183,7 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      NavisworksConverter.Report.Log(reportObject);
+      _navisworksConverter.Report.Log(reportObject);
 
       var converted = Convert(pseudoId);
 
@@ -185,10 +195,7 @@ public partial class ConnectorBindingsNavisworks
         continue;
       }
 
-      if (commitObject["@elements"] == null)
-        commitObject["@elements"] = new List<Base>();
-
-      ((List<Base>)commitObject["@elements"]).Add(converted);
+      commitObject.elements.Add(converted);
 
       toConvertDictionary[pseudoId] = ConversionState.Converted;
 
@@ -213,16 +220,16 @@ public partial class ConnectorBindingsNavisworks
 
     // Better set the users autosave back on or they might get cross
     if (autosaveSetting)
-      using (var optionLock = new LcUOptionLock())
-      {
-        var rootOptions = GetRoot(optionLock);
-        rootOptions.SetBoolean("general.autosave.enable", true);
-        SaveGlobalOptions();
-      }
+    {
+      using var optionLock = new LcUOptionLock();
+      var rootOptions = GetRoot(optionLock);
+      rootOptions.SetBoolean("general.autosave.enable", true);
+      SaveGlobalOptions();
+    }
 
     progressBar.EndSubOperation();
 
-    progress.Report.Merge(NavisworksConverter.Report);
+    progress.Report.Merge(_navisworksConverter.Report);
 
     if (convertedCount == 0)
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
@@ -231,18 +238,33 @@ public partial class ConnectorBindingsNavisworks
 
     var views = new List<Base>();
 
-    NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "views" } });
+    _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "views" } });
     if (state.Filter?.Slug == "views")
     {
       var selectedViews = state.Filter.Selection.Select(Convert).Where(c => c != null).ToList();
       views.AddRange(selectedViews);
     }
 
-    if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting checkBox && checkBox.IsChecked)
-      views.Add(Convert(Doc.CurrentViewpoint.ToViewpoint()));
+    if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting { IsChecked: true })
+    {
+      var currentView = Convert(_doc.CurrentViewpoint.ToViewpoint());
+      var homeView = Convert(_doc.HomeView);
+
+      if (currentView != null)
+      {
+        currentView["name"] = "Active View";
+        views.Add(currentView);
+      }
+
+      if (homeView != null)
+      {
+        homeView["name"] = "Home View";
+        views.Add(homeView);
+      }
+    }
 
     if (views.Any())
-      commitObject["Views"] = views;
+      commitObject["views"] = views;
 
     #endregion
 
@@ -253,7 +275,7 @@ public partial class ConnectorBindingsNavisworks
       $"Sending {convertedCount} objects and {conversionProgressDict["Conversion"]} children to Speckle."
     );
 
-    NavisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", null } });
+    _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", null } });
 
     progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -261,27 +283,30 @@ public partial class ConnectorBindingsNavisworks
 
     var transports = new List<ITransport> { new ServerTransport(client.Account, streamId) };
 
-    var objectId = await Operations.Send(
-      commitObject,
-      progress.CancellationToken,
-      transports,
-      onProgressAction: dict =>
-      {
-        if (dict.TryGetValue("RemoteTransport", out var rc) && rc > 0)
+    var objectId = await Operations
+      .Send(
+        commitObject,
+        progress.CancellationToken,
+        transports,
+        // This is somewhat fake but roughly represents the progress of the conversion
+        onProgressAction: dict =>
         {
-          var p = (double)rc / 2 / totalConversions;
-          if (p <= 1)
-            progressBar.Update(p);
-        }
-        progress.Update(dict);
-      },
-      // Deviation from the ideal pattern, which should throw to the DefaultErrorHandler
-      onErrorAction: (err, ex) =>
-      {
-        progress.Report.OperationErrors.Add(ex);
-      },
-      disposeTransports: true
-    );
+          if (dict.TryGetValue("RemoteTransport", out var rc) && rc > 0)
+          {
+            var p = (double)rc / 2 / totalConversions;
+            if (p <= 1)
+              progressBar.Update(p);
+          }
+          progress.Update(dict);
+        },
+        // Deviation from the ideal pattern, which should throw to the DefaultErrorHandler
+        onErrorAction: (_, ex) =>
+        {
+          progress.Report.OperationErrors.Add(ex);
+        },
+        disposeTransports: true
+      )
+      .ConfigureAwait(false);
 
     if (progress.Report.OperationErrors.Any())
       ConnectorHelpers.DefaultSendErrorHandler("", progress.Report.OperationErrors.Last());
@@ -294,10 +319,12 @@ public partial class ConnectorBindingsNavisworks
       objectId = objectId,
       branchName = state.BranchName,
       message = state.CommitMessage ?? $"Sent {totalConversions} elements from {HostApplications.Navisworks.Name}.",
-      sourceApplication = HostApplications.Navisworks.Slug
+      sourceApplication = HostAppNameVersion
     };
 
-    var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, commit);
+    var commitId = await ConnectorHelpers
+      .CreateCommit(progress.CancellationToken, client, commit)
+      .ConfigureAwait(false);
     return commitId;
   }
 
@@ -305,8 +332,8 @@ public partial class ConnectorBindingsNavisworks
   {
     try
     {
-      Func<object, Base> convertToSpeckle = NavisworksConverter.ConvertToSpeckle;
-      return (Base)InvokeOnUIThreadWithException(Control, convertToSpeckle, inputObject);
+      Func<object, Base> convertToSpeckle = _navisworksConverter.ConvertToSpeckle;
+      return (Base)InvokeOnUIThreadWithException(_control, convertToSpeckle, inputObject);
     }
     catch (TargetInvocationException ex)
     {

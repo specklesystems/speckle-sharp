@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Utils;
@@ -63,9 +63,13 @@ namespace Objects.BuiltElements
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_zonetype
+  */
   public class ArchicadRoom : Room
   {
-    public int? floorIndex { get; set; }
+    public ArchicadLevel level { get; set; }
 
     public double height { get; set; }
 

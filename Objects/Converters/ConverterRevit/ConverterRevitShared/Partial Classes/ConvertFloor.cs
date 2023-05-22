@@ -23,7 +23,7 @@ namespace Objects.Converter.Revit
       };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (speckleFloor.outline == null)
@@ -59,7 +59,8 @@ namespace Objects.Converter.Revit
       var outline = CurveToNative(flattenedOutline, true);
       UnboundCurveIfSingle(outline);
 
-      if (!GetElementType<FloorType>(speckleFloor, appObj, out FloorType floorType))
+      var floorType = GetElementType<FloorType>(speckleFloor, appObj, out bool _);
+      if (floorType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -178,10 +179,9 @@ namespace Objects.Converter.Revit
         }
       }
 
-      speckleFloor.displayValue = GetElementDisplayMesh(
+      speckleFloor.displayValue = GetElementDisplayValue(
         revitFloor,
-        new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false }
-      );
+        new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       GetHostedElements(speckleFloor, revitFloor, out List<string> hostedNotes);
       if (hostedNotes.Any())
@@ -336,8 +336,8 @@ namespace Objects.Converter.Revit
 
           return new OG.Ellipse(
             newCirclePlane,
-            (circle.radius ?? 0) * rad1ScaleCircle,
-            (circle.radius ?? 0) * rad2ScaleCircle,
+            radius * rad1ScaleCircle,
+            radius * rad2ScaleCircle,
             units: circle.units
           );
 

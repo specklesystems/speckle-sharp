@@ -23,6 +23,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PipeTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RoofTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RoomTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ScheduleTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleUtils.cs" />

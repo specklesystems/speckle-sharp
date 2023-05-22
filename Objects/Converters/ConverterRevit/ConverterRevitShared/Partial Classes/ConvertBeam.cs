@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleBeam.id, speckleBeam.speckle_type) { applicationId = speckleBeam.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (speckleBeam.baseLine == null)
@@ -30,7 +30,8 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (!GetElementType<FamilySymbol>(speckleBeam, appObj, out DB.FamilySymbol familySymbol))
+      var familySymbol = GetElementType<FamilySymbol>(speckleBeam, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -57,16 +58,19 @@ namespace Objects.Converter.Revit
 
           // if family changed, tough luck. delete and let us create a new one.
           if (familySymbol.FamilyName != revitType.FamilyName)
+          {
             Doc.Delete(docObj.Id);
-
+          }
           else
           {
             revitBeam = (DB.FamilyInstance)docObj;
             (revitBeam.Location as LocationCurve).Curve = baseLine;
 
             // check for a type change
-            if (!string.IsNullOrEmpty(familySymbol.FamilyName) && familySymbol.FamilyName != revitType.Name)
+            if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)
+            {
               revitBeam.ChangeTypeId(familySymbol.Id);
+            }
           }
           isUpdate = true;
         }
@@ -129,10 +133,9 @@ namespace Objects.Converter.Revit
       // so we need to pass in the view we want in order to get the correct geometry
       // TODO: we need to make sure we are passing in the correct view
       var connectionHandlerFilter = new ElementClassFilter(typeof(DB.Structure.StructuralConnectionHandler));
-      if (revitBeam.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitBeam.GetDependentElements(connectionHandlerFilter).Any())
-        speckleBeam.displayValue = GetElementDisplayMesh(revitBeam, new Options() { View = Doc.ActiveView, ComputeReferences = true });
-      else
-        speckleBeam.displayValue = GetElementMesh(revitBeam);
+      var options = revitBeam.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitBeam.GetDependentElements(connectionHandlerFilter).Any() ?
+        new Options() { View = Doc.ActiveView, ComputeReferences = true } : SolidDisplayValueOptions;
+      speckleBeam.displayValue = GetElementDisplayValue(revitBeam, options);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 

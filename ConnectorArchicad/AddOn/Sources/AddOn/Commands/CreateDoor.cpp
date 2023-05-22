@@ -1,6 +1,5 @@
 #include "CreateDoor.hpp"
 #include "CreateOpeningBase.hpp"
-#include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
 #include "Objects/Point.hpp"
@@ -29,33 +28,32 @@ GS::UniString CreateDoor::GetUndoableCommandName () const
 }
 
 
-GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& currentDoor,
+GSErrCode CreateDoor::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& element,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& /*memoMask*/,
+	API_SubElement** marker,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** marker /*= nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type = API_DoorID;
-#else
-	element.header.typeID = API_DoorID;
-#endif
+	Utility::SetElementType (element.header, API_DoorID);
 
-	* marker = new API_SubElement ();
+	*marker = new API_SubElement ();
 	BNZeroMemory (*marker, sizeof (API_SubElement));
-	err = Utility::GetBaseElementData (element, &memo, marker);
+	err = Utility::GetBaseElementData (element, &memo, marker, log);
 	if (err != NoError)
 		return err;
 
-	if (!CheckEnvironment (currentDoor, element))
+	if (!CheckEnvironment (os, element))
 		return Error;
 
-	err = GetOpeningBaseFromObjectState<API_DoorType> (currentDoor, element.door, elementMask);
+	GetDoorWindowFromObjectState<API_DoorType> (os, element.door, elementMask, log);
+
+	err = GetOpeningBaseFromObjectState<API_DoorType> (os, element.door, elementMask, log);
 
 	return err;
 }

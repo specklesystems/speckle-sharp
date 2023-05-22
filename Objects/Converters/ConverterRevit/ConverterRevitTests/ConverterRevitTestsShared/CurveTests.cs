@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
@@ -49,9 +49,7 @@ namespace ConverterRevitTests
 
     internal void AssertCurveEqual(DB.CurveElement sourceElem, DB.CurveElement destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
-
+      AssertElementEqual(sourceElem, destElem);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.CURVE_ELEM_LENGTH);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.BUILDING_CURVE_GSTYLE);
 

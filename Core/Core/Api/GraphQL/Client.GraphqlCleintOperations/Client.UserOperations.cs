@@ -1,3 +1,4 @@
+#nullable enable
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -50,7 +51,7 @@ public partial class Client
   /// </summary>
   /// <param name="id">Id of the user you are looking for</param>
   /// <returns></returns>
-  public Task<LimitedUser> OtherUserGet(string id)
+  public Task<LimitedUser?> OtherUserGet(string id)
   {
     return OtherUserGet(CancellationToken.None, id);
   }
@@ -62,7 +63,7 @@ public partial class Client
   /// <param name="id">Id of the user you are looking for</param>
   /// <returns></returns>
   /// <exception cref="SpeckleException"></exception>
-  public async Task<LimitedUser> OtherUserGet(CancellationToken cancellationToken, string id)
+  public async Task<LimitedUser?> OtherUserGet(CancellationToken cancellationToken, string id)
   {
     var request = new GraphQLRequest
     {

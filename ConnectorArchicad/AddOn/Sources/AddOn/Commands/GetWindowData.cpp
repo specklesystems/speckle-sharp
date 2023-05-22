@@ -29,9 +29,10 @@ GS::ErrCode	GetWindowData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& /*memo*/,
 	GS::ObjectState& os) const
 {
+	os.Add (ElementBase::ApplicationId, APIGuidToString (element.header.guid));
+	os.Add (ElementBase::ParentElementId, APIGuidToString (element.window.owner));
 
-	os.Add (ApplicationId, APIGuidToString (element.header.guid));
-	os.Add (ParentElementId, APIGuidToString (element.door.owner));
+	AddOnCommands::GetDoorWindowData<API_WindowType> (element.window, os);
 
 	AddOnCommands::GetOpeningBaseData<API_WindowType> (element.window, os);
 

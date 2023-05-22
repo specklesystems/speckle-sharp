@@ -3,6 +3,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
 #include "RealNumber.h"
 #include "FieldNames.hpp"
@@ -44,19 +45,20 @@ GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
 		return err;
 
 	// The identifier of the room
-	os.Add (ApplicationId, APIGuidToString (element.zone.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (element.zone.head.guid));
 	GS::UniString roomName = element.zone.roomName;
 	GS::UniString roomNum = element.zone.roomNoStr;
 	os.Add (Room::Name, roomName);
 	os.Add (Room::Number, roomNum);
 
 	// The index of the room's floor
-	os.Add (FloorIndex, element.zone.head.floorInd);
+	API_StoryType story = Utility::GetStory (element.zone.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	// The base point of the room
 	double level = Utility::GetStoryLevel (element.zone.head.floorInd) + element.zone.roomBaseLev;
 	os.Add (Room::BasePoint, Objects::Point3D (0, 0, level));
-	os.Add (Shape, Objects::ElementShape (element.zone.poly, memo, level));
+	os.Add (ElementBase::Shape, Objects::ElementShape (element.zone.poly, memo, Objects::ElementShape::MemoMainPolygon, level));
 
 	// double polyCoords [zone.poly.nCoords*3];
 	//
@@ -80,7 +82,7 @@ GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
 
 GS::String GetRoomData::GetName () const
 {
-	return GetRoomDataCommandName
+	return GetRoomDataCommandName;
 }
 
 

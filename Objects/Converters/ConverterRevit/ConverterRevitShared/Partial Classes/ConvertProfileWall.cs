@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRevitWall.id, speckleRevitWall.speckle_type) { applicationId = speckleRevitWall.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(revitWall, appObj, out appObj))
+      if (IsIgnore(revitWall, appObj))
         return appObj;
 
       if (speckleRevitWall.profile == null)
@@ -24,11 +24,13 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (!GetElementType<WallType>(speckleRevitWall, appObj, out WallType wallType))
+      var wallType = GetElementType<WallType>(speckleRevitWall, appObj, out bool _);
+      if (wallType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
+
       // Level level = null;
       var structural = speckleRevitWall.structural;
       var profile = new List<DB.Curve>();

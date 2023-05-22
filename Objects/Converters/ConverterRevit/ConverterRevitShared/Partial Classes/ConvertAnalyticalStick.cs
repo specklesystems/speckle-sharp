@@ -35,7 +35,7 @@ namespace Objects.Converter.Revit
       appObj = new ApplicationObject(speckleStick.id, speckleStick.speckle_type) { applicationId = speckleStick.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (speckleStick.baseLine == null)
@@ -50,7 +50,8 @@ namespace Objects.Converter.Revit
       level ??= ConvertLevelToRevit(LevelFromCurve(baseLine), out ApplicationObject.State levelState);
       var isUpdate = false;
 
-      if (!GetElementType<FamilySymbol>(speckleStick, appObj, out DB.FamilySymbol familySymbol))
+      var familySymbol = GetElementType<FamilySymbol>(speckleStick, appObj, out bool isExactMatch);
+      if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -70,17 +71,20 @@ namespace Objects.Converter.Revit
         else
           analyticalMember.SetCurve(baseLine);
 
-        //update type
-        analyticalMember.SectionTypeId = familySymbol.Id;
-        isUpdate = true;
-        revitMember = analyticalMember;
-
-        if (analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+        if (isExactMatch)
         {
-          var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
-          physicalMember = (DB.FamilyInstance)Doc.GetElement(physicalMemberId);
-          if (physicalMember.Symbol != familySymbol)
-            physicalMember.Symbol = familySymbol;
+          //update type
+          analyticalMember.SectionTypeId = familySymbol.Id;
+          isUpdate = true;
+          revitMember = analyticalMember;
+
+          if (analyticalToPhysicalManager.HasAssociation(revitMember.Id))
+          {
+            var physicalMemberId = analyticalToPhysicalManager.GetAssociatedElementId(revitMember.Id);
+            physicalMember = (DB.FamilyInstance)Doc.GetElement(physicalMemberId);
+            if (physicalMember.Symbol != familySymbol)
+              physicalMember.Symbol = familySymbol;
+          }
         }
       }
 
@@ -263,7 +267,7 @@ namespace Objects.Converter.Revit
       speckleElement1D.property = prop;
 
       GetAllRevitParamsAndIds(speckleElement1D, revitStick);
-      speckleElement1D.displayValue = GetElementDisplayMesh(revitStick.Document.GetElement(revitStick.GetElementId()));
+      speckleElement1D.displayValue = GetElementDisplayValue(revitStick.Document.GetElement(revitStick.GetElementId()));
       return speckleElement1D;
     }
 
@@ -334,7 +338,7 @@ namespace Objects.Converter.Revit
       {
         var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitStick.Id);
         var physicalElement = Doc.GetElement(physicalElementId);
-        speckleElement1D.displayValue = GetElementDisplayMesh(physicalElement);
+        speckleElement1D.displayValue = GetElementDisplayValue(physicalElement);
       }
 
       return speckleElement1D;

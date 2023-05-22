@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
@@ -53,6 +53,13 @@ namespace ConverterRevitTests
     #region ToNative
 
     [Fact]
+    [Trait("FamilyInstance", "Selection")]
+    public async Task FamilyInstanceSelectionToNative()
+    {
+      await SelectionToNative<DB.Element>(AssertNestedEqual);
+    }
+
+    [Fact]
     [Trait("FamilyInstance", "ToNative")]
     public async Task NestedToNative()
     {
@@ -69,8 +76,7 @@ namespace ConverterRevitTests
 
     internal void AssertNestedEqual(DB.Element sourceElem, DB.Element destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       //family instance
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_LEVEL_PARAM);
@@ -102,7 +108,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
-
     }
 
     #endregion

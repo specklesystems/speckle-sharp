@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -17,8 +17,11 @@ using Ceiling = Objects.BuiltElements.Ceiling;
 using Column = Objects.BuiltElements.Column;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Floor;
+using Roof = Objects.BuiltElements.Roof;
+using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
+using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 
 namespace Archicad
 {
@@ -36,7 +39,7 @@ namespace Archicad
     private Dictionary<Type, IEnumerable<Base>> ReceivedObjects { get; set; }
     private Dictionary<string, IEnumerable<string>> SelectedObjects { get; set; }
 
-    private List<string> CanHaveSubElements = new List<string> { "Wall" }; // Hardcoded until we know whats the shared property that defines wether elements may be have subelements or not.
+    private List<string> CanHaveSubElements = new List<string> { "Wall", "Roof", "Shell" }; // Hardcoded until we know whats the shared property that defines wether elements may be have subelements or not.
     #endregion
 
     #region --- Ctor \ Dtor ---
@@ -147,8 +150,12 @@ namespace Archicad
         return Converters[typeof(Door)];
       if (elementType.IsSubclassOf(typeof(Window)))
         return Converters[typeof(Window)];
+      if (elementType.IsSubclassOf(typeof(Skylight)))
+        return Converters[typeof(Skylight)];
       if (elementType.IsSubclassOf(typeof(Floor)) || elementType.IsSubclassOf(typeof(Ceiling)))
         return Converters[typeof(Floor)];
+      if (elementType.IsSubclassOf(typeof(Roof)))
+        return Converters[typeof(Roof)];
       if (elementType.IsSubclassOf(typeof(Objects.BuiltElements.Room)))
         return Converters[typeof(Objects.BuiltElements.Room)];
 
@@ -207,7 +214,7 @@ namespace Archicad
     {
       var subElementsAsBases = new List<Base>();
 
-      if (convertedObject is not Objects.BuiltElements.Archicad.ArchicadWall)
+      if (convertedObject is not (Objects.BuiltElements.Archicad.ArchicadWall or Objects.BuiltElements.Archicad.ArchicadRoof or Objects.BuiltElements.Archicad.ArchicadShell))
         return subElementsAsBases;
 
       var subElements = await GetAllSubElements(convertedObject.applicationId);

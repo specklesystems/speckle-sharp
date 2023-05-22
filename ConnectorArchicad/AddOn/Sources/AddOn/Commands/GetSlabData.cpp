@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Polyline.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
@@ -28,15 +29,16 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 	GS::ObjectState& os) const
 {
 	// The identifier of the slab
-	os.Add (ApplicationId, APIGuidToString (element.slab.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (element.slab.head.guid));
 
 	// Geometry and positioning
 	// The index of the slab's floor
-	os.Add (FloorIndex, element.slab.head.floorInd);
+	API_StoryType story = Utility::GetStory (element.slab.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	// The shape of the slab
 	double level = Utility::GetStoryLevel (element.slab.head.floorInd) + element.slab.level;
-	os.Add (Shape, Objects::ElementShape (element.slab.poly, memo, level));
+	os.Add (ElementBase::Shape, Objects::ElementShape (element.slab.poly, memo, Objects::ElementShape::MemoMainPolygon, level));
 
 	// The thickness of the slab
 	os.Add (Slab::Thickness, element.slab.thickness);
@@ -85,18 +87,18 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 	// Show on Stories - Story visibility
 	{
 		GS::UniString visibilityFillString;
-		Utility::GetVisibility (false, element.slab.visibilityFill, visibilityFillString);
+		Utility::GetPredefinedVisibility (false, element.slab.visibilityFill, visibilityFillString);
 
 		GS::UniString visibilityContString;
-		Utility::GetVisibility (false, element.slab.visibilityCont, visibilityContString);
+		Utility::GetPredefinedVisibility (false, element.slab.visibilityCont, visibilityContString);
 
 		if (visibilityFillString == visibilityContString && visibilityFillString != CustomStoriesValueName) {
 			os.Add (ShowOnStories, visibilityContString);
 		} else {
 			os.Add (ShowOnStories, CustomStoriesValueName);
 
-			Utility::ExportVisibility (false, element.slab.visibilityFill, os, VisibilityFillData, true);
-			Utility::ExportVisibility (false, element.slab.visibilityCont, os, VisibilityContData, true);
+			Utility::GetVisibility (false, element.slab.visibilityFill, os, VisibilityFillData, true);
+			Utility::GetVisibility (false, element.slab.visibilityCont, os, VisibilityContData, true);
 		}
 	}
 
@@ -164,7 +166,7 @@ GS::ErrCode GetSlabData::SerializeElementType (const API_Element& element,
 		}
 
 		// Hatch Orientation
-		Utility::ExportHatchOrientation (element.slab.hatchOrientation.type, os);
+		Utility::GetHatchOrientation (element.slab.hatchOrientation.type, os);
 
 		if (element.slab.hatchOrientation.type == API_HatchRotated || element.slab.hatchOrientation.type == API_HatchDistorted) {
 			os.Add (Slab::hatchOrientationOrigoX, element.slab.hatchOrientation.origo.x);

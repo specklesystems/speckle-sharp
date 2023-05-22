@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
@@ -19,10 +19,11 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleCableTray.id, speckleCableTray.speckle_type) { applicationId = speckleCableTray.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
-      if (!GetElementType<CableTrayType>(speckleCableTray, appObj, out CableTrayType cableTrayType))
+      var cableTrayType = GetElementType<CableTrayType>(speckleCableTray, appObj, out bool _);
+      if (cableTrayType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -78,7 +79,7 @@ namespace Objects.Converter.Revit
         width = GetParamValue<double>(revitCableTray, BuiltInParameter.RBS_CABLETRAY_WIDTH_PARAM),
         length = GetParamValue<double>(revitCableTray, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitCableTray, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitCableTray)
+        displayValue = GetElementDisplayValue(revitCableTray, SolidDisplayValueOptions)
       };
 
       GetAllRevitParamsAndIds(speckleCableTray, revitCableTray,

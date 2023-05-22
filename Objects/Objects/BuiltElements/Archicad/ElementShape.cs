@@ -23,16 +23,18 @@ public sealed class ElementShape : Base
   {
     public PolylineSegment() { }
 
-    public PolylineSegment(Point startPoint, Point endPoint, double? arcAngle = null)
+    public PolylineSegment(Point startPoint, Point endPoint, double? arcAngle = null, bool? bodyFlag = null)
     {
       this.startPoint = startPoint;
       this.endPoint = endPoint;
       this.arcAngle = arcAngle ?? 0;
+      this.bodyFlag = bodyFlag;
     }
 
     public Point startPoint { get; set; }
     public Point endPoint { get; set; }
     public double arcAngle { get; set; }
+    public bool? bodyFlag { get; set; }
     public double length { get; set; }
     public Interval domain { get; set; }
   }

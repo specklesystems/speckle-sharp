@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
 #include "RealNumber.h"
 #include "FieldNames.hpp"
@@ -37,10 +38,11 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 	GS::ObjectState& os) const
 {
 	// The identifier of the column
-	os.Add (ApplicationId, APIGuidToString (elem.column.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (elem.column.head.guid));
 
 	// Positioning - geometry
-	os.Add (FloorIndex, elem.column.head.floorInd);
+	API_StoryType story = Utility::GetStory (elem.column.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	double z = Utility::GetStoryLevel (elem.column.head.floorInd) + elem.column.bottomOffset;
 	os.Add (Column::origoPos, Objects::Point3D (elem.column.origoPos.x, elem.column.origoPos.y, z));
@@ -162,7 +164,7 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Show on Stories - Story visibility
-	Utility::ExportVisibility (elem.column.isAutoOnStoryVisibility, elem.column.visibility, os, ShowOnStories);
+	Utility::GetVisibility (elem.column.isAutoOnStoryVisibility, elem.column.visibility, os, ShowOnStories);
 
 	// The display options (Projected, Projected with Overhead, Cut Only, Outlines Only, Overhead All or Symbolic Cut)
 	os.Add (Column::DisplayOptionName, displayOptionNames.Get (elem.column.displayOption));
@@ -271,7 +273,7 @@ GS::ErrCode	GetColumnData::SerializeElementType (const API_Element& elem,
 		}
 
 		// Cover Fill Transformation
-		Utility::ExportCoverFillTransformation (elem.column.coverFillOrientationComesFrom3D, elem.column.coverFillTransformationType, os);
+		Utility::GetCoverFillTransformation (elem.column.coverFillOrientationComesFrom3D, elem.column.coverFillTransformationType, os);
 
 		if ((elem.column.coverFillTransformationType == API_CoverFillTransformationType_Rotated || elem.column.coverFillTransformationType == API_CoverFillTransformationType_Distorted) && !elem.column.coverFillOrientationComesFrom3D) {
 			os.Add (Column::CoverFillTransformationOrigoX, elem.column.coverFillTransformation.origo.x);

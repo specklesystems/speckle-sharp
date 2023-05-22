@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB.Electrical;
 using Xunit;
@@ -38,8 +38,7 @@ namespace ConverterRevitTests
 
     private void AssertWireEqual(DB.Wire sourceElem, DB.Wire destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_ELEC_WIRE_TYPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FABRIC_WIRE_LENGTH);

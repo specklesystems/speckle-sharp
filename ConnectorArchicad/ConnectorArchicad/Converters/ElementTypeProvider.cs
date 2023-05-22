@@ -1,15 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
-using Archicad.Converters;
-using Objects.BuiltElements.Archicad;
 using Beam = Objects.BuiltElements.Archicad.ArchicadBeam;
 using Column = Objects.BuiltElements.Archicad.ArchicadColumn;
 using DirectShape = Objects.BuiltElements.Archicad.DirectShape;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Archicad.ArchicadFloor;
+using Roof = Objects.BuiltElements.Archicad.ArchicadRoof;
 using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
+using Shell = Objects.BuiltElements.Archicad.ArchicadShell;
 using Wall = Objects.BuiltElements.Archicad.ArchicadWall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
+using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
 
 namespace Archicad
 {
@@ -18,11 +19,14 @@ namespace Archicad
     private static Dictionary<string, Type> _nameToType = new()  {
       { "Wall", typeof(Wall) },
       { "Slab", typeof(Floor) },
+      { "Roof", typeof(Roof) },
+      { "Shell", typeof(Shell) },
       { "Zone", typeof(Room) },
       { "Beam", typeof(Beam) },
       { "Column", typeof(Column) },
       { "Door", typeof(Door) },
-      { "Window", typeof(Window) }
+      { "Window", typeof(Window) },
+      { "Skylight", typeof(Skylight) }
 
     };
 

@@ -2,6 +2,7 @@
 #include "ResourceIds.hpp"
 #include "ObjectState.hpp"
 #include "Utility.hpp"
+#include "Objects/Level.hpp"
 #include "Objects/Point.hpp"
 #include "Objects/Polyline.hpp"
 #include "RealNumber.h"
@@ -33,12 +34,13 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	const API_WallType wall = element.wall;
 
 	// The identifier of the wall
-	os.Add (ApplicationId, APIGuidToString (wall.head.guid));
+	os.Add (ElementBase::ApplicationId, APIGuidToString (wall.head.guid));
 
 	// Wall geometry
 
-	// The index of the wall's floor
-	os.Add (FloorIndex, wall.head.floorInd);
+	// The story of the wall
+	API_StoryType story = Utility::GetStory (wall.head.floorInd);
+	os.Add (ElementBase::Level, Objects::Level (story));
 
 	// Base offset of the wall
 	os.Add (Wall::BaseOffset, wall.bottomOffset);
@@ -94,7 +96,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 
 	// The polygon of the wall
 	if (wall.type == APIWtyp_Poly)
-		os.Add (Shape, Objects::ElementShape (wall.poly, memo, z));
+		os.Add (ElementBase::Shape, Objects::ElementShape (wall.poly, memo, Objects::ElementShape::MemoMainPolygon, z));
 
 	// The thickness of the wall (first and second thickness for trapezoid walls)
 	if (wall.type == APIWtyp_Trapez) {
@@ -152,7 +154,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Show on Stories - Story visibility
-	Utility::ExportVisibility (wall.isAutoOnStoryVisibility, wall.visibility, os, ShowOnStories);
+	Utility::GetVisibility (wall.isAutoOnStoryVisibility, wall.visibility, os, ShowOnStories);
 
 	// The display options (Projected, Projected with Overhead, Cut Only, Outlines Only, Overhead All or Symbolic Cut)
 	os.Add (Wall::DisplayOptionName, displayOptionNames.Get (wall.displayOption));

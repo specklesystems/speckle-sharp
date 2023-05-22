@@ -60,7 +60,8 @@ namespace Objects.Converter.Revit
       var convertedMEPCurves = convertedElements.Where(e => e.Value is MEPCurve).ToArray();
       foreach (var networkElement in connectorBasedCreationElements)
       {
-        if (!GetElementType(networkElement.elements, appObj, out FamilySymbol familySymbol))
+        var familySymbol = GetElementType<FamilySymbol>(networkElement.elements, appObj, out bool _);
+        if (familySymbol == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed);
           continue;
@@ -252,7 +253,7 @@ namespace Objects.Converter.Revit
           isConnectorBased = connectorBasedCreation,
           isCurveBased = element is MEPCurve
         });
-        ConvertedObjectsList.Add(obj.applicationId);
+        ConvertedObjects.Add(obj.applicationId);
 
         Report.Log(reportObj);
       }

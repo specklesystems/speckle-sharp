@@ -7,6 +7,7 @@
 #include "OnExit.hpp"
 #include "ExchangeManager.hpp"
 #include "Database.hpp"
+#include "Objects/Level.hpp"
 
 
 using namespace FieldNames;
@@ -34,6 +35,15 @@ GSErrCode CreateCommand::ModifyExistingElement (API_Element& element,
 }
 
 
+void CreateCommand::GetStoryFromObjectState (const GS::ObjectState& os, const double& elementLevel, short& floorIndex, double& relativeLevel) const
+{
+	Objects::Level level;
+	os.Get (ElementBase::Level, level);
+	Utility::SetStoryLevelAndFloor (elementLevel, level.floorIndex, relativeLevel);
+	floorIndex = level.floorIndex;
+}
+
+
 GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::ProcessControl& /*processControl*/) const
 {
 	GS::ObjectState result;
@@ -45,6 +55,9 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 		LibraryHelper helper (false);
 
 		GS::Array<GS::ObjectState> applicationObjects;
+
+		AttributeManager* attributeManager = AttributeManager::GetInstance ();
+		LibpartImportManager* libpartImportManager = LibpartImportManager::GetInstance ();
 
 		Utility::Database db;
 		db.SwitchToFloorPlan ();
@@ -62,39 +75,46 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 					ACAPI_DisposeElemMemoHdls (&marker->memo);
 			});
 
+			GSErrCode err = NoError;
+
 			GS::String speckleId;
 			{
-				objectState.Get (Id, speckleId);
+				objectState.Get (ElementBase::Id, speckleId);
 				
 				if (speckleId.IsEmpty())
-					return Error;
+					err = Error;
 			}
+	
+			bool elementExists = false;
+			GS::Array<GS::UniString> log;
 			
-			bool isConverted = false;
-			API_Guid convertedArchicadId;
-			ExchangeManager::GetInstance().GetState (speckleId, isConverted, convertedArchicadId);
-			
-			bool elementExists = isConverted && Utility::ElementExists (convertedArchicadId);
-			
-			{
-				// if already converted and element exists, use that
-				if (elementExists) {
-					element.header.guid = convertedArchicadId;
-				}
-				// otherwise try to use applicationId
-				else {
-					GS::UniString applicationId;
-					objectState.Get (ApplicationId, applicationId);
-					element.header.guid = APIGuidFromString (applicationId.ToCStr ());
-				}
-			}
-
-			GSErrCode err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, *AttributeManager::GetInstance (), *LibpartImportManager::GetInstance (), &marker);
 			if (err == NoError) {
-				if (elementExists) {
-					err = ModifyExistingElement (element, elementMask, memo, memoMask);
-				} else {
-					err = CreateNewElement (element, memo, marker);
+				bool isConverted = false;
+				API_Guid convertedArchicadId;
+				ExchangeManager::GetInstance().GetState (speckleId, isConverted, convertedArchicadId);
+				
+				elementExists = isConverted && Utility::ElementExists (convertedArchicadId);
+				
+				{
+					// if already converted and element exists, use that
+					if (elementExists) {
+						element.header.guid = convertedArchicadId;
+					}
+					// otherwise try to use applicationId
+					else {
+						GS::UniString applicationId;
+						objectState.Get (ElementBase::ApplicationId, applicationId);
+						element.header.guid = APIGuidFromString (applicationId.ToCStr ());
+					}
+				}
+				
+				err = GetElementFromObjectState (objectState, element, elementMask, memo, memoMask, &marker, *attributeManager, *libpartImportManager, log);
+				if (err == NoError) {
+					if (elementExists) {
+						err = ModifyExistingElement (element, elementMask, memo, memoMask);
+					} else {
+						err = CreateNewElement (element, memo, marker);
+					}
 				}
 			}
 
@@ -103,7 +123,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 
 			if (err == NoError) {
 				GS::UniString applicationId = APIGuidToString (element.header.guid);
-				applicationObject.Add (ApplicationId, applicationId);
+				applicationObject.Add (ElementBase::ApplicationId, applicationId);
 				GS::Array<GS::UniString> createdIds;
 				createdIds.Push (applicationId);
 				applicationObject.Add (ApplicationObject::CreatedIds, createdIds);
@@ -116,6 +136,7 @@ GS::ObjectState CreateCommand::Execute (const GS::ObjectState& parameters, GS::P
 				ExchangeManager::GetInstance().UpdateState (speckleId, element.header.guid);
 			} else {
 				applicationObject.Add (ApplicationObject::Status, ApplicationObject::StateFailed);
+				applicationObject.Add (ApplicationObject::Log, log);
 			}
 
 			applicationObjects.Push (applicationObject);

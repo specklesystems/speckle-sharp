@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 using Speckle.Newtonsoft.Json;
+using Objects.Geometry;
 
 namespace Archicad.Model
 {
@@ -123,6 +124,26 @@ namespace Archicad.Model
 
     [JsonConverter(typeof(MeshModelEdgeConverter))]
     public Dictionary<Tuple<int, int>, EdgeStatus> edges { get; set; } = new Dictionary<Tuple<int, int>, EdgeStatus>();
+
+    public bool IsCoplanar (Polygon polygon)
+    {
+      Vector vector1 = Archicad.Converters.Utils.VertexToVector(vertices[polygon.pointIds[0]]);
+      Vector vector2 = Archicad.Converters.Utils.VertexToVector(vertices[polygon.pointIds[1]]);
+      Vector vector3 = Archicad.Converters.Utils.VertexToVector(vertices[polygon.pointIds[2]]);
+      for (int i = 3; i < polygon.pointIds.Count; i++)
+      {
+        Vector vector4 = Archicad.Converters.Utils.VertexToVector(vertices[polygon.pointIds[i]]);
+        if (!IsCoplanar(vector1, vector2, vector3, vector4))
+          return false;
+      }
+      return true;
+    }
+
+    private bool IsCoplanar(Vector vector1, Vector vector2, Vector vector3, Vector vector4)
+    {
+      var dotProduct = Vector.DotProduct(vector2 - vector1, Vector.CrossProduct(vector4 - vector1, vector3 - vector1)); 
+      return Math.Abs(dotProduct) < Speckle.Core.Helpers.Constants.Eps;
+    }
 
     #endregion
   }

@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
@@ -49,8 +49,7 @@ namespace ConverterRevitTests
 
     private void AssertRoofEqual(DB.RoofBase sourceElem, DB.RoofBase destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
+      AssertElementEqual(sourceElem, destElem);
 
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.ROOF_SLOPE);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.ROOF_BASE_LEVEL_PARAM);

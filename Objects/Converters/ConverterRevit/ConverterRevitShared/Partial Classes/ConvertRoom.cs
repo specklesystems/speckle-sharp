@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRoom.id, speckleRoom.speckle_type) { applicationId = speckleRoom.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(revitRoom, appObj, out appObj))
+      if (IsIgnore(revitRoom, appObj))
         return appObj;
 
       var level = ConvertLevelToRevit(speckleRoom.level, out ApplicationObject.State levelState);
@@ -57,7 +57,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(speckleRoom, revitRoom);
 
-      speckleRoom.displayValue = GetElementDisplayMesh(revitRoom);
+      speckleRoom.displayValue = GetElementDisplayValue(revitRoom);
 
       return speckleRoom;
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
@@ -50,15 +50,12 @@ namespace ConverterRevitTests
 
     private void AdaptiveComponentEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
     {
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
-
+      AssertElementEqual(sourceElem, destElem);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.FLEXIBLE_INSTANCE_FLIP);
 
       var dist = (sourceElem.Location as LocationPoint).Point.DistanceTo((destElem.Location as LocationPoint).Point);
 
       Assert.True(dist<0.1);
-
     }
 
     #endregion

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -102,9 +104,8 @@ public static class Helpers
       };
     }
 
-    var client = new Client(account);
-
-    var transport = new ServerTransport(client.Account, sw.StreamId);
+    using var client = new Client(account);
+    using var transport = new ServerTransport(client.Account, sw.StreamId);
 
     string objectId = "";
     Commit commit = null;
@@ -199,7 +200,7 @@ public static class Helpers
   {
     var sw = new StreamWrapper(stream);
 
-    var client = new Client(account ?? await sw.GetAccount().ConfigureAwait(false));
+    using var client = new Client(account ?? await sw.GetAccount().ConfigureAwait(false));
 
     var transport = new ServerTransport(client.Account, sw.StreamId);
     var branchName = string.IsNullOrEmpty(sw.BranchName) ? "main" : sw.BranchName;
@@ -269,22 +270,31 @@ public static class Helpers
     return false;
   }
 
+  [Obsolete("Use DateTime overload")]
   public static string TimeAgo(string timestamp)
   {
     return TimeAgo(DateTime.Parse(timestamp));
   }
 
+#nullable enable
+
+  /// <inheritdoc cref="TimeAgo(DateTime)"/>
+  /// <param name="fallback">value to fallback to if the given <paramref name="timestamp"/> is <see langword="null"/></param>
+  public static string TimeAgo(DateTime? timestamp, string fallback = "Never")
+  {
+    return timestamp.HasValue ? TimeAgo(timestamp.Value) : fallback;
+  }
+
+  /// <summary>Formats the given difference between the current system time and the provided <paramref name="timestamp"/>
+  /// into a human readable string
+  /// </summary>
+  /// <param name="timestamp"></param>
+  /// <returns>A Human readable string</returns>
   public static string TimeAgo(DateTime timestamp)
   {
     TimeSpan timeAgo;
-    try
-    {
-      timeAgo = DateTime.Now.Subtract(timestamp);
-    }
-    catch (FormatException e)
-    {
-      return "never";
-    }
+
+    timeAgo = DateTime.UtcNow.Subtract(timestamp);
 
     if (timeAgo.TotalSeconds < 60)
       return "just now";
@@ -299,9 +309,22 @@ public static class Helpers
     if (timeAgo.TotalDays < 365)
       return $"{timeAgo.Days / 30} month{PluralS(timeAgo.Days / 30)} ago";
 
-    return $"{timeAgo.Days / 356} year{PluralS(timeAgo.Days / 356)} ago";
+    if (timestamp <= new DateTime(1800, 1, 1))
+    {
+      SpeckleLog.Logger.Warning(
+        "Tried to calculate {functionName} of a DateTime value that was way in the past: {dateTimeValue}",
+        nameof(TimeAgo),
+        timestamp
+      );
+      // We assume this was an error, Likely a non-nullable DateTime was initialized/deserialized to the default
+      // Instead of potentially lying to the user, lets tell them we don't know what happened.
+      return "Unknown";
+    }
+
+    return $"{timeAgo.Days / 365} year{PluralS(timeAgo.Days / 365)} ago";
   }
 
+  [Pure]
   public static string PluralS(int num)
   {
     return num != 1 ? "s" : "";

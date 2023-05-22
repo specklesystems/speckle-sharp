@@ -62,12 +62,14 @@ namespace Objects.Converter.Archicad
         Objects.BuiltElements.Column _ => true,
         Objects.BuiltElements.Floor _ => true,
         Objects.BuiltElements.Ceiling _ => true,
+        Objects.BuiltElements.Roof _ => true,
         Objects.BuiltElements.Room _ => true,
         Objects.BuiltElements.Wall _ => true,
 
         // Archicad elements
         Objects.BuiltElements.Archicad.ArchicadDoor => true,
         Objects.BuiltElements.Archicad.ArchicadWindow => true,
+        Objects.BuiltElements.Archicad.ArchicadSkylight => true,
         Objects.BuiltElements.Archicad.DirectShape _ => true,
 
         // Revit elements
@@ -80,7 +82,7 @@ namespace Objects.Converter.Archicad
 
         _ => false
       };
-     }
+    }
 
     public bool CanConvertToNativeNotImplemented(Base @object)
     {

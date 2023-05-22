@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
@@ -114,16 +114,19 @@ namespace Objects.BuiltElements.TeklaStructures
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_beamtype
+  */
   public class ArchicadBeam : Beam
   {
     [SchemaInfo("ArchicadBeam", "Creates an Archicad beam by curve.", "Archicad", "Structure")]
     public ArchicadBeam() { }
 
     // Positioning
-    public int floorIndex { get; set; }
+    public ArchicadLevel level { get; set; }
     public Point begC { get; set; }
     public Point endC { get; set; }
-    public double level { get; set; }
     public bool isSlanted { get; set; }
     public double slantAngle { get; set; }
     public string beamShape { get; set; }

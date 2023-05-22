@@ -1,5 +1,6 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using Autodesk.Revit.DB.Mechanical;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
@@ -28,9 +29,10 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      if (!GetElementType(speckleConduit, appObj, out ConduitType conduitType))
+      var conduitType = GetElementType<ConduitType>(speckleConduit, appObj, out bool _);
+      if (conduitType == null)
       {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve conduit type");
+        appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
       }
 
@@ -78,7 +80,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitConduit, BuiltInParameter.RBS_CONDUIT_DIAMETER_PARAM),
         length = GetParamValue<double>(revitConduit, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitConduit, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitConduit)
+        displayValue = GetElementDisplayValue(revitConduit, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true })
       };
 
       GetAllRevitParamsAndIds(speckleConduit, revitConduit,

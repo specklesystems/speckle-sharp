@@ -11,6 +11,7 @@ using Objects.Other;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
 using Duct = Objects.BuiltElements.Duct;
@@ -35,7 +36,7 @@ namespace Objects.Converter.Revit
         return true;
 
       // has been converted before (from a parent host), skip it
-      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+      if (ConvertedObjects.Contains(element.UniqueId))
       {
         return false;
       }
@@ -48,14 +49,14 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, Base extraProps)
     {
       // doesn't have a host that will convert the element, go ahead and do it now
       if (host == null || host is DB.Level)
         return true;
 
       // has been converted before (from a parent host), skip it
-      if (ConvertedObjectsList.IndexOf(element.UniqueId) != -1)
+      if (ConvertedObjects.Contains(element.UniqueId))
         return false;
 
       // the parent is in our selection list,skip it, as this element will be converted by the host element
@@ -65,10 +66,13 @@ namespace Objects.Converter.Revit
         // yet not know it.
         var hostedElementIds = GetHostedElementIds(host);
         var elementId = element.Id;
-        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        if (!hostedElementIds.Contains(elementId))
         {
-          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId };
-          ((dynamic)extraProps["speckleHost"])["category"] = host.Category.Name;
+          extraProps["speckleHost"] = new Base()
+          {
+            applicationId = host.UniqueId,
+            ["category"] = host.Category.Name,
+          };
         }
         else return false;
       }
@@ -102,25 +106,33 @@ namespace Objects.Converter.Revit
       foreach (var elemId in hostedElementIds)
       {
         var element = host.Document.GetElement(elemId);
-        if (ContextObjects.ContainsKey(element.UniqueId))
+        if (!ContextObjects.ContainsKey(element.UniqueId))
         {
           continue;
         }
 
-        ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+        var reportObj = Report.ReportObjects.TryGetValue(element.UniqueId, out ApplicationObject value) ? value : new ApplicationObject(element.UniqueId, element.GetType().ToString());
+
         if (CanConvertToSpeckle(element))
         {
-          var obj = ConvertToSpeckle(element);
-          if (obj != null)
+          try
           {
-            ContextObjects.Remove(element.UniqueId);
-            reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
-            convertedHostedElements.Add(obj);
-            ConvertedObjectsList.Add(obj.applicationId);
+            var obj = ConvertToSpeckle(element);
+            if (obj != null)
+            {
+              ContextObjects.Remove(element.UniqueId);
+              reportObj.Update(status: ApplicationObject.State.Created, logItem: $"Attached as hosted element to {host.UniqueId}");
+              convertedHostedElements.Add(obj);
+              ConvertedObjects.Add(obj.applicationId);
+            }
+            else
+            {
+              reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+            }
           }
-          else
+          catch (Exception ex)
           {
-            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion returned null");
+            reportObj.Update(status: ApplicationObject.State.Failed, logItem: $"Conversion threw exception: {ex}");
           }
         }
         else
@@ -133,10 +145,15 @@ namespace Objects.Converter.Revit
       if (convertedHostedElements.Any())
       {
         notes.Add($"Converted and attached {convertedHostedElements.Count} hosted elements");
-        if (@base["elements"] == null || !(@base["elements"] is List<Base>))
-          @base["elements"] = new List<Base>();
 
-        (@base["elements"] as List<Base>).AddRange(convertedHostedElements);
+        if (@base.GetDetachedProp("elements") is List<Base> elements)
+        {
+          elements.AddRange(convertedHostedElements);
+        }
+        else
+        {
+          @base.SetDetachedProp("elements", convertedHostedElements);
+        }
       }
     }
     public IList<ElementId> GetHostedElementIds(Element host)
@@ -169,11 +186,13 @@ namespace Objects.Converter.Revit
     {
       if (@base == null) return appObj;
 
-      var nestedElements = @base["elements"];
+      //we used to use "elements" but have now switched to "@elements"
+      //this extra check is for backwards compatibility
+      var nestedElements = @base["elements"] ?? @base["@elements"];
       if (nestedElements == null) return appObj;
 
       CurrentHostElement = host;
-      foreach (var obj in GraphTraversal.TraverseMember(@base["elements"]))
+      foreach (var obj in GraphTraversal.TraverseMember(nestedElements))
       {
         if (!CanConvertToNative(obj))
         {
@@ -313,7 +332,7 @@ namespace Objects.Converter.Revit
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
-    private T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
+    public static T GetParamValue<T>(DB.Element elem, BuiltInParameter bip, string unitsOverride = null)
     {
       var rp = elem.get_Parameter(bip);
 
@@ -335,7 +354,7 @@ namespace Objects.Converter.Revit
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <returns></returns>
     /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
-    private Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
+    private static Parameter ParameterToSpeckle(DB.Parameter rp, bool isTypeParameter = false, string unitsOverride = null)
     {
       var sp = new Parameter
       {
@@ -446,75 +465,90 @@ namespace Objects.Converter.Revit
 
       foreach (var spk in filteredSpeckleParameters)
       {
-        var sp = spk.Value as Parameter;
-        if (sp == null || sp.isReadOnly)
+        if (!(spk.Value is Parameter sp) || sp.isReadOnly)
           continue;
 
         var rp = revitParameterById.ContainsKey(spk.Key) ? revitParameterById[spk.Key] : revitParameterByName[spk.Key];
-        try
-        {
-          switch (rp.StorageType)
-          {
-            case StorageType.Double:
-              // This is meant for parameters that come from Revit
-              // as they might use a lot more unit types that Speckle doesn't currently support
-              if (!string.IsNullOrEmpty(sp.applicationUnit))
-              {
-                var val = RevitVersionHelper.ConvertToInternalUnits(sp);
-                rp.Set(val);
-              }
-              // the following two cases are for parameters comimg form schema builder
-              // they do not have applicationUnit but just units
-              // units are automatically set but the user can override them 
-              // users might set them to "none" so that we convert them by using the Revit destination parameter display units
-              // this is needed to correctly receive non lenght based parameters (eg air flow)
-              else if (sp.units == Speckle.Core.Kits.Units.None)
-              {
-                var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(sp.value), rp);
-                rp.Set(val);
-              }
-              else if (Speckle.Core.Kits.Units.IsUnitSupported(sp.units))
-              {
-                var val = ScaleToNative(Convert.ToDouble(sp.value), sp.units);
-                rp.Set(val);
-              }
-              else
-              {
-                rp.Set(Convert.ToDouble(sp.value));
-              }
-              break;
 
-            case StorageType.Integer:
-              rp.Set(Convert.ToInt32(sp.value));
-              break;
+        TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
+      }
+    }
 
-            case StorageType.String:
-              if (rp.Definition.Name.ToLower().Contains("name"))
-              {
-                var temp = Regex.Replace(Convert.ToString(sp.value), "[^0-9a-zA-Z ]+", "");
-                Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
-                rp.Set(temp);
-              }
-              else
-              {
-                rp.Set(Convert.ToString(sp.value));
-              }
-              break;
-            default:
-              break;
-          }
-        }
-        catch (Exception ex)
+    private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
+    {
+      try
+      {
+        switch (rp.StorageType)
         {
-          continue;
+          case StorageType.Double:
+            // This is meant for parameters that come from Revit
+            // as they might use a lot more unit types that Speckle doesn't currently support
+            if (!string.IsNullOrEmpty(applicationUnit))
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(value, applicationUnit);
+              rp.Set(val);
+            }
+            // the following two cases are for parameters comimg form schema builder
+            // they do not have applicationUnit but just units
+            // units are automatically set but the user can override them 
+            // users might set them to "none" so that we convert them by using the Revit destination parameter display units
+            // this is needed to correctly receive non lenght based parameters (eg air flow)
+            else if (units == Speckle.Core.Kits.Units.None)
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(value), rp);
+              rp.Set(val);
+            }
+            else if (Speckle.Core.Kits.Units.IsUnitSupported(units))
+            {
+              var val = ScaleToNative(Convert.ToDouble(value), units);
+              rp.Set(val);
+            }
+            else
+            {
+              rp.Set(Convert.ToDouble(value));
+            }
+            break;
+
+          case StorageType.Integer:
+            if (value is string s)
+            {
+              if (s.ToLower() == "no")
+              {
+                value = 0;
+              }
+              else if (s.ToLower() == "yes")
+              {
+                value = 1;
+              }
+            }
+            rp.Set(Convert.ToInt32(value));
+            break;
+
+          case StorageType.String:
+            if (rp.Definition.Name.ToLower().Contains("name"))
+            {
+              var temp = Regex.Replace(Convert.ToString(value), "[^0-9a-zA-Z ]+", "");
+              Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
+              rp.Set(temp);
+            }
+            else
+            {
+              rp.Set(Convert.ToString(value));
+            }
+            break;
+          default:
+            break;
         }
       }
-
+      catch
+      {
+        // do nothing for now...
+      }
     }
 
     //Shared parameters use a GUID to be uniquely identified
     //Other parameters use a BuiltInParameter enum
-    private string GetParamInternalName(DB.Parameter rp)
+    private static string GetParamInternalName(DB.Parameter rp)
     {
       if (rp.IsShared)
         return rp.GUID.ToString();
@@ -554,22 +588,33 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
+    //private void TrySetParam(DB.Element elem, BuiltInParameter bip, double value, string units = "")
+    //{
+    //  var param = elem.get_Parameter(bip);
+    //  if (param != null && !param.IsReadOnly)
+    //  {
+    //    //for angles, we use the default conversion (degrees > radians)
+    //    if (string.IsNullOrEmpty(units))
+    //    {
+    //      param.Set(value);
+    //    }
+    //    else
+    //    {
+    //      param.Set(ScaleToNative(value, units));
+    //    }
+
+    //  }
+    //}
+
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, object value, string units = "")
     {
       var param = elem.get_Parameter(bip);
-      if (param != null && !param.IsReadOnly)
+      if (param == null || param.IsReadOnly)
       {
-        //for angles, we use the default conversion (degrees > radians)
-        if (string.IsNullOrEmpty(units))
-        {
-          param.Set(value);
-        }
-        else
-        {
-          param.Set(ScaleToNative(value, units));
-        }
-
+        return;
       }
+
+      TrySetParam(param, value, units);
     }
 
     /// <summary>
@@ -600,141 +645,87 @@ namespace Objects.Converter.Revit
     #endregion
 
     #region  element types
-
-    private bool GetElementType<T>(string family, string type, ApplicationObject appObj, out T value)
+    
+    private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
     {
-      List<ElementType> types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-
-      //match family and type
-      var match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
-      if (match != null)
-      {
-        if (match is FamilySymbol fs && !fs.IsActive)
-          fs.Activate();
-
-        value = (T)(object)match;
-        return true;
-      }
-
-      //match family
-      match = types.FirstOrDefault(x => x.FamilyName == family);
-      if (match != null)
-      {
-        appObj.Log.Add($"Missing type [{family} - {type}] was replaced with [{match.FamilyName} - {match.Name}]");
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-            fs.Activate();
-
-          value = (T)(object)match;
-          return true;
-        }
-      }
-
-      // get whatever we found, could be a different category!
-      if (types.Any())
-      {
-        match = types.FirstOrDefault();
-        appObj.Log.Add($"Missing family and type, the following family and type were used: {match.FamilyName} - {match.Name}");
-        if (match != null)
-        {
-          if (match is FamilySymbol fs && !fs.IsActive)
-            fs.Activate();
-
-          value = (T)(object)match;
-          return true;
-        }
-      }
-
-      appObj.Log.Add($"Could not find any family symbol to use.");
-      value = default(T);
-      return false;
-    }
-
-    private bool GetElementType<T>(Base element, ApplicationObject appObj, out T value)
-    {
-      List<ElementType> types = new List<ElementType>();
-      ElementFilter filter = GetCategoryFilter(element);
-
-      if (filter != null)
-        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
-      else
-        types = new FilteredElementCollector(Doc).WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
+      isExactMatch = false;
+      var filter = GetCategoryFilter(element);
+      var types = GetElementTypesThatPassFilter<T>(filter);
 
       if (types.Count == 0)
       {
-        var name = string.IsNullOrEmpty(element["category"] as string) ? typeof(T).Name : element["category"].ToString();
-        appObj.Log.Add($"Could not find any family to use for category {name}.");
-        value = default(T);
-        return false;
+        var name = typeof(T).Name;
+        if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
+          name = category;
+
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
+
+        return default;
       }
 
-      var family = element["family"] as string;
-      var type = element["type"] as string;
+      var family = (element["family"] as string)?.ToLower();
+      var type = GetTypeOfSpeckleObject(element)?.ToLower();
 
-      // if the object is structural, we keep the type name in a different location
-      if (element is OSG.Element1D element1D)
-        type = element1D.property.name.Replace('X', 'x');
-      else if (element is OSG.Element2D element2D)
-        type = element2D.property.name;
+      return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
+    }
 
+    private T GetElementType<T>(Base element, string family, string type, List<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
+    {
+      isExactMatch = false;
       ElementType match = null;
 
       if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-        match = types.FirstOrDefault(x => x.FamilyName == family && x.Name == type);
+      {
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family && x.Name?.ToLower() == type);
+        isExactMatch = match != null;
+      }
 
       //some elements only have one family so we didn't add such prop our schema
       if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-        match = types.FirstOrDefault(x => x.Name == type);
+      {
+        match = types.FirstOrDefault(x => x.Name?.ToLower() == type);
+        isExactMatch = match != null;
+      }
 
       // match the type only for when we auto assign it
       if (match == null && !string.IsNullOrEmpty(type))
       {
         match = types.FirstOrDefault(x =>
         {
-          var symbolType = x.GetParameters("Type");
-          var symbolTypeName = x.GetParameters("Type Name");
-          if (symbolType.ElementAtOrDefault(0) != null && symbolType[0].AsValueString()?.ToLower() == type.ToLower())
+          var symbolTypeParam = x.get_Parameter(DB.BuiltInParameter.ELEM_TYPE_PARAM);
+          var symbolTypeNameParam = x.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM);
+          if (symbolTypeParam != null && symbolTypeParam.AsValueString()?.ToLower() == type)
             return true;
-          else if (symbolTypeName.ElementAtOrDefault(0) != null && symbolTypeName[0].AsValueString()?.ToLower() == type.ToLower())
+          else if (symbolTypeNameParam != null && symbolTypeNameParam.AsValueString()?.ToLower() == type)
             return true;
           return false;
         });
+        isExactMatch = match != null;
       }
 
       if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
       {
-        match = types.FirstOrDefault(x => x.FamilyName == family);
-        if (match != null) //inform user that the type is different!
-          appObj.Log.Add($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
-
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family);
       }
+
       if (match == null) // okay, try something!
       {
         if (element is BuiltElements.Wall) // specifies the basic wall sub type as default
           match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
-        if (match == null)
-          match = types.First();
-        appObj.Log.Add($"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+        match ??= types.First();
       }
+
+      if (!isExactMatch)
+        appObj.Update(logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
 
       if (match is FamilySymbol fs && !fs.IsActive)
         fs.Activate();
 
-      value = (T)(object)match;
-      return true;
+      return (T)(object)match;
     }
 
     private ElementFilter GetCategoryFilter(Base element)
     {
-      if (element is OSG.Element1D element1D)
-      {
-        if (element1D.type == OSG.ElementType1D.Column)
-          return new ElementMulticategoryFilter(Categories.columnCategories);
-        else if (element1D.type == OSG.ElementType1D.Beam || element1D.type == OSG.ElementType1D.Brace)
-          return new ElementMulticategoryFilter(Categories.beamCategories);
-      }
-
       switch (element)
       {
         case BuiltElements.Wall _:
@@ -746,23 +737,53 @@ namespace Objects.Converter.Revit
           return new ElementMulticategoryFilter(Categories.beamCategories);
         case Duct _:
           return new ElementMulticategoryFilter(Categories.ductCategories);
-        case Floor _:
+        case OSG.Element1D o:
+          if (o.type == OSG.ElementType1D.Column)
+            return new ElementMulticategoryFilter(Categories.columnCategories);
+          else if (o.type == OSG.ElementType1D.Beam || o.type == OSG.ElementType1D.Brace)
+            return new ElementMulticategoryFilter(Categories.beamCategories);
+          else return null;
         case OSG.Element2D _:
+        case Floor _:
           return new ElementMulticategoryFilter(Categories.floorCategories);
         case Pipe _:
           return new ElementMulticategoryFilter(Categories.pipeCategories);
         case Roof _:
           return new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
         default:
-          ElementFilter filter = null;
           if (element["category"] != null)
           {
             var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
             if (cat != null)
-              filter = new ElementMulticategoryFilter(new List<ElementId> { cat.Id });
+            {
+              return new ElementCategoryFilter(cat.Id);
+            }
           }
-          return filter;
+          return null;
       }
+    }
+
+    private List<ElementType> GetElementTypesThatPassFilter<T>(ElementFilter filter)
+    {
+      using var collector = new FilteredElementCollector(Doc);
+      if (filter != null)
+      {
+        return collector.WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
+      }
+      return collector.WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
+    }
+
+    private string GetTypeOfSpeckleObject(Base @base)
+    {
+      var type = @base["type"] as string;
+
+      // if the object is structural, we keep the type name in a different location
+      if (@base is OSG.Element1D element1D)
+        type = element1D.property.name.Replace('X', 'x');
+      else if (@base is OSG.Element2D element2D)
+        type = element2D.property.name;
+
+      return type;
     }
 
     #endregion
@@ -838,16 +859,22 @@ namespace Objects.Converter.Revit
     /// <param name="appObj"></param>
     /// <param name="updatedAppObj">The updated appObj if method returns true, the original appObj if false</param>
     /// <returns></returns>
-    public bool IsIgnore(Element docObj, ApplicationObject appObj, out ApplicationObject updatedAppObj)
+    public bool IsIgnore(Element docObj, ApplicationObject appObj)
     {
-      updatedAppObj = appObj;
-      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
+      if (docObj != null)
       {
-        updatedAppObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
-        return true;
+        if (ReceiveMode == ReceiveMode.Ignore)
+        {
+          appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+          return true;
+        }
+        else if (docObj.Pinned)
+        {
+          appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: "Element is pinned and cannot be updated");
+          return true;
+        }
       }
-      else
-        return false;
+      return false;
     }
     #endregion
 
@@ -968,7 +995,10 @@ namespace Objects.Converter.Revit
 
       //list of openings hosted in this speckle element
       var openings = new List<RevitOpening>();
-      if (speckleElement["elements"] != null && (speckleElement["elements"] is List<Base> elements))
+      //we used to use "elements" but have now switched to "@elements"
+      //this extra check is for backwards compatibility
+      var nestedElements = @speckleElement["elements"] ?? @speckleElement["@elements"];
+      if (nestedElements is List<Base> elements)
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
@@ -1309,7 +1339,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(@base.id, @base.speckle_type) { applicationId = @base.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       // otherwise just create new one 
@@ -1326,7 +1356,7 @@ namespace Objects.Converter.Revit
       return Regex.Replace(s, "[\\[\\]{}|;<>?`~]", "");
     }
 
-    private static ModelLine GetSlopeArrow(Element element)
+    public static ModelLine GetSlopeArrow(Element element)
     {
       IList<ElementId> elementIds = null;
 #if !REVIT2020 && !REVIT2021
@@ -1363,11 +1393,11 @@ namespace Objects.Converter.Revit
       if (slopeArrow == null) return null;
       return PointToSpeckle(((LocationCurve)slopeArrow.Location).Curve.GetEndPoint(0), doc);
     }
-    public double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
+    public static double GetSlopeArrowTailOffset(ModelLine slopeArrow, Document doc)
     {
       return GetParamValue<double>(slopeArrow, BuiltInParameter.SLOPE_START_HEIGHT);
     }
-    public double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
+    public static double GetSlopeArrowHeadOffset(ModelLine slopeArrow, Document doc, double tailOffset, out double slope)
     {
       var specifyOffset = GetParamValue<int>(slopeArrow, BuiltInParameter.SPECIFY_SLOPE_OR_OFFSET);
       var lineLength = GetParamValue<double>(slopeArrow, BuiltInParameter.CURVE_ELEM_LENGTH);

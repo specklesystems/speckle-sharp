@@ -21,7 +21,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleOpening.id, speckleOpening.speckle_type) { applicationId = speckleOpening.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (docObj != null)
@@ -126,9 +126,6 @@ namespace Objects.Converter.Revit
 
     public BuiltElements.Opening OpeningToSpeckle(DB.Opening revitOpening)
     {
-      if (!ShouldConvertHostedElement(revitOpening, revitOpening.Host))
-        return null;
-
       RevitOpening speckleOpening;
       if (revitOpening.IsRectBoundary)
       {
@@ -160,15 +157,13 @@ namespace Objects.Converter.Revit
         }
         else
         {
-          speckleOpening = new RevitShaft();
+          var shaftOpening = new RevitShaft();
+          speckleOpening = shaftOpening;
           if (revitOpening.get_Parameter(BuiltInParameter.WALL_HEIGHT_TYPE) != null)
           {
-            ((RevitShaft)speckleOpening).topLevel =
-              ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_HEIGHT_TYPE);
-            ((RevitShaft)speckleOpening).bottomLevel =
-              ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_BASE_CONSTRAINT);
-            ((RevitShaft)speckleOpening).height =
-              GetParamValue<double>(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
+            shaftOpening.topLevel = ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_HEIGHT_TYPE);
+            shaftOpening.bottomLevel = ConvertAndCacheLevel(revitOpening, BuiltInParameter.WALL_BASE_CONSTRAINT);
+            shaftOpening.height = GetParamValue<double>(revitOpening, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
           }
         }
 

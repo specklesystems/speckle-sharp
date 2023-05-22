@@ -54,6 +54,8 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
         Tracker.TrackNodeRun("Object Value by Key");
 
       var @base = speckleObj?.Value;
+      if (@base == null)
+        return;
       var task = Task.Run(() => DoWork(@base, key, CancelToken));
       TaskList.Add(task);
       return;
@@ -74,7 +76,6 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
     switch (value)
     {
       case null:
-        AddRuntimeMessage(GH_RuntimeMessageLevel.Warning, "Key not found in object");
         break;
       case IEnumerable list:
       {
@@ -98,6 +99,13 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
         return null;
 
       var obj = @base[key] ?? @base["@" + key];
+      if (obj == null)
+      {
+        // Try check if it's a computed value
+        var members = @base.GetMembers(DynamicBaseMemberType.SchemaComputed);
+        if (members.TryGetValue(key, out object member))
+          obj = member;
+      }
 
       switch (obj)
       {
@@ -119,7 +127,7 @@ public class GetObjectValueByKeyTaskComponent : SelectKitTaskCapableComponentBas
     catch (Exception ex)
     {
       // If we reach this, something happened that we weren't expecting...
-      SpeckleLog.Logger.Error(ex, ex.Message);
+      SpeckleLog.Logger.Error(ex, "Failed during execution of {componentName}", this.GetType());
       AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Something went terribly wrong... " + ex.ToFormattedString());
     }
     return value;

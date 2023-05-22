@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements.Revit;
@@ -18,7 +18,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRebar.id, speckleRebar.speckle_type) { applicationId = speckleRebar.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (speckleRebar.curves.Count == 0)
@@ -35,7 +35,8 @@ namespace Objects.Converter.Revit
       }
 
       var rebarType = speckleRevitRebar?.barType;
-      if (!GetElementType<RebarBarType>(speckleRebar, appObj, out RebarBarType barType))
+      var barType = GetElementType<RebarBarType>(speckleRebar, appObj, out bool _);
+      if (barType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;

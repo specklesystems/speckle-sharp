@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.DB.Plumbing;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using Curve = Objects.Geometry.Curve;
@@ -22,11 +23,12 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(specklePipe.id, specklePipe.speckle_type) { applicationId = specklePipe.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       // get system info
-      if (!GetElementType<DB.Plumbing.PipeType>(specklePipe, appObj, out DB.Plumbing.PipeType pipeType))
+      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe, appObj, out bool _);
+      if (pipeType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
         return appObj;
@@ -65,19 +67,16 @@ namespace Objects.Converter.Revit
           DB.Plumbing.FlexPipeType flexPipeType = null;
           if (speckleRevitFlexPipe != null)
           {
-            if (!GetElementType<DB.Plumbing.FlexPipeType>(speckleRevitFlexPipe, appObj, out flexPipeType))
-            {
-              appObj.Update(status: ApplicationObject.State.Failed);
-              return appObj;
-            }
+            flexPipeType = GetElementType<FlexPipeType>(speckleRevitFlexPipe, appObj, out bool _);
           }
           else
           {
-            if (!GetElementType<DB.Plumbing.FlexPipeType>(specklePipe, appObj, out flexPipeType))
-            {
-              appObj.Update(status: ApplicationObject.State.Failed);
-              return appObj;
-            }
+            flexPipeType = GetElementType<FlexPipeType>(specklePipe, appObj, out bool _);
+          }
+          if (flexPipeType == null)
+          {
+            appObj.Update(status: ApplicationObject.State.Failed);
+            return appObj;
           }
 
           // get points
@@ -140,7 +139,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitPipe)
+        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
@@ -184,7 +183,7 @@ namespace Objects.Converter.Revit
         startTangent = VectorToSpeckle(revitPipe.StartTangent, revitPipe.Document),
         endTangent = VectorToSpeckle(revitPipe.EndTangent, revitPipe.Document),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitPipe)
+        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);

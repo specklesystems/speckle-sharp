@@ -10,9 +10,10 @@ namespace AdvanceSteelAddinRegistrator
 {
   internal class Program
   {
-    const string path = "C:\\Program Files\\Autodesk\\AutoCAD 2023\\ADVS\\Addons\\";
-    private static string manifest = Path.Combine(path, "MyAddons.xml");
-    private static string addinPath = Path.Combine(path, "Speckle");
+    private static string _year = null;
+    static string manifestBasePath => $"C:\\Program Files\\Autodesk\\AutoCAD {_year}\\ADVS\\Addons\\";
+    static string addinPath => $"C:\\Program Files\\Autodesk\\Advance Steel Speckle Connector\\{_year}\\";
+    private static string manifest => Path.Combine(manifestBasePath, "MyAddons.xml");
     const string addinDllName = "SpeckleConnectorAdvanceSteel.dll";
     const string addinName = "Speckle";
 
@@ -23,19 +24,30 @@ namespace AdvanceSteelAddinRegistrator
       ErrorUpdatingXml = 2,
       ErrorWritingXml = 3,
       NoAdminRights = 4,
-      Unknown = 5
+      Unknown = 5,
+      NoYearArgument = 6
     }
     static int Main(string[] args)
     {
+      if (args == null || !args.Any() || args[0].Length!=4)
+      {
+        Console.WriteLine("Please provide a Year argument (eg: '202X')");
+        return (int)ExitCode.NoYearArgument;
+      }
+
+      _year = args[0];
+      
+      
       AddonsData addonsData = new AddonsData();
 
       try
       {
 
         if (File.Exists(manifest))
-        {
           addonsData = ParseManifestFile();
-        }
+
+        if (!Directory.Exists(manifestBasePath))
+          Directory.CreateDirectory(manifestBasePath);
 
         addonsData = UpdateManifestFile(addonsData);
 
