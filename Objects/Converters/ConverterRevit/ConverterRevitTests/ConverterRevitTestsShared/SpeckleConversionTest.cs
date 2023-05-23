@@ -334,7 +334,7 @@ namespace ConverterRevitTests
       Assert.NotNull(sourceElem);
       Assert.NotNull(destElem);
       Assert.Equal(sourceElem.Name, destElem.Name);
-      Assert.Equal(sourceElem.Document.GetElement(sourceElem.GetTypeId()).Name, destElem.Document.GetElement(destElem.GetTypeId()).Name);
+      Assert.Equal(sourceElem.Document.GetElement(sourceElem.GetTypeId())?.Name, destElem.Document.GetElement(destElem.GetTypeId())?.Name);
       Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
     }
 
