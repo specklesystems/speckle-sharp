@@ -95,6 +95,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Floors
         }
       },
+      { "floor", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_Floors
+        }
+      },
     };
     public SpeckleConversionFixture()
     {

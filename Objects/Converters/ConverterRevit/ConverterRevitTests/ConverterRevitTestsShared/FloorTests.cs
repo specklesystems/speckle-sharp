@@ -11,9 +11,10 @@ namespace ConverterRevitTests
 {
   public class FloorFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Floor.rvt");
-    public override string NewFile => Globals.GetTestModel("FloorToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Floor.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "FloorToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Floors };
+    public override string Category => "Floor";
 
     public FloorFixture() : base()
     {
