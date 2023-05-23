@@ -1,8 +1,5 @@
-using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using System.Collections.Generic;
-
 using Xunit;
 using System.Threading.Tasks;
 
@@ -12,8 +9,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Curve.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "CurveToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines };
-    public override string Category => "Curve";
+    public override string Category => TestCategories.Curve;
     public CurveFixture() : base()
     {
     }

@@ -1,8 +1,5 @@
-using Autodesk.Revit.DB;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-
 using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
@@ -12,9 +9,7 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Column.rvt");
     public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "ColumnUpdated.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "ColumnToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns };
-    //public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "Beam.ExpectedFailures.json");
-    public override string Category => "Column";
+    public override string Category => TestCategories.Column;
 
     public ColumnFixture() : base()
     {

@@ -1,8 +1,4 @@
-using System;
-using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using System.Collections.Generic;
-
 using Xunit;
 using System.Threading.Tasks;
 
@@ -12,9 +8,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "DirectShape.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "DirectShapeToNative.rvt");
-    //USING GENERIC MODELS FOR AC, fine for testing
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_GenericModel };
-    public override string Category => "DirectShape";
+    public override string Category => TestCategories.DirectShape;
     public DirectShapeFixture() : base ()
     {
     }

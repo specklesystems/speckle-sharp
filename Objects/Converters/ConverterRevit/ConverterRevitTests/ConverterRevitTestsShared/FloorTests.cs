@@ -1,7 +1,6 @@
 using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
 using Revit.Async;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -13,9 +12,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Floor.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "FloorToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Floors };
-    public override string Category => "Floor";
-
+    public override string Category => TestCategories.Floor;
     public FloorFixture() : base()
     {
     }

@@ -1,8 +1,6 @@
-using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB.Plumbing;
 using Xunit;
-using System.Threading.Tasks;
 
 namespace ConverterRevitTests
 {
@@ -10,8 +8,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Pipe.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "PipeToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {BuiltInCategory.OST_PipeCurves};
-    public override string Category => "pipe";
+    public override string Category => TestCategories.Pipe;
   }
 
   public class PipeTests : SpeckleConversionTest, IClassFixture<PipeFixture>

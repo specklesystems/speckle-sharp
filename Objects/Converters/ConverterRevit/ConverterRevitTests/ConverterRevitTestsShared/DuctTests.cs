@@ -1,10 +1,5 @@
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB.Mechanical;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace ConverterRevitTests
@@ -13,8 +8,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Duct.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category,"DuctToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_DuctCurves };
-    public override string Category => "Duct";
+    public override string Category => TestCategories.Duct;
     public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "Duct.ExpectedFailures.json");
     public DuctFixture() : base() { }
   }

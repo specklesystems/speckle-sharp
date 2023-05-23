@@ -1,13 +1,6 @@
-using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using System.Collections.Generic;
-
 using Xunit;
-using Objects.Converter.Revit;
-using System.Linq;
-using xUnitRevitUtils;
-using Speckle.Core.Models;
 using System.Threading.Tasks;
 
 namespace ConverterRevitTests
@@ -17,23 +10,8 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.rvt");
     public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceUpdated.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
-      BuiltInCategory.OST_Furniture,
-      BuiltInCategory.OST_Doors,
-      BuiltInCategory.OST_Walls,
-      BuiltInCategory.OST_Windows,
-      BuiltInCategory.OST_CeilingOpening,
-      BuiltInCategory.OST_ColumnOpening,
-      BuiltInCategory.OST_FloorOpening,
-      BuiltInCategory.OST_ShaftOpening,
-      BuiltInCategory.OST_StructuralFramingOpening,
-      BuiltInCategory.OST_SWallRectOpening,
-      BuiltInCategory.OST_ArcWallRectOpening,
-      BuiltInCategory.OST_FloorOpening,
-      BuiltInCategory.OST_SWallRectOpening,
-      BuiltInCategory.OST_Floors};
     public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.ExpectedFailures.json");
-    public override string Category => "FamilyInstance";
+    public override string Category => TestCategories.FamilyInstance;
     public FamilyInstanceFixture() : base()
     {
     }

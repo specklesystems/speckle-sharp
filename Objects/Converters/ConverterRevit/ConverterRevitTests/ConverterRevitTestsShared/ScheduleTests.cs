@@ -15,8 +15,7 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Schedule.rvt");
     public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "ScheduleUpdated.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "ScheduleToNative.rvt");
-    public override List<BuiltInCategory> Categories => new() { BuiltInCategory.OST_Schedules };
-    public override string Category => "Schedule";
+    public override string Category => TestCategories.Schedule;
     public ScheduleFixture() : base ()
     {
     }

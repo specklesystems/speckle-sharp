@@ -27,6 +27,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleUtils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TestCategories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WallTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WireTests.cs" />
   </ItemGroup>

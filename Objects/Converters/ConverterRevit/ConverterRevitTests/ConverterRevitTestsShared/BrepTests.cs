@@ -8,19 +8,15 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using xUnitRevitUtils;
 
 namespace ConverterRevitTests
 {
   public class BrepFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Brep.rvt");
-
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Mass, BuiltInCategory.OST_Mass };
-
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "BrepToNative.rvt");
     public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "Brep.ExpectedFailures.json");
-    public override string Category => "brep";
+    public override string Category => TestCategories.Brep;
   }
 
   public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>

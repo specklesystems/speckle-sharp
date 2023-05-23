@@ -1,9 +1,5 @@
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -15,8 +11,7 @@ namespace ConverterRevitTests
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Wall.rvt");
     public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "WallUpdated.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "WallToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Walls };
-    public override string Category => "Wall";
+    public override string Category => TestCategories.Wall;
     public WallFixture() : base()
     {
     }

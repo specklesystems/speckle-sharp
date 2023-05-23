@@ -1,8 +1,6 @@
 using Autodesk.Revit.DB;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
-
 using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
@@ -11,21 +9,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Opening.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "OpeningToNative.rvt");
-    public override string Category => "opening";
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
-      BuiltInCategory.OST_CeilingOpening,
-      BuiltInCategory.OST_ColumnOpening,
-      BuiltInCategory.OST_FloorOpening,
-      BuiltInCategory.OST_ShaftOpening,
-      BuiltInCategory.OST_StructuralFramingOpening,
-      BuiltInCategory.OST_SWallRectOpening,
-      BuiltInCategory.OST_ArcWallRectOpening,
-      BuiltInCategory.OST_Walls,
-      BuiltInCategory.OST_Floors,
-      BuiltInCategory.OST_Ceilings,
-      BuiltInCategory.OST_RoofOpening,
-      BuiltInCategory.OST_Roofs};
-
+    public override string Category => TestCategories.Opening;
     public OpeningFixture() : base()
     {
     }

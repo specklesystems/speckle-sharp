@@ -1,8 +1,4 @@
-using System;
-using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
-using System.Collections.Generic;
-
 using Xunit;
 using System.Threading.Tasks;
 
@@ -11,12 +7,10 @@ namespace ConverterRevitTests
   public class BeamFixture : SpeckleConversionFixture
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Beam.rvt");
-
     public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "BeamUpdated.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "BeamToNative.rvt");
     public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "Beam.ExpectedFailures.json");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming };
-    public override string Category => "Beam";
+    public override string Category => TestCategories.Beam;
 
     public BeamFixture() : base()
     {

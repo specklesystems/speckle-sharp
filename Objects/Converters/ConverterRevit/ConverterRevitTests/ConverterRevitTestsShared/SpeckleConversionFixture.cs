@@ -22,7 +22,7 @@ namespace ConverterRevitTests
     public bool UpdateTestRunning { get; set; }
     public string TestClassName { get; set; }
     public virtual string TestName { get; }
-    public virtual string Category { get; }
+    public abstract string Category { get; }
     public virtual string TestFile { get; }
     public virtual string UpdatedTestFile { get; }
     public virtual string NewFile { get; }
@@ -38,122 +38,13 @@ namespace ConverterRevitTests
         return expectedFailures;
       }
     }
-    public virtual List<BuiltInCategory> Categories { get; }
-
-    public Dictionary<string, List<BuiltInCategory>> CategoriesDict = new()
-    {
-      { "beam", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_StructuralFraming
-        }
-      },
-      { "adaptivecomponent", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_GenericModel
-        }
-      },
-      { "brep", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Mass
-        }
-      },
-      { "column", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns
-        }
-      },
-      { "curve", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Lines, BuiltInCategory.OST_RoomSeparationLines
-        }
-      },
-      { "directshape", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_GenericModel
-        }
-      },
-      { "duct", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_DuctCurves
-        }
-      },
-      { "familyinstance", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Furniture,
-          BuiltInCategory.OST_Doors,
-          BuiltInCategory.OST_Walls,
-          BuiltInCategory.OST_Windows,
-          BuiltInCategory.OST_CeilingOpening,
-          BuiltInCategory.OST_ColumnOpening,
-          BuiltInCategory.OST_FloorOpening,
-          BuiltInCategory.OST_ShaftOpening,
-          BuiltInCategory.OST_StructuralFramingOpening,
-          BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_ArcWallRectOpening,
-          BuiltInCategory.OST_FloorOpening,
-          BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_Floors
-        }
-      },
-      { "floor", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Floors
-        }
-      },
-      { "opening", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_CeilingOpening,
-          BuiltInCategory.OST_ColumnOpening,
-          BuiltInCategory.OST_FloorOpening,
-          BuiltInCategory.OST_ShaftOpening,
-          BuiltInCategory.OST_StructuralFramingOpening,
-          BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_ArcWallRectOpening,
-          BuiltInCategory.OST_Walls,
-          BuiltInCategory.OST_Floors,
-          BuiltInCategory.OST_Ceilings,
-          BuiltInCategory.OST_RoofOpening,
-          BuiltInCategory.OST_Roofs
-        }
-      },
-      { "pipe", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_PipeCurves
-        }
-      },
-      { "roof", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Roofs
-        }
-      },
-      { "room", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Rooms
-        }
-      },
-      { "schedule", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Schedules
-        }
-      },
-      { "wall", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Walls
-        }
-      },
-      { "wire", new List<BuiltInCategory>()
-        {
-          BuiltInCategory.OST_Wire
-        }
-      },
-    };
     public SpeckleConversionFixture()
     {
     }
 
     public void Initialize()
     {
-      if (!CategoriesDict.TryGetValue(Category.ToLower(), out var categories))
+      if (!TestCategories.CategoriesDict.TryGetValue(Category.ToLower(), out var categories))
       {
         throw new System.Exception($"Category, {Category.ToLower()} is not a recognized category");
       }

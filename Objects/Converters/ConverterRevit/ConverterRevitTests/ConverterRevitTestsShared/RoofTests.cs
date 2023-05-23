@@ -1,5 +1,4 @@
 using Autodesk.Revit.DB;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -11,8 +10,7 @@ namespace ConverterRevitTests
   {
     public override string TestFile => Globals.GetTestModelOfCategory(Category, "Roof.rvt");
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "RoofToNative.rvt");
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Roofs };
-    public override string Category => "Roof";
+    public override string Category => TestCategories.Roof;
 
     public RoofFixture() : base()
     {
