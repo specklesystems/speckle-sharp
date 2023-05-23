@@ -100,6 +100,22 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Floors
         }
       },
+      { "opening", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_CeilingOpening,
+          BuiltInCategory.OST_ColumnOpening,
+          BuiltInCategory.OST_FloorOpening,
+          BuiltInCategory.OST_ShaftOpening,
+          BuiltInCategory.OST_StructuralFramingOpening,
+          BuiltInCategory.OST_SWallRectOpening,
+          BuiltInCategory.OST_ArcWallRectOpening,
+          BuiltInCategory.OST_Walls,
+          BuiltInCategory.OST_Floors,
+          BuiltInCategory.OST_Ceilings,
+          BuiltInCategory.OST_RoofOpening,
+          BuiltInCategory.OST_Roofs
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
