@@ -10,9 +10,10 @@ namespace ConverterRevitTests
 {
   public class AdaptiveComponentFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("AdaptiveComponent.rvt");
-    public override string NewFile => Globals.GetTestModel("AdaptiveComponentToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "AdaptiveComponent.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "AdaptiveComponentToNative.rvt");
     //USING GENERIC MODELS FOR AC, fine for testing
+    public override string Category => "AdaptiveComponent";
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_GenericModel };
     public AdaptiveComponentFixture() : base ()
     {

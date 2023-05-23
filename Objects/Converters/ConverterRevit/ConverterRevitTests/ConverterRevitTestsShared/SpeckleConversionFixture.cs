@@ -46,7 +46,12 @@ namespace ConverterRevitTests
         {
           BuiltInCategory.OST_StructuralFraming
         }
-      }
+      },
+      { "adaptivecomponent", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_GenericModel
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
@@ -98,10 +103,10 @@ namespace ConverterRevitTests
         //// if none of the tests failed, close the documents
         //if (!testsFailed)
         //{
-        //  xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
-        //  xru.CloseDoc(SourceDoc);
-        //  xru.CloseDoc(UpdatedDoc);
-        //  xru.CloseDoc(NewDoc);
+        xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
+        xru.CloseDoc(SourceDoc);
+        xru.CloseDoc(UpdatedDoc);
+        xru.CloseDoc(NewDoc);
         //}
 
         return Task.CompletedTask;
@@ -117,11 +122,20 @@ namespace ConverterRevitTests
   {
     public static Dictionary<string, List<string>> DeserializeFile(string file)
     {
+      if (string.IsNullOrEmpty(file))
+      {
+        return new Dictionary<string, List<string>>();
+      }
       using StreamReader r = new StreamReader(file);
       string json = r.ReadToEnd();
-      var res = JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
-
-      return res;
+      try
+      {
+        return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
+      }
+      catch
+      {
+        return new Dictionary<string, List<string>>();
+      }
     }
   }
 }

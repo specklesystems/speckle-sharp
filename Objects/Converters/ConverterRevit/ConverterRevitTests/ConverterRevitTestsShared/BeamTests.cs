@@ -16,9 +16,6 @@ namespace ConverterRevitTests
     public override string NewFile => Globals.GetTestModelOfCategory(Category, "BeamToNative.rvt");
     public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "Beam.ExpectedFailures.json");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming };
-
-    public override string TestName => "Beam";
-
     public override string Category => "Beam";
 
     public BeamFixture() : base()

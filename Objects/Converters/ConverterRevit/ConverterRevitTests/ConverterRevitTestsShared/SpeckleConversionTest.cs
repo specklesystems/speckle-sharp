@@ -219,12 +219,14 @@ namespace ConverterRevitTests
       for (var i = 0; i < spkElems.Count; i++)
       {
         if (fixture.UpdateTestRunning
-          && fixture.ExpectedFailures["ToNativeUpdates"].Contains(spkElems[i].applicationId))
+          && fixture.ExpectedFailures.TryGetValue("ToNativeUpdates", out var skipsUpdate)
+          && skipsUpdate.Contains(spkElems[i].applicationId))
         {
           continue;
         }
         else if (!fixture.UpdateTestRunning
-          && fixture.ExpectedFailures["ToNative"].Contains(spkElems[i].applicationId))
+          && fixture.ExpectedFailures.TryGetValue("ToNative", out var skipsToNative)
+          && skipsToNative.Contains(spkElems[i].applicationId))
         {
           continue;
         }
