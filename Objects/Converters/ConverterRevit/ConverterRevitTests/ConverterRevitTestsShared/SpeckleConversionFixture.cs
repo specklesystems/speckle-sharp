@@ -52,6 +52,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_GenericModel
         }
       },
+      { "brep", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_Mass
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
