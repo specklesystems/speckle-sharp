@@ -8,9 +8,10 @@ namespace ConverterRevitTests
 {
   public class WireFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Wire.rvt");
-    public override string NewFile => Globals.GetTestModel("WireToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Wire.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "WireToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {BuiltInCategory.OST_Wire};
+    public override string Category => "Wire";
   }
 
   public class WireTests : SpeckleConversionTest, IClassFixture<WireFixture>
