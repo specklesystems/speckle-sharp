@@ -12,10 +12,11 @@ namespace ConverterRevitTests
 
   public class WallFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Wall.rvt");
-    public override string UpdatedTestFile => Globals.GetTestModel("WallUpdated.rvt");
-    public override string NewFile => Globals.GetTestModel("WallToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Wall.rvt");
+    public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "WallUpdated.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "WallToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Walls };
+    public override string Category => "Wall";
     public WallFixture() : base()
     {
     }

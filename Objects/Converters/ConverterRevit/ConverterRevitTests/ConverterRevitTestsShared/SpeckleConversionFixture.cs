@@ -136,6 +136,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Schedules
         }
       },
+      { "wall", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_Walls
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
