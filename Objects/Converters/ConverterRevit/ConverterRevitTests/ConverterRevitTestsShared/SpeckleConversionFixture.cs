@@ -72,6 +72,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_GenericModel
         }
       },
+      { "duct", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_DuctCurves
+        }
+      },
     };
     public SpeckleConversionFixture()
     {

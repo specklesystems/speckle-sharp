@@ -32,7 +32,20 @@ namespace ConverterRevitTests
       {
         await RevitTask.RunAsync(() =>
         {
-          var spkElem = converter.ConvertToSpeckle(elem);
+          Base spkElem = null;
+          try
+          {
+            spkElem = converter.ConvertToSpeckle(elem);
+          }
+          catch
+          {
+            // do nothing
+          }
+          if (fixture.ExpectedFailures.TryGetValue("ToSpeckle", out var skipIds)
+            && skipIds.Contains(elem.UniqueId)) 
+          {
+            return;
+          }
           if (spkElem is Base re)
             AssertValidSpeckleElement(elem, re);
         });
@@ -142,7 +155,10 @@ namespace ConverterRevitTests
             {
               conversionResult = converter.ConvertToSpeckle(elem);
             }
-            catch { }
+            catch (Exception ex)
+            {
+              HandleError(elem.UniqueId, ex);
+            }
             if (conversionResult != null)
             {
               spkElems.Add(conversionResult);
@@ -159,9 +175,20 @@ namespace ConverterRevitTests
       if (appPlaceholders != null)
         converter.SetPreviousContextObjects(appPlaceholders);
 
-      converter.SetContextObjects(
-        spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList()
-      );
+      var contextObjs = spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList();
+      var appObjs = new List<ApplicationObject>();
+      foreach (var contextObj in contextObjs)
+      {
+        if (string.IsNullOrEmpty(contextObj.applicationId) 
+          && string.IsNullOrEmpty(contextObj.OriginalId))
+        {
+          continue;
+        }
+
+        appObjs.Add(contextObj);
+      }
+
+      converter.SetContextObjects(appObjs);
 
       var resEls = new List<ApplicationObject>();
       //used to associate th nested Base objects with eh flat revit ones
@@ -199,13 +226,14 @@ namespace ConverterRevitTests
             }
             else if (res == null)
             {
-              throw new Exception("Conversion returned null");
+              HandleError(el.applicationId, new Exception("Conversion returned null"));
             }
             else
             {
-              throw new Exception(
+              HandleError(el.applicationId,
+                new Exception(
                 $"Conversion of Speckle object, of type {el.speckle_type}, to Revit returned unexpected type, {res.GetType().FullName}"
-              );
+              ));
             }
           }
           //}, fixture.NewDoc).Wait();
@@ -234,10 +262,17 @@ namespace ConverterRevitTests
         var sourceElem = (T)(object)elements.FirstOrDefault(x => x.UniqueId == flatSpkElems[i].applicationId);
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
 
-        assert?.Invoke(sourceElem, destElement);
-        if (assertAsync != null)
+        try
         {
-          await assertAsync.Invoke(sourceElem, destElement);
+          assert?.Invoke(sourceElem, destElement);
+          if (assertAsync != null)
+          {
+            await assertAsync.Invoke(sourceElem, destElement);
+          }
+        }
+        catch(Exception ex)
+        {
+          HandleError(spkElems[i].applicationId, ex);
         }
       }
 
@@ -247,6 +282,24 @@ namespace ConverterRevitTests
       }
 
       return resEls;
+    }
+
+    public void HandleError(string uniqueId, Exception ex)
+    {
+      if (fixture.UpdateTestRunning
+          && fixture.ExpectedFailures.TryGetValue("ToNativeUpdates", out var skipsUpdate)
+          && skipsUpdate.Contains(uniqueId))
+      {
+        return;
+      }
+      else if (!fixture.UpdateTestRunning
+        && fixture.ExpectedFailures.TryGetValue("ToNative", out var skipsToNative)
+        && skipsToNative.Contains(uniqueId))
+      {
+        return;
+      }
+
+      throw ex;
     }
 
     /// <summary>

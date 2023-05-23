@@ -60,24 +60,19 @@ namespace ConverterRevitTests
       if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
       DirectShape native = null;
 
-      if (fixture.UpdateTestRunning
-          && fixture.ExpectedFailures.TryGetValue("ToNativeUpdates", out var skipsUpdate)
-          && skipsUpdate.Contains(@base.id))
+      try
       {
+        await SpeckleUtils.RunInTransaction(() =>
+        {
+          converter.SetContextDocument(fixture.NewDoc);
+          native = converter.BrepToDirectShape(brep, out List<string> notes);
+        }, fixture.NewDoc, converter);
+      }
+      catch (Exception ex)
+      {
+        HandleError(@base.id, ex);
         return;
       }
-      else if (!fixture.UpdateTestRunning
-          && fixture.ExpectedFailures.TryGetValue("ToNative", out var skipsToNative)
-          && skipsToNative.Contains(@base.id))
-      {
-        return;
-      }
-
-      await SpeckleUtils.RunInTransaction(() =>
-      {
-        converter.SetContextDocument(fixture.NewDoc);
-        native = converter.BrepToDirectShape(brep, out List<string>notes);
-      }, fixture.NewDoc, converter);
 
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
     }
