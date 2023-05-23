@@ -23,6 +23,7 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTests2021\\ConverterRevitTests2021.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTests2023\\ConverterRevitTests2023.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTestsShared\\ConverterRevitTestsShared.shproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\TestGenerator\\TestGenerator.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\xUnitRevit\\speckle.xunit.runner.wpf\\speckle.xunit.runner.wpf\\speckle.xunit.runner.wpf.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\xUnitRevit\\xUnitRevitRunner\\xUnitRevitRunner2021\\xUnitRevitRunner2021.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\xUnitRevit\\xUnitRevitRunner\\xUnitRevitRunner2022\\xUnitRevitRunner2022.csproj",

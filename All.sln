@@ -348,6 +348,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevitTests2021", "
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deps", "deps", "{697DC8AA-9396-4E47-B0A7-1CEE5608B1BA}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestGenerator", "Objects\Converters\ConverterRevit\ConverterRevitTests\TestGenerator\TestGenerator.csproj", "{83EAF128-AF56-4E98-BA19-646291690333}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -1841,6 +1843,22 @@ Global
 		{98B35096-121D-4EF5-9BFF-EFEA518E9311}.Release|Any CPU.Build.0 = Release|Any CPU
 		{98B35096-121D-4EF5-9BFF-EFEA518E9311}.Release|x64.ActiveCfg = Release|Any CPU
 		{98B35096-121D-4EF5-9BFF-EFEA518E9311}.Release|x64.Build.0 = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Debug|x64.Build.0 = Debug|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release Mac|x64.Build.0 = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release|x64.ActiveCfg = Release|Any CPU
+		{83EAF128-AF56-4E98-BA19-646291690333}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
