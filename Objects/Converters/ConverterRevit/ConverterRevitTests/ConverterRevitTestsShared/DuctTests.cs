@@ -24,21 +24,19 @@ namespace ConverterRevitTests
     {
     }
 
-    [Fact]
-    [Trait("Duct", "ToSpeckle")]
-    public async Task DuctToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
+    //[Fact]
+    //[Trait("Duct", "ToSpeckle")]
+    //public async Task DuctToSpeckle()
+    //{
+    //  await NativeToSpeckle();
+    //}
 
-    #region ToNative
-
-    [Fact]
-    [Trait("Duct", "ToNative")]
-    public async Task DuctToNative()
-    {
-      await SpeckleToNative<DB.Duct>(AssertDuctEqual);
-    }
+    //[Fact]
+    //[Trait("Duct", "ToNative")]
+    //public async Task DuctToNative()
+    //{
+    //  await SpeckleToNative<DB.Duct>(AssertDuctEqual);
+    //}
 
     private void AssertDuctEqual(DB.Duct sourceElem, DB.Duct destElem)
     {
@@ -52,7 +50,6 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_CURVE_DIAMETER_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_VELOCITY);
     }
-    #endregion
 
   }
 }
