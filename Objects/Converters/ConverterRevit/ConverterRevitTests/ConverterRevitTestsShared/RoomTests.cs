@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autodesk.Revit.DB;
 using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
@@ -10,9 +10,10 @@ namespace ConverterRevitTests
 {
   public class RoomFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Room.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Room.rvt");
    // public override string NewFile => Globals.GetTestModel("Room_ToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Rooms };
+    public override string Category => "Room";
     public RoomFixture() : base ()
     {
     }

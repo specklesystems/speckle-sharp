@@ -126,6 +126,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Roofs
         }
       },
+      { "room", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_Rooms
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
