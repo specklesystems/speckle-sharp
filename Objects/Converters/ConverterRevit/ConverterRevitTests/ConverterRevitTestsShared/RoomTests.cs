@@ -31,7 +31,5 @@ namespace ConverterRevitTests
     {
       await NativeToSpeckle();
     }
-
-
   }
 }

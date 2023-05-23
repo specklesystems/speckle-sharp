@@ -12,10 +12,11 @@ namespace ConverterRevitTests
 {
   public class ScheduleFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Schedule.rvt");
-    public override string UpdatedTestFile => Globals.GetTestModel("ScheduleUpdated.rvt");
-    public override string NewFile => Globals.GetTestModel("ScheduleToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Schedule.rvt");
+    public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "ScheduleUpdated.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "ScheduleToNative.rvt");
     public override List<BuiltInCategory> Categories => new() { BuiltInCategory.OST_Schedules };
+    public override string Category => "Schedule";
     public ScheduleFixture() : base ()
     {
     }
@@ -94,6 +95,8 @@ namespace ConverterRevitTests
 
     private static List<List<string>> GetTextValuesFromSchedule(ViewSchedule revitSchedule)
     {
+      var originalTableIds = new FilteredElementCollector(revitSchedule.Document, revitSchedule.Id)
+        .ToElementIds();
       var values = new List<List<string>>();
       foreach (var rowInfo in RevitScheduleUtils.ScheduleRowIteration(revitSchedule))
       {
@@ -101,6 +104,11 @@ namespace ConverterRevitTests
         {
           continue;
         }
+        if (!ConverterRevit.ElementApplicationIdsInRow(rowInfo.rowIndex, rowInfo.section, originalTableIds, revitSchedule, rowInfo.tableSection).Any())
+        {
+          continue;
+        }
+
         var innerList = new List<string>();
         for (var columnIndex = 0; columnIndex < rowInfo.columnCount; columnIndex++)
         {
