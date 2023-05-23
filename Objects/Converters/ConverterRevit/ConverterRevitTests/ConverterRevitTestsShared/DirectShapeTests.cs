@@ -10,10 +10,11 @@ namespace ConverterRevitTests
 {
   public class DirectShapeFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("DirectShape.rvt");
-    public override string NewFile => Globals.GetTestModel("DirectShapeToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "DirectShape.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "DirectShapeToNative.rvt");
     //USING GENERIC MODELS FOR AC, fine for testing
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_GenericModel };
+    public override string Category => "DirectShape";
     public DirectShapeFixture() : base ()
     {
     }
