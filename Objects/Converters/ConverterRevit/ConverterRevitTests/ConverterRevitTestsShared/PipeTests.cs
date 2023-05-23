@@ -8,9 +8,10 @@ namespace ConverterRevitTests
 {
   public class PipeFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Pipe.rvt");
-    public override string NewFile => Globals.GetTestModel("PipeToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Pipe.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "PipeToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {BuiltInCategory.OST_PipeCurves};
+    public override string Category => "pipe";
   }
 
   public class PipeTests : SpeckleConversionTest, IClassFixture<PipeFixture>
@@ -19,21 +20,19 @@ namespace ConverterRevitTests
     {
     }
 
-    [Fact]
-    [Trait("Pipe", "ToSpeckle")]
-    public async Task PipeToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
+    //[Fact]
+    //[Trait("Pipe", "ToSpeckle")]
+    //public async Task PipeToSpeckle()
+    //{
+    //  await NativeToSpeckle();
+    //}
 
-    #region ToNative
-
-    [Fact]
-    [Trait("Pipe", "ToNative")]
-    public async Task PipeToNative()
-    {
-      await SpeckleToNative<DB.Pipe>(AssertPipeEqual);
-    }
+    //[Fact]
+    //[Trait("Pipe", "ToNative")]
+    //public async Task PipeToNative()
+    //{
+    //  await SpeckleToNative<DB.Pipe>(AssertPipeEqual);
+    //}
 
     private void AssertPipeEqual(DB.Pipe sourceElem, DB.Pipe destElem)
     {
@@ -44,7 +43,5 @@ namespace ConverterRevitTests
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_START_LEVEL_PARAM);
       AssertEqualParam(sourceElem, destElem, BuiltInParameter.RBS_SYSTEM_CLASSIFICATION_PARAM);
     }
-
-    #endregion ToNative
   }
 }

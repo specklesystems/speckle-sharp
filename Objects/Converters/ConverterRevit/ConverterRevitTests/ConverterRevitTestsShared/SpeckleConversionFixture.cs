@@ -116,6 +116,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Roofs
         }
       },
+      { "pipe", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_PipeCurves
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
