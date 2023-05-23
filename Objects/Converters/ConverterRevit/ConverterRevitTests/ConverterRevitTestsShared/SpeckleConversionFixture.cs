@@ -57,6 +57,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_Mass
         }
       },
+      { "column", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
