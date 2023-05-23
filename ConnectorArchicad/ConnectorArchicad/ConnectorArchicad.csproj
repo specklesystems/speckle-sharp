@@ -10,12 +10,6 @@
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
     <WarningLevel>1</WarningLevel>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
-  </ItemGroup>
   
   <ItemGroup>
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
