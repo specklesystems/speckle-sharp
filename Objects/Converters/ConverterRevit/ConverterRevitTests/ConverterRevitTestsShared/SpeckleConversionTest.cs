@@ -246,19 +246,6 @@ namespace ConverterRevitTests
 
       for (var i = 0; i < spkElems.Count; i++)
       {
-        if (fixture.UpdateTestRunning
-          && fixture.ExpectedFailures.TryGetValue("ToNativeUpdates", out var skipsUpdate)
-          && skipsUpdate.Contains(spkElems[i].applicationId))
-        {
-          continue;
-        }
-        else if (!fixture.UpdateTestRunning
-          && fixture.ExpectedFailures.TryGetValue("ToNative", out var skipsToNative)
-          && skipsToNative.Contains(spkElems[i].applicationId))
-        {
-          continue;
-        }
-
         var sourceElem = (T)(object)elements.FirstOrDefault(x => x.UniqueId == flatSpkElems[i].applicationId);
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
 

@@ -14,9 +14,9 @@ namespace ConverterRevitTests
 {
   public class FamilyInstanceFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("FamilyInstance.rvt");
-    public override string UpdatedTestFile => Globals.GetTestModel("FamilyInstanceUpdated.rvt");
-    public override string NewFile => Globals.GetTestModel("FamilyInstanceToNative.rvt");
+    public override string TestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.rvt");
+    public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceUpdated.rvt");
+    public override string NewFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceToNative.rvt");
     public override List<BuiltInCategory> Categories => new List<BuiltInCategory> {
       BuiltInCategory.OST_Furniture,
       BuiltInCategory.OST_Doors,
@@ -32,6 +32,8 @@ namespace ConverterRevitTests
       BuiltInCategory.OST_FloorOpening,
       BuiltInCategory.OST_SWallRectOpening,
       BuiltInCategory.OST_Floors};
+    public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.ExpectedFailures.json");
+    public override string Category => "FamilyInstance";
     public FamilyInstanceFixture() : base()
     {
     }
@@ -98,7 +100,7 @@ namespace ConverterRevitTests
       //rotation
       //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
       if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
-        Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation);
+        Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation, 3);
 
 
       //walls

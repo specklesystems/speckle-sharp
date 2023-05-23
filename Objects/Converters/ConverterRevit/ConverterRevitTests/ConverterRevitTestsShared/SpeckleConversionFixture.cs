@@ -77,6 +77,24 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_DuctCurves
         }
       },
+      { "familyinstance", new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_Furniture,
+          BuiltInCategory.OST_Doors,
+          BuiltInCategory.OST_Walls,
+          BuiltInCategory.OST_Windows,
+          BuiltInCategory.OST_CeilingOpening,
+          BuiltInCategory.OST_ColumnOpening,
+          BuiltInCategory.OST_FloorOpening,
+          BuiltInCategory.OST_ShaftOpening,
+          BuiltInCategory.OST_StructuralFramingOpening,
+          BuiltInCategory.OST_SWallRectOpening,
+          BuiltInCategory.OST_ArcWallRectOpening,
+          BuiltInCategory.OST_FloorOpening,
+          BuiltInCategory.OST_SWallRectOpening,
+          BuiltInCategory.OST_Floors
+        }
+      },
     };
     public SpeckleConversionFixture()
     {
