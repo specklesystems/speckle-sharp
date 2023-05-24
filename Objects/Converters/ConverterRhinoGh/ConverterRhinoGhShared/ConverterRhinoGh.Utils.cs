@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Drawing;
@@ -48,31 +48,6 @@ public partial class ConverterRhinoGh
       }
 
     return index;
-  }
-
-  private string GetSchema(RhinoObject obj, out string[] args)
-  {
-    args = null;
-
-    // user string has format "DirectShape{[family], [type]}" if it is a directshape conversion
-    // user string has format "AdaptiveComponent{[family], [type]}" if it is an adaptive component conversion
-    // user string has format "Pipe{[diameter]}" if it is a pipe conversion
-    // user string has format "Duct{[width], [height], [diameter]}" if it is a duct conversion
-    // otherwise, it is just the schema type name
-    string schema = obj.Attributes.GetUserString(SpeckleSchemaKey);
-
-    if (schema == null)
-      return null;
-
-    string[] parsedSchema = schema.Split(new[] { '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
-    if (parsedSchema.Length > 2) // there is incorrect formatting in the schema string!
-      return null;
-    if (parsedSchema.Length == 2)
-      args = parsedSchema[1]
-        .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-        ?.Select(o => o.Trim())
-        ?.ToArray();
-    return parsedSchema[0].Trim();
   }
 
   private string GetCommitInfo()
