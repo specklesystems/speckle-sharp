@@ -55,7 +55,7 @@ namespace Objects.Converter.Revit
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public IReceivedObjectsCache PreviouslyReceivedObjects { get; set; }
+    public IReceivedObjectIdCache<Base, Element> PreviouslyReceivedObjects { get; set; }
 
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
@@ -106,7 +106,7 @@ namespace Objects.Converter.Revit
       {
         T = t;
       }
-      else if (doc is IReceivedObjectsCache cache)
+      else if (doc is IReceivedObjectIdCache<Base, Element> cache)
       {
         PreviouslyReceivedObjects = cache;
       }

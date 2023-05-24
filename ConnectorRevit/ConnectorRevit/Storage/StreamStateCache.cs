@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -7,7 +8,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
-  public class StreamStateCache : IReceivedObjectsCache
+  public class StreamStateCache : IReceivedObjectIdCache<Base, Element>
   {
     private StreamState streamState;
     private Dictionary<string, ApplicationObject> previousContextObjects;
@@ -25,62 +26,41 @@ namespace ConnectorRevit.Storage
       }
     }
 
-    public void AddConvertedElements(IConvertedObjectsCache convertedObjects)
+    public void AddConvertedElements(IConvertedObjectsCache<Base, Element> convertedObjects)
     {
       var newContextObjects = new List<ApplicationObject>();
-      foreach (var @base in convertedObjects.GetConvertedBaseObjects())
+      foreach (var @base in convertedObjects.GetConvertedObjects())
       {
-        var elements = convertedObjects.GetConvertedObjectsFromApplicationId(@base.applicationId);
+        var elements = convertedObjects.GetCreatedObjectsFromConvertedId(@base.applicationId).ToList();
         newContextObjects.Add(new ApplicationObject(@base.id, @base.speckle_type)
         {
           applicationId = @base.applicationId,
           CreatedIds = elements
-            .Where(e => e is Element element)
-            .Select(element => ((Element)element).UniqueId)
+            .Select(element => element.UniqueId)
             .ToList(),
-          Converted = elements.ToList()
+          Converted = elements.Cast<object>().ToList()
         });
       }
       streamState.ReceivedObjects = newContextObjects;
     }
 
-    public HashSet<string> GetApplicationIds()
+    public IEnumerable<string> GetConvertedIds()
     {
-      return previousContextObjects.Keys.ToHashSet();
+      return previousContextObjects.Keys;
     }
 
-    public Element? GetExistingElementFromApplicationId(Document doc, string applicationId)
+    public IEnumerable<string> GetCreatedIdsFromConvertedId(string id)
     {
-      if (previousContextObjects.TryGetValue(applicationId, out var appObj))
+      if (previousContextObjects.TryGetValue(id, out var appObj) && appObj.CreatedIds.Count > 0)
       {
-        //return the cached object, if it's still in the model
-        if (appObj.CreatedIds.Any()) return doc.GetElement(appObj.CreatedIds.First());
+        return appObj.CreatedIds;
       }
-
-      //element was not cached in a PreviousContex but might exist in the model
-      //eg: user sends some objects, moves them, receives them 
-      return doc.GetElement(applicationId);
+      return new[] { id };
     }
 
-    public IEnumerable<Element?> GetExistingElementsFromApplicationId(Document doc, string applicationId)
+    public void RemoveConvertedId(string id)
     {
-      if (previousContextObjects.TryGetValue(applicationId, out var appObj))
-      {
-        //return the cached object, if it's still in the model
-        foreach (var id in appObj.CreatedIds)
-        {
-          yield return doc.GetElement(id);
-        }
-      }
-
-      //element was not cached in a PreviousContex but might exist in the model
-      //eg: user sends some objects, moves them, receives them 
-      yield return doc.GetElement(applicationId);
-    }
-
-    public void RemoveSpeckleId(string applicationId)
-    {
-      //previousContextObjects.Remove(applicationId);
+      previousContextObjects.Remove(id);
     }
   }
 }

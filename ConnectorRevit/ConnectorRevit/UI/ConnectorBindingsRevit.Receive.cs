@@ -131,23 +131,27 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(IReceivedObjectsCache previousObjects, IConvertedObjectsCache convertedObjects)
+    private void DeleteObjects(IReceivedObjectIdCache<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects)
     {
-      var previousAppIds = previousObjects.GetApplicationIds();
+      var previousAppIds = previousObjects.GetConvertedIds();
       foreach (var appId in previousAppIds)
       {
-        if (string.IsNullOrEmpty(appId) || convertedObjects.ContainsApplicationId(appId))
+        if (string.IsNullOrEmpty(appId) || convertedObjects.HasConvertedObjectWithId(appId))
           continue;
 
-        var elementToDelete = previousObjects
-          .GetExistingElementFromApplicationId(CurrentDoc.Document, appId);
+        var elementIdToDelete = previousObjects.GetCreatedIdsFromConvertedId(appId);
 
-        if (elementToDelete != null) CurrentDoc.Document.Delete(elementToDelete.Id);
-        previousObjects.RemoveSpeckleId(appId);
+        foreach (var elementId in elementIdToDelete)
+        {
+          var elementToDelete = CurrentDoc.Document.GetElement(elementId);
+
+          if (elementToDelete != null) CurrentDoc.Document.Delete(elementToDelete.Id);
+          previousObjects.RemoveConvertedId(appId);
+        }
       }
     }
 
-    private IConvertedObjectsCache ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
       var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -180,9 +184,9 @@ namespace Speckle.ConnectorRevit.UI
           switch (convRes)
           {
             case ApplicationObject o:
-              if (o.Converted.Count >= 1)
+              if (o.Converted.Cast<Element>() is IList<Element> typedList && typedList.Count >= 1)
               {
-                convertedObjectsCache.AddReceivedElements(o.Converted, @base);
+                convertedObjectsCache.AddConvertedObjects(@base, typedList);
               }
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);

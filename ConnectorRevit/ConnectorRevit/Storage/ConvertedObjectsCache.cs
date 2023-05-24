@@ -1,41 +1,53 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
-  internal sealed class ConvertedObjectsCache : IConvertedObjectsCache
+  internal sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
   {
-    private Dictionary<string, (Base, List<object>)> convertedObjects = new();
-    public void AddReceivedElements(List<object> elements, Base @base)
+    private Dictionary<string, (Base, List<Element>)> convertedObjects = new();
+    public void AddConvertedObject(Base converted, Element created)
     {
-      convertedObjects[@base.applicationId] = (@base, elements);
-    }
-    public IEnumerable<string> GetApplicationIds()
-    {
-      return convertedObjects.Keys;
-    }
-    public IEnumerable<Base> GetConvertedBaseObjects()
-    {
-      foreach (var tuple in convertedObjects.Values)
-      {
-        yield return tuple.Item1;
-      }
-    }
-    public IList<object> GetConvertedObjectsFromApplicationId(string applicationId)
-    {
-      if (convertedObjects.TryGetValue(applicationId, out var elements))
-      {
-        return elements.Item2;
-      }
-      return new List<object>();
-    }
-    public bool ContainsApplicationId(string applicationId)
-    {
-      return convertedObjects.ContainsKey(applicationId);
+      convertedObjects[converted.applicationId] = (converted, new List<Element>() { created });
     }
 
-    public IEnumerable<object> GetConvertedObjects()
+    public void AddConvertedObjects(Base converted, IList<Element> created)
+    {
+      convertedObjects[converted.applicationId] = (converted, created.ToList());
+    }
+
+    public IEnumerable<Base> GetConvertedObjects()
+    {
+      foreach (var kvp in convertedObjects)
+      {
+          yield return kvp.Value.Item1;
+      }
+    }
+
+    public IEnumerable<Base> GetConvertedObjectsFromCreatedId(string id)
+    {
+      foreach (var kvp in convertedObjects)
+      {
+        foreach (var obj in kvp.Value.Item2)
+        {
+          if (obj.UniqueId != id) continue;
+
+          yield return kvp.Value.Item1;
+          yield break;
+        }
+      }
+    }
+
+    public bool HasConvertedObjectWithId(string id)
+    {
+      return convertedObjects.ContainsKey(id);
+    }
+
+    public IEnumerable<Element> GetCreatedObjects()
     {
       foreach (var kvp in convertedObjects)
       {
@@ -44,6 +56,23 @@ namespace ConnectorRevit.Storage
           yield return obj;
         }
       }
+    }
+
+    public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
+    {
+      return convertedObjects[id].Item2;
+    }
+
+    public bool HasCreatedObjectWithId(string id)
+    {
+      foreach (var kvp in convertedObjects)
+      {
+        foreach (var obj in kvp.Value.Item2)
+        {
+          if (obj.UniqueId == id) return true;
+        }
+      }
+      return false;
     }
   }
 }

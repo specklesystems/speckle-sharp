@@ -360,6 +360,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources2021", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources2020", "ConnectorRevit\RevitSharedResources\RevitSharedResources2020\RevitSharedResources2020.csproj", "{691F068C-A302-466D-BC9D-61F6544BF590}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RevitSharedResources", "ConnectorRevit\RevitSharedResources\RevitSharedResources.csproj", "{9143FD34-3135-41A8-961D-125AA55A0BCD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -1917,6 +1919,22 @@ Global
 		{691F068C-A302-466D-BC9D-61F6544BF590}.Release|Any CPU.Build.0 = Release|Any CPU
 		{691F068C-A302-466D-BC9D-61F6544BF590}.Release|x64.ActiveCfg = Release|Any CPU
 		{691F068C-A302-466D-BC9D-61F6544BF590}.Release|x64.Build.0 = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Debug|x64.Build.0 = Debug|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release Mac|x64.Build.0 = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release|x64.ActiveCfg = Release|Any CPU
+		{9143FD34-3135-41A8-961D-125AA55A0BCD}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2067,6 +2085,7 @@ Global
 		{19A022AB-6BF0-4903-8DBC-5A00C4C0B25F} = {C73C19B5-72A3-4C63-8D56-0A7E7DB46CA5}
 		{516F4D33-4FC6-4B0B-B7C8-90605D13A41C} = {C73C19B5-72A3-4C63-8D56-0A7E7DB46CA5}
 		{691F068C-A302-466D-BC9D-61F6544BF590} = {C73C19B5-72A3-4C63-8D56-0A7E7DB46CA5}
+		{9143FD34-3135-41A8-961D-125AA55A0BCD} = {42A86931-7497-4A34-B2FD-060231CD0A8F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
