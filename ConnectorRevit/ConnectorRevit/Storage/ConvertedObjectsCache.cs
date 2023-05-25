@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -7,15 +6,11 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
-  internal sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, object>
+  internal sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
   {
-    private Dictionary<string, (Base, List<object>)> convertedObjects = new();
-    public void AddConvertedObject(Base converted, object created)
-    {
-      convertedObjects[converted.applicationId] = (converted, new List<object>() { created });
-    }
+    private Dictionary<string, (Base, List<Element>)> convertedObjects = new();
 
-    public void AddConvertedObjects(Base converted, IList<object> created)
+    public void AddConvertedObjects(Base converted, IList<Element> created)
     {
       convertedObjects[converted.applicationId] = (converted, created.ToList());
     }
@@ -34,7 +29,7 @@ namespace ConnectorRevit.Storage
       {
         foreach (var obj in kvp.Value.Item2)
         {
-          if (obj is Element el && el.UniqueId != id) continue;
+          if (obj.UniqueId != id) continue;
 
           yield return kvp.Value.Item1;
           yield break;
@@ -47,7 +42,7 @@ namespace ConnectorRevit.Storage
       return convertedObjects.ContainsKey(id);
     }
 
-    public IEnumerable<object> GetCreatedObjects()
+    public IEnumerable<Element> GetCreatedObjects()
     {
       foreach (var kvp in convertedObjects)
       {
@@ -58,7 +53,7 @@ namespace ConnectorRevit.Storage
       }
     }
 
-    public IEnumerable<object> GetCreatedObjectsFromConvertedId(string id)
+    public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
     {
       return convertedObjects[id].Item2;
     }
@@ -69,7 +64,7 @@ namespace ConnectorRevit.Storage
       {
         foreach (var obj in kvp.Value.Item2)
         {
-          if (obj is Element el && el.UniqueId == id) return true;
+          if (obj.UniqueId == id) return true;
         }
       }
       return false;

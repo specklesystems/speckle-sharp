@@ -131,9 +131,9 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(IReceivedObjectIdCache<Base, object> previousObjects, IConvertedObjectsCache<Base, object> convertedObjects)
+    private void DeleteObjects(IReceivedObjectIdMap<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects)
     {
-      var previousAppIds = previousObjects.GetConvertedIds().ToList();
+      var previousAppIds = previousObjects.GetAllConvertedIds().ToList();
       for (var i = previousAppIds.Count - 1; i >=0; i--)
       {
         var appId = previousAppIds[i];
@@ -152,7 +152,7 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private IConvertedObjectsCache<Base, object> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
       var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -185,9 +185,9 @@ namespace Speckle.ConnectorRevit.UI
           switch (convRes)
           {
             case ApplicationObject o:
-              if (o.Converted.Count >= 1)
+              if (o.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
               {
-                convertedObjectsCache.AddConvertedObjects(@base, o.Converted);
+                convertedObjectsCache.AddConvertedObjects(@base, typedList);
               }
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);

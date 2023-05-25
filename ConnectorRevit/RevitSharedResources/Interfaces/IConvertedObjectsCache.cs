@@ -10,7 +10,6 @@ namespace RevitSharedResources.Interfaces
   public interface IConvertedObjectsCache<TFrom, TTo>
   {
     #region Add
-    public void AddConvertedObject(TFrom converted, TTo created);
     public void AddConvertedObjects(TFrom converted, IList<TTo> created);
     #endregion
 

@@ -30,7 +30,6 @@
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
     <ProjectReference Include="..\RevitSharedResources\RevitSharedResources.csproj" />
-    <ProjectReference Include="..\RevitSharedResources\RevitSharedResources2023\RevitSharedResources2023.csproj" />
   </ItemGroup>
 
   <ItemGroup>
