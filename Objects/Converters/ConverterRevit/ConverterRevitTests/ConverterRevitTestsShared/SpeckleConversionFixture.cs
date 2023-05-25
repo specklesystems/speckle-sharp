@@ -23,9 +23,9 @@ namespace ConverterRevitTests
     public string TestClassName { get; set; }
     public virtual string TestName { get; }
     public abstract string Category { get; }
-    public virtual string TestFile { get; }
-    public virtual string UpdatedTestFile { get; }
-    public virtual string NewFile { get; }
+    public virtual string TestFile => Globals.GetTestModelOfCategory(Category, $"{TestName}.rvt");
+    public virtual string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, $"{TestName}Updated.rvt");
+    public virtual string NewFile => Globals.GetTestModelOfCategory(Category, $"{TestName}ToNative.rvt");
     public virtual string ExpectedFailuresFile { get; }
     private Dictionary<string, List<string>> expectedFailures;
     public Dictionary<string, List<string>> ExpectedFailures
