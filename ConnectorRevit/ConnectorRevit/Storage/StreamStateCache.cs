@@ -8,7 +8,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
-  public class StreamStateCache : IReceivedObjectIdCache<Base, Element>
+  public class StreamStateCache : IReceivedObjectIdCache<Base, object>
   {
     private StreamState streamState;
     private Dictionary<string, ApplicationObject> previousContextObjects;
@@ -26,17 +26,20 @@ namespace ConnectorRevit.Storage
       }
     }
 
-    public void AddConvertedElements(IConvertedObjectsCache<Base, Element> convertedObjects)
+    public void AddConvertedElements(IConvertedObjectsCache<Base, object> convertedObjects)
     {
       var newContextObjects = new List<ApplicationObject>();
       foreach (var @base in convertedObjects.GetConvertedObjects())
       {
         var elements = convertedObjects.GetCreatedObjectsFromConvertedId(@base.applicationId).ToList();
+        var appObj = new ApplicationObject(@base.id, @base.speckle_type);
+
         newContextObjects.Add(new ApplicationObject(@base.id, @base.speckle_type)
         {
           applicationId = @base.applicationId,
           CreatedIds = elements
-            .Select(element => element.UniqueId)
+            .Where(element => element is Element)
+            .Select(element => ((Element)element).UniqueId)
             .ToList(),
           Converted = elements.Cast<object>().ToList()
         });

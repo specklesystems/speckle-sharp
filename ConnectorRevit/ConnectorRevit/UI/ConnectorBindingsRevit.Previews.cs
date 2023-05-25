@@ -71,7 +71,7 @@ namespace Speckle.ConnectorRevit.UI
           foreach (var previewObj in Preview)
             progress.Report.Log(previewObj);
 
-          IConvertedObjectsCache<Base, Element> convertedObjects = null;
+          IConvertedObjectsCache<Base, object> convertedObjects = null;
           await RevitTask.RunAsync(
             app =>
             {
@@ -108,7 +108,7 @@ namespace Speckle.ConnectorRevit.UI
       UnregisterServers();
     }
 
-    public void AddMultipleRevitElementServers(IConvertedObjectsCache<Base, Element> convertedObjects)
+    public void AddMultipleRevitElementServers(IConvertedObjectsCache<Base, object> convertedObjects)
     {
       ExternalService directContext3DService =
         ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.DirectContext3DService);

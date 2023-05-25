@@ -801,7 +801,7 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
-      var cachedIds = PreviouslyReceivedObjects.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
       // TODO: we may not want just the first one
       return Doc.GetElement(cachedIds.First());
     }
@@ -811,7 +811,7 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         yield break;
 
-      var cachedIds = PreviouslyReceivedObjects.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
       foreach ( var id in cachedIds)
       {
         yield return Doc.GetElement(id);
