@@ -62,6 +62,7 @@ namespace ConnectorRevit.Storage
 
     public void RemoveConvertedId(string id)
     {
+      // no need to remove as this cache get written over by a new one after each receive
       //previousContextObjects.Remove(id);
     }
   }
