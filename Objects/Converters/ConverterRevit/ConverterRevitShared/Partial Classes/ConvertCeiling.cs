@@ -28,9 +28,9 @@ namespace Objects.Converter.Revit
       GetAllRevitParamsAndIds(speckleCeiling, revitCeiling, new List<string> { "LEVEL_PARAM" });
 
       GetHostedElements(speckleCeiling, revitCeiling, out List<string> hostedNotes);
-      if (hostedNotes.Any()) notes.AddRange(hostedNotes);
+      if (hostedNotes.Any()) notes.AddRange(hostedNotes); //TODO: what are we doing here?
 
-      speckleCeiling.displayValue = GetElementDisplayMesh(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleCeiling.displayValue = GetElementDisplayValue(revitCeiling, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       return speckleCeiling;
     }
@@ -43,7 +43,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleCeiling.id, speckleCeiling.speckle_type) { applicationId = speckleCeiling.applicationId };
       
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
       
       if (speckleCeiling.outline == null)

@@ -1,4 +1,4 @@
-﻿
+
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using System.Collections.Generic;
@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
 
       GetAllRevitParamsAndIds(specklePad, revitPad, new List<string> { "LEVEL_PARAM" });
 
-      specklePad.displayValue = GetElementDisplayMesh(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      specklePad.displayValue = GetElementDisplayValue(revitPad, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       return specklePad;
     }

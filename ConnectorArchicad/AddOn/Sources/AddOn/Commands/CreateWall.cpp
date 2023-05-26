@@ -33,19 +33,15 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_WallID;
-#else
-	element.header.typeID = API_WallID;
-#endif
-
-	err = Utility::GetBaseElementData (element, &memo);
+	Utility::SetElementType (element.header, API_WallID);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -71,9 +67,12 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	// The floor index and bottom offset of the wall
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, startPoint.z, element.header.floorInd, element.wall.bottomOffset);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, bottomOffset);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (startPoint.z, element.header.floorInd, element.wall.bottomOffset);
+	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, bottomOffset);
 
 	// The profile type of the wall
 	short profileType = 0;
@@ -267,7 +266,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 		if (type.HasValue ())
 			element.wall.referenceLineLocation = type.Get ();
 
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, type);
+		ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, referenceLineLocation);
 	}
 
 	// The offset of the wall’s base line from reference line
@@ -301,7 +300,7 @@ GSErrCode CreateWall::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Story visibility
-	Utility::ImportVisibility (os, "", element.wall.isAutoOnStoryVisibility, element.wall.visibility);
+	Utility::CreateVisibility (os, "", element.wall.isAutoOnStoryVisibility, element.wall.visibility);
 
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, isAutoOnStoryVisibility);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_WallType, visibility.showOnHome);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -212,7 +212,7 @@ public class SpeckleRhinoConnectorPlugin : PlugIn
     Panels.RegisterPanel(this, panelType, "Speckle", Resources.icon);
 
     Type mappingsPanelType = typeof(MappingsPanel);
-    Panels.RegisterPanel(this, mappingsPanelType, "Speckle Mapping Tool", Resources.icon);
+    Panels.RegisterPanel(this, mappingsPanelType, "Speckle Mapper", Resources.mapper);
 #endif
     EnsureVersionSettings();
 

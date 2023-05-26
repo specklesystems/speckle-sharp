@@ -24,7 +24,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       var isUpdate = false;

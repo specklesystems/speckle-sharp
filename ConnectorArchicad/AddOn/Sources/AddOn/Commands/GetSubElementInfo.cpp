@@ -23,17 +23,17 @@ GS::ObjectState GetSubElementInfo::Execute (const GS::ObjectState& parameters, G
 	GSErrCode err = NoError;
 	GS::UniString id;
 	parameters.Get (ElementBase::ApplicationId, id);
-	API_Guid wallGuid = APIGuidFromString (id.ToCStr ());
+	API_Guid elementGuid = APIGuidFromString (id.ToCStr ());
 
 	GS::ObjectState result;
 	const auto& listAdder = result.AddList<GS::ObjectState> (SubelementModels);
 
-	API_Element wallElement{};
-	wallElement.header.guid = wallGuid;
-	err = ACAPI_Element_Get (&wallElement);
+	API_Element element{};
+	element.header.guid = elementGuid;
+	err = ACAPI_Element_Get (&element);
 
 	if (err == NoError) {
-		GS::Array<API_Guid> elementGuids = Utility::GetWallSubelements (wallElement.wall);
+		GS::Array<API_Guid> elementGuids = Utility::GetElementSubelements (element);
 		for (GS::UInt32 i = 0; i < elementGuids.GetSize (); i++) {
 			API_Guid currentGuid = elementGuids.Get (i);
 

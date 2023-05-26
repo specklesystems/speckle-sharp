@@ -1,4 +1,4 @@
-﻿using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System.Collections.Generic;
 using DB = Autodesk.Revit.DB;
@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
 
       // Structural Connection Handlers are (supposedly) view specific which requires getting mesh by view
       // TODO: not guarenteed that the active view is what we need (3D view with fine detail where the element is visible
-      speckleConnection.displayValue = GetElementDisplayMesh(revitConnection, new DB.Options() { ComputeReferences = false, View = Doc.ActiveView });
+      speckleConnection.displayValue = GetElementDisplayValue(revitConnection, new DB.Options() { View = Doc.ActiveView });
 
       GetAllRevitParamsAndIds(speckleConnection, revitConnection);
       

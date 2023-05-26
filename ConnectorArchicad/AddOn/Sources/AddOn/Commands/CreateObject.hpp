@@ -8,20 +8,22 @@ namespace AddOnCommands {
 
 
 class CreateObject : public CreateCommand {
-	GS::String			GetFieldName () const override;
-	GS::UniString		GetUndoableCommandName () const override;
+	GS::String		GetFieldName () const override;
+	GS::UniString	GetUndoableCommandName () const override;
 
-	GSErrCode			GetElementFromObjectState (const GS::ObjectState& os,
-							API_Element& element,
-							API_Element& elementMask,
-							API_ElementMemo& memo,
-							GS::UInt64& memoMask,
-							AttributeManager& attributeManager,
-							LibpartImportManager& libpartImportManager,
-							API_SubElement** marker = nullptr) const override;
+	GSErrCode	GetElementFromObjectState (const GS::ObjectState& os,
+					API_Element& element,
+					API_Element& elementMask,
+					API_ElementMemo& memo,
+					GS::UInt64& memoMask,
+					API_SubElement** marker,
+					AttributeManager& attributeManager,
+					LibpartImportManager& libpartImportManager,
+					GS::Array<GS::UniString>& log) const override;
 
 public:
-	virtual GS::String	GetName () const override;
+	virtual GS::String		GetName () const override;
+	virtual GS::ObjectState	Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
 };
 
 

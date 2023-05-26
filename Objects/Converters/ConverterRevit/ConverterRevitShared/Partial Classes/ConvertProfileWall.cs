@@ -15,7 +15,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleRevitWall.id, speckleRevitWall.speckle_type) { applicationId = speckleRevitWall.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(revitWall, appObj, out appObj))
+      if (IsIgnore(revitWall, appObj))
         return appObj;
 
       if (speckleRevitWall.profile == null)

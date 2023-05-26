@@ -14,7 +14,6 @@
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterAdvanceSteel2023\\ConverterAdvanceSteel2023.csproj",
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocad2023\\ConverterAutocad2023.csproj",
       "Objects\\Converters\\ConverterAutocadCivil\\ConverterAutocadCivilShared\\ConverterAutocadCivilShared.shproj",
-      "Objects\\Converters\\StructuralUtilities\\Triangle\\Triangle.csproj",
       "Objects\\Objects\\Objects.csproj",
       "Objects\\Tests\\Tests.csproj"
     ]

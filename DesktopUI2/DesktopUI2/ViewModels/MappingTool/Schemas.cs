@@ -420,6 +420,21 @@ public class RevitDefaultWallViewModel : Schema
   }
 }
 
+public class RevitDefaultFloorViewModel : Schema
+{
+  public override string Name => "Default Floor";
+
+  public override string Summary => Name;
+
+  public override bool IsValid => true;
+
+  public override string GetSerializedSchema()
+  {
+    var obj = new Floor();
+    return Operations.Serialize(obj);
+  }
+}
+
 public class RevitDefaultBeamViewModel : Schema
 {
   public override string Name => "Default Beam";

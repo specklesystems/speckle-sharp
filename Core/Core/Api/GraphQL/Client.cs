@@ -54,6 +54,7 @@ public partial class Client : IDisposable
       {
         EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
         UseWebSocketForQueriesAndMutations = false,
+        WebSocketProtocol = "graphql-ws",
         ConfigureWebSocketConnectionInitPayload = opts =>
         {
           return new { Authorization = $"Bearer {account.token}" };

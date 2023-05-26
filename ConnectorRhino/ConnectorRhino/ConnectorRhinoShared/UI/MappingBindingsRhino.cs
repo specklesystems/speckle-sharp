@@ -100,7 +100,6 @@ public class MappingBindingsRhino : MappingsBindings
             var extrusionBrp = e.ToBrep(false);
             var extrusionSurfaceSchemas = EvaluateBrepSurfaceSchemas(extrusionBrp, true);
             result.AddRange(extrusionSurfaceSchemas);
-            result.Add(new RevitDefaultWallViewModel());
             break;
 
           case Curve c:
@@ -201,6 +200,7 @@ public class MappingBindingsRhino : MappingsBindings
       if (isHorizontal)
       {
         schemas.Add(new RevitFloorViewModel());
+        schemas.Add(new RevitDefaultFloorViewModel());
       }
       else if (isVertical)
       {
@@ -218,6 +218,7 @@ public class MappingBindingsRhino : MappingsBindings
           schemas.Add(new RevitProfileWallViewModel());
         }
         schemas.Add(new RevitFaceWallViewModel());
+        schemas.Add(new RevitDefaultWallViewModel());
       }
       else
       {

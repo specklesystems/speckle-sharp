@@ -44,9 +44,10 @@ namespace AdvanceSteelAddinRegistrator
       {
 
         if (File.Exists(manifest))
-        {
           addonsData = ParseManifestFile();
-        }
+
+        if (!Directory.Exists(manifestBasePath))
+          Directory.CreateDirectory(manifestBasePath);
 
         addonsData = UpdateManifestFile(addonsData);
 

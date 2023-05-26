@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleGridline.id, speckleGridline.speckle_type) { applicationId = speckleGridline.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(revitGrid, appObj, out appObj))
+      if (IsIgnore(revitGrid, appObj))
         return appObj;
 
       var curve = CurveToNative(speckleGridline.baseLine).get_Item(0);

@@ -16,6 +16,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Other.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Types.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterNavisworks.Utilities.cs" />
   </ItemGroup>
 </Project>

@@ -1,11 +1,11 @@
-﻿using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Autodesk.Revit.DB;
 using Xunit;
 using xUnitRevitUtils;
-using System.IO;
+using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
 {
@@ -65,18 +65,18 @@ namespace ConverterRevitTests
     {
       try
       {
-        var testsFailed = xru.MainViewModel.FilteredTestCases
-          .Where(testCase => testCase.DisplayName.Contains(TestClassName))
-          .Any(testCase => testCase.State == Xunit.Runner.Wpf.TestState.Failed);
+        //var testsFailed = xru.MainViewModel.FilteredTestCases
+        //  .Where(testCase => testCase.DisplayName.Contains(TestClassName))
+        //  .Any(testCase => testCase.State == Xunit.Runner.Wpf.TestState.Failed);
 
-        // if none of the tests failed, close the documents
-        if (!testsFailed)
-        {
-          xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
-          xru.CloseDoc(SourceDoc);
-          xru.CloseDoc(UpdatedDoc);
-          xru.CloseDoc(NewDoc);
-        }
+        //// if none of the tests failed, close the documents
+        //if (!testsFailed)
+        //{
+        //  xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
+        //  xru.CloseDoc(SourceDoc);
+        //  xru.CloseDoc(UpdatedDoc);
+        //  xru.CloseDoc(NewDoc);
+        //}
 
         return Task.CompletedTask;
       }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
@@ -271,6 +271,10 @@ namespace Objects.BuiltElements.Revit
 
 namespace Objects.BuiltElements.Archicad
 {
+  /*
+  For further informations about given the variables, visit:
+  https://archicadapi.graphisoft.com/documentation/api_walltype
+  */
   public class ArchicadWall : Wall
   {
     [SchemaInfo("ArchicadWall", "Creates an Archicad wall.", "Archicad", "Structure")]

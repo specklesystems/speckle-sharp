@@ -28,18 +28,15 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& beamMask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_BeamID;
-#else
-	element.header.typeID = API_BeamID;
-#endif
-	err = Utility::GetBaseElementData (element, &memo);
+	Utility::SetElementType (element.header, API_BeamID);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -61,9 +58,12 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, startPoint.z, element.header.floorInd, element.beam.offset);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_Elem_Head, floorInd);
-		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, offset);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (startPoint.z, element.header.floorInd, element.beam.offset);
+	}
+	ACAPI_ELEMENT_MASK_SET (beamMask, API_Elem_Head, floorInd);
+	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, offset);
 
 	if (os.Contains (Beam::level)) {
 		os.Get (Beam::level, element.beam.level);
@@ -361,7 +361,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Show on Stories - Story visibility
-	Utility::ImportVisibility (os, "", element.beam.isAutoOnStoryVisibility, element.beam.visibility);
+	Utility::CreateVisibility (os, "", element.beam.isAutoOnStoryVisibility, element.beam.visibility);
 
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, isAutoOnStoryVisibility);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, visibility.showOnHome);
@@ -625,7 +625,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Cover Fill Transformation
-	Utility::ImportCoverFillTransformation (os, element.beam.coverFillOrientationComesFrom3D, element.beam.coverFillTransformationType);
+	Utility::CreateCoverFillTransformation (os, element.beam.coverFillOrientationComesFrom3D, element.beam.coverFillTransformationType);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, coverFillOrientationComesFrom3D);
 	ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, coverFillTransformationType);
 
