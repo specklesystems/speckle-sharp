@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Reflection;
 using System.IO;
 using System.Text;
 using Microsoft.CodeAnalysis;
@@ -20,23 +19,10 @@ namespace TestGenerator
       var sb = new StringBuilder();
       sb.Append(TestTemplate.StartNamespace);
 
-      //Trace.WriteLine(Assembly.GetCallingAssembly());
-      //Trace.WriteLine(Assembly.GetEntryAssembly());
-      //Trace.WriteLine(Assembly.GetAssembly(typeof(Generator)));
-      //Trace.WriteLine(Assembly.GetExecutingAssembly());
-
-      var assembly = context.Compilation.Assembly;
       var assemblyLocationArrray = context.Compilation.Assembly.Locations.First().ToString().Split('\\');
       assemblyLocationArrray[0] = assemblyLocationArrray[0].Replace("SourceFile(", "");
       var assemblyLocation = string.Join("\\", assemblyLocationArrray.Take(assemblyLocationArrray.Length - 1));
-      foreach (var a in assembly.Locations)
-      {
-        Trace.WriteLine(a);
-      }
 
-#if REVIT2021
-      Trace.WriteLine("Debug");
-#endif
       var assemblyName = context.Compilation.AssemblyName;
       var year = assemblyName.Substring(assemblyName.Length - 4);
       var subdirectories = Directory.GetDirectories(Globals.TestModelsFolderForRevitVersion(assemblyLocation, year));
@@ -72,9 +58,6 @@ namespace TestGenerator
         ValidateFilesInFolder(category, baseFiles, toNativeFiles, updatedFiles);
         AddTestToStringBuilder(sb, category, categoryProps, baseFiles, toNativeFiles, updatedFiles);
       }
-
-      //sb.Append(TestTemplate.Create("Beam", "Beam", "DB.FamilyInstance", "AssertFamilyInstanceEqual"));
-
 
       sb.Append(TestTemplate.EndNamespace);
       context.AddSource($"GeneratedTests.g.cs", sb.ToString());
