@@ -16,7 +16,7 @@ namespace TestGenerator
     public const string Updated = "Updated";
     public void Execute(GeneratorExecutionContext context)
     {
-      Debugger.Launch();
+      //Debugger.Launch();
       var sb = new StringBuilder();
       sb.Append(TestTemplate.StartNamespace);
 
@@ -57,7 +57,10 @@ namespace TestGenerator
         var updatedFiles = new List<string>();
         foreach (var file in Directory.GetFiles(subdir))
         {
-          var strippedFile = file.Split('\\').Last().Replace(".rvt","");
+          var strippedFile = file.Split('\\').Last();
+          if (!strippedFile.EndsWith(".rvt")) continue;
+          strippedFile = strippedFile.Replace(".rvt", "");
+
           if (strippedFile.EndsWith(ToNative)) toNativeFiles.Add(strippedFile);
           else if (strippedFile.EndsWith(Updated)) updatedFiles.Add(strippedFile);
           else baseFiles.Add(strippedFile);
@@ -91,14 +94,14 @@ namespace TestGenerator
             category,
             file,
             categoryProps.RevitType,
-            categoryProps.SyncAssertFunc,
-            categoryProps.AsyncAssertFunc
+            categoryProps.SyncAssertFunc ?? "null",
+            categoryProps.AsyncAssertFunc ?? "null"
           ));
           sb.Append(TestTemplate.CreateSelectionTest(category,
             file,
             categoryProps.RevitType,
-            categoryProps.SyncAssertFunc,
-            categoryProps.AsyncAssertFunc
+            categoryProps.SyncAssertFunc ?? "null",
+            categoryProps.AsyncAssertFunc ?? "null"
           ));
         }
         if (runUpdateTest)
@@ -106,8 +109,8 @@ namespace TestGenerator
           sb.Append(TestTemplate.CreateUpdateTest(category,
             file,
             categoryProps.RevitType,
-            categoryProps.SyncAssertFunc,
-            categoryProps.AsyncAssertFunc
+            categoryProps.SyncAssertFunc ?? "null",
+            categoryProps.AsyncAssertFunc ?? "null"
           ));
         }
         sb.Append(TestTemplate.EndClass);

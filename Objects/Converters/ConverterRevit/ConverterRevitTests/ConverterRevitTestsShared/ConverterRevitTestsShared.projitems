@@ -10,6 +10,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AdaptiveComponentTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssertUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BeamTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BrepTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ColumnTests.cs" />

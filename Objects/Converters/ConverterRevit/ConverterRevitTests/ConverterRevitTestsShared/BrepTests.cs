@@ -13,9 +13,7 @@ namespace ConverterRevitTests
 {
   public class BrepFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Brep.rvt");
-    public override string NewFile => Globals.GetTestModelOfCategory(Category, "BrepToNative.rvt");
-    public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "Brep.ExpectedFailures.json");
+    public override string TestName => "Brep";
     public override string Category => TestCategories.Brep;
   }
 
@@ -56,19 +54,11 @@ namespace ConverterRevitTests
       if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
       DirectShape native = null;
 
-      try
+      await SpeckleUtils.RunInTransaction(() =>
       {
-        await SpeckleUtils.RunInTransaction(() =>
-        {
-          converter.SetContextDocument(fixture.NewDoc);
-          native = converter.BrepToDirectShape(brep, out List<string> notes);
-        }, fixture.NewDoc, converter);
-      }
-      catch (Exception ex)
-      {
-        HandleError(@base.id, ex);
-        return;
-      }
+        converter.SetContextDocument(fixture.NewDoc);
+        native = converter.BrepToDirectShape(brep, out List<string> notes);
+      }, fixture.NewDoc, converter);
 
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
     }

@@ -34,74 +34,74 @@ namespace TestGenerator
       { AdaptiveComponent, new CategoryProperties()
         {
           RevitType = "DB.FamilyInstance",
-          SyncAssertFunc = "AdaptiveComponentEqual"
+          SyncAssertFunc = "AssertUtils.AdaptiveComponentEqual"
         } 
       },
       { Beam, new CategoryProperties()
         {
           RevitType = "DB.FamilyInstance",
-          SyncAssertFunc = "AssertFamilyInstanceEqual"
+          SyncAssertFunc = "AssertUtils.FamilyInstanceEqual"
         }
       },
       //{ Brep, new CategoryProperties()
       //  {
       //    RevitType = "DB.FamilyInstance",
-      //    SyncAssertFunc = "AdaptiveComponentEqual"
+      //    SyncAssertFunc = "AssertUtils.AdaptiveComponentEqual"
       //  }
       //},
       { Column, new CategoryProperties()
         {
           RevitType = "DB.FamilyInstance",
-          SyncAssertFunc = "AssertFamilyInstanceEqual"
+          SyncAssertFunc = "AssertUtils.FamilyInstanceEqual"
         }
       },
       { Curve, new CategoryProperties()
         {
           RevitType = "DB.CurveElement",
-          SyncAssertFunc = "AssertCurveEqual"
+          SyncAssertFunc = "AssertUtils.CurveEqual"
         }
       },
       { DirectShape, new CategoryProperties()
         {
           RevitType = "DB.DirectShape",
-          SyncAssertFunc = "DirectShapeEqual"
+          SyncAssertFunc = "AssertUtils.DirectShapeEqual"
         }
       },
       { Duct, new CategoryProperties()
         {
-          RevitType = "DB.Duct",
-          SyncAssertFunc = "AssertDuctEqual"
+          RevitType = "DB.Mechanical.Duct",
+          SyncAssertFunc = "AssertUtils.DuctEqual"
         }
       },
       { FamilyInstance, new CategoryProperties()
         {
           RevitType = "DB.Element",
-          SyncAssertFunc = "AssertNestedEqual"
+          SyncAssertFunc = "AssertUtils.NestedEqual"
         }
       },
       { Floor, new CategoryProperties()
         {
           RevitType = "DB.Floor",
           SyncAssertFunc = "null",
-          AsyncAssertFunc = "AssertFloorEqual"
+          AsyncAssertFunc = "AssertUtils.FloorEqual"
         }
       },
       { Opening, new CategoryProperties()
         {
           RevitType = "DB.Element",
-          SyncAssertFunc = "AssertOpeningEqual"
+          SyncAssertFunc = "AssertUtils.OpeningEqual"
         }
       },
       { Pipe, new CategoryProperties()
         {
-          RevitType = "DB.Pipe",
-          SyncAssertFunc = "AssertPipeEqual"
+          RevitType = "DB.Plumbing.Pipe",
+          SyncAssertFunc = "AssertUtils.PipeEqual"
         }
       },
       { Roof, new CategoryProperties()
         {
           RevitType = "DB.RoofBase",
-          SyncAssertFunc = "AssertRoofEqual"
+          SyncAssertFunc = "AssertUtils.RoofEqual"
         }
       },
       { Room, new CategoryProperties()
@@ -114,19 +114,19 @@ namespace TestGenerator
         {
           RevitType = "DB.ViewSchedule",
           //SyncAssertFunc = "null",
-          AsyncAssertFunc = "AssertSchedulesEqual",
+          AsyncAssertFunc = "AssertUtils.ScheduleEqual",
         }
       },
       { Wall, new CategoryProperties()
         {
           RevitType = "DB.Wall",
-          SyncAssertFunc = "AssertWallEqual"
+          SyncAssertFunc = "AssertUtils.WallEqual"
         }
       },
       { Wire, new CategoryProperties()
         {
-          RevitType = "DB.Wire",
-          SyncAssertFunc = "AssertWireEqual"
+          RevitType = "DB.Electrical.Wire",
+          SyncAssertFunc = "AssertUtils.WireEqual"
         }
       },
     };

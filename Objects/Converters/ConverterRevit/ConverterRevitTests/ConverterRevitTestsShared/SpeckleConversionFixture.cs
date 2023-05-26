@@ -27,17 +27,6 @@ namespace ConverterRevitTests
     public virtual string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, $"{TestName}Updated.rvt");
     public virtual string NewFile => Globals.GetTestModelOfCategory(Category, $"{TestName}ToNative.rvt");
     public virtual string ExpectedFailuresFile { get; }
-    private Dictionary<string, List<string>> expectedFailures;
-    public Dictionary<string, List<string>> ExpectedFailures
-    {
-      get
-      {
-        if (expectedFailures != null) return expectedFailures;
-
-        expectedFailures = ExpectedFailuresUtils.DeserializeFile(ExpectedFailuresFile);
-        return expectedFailures;
-      }
-    }
     public SpeckleConversionFixture()
     {
     }
@@ -54,18 +43,15 @@ namespace ConverterRevitTests
       Selection = xru.GetActiveSelection().ToList();
       SourceDoc = xru.OpenDoc(TestFile);
 
-      if (UpdatedTestFile != null)
+      if (File.Exists(UpdatedTestFile))
       {
         UpdatedDoc = xru.OpenDoc(UpdatedTestFile);
         UpdatedRevitElements = new FilteredElementCollector(UpdatedDoc).WhereElementIsNotElementType().WherePasses(filter).ToElements();
       }
 
-      if (NewFile != null)
+      if (File.Exists(NewFile))
       {
-        if (File.Exists(NewFile))
-          NewDoc = xru.OpenDoc(NewFile);
-        else
-          NewDoc = xru.CreateNewDoc(TemplateFile, NewFile);
+        NewDoc = xru.OpenDoc(NewFile);
       }
 
       RevitElements = new FilteredElementCollector(SourceDoc).WhereElementIsNotElementType().WherePasses(filter).ToElements();
@@ -99,27 +85,6 @@ namespace ConverterRevitTests
       finally
       {
         SpeckleUtils.Throttler.Release();
-      }
-    }
-  }
-
-  internal static class ExpectedFailuresUtils
-  {
-    public static Dictionary<string, List<string>> DeserializeFile(string file)
-    {
-      if (string.IsNullOrEmpty(file))
-      {
-        return new Dictionary<string, List<string>>();
-      }
-      using StreamReader r = new StreamReader(file);
-      string json = r.ReadToEnd();
-      try
-      {
-        return JsonConvert.DeserializeObject<Dictionary<string, List<string>>>(json);
-      }
-      catch
-      {
-        return new Dictionary<string, List<string>>();
       }
     }
   }

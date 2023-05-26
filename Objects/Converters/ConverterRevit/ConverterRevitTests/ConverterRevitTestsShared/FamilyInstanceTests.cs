@@ -1,96 +1,96 @@
-using Autodesk.Revit.DB;
-using DB = Autodesk.Revit.DB;
-using Xunit;
-using System.Threading.Tasks;
+//using Autodesk.Revit.DB;
+//using DB = Autodesk.Revit.DB;
+//using Xunit;
+//using System.Threading.Tasks;
 
-namespace ConverterRevitTests
-{
-  public class FamilyInstanceFixture : SpeckleConversionFixture
-  {
-    public override string TestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.rvt");
-    public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceUpdated.rvt");
-    public override string NewFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceToNative.rvt");
-    public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.ExpectedFailures.json");
-    public override string Category => TestCategories.FamilyInstance;
-    public FamilyInstanceFixture() : base()
-    {
-    }
-  }
+//namespace ConverterRevitTests
+//{
+//  public class FamilyInstanceFixture : SpeckleConversionFixture
+//  {
+//    public override string TestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.rvt");
+//    public override string UpdatedTestFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceUpdated.rvt");
+//    public override string NewFile => Globals.GetTestModelOfCategory(Category, "FamilyInstanceToNative.rvt");
+//    public override string ExpectedFailuresFile => Globals.GetTestModelOfCategory(Category, "FamilyInstance.ExpectedFailures.json");
+//    public override string Category => TestCategories.FamilyInstance;
+//    public FamilyInstanceFixture() : base()
+//    {
+//    }
+//  }
 
-  public class FamilyInstanceTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFixture>
-  {
-    public FamilyInstanceTests(FamilyInstanceFixture fixture) : base(fixture)
-    {
-    }
+//  public class FamilyInstanceTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFixture>
+//  {
+//    public FamilyInstanceTests(FamilyInstanceFixture fixture) : base(fixture)
+//    {
+//    }
 
-    //[Fact]
-    //[Trait("Nested", "NestedToSpeckle")]
-    //public void NestedToSpeckle()
-    //{
-    //  NativeToSpeckle();
-    //}
+//    //[Fact]
+//    //[Trait("Nested", "NestedToSpeckle")]
+//    //public void NestedToSpeckle()
+//    //{
+//    //  NativeToSpeckle();
+//    //}
 
-    #region ToNative
+//    #region ToNative
 
-    [Fact]
-    [Trait("FamilyInstance", "Selection")]
-    public async Task FamilyInstanceSelectionToNative()
-    {
-      await SelectionToNative<DB.Element>(AssertNestedEqual);
-    }
+//    [Fact]
+//    [Trait("FamilyInstance", "Selection")]
+//    public async Task FamilyInstanceSelectionToNative()
+//    {
+//      await SelectionToNative<DB.Element>(AssertNestedEqual);
+//    }
 
-    [Fact]
-    [Trait("FamilyInstance", "ToNative")]
-    public async Task NestedToNative()
-    {
-      await SpeckleToNative<DB.Element>(AssertNestedEqual);
-    }
-
-
-    [Fact]
-    [Trait("FamilyInstance", "ToNativeUpdates")]
-    public async Task NestedToNativeUpdates()
-    {
-      await SpeckleToNativeUpdates<DB.Element>(AssertNestedEqual);
-    }
-
-    internal void AssertNestedEqual(DB.Element sourceElem, DB.Element destElem)
-    {
-      AssertElementEqual(sourceElem, destElem);
-
-      //family instance
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_LEVEL_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_ELEVATION_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_SILL_HEIGHT_PARAM);
-
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
+//    [Fact]
+//    [Trait("FamilyInstance", "ToNative")]
+//    public async Task NestedToNative()
+//    {
+//      await SpeckleToNative<DB.Element>(AssertNestedEqual);
+//    }
 
 
-      if (sourceElem is FamilyInstance fi && fi.Host != null && destElem is FamilyInstance fi2)
-      {
-        Assert.Equal(fi.Host.Name, fi2.Host.Name);
-      }
+//    [Fact]
+//    [Trait("FamilyInstance", "ToNativeUpdates")]
+//    public async Task NestedToNativeUpdates()
+//    {
+//      await SpeckleToNativeUpdates<DB.Element>(AssertNestedEqual);
+//    }
 
-      //rotation
-      //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
-      if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
-        Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation, 3);
+//    internal void AssertNestedEqual(DB.Element sourceElem, DB.Element destElem)
+//    {
+//      AssertElementEqual(sourceElem, destElem);
+
+//      //family instance
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_LEVEL_PARAM);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_ELEVATION_PARAM);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_SILL_HEIGHT_PARAM);
+
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
 
-      //walls
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_OFFSET);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_TOP_OFFSET);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
-    }
+//      if (sourceElem is FamilyInstance fi && fi.Host != null && destElem is FamilyInstance fi2)
+//      {
+//        Assert.Equal(fi.Host.Name, fi2.Host.Name);
+//      }
 
-    #endregion
+//      //rotation
+//      //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
+//      if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
+//        Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation, 3);
 
-  }
-}
+
+//      //walls
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_OFFSET);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_TOP_OFFSET);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
+//    }
+
+//    #endregion
+
+//  }
+//}

@@ -1,61 +1,61 @@
-using Autodesk.Revit.DB;
-using System.Threading.Tasks;
-using Xunit;
-using DB = Autodesk.Revit.DB;
+//using Autodesk.Revit.DB;
+//using System.Threading.Tasks;
+//using Xunit;
+//using DB = Autodesk.Revit.DB;
 
-namespace ConverterRevitTests
-{
-  public class OpeningFixture : SpeckleConversionFixture
-  {
-    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Opening.rvt");
-    public override string NewFile => Globals.GetTestModelOfCategory(Category, "OpeningToNative.rvt");
-    public override string Category => TestCategories.Opening;
-    public OpeningFixture() : base()
-    {
-    }
-  }
+//namespace ConverterRevitTests
+//{
+//  public class OpeningFixture : SpeckleConversionFixture
+//  {
+//    public override string TestFile => Globals.GetTestModelOfCategory(Category, "Opening.rvt");
+//    public override string NewFile => Globals.GetTestModelOfCategory(Category, "OpeningToNative.rvt");
+//    public override string Category => TestCategories.Opening;
+//    public OpeningFixture() : base()
+//    {
+//    }
+//  }
 
-  public class OpeningTests : SpeckleConversionTest, IClassFixture<OpeningFixture>
-  {
-    public OpeningTests(OpeningFixture fixture) : base(fixture)
-    {
-    }
+//  public class OpeningTests : SpeckleConversionTest, IClassFixture<OpeningFixture>
+//  {
+//    public OpeningTests(OpeningFixture fixture) : base(fixture)
+//    {
+//    }
 
-    [Fact]
-    [Trait("Opening", "ToSpeckle")]
-    public async Task OpeningToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
+//    [Fact]
+//    [Trait("Opening", "ToSpeckle")]
+//    public async Task OpeningToSpeckle()
+//    {
+//      await NativeToSpeckle();
+//    }
 
-    #region ToNative
+//    #region ToNative
 
-    [Fact]
-    [Trait("Opening", "ToNative")]
-    public async Task OpeningToNative()
-    {
-      await SpeckleToNative<DB.Element>(AssertOpeningEqual);
-    }
+//    [Fact]
+//    [Trait("Opening", "ToNative")]
+//    public async Task OpeningToNative()
+//    {
+//      await SpeckleToNative<DB.Element>(AssertOpeningEqual);
+//    }
 
-    [Fact]
-    [Trait("Opening", "Selection")]
-    public async Task OpeningSelectionToNative()
-    {
-      await SelectionToNative<DB.Element>(AssertOpeningEqual);
-    }
+//    [Fact]
+//    [Trait("Opening", "Selection")]
+//    public async Task OpeningSelectionToNative()
+//    {
+//      await SelectionToNative<DB.Element>(AssertOpeningEqual);
+//    }
 
-    private void AssertOpeningEqual(DB.Element sourceElem, DB.Element destElem)
-    {
-      if (!(sourceElem is DB.Opening))
-        return;
+//    private void AssertOpeningEqual(DB.Element sourceElem, DB.Element destElem)
+//    {
+//      if (!(sourceElem is DB.Opening))
+//        return;
 
-      AssertElementEqual(sourceElem, destElem);
+//      AssertElementEqual(sourceElem, destElem);
 
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
-    }
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
+//      AssertEqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
+//    }
 
-    #endregion ToNative
-  }
-}
+//    #endregion ToNative
+//  }
+//}
