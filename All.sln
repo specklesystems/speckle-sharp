@@ -350,6 +350,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "deps", "deps", "{697DC8AA-9
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestGenerator", "Objects\Converters\ConverterRevit\ConverterRevitTests\TestGenerator\TestGenerator.csproj", "{83EAF128-AF56-4E98-BA19-646291690333}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevitTests2022", "Objects\Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTests2022\ConverterRevitTests2022.csproj", "{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -1859,6 +1861,22 @@ Global
 		{83EAF128-AF56-4E98-BA19-646291690333}.Release|Any CPU.Build.0 = Release|Any CPU
 		{83EAF128-AF56-4E98-BA19-646291690333}.Release|x64.ActiveCfg = Release|Any CPU
 		{83EAF128-AF56-4E98-BA19-646291690333}.Release|x64.Build.0 = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Debug|x64.Build.0 = Debug|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release Mac|x64.Build.0 = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release|x64.ActiveCfg = Release|Any CPU
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -2004,6 +2022,7 @@ Global
 		{98B35096-121D-4EF5-9BFF-EFEA518E9311} = {061B11B9-8970-4770-B4BB-A09A2611FBD7}
 		{697DC8AA-9396-4E47-B0A7-1CEE5608B1BA} = {061B11B9-8970-4770-B4BB-A09A2611FBD7}
 		{83EAF128-AF56-4E98-BA19-646291690333} = {697DC8AA-9396-4E47-B0A7-1CEE5608B1BA}
+		{DBC686AE-3E7E-40E4-8EBC-CCF28277028C} = {061B11B9-8970-4770-B4BB-A09A2611FBD7}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
@@ -2087,6 +2106,7 @@ Global
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{d1d0f986-12be-4fd5-8925-c96b1f86427d}*SharedItemsImports = 5
 		ConnectorRhino\ConnectorRhino\ConnectorRhinoShared\ConnectorRhinoShared.projitems*{d648bb69-b992-4d34-906e-7a547374b86c}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{d9f443b5-c55b-4ad8-9c70-bc3d2be781be}*SharedItemsImports = 5
+		Objects\Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTestsShared\ConverterRevitTestsShared.projitems*{dbc686ae-3e7e-40e4-8ebc-ccf28277028c}*SharedItemsImports = 5
 		ConnectorNavisworks\ConnectorNavisworks\ConnectorNavisworks.Shared.projitems*{debc2174-5e31-4b6e-8680-690d75e50e2d}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{dfdfdbb8-018b-4dcb-a012-54227abf53a7}*SharedItemsImports = 5
 		Objects\Converters\ConverterRhinoGh\ConverterRhinoGhShared\ConverterRhinoGhShared.projitems*{ea81f83c-1485-49c8-ab05-9df2798d70ec}*SharedItemsImports = 5
