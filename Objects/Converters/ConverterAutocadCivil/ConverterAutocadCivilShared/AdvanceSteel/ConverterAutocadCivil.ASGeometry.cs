@@ -48,14 +48,12 @@ namespace Objects.Converter.AutocadCivil
 
     private Point3d PointASToAcad(ASPoint3d point)
     {
-      var pointScaled = point * FactorFromNative;
-      return new Point3d(pointScaled.x, pointScaled.y, pointScaled.z);
+      return new Point3d(point.x * FactorFromNative, point.y * FactorFromNative, point.z * FactorFromNative);
     }
 
     private Point3D PointToMath(ASPoint3d point)
     {
-      var pointScaled = point * FactorFromNative;
-      return new Point3D(pointScaled.x, pointScaled.y, pointScaled.z);
+      return new Point3D(point.x * FactorFromNative, point.y * FactorFromNative, point.z * FactorFromNative);
     }
 
     public Vector VectorToSpeckle(ASVector3d vector, string units = null)
@@ -66,8 +64,7 @@ namespace Objects.Converter.AutocadCivil
     }
     private Vector3d VectorASToAcad(ASVector3d vector)
     {
-      var vectorScaled = vector * FactorFromNative;
-      return new Vector3d(vectorScaled.x, vectorScaled.y, vectorScaled.z);
+      return new Vector3d(vector.x * FactorFromNative, vector.y * FactorFromNative, vector.z * FactorFromNative);
     }
 
     private Box BoxToSpeckle(ASBoundBlock3d bound)
