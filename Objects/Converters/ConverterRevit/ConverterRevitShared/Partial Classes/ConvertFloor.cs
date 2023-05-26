@@ -110,7 +110,7 @@ namespace Objects.Converter.Revit
         if (slope != 0 && slopeDirection != null)
           revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, slopeDirection, slope);
         if (revitFloor == null)
-          revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, null, null);
+          revitFloor = Floor.Create(Doc, profile, floorType.Id, level.Id, structural, null, 0);
       }
 #endif
 
