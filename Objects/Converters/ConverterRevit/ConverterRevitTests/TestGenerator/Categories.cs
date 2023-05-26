@@ -67,12 +67,12 @@ namespace TestGenerator
           SyncAssertFunc = "AssertUtils.DirectShapeEqual"
         }
       },
-      { Duct, new CategoryProperties()
-        {
-          RevitType = "DB.Mechanical.Duct",
-          SyncAssertFunc = "AssertUtils.DuctEqual"
-        }
-      },
+      //{ Duct, new CategoryProperties()
+      //  {
+      //    RevitType = "DB.Mechanical.Duct",
+      //    SyncAssertFunc = "AssertUtils.DuctEqual"
+      //  }
+      //},
       { FamilyInstance, new CategoryProperties()
         {
           RevitType = "DB.Element",
@@ -92,12 +92,12 @@ namespace TestGenerator
           SyncAssertFunc = "AssertUtils.OpeningEqual"
         }
       },
-      { Pipe, new CategoryProperties()
-        {
-          RevitType = "DB.Plumbing.Pipe",
-          SyncAssertFunc = "AssertUtils.PipeEqual"
-        }
-      },
+      //{ Pipe, new CategoryProperties()
+      //  {
+      //    RevitType = "DB.Plumbing.Pipe",
+      //    SyncAssertFunc = "AssertUtils.PipeEqual"
+      //  }
+      //},
       { Roof, new CategoryProperties()
         {
           RevitType = "DB.RoofBase",

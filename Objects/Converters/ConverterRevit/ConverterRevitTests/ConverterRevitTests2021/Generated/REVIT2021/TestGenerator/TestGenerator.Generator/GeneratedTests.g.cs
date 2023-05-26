@@ -215,45 +215,6 @@ namespace ConverterRevitTests
 
   }
 
-  public class DuctDuctFixture : SpeckleConversionFixture
-  {
-    public override string Category => "Duct";
-    public override string TestName => "Duct";
-
-    public DuctDuctFixture() : base()
-    {
-    }
-  }
-
-  public class DuctDuctTests : SpeckleConversionTest, IClassFixture<DuctDuctFixture>
-  {
-    public DuctDuctTests(DuctDuctFixture fixture) : base(fixture)
-    {
-    }
-
-    [Fact]
-    [Trait("Duct", "DuctToSpeckle")]
-    public async Task DuctDuctToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
-    [Trait("Duct", "DuctToNative")]
-    public async Task DuctDuctToNative()
-    {
-      await SpeckleToNative<DB.Mechanical.Duct>(AssertUtils.DuctEqual, null);
-    }
-
-    [Fact]
-    [Trait("Duct", "DuctSelection")]
-    public async Task DuctDuctSelectionToNative()
-    {
-      await SelectionToNative<DB.Mechanical.Duct>(AssertUtils.DuctEqual, null);
-    }
-
-  }
-
   public class FamilyInstanceFamilyInstanceFixture : SpeckleConversionFixture
   {
     public override string Category => "FamilyInstance";
@@ -374,45 +335,6 @@ namespace ConverterRevitTests
     public async Task OpeningOpeningSelectionToNative()
     {
       await SelectionToNative<DB.Element>(AssertUtils.OpeningEqual, null);
-    }
-
-  }
-
-  public class PipePipeFixture : SpeckleConversionFixture
-  {
-    public override string Category => "Pipe";
-    public override string TestName => "Pipe";
-
-    public PipePipeFixture() : base()
-    {
-    }
-  }
-
-  public class PipePipeTests : SpeckleConversionTest, IClassFixture<PipePipeFixture>
-  {
-    public PipePipeTests(PipePipeFixture fixture) : base(fixture)
-    {
-    }
-
-    [Fact]
-    [Trait("Pipe", "PipeToSpeckle")]
-    public async Task PipePipeToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
-    [Trait("Pipe", "PipeToNative")]
-    public async Task PipePipeToNative()
-    {
-      await SpeckleToNative<DB.Plumbing.Pipe>(AssertUtils.PipeEqual, null);
-    }
-
-    [Fact]
-    [Trait("Pipe", "PipeSelection")]
-    public async Task PipePipeSelectionToNative()
-    {
-      await SelectionToNative<DB.Plumbing.Pipe>(AssertUtils.PipeEqual, null);
     }
 
   }

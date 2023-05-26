@@ -61,6 +61,9 @@ namespace TestGenerator
           if (!strippedFile.EndsWith(".rvt")) continue;
           strippedFile = strippedFile.Replace(".rvt", "");
 
+          // illegal character in revit file name
+          if (strippedFile.Contains('.')) continue;
+
           if (strippedFile.EndsWith(ToNative)) toNativeFiles.Add(strippedFile);
           else if (strippedFile.EndsWith(Updated)) updatedFiles.Add(strippedFile);
           else baseFiles.Add(strippedFile);
