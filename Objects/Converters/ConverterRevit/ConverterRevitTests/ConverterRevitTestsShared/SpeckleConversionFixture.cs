@@ -74,10 +74,10 @@ namespace ConverterRevitTests
         //// if none of the tests failed, close the documents
         //if (!testsFailed)
         //{
-        xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
-        xru.CloseDoc(SourceDoc);
-        xru.CloseDoc(UpdatedDoc);
-        xru.CloseDoc(NewDoc);
+        //xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
+        //xru.CloseDoc(SourceDoc);
+        //xru.CloseDoc(UpdatedDoc);
+        //xru.CloseDoc(NewDoc);
         //}
 
         return Task.CompletedTask;

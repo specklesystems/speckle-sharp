@@ -34,11 +34,11 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_StructuralFraming
         }
       },
-      //{ Brep, new List<BuiltInCategory>()
-      //  {
-      //    BuiltInCategory.OST_Mass
-      //  }
-      //},
+      { Brep, new List<BuiltInCategory>()
+        {
+          BuiltInCategory.OST_Mass
+        }
+      },
       { Column, new List<BuiltInCategory>()
         {
           BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns
