@@ -1,4 +1,6 @@
 using Autodesk.Revit.DB;
+using ConnectorRevit.Storage;
+using DesktopUI2.Models;
 using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit;
 using Revit.Async;
@@ -123,6 +125,7 @@ namespace ConverterRevitTests
         .Select(obj => new ApplicationObject(obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId })
         .ToList();
       converter.SetContextObjects(contextObjects);
+      converter.SetContextDocument(new StreamStateCache(new StreamState()));
 
       var spkElems = new List<Base>();
       await RevitTask
@@ -152,8 +155,11 @@ namespace ConverterRevitTests
 
       converter.SetContextDocument(fixture.NewDoc);
       //setting context objects for update routine
-      if (appPlaceholders != null)
-        converter.SetPreviousContextObjects(appPlaceholders);
+      var state = new StreamState()
+      {
+        ReceivedObjects = appPlaceholders ?? new List<ApplicationObject>()
+      };
+      converter.SetContextDocument(new StreamStateCache(state));
 
       var contextObjs = spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList();
       var appObjs = new List<ApplicationObject>();
@@ -277,6 +283,7 @@ namespace ConverterRevitTests
 
       converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
+      converter.SetContextDocument(new StreamStateCache(new StreamState()));
       var revitEls = new List<object>();
 
       await SpeckleUtils.RunInTransaction(

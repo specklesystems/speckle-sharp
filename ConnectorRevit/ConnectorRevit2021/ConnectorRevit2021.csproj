@@ -26,9 +26,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="Avalonia" Version="0.10.18" />
-    <PackageReference Include="Avalonia.Desktop" Version="0.10.18" />
-    <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.18" />
     <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0" IncludeAssets="compile;build" PrivateAssets="all"/>
     <PackageReference Include="Revit.Async" Version="2.0.1" />
   </ItemGroup>
@@ -37,6 +34,7 @@
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\RevitSharedResources\RevitSharedResources.csproj" />
   </ItemGroup>
   
   <Target Name="Clean">
