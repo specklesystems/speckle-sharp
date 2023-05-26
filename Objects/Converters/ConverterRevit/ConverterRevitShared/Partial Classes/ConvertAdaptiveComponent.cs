@@ -17,7 +17,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleAc.id, speckleAc.speckle_type) { applicationId = speckleAc.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       string familyName = speckleAc["family"] as string != null ? speckleAc["family"] as string : "";
@@ -89,7 +89,7 @@ namespace Objects.Converter.Revit
 
       speckleAc.basePoints = GetAdaptivePoints(revitAc);
       speckleAc.flipped = AdaptiveComponentInstanceUtils.IsInstanceFlipped(revitAc);
-      speckleAc.displayValue = GetElementMesh(revitAc);
+      speckleAc.displayValue = GetElementDisplayValue(revitAc, SolidDisplayValueOptions);
 
       GetAllRevitParamsAndIds(speckleAc, revitAc);
       Report.Log($"Converted AdaptiveComponent {revitAc.Id}");

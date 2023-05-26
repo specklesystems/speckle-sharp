@@ -53,6 +53,13 @@ namespace ConverterRevitTests
     #region ToNative
 
     [Fact]
+    [Trait("FamilyInstance", "Selection")]
+    public async Task FamilyInstanceSelectionToNative()
+    {
+      await SelectionToNative<DB.Element>(AssertNestedEqual);
+    }
+
+    [Fact]
     [Trait("FamilyInstance", "ToNative")]
     public async Task NestedToNative()
     {

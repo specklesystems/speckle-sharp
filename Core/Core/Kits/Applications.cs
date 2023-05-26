@@ -20,7 +20,10 @@ public enum HostAppVersion
   vRevit2024,
   vRevit2025,
   v25,
-  v26
+  v26,
+  v715,
+  v716,
+  v717
 }
 
 public class HostApplication

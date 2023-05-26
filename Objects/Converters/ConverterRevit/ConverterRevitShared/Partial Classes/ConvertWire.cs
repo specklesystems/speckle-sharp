@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleWire.id, speckleWire.speckle_type) { applicationId = speckleWire.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       var wiringType = speckleRevitWire?.wiringType == "Chamfer"

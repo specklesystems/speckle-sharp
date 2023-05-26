@@ -23,7 +23,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(specklePipe.id, specklePipe.speckle_type) { applicationId = specklePipe.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       // get system info
@@ -139,7 +139,7 @@ namespace Objects.Converter.Revit
         diameter = GetParamValue<double>(revitPipe, BuiltInParameter.RBS_PIPE_DIAMETER_PARAM),
         length = GetParamValue<double>(revitPipe, BuiltInParameter.CURVE_ELEM_LENGTH),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitPipe)
+        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);
@@ -183,7 +183,7 @@ namespace Objects.Converter.Revit
         startTangent = VectorToSpeckle(revitPipe.StartTangent, revitPipe.Document),
         endTangent = VectorToSpeckle(revitPipe.EndTangent, revitPipe.Document),
         level = ConvertAndCacheLevel(revitPipe, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitPipe)
+        displayValue = GetElementDisplayValue(revitPipe, SolidDisplayValueOptions)
       };
 
       var material = ConverterRevit.GetMEPSystemMaterial(revitPipe);

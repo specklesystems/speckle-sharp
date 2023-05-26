@@ -154,7 +154,7 @@ GS::ErrCode GetWallData::SerializeElementType (const API_Element& element,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Show on Stories - Story visibility
-	Utility::ExportVisibility (wall.isAutoOnStoryVisibility, wall.visibility, os, ShowOnStories);
+	Utility::GetVisibility (wall.isAutoOnStoryVisibility, wall.visibility, os, ShowOnStories);
 
 	// The display options (Projected, Projected with Overhead, Cut Only, Outlines Only, Overhead All or Symbolic Cut)
 	os.Add (Wall::DisplayOptionName, displayOptionNames.Get (wall.displayOption));

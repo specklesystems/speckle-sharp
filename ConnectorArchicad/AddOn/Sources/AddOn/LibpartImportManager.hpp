@@ -28,6 +28,8 @@ public:
 
 	GSErrCode	GetLibpart (const ModelInfo& modelInfo, AttributeManager& attributeManager, API_LibPart& libPart);
 
+	GSErrCode GetLibpartFromCache(const GS::Array<GS::UniString> modelIds, API_LibPart& libPart);
+
 private:
 	GSErrCode	CreateLibraryPart (const ModelInfo& modelInfo, AttributeManager& attributeManager, API_LibPart& libPart);
 	GSErrCode	GetLocation (bool useEmbeddedLibrary, IO::Location*& libraryFolderLocation) const;

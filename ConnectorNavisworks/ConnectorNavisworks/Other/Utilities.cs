@@ -110,11 +110,11 @@ public static class Utilities
           if (int.TryParse(x, out var value))
             return value;
 
-          throw new Exception("malformed path pseudoId");
+          throw new ArgumentException("malformed path pseudoId");
         })
         .ToArray();
     }
-    catch
+    catch (ArgumentException)
     {
       return null;
     }

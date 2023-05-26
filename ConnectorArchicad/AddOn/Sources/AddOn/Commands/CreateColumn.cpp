@@ -31,18 +31,15 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	API_Element& elementMask,
 	API_ElementMemo& memo,
 	GS::UInt64& memoMask,
+	API_SubElement** /*marker*/,
 	AttributeManager& /*attributeManager*/,
 	LibpartImportManager& /*libpartImportManager*/,
-	API_SubElement** /*marker = nullptr*/) const
+	GS::Array<GS::UniString>& log) const
 {
 	GSErrCode err = NoError;
 
-#ifdef ServerMainVers_2600
-	element.header.type.typeID = API_ColumnID;
-#else
-	element.header.typeID = API_ColumnID;
-#endif
-	err = Utility::GetBaseElementData (element, &memo);
+	Utility::SetElementType (element.header, API_ColumnID);
+	err = Utility::GetBaseElementData (element, &memo, nullptr, log);
 	if (err != NoError)
 		return err;
 
@@ -57,9 +54,12 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 
 	if (os.Contains (ElementBase::Level)) {
 		GetStoryFromObjectState (os, origoPos.z, element.header.floorInd, element.column.bottomOffset);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
-		ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, bottomOffset);
 	}
+	else {
+		Utility::SetStoryLevelAndFloor (origoPos.z, element.header.floorInd, element.column.bottomOffset);
+	}
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_Elem_Head, floorInd);
+	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, bottomOffset);
 
 	if (os.Contains (Column::height)) {
 		os.Get (Column::height, element.column.height);
@@ -279,7 +279,7 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	// Floor Plan and Section - Floor Plan Display
 
 	// Story visibility
-	Utility::ImportVisibility (os, "", element.column.isAutoOnStoryVisibility, element.column.visibility);
+	Utility::CreateVisibility (os, "", element.column.isAutoOnStoryVisibility, element.column.visibility);
 
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, isAutoOnStoryVisibility);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, visibility.showOnHome);
@@ -520,7 +520,7 @@ GSErrCode CreateColumn::GetElementFromObjectState (const GS::ObjectState& os,
 	}
 
 	// Cover Fill Transformation
-	Utility::ImportCoverFillTransformation (os, element.column.coverFillOrientationComesFrom3D, element.column.coverFillTransformationType);
+	Utility::CreateCoverFillTransformation (os, element.column.coverFillOrientationComesFrom3D, element.column.coverFillTransformationType);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillOrientationComesFrom3D);
 	ACAPI_ELEMENT_MASK_SET (elementMask, API_ColumnType, coverFillTransformationType);
 

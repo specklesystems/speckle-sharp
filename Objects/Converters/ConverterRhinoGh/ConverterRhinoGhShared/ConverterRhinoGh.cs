@@ -33,7 +33,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 #if RHINO6 && GRASSHOPPER
     public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v6);
 #elif RHINO7 && GRASSHOPPER
-    public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
+  public static string RhinoAppName = HostApplications.Grasshopper.GetVersion(HostAppVersion.v7);
 #elif RHINO6
   public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v6);
 #elif RHINO7
@@ -72,6 +72,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   public RhinoDoc Doc { get; private set; }
 
   public Dictionary<string, BlockDefinition> BlockDefinitions { get; private set; } = new();
+  public Dictionary<string, InstanceDefinition> InstanceDefinitions { get; private set; } = new();
 
   public List<ApplicationObject> ContextObjects { get; set; } = new();
 
@@ -96,6 +97,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
         PreprocessGeometry = (bool)dict["preprocessGeometry"];
       return;
     }
+
     // Keep this for backwards compatibility.
     var s = (MeshSettings)settings;
     SelectedMeshSettings = s;
@@ -144,6 +146,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     Base @base = null;
     Base schema = null;
     var notes = new List<string>();
+    var defaultPreprocess = PreprocessGeometry;
+
     try
     {
       switch (@object)
@@ -185,6 +189,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           userStrings = l.GetUserStrings();
           break;
       }
+
+      if (schema != null)
+        PreprocessGeometry = true;
 
       switch (@object)
       {
@@ -261,14 +268,14 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           @base = DisplayMaterialToSpeckle(o);
           break;
         case UVInterval o:
-            @base = Interval2dToSpeckle(o);
-            break;
+          @base = Interval2dToSpeckle(o);
+          break;
 #endif
 
 #if RHINO7
         case RH.SubD o:
           if (o.HasBrepForm)
-            @base = BrepToSpeckle(o.ToBrep(new RH.SubDToBrepOptions()),null, displayMesh, material);
+            @base = BrepToSpeckle(o.ToBrep(new RH.SubDToBrepOptions()), null, displayMesh, material);
           else
             @base = MeshToSpeckle(o);
           break;
@@ -309,6 +316,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             );
             Report.UpdateReportObject(reportObj);
           }
+
           return @base;
       }
 
@@ -335,6 +343,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       );
     }
 
+    PreprocessGeometry = defaultPreprocess;
+
     if (reportObj != null)
     {
       reportObj.Update(log: notes);
@@ -351,6 +361,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
   private Base MappingToSpeckle(string mapping, RhinoObject @object, List<string> notes)
   {
+    var defaultPreprocess = PreprocessGeometry;
     PreprocessGeometry = true;
     Base schemaObject = Operations.Deserialize(mapping);
     try
@@ -365,12 +376,14 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           {
             throw new ArgumentException("Wall geometry can only be a brep or extrusion");
           }
+
           var edges = profileWallBrep.DuplicateNakedEdgeCurves(true, false);
           var profileCurve = RH.Curve.JoinCurves(edges);
           if (profileCurve.Count() != 1)
           {
             throw new Exception("Surface external edges should be joined into 1 curve");
           }
+
           var speckleProfileCurve = CurveToSpeckle(profileCurve.First());
           var profile = new Polycurve()
           {
@@ -457,8 +470,10 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             block.transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector4 translation);
             o.rotation = Math.Acos(rotation.W) * 2;
           }
+
           break;
       }
+
       schemaObject.applicationId = @object.Id.ToString();
       schemaObject["units"] = ModelUnits;
 
@@ -469,12 +484,13 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       notes.Add($"Could not attach {schemaObject.speckle_type} schema: {ex.Message}");
     }
 
-    PreprocessGeometry = false;
+    PreprocessGeometry = defaultPreprocess;
     return schemaObject;
   }
 
   public Base ConvertToSpeckleBE(object @object, ApplicationObject reportObj, RH.Mesh displayMesh)
   {
+    var defaultPreprocess = PreprocessGeometry;
     PreprocessGeometry = true;
     // get schema if it exists
     RhinoObject obj = @object as RhinoObject;
@@ -515,6 +531,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
             break;
         }
+
         break;
 
       case RH.Brep o:
@@ -548,6 +565,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
             break;
         }
+
         break;
 
       case RH.Extrusion o:
@@ -582,6 +600,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
             break;
         }
+
         break;
 
       case RH.Mesh o:
@@ -599,25 +618,29 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             reportObj.Update(logItem: $"{schema} creation from {o.ObjectType} is not supported");
             break;
         }
+
         break;
 
 #if RHINO7
-        case RH.SubD o:
-          if (o.HasBrepForm)
-            schemaBase = displayMesh != null ? MeshToTopography(displayMesh) : BrepToTopography(o.ToBrep(new RH.SubDToBrepOptions()));
-          else
-            schemaBase = MeshToTopography(o);
-          break;
+      case RH.SubD o:
+        if (o.HasBrepForm)
+          schemaBase = displayMesh != null
+            ? MeshToTopography(displayMesh)
+            : BrepToTopography(o.ToBrep(new RH.SubDToBrepOptions()));
+        else
+          schemaBase = MeshToTopography(o);
+        break;
 #endif
 
       default:
         reportObj.Update(logItem: $"{obj.ObjectType} is not supported in schema conversions.");
         break;
     }
+
     reportObj.Log.AddRange(notes);
     if (schemaBase == null)
       reportObj.Update(logItem: $"{schema} schema creation failed");
-    PreprocessGeometry = false;
+    PreprocessGeometry = defaultPreprocess;
     return schemaBase;
   }
 
@@ -700,9 +723,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           rhinoObj = IntervalToNative(o);
           break;
 #if GRASSHOPPER
-          case Interval2d o:
-            rhinoObj = Interval2dToNative(o);
-            break;
+        case Interval2d o:
+          rhinoObj = Interval2dToNative(o);
+          break;
 #endif
         case Line o:
           rhinoObj = LineToNative(o);
@@ -760,6 +783,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
           {
             rhinoObj = b;
           }
+
           break;
 
         case Surface o:
@@ -812,7 +836,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
         case RenderMaterial o:
 #if GRASSHOPPER
-            rhinoObj = RenderMaterialToDisplayMaterial(o);
+          rhinoObj = RenderMaterialToDisplayMaterial(o);
 #else
           rhinoObj = RenderMaterialToNative(o);
 #endif
@@ -829,6 +853,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
             );
             Report.UpdateReportObject(reportObj);
           }
+
           break;
       }
     }
@@ -897,7 +922,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case RH.Box _:
       case RH.Mesh _:
 #if RHINO7
-        case RH.SubD _:
+      case RH.SubD _:
 #endif
       case RH.Extrusion _:
       case RH.Brep _:
@@ -905,11 +930,11 @@ public partial class ConverterRhinoGh : ISpeckleConverter
         return true;
 
 #if GRASSHOPPER
-        // This types are ONLY supported in GH!
-        case RH.Transform _:
-        case DisplayMaterial _:
-        case UVInterval _:
-          return true;
+      // This types are ONLY supported in GH!
+      case RH.Transform _:
+      case DisplayMaterial _:
+      case UVInterval _:
+        return true;
 #else
       // This types are NOT supported in GH!
       case ViewInfo _:
@@ -950,9 +975,9 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Element1D _:
         return true;
 #if GRASSHOPPER
-        case Transform _:
-        case RenderMaterial _:
-          return true;
+      case Transform _:
+      case RenderMaterial _:
+        return true;
 #else
       // This types are not supported in GH!
       case Pointcloud _:
@@ -999,14 +1024,14 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       case Element1D _:
         return true;
 #if GRASSHOPPER
-        case Interval _:
-        case Interval2d _:
-        case Plane _:
-        case RenderMaterial _:
-        case Spiral _:
-        case Transform _:
-        case Vector _:
-          return true;
+      case Interval _:
+      case Interval2d _:
+      case Plane _:
+      case RenderMaterial _:
+      case Spiral _:
+      case Transform _:
+      case Vector _:
+        return true;
 #else
       // This types are not supported in GH!
       case Pointcloud _:

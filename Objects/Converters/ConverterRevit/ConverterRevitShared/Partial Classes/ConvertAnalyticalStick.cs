@@ -35,7 +35,7 @@ namespace Objects.Converter.Revit
       appObj = new ApplicationObject(speckleStick.id, speckleStick.speckle_type) { applicationId = speckleStick.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (speckleStick.baseLine == null)
@@ -267,7 +267,7 @@ namespace Objects.Converter.Revit
       speckleElement1D.property = prop;
 
       GetAllRevitParamsAndIds(speckleElement1D, revitStick);
-      speckleElement1D.displayValue = GetElementDisplayMesh(revitStick.Document.GetElement(revitStick.GetElementId()));
+      speckleElement1D.displayValue = GetElementDisplayValue(revitStick.Document.GetElement(revitStick.GetElementId()));
       return speckleElement1D;
     }
 
@@ -338,7 +338,7 @@ namespace Objects.Converter.Revit
       {
         var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitStick.Id);
         var physicalElement = Doc.GetElement(physicalElementId);
-        speckleElement1D.displayValue = GetElementDisplayMesh(physicalElement);
+        speckleElement1D.displayValue = GetElementDisplayValue(physicalElement);
       }
 
       return speckleElement1D;

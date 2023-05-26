@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleDuct.id, speckleDuct.speckle_type) { applicationId = speckleDuct.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       var systemFamily = (speckleRevitDuct != null) ? speckleRevitDuct.systemName : "";
@@ -115,7 +115,7 @@ namespace Objects.Converter.Revit
         length = GetParamValue<double>(revitDuct, BuiltInParameter.CURVE_ELEM_LENGTH),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitDuct),
+        displayValue = GetElementDisplayValue(revitDuct, SolidDisplayValueOptions)
       };
 
       if (revitDuct.MEPSystem != null)
@@ -161,7 +161,7 @@ namespace Objects.Converter.Revit
         endTangent = VectorToSpeckle(revitDuct.EndTangent, revitDuct.Document),
         velocity = GetParamValue<double>(revitDuct, BuiltInParameter.RBS_VELOCITY),
         level = ConvertAndCacheLevel(revitDuct, BuiltInParameter.RBS_START_LEVEL_PARAM),
-        displayValue = GetElementMesh(revitDuct)
+        displayValue = GetElementDisplayValue(revitDuct, SolidDisplayValueOptions)
       };
 
       if (revitDuct.MEPSystem != null)

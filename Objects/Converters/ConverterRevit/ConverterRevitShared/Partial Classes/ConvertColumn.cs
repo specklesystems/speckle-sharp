@@ -20,7 +20,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleColumn.id, speckleColumn.speckle_type) { applicationId = speckleColumn.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       if (speckleColumn.baseLine == null)
@@ -251,10 +251,9 @@ namespace Objects.Converter.Revit
       // so we need to pass in the view we want in order to get the correct geometry
       // TODO: we need to make sure we are passing in the correct view
       var connectionHandlerFilter = new ElementClassFilter(typeof(DB.Structure.StructuralConnectionHandler));
-      if (revitColumn.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitColumn.GetDependentElements(connectionHandlerFilter).Any())
-        speckleColumn.displayValue = GetElementDisplayMesh(revitColumn, new Options() { View = Doc.ActiveView, ComputeReferences = true });
-      else
-        speckleColumn.displayValue = GetElementMesh(revitColumn);
+      var options = revitColumn.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitColumn.GetDependentElements(connectionHandlerFilter).Any() ?
+        new Options() { View = Doc.ActiveView, ComputeReferences = true } : SolidDisplayValueOptions;
+      speckleColumn.displayValue = GetElementDisplayValue(revitColumn, options);
 
       return speckleColumn;
     }

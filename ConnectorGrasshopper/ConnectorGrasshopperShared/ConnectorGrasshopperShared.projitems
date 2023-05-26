@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -23,6 +23,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\SelectKitAsyncComponentBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\SelectKitComponentBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BaseComponents\SelectKitTaskCapableComponentBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Collections\FlattenCollectionComponent.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Collections\GH_SpeckleCollection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Collections\SpeckleCollectionParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ComponentCategories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorGrasshopperInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Conversion\DeserialiseTaskCapableComponent.cs" />
@@ -34,7 +37,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleAccount.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleGoo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SendReceiveDataParam.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extras\Speckle.IGH_Goo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extras\GH_SpeckleBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleBaseParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStatefulParam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extras\SpeckleStateTag.cs" />
@@ -67,7 +70,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.SyncSendComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.VariableInputReceiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Ops\Operations.VariableInputSendComponent.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Properties\Resources.Designer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CreateSchemaObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CreateSchemaObjectBase.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SchemaBuilder\CreateSchemaObjectDialog.cs" />
@@ -93,13 +95,17 @@
     <Compile Include="$(MSBuildThisFileDirectory)UpgradeUtilities.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="$(MSBuildThisFileDirectory)Resources\ServerAccount.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\AccountParam.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\AccountToken.png" />
-    <None Include="$(MSBuildThisFileDirectory)Resources\StreamGetWithToken.png" />
     <Content Include="$(MSBuildThisFileDirectory)SchemaBuilder\SchemaBuilderGen.tt" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Properties\Resources.resx" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <CustomToolNamespace>ConnectorGrasshopper.Properties</CustomToolNamespace>
+    </EmbeddedResource>
+    <Compile Include="$(MSBuildThisFileDirectory)Properties\Resources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

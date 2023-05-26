@@ -69,6 +69,7 @@ namespace Objects.Converter.Archicad
         // Archicad elements
         Objects.BuiltElements.Archicad.ArchicadDoor => true,
         Objects.BuiltElements.Archicad.ArchicadWindow => true,
+        Objects.BuiltElements.Archicad.ArchicadSkylight => true,
         Objects.BuiltElements.Archicad.DirectShape _ => true,
 
         // Revit elements
@@ -81,7 +82,7 @@ namespace Objects.Converter.Archicad
 
         _ => false
       };
-     }
+    }
 
     public bool CanConvertToNativeNotImplemented(Base @object)
     {

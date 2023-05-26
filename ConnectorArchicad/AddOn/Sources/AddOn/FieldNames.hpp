@@ -16,6 +16,7 @@ static const char* StateRemoved = "Removed";
 static const char* StateUnknown = "Unknown";
 static const char* OriginalId = "OriginalId";
 static const char* CreatedIds = "CreatedIds";
+static const char* Log = "Log";
 }
 
 namespace ElementBase
@@ -40,8 +41,10 @@ static const char* Columns = "columns";
 static const char* DirectShapes = "directShapes";
 static const char* Doors = "doors";
 static const char* Objects = "objects";
+static const char* MeshModels = "meshModels";
 static const char* Roofs = "roofs";
 static const char* Shells = "shells";
+static const char* Skylights = "skylights";
 static const char* Slabs = "slabs";
 static const char* Walls = "walls";
 static const char* Windows = "windows";
@@ -193,9 +196,28 @@ static const char* subFloorThickness = "subFloorThickness";
 static const char* reflected = "reflected";
 static const char* oSide = "oSide";
 static const char* refSide = "refSide";
+static const char* VerticalLinkTypeName = "verticalLinkTypeName";
+static const char* VerticalLinkStoryIndex = "verticalLinkStoryIndex";
+static const char* WallCutUsing = "wallCutUsing";
 
-static const char* buildingMaterial = "buildingMaterial";
-static const char* libraryPart = "libraryPart";
+static const char* PenIndex = "pen";
+static const char* LineTypeName = "lineTypeName";
+static const char* SectFillName = "sectFill";
+static const char* SectFillPenIndex = "sectFillPen";
+static const char* SectBackgroundPenIndex = "sectBackgroundPen";
+static const char* SectContPenIndex = "sectContPen";
+static const char* CutLineTypeName = "cutLineType";
+static const char* AboveViewLineTypeName = "aboveViewLineType";
+static const char* AboveViewLinePenIndex = "aboveViewLinePen";
+static const char* BelowViewLinePenIndex = "belowViewLinePen";
+static const char* BelowViewLineTypeName = "belowViewLineType";
+static const char* UseObjectPens = "useObjectPens";
+static const char* UseObjLinetypes = "useObjLinetypes";
+static const char* UseObjMaterials = "useObjMaterials";
+static const char* UseObjSectAttrs = "useObjSectAttrs";
+static const char* BuildingMaterialName = "buildingMaterial";
+static const char* LibraryPart = "libraryPart";
+static const char* DisplayOptionName = "displayOptionName";
 
 static const char* revealDepthFromSide = "revealDepthFromSide";
 static const char* jambDepthHead = "jambDepthHead";
@@ -415,6 +437,7 @@ namespace Object
 {
 // Main
 static const char* pos = "pos";
+static const char* transform = "transform";
 }
 
 
@@ -527,6 +550,7 @@ static const char* BotMat = "botMat";
 static const char* MaterialsChained = "materialsChained";
 static const char* TrimmingBodyName = "trimmingBodyName";
 }
+
 
 namespace Shell
 {
@@ -656,6 +680,20 @@ static const char* MaterialsChained = "materialsChained";
 static const char* TrimmingBodyName = "trimmingBodyName";
 }
 
+
+namespace Skylight
+{
+// Geometry and positioning
+static const char* VertexID = "vertexID";
+static const char* SkylightFixMode = "skylightFixMode";
+static const char* SkylightAnchor = "skylightAnchor";
+static const char* AnchorPosition = "anchorPosition";
+static const char* AnchorLevel = "anchorLevel";
+static const char* AzimuthAngle = "azimuthAngle";
+static const char* ElevationAngle = "elevationAngle";
+}
+
+
 namespace Room
 {
 static const char* Name = "name";
@@ -682,6 +720,7 @@ static const char* AmbientColor = "ambientColor";
 static const char* EmissionColor = "emissionColor";
 static const char* Material = "material";
 static const char* Model = "model";
+static const char* ModelIds = "modelIds";
 static const char* Ids = "ids";
 static const char* Edges = "edges";
 }

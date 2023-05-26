@@ -44,7 +44,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
   public ConnectorBindingsRhino()
   {
     RhinoDoc.EndOpenDocument += RhinoDoc_EndOpenDocument;
-    RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange;
+    RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange; // used to update the DUI2 layer filter to reflect layer changes
   }
 
   public RhinoDoc Doc => RhinoDoc.ActiveDoc;
@@ -554,6 +554,8 @@ public class ConnectorBindingsRhino : ConnectorBindings
 
           #region layer creation
 
+          RhinoDoc.LayerTableEvent -= RhinoDoc_LayerChange; // temporarily unsubscribe from layer handler since layer creation will trigger it.
+
           // sort by depth and create all the containers as layers first
           var layers = new Dictionary<string, Layer>();
           var containers = Preview
@@ -668,6 +670,8 @@ public class ConnectorBindingsRhino : ConnectorBindings
             progress.Update(conversionProgressDict);
           }
           progress.Report.Merge(converter.Report);
+
+          RhinoDoc.LayerTableEvent += RhinoDoc_LayerChange; // reactivate the layer handler
 
           // undo notes edit
           var segments = Doc.Notes.Split(new[] { "%%%" }, StringSplitOptions.None).ToList();

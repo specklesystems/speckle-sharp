@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using ConnectorGrasshopper.Collections;
 using Grasshopper.Kernel.Types;
 using Speckle.Core.Models;
 
@@ -8,19 +9,19 @@ public class GH_SpeckleBase : GH_Goo<Base>
 {
   public GH_SpeckleBase()
   {
-    Value = null;
+    m_value = null;
   }
 
   public GH_SpeckleBase(Base internal_data)
     : base(internal_data)
   {
-    Value = internal_data;
+    m_value = internal_data;
   }
 
   public GH_SpeckleBase(GH_Goo<Base> other)
     : base(other)
   {
-    Value = other.Value;
+    m_value = other.Value;
   }
 
   public override bool IsValid => Value != null;
@@ -36,34 +37,32 @@ public class GH_SpeckleBase : GH_Goo<Base>
 
   public override bool CastFrom(object source)
   {
-    Base @base = null;
-    var type = source.GetType();
-
-    if (source == null)
-      return false;
-
-    if (source is Base _base)
+    Base @base;
+    switch (source)
     {
-      @base = _base;
-    }
-    else if (source is GH_SpeckleBase speckleBase)
-    {
-      @base = speckleBase.Value;
-    }
-    else if (source is GH_Goo<Base> goo)
-    {
-      @base = goo.Value;
-    }
-    else if (typeof(IDictionary).IsAssignableFrom(source.GetType()))
-    {
-      var dict = source as IDictionary;
-      @base = new Base();
-      foreach (DictionaryEntry kvp in dict)
-      {
-        if (!(kvp.Key is string s))
-          return false;
-        @base[(string)kvp.Key] = kvp.Value;
-      }
+      case Base _base:
+        @base = _base;
+        break;
+      case GH_SpeckleBase speckleBase:
+        @base = speckleBase.Value;
+        break;
+      case GH_SpeckleCollection speckleCollection:
+        @base = speckleCollection.Value;
+        break;
+      case GH_Goo<Base> goo:
+        @base = goo.Value;
+        break;
+      case IDictionary dict:
+        @base = new Base();
+        foreach (DictionaryEntry kvp in dict)
+        {
+          if (kvp.Key is not string s)
+            return false;
+          @base[s] = kvp.Value;
+        }
+        break;
+      default:
+        return false;
     }
 
     Value = @base;
@@ -72,11 +71,19 @@ public class GH_SpeckleBase : GH_Goo<Base>
 
   public override bool CastTo<Q>(ref Q target)
   {
-    if (!(target is GH_SpeckleBase))
-      return false;
-
-    target = (Q)(object)new GH_SpeckleBase { Value = Value };
-    return true;
+    var type = typeof(Q);
+    var success = false;
+    if (type == typeof(GH_SpeckleBase))
+    {
+      target = (Q)(object)new GH_SpeckleBase { Value = Value };
+      success = true;
+    }
+    else if (type == typeof(GH_SpeckleCollection) && Value is Collection collection)
+    {
+      target = (Q)(object)new GH_SpeckleCollection { Value = collection };
+      success = true;
+    }
+    return success;
   }
 
   public override IGH_Goo Duplicate()

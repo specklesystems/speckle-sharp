@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, ref Base extraProps)
+    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, Base extraProps)
     {
       // doesn't have a host that will convert the element, go ahead and do it now
       if (host == null || host is DB.Level)
@@ -66,10 +66,13 @@ namespace Objects.Converter.Revit
         // yet not know it.
         var hostedElementIds = GetHostedElementIds(host);
         var elementId = element.Id;
-        if (!hostedElementIds.Where(b => b.IntegerValue == elementId.IntegerValue).Any())
+        if (!hostedElementIds.Contains(elementId))
         {
-          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId };
-          ((dynamic)extraProps["speckleHost"])["category"] = host.Category.Name;
+          extraProps["speckleHost"] = new Base()
+          {
+            applicationId = host.UniqueId,
+            ["category"] = host.Category.Name,
+          };
         }
         else return false;
       }
@@ -856,16 +859,22 @@ namespace Objects.Converter.Revit
     /// <param name="appObj"></param>
     /// <param name="updatedAppObj">The updated appObj if method returns true, the original appObj if false</param>
     /// <returns></returns>
-    public bool IsIgnore(Element docObj, ApplicationObject appObj, out ApplicationObject updatedAppObj)
+    public bool IsIgnore(Element docObj, ApplicationObject appObj)
     {
-      updatedAppObj = appObj;
-      if (docObj != null && ReceiveMode == ReceiveMode.Ignore)
+      if (docObj != null)
       {
-        updatedAppObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
-        return true;
+        if (ReceiveMode == ReceiveMode.Ignore)
+        {
+          appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: $"ApplicationId already exists in document, new object ignored.");
+          return true;
+        }
+        else if (docObj.Pinned)
+        {
+          appObj.Update(status: ApplicationObject.State.Skipped, createdId: docObj.UniqueId, convertedItem: docObj, logItem: "Element is pinned and cannot be updated");
+          return true;
+        }
       }
-      else
-        return false;
+      return false;
     }
     #endregion
 
@@ -1330,7 +1339,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(@base.id, @base.speckle_type) { applicationId = @base.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       // otherwise just create new one 

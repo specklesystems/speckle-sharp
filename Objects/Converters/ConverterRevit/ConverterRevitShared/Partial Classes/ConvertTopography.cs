@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Architecture;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -16,7 +16,7 @@ namespace Objects.Converter.Revit
       var appObj = new ApplicationObject(speckleSurface.id, speckleSurface.speckle_type) { applicationId = speckleSurface.applicationId };
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       var pts = new List<XYZ>();
@@ -49,7 +49,7 @@ namespace Objects.Converter.Revit
     public RevitTopography TopographyToSpeckle(TopographySurface revitTopo)
     {
       var speckleTopo = new RevitTopography();
-      speckleTopo.displayValue = GetElementMesh(revitTopo);
+      speckleTopo.displayValue = GetElementDisplayValue(revitTopo, SolidDisplayValueOptions);
       GetAllRevitParamsAndIds(speckleTopo, revitTopo);
       return speckleTopo;
     }

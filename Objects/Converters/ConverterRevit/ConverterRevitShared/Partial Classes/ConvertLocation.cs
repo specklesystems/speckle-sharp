@@ -1,8 +1,9 @@
-﻿using System;
+using System;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -15,14 +16,13 @@ namespace Objects.Converter.Revit
   {
     public Base LocationToSpeckle(DB.Element revitElement)
     {
-      if (revitElement is DB.FamilyInstance familyInstance && familyInstance.Location is LocationPoint)
+      if (revitElement is DB.FamilyInstance familyInstance 
+        && familyInstance.Location is LocationPoint lp
+        && (Categories.columnCategories.Contains(familyInstance.Category)
+          || familyInstance.StructuralType == StructuralType.Column))
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location
-        if (Categories.columnCategories.Contains(familyInstance.Category) ||
-          familyInstance.StructuralType == StructuralType.Column)
-        {
-          return TryGetLocationAsCurve(familyInstance);
-        }
+        return TryGetColumnLocationAsCurve(familyInstance, lp);
       }
 
       var revitLocation = revitElement.Location;
@@ -57,95 +57,30 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
-    /// Tries to to get the location as a Curve
+    /// Tries to to get the location of a column as a Curve
     /// </summary>
-    /// <param name="loc"></param>
+    /// <param name="familyInstance"></param>
+    /// <param name="locationPoint"></param>
     /// <returns></returns>
-    private Base TryGetLocationAsCurve(DB.FamilyInstance familyInstance)
+    private Base TryGetColumnLocationAsCurve(DB.FamilyInstance familyInstance, LocationPoint locationPoint)
     {
-#if REVIT2020 || REVIT2021 || REVIT2022
-      if (familyInstance.CanHaveAnalyticalModel())
+      var point = PointToSpeckle(locationPoint.Point, familyInstance.Document);
+
+      var baseOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
+      var baseLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
+      var topOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
+      var topLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
+
+      if (baseLevel == null || topLevel == null)
       {
-        //no need to apply offset transform
-        var analyticalModel = familyInstance.GetAnalyticalModel();
-        if (analyticalModel != null && analyticalModel.GetCurve() != null)
-          return CurveToSpeckle(analyticalModel.GetCurve(), familyInstance.Document) as Base;
-      }
-#else
-      var manager = AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc);
-
-      if (manager.HasAssociation(familyInstance.Id))
-      {
-        var analyticalModel = Doc.GetElement(AnalyticalToPhysicalAssociationManager.GetAnalyticalToPhysicalAssociationManager(Doc).GetAssociatedElementId(familyInstance.Id)) as AnalyticalMember;
-        //no need to apply offset transform
-        if (analyticalModel != null && analyticalModel.GetCurve() != null)
-          return CurveToSpeckle(analyticalModel.GetCurve(), familyInstance.Document) as Base;
-      }
-#endif
-      Point point = familyInstance.Location switch
-      {
-        LocationPoint p => PointToSpeckle(p.Point, familyInstance.Document),
-        LocationCurve c => PointToSpeckle(c.Curve.GetEndPoint(0), familyInstance.Document),
-        _ => null,
-      };
-
-      try
-      {
-        //apply offset transform and create line
-        var baseOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
-        var baseLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-        var topOffset = GetParamValue<double>(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-        var topLevel = ConvertAndCacheLevel(familyInstance, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
-
-        var baseLine = new Line(new[] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
-        baseLine.length = Math.Abs(baseLine.start.z - baseLine.end.z);
-
-        return baseLine;
-      }
-      catch { }
-      //everything else failed, just return the base point without moving it
-      return point;
-    }
-
-    //TODO: revise and improve
-    private object LocationToNative(Base elem)
-    {
-
-      //no transforms are applied on points
-
-      if (elem["basePoint"] as Point != null)
-        return PointToNative(elem["basePoint"] as Point);
-
-      if (elem["baseLine"] == null)
-        throw new Speckle.Core.Logging.SpeckleException("Location is null.");
-
-      //must be a curve!?
-      var converted = GeometryToNative(elem["baseLine"] as Base);
-      var curve = (converted as CurveArray).get_Item(0);
-      //reapply revit's offset
-      var offset = elem["baseOffset"] as double?;
-
-      if (elem is Column)
-      {
-        //revit vertical columns can only be POINT based
-        if (!(bool)elem["isSlanted"] || IsVertical(curve))
-        {
-          var baseLine = elem["baseLine"] as Line;
-          var point = new Point(baseLine.start.x, baseLine.start.y, baseLine.start.z - (double)offset, ModelUnits);
-
-          return PointToNative(point);
-        }
-      }
-      //undo offset transform
-      else if (elem is Wall w)
-      {
-        var revitOffset = ScaleToNative((double)offset, ((Base)w.baseLine)["units"] as string);
-        XYZ vector = new XYZ(0, 0, -revitOffset);
-        Transform tf = Transform.CreateTranslation(vector);
-        curve = curve.CreateTransformed(tf);
+        SpeckleLog.Logger.Error("Failed to get baseCurve from vertical column because the baseLevel or topLevel (or both) parameters were null");
+        return point;
       }
 
-      return curve;
+      var baseLine = new Line(new[] { point.x, point.y, baseLevel.elevation + baseOffset, point.x, point.y, topLevel.elevation + topOffset }, ModelUnits);
+      baseLine.length = Math.Abs(baseLine.start.z - baseLine.end.z);
+
+      return baseLine;
     }
 
     /// <summary>
@@ -153,7 +88,7 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="curve"></param>
     /// <returns></returns>
-    private bool IsVertical(DB.Curve curve)
+    private static bool IsVertical(DB.Curve curve)
     {
       var diffX = Math.Abs(curve.GetEndPoint(0).X - curve.GetEndPoint(1).X);
       var diffY = Math.Abs(curve.GetEndPoint(0).Y - curve.GetEndPoint(1).Y);

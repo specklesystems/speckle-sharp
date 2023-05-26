@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -80,7 +81,7 @@ namespace Objects.Converter.Revit
       var docObj = GetExistingElementByApplicationId(speckleElement.applicationId);
 
       // skip if element already exists in doc & receive mode is set to ignore
-      if (IsIgnore(docObj, appObj, out appObj))
+      if (IsIgnore(docObj, appObj))
         return appObj;
 
       AnalyticalPanel revitMember = null;
@@ -217,7 +218,7 @@ namespace Objects.Converter.Revit
       }
 
       speckleElement2D.topology = edgeNodes;
-      speckleElement2D.displayValue = GetElementDisplayMesh(revitSurface, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+      speckleElement2D.displayValue = GetElementDisplayValue(revitSurface, new Options() { DetailLevel = ViewDetailLevel.Fine });
 
       var voidNodes = new List<List<Node>> { };
       var voidLoops = revitSurface.GetLoops(AnalyticalLoopType.Void);
@@ -320,16 +321,10 @@ namespace Objects.Converter.Revit
       {
         var physicalElementId = analyticalToPhysicalManager.GetAssociatedElementId(revitSurface.Id);
         var physicalElement = Doc.GetElement(physicalElementId);
-        speckleElement2D.displayValue = GetElementDisplayMesh(physicalElement, new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
+        speckleElement2D.displayValue = GetElementDisplayValue(physicalElement, new Options() { DetailLevel = ViewDetailLevel.Fine });
       }
-      //speckleElement2D["displayValue"] = displayLine;
 
-      //speckleElement2D.voids = voidNodes;
-
-      //var mesh = new Geometry.Mesh();
-      //var solidGeom = GetElementSolids(structuralElement);
-      //(mesh.faces, mesh.vertices) = GetFaceVertexArrFromSolids(solidGeom);
-      //speckleElement2D.baseMesh = mesh;	  
+      speckleElement2D.openings = GetOpenings(revitSurface);
 
       var prop = new Property2D();
 
@@ -368,6 +363,19 @@ namespace Objects.Converter.Revit
       // new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = false });
 
       return speckleElement2D;
+    }
+
+    private List<Polycurve> GetOpenings(AnalyticalPanel revitSurface)
+    {
+      var openings = new List<Polycurve>();
+      foreach (var openingId in revitSurface.GetAnalyticalOpeningsIds())
+      {
+        if (revitSurface.Document.GetElement(openingId) is not AnalyticalOpening opening) continue;
+
+        var curveLoop = opening.GetOuterContour();
+        openings.Add(CurveLoopToSpeckle(curveLoop, revitSurface.Document));
+      }
+      return openings;
     }
 #endif
   }

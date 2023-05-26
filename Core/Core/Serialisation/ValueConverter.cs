@@ -114,8 +114,21 @@ internal static class ValueConverter
           convertedValue = (double)(long)value;
           return true;
         }
+        switch (value)
+        {
+          case "NaN":
+            convertedValue = double.NaN;
+            return true;
+          case "Infinity":
+            convertedValue = double.PositiveInfinity;
+            return true;
+          case "-Infinity":
+            convertedValue = double.NegativeInfinity;
+            return true;
+          default:
+            return false;
+        }
 
-        return false;
       case "Single":
         if (valueType == typeof(double))
         {
@@ -127,8 +140,20 @@ internal static class ValueConverter
           convertedValue = (float)(long)value;
           return true;
         }
-
-        return false;
+        switch (value)
+        {
+          case "NaN":
+            convertedValue = float.NaN;
+            return true;
+          case "Infinity":
+            convertedValue = float.PositiveInfinity;
+            return true;
+          case "-Infinity":
+            convertedValue = float.NegativeInfinity;
+            return true;
+          default:
+            return false;
+        }
 
       #endregion
     }
