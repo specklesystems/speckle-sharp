@@ -75,9 +75,9 @@ namespace ConverterRevitTests
         //if (!testsFailed)
         //{
         xru.OpenDoc(Globals.GetTestModel("blank.rvt"));
-        xru.CloseDoc(SourceDoc);
-        xru.CloseDoc(UpdatedDoc);
-        xru.CloseDoc(NewDoc);
+        xru.CloseDoc(SourceDoc, true);
+        xru.CloseDoc(UpdatedDoc, true);
+        xru.CloseDoc(NewDoc, true);
         //}
 
         return Task.CompletedTask;

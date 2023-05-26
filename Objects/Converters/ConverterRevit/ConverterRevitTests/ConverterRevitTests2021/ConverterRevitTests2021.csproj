@@ -8,7 +8,6 @@
         <Company>Autodesk Inc.</Company>
         <Product>ConverterRevitTests Revit C# .NET Add-In</Product>
         <Description>Revit Add-In Description for ConverterRevitTests</Description>
-        <Copyright>Copyright (C) 2020 by Jeremy Tammik, Autodesk Inc.</Copyright>
         <AssemblyVersion>2021.0.0.0</AssemblyVersion>
         <FileVersion>2021.0.0.0</FileVersion>
         <StartAction>Program</StartAction>
@@ -25,7 +24,7 @@
 
     <PropertyGroup>
         <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
-        <GeneratedFolder>Generated\REVIT2021</GeneratedFolder>
+        <GeneratedFolder>..\ConverterRevitTestsShared\Generated\REVIT2021</GeneratedFolder>
         <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)</CompilerGeneratedFilesOutputPath>
     </PropertyGroup>
 

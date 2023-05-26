@@ -21,6 +21,7 @@
       "Objects\\Converters\\ConverterRevit\\ConverterRevit2023\\ConverterRevit2023.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitShared\\ConverterRevitShared.shproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTests2021\\ConverterRevitTests2021.csproj",
+      "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTests2022\\ConverterRevitTests2022.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTests2023\\ConverterRevitTests2023.csproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\ConverterRevitTestsShared\\ConverterRevitTestsShared.shproj",
       "Objects\\Converters\\ConverterRevit\\ConverterRevitTests\\TestGenerator\\TestGenerator.csproj",
