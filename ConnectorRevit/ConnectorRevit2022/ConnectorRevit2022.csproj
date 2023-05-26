@@ -14,21 +14,22 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared"/>
+  <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
 
   <ItemGroup>
-    <Reference Include="PresentationCore"/>
-    <Reference Include="PresentationFramework"/>
-    <Reference Include="System.Web.Extensions"/>
-    <Reference Include="System.Xaml"/>
-    <Reference Include="System.Web"/>
-    <Reference Include="WindowsBase"/>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Web" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
-    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj"/>
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj"/>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
+    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\RevitSharedResources\RevitSharedResources.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,37 +38,27 @@
   </ItemGroup>
 
   <Target Name="Clean">
-    <RemoveDir
-      Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2022;$(AppData)\Autodesk\Revit\Addins\2022\SpeckleRevit2"/>
+    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2022;$(AppData)\Autodesk\Revit\Addins\2022\SpeckleRevit2" />
   </Target>
-  <Target Name="AfterBuildMigrated" AfterTargets="Build"
-  >
-    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true"
-      Targets="AfterBuildDebug"/>
-    <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease"/>
+  <Target Name="AfterBuildMigrated" AfterTargets="Build">
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+    <CallTarget Condition="'$(Configuration)' == 'Release'" Targets="AfterBuildRelease" />
   </Target>
   <Target Name="AfterBuildDebug">
     <ItemGroup>
-      <SourceDLLs Include="$(TargetDir)\**\*.*"/>
-      <SourceManifest Include="$(TargetDir)*.addin"/>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+      <SourceManifest Include="$(TargetDir)*.addin" />
     </ItemGroup>
-    <Copy
-      DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)"
-      SourceFiles="@(SourceDLLs)"/>
-    <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\"
-      SourceFiles="@(SourceManifest)"/>
+    <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Autodesk\REVIT\Addins\$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
   <Target Name="AfterBuildRelease">
     <ItemGroup>
-      <SourceDLLs Include="$(TargetDir)\**\*.*"/>
-      <SourceManifest Include="$(TargetDir)*.addin"/>
+      <SourceDLLs Include="$(TargetDir)\**\*.*" />
+      <SourceManifest Include="$(TargetDir)*.addin" />
     </ItemGroup>
-    <Message Importance="High"
-      Text="RELEASE copy from $(TargetDir) to $(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\"/>
-    <Copy
-      DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)"
-      SourceFiles="@(SourceDLLs)"/>
-    <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\"
-      SourceFiles="@(SourceManifest)"/>
+    <Message Importance="High" Text="RELEASE copy from $(TargetDir) to $(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\" />
+    <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
 </Project>
