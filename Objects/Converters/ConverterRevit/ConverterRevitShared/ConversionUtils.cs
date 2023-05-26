@@ -796,60 +796,26 @@ namespace Objects.Converter.Revit
     /// </summary>
     /// <param name="applicationId">Id of the application that originally created the element, in Revit it's the UniqueId</param>
     /// <returns>The element, if found, otherwise null</returns>
-    public DB.Element GetExistingElementByApplicationId(string applicationId)
+    public DB.Element? GetExistingElementByApplicationId(string applicationId)
     {
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
-
-
-      Element element = null;
-      if (!PreviousContextObjects.ContainsKey(applicationId))
-      {
-        //element was not cached in a PreviousContex but might exist in the model
-        //eg: user sends some objects, moves them, receives them 
-        element = Doc.GetElement(applicationId);
-      }
-      else
-      {
-        var @ref = PreviousContextObjects[applicationId];
-        //return the cached object, if it's still in the model
-        if (@ref.CreatedIds.Any())
-          element = Doc.GetElement(@ref.CreatedIds.First());
-      }
-
-      return element;
+      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      // TODO: we may not want just the first one
+      return Doc.GetElement(cachedIds.First());
     }
 
-    public List<DB.Element> GetExistingElementsByApplicationId(string applicationId)
+    public IEnumerable<DB.Element?> GetExistingElementsByApplicationId(string applicationId)
     {
-      var elements = new List<Element>();
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
-        return elements;
+        yield break;
 
-
-      if (!PreviousContextObjects.ContainsKey(applicationId))
+      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      foreach ( var id in cachedIds)
       {
-        //element was not cached in a PreviousContex but might exist in the model
-        //eg: user sends some objects, moves them, receives them 
-        var revElement = Doc.GetElement(applicationId);
-        if (revElement != null)
-          elements.Add(revElement);
+        yield return Doc.GetElement(id);
       }
-      else
-      {
-        var @ref = PreviousContextObjects[applicationId];
-        //return the cached objects, if they are still in the model
-        foreach (var id in @ref.CreatedIds)
-        {
-          var revElement = Doc.GetElement(id);
-          if (revElement != null)
-            elements.Add(revElement);
-        }
-
-      }
-
-      return elements;
     }
 
     /// <summary>
