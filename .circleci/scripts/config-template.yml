@@ -55,7 +55,8 @@ commands:
           name: Build nuget packages
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
+            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
             dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
@@ -90,7 +91,8 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           name: Build SDK Projects
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
+            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
             dotnet build SDK.slnf -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
