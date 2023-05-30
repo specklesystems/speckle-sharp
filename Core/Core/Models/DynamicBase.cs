@@ -162,7 +162,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// <summary>
   /// Gets all of the property names on this class, dynamic or not.
   /// </summary> <returns></returns>
-  [Obsolete("Use `GetMembers(DynamicBaseMemberType.All).Keys` instead")]
+  [Obsolete("Use `GetMembers(DynamicBaseMemberType.All).Keys` instead", true)]
   public override IEnumerable<string> GetDynamicMemberNames()
   {
     PopulatePropInfoCache(GetType());
@@ -181,7 +181,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// Gets the names of the defined class properties (typed).
   /// </summary>
   /// <returns></returns>
-  [Obsolete("Use GetMembers(DynamicBaseMemberType.InstanceAll).Keys instead")]
+  [Obsolete("Use GetMembers(DynamicBaseMemberType.InstanceAll).Keys instead", true)]
   public IEnumerable<string> GetInstanceMembersNames()
   {
     return GetInstanceMembersNames(GetType());
@@ -226,7 +226,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// Gets the names of the typed and dynamic properties that don't have a [SchemaIgnore] attribute.
   /// </summary>
   /// <returns></returns>
-  [Obsolete("Use GetMembers().Keys instead")]
+  [Obsolete("Use GetMembers().Keys instead", true)]
   public IEnumerable<string> GetMemberNames()
   {
     return GetMembers().Keys;
@@ -293,7 +293,7 @@ public class DynamicBase : DynamicObject, IDynamicMetaObjectProvider
   /// Gets the dynamically added property names only.
   /// </summary>
   /// <returns></returns>
-  [Obsolete("Use GetMembers(DynamicBaseMemberType.Dynamic).Keys instead")]
+  [Obsolete("Use GetMembers(DynamicBaseMemberType.Dynamic).Keys instead", true)]
   public IEnumerable<string> GetDynamicMembers()
   {
     return properties.Keys;
