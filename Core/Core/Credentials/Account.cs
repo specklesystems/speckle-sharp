@@ -81,7 +81,7 @@ public class Account : IEquatable<Account>
       httpClient
     );
 
-    var request = new GraphQLRequest { Query = @" query { user { name email id company } }" };
+    var request = new GraphQLRequest { Query = @" query { activeUser { name email id company } }" };
 
     var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request).ConfigureAwait(false);
 
