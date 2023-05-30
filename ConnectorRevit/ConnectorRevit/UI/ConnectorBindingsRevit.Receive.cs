@@ -38,13 +38,19 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      await ReceiveStreamTestable(state, progress, Converter.GetType());
+
+      return state;
+    }
+
+    private static async Task ReceiveStreamTestable(StreamState state, ProgressViewModel progress, Type converterType)
+    {
       //make sure to instance a new copy so all values are reset correctly
-      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      var converter = (ISpeckleConverter)Activator.CreateInstance(converterType);
       converter.SetContextDocument(CurrentDoc.Document);
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
-      CurrentSettings = state.Settings;
       foreach (var setting in state.Settings)
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
@@ -126,8 +132,6 @@ namespace Speckle.ConnectorRevit.UI
         if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
         throw new SpeckleException(exception.Message, exception);
       }
-
-      return state;
     }
 
     //delete previously sent object that are no more in this stream
@@ -152,14 +156,14 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, List<ISetting> settings)
     {
       var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
       // Get setting to skip linked model elements if necessary
-      var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
+      var receiveLinkedModelsSetting = settings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
       foreach (var obj in Preview)
       {

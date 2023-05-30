@@ -98,12 +98,12 @@ namespace Speckle.ConnectorRevit.UI
 
     }
 
-    private List<Document> GetLinkedDocuments()
+    private List<Document> GetLinkedDocuments(List<ISetting> settings)
     {
       var docs = new List<Document>();
 
       // Get settings and return empty list if we should not send linked models
-      var sendLinkedModels = CurrentSettings?.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
+      var sendLinkedModels = settings?.FirstOrDefault(x => x.Slug == "linkedmodels-send") as CheckBoxSetting;
       if (sendLinkedModels == null || !sendLinkedModels.IsChecked)
         return docs;
 
@@ -126,10 +126,10 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    private List<Element> GetSelectionFilterObjects(ISelectionFilter filter)
+    private List<Element> GetSelectionFilterObjects(ISelectionFilter filter, List<ISetting> settings)
     {
       var currentDoc = CurrentDoc.Document;
-      var allDocs = GetLinkedDocuments();
+      var allDocs = GetLinkedDocuments(settings);
       allDocs.Add(currentDoc);
 
       var selection = new List<Element>();

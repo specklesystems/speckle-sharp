@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -30,10 +30,10 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="progress"></param>
     /// <param name="sourceApp"></param>
     /// <returns></returns>
-    public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, string sourceApp)
+    public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, string sourceApp, List<ISetting> settings)
     {
       // Get Settings for recieve on mapping 
-      if (CurrentSettings.FirstOrDefault(x => x.Slug == "receive-mappings") is not MappingSeting mappingSetting 
+      if (settings.FirstOrDefault(x => x.Slug == "receive-mappings") is not MappingSeting mappingSetting 
         || mappingSetting.Selection == null 
         || mappingSetting.Selection == noMapping)
       {

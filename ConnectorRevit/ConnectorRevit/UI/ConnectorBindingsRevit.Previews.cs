@@ -55,7 +55,6 @@ namespace Speckle.ConnectorRevit.UI
           converter.SetContextDocument(CurrentDoc.Document);
 
           var settings = new Dictionary<string, string>();
-          CurrentSettings = state.Settings;
           foreach (var setting in state.Settings)
             settings.Add(setting.Slug, setting.Selection);
 
@@ -159,7 +158,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       try
       {
-        var filterObjs = GetSelectionFilterObjects(state.Filter);
+        var filterObjs = GetSelectionFilterObjects(state.Filter, state.Settings);
         foreach (var filterObj in filterObjs)
         {
           var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
