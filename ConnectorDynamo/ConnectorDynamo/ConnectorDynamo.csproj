@@ -1,196 +1,118 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
-    <PropertyGroup>
-        <RootNamespace>Speckle.ConnectorDynamo</RootNamespace>
-        <AssemblyName>SpeckleConnectorDynamo</AssemblyName>
-        <TargetFramework>net48</TargetFramework>
-        <StartAction>Program</StartAction>
-        <AssemblyTitle>ConnectorDynamo</AssemblyTitle>
-        <Product>ConnectorDynamo</Product>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <StartProgram>C:\Program Files\Dynamo\Dynamo Core\2.7\DynamoSandbox.exe</StartProgram>
-        <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
-        <UseWpf>true</UseWpf>
-        <EnableDefaultPageItems>false</EnableDefaultPageItems>
+  <PropertyGroup>
+    <RootNamespace>Speckle.ConnectorDynamo</RootNamespace>
+    <AssemblyName>SpeckleConnectorDynamo</AssemblyName>
+    <TargetFramework>net48</TargetFramework>
+    <StartAction>Program</StartAction>
+    <AssemblyTitle>ConnectorDynamo</AssemblyTitle>
+    <Product>ConnectorDynamo</Product>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <StartProgram>C:\Program Files\Dynamo\Dynamo Core\2.7\DynamoSandbox.exe</StartProgram>
+    <UseWpf>true</UseWpf>
+    <EnableDefaultPageItems>false</EnableDefaultPageItems>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    </PropertyGroup>
-  
-    <PropertyGroup>
-        <PackageName>SpeckleDynamo2</PackageName>
-        <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
-        <BinFolder>$(PackageFolder)bin\</BinFolder>
-        <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
-        <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
-    </PropertyGroup>
-    <ItemGroup>
-      <Reference Include="PresentationCore" />
-      <Reference Include="PresentationFramework" />
-      <Reference Include="System" />
-      <Reference Include="System.Core" />
-      <Reference Include="System.Drawing" />
-      <Reference Include="System.Xaml" />
-      <Reference Include="System.Xml.Linq" />
-      <Reference Include="System.Data.DataSetExtensions" />
-      <Reference Include="Microsoft.CSharp" />
-      <Reference Include="System.Data" />
-      <Reference Include="System.Xml" />
-      <Reference Include="WindowsBase" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471"
-            ExcludeAssets="runtime" />
-        <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471"
-            ExcludeAssets="runtime" />
-        <PackageReference Include="DynamoVisualProgramming.WpfUILibrary" Version="2.8.0.2471"
-            ExcludeAssets="runtime" />
-        <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471"
-            ExcludeAssets="runtime" />
-        <PackageReference Include="MaterialDesignColors" Version="2.0.3" />
-        <PackageReference Include="MaterialDesignThemes" Version="4.2.1" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-        <ProjectReference Include="..\ConnectorDynamoExtension\ConnectorDynamoExtension.csproj" />
-        <ProjectReference Include="..\ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="pkg.json" />
-    </ItemGroup>
-    <ItemGroup>
-        <Compile Update="AccountsNode\AccountsUi.xaml.cs">
-            <DependentUpon>AccountsUi.xaml</DependentUpon>
-        </Compile>
-        <Compile Update="CreateStreamNode\CreateStreamUi.xaml.cs">
-            <DependentUpon>CreateStreamUi.xaml</DependentUpon>
-        </Compile>
-        <Compile Update="ReceiveNode\ReceiveUi.xaml.cs">
-            <DependentUpon>ReceiveUi.xaml</DependentUpon>
-        </Compile>
-        <Compile Update="SendNode\SendUi.xaml.cs">
-            <DependentUpon>SendUi.xaml</DependentUpon>
-        </Compile>
-        <Compile Update="ViewNode\ViewUi.xaml.cs">
-            <DependentUpon>SendUi.xaml</DependentUpon>
-        </Compile>
-    </ItemGroup>
-    <ItemGroup>
-        <Content Include="Assets\AccountDetails%40128.png" />
-        <Content Include="Assets\AccountDetails%4032.png" />
-        <Content Include="Assets\Accounts%40128.png" />
-        <Content Include="Assets\Accounts%4032.png" />
-        <Content Include="Assets\BaseParam%40128.png" />
-        <Content Include="Assets\BaseParam%4032.png" />
-        <Content Include="Assets\CreateSpeckleObject%40128.png" />
-        <Content Include="Assets\CreateSpeckleObject%4032.png" />
-        <Content Include="Assets\CreateSpeckleObjectByKeyValue%40128.png" />
-        <Content Include="Assets\CreateSpeckleObjectByKeyValue%4032.png" />
-        <Content Include="Assets\CreateStream%40128.png" />
-        <Resource Include="Assets\CreateStream%4032.png" />
-        <Content Include="Assets\Deserialize%40128.png" />
-        <Content Include="Assets\Deserialize%4032.png" />
-        <Content Include="Assets\DiskTransport%40128.png" />
-        <Content Include="Assets\DiskTransport%4032.png" />
-        <Content Include="Assets\ExpandSpeckleObject%40128.png" />
-        <Content Include="Assets\ExpandSpeckleObject%4032.png" />
-        <Content Include="Assets\ExtendSpeckleObject%40128.png" />
-        <Content Include="Assets\ExtendSpeckleObject%4032.png" />
-        <Content Include="Assets\GetObjectValueByKey%40128.png" />
-        <Content Include="Assets\GetObjectValueByKey%4032.png" />
-        <Content Include="Assets\LocalReceiver%40128.png" />
-        <Content Include="Assets\LocalReceiver%4032.png" />
-        <Content Include="Assets\LocalSender%40128.png" />
-        <Content Include="Assets\LocalSender%4032.png" />
-        <Content Include="Assets\logo.png" />
-        <Content Include="Assets\logo128.png" />
-        <Content Include="Assets\logo16.png" />
-        <Content Include="Assets\logo32.png" />
-        <Content Include="Assets\MemoryTransport%40128.png" />
-        <Content Include="Assets\MemoryTransport%4032.png" />
-        <Content Include="Assets\Receiver%40128.png" />
-        <Resource Include="Assets\Receiver%4032.png" />
-        <Content Include="Assets\SchemaBuilder%40128.png" />
-        <Content Include="Assets\SchemaBuilder%4032.png" />
-        <Content Include="Assets\Sender%40128.png" />
-        <Resource Include="Assets\Sender%4032.png" />
-        <Content Include="Assets\Serialize%40128.png" />
-        <Content Include="Assets\Serialize%4032.png" />
-        <Content Include="Assets\ServerTransport%40128.png" />
-        <Content Include="Assets\ServerTransport%4032.png" />
-        <Content Include="Assets\SQLiteTransport%40128.png" />
-        <Content Include="Assets\SQLiteTransport%4032.png" />
-        <Content Include="Assets\StreamDetails%40128.png" />
-        <Content Include="Assets\StreamDetails%4032.png" />
-        <Content Include="Assets\StreamGet%40128.png" />
-        <Content Include="Assets\StreamGet%4032.png" />
-        <Content Include="Assets\StreamList%40128.png" />
-        <Content Include="Assets\StreamList%4032.png" />
-        <Content Include="Assets\StreamParam%40128.png" />
-        <Content Include="Assets\StreamParam%4032.png" />
-        <Content Include="Assets\StreamUpdate%40128.png" />
-        <Content Include="Assets\StreamUpdate%4032.png" />
-        <Content Include="Assets\StreamView%40128.png" />
-        <Resource Include="Assets\StreamView%4032.png" />
-        <Content Include="Assets\ToNative%40128.png" />
-        <Content Include="Assets\ToNative%4032.png" />
-        <Content Include="Assets\ToSpeckle%40128.png" />
-        <Content Include="Assets\ToSpeckle%4032.png" />
-    </ItemGroup>
-    <ItemGroup>
-        <Page Include="AccountsNode\AccountsUi.xaml">
-            <SubType>Designer</SubType>
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-        <Page Include="CreateStreamNode\CreateStreamUi.xaml">
-            <SubType>Designer</SubType>
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-        <Page Include="ReceiveNode\ReceiveUi.xaml">
-            <Generator>MSBuild:Compile</Generator>
-            <SubType>Designer</SubType>
-        </Page>
-        <Page Include="Themes\Generic.xaml">
-            <SubType>Designer</SubType>
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-        <Page Include="SendNode\SendUi.xaml">
-            <SubType>Designer</SubType>
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-        <Page Include="ViewNode\ViewUi.xaml">
-            <SubType>Designer</SubType>
-            <Generator>MSBuild:Compile</Generator>
-        </Page>
-    </ItemGroup>
+  </PropertyGroup>
 
-    <Target Name="AfterBuildMigrated" AfterTargets="Build">
+  <PropertyGroup>
+    <PackageName>SpeckleDynamo2</PackageName>
+    <PackageFolder>$(ProjectDir)dist\$(PackageName)\</PackageFolder>
+    <BinFolder>$(PackageFolder)bin\</BinFolder>
+    <ExtraFolder>$(PackageFolder)extra\</ExtraFolder>
+    <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="DynamoVisualProgramming.DynamoServices" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="DynamoVisualProgramming.WpfUILibrary" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="DynamoVisualProgramming.ZeroTouchLibrary" Version="2.8.0.2471" ExcludeAssets="runtime" />
+    <PackageReference Include="MaterialDesignColors" Version="2.0.3" />
+    <PackageReference Include="MaterialDesignThemes" Version="4.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
+    <ProjectReference Include="..\ConnectorDynamoExtension\ConnectorDynamoExtension.csproj" />
+    <ProjectReference Include="..\ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="pkg.json" />
+    <EmbeddedResource Remove="SpeckleConnectorDynamoImages.resx" />
+    <None Include="SpeckleConnectorDynamoImages.resx" />
+    <None Remove="SpeckleConnectorDynamoImages.resources" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="AccountsNode\AccountsUi.xaml.cs">
+      <DependentUpon>AccountsUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="CreateStreamNode\CreateStreamUi.xaml.cs">
+      <DependentUpon>CreateStreamUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="ReceiveNode\ReceiveUi.xaml.cs">
+      <DependentUpon>ReceiveUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="SendNode\SendUi.xaml.cs">
+      <DependentUpon>SendUi.xaml</DependentUpon>
+    </Compile>
+    <Compile Update="ViewNode\ViewUi.xaml.cs">
+      <DependentUpon>SendUi.xaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="AccountsNode\AccountsUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CreateStreamNode\CreateStreamUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ReceiveNode\ReceiveUi.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Themes\Generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="SendNode\SendUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ViewNode\ViewUi.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
 
-      <!-- Icons stuff -->
-      <!-- Get System.Drawing.dll -->
-      <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.8">
-        <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
-      </GetReferenceAssemblyPaths>
-      <!-- Get assembly -->
-      <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
-        <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
-      </GetAssemblyIdentity>
-      <!-- Generate customization dll -->
-      <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" UseSourcePath="true" Sources="$(ProjectDir)\SpeckleConnectorDynamoImages.resx" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
-      <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamo.customization.dll" Version="%(AssemblyInfo.Version)" />
-      <!-- Icons stuff end -->
-      <ItemGroup>
-        <Dlls Include="$(OutDir)\**\*.*" />
-        <!--<Pdbs Include="$(OutDir)*.pdb" />-->
-        <SourceExtension Include="$(OutDir)*Extension_ViewExtensionDefinition.xml" />
-        <!--<XML Include="$(OutDir)*.xml" />-->
-        <PackageJson Include="$(ProjectDir)pkg.json" />
-      </ItemGroup>
-      <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))">
-      </MakeDir>
-      <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))">
-      </MakeDir>
-      <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)\%(RecursiveDir)" />
-      <!--<Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />-->
-      <!--<Copy SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />-->
-      <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
-      <Copy SourceFiles="@(SourceExtension)" DestinationFolder="$(ExtraFolder)" />
-    </Target>
+  <Target Name="BuildIconDll" BeforeTargets="Build">
+    <Message Text="Building icon dll" Importance="high" />
+    <GenerateResource Sources="$(ProjectDir)\SpeckleConnectorDynamoImages.resx" UseSourcePath="true" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" />
+    <CSC TargetType="library" Resources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamo.customization.dll" />
+  </Target>
+
+  <Target Name="AfterBuildMigrated" AfterTargets="Build">
+    <ItemGroup>
+      <Dlls Include="$(OutDir)\**\*.*" />
+      <PackageJson Include="$(ProjectDir)pkg.json" />
+    </ItemGroup>
+    <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))">
+    </MakeDir>
+    <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))">
+    </MakeDir>
+    <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)\%(RecursiveDir)" />
+    <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
+  </Target>
 </Project>

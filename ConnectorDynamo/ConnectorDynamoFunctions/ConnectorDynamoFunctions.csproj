@@ -6,7 +6,6 @@
         <AssemblyTitle>ConnectorDynamoFunctions</AssemblyTitle>
         <Product>ConnectorDynamoFunctions</Product>
         <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-        <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
     </PropertyGroup>
 
     <ItemGroup>
@@ -17,45 +16,21 @@
         <None Include="SpeckleConnectorDynamoFunctions_DynamoCustomization.xml">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </None>
+      <None Remove="SpeckleConnectorDynamoFunctionsImages.resources" />
+      <EmbeddedResource Remove="SpeckleConnectorDynamoFunctionsImages.resx" />
+      <None Include="SpeckleConnectorDynamoFunctionsImages.resx" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471"
-            ExcludeAssets="runtime" />
-        <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
-        <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.2">
-            <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
-            <PrivateAssets>all</PrivateAssets>
-        </PackageReference>
+        <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471" ExcludeAssets="runtime" />
     </ItemGroup>
-    <ItemGroup>
-        <None Include="Resources\accountdetails%40128.png" />
-        <None Include="Resources\accountdetails%4032.png" />
-        <None Include="Resources\logo128.png" />
-        <None Include="Resources\logo32.png" />
-    </ItemGroup>
-
-    <Target Name="AfterBuildMigrated" AfterTargets="Build">
-      <!-- Icons stuff -->
-      <!-- Get System.Drawing.dll -->
-      <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.8">
-        <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
-      </GetReferenceAssemblyPaths>
-      <!-- Get assembly -->
-      <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
-        <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
-      </GetAssemblyIdentity>
-      <!-- Generate customization dll -->
-      <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" UseSourcePath="true" Sources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resx" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
-      <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" Version="%(AssemblyInfo.Version)" />
-      <!-- Icons stuff end -->
-      <ItemGroup>
-        <Dll Include="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
-      </ItemGroup>
-        <Copy SourceFiles="@(Dll)"
-            DestinationFolder="$(ProjectDir)\..\ConnectorDynamo\bin\$(ConfigurationName)\win-x64\" />
+  
+    <Target Name="BuildIconDll" BeforeTargets="Build">
+      <Message Text="Building icon dll" Importance="high" />
+      <GenerateResource Sources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resx" UseSourcePath="true" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" />
+      <CSC TargetType="library" Resources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
     </Target>
 </Project>
