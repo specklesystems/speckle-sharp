@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.2.32526.322
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorDynamo", "ConnectorDynamo\ConnectorDynamo.csproj", "{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorDynamo", "ConnectorDynamo\ConnectorDynamo.csproj", "{61A977EE-10DA-47F2-8BD9-3CC7BBB6904F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorDynamoExtension", "ConnectorDynamoExtension\ConnectorDynamoExtension.csproj", "{B494FD40-5E59-4D5E-87B0-80AAC8BDCD5A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorDynamoExtension", "ConnectorDynamoExtension\ConnectorDynamoExtension.csproj", "{B494FD40-5E59-4D5E-87B0-80AAC8BDCD5A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConnectorDynamoFunctions", "ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj", "{8F4D907B-A2DF-4B40-8EA6-D79F9ED6D906}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorDynamoFunctions", "ConnectorDynamoFunctions\ConnectorDynamoFunctions.csproj", "{8F4D907B-A2DF-4B40-8EA6-D79F9ED6D906}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Local Dependencies", "Local Dependencies", "{A345B1E4-AD27-4066-8CD1-5650B9E6C0FF}"
 EndProject
@@ -40,7 +40,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit2022", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDynamoRevit2023", "..\Objects\Converters\ConverterDynamo\ConverterDynamoRevit2023\ConverterDynamoRevit2023.csproj", "{0B3D9AE3-DEF6-4CD6-BE44-9C7CF190E207}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConverterDxf", "..\Objects\Converters\ConverterDxf\ConverterDxf\ConverterDxf.csproj", "{BF4DCC7D-5F05-4900-BA97-148652AA6E79}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterDxf", "..\Objects\Converters\ConverterDxf\ConverterDxf\ConverterDxf.csproj", "{BF4DCC7D-5F05-4900-BA97-148652AA6E79}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RevitSharedResources", "..\ConnectorRevit\RevitSharedResources\RevitSharedResources.csproj", "{8F8CDA99-E576-4745-AC9D-A80EEB42190B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -96,6 +98,10 @@ Global
 		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BF4DCC7D-5F05-4900-BA97-148652AA6E79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F8CDA99-E576-4745-AC9D-A80EEB42190B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F8CDA99-E576-4745-AC9D-A80EEB42190B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F8CDA99-E576-4745-AC9D-A80EEB42190B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F8CDA99-E576-4745-AC9D-A80EEB42190B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

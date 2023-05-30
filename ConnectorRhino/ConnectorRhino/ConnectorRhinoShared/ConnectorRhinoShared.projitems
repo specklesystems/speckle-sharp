@@ -9,8 +9,6 @@
     <Import_RootNamespace>ConnectorRhinoShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementCommands.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMappingsCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
