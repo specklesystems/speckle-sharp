@@ -30,7 +30,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="progress"></param>
     /// <param name="sourceApp"></param>
     /// <returns></returns>
-    public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, string sourceApp, List<ISetting> settings)
+    public static async Task UpdateForCustomMapping(ProgressViewModel progress, string sourceApp, List<ISetting> settings, List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
     {
       // Get Settings for recieve on mapping 
       if (settings.FirstOrDefault(x => x.Slug == "receive-mappings") is not MappingSeting mappingSetting 
@@ -53,7 +53,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       var hostTypesDict = GetHostTypes();
-      var incomingTypesDict = GetIncomingTypes(progress, sourceApp);
+      var incomingTypesDict = GetIncomingTypes(progress, sourceApp, preview, storedObjects);
 
       // if mappings already exist, update them and return true
       bool newTypesExist = UpdateExistingMapping(settingsMapping, hostTypesDict, incomingTypesDict, progress);
@@ -90,7 +90,7 @@ namespace Speckle.ConnectorRevit.UI
       mappingSetting.MappingJson = JsonConvert.SerializeObject(mapping);
 
       // update the mapping object for the user mapped types
-      SetMappedValues(mapping, progress, sourceApp);
+      SetMappedValues(mapping, progress, sourceApp, preview, storedObjects);
     }
 
     /// <summary>
@@ -100,7 +100,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="hostTypes"></param>
     /// <param name="progress"></param>
     /// <returns></returns>
-    private Dictionary<string, List<MappingValue>> ReturnFirstPassMap(Dictionary<string, List<string>> incomingTypesDict, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
+    private static Dictionary<string, List<MappingValue>> ReturnFirstPassMap(Dictionary<string, List<string>> incomingTypesDict, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
     {
       var mappings = new Dictionary<string, List<MappingValue>> { };
       foreach (var incomingTypeCategory in incomingTypesDict.Keys)
@@ -138,7 +138,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="category"></param>
     /// <param name="speckleType"></param>
     /// <returns>name of host type as string</returns>
-    private string GetMappedValue(Dictionary<string, List<string>> hostTypes, string category, string speckleType)
+    private static string GetMappedValue(Dictionary<string, List<string>> hostTypes, string category, string speckleType)
     {
       string hostCategory;
       var listVert = new List<int>();
@@ -216,7 +216,7 @@ namespace Speckle.ConnectorRevit.UI
     private const string TypeCatFraming = "Framing";
     private const string TypeCatColumns = "Columns";
     private const string TypeCatMisc = "Miscellaneous"; // Warning, this string need to be the same as the strings in the MappingViewModel
-    private List<string> allTypeCategories = new List<string>
+    private static List<string> allTypeCategories = new List<string>
     {
       TypeCatColumns,
       TypeCatFloors,
@@ -231,7 +231,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="obj"></param>
     /// <returns>name of category type as string</returns>
-    private string GetTypeCategory(Base @object)
+    private static string GetTypeCategory(Base @object)
     {
       var speckleType = @object.speckle_type.Split('.').LastOrDefault().ToLower();
       return GetTypeCategory(speckleType, @object);
@@ -242,7 +242,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="obj"></param>
     /// <returns>name of category type as string</returns>
-    private string GetTypeCategory(string speckleType, Base obj = null)
+    private static string GetTypeCategory(string speckleType, Base obj = null)
     {
       try
       {
@@ -329,7 +329,7 @@ namespace Speckle.ConnectorRevit.UI
     /// Get an object with all the Revit types in the current project
     /// </summary>
     /// <returns>A dictionary where the keys are type categories and the value is a list of all the revit types that fit that category in the existing project</returns>
-    private Dictionary<string, List<string>> GetHostTypes()
+    private static Dictionary<string, List<string>> GetHostTypes()
     {
       var returnDict = new Dictionary<string, List<string>>();
       //var exclusionFilterIds = new List<ElementId>();
@@ -345,7 +345,7 @@ namespace Speckle.ConnectorRevit.UI
       return returnDict;
     }
 
-    private CustomTypesFilter GetCustomTypeFilter(string category)
+    private static CustomTypesFilter GetCustomTypeFilter(string category)
     {
       return category switch
       {
@@ -358,7 +358,7 @@ namespace Speckle.ConnectorRevit.UI
       };
     }
 
-    private FilteredElementCollector GetFilteredElements(string category, FilteredElementCollector collector)
+    private static FilteredElementCollector GetFilteredElements(string category, FilteredElementCollector collector)
     {
       if (!allTypeCategories.Contains(category))
         throw new Exception($"Category string {category} is not a recognized category");
@@ -388,15 +388,15 @@ namespace Speckle.ConnectorRevit.UI
     /// Get an object with all the incoming types for the receive object
     /// </summary>
     /// <returns>A dictionary where the keys are type categories and the value is a list of all the incoming types that fit that category</returns>
-    private Dictionary<string, List<string>> GetIncomingTypes(ProgressViewModel progress, string sourceApp)
+    private static Dictionary<string, List<string>> GetIncomingTypes(ProgressViewModel progress, string sourceApp, List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
     {
       var returnDict = new Dictionary<string, List<string>>();
       string typeCategory = null;
       var cleanAppName = Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty);
 
-      foreach (var obj in Preview)
+      foreach (var obj in preview)
       {
-        var @object = StoredObjects[obj.OriginalId];
+        var @object = storedObjects[obj.OriginalId];
         string type = null;
 
         switch (cleanAppName)
@@ -451,15 +451,15 @@ namespace Speckle.ConnectorRevit.UI
     /// <summary>
     /// Update receive object to include the user's custom mapping
     /// </summary>
-    private void SetMappedValues(Dictionary<string, List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
+    private static void SetMappedValues(Dictionary<string, List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp, List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
     {
 
       string typeCategory = null;
       List<string> mappedValues = new List<string>();
 
-      foreach (var obj in Preview)
+      foreach (var obj in preview)
       {
-        var @object = StoredObjects[obj.OriginalId];
+        var @object = storedObjects[obj.OriginalId];
         string type = null;
 
         switch (Regex.Replace(sourceApp.ToLower(), @"[\d-]", string.Empty))
@@ -539,7 +539,7 @@ namespace Speckle.ConnectorRevit.UI
     /// Update the custom type mapping that the user has saved
     /// </summary>
     /// <returns>A bool indicating whether there are new incoming types or not</returns>
-    private bool UpdateExistingMapping(Dictionary<string, List<MappingValue>> settingsMapping, Dictionary<string, List<string>> hostTypesDict, Dictionary<string, List<string>> incomingTypesDict, ProgressViewModel progress)
+    private static bool UpdateExistingMapping(Dictionary<string, List<MappingValue>> settingsMapping, Dictionary<string, List<string>> hostTypesDict, Dictionary<string, List<string>> incomingTypesDict, ProgressViewModel progress)
     {
       // no existing mappings exist
       if (settingsMapping == null)
@@ -598,7 +598,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>
     /// New host types dictionary with newly imported types added (if applicable)
     /// </returns>
-    public async Task<Dictionary<string, List<string>>> ImportFamilyTypes(Dictionary<string, List<string>> hostTypesDict)
+    public static async Task<Dictionary<string, List<string>>> ImportFamilyTypes(Dictionary<string, List<string>> hostTypesDict)
     {
       var windowsDialog = new OpenFileDialog();
       windowsDialog.Title = "Choose Revit Families";

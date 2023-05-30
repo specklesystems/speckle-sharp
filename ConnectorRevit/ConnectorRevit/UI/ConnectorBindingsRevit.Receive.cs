@@ -60,11 +60,12 @@ namespace Speckle.ConnectorRevit.UI
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
       await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);
 
-      Preview.Clear();
-      StoredObjects.Clear();
+      //Preview.Clear();
+      //StoredObjects.Clear();
 
-      Preview = FlattenCommitObject(commitObject, converter);
-      foreach (var previewObj in Preview)
+      var storedObjects = new Dictionary<string, Base>();
+      var preview = FlattenCommitObject(commitObject, converter, storedObjects);
+      foreach (var previewObj in preview)
         progress.Report.Log(previewObj);
 
 
@@ -73,11 +74,11 @@ namespace Speckle.ConnectorRevit.UI
       var previousObjects = new StreamStateCache(state);
       converter.SetContextDocument(previousObjects);
       // needs to be set for openings in floors and roofs to work
-      converter.SetContextObjects(Preview);
+      converter.SetContextObjects(preview);
 
       try
       {
-        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+        await RevitTask.RunAsync(() => UpdateForCustomMapping(progress, myCommit.sourceApplication, state.Settings, preview, storedObjects));
       }
       catch (Exception ex)
       {
@@ -102,7 +103,7 @@ namespace Speckle.ConnectorRevit.UI
         {
           converter.SetContextDocument(t);
 
-          var convertedObjects = ConvertReceivedObjects(converter, progress);
+          var convertedObjects = ConvertReceivedObjects(converter, progress, state.Settings, preview, storedObjects);
 
           if (state.ReceiveMode == ReceiveMode.Update)
             DeleteObjects(previousObjects, convertedObjects);
@@ -135,7 +136,7 @@ namespace Speckle.ConnectorRevit.UI
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(IReceivedObjectIdMap<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects)
+    private static void DeleteObjects(IReceivedObjectIdMap<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects)
     {
       var previousAppIds = previousObjects.GetAllConvertedIds().ToList();
       for (var i = previousAppIds.Count - 1; i >=0; i--)
@@ -156,7 +157,7 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, List<ISetting> settings)
+    private static IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, List<ISetting> settings, List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
     {
       var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -165,9 +166,9 @@ namespace Speckle.ConnectorRevit.UI
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting = settings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-      foreach (var obj in Preview)
+      foreach (var obj in preview)
       {
-        var @base = StoredObjects[obj.OriginalId];
+        var @base = storedObjects[obj.OriginalId];
         progress.CancellationToken.ThrowIfCancellationRequested();
 
         try
@@ -211,7 +212,7 @@ namespace Speckle.ConnectorRevit.UI
       return convertedObjectsCache;
     }
 
-    private void RefreshView()
+    private static void RefreshView()
     {
       //regenerate the document and then implement a hack to "refresh" the view
       CurrentDoc.Document.Regenerate();
@@ -235,7 +236,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
     /// <param name="converter">The converter instance, used to define what objects are convertable</param>
     /// <returns>A flattened list of objects to be converted ToNative</returns>
-    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
+    private static List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter, Dictionary<string, Base> storedObjects)
     {
 
       ApplicationObject CreateApplicationObject(Base current)
@@ -247,10 +248,10 @@ namespace Speckle.ConnectorRevit.UI
           applicationId = current.applicationId,
           Convertible = true
         };
-        if (StoredObjects.ContainsKey(current.id))
+        if (storedObjects.ContainsKey(current.id))
           return null;
 
-        StoredObjects.Add(current.id, current);
+        storedObjects.Add(current.id, current);
         return appObj;
       }
 

@@ -63,11 +63,12 @@ namespace Speckle.ConnectorRevit.UI
 
           var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
-          Preview.Clear();
-          StoredObjects.Clear();
+          //Preview.Clear();
+          //StoredObjects.Clear();
 
-          Preview = FlattenCommitObject(commitObject, converter);
-          foreach (var previewObj in Preview)
+          var storedObjects = new Dictionary<string, Base>();
+          var preview = FlattenCommitObject(commitObject, converter, storedObjects);
+          foreach (var previewObj in preview)
             progress.Report.Log(previewObj);
 
           IConvertedObjectsCache<Base, Element> convertedObjects = null;
@@ -77,18 +78,18 @@ namespace Speckle.ConnectorRevit.UI
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
               {
                 t.Start();
-                convertedObjects = ConvertReceivedObjects(converter, progress);
+                convertedObjects = ConvertReceivedObjects(converter, progress, state.Settings, preview, storedObjects);
                 t.Commit();
               }
 
               AddMultipleRevitElementServers(convertedObjects);
             });
         }
-        else // just generate the log
-        {
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
-        }
+        //else // just generate the log
+        //{
+        //  foreach (var previewObj in preview)
+        //    progress.Report.Log(previewObj);
+        //}
       }
       catch (Exception ex)
       {
