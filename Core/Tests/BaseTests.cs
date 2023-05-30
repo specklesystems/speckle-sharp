@@ -105,7 +105,7 @@ public class BaseTests
     var @base = new SampleObject();
     var dynamicProp = "dynamicProp";
     @base[dynamicProp] = 123;
-    var names = @base.GetMemberNames();
+    var names = @base.GetMembers().Keys;
     Assert.That(names, Has.No.Member(nameof(@base.IgnoredSchemaProp)));
     Assert.That(names, Has.No.Member(nameof(@base.ObsoleteSchemaProp)));
     Assert.That(names, Has.Member(dynamicProp));

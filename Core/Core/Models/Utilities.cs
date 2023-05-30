@@ -166,7 +166,7 @@ public static class Utilities
   /// <param name="props">The base class object representing application props</param>
   public static void SetApplicationProps(object o, Type t, Base props)
   {
-    var propNames = props.GetDynamicMembers();
+    var propNames = props.GetMembers(DynamicBaseMemberType.Dynamic).Keys;
     IEnumerable<string> names = propNames.ToList();
     if (o == null || names.Any())
       return;

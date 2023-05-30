@@ -23,7 +23,9 @@ public static class DefaultTraversal
       .When(HasDisplayValue)
       .ContinueTraversing(b =>
       {
-        var membersToTraverse = b.GetDynamicMembers().Concat(elementsAliases).Except(ignoreProps);
+        var membersToTraverse = b.GetMembers(DynamicBaseMemberType.Dynamic)
+          .Keys.Concat(elementsAliases)
+          .Except(ignoreProps);
         return membersToTraverse;
       });
 
@@ -56,8 +58,8 @@ public static class DefaultTraversal
       .When(HasDisplayValue)
       .ContinueTraversing(b =>
       {
-        var membersToTraverse = b.GetDynamicMembers()
-          .Concat(elementsAliases)
+        var membersToTraverse = b.GetMembers(DynamicBaseMemberType.Dynamic)
+          .Keys.Concat(elementsAliases)
           .Except(ignoreProps)
           .Concat(displayValueAliases);
         return membersToTraverse;
@@ -129,7 +131,7 @@ public static class DefaultTraversal
 
   internal static SelectMembers DynamicMembers()
   {
-    return x => x.GetDynamicMembers();
+    return x => x.GetMembers(DynamicBaseMemberType.Dynamic).Keys;
   }
 
   internal static SelectMembers Concat(params SelectMembers[] selectProps)

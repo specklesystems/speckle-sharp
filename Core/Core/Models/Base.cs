@@ -153,7 +153,7 @@ public class Base : DynamicBase
       }
     }
 
-    var dynamicProps = @base.GetDynamicMembers();
+    var dynamicProps = @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys;
     foreach (var propName in dynamicProps)
     {
       if (!propName.StartsWith("@"))
