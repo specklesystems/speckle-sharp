@@ -1333,7 +1333,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
   /// <param name="dict"></param>
   private void ParseDictionaryToArchivable(ArchivableDictionary target, Base @base)
   {
-    foreach (var prop in @base.GetMemberNames())
+    foreach (var prop in @base.GetMembers().Keys)
     {
       var obj = @base[prop];
       switch (obj)

@@ -19,10 +19,8 @@ using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Speckle.ConnectorRevit.UI
 {
-
   public partial class ConnectorBindingsRevit
   {
-
     /// <summary>
     /// Updates the flattenedBase object with user selected types
     /// </summary>
@@ -32,10 +30,12 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns></returns>
     public async Task UpdateForCustomMapping(StreamState state, ProgressViewModel progress, string sourceApp)
     {
-      // Get Settings for recieve on mapping 
-      if (CurrentSettings.FirstOrDefault(x => x.Slug == "receive-mappings") is not MappingSeting mappingSetting 
-        || mappingSetting.Selection == null 
-        || mappingSetting.Selection == noMapping)
+      // Get Settings for recieve on mapping
+      if (
+        CurrentSettings.FirstOrDefault(x => x.Slug == "receive-mappings") is not MappingSeting mappingSetting
+        || mappingSetting.Selection == null
+        || mappingSetting.Selection == noMapping
+      )
       {
         return;
       }
@@ -45,7 +45,9 @@ namespace Speckle.ConnectorRevit.UI
 
       if (mappingSetting.MappingJson != null)
       {
-        settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(mappingSetting.MappingJson);
+        settingsMapping = JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(
+          mappingSetting.MappingJson
+        );
       }
       else
       {
@@ -57,17 +59,17 @@ namespace Speckle.ConnectorRevit.UI
 
       // if mappings already exist, update them and return true
       bool newTypesExist = UpdateExistingMapping(settingsMapping, hostTypesDict, incomingTypesDict, progress);
-      if (!newTypesExist && mappingSetting.Selection != everyReceive) { return; }
+      if (!newTypesExist && mappingSetting.Selection != everyReceive)
+      {
+        return;
+      }
 
       Dictionary<string, List<MappingValue>> mapping = settingsMapping;
       mapping ??= ReturnFirstPassMap(incomingTypesDict, hostTypesDict, progress);
 
       // show custom mapping dialog if the settings corrospond to what is being received
       var vm = new MappingViewModel(mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
-      MappingViewDialog mappingView = new MappingViewDialog
-      {
-        DataContext = vm
-      };
+      MappingViewDialog mappingView = new MappingViewDialog { DataContext = vm };
 
       mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>().ConfigureAwait(true);
 
@@ -76,10 +78,7 @@ namespace Speckle.ConnectorRevit.UI
         hostTypesDict = await ImportFamilyTypes(hostTypesDict).ConfigureAwait(true);
 
         vm = new MappingViewModel(mapping, hostTypesDict, newTypesExist && !isFirstTimeReceiving);
-        mappingView = new MappingViewDialog
-        {
-          DataContext = vm
-        };
+        mappingView = new MappingViewDialog { DataContext = vm };
 
         mapping = await mappingView.ShowDialog<Dictionary<string, List<MappingValue>>>();
       }
@@ -100,7 +99,11 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="hostTypes"></param>
     /// <param name="progress"></param>
     /// <returns></returns>
-    private Dictionary<string, List<MappingValue>> ReturnFirstPassMap(Dictionary<string, List<string>> incomingTypesDict, Dictionary<string, List<string>> hostTypes, ProgressViewModel progress)
+    private Dictionary<string, List<MappingValue>> ReturnFirstPassMap(
+      Dictionary<string, List<string>> incomingTypesDict,
+      Dictionary<string, List<string>> hostTypes,
+      ProgressViewModel progress
+    )
     {
       var mappings = new Dictionary<string, List<MappingValue>> { };
       foreach (var incomingTypeCategory in incomingTypesDict.Keys)
@@ -110,20 +113,11 @@ namespace Speckle.ConnectorRevit.UI
           string mappedValue = GetMappedValue(hostTypes, incomingTypeCategory, speckleType);
           if (mappings.ContainsKey(incomingTypeCategory))
           {
-            mappings[incomingTypeCategory].Add(new MappingValue
-              (
-                speckleType, mappedValue
-              ));
+            mappings[incomingTypeCategory].Add(new MappingValue(speckleType, mappedValue));
           }
           else
           {
-            mappings[incomingTypeCategory] = new List<MappingValue>
-              {
-                new MappingValue
-                (
-                  speckleType, mappedValue
-                )
-              };
+            mappings[incomingTypeCategory] = new List<MappingValue> { new MappingValue(speckleType, mappedValue) };
           }
         }
       }
@@ -202,9 +196,7 @@ namespace Speckle.ConnectorRevit.UI
         for (int j = 1; j <= m; j++)
         {
           int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
-          d[i, j] = Math.Min(
-              Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-              d[i - 1, j - 1] + cost);
+          d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
         }
       }
       return d[n, m];
@@ -265,9 +257,9 @@ namespace Speckle.ConnectorRevit.UI
             }
             return TypeCatMisc;
           case "csielement2d":
-            if (obj.GetMemberNames().Contains("property") && obj["property"] is Base prop)
+            if (obj.GetMembers().Keys.Contains("property") && obj["property"] is Base prop)
             {
-              if (prop.GetMemberNames().Contains("type") && (int)obj["type"] is int type)
+              if (prop.GetMembers().Keys.Contains("type") && (int)obj["type"] is int type)
               {
                 switch (type)
                 {
@@ -298,7 +290,7 @@ namespace Speckle.ConnectorRevit.UI
 
           case string a when a.Contains("wall"):
             return TypeCatWalls;
-            #endregion
+          #endregion
         }
       }
       catch (Exception _)
@@ -352,8 +344,18 @@ namespace Speckle.ConnectorRevit.UI
         TypeCatMaterials => new CustomTypesFilter(TypeCatMaterials, typeof(Autodesk.Revit.DB.Material)),
         TypeCatFloors => new CustomTypesFilter(TypeCatFloors, typeof(FloorType)),
         TypeCatWalls => new CustomTypesFilter(TypeCatWalls, typeof(WallType)),
-        TypeCatFraming => new CustomTypesFilter(TypeCatFraming, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming }),
-        TypeCatColumns => new CustomTypesFilter(TypeCatColumns, typeof(FamilySymbol), new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns }),
+        TypeCatFraming
+          => new CustomTypesFilter(
+            TypeCatFraming,
+            typeof(FamilySymbol),
+            new List<BuiltInCategory> { BuiltInCategory.OST_StructuralFraming }
+          ),
+        TypeCatColumns
+          => new CustomTypesFilter(
+            TypeCatColumns,
+            typeof(FamilySymbol),
+            new List<BuiltInCategory> { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns }
+          ),
         _ => new CustomTypesFilter(TypeCatMisc),
       };
     }
@@ -407,7 +409,7 @@ namespace Speckle.ConnectorRevit.UI
               returnDict[typeCategory] = new List<string>();
             if (@object.GetMembers().ContainsKey("property") && @object["property"] is Base prop)
             {
-              if (prop.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(prop["name"] as string))
+              if (prop.GetMembers().Keys.Contains("name") && !string.IsNullOrEmpty(prop["name"] as string))
               {
                 if (!returnDict[typeCategory].Contains(prop["name"] as string))
                   returnDict[typeCategory].Add(prop["name"] as string);
@@ -427,9 +429,9 @@ namespace Speckle.ConnectorRevit.UI
             if (!returnDict.ContainsKey(typeCategory))
               returnDict[typeCategory] = new List<string>();
 
-            if (@object.GetMemberNames().Contains("profile") && @object["profile"] is Base profile)
+            if (@object.GetMembers().Keys.Contains("profile") && @object["profile"] is Base profile)
             {
-              if (profile.GetMemberNames().Contains("name") && !string.IsNullOrEmpty(profile["name"] as string))
+              if (profile.GetMembers().Keys.Contains("name") && !string.IsNullOrEmpty(profile["name"] as string))
               {
                 if (!returnDict[typeCategory].Contains(profile["name"] as string))
                   returnDict[typeCategory].Add(profile["name"] as string);
@@ -451,9 +453,12 @@ namespace Speckle.ConnectorRevit.UI
     /// <summary>
     /// Update receive object to include the user's custom mapping
     /// </summary>
-    private void SetMappedValues(Dictionary<string, List<MappingValue>> userMap, ProgressViewModel progress, string sourceApp)
+    private void SetMappedValues(
+      Dictionary<string, List<MappingValue>> userMap,
+      ProgressViewModel progress,
+      string sourceApp
+    )
     {
-
       string typeCategory = null;
       List<string> mappedValues = new List<string>();
 
@@ -474,15 +479,21 @@ namespace Speckle.ConnectorRevit.UI
                 if (!userMap.ContainsKey(typeCategory))
                   continue;
 
-                if (el.GetMemberNames().Contains("property") && el["property"] is Base prop)
+                if (el.GetMembers().Keys.Contains("property") && el["property"] is Base prop)
                 {
-                  if (prop.GetMemberNames().Contains("name") && prop.GetType().GetProperty("name") is System.Reflection.PropertyInfo info)
+                  if (
+                    prop.GetMembers().Keys.Contains("name")
+                    && prop.GetType().GetProperty("name") is System.Reflection.PropertyInfo info
+                  )
                   {
                     if (mappedValues.Contains(info.GetValue(prop) as string))
                       continue;
 
-                    MappingValue mappingWithMatchingType = userMap[typeCategory].Where(i => i.IncomingType == info.GetValue(prop) as string).First();
-                    string mappingProperty = mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
+                    MappingValue mappingWithMatchingType = userMap[typeCategory]
+                      .Where(i => i.IncomingType == info.GetValue(prop) as string)
+                      .First();
+                    string mappingProperty =
+                      mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
 
                     info.SetValue(prop, mappingProperty);
                     mappedValues.Add(mappingProperty);
@@ -496,12 +507,17 @@ namespace Speckle.ConnectorRevit.UI
             if (!userMap.ContainsKey(typeCategory))
               continue;
 
-            if (@object.GetMemberNames().Contains("type") && @object.GetType().GetProperty("type") is System.Reflection.PropertyInfo revType)
+            if (
+              @object.GetMembers().Keys.Contains("type")
+              && @object.GetType().GetProperty("type") is System.Reflection.PropertyInfo revType
+            )
             {
               if (mappedValues.Contains(revType.GetValue(@object) as string))
                 continue;
 
-              MappingValue mappingWithMatchingType = userMap[typeCategory].Where(i => i.IncomingType == revType.GetValue(@object) as string).First();
+              MappingValue mappingWithMatchingType = userMap[typeCategory]
+                .Where(i => i.IncomingType == revType.GetValue(@object) as string)
+                .First();
               string mappingProperty = mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
 
               revType.SetValue(@object, mappingProperty);
@@ -514,14 +530,19 @@ namespace Speckle.ConnectorRevit.UI
             if (!userMap.ContainsKey(typeCategory))
               continue;
 
-            if (@object.GetMemberNames().Contains("profile") && @object["profile"] is Base profile)
+            if (@object.GetMembers().Keys.Contains("profile") && @object["profile"] is Base profile)
             {
-              if (profile.GetMemberNames().Contains("name") && profile.GetType().GetProperty("name") is System.Reflection.PropertyInfo info)
+              if (
+                profile.GetMembers().Keys.Contains("name")
+                && profile.GetType().GetProperty("name") is System.Reflection.PropertyInfo info
+              )
               {
                 if (mappedValues.Contains(info.GetValue(profile) as string))
                   continue;
 
-                MappingValue mappingWithMatchingType = userMap[typeCategory].Where(i => i.IncomingType == info.GetValue(profile) as string).First();
+                MappingValue mappingWithMatchingType = userMap[typeCategory]
+                  .Where(i => i.IncomingType == info.GetValue(profile) as string)
+                  .First();
                 string mappingProperty = mappingWithMatchingType.OutgoingType ?? mappingWithMatchingType.InitialGuess;
 
                 info.SetValue(profile, mappingProperty);
@@ -532,14 +553,22 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
 
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() { { "name", "Mappings Applied" } });
+      Analytics.TrackEvent(
+        Analytics.Events.DUIAction,
+        new Dictionary<string, object>() { { "name", "Mappings Applied" } }
+      );
     }
 
     /// <summary>
     /// Update the custom type mapping that the user has saved
     /// </summary>
     /// <returns>A bool indicating whether there are new incoming types or not</returns>
-    private bool UpdateExistingMapping(Dictionary<string, List<MappingValue>> settingsMapping, Dictionary<string, List<string>> hostTypesDict, Dictionary<string, List<string>> incomingTypesDict, ProgressViewModel progress)
+    private bool UpdateExistingMapping(
+      Dictionary<string, List<MappingValue>> settingsMapping,
+      Dictionary<string, List<string>> hostTypesDict,
+      Dictionary<string, List<string>> incomingTypesDict,
+      ProgressViewModel progress
+    )
     {
       // no existing mappings exist
       if (settingsMapping == null)
@@ -578,7 +607,6 @@ namespace Speckle.ConnectorRevit.UI
       return newTypesExist;
     }
 
-
     /// <summary>
     /// Imports family symbols into Revit
     /// </summary>
@@ -586,7 +614,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>
     /// New mapping value with newly imported types added (if applicable)
     /// </returns>
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
+    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
+      Dictionary<string, List<MappingValue>> Mapping
+    )
     {
       return Mapping;
     }
@@ -598,7 +628,9 @@ namespace Speckle.ConnectorRevit.UI
     /// <returns>
     /// New host types dictionary with newly imported types added (if applicable)
     /// </returns>
-    public async Task<Dictionary<string, List<string>>> ImportFamilyTypes(Dictionary<string, List<string>> hostTypesDict)
+    public async Task<Dictionary<string, List<string>>> ImportFamilyTypes(
+      Dictionary<string, List<string>> hostTypesDict
+    )
     {
       var windowsDialog = new OpenFileDialog();
       windowsDialog.Title = "Choose Revit Families";
@@ -650,7 +682,10 @@ namespace Speckle.ConnectorRevit.UI
               var families = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(Family));
               var list = families.ToElements().Cast<Family>().ToList();
 
-              match = list.FirstOrDefault(x => x.Name == familyName && filter.categories.Contains((BuiltInCategory)x.FamilyCategory?.Id.IntegerValue));
+              match = list.FirstOrDefault(
+                x =>
+                  x.Name == familyName && filter.categories.Contains((BuiltInCategory)x.FamilyCategory?.Id.IntegerValue)
+              );
               if (match != null)
                 break;
             }
@@ -695,26 +730,21 @@ namespace Speckle.ConnectorRevit.UI
             }
           }
         }
-        catch (Exception e)
-        { }
+        catch (Exception e) { }
 
         // delete the newly created xml file
         try
         {
           System.IO.File.Delete(path + ".xml");
         }
-        catch (Exception ex)
-        { }
+        catch (Exception ex) { }
       }
 
       //close current dialog body
       MainViewModel.CloseDialog();
 
       var vm = new ImportFamiliesDialogViewModel(allSymbols);
-      var importFamilies = new ImportFamiliesDialog
-      {
-        DataContext = vm
-      };
+      var importFamilies = new ImportFamiliesDialog { DataContext = vm };
 
       await importFamilies.ShowDialog<object>();
 
@@ -734,7 +764,10 @@ namespace Speckle.ConnectorRevit.UI
 
           foreach (var symbol in vm.selectedFamilySymbols)
           {
-            bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name);
+            bool successfullyImported = CurrentDoc.Document.LoadFamilySymbol(
+              familyInfo[symbol.FamilyName].Path,
+              symbol.Name
+            );
             if (successfullyImported)
             {
               symbolLoaded = true;
@@ -746,19 +779,20 @@ namespace Speckle.ConnectorRevit.UI
           if (symbolLoaded)
           {
             t.Commit();
-            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
-              { "name", "Mappings Import Families" },
-              { "count", vm.selectedFamilySymbols.Count }});
+            Analytics.TrackEvent(
+              Analytics.Events.DUIAction,
+              new Dictionary<string, object>()
+              {
+                { "name", "Mappings Import Families" },
+                { "count", vm.selectedFamilySymbols.Count }
+              }
+            );
           }
-
           else
             t.RollBack();
           return hostTypesDict;
         }
       });
-
-
-
 
       //close current dialog body
       MainViewModel.CloseDialog();
@@ -770,6 +804,7 @@ namespace Speckle.ConnectorRevit.UI
     {
       public string Path { get; set; }
       public string Category { get; set; }
+
       public FamilyInfo(string path, string category)
       {
         Path = path;

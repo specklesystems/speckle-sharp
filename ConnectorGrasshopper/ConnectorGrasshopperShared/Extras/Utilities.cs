@@ -123,8 +123,8 @@ public static class Utilities
   {
     var dataTree = new GH_Structure<IGH_Goo>();
     @base
-      .GetDynamicMembers()
-      .ToList()
+      .GetMembers()
+      .Keys.ToList()
       .ForEach(key =>
       {
         var value = @base[key] as List<object>;
@@ -155,7 +155,7 @@ public static class Utilities
   public static bool CanConvertToDataTree(Base @base)
   {
     var regex = new Regex(dataTreePathPattern);
-    var dynamicMembers = @base.GetDynamicMembers().ToList();
+    var dynamicMembers = @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys.ToList();
     if (dynamicMembers.Count == 0)
       return false;
     var isDataTree = dynamicMembers.All(el => regex.Match(el).Success);
@@ -571,7 +571,11 @@ public static class Utilities
       var converted = Converter.ConvertToNative(@base);
       data.Append(WrapInGhType(converted));
     }
-    else if (unwrap && @base.GetDynamicMembers().Count() == 1 && (@base["@data"] != null || @base["@Data"] != null))
+    else if (
+      unwrap
+      && @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys.Count == 1
+      && (@base["@data"] != null || @base["@Data"] != null)
+    )
     {
       // Comes from a wrapper
       var wrappedData = @base["@data"] ?? @base["@Data"];
