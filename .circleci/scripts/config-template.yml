@@ -33,6 +33,14 @@ workflows:
 commands:
   cached-checkout:
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "62:b2:1a:86:b7:9f:83:91:9b:61:f8:52:66:38:78:64"
+      - run:
+          name: I know Github as a host
+          command: |
+            mkdir ~/.ssh
+            ssh-keyscan github.com >> ~/.ssh/known_hosts
       - git-shallow-clone/checkout:
           fetch_depth: 1
 
