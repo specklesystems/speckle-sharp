@@ -6,7 +6,7 @@ orbs:
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
-
+  git-shallow-clone: guitarrapc/git-shallow-clone@2.5.0
 # The main workflows for our monorepo pipeline.
 
 workflows:
@@ -33,7 +33,8 @@ workflows:
 commands:
   cached-checkout:
     steps:
-      - checkout
+      - git-shallow-clone/checkout:
+          fetch_depth: 1
 
   # Leaving this here to investigate further but currently IT DOES NOT WORK
   # BASH_ENV says it doesn't exist or I don't have access to it.
