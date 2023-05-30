@@ -18,10 +18,10 @@ using Serilog;
 namespace Speckle.ConnectorTeklaStructures.UI
 {
   public partial class ConnectorBindingsTeklaStructures : ConnectorBindings
-
   {
     #region receiving
     public override bool CanPreviewReceive => false;
+
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
       return null;
@@ -47,8 +47,13 @@ namespace Speckle.ConnectorTeklaStructures.UI
       Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
       state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
-      
+      await ConnectorHelpers.TryCommitReceived(
+        progress.CancellationToken,
+        state,
+        myCommit,
+        ConnectorTeklaStructuresUtils.TeklaStructuresAppName
+      );
+
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
       //Execute.PostToUIThread(() => state.Progress.Maximum = state.SelectedObjectIds.Count());
@@ -59,14 +64,12 @@ namespace Speckle.ConnectorTeklaStructures.UI
         progress.Update(conversionProgressDict);
       };
 
-
       var commitObjs = FlattenCommitObject(commitObject, converter);
       foreach (var commitObj in commitObjs)
       {
         BakeObject(commitObj, state, converter);
         updateProgressAction?.Invoke();
       }
-
 
       Model.CommitChanges();
       progress.Report.Merge(converter.Report);
@@ -87,14 +90,16 @@ namespace Speckle.ConnectorTeklaStructures.UI
       }
       catch (Exception e)
       {
-        var exception = new Exception($"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}");
+        var exception = new Exception(
+          $"Failed to convert object {obj.id} of type {obj.speckle_type}\n with error\n{e}"
+        );
         converter.Report.LogOperationError(exception);
         return;
       }
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Recurses through the commit object and flattens it.
     /// </summary>
     /// <param name="obj"></param>
     /// <param name="converter"></param>
@@ -102,7 +107,6 @@ namespace Speckle.ConnectorTeklaStructures.UI
     private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
     {
       List<Base> objects = new List<Base>();
-
 
       if (obj is Base @base)
       {
@@ -114,7 +118,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
         }
         else
         {
-          foreach (var prop in @base.GetDynamicMembers())
+          foreach (var prop in @base.GetMembers(DynamicBaseMemberType.Dynamic).Keys)
           {
             objects.AddRange(FlattenCommitObject(@base[prop], converter));
           }

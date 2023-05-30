@@ -19,11 +19,8 @@ namespace Objects.Converter.TeklaStructures
 {
   public partial class ConverterTeklaStructures
   {
+    public void SetUnits(string units) { }
 
-    public void SetUnits(string units)
-    {
-
-    }
     public string GetUnitsFromModel()
     {
       var unit = Distance.CurrentUnitType;
@@ -41,11 +38,9 @@ namespace Objects.Converter.TeklaStructures
           return "ft";
         default:
           return "mm";
-
       }
-
-
     }
+
     public Mesh GetMeshFromSolid(Solid solid)
     {
       List<double> vertexList = new List<double> { };
@@ -73,19 +68,16 @@ namespace Objects.Converter.TeklaStructures
             Loop MyLoop = MyLoopEnum.Current as Loop;
             if (MyLoop != null)
             {
-
               VertexEnumerator MyVertexEnum = MyLoop.GetVertexEnumerator() as VertexEnumerator;
               var innerLoopListOfList = new List<double> { };
               while (MyVertexEnum.MoveNext())
               {
-
                 Tekla.Structures.Geometry3d.Point MyVertex = MyVertexEnum.Current as Tekla.Structures.Geometry3d.Point;
                 if (MyVertex != null && inner_loop == 0)
                 {
                   outerLoopList.Add(MyVertex.X);
                   outerLoopList.Add(MyVertex.Y);
                   outerLoopList.Add(MyVertex.Z);
-
                 }
                 else
                 {
@@ -94,11 +86,11 @@ namespace Objects.Converter.TeklaStructures
                   innerLoopListOfList.Add(MyVertex.Z);
                 }
 
-
                 //speckleBeam.displayMesh = beam.Profile.
               }
               inner_loop++;
-              if(innerLoopListOfList.Any()){
+              if (innerLoopListOfList.Any())
+              {
                 innerLoopList.Add(innerLoopListOfList);
               }
             }
@@ -138,16 +130,16 @@ namespace Objects.Converter.TeklaStructures
           facesList.AddRange(faces.ToList());
         }
       }
-      return new Mesh(vertexList, facesList,units: GetUnitsFromModel());
-
+      return new Mesh(vertexList, facesList, units: GetUnitsFromModel());
     }
+
     /// <summary>
     /// Get all user properties defined for this object in Tekla
     /// </summary>
     /// <param name="speckleElement"></param>
     /// <param name="teklaObject"></param>
     /// <param name="exclusions">List of BuiltInParameters or GUIDs used to indicate what parameters NOT to get,
-    /// we exclude all params already defined on the top level object to avoid duplication and 
+    /// we exclude all params already defined on the top level object to avoid duplication and
     /// potential conflicts when setting them back on the element</param>
     public void GetAllUserProperties(Base speckleElement, ModelObject teklaObject, List<string> exclusions = null)
     {
@@ -155,7 +147,10 @@ namespace Objects.Converter.TeklaStructures
       teklaObject.GetAllUserProperties(ref propertyHashtable);
 
       // sort by key
-      var sortedproperties = propertyHashtable.Cast<DictionaryEntry>().OrderBy(x => x.Key).ToDictionary(d => (string)d.Key, d => d.Value);
+      var sortedproperties = propertyHashtable
+        .Cast<DictionaryEntry>()
+        .OrderBy(x => x.Key)
+        .ToDictionary(d => (string)d.Key, d => d.Value);
 
       Base paramBase = new Base();
       foreach (var kv in sortedproperties)
@@ -170,7 +165,7 @@ namespace Objects.Converter.TeklaStructures
         }
       }
 
-      if (paramBase.GetDynamicMembers().Any())
+      if (paramBase.GetMembers(DynamicBaseMemberType.Dynamic).Keys.Any())
         speckleElement["parameters"] = paramBase;
       //speckleElement["elementId"] = revitElement.Id.ToString();
       speckleElement.applicationId = teklaObject.Identifier.GUID.ToString();
@@ -224,26 +219,35 @@ namespace Objects.Converter.TeklaStructures
             break;
           default:
             profile = new SectionProfile();
-            profile.name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+            profile.name =
+              profileItem is LibraryProfileItem
+                ? ((LibraryProfileItem)profileItem).ProfileName
+                : ((ParametricProfileItem)profileItem).CreateProfileString();
             break;
         }
       }
       return profile;
     }
+
     public Structural.Properties.Profiles.SectionProfile GetContourPlateProfile(string teklaProfileString)
     {
       ParametricProfileItem paramItem = new ParametricProfileItem();
-      SectionProfile profile = new SectionProfile() { name = teklaProfileString, shapeType = Structural.ShapeType.Perimeter };
+      SectionProfile profile = new SectionProfile()
+      {
+        name = teklaProfileString,
+        shapeType = Structural.ShapeType.Perimeter
+      };
       return profile;
     }
-
-
 
     #region Profile type getters
     private Structural.Properties.Profiles.ISection GetIProfile(ProfileItem profileItem)
     {
       // Set profile name depending on type
-      var name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      var name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       // Get properties from catalog
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
@@ -253,20 +257,36 @@ namespace Objects.Converter.TeklaStructures
       var tf = properties.FirstOrDefault(p => p.Property == "FLANGE_THICKNESS")?.Value;
       var tw = properties.FirstOrDefault(p => p.Property == "WEB_THICKNESS")?.Value;
 
-      var speckleProfile = new ISection(name, depth.GetValueOrDefault(), width.GetValueOrDefault(), tw.GetValueOrDefault(), tf.GetValueOrDefault());
+      var speckleProfile = new ISection(
+        name,
+        depth.GetValueOrDefault(),
+        width.GetValueOrDefault(),
+        tw.GetValueOrDefault(),
+        tf.GetValueOrDefault()
+      );
       return speckleProfile;
     }
+
     private Structural.Properties.Profiles.Angle GetAngleProfile(ProfileItem profileItem)
     {
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
-      string name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      string name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       var depth = properties.FirstOrDefault(p => p.Property == "HEIGHT")?.Value;
       var width = properties.FirstOrDefault(p => p.Property == "WIDTH")?.Value;
       var tf1 = properties.FirstOrDefault(p => p.Property == "FLANGE_THICKNESS_1")?.Value;
       var tf2 = properties.FirstOrDefault(p => p.Property == "FLANGE_THICKNESS_2")?.Value;
 
-      var speckleProfile = new Structural.Properties.Profiles.Angle(name, depth.GetValueOrDefault(), width.GetValueOrDefault(), tf1.GetValueOrDefault(), tf2.GetValueOrDefault());
+      var speckleProfile = new Structural.Properties.Profiles.Angle(
+        name,
+        depth.GetValueOrDefault(),
+        width.GetValueOrDefault(),
+        tf1.GetValueOrDefault(),
+        tf2.GetValueOrDefault()
+      );
 
       return speckleProfile;
     }
@@ -274,51 +294,84 @@ namespace Objects.Converter.TeklaStructures
     private Structural.Properties.Profiles.Rectangular GetRectangularProfile(ProfileItem profileItem)
     {
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
-      string name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      string name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       var depth = properties.FirstOrDefault(p => p.Property == "HEIGHT")?.Value;
       var width = properties.FirstOrDefault(p => p.Property == "WIDTH")?.Value;
-      var speckleProfile = new Structural.Properties.Profiles.Rectangular(name, depth.GetValueOrDefault(), width.GetValueOrDefault());
+      var speckleProfile = new Structural.Properties.Profiles.Rectangular(
+        name,
+        depth.GetValueOrDefault(),
+        width.GetValueOrDefault()
+      );
 
       return speckleProfile;
     }
+
     private Structural.Properties.Profiles.Rectangular GetRectangularHollowProfile(ProfileItem profileItem)
     {
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
-      string name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      string name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       var depth = properties.FirstOrDefault(p => p.Property == "HEIGHT")?.Value;
       var width = properties.FirstOrDefault(p => p.Property == "WIDTH")?.Value;
       var wallThk = properties.FirstOrDefault(p => p.Property == "PLATE_THICKNESS")?.Value;
-      var speckleProfile = new Structural.Properties.Profiles.Rectangular(name, depth.GetValueOrDefault(), width.GetValueOrDefault(), wallThk.GetValueOrDefault(), wallThk.GetValueOrDefault());
+      var speckleProfile = new Structural.Properties.Profiles.Rectangular(
+        name,
+        depth.GetValueOrDefault(),
+        width.GetValueOrDefault(),
+        wallThk.GetValueOrDefault(),
+        wallThk.GetValueOrDefault()
+      );
 
       return speckleProfile;
     }
+
     private Structural.Properties.Profiles.Circular GetCircularProfile(ProfileItem profileItem)
     {
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
-      string name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      string name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       var depth = properties.FirstOrDefault(p => p.Property == "DIAMETER")?.Value;
       var speckleProfile = new Structural.Properties.Profiles.Circular(name, depth.GetValueOrDefault() * 0.5);
 
       return speckleProfile;
     }
+
     private Structural.Properties.Profiles.Circular GetCircularHollowProfile(ProfileItem profileItem)
     {
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
-      string name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      string name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       var depth = properties.FirstOrDefault(p => p.Property == "DIAMETER")?.Value;
       var wallThk = properties.FirstOrDefault(p => p.Property == "PLATE_THICKNESS")?.Value;
-      var speckleProfile = new Structural.Properties.Profiles.Circular(name, depth.GetValueOrDefault() * 0.5, wallThk.GetValueOrDefault());
+      var speckleProfile = new Structural.Properties.Profiles.Circular(
+        name,
+        depth.GetValueOrDefault() * 0.5,
+        wallThk.GetValueOrDefault()
+      );
 
       return speckleProfile;
     }
+
     private Structural.Properties.Profiles.Channel GetChannelProfile(ProfileItem profileItem)
     {
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
-      string name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      string name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       var depth = properties.FirstOrDefault(p => p.Property == "HEIGHT")?.Value;
       var width = properties.FirstOrDefault(p => p.Property == "WIDTH")?.Value;
@@ -328,23 +381,45 @@ namespace Objects.Converter.TeklaStructures
 
       Channel speckleProfile;
       if (tf.HasValue && tw.HasValue)
-        speckleProfile = new Channel(name, depth.GetValueOrDefault(), width.GetValueOrDefault(), tw.GetValueOrDefault(), tf.GetValueOrDefault());
+        speckleProfile = new Channel(
+          name,
+          depth.GetValueOrDefault(),
+          width.GetValueOrDefault(),
+          tw.GetValueOrDefault(),
+          tf.GetValueOrDefault()
+        );
       else
-        speckleProfile = new Channel(name, depth.GetValueOrDefault(), width.GetValueOrDefault(), wallThk.GetValueOrDefault(), wallThk.GetValueOrDefault());
+        speckleProfile = new Channel(
+          name,
+          depth.GetValueOrDefault(),
+          width.GetValueOrDefault(),
+          wallThk.GetValueOrDefault(),
+          wallThk.GetValueOrDefault()
+        );
 
       return speckleProfile;
     }
+
     private Structural.Properties.Profiles.Tee GetTeeProfile(ProfileItem profileItem)
     {
       var properties = profileItem.aProfileItemParameters.Cast<ProfileItemParameter>().ToList();
-      string name = profileItem is LibraryProfileItem ? ((LibraryProfileItem)profileItem).ProfileName : ((ParametricProfileItem)profileItem).CreateProfileString();
+      string name =
+        profileItem is LibraryProfileItem
+          ? ((LibraryProfileItem)profileItem).ProfileName
+          : ((ParametricProfileItem)profileItem).CreateProfileString();
 
       var depth = properties.FirstOrDefault(p => p.Property == "HEIGHT")?.Value;
       var width = properties.FirstOrDefault(p => p.Property == "WIDTH")?.Value;
       var tf = properties.FirstOrDefault(p => p.Property == "FLANGE_THICKNESS")?.Value;
       var tw = properties.FirstOrDefault(p => p.Property == "WEB_THICKNESS")?.Value;
 
-      var speckleProfile = new Tee(name, depth.GetValueOrDefault(), width.GetValueOrDefault(), tw.GetValueOrDefault(), tf.GetValueOrDefault());
+      var speckleProfile = new Tee(
+        name,
+        depth.GetValueOrDefault(),
+        width.GetValueOrDefault(),
+        tw.GetValueOrDefault(),
+        tf.GetValueOrDefault()
+      );
       return speckleProfile;
     }
 
@@ -379,7 +454,6 @@ namespace Objects.Converter.TeklaStructures
         speckleMaterial.thermalExpansivity = materialItem.ThermalDilatation;
       }
       return speckleMaterial;
-
     }
 
     public ArrayList GetContourPointsFromPolyLine(Polyline polyline)
@@ -396,10 +470,10 @@ namespace Objects.Converter.TeklaStructures
           point.Z = coordinates[j + 2];
           contourList.Add(new ContourPoint(point, new Chamfer()));
         }
-
       }
       return contourList;
     }
+
     public void ToNativeContourPlate(Polyline polyline, Contour contour)
     {
       var coordinates = polyline.value;
@@ -415,6 +489,7 @@ namespace Objects.Converter.TeklaStructures
         }
       }
     }
+
     public Polyline ToSpecklePolyline(Tekla.Structures.Model.Polygon polygon)
     {
       List<double> coordinateList = new List<double>();
@@ -430,6 +505,7 @@ namespace Objects.Converter.TeklaStructures
       var specklePolyline = new Polyline(coordinateList, units);
       return specklePolyline;
     }
+
     public Polycurve ToSpecklePolycurve(Tekla.Structures.Geometry3d.Polycurve teklaPolycurve)
     {
       var units = GetUnitsFromModel();
@@ -455,7 +531,6 @@ namespace Objects.Converter.TeklaStructures
           Point end = new Point(arcSeg.EndPoint.X, arcSeg.EndPoint.Y, arcSeg.EndPoint.Z, units);
           Point mid = new Point(arcSeg.ArcMiddlePoint.X, arcSeg.ArcMiddlePoint.Y, arcSeg.ArcMiddlePoint.Z, units);
 
-
           Arc speckleArc = new Arc();
           speckleArc.startPoint = start;
           speckleArc.endPoint = end;
@@ -468,6 +543,7 @@ namespace Objects.Converter.TeklaStructures
       }
       return specklePolycurve;
     }
+
     public TeklaContourPoint ToSpeckleContourPoint(ContourPoint contourPoint)
     {
       var speckleCP = new TeklaContourPoint();
@@ -483,6 +559,7 @@ namespace Objects.Converter.TeklaStructures
       speckleCP.units = GetUnitsFromModel();
       return speckleCP;
     }
+
     public ContourPoint ToTeklaContourPoint(TeklaContourPoint speckleCP)
     {
       var teklaCP = new ContourPoint();
@@ -509,6 +586,7 @@ namespace Objects.Converter.TeklaStructures
 
       return specklePosition;
     }
+
     public Position SetPositioning(TeklaPosition position)
     {
       var teklaPosition = new Position()
@@ -523,6 +601,7 @@ namespace Objects.Converter.TeklaStructures
 
       return teklaPosition;
     }
+
     public bool IsProfileValid(string profileName)
     {
       if (string.IsNullOrEmpty(profileName))
@@ -554,7 +633,5 @@ namespace Objects.Converter.TeklaStructures
     //private static List<ModelObject.ModelObjectEnum> SupportedBuiltInCategories = new List<ModelObject.ModelObjectEnum>{
 
     //ModelObject.ModelObjectEnum.BEAM,
-
-
   }
 }
