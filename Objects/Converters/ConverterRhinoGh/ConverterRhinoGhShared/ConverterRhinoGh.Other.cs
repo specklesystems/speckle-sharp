@@ -538,6 +538,7 @@ public partial class ConverterRhinoGh
     {
       transform = new Other.Transform(t, ModelUnits),
       typedDefinition = def,
+      applicationId = instance.Id.ToString(),
       units = ModelUnits
     };
 
