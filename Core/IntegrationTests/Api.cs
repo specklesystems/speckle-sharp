@@ -101,6 +101,15 @@ public class Api
   }
 
   [Test, Order(12)]
+  public async Task StreamExists()
+  {
+    var res = await myClient.StreamExists(streamId).ConfigureAwait(false);
+
+    Assert.True(res);
+  }
+
+
+  [Test, Order(13)]
   public async Task StreamSearch()
   {
     var res = await myClient.StreamSearch(streamId).ConfigureAwait(false);
