@@ -140,6 +140,13 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     steps:
       - cached-checkout
       - run:
+          name: Install dockerize
+          command: |
+            DOCKERIZE_VERSION=v0.7.0
+            RUN wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+      - run:
           name: Wait for Specke server to start
           command: dockerize -wait tcp://localhost:3000 -timeout 1m
       - run-tests:
