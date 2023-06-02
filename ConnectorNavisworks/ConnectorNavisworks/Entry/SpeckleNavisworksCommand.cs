@@ -15,7 +15,7 @@ using Application = Autodesk.Navisworks.Api.Application;
 namespace Speckle.ConnectorNavisworks.Entry;
 
 [
-  DockPanePlugin(400, 400, FixedSize = false, AutoScroll = true, MinimumHeight = 410, MinimumWidth = 250),
+  DockPanePlugin(450, 750, FixedSize = false, AutoScroll = true, MinimumHeight = 410, MinimumWidth = 250),
   Plugin(
     LaunchSpeckleConnector.Plugin,
     "Speckle",
