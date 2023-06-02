@@ -126,7 +126,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
-          command: docker-compose -f Core/docker-compose.yml up -d
+          command: docker compose -f Core/docker-compose.yml up -d
       - run-tests:
           title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
