@@ -117,6 +117,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     machine:
       image: ubuntu-2204:2023.02.1
       docker_layer_caching: true
+    resource_class: large
     steps:
       - cached-checkout
       - run:
