@@ -85,8 +85,8 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
     {
       if (Utils.IsValidEmail(SearchQuery))
       {
-        var emailAcc = new AccountViewModel {Name = SearchQuery};
-        Users = new List<AccountViewModel> {emailAcc};
+        var emailAcc = new AccountViewModel { Name = SearchQuery };
+        Users = new List<AccountViewModel> { emailAcc };
 
         ShowProgress = false;
         DropDownOpen = true;
@@ -116,16 +116,24 @@ public class CollaboratorsViewModel : ReactiveObject, IRoutableViewModel
 
   private async void SearchUsers()
   {
-    ShowProgress = true;
 
-    //exclude existing ones
-    var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
+    ShowProgress = true;
+    try
+    {
+      //exclude existing ones
+      var users = (await _stream.StreamState.Client.UserSearch(SearchQuery).ConfigureAwait(true)).Where(
       x => !AddedUsers.Any(u => u.Id == x.id)
     );
-    //exclude myself
-    users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
+      //exclude myself
+      users = users.Where(x => _stream.StreamState.Client.Account.userInfo.id != x.id);
 
-    Users = users.Select(x => new AccountViewModel(x)).ToList();
+      Users = users.Select(x => new AccountViewModel(x)).ToList();
+    }
+    catch
+    {
+      //ignore
+    }
+
 
     ShowProgress = false;
     DropDownOpen = true;
