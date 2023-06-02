@@ -76,7 +76,7 @@ commands:
     steps:
       - run:
           name: << parameters.title >>
-          command: dotnet test << parameters.project >>
+          command: $HOME/.dotnet/dotnet test << parameters.project >>
             -c Release
             --logger:"junit;LogFileName={assembly}.results.xml"
             --results-directory=TestResults
@@ -110,45 +110,17 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     docker:
-      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet
-      # Node, redis, postgres and speckle-server images for test server
-      - image: "cimg/node:16.15"
-      - image: "cimg/redis:7.0.5"
-      - image: "cimg/postgres:14.5"
-        environment:
-          POSTGRES_DB: speckle2_test
-          POSTGRES_PASSWORD: speckle
-          POSTGRES_USER: speckle
-      - image: "minio/minio"
-        command: server /data --console-address ":9001"
-      - image: "speckle/speckle-server:latest"
-        environment:
-          POSTGRES_URL: "127.0.0.1"
-          POSTGRES_USER: "speckle"
-          POSTGRES_PASSWORD: "speckle"
-          POSTGRES_DB: "speckle2_test"
-          REDIS_URL: "redis://127.0.0.1"
-          SESSION_SECRET: "keyboard cat"
-          STRATEGY_LOCAL: "true"
-          CANONICAL_URL: "http://localhost:3000"
-          S3_ENDPOINT: "http://127.0.0.1:9000"
-          S3_ACCESS_KEY: "minioadmin"
-          S3_SECRET_KEY: "minioadmin"
-          S3_BUCKET: "speckle-server"
-          S3_CREATE_BUCKET: "true"
-          WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
+      - image: cimg/base:2021.01 # THE MAIN IMAGE, we will install dotnet on a step.
     steps:
       - cached-checkout
       - run:
-          name: Install dockerize
+          name: Install dotnet
           command: |
-            DOCKERIZE_VERSION=v0.7.0
-            wget https://github.com/jwilder/dockerize/releases/download/$DOCKERIZE_VERSION/dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            tar -C /usr/local/bin -xzvf dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
-            rm dockerize-linux-amd64-$DOCKERIZE_VERSION.tar.gz
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            $HOME/.dotnet/dotnet --version
       - run:
-          name: Wait for Specke server to start
-          command: dockerize -wait tcp://localhost:3000 -timeout 1m
+          name: Startup the Speckle Server
+          command: docker compose -f Core/docker-compose.yml up -d
       - run-tests:
           title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
