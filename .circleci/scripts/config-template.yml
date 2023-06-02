@@ -114,11 +114,11 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           path: TestResults
 
   test-core:
-    docker:
-      - image: cimg/base:2023.06 # THE MAIN IMAGE, we will install dotnet on a step.
+    machine:
+      image: ubuntu-2204:2023.02.1
+      docker_layer_caching: true
     steps:
       - cached-checkout
-      - setup_remote_docker
       - run:
           name: Install dotnet
           command: |
