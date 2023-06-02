@@ -117,7 +117,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
     machine:
       image: ubuntu-2204:2023.02.1
       docker_layer_caching: true
-    resource_class: large
+    resource_class: medium
     steps:
       - cached-checkout
       - run:
@@ -127,7 +127,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
             $HOME/.dotnet/dotnet --version
       - run:
           name: Startup the Speckle Server
-          command: docker compose -f Core/docker-compose.yml up -d
+          command: docker compose -f Core/docker-compose.yml up -d --scale preview-service=0
       - run-tests:
           title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
