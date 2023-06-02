@@ -121,7 +121,6 @@ jobs: # Each project will have individual jobs for each specific task it has to 
       - image: "minio/minio"
         command: server /data --console-address ":9001"
       - image: "speckle/speckle-server:latest"
-        command: ["bash", "-c", "/wait && node bin/www"]
         environment:
           POSTGRES_URL: "127.0.0.1"
           POSTGRES_USER: "speckle"
@@ -139,6 +138,9 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
     steps:
       - cached-checkout
+      - run:
+          name: Wait for Specke server to start
+          command: dockerize -wait tcp://localhost:3000 -timeout 1m
       - run-tests:
           title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
