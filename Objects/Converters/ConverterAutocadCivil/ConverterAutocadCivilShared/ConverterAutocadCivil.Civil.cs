@@ -85,6 +85,19 @@ namespace Objects.Converter.AutocadCivil
       _alignment.stationEquations = equations;
       _alignment.stationEquationDirections = directions;
 
+      // get alignment profiles
+      var profiles = new List<Profile>();
+      foreach (ObjectId profileId in alignment.GetProfileIds())
+      {
+        var profile = Trans.GetObject(profileId, OpenMode.ForRead) as CivilDB.Profile;
+        var convertedProfile = ProfileToSpeckle(profile);
+        if (convertedProfile != null)
+        {
+          profiles.Add(convertedProfile);
+        }
+      }
+      _alignment.profiles = profiles;
+
       // get the alignment subentity curves
       List<ICurve> curves = new List<ICurve>();
       for (int i = 0; i < alignment.Entities.Count; i++)
