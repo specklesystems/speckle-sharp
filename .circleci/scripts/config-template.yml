@@ -85,9 +85,14 @@ commands:
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-sdk:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+      - image: cimg/base:2021.01
     steps:
       - cached-checkout
+      - run:
+          name: Install dotnet
+          command: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            $HOME/.dotnet/dotnet --version
       - run:
           name: Build SDK Projects
           command: |
