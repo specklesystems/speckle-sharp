@@ -9,6 +9,7 @@ using Archicad.Operations;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -87,63 +88,67 @@ namespace Archicad.Converters
       return meshesIds;
     }
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
     {
       var archicadObjects = new List<Archicad.ArchicadObject>();
       var meshModels = new List<MeshModel>();
       var transformMatrixById = new Dictionary<string, Transform>();
       var transformedMeshById = new Dictionary<string, Mesh>();
-      
-      foreach (var tc in elements)
+
+      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
       {
-        var element = tc.current;
-
-        // base point
-        var basePoint = new Point(0, 0, 0);
-        // var specialKeys = element.GetMembers();
-        var transform = (Transform)(element["transform"]) ?? new Transform();
-
-        // todo Speckle schema
-        //if (specialKeys.ContainsKey("basePoint"))
-        //  basePoint = (Point)element["basePoint"];
-
-        List<string> meshIdHashes;
+        foreach (var tc in elements)
         {
-          Transform baseTransform = new Transform();
-          baseTransform.id = "1530eda076784bfaa61728b060ed8d43";
-          Transform newTransform = new Transform();
-          newTransform.id = "0cecc0af9be7465b958d736618817315";
+          var element = tc.current;
 
-          meshIdHashes = TraverseDefinitions(element, baseTransform, newTransform, transformMatrixById, transformedMeshById);
+          // base point
+          var basePoint = new Point(0, 0, 0);
+          // var specialKeys = element.GetMembers();
+          var transform = (Transform)(element["transform"]) ?? new Transform();
 
-          if (meshIdHashes == null)
-            continue;
+          // todo Speckle schema
+          //if (specialKeys.ContainsKey("basePoint"))
+          //  basePoint = (Point)element["basePoint"];
+
+          List<string> meshIdHashes;
+          {
+            Transform baseTransform = new Transform();
+            baseTransform.id = "1530eda076784bfaa61728b060ed8d43";
+            Transform newTransform = new Transform();
+            newTransform.id = "0cecc0af9be7465b958d736618817315";
+
+            meshIdHashes = TraverseDefinitions(element, baseTransform, newTransform, transformMatrixById, transformedMeshById);
+
+            if (meshIdHashes == null)
+              continue;
+          }
+
+          // if the same geometry representation is not used before
+          if (!archicadObjects.Any(archicadObject => archicadObject.modelIds.SequenceEqual(meshIdHashes)))
+          {
+            var meshes = meshIdHashes.ConvertAll(meshIdHash => transformedMeshById[meshIdHash]);
+            var meshModel = ModelConverter.MeshToNative(meshes, cumulativeTimer);
+            meshModels.Add(meshModel);
+          }
+
+          var newObject = new Archicad.ArchicadObject
+          {
+            id = element.id,
+            applicationId = element.applicationId,
+            pos = Utils.ScaleToNative(basePoint),
+            transform = new Objects.Other.Transform(transform.ConvertToUnits(Units.Meters), Units.Meters),
+            modelIds = meshIdHashes
+          };
+          archicadObjects.Add(newObject);
         }
-
-        // if the same geometry representation is not used before
-        if (!archicadObjects.Any(archicadObject => archicadObject.modelIds.SequenceEqual(meshIdHashes)))
-        {
-          var meshes = meshIdHashes.ConvertAll(meshIdHash => transformedMeshById[meshIdHash]);
-          var meshModel = ModelConverter.MeshToNative(meshes);
-          meshModels.Add(meshModel);
-        }
-        
-        var newObject = new Archicad.ArchicadObject
-        {
-          id = element.id,
-          applicationId = element.applicationId,
-          pos = Utils.ScaleToNative(basePoint),
-          transform = new Objects.Other.Transform(transform.ConvertToUnits(Units.Meters), Units.Meters),
-          modelIds = meshIdHashes
-        };
-        archicadObjects.Add(newObject);
       }
 
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateObject(archicadObjects, meshModels), token);
+      IEnumerable<ApplicationObject> result;
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateObject(archicadObjects, meshModels), token, cumulativeTimer);
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
     {
       // Objects not stored on the server
       return new List<Base>();

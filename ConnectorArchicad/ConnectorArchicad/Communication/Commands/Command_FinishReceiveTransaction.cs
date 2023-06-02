@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
 using System.Threading.Tasks;
 using Speckle.Newtonsoft.Json;
-using Speckle.Core.Models;
-using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -16,11 +12,12 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result { }
 
-    public async Task<object> Execute()
+    public async Task<object> Execute(CumulativeTimer cumulativeTimer)
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "FinishReceiveTransaction",
-        new Parameters()
+        new Parameters(),
+        cumulativeTimer
       );
       return result;
     }

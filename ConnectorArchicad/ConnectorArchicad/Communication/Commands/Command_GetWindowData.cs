@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -34,11 +35,12 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadWindow>> Execute()
+    public async Task<IEnumerable<ArchicadWindow>> Execute(CumulativeTimer cumulativeTimer)
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetWindowData",
-        new Parameters(ApplicationIds)
+        new Parameters(ApplicationIds),
+        cumulativeTimer
       );
       //foreach (var subelement in result.Datas)
       //subelement.units = Units.Meters;

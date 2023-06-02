@@ -1,9 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 using Speckle.Newtonsoft.Json.Converters;
-using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -68,9 +67,9 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<IEnumerable<string>> Execute()
+    public async Task<IEnumerable<string>> Execute(CumulativeTimer cumulativeTimer)
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementIds", new Parameters(Filter));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetElementIds", new Parameters(Filter), cumulativeTimer);
       return result.ApplicationIds;
     }
 

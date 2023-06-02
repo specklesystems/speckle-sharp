@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
@@ -34,10 +35,10 @@ namespace Archicad.Communication.Commands
     }
 
 
-    public async Task<IEnumerable<Model.ElementModelData>> Execute()
+    public async Task<IEnumerable<Model.ElementModelData>> Execute(CumulativeTimer cumulativeTimer)
     {
       Result result =
-        await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ApplicationIds));
+        await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ApplicationIds), cumulativeTimer);
       return result.Models;
     }
   }

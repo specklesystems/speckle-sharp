@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+using System.Threading.Tasks;
+using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
@@ -14,9 +15,9 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<Model.ProjectInfoData> Execute()
+    public async Task<Model.ProjectInfoData> Execute(CumulativeTimer cumulativeTimer)
     {
-      return await HttpCommandExecutor.Execute<Parameters, Model.ProjectInfoData>("GetProjectInfo", null);
+      return await HttpCommandExecutor.Execute<Parameters, Model.ProjectInfoData>("GetProjectInfo", null, cumulativeTimer);
     }
 
     #endregion

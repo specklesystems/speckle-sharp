@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
-using Objects.BuiltElements;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -15,42 +15,44 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Floor);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
     {
       var floors = new List<Objects.BuiltElements.Archicad.ArchicadFloor>();
-      foreach (var tc in elements)
+
+      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
-            floors.Add(archiFloor);
-            break;
-          case Objects.BuiltElements.Floor floor:
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadFloor archiFloor:
+              floors.Add(archiFloor);
+              break;
+            case Objects.BuiltElements.Floor floor:
 
-            Objects.BuiltElements.Archicad.ArchicadFloor newFloor = new Objects.BuiltElements.Archicad.ArchicadFloor
-            {
-              id = floor.id,
-              applicationId = floor.applicationId,
-              shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
-            };
+              Objects.BuiltElements.Archicad.ArchicadFloor newFloor = new Objects.BuiltElements.Archicad.ArchicadFloor
+              {
+                id = floor.id,
+                applicationId = floor.applicationId,
+                shape = Utils.PolycurvesToElementShape(floor.outline, floor.voids),
+              };
 
-            floors.Add(newFloor);
-            break;
+              floors.Add(newFloor);
+              break;
+          }
         }
       }
 
-      var result =
-        await AsyncCommandProcessor.Execute(
-          new Communication.Commands.CreateFloor(floors), token);
+      IEnumerable<ApplicationObject> result;
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateFloor(floors), token, cumulativeTimer);
 
       return result is null ? new List<ApplicationObject>() : result.ToList(); ;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
     {
       var data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)), token);
+        new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)), token, cumulativeTimer);
 
       var floors = new List<Base>();
       foreach (var slab in data)

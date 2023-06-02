@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -39,11 +40,12 @@ namespace Archicad.Communication.Commands
       DirectShapes = directShapes;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "CreateDirectShape",
-        new Parameters(DirectShapes)
+        new Parameters(DirectShapes),
+        cumulativeTimer
       );
       return result == null ? null : result.ApplicationObjects;
     }

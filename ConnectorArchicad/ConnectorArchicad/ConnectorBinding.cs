@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +8,6 @@ using Archicad.Model;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -122,14 +121,25 @@ namespace Archicad.Launcher
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      Base commitObject = await Helpers.Receive(IdentifyStream(state));
-      if (commitObject is not null)
-        await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
+      using (var op = SerilogTimings.Operation.Begin("Receive stream {streamId}", state.StreamId))
+      {
+        var cumulativeTimer = new CumulativeTimer();
 
-      await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
+        Base commitObject = await Helpers.Receive(IdentifyStream(state));
+        if (commitObject is not null)
+          await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress, cumulativeTimer);
 
-      if (commitObject == null)
-        throw new SpeckleException("Failed to receive specified");
+        await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
+
+        if (commitObject == null)
+        {
+          op.Cancel();
+          throw new SpeckleException("Failed to receive specified");
+        }
+
+        cumulativeTimer.EnrichSerilogOperation(op);
+        op.Complete();
+      }
 
       return state;
     }

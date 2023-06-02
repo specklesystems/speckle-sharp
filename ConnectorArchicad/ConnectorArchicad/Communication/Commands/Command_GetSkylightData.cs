@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Objects.BuiltElements.Archicad;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
@@ -39,9 +40,9 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadSkylight>> Execute()
+    public async Task<IEnumerable<ArchicadSkylight>> Execute(CumulativeTimer cumulativeTimer)
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSkylightData", new Parameters(ApplicationIds));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetSkylightData", new Parameters(ApplicationIds), cumulativeTimer);
       //foreach (var subelement in result.Datas)
       //subelement.units = Units.Meters;
 

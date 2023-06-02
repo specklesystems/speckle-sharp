@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands
@@ -67,9 +68,9 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<object> Execute()
+    public async Task<object> Execute(CumulativeTimer cumulativeTimer)
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("SelectElements", new Parameters(ElementIds, Deselect));
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("SelectElements", new Parameters(ElementIds, Deselect), cumulativeTimer);
       return result;
     }
 

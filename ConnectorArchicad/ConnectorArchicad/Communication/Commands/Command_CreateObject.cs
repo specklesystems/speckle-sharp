@@ -4,6 +4,7 @@ using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
 using Archicad.Model;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -41,9 +42,9 @@ namespace Archicad.Communication.Commands
       MeshModels = meshModels;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects, MeshModels));
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects, MeshModels), cumulativeTimer);
       return result == null ? null : result.ApplicationObjects;
     }
   }

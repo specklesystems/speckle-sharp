@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Objects.BuiltElements.Archicad;
 using Speckle.Newtonsoft.Json;
 using Speckle.Core.Models;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -39,9 +40,9 @@ namespace Archicad.Communication.Commands
       Roofs = roofs;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateRoof", new Parameters(Roofs));
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateRoof", new Parameters(Roofs), cumulativeTimer);
       return result == null ? null : result.ApplicationObjects;
     }
   }

@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -34,11 +35,12 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadFloor>> Execute()
+    public async Task<IEnumerable<ArchicadFloor>> Execute(CumulativeTimer cumulativeTimer)
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetSlabData",
-        new Parameters(ApplicationIds)
+        new Parameters(ApplicationIds),
+        cumulativeTimer
       );
       foreach (var floor in result.Datas)
         floor.units = Units.Meters;

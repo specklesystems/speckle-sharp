@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
@@ -38,9 +39,9 @@ namespace Archicad.Communication.Commands
       Datas = datas;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute()
+    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateSkylight", new Parameters(Datas));
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateSkylight", new Parameters(Datas), cumulativeTimer);
       return result == null ? null : result.ApplicationObjects;
     }
 

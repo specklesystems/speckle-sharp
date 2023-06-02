@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
-using Objects.BuiltElements;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -15,33 +15,37 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Roof);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
     {
       var roofs = new List<Objects.BuiltElements.Archicad.ArchicadRoof>();
       var shells = new List<Objects.BuiltElements.Archicad.ArchicadShell>();
-      foreach (var tc in elements)
+
+      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
-            roofs.Add(archiRoof);
-            break;
-          case Objects.BuiltElements.Archicad.ArchicadShell archiShell:
-            shells.Add(archiShell);
-            break;
-          case Objects.BuiltElements.Roof roof:
-            roofs.Add(new Objects.BuiltElements.Archicad.ArchicadRoof
-            {
-              id = roof.id,
-              applicationId = roof.applicationId,
-              shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids),
-            });
-            break;
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
+              roofs.Add(archiRoof);
+              break;
+            case Objects.BuiltElements.Archicad.ArchicadShell archiShell:
+              shells.Add(archiShell);
+              break;
+            case Objects.BuiltElements.Roof roof:
+              roofs.Add(new Objects.BuiltElements.Archicad.ArchicadRoof
+              {
+                id = roof.id,
+                applicationId = roof.applicationId,
+                shape = Utils.PolycurvesToElementShape(roof.outline, roof.voids),
+              });
+              break;
+          }
         }
       }
 
-      var resultRoofs = roofs.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoof(roofs), token) : null;
-      var resultShells = shells.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateShell(shells), token) : null;
+      var resultRoofs = roofs.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoof(roofs), token, cumulativeTimer) : null;
+      var resultShells = shells.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateShell(shells), token, cumulativeTimer) : null;
 
       var result = new List<ApplicationObject> ();
       if (resultRoofs is not null)
@@ -53,11 +57,10 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
-      CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
     {
       var data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)), token);
+        new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)), token, cumulativeTimer);
 
       var Roofs = new List<Base>();
       foreach (var roof in data)
@@ -77,7 +80,7 @@ namespace Archicad.Converters
       }
 
      var shelldData = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)), token);
+        new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)), token, cumulativeTimer);
 
       var Shells = new List<Base>();
       foreach (var shell in shelldData)

@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,13 +18,13 @@ namespace Archicad
       Type elementType,
       IEnumerable<TraversalContext> elements,
       ConversionOptions conversionOptions,
-      CancellationToken token
-    )
+      CancellationToken token,
+      CumulativeTimer cumulativeTimer)
     {
       try
       {
         var elementConverter = GetConverterForElement(elementType, conversionOptions, true);
-        return await elementConverter.ConvertToArchicad(elements, token);
+        return await elementConverter.ConvertToArchicad(elements, cumulativeTimer, token);
       }
       catch (Exception e)
       {
@@ -37,8 +36,8 @@ namespace Archicad
     private async Task<bool> ConvertReceivedObjects(
       List<TraversalContext> flattenObjects,
       ConverterArchicad converter,
-      ProgressViewModel progress
-    )
+      ProgressViewModel progress,
+      CumulativeTimer cumulativeTimer)
     {
       Dictionary<Type, IEnumerable<TraversalContext>> receivedObjects;
 
@@ -56,7 +55,8 @@ namespace Archicad
           elementType,
           tc,
           converter.ConversionOptions,
-          progress.CancellationTokenSource.Token
+          progress.CancellationTokenSource.Token,
+          cumulativeTimer
         );
 
         if (convertedElements != null)
@@ -82,7 +82,7 @@ namespace Archicad
       return true;
     }
 
-    public async Task<bool> ConvertToNative(StreamState state, Base commitObject, ProgressViewModel progress)
+    public async Task<bool> ConvertToNative(StreamState state, Base commitObject, ProgressViewModel progress, CumulativeTimer cumulativeTimer)
     {
       try
       {
@@ -100,7 +100,7 @@ namespace Archicad
 
         converter.ReceiveMode = state.ReceiveMode;
 
-        return await ConvertReceivedObjects(flattenObjects, converter, progress);
+        return await ConvertReceivedObjects(flattenObjects, converter, progress, cumulativeTimer);
       }
       catch (Exception ex)
       {

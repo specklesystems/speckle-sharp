@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
+using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {
@@ -34,11 +35,12 @@ namespace Archicad.Communication.Commands
       ApplicationId = applicationId;
     }
 
-    public async Task<IEnumerable<SubElementData>> Execute()
+    public async Task<IEnumerable<SubElementData>> Execute(CumulativeTimer cumulativeTimer)
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetSubelementInfo",
-        new Parameters(ApplicationId)
+        new Parameters(ApplicationId),
+        cumulativeTimer
       );
       return result.Datas;
     }
