@@ -153,8 +153,8 @@ services:
       SPECKLE_SERVER_URL: "http://speckle-server:3000"
 
 networks:
-  default:
-    name: automate-speckle-server
+  internal:
+    driver: bridge
 
 volumes:
   postgres-data:
