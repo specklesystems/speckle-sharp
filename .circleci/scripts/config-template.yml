@@ -6,6 +6,7 @@ orbs:
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
+  docker: circleci/docker@2.2.0
 
 # The main workflows for our monorepo pipeline.
 
