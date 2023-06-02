@@ -13,7 +13,8 @@ public partial class ConverterNavisworks
 {
   private static Base GetPropertiesBase(ModelItem element)
   {
-    Base propertiesBase = new();
+    Base propertiesBase = new() { ["name"] = "Properties" };
+
     PropertyCategoryCollection userVisiblePropertyCategories = element.GetUserFilteredPropertyCategories();
 
     foreach (PropertyCategory propertyCategory in userVisiblePropertyCategories)
