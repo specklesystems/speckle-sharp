@@ -115,7 +115,7 @@ jobs: # Each project will have individual jobs for each specific task it has to 
 
   test-core:
     docker:
-      - image: cimg/base:2021.01 # THE MAIN IMAGE, we will install dotnet on a step.
+      - image: cimg/base:2023.06 # THE MAIN IMAGE, we will install dotnet on a step.
     steps:
       - cached-checkout
       - run:
