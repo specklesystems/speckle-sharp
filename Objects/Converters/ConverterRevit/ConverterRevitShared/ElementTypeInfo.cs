@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OSG = Objects.Structural.Geometry;
 
-namespace ConverterRevitShared
+namespace Objects.Converter.Revit
 {
   public class ElementTypeInfo
   {

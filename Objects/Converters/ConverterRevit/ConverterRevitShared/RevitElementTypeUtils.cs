@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Classes;
 using Objects.BuiltElements;
 using Objects.Other;
 using Speckle.Core.Api;
@@ -10,10 +11,11 @@ using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OSG = Objects.Structural.Geometry;
 
-namespace ConverterRevitShared
+namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
+    private ConversionOperationCache conversionOperationCache { get; } = new();
     public static string GetRevitTypeOfSpeckleObject(Base @base)
     {
       var type = @base["type"] as string;
@@ -33,9 +35,15 @@ namespace ConverterRevitShared
       return elementTypeInfo.CategoryName;
     }
 
-    private IEnumerable<ElementType> GetAvailibleTypes(Base @base)
+    private IEnumerable<T> GetAvailibleTypes(Base @base)
     {
+      var elementTypeInfo = ElementTypeInfo.GetElementTypeInfoOfSpeckleObject(@base);
+      //var categories = GetElementTypeCategories(element);
+      //conversionOperationCache.GetOrAdd($"{elementTypeFilterComp.GetHashCode()}", () => GetElementTypes(revitElementType, categories));
+      //var match = cache.TryGet()
+      conversionOperationCache.InitializeCacheIfNull(() => GetElementTypes<T>(elementTypeInfo.ElementTypeType, elementTypeInfo.BuiltInCategories), elementType => elementType.Name);
 
+      return conversionOperationCache.GetAllObjectsOfType();
     }
 
     private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
@@ -114,6 +122,17 @@ namespace ConverterRevitShared
         fs.Activate();
 
       return (T)(object)match;
+    }
+
+    private static IEnumerable<T> GetElementTypes<T>(Type type, List<BuiltInCategory> categories)
+    {
+      using var collector = new FilteredElementCollector(Doc);
+      if (categories.Count > 0)
+      {
+        using var filter = new ElementMulticategoryFilter(categories);
+        return collector.WhereElementIsElementType().OfClass(type).WherePasses(filter).Cast<T>();
+      }
+      return collector.WhereElementIsElementType().OfClass(type).Cast<T>();
     }
 
     private ElementFilter GetCategoryFilter(Base element)
