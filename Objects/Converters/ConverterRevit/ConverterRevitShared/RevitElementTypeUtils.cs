@@ -13,7 +13,7 @@ using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.Revit
 {
-  public partial class ConverterRevit : IRevitElementTypeRetriever
+  public partial class ConverterRevit : IRevitElementTypeRetriever<ElementType>
   {
     private ConversionOperationCache conversionOperationCache { get; } = new();
     public string? GetRevitTypeOfBase(Base @base)
@@ -37,14 +37,13 @@ namespace Objects.Converter.Revit
 
     public IEnumerable<string> GetAllTypeNamesForBase(Base @base)
     {
-      var types = GetAvailibleTypes(@base);
-      foreach (var type in GetAvailibleTypes(@base))
+      foreach (var type in GetAndCacheAvailibleTypes(@base))
       {
         yield return type.Name;
       }
     }
     
-    public bool CacheContainsTypeWithName(Base @base, string baseType)
+    public bool CacheContainsTypeWithName(string baseType)
     {
       var type = conversionOperationCache.TryGet<ElementType>(baseType);
       if (type == null) return false;
@@ -52,16 +51,21 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    private IEnumerable<ElementType> GetAvailibleTypes(Base @base)
+    public void AddElementTypesInCategoryToCache(Base @base)
+    {
+
+    }
+
+    public IEnumerable<ElementType> GetAndCacheAvailibleTypes(Base @base)
     {
       var elementTypeInfo = ElementTypeInfo.GetElementTypeInfoOfSpeckleObject(@base);
       var types = conversionOperationCache.GetOrAdd<IEnumerable<ElementType>>(
         elementTypeInfo.CategoryName,
         () => GetElementTypes<ElementType>(elementTypeInfo.ElementTypeType, elementTypeInfo.BuiltInCategories),
-        out var typeRetrieved);
+        out var typesRetrieved);
 
       // if type was added instead of retreived, add types to master cache to facilitate lookup later
-      if (!typeRetrieved)
+      if (!typesRetrieved)
       {
         conversionOperationCache.AddMany<ElementType>(types, type => type.Name);
       }

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using DesktopUI2.Models.Settings;
@@ -20,9 +20,9 @@ namespace Speckle.ConnectorRevit.UI
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
 
-    const string noMapping = "Never (default)";
-    const string everyReceive = "Always";
-    const string forNewTypes = "For New Types";
+    public const string noMapping = "Never (default)";
+    public const string everyReceive = "Always";
+    public const string forNewTypes = "For New Types";
 
     public override List<ISetting> GetSettings()
     {
