@@ -1,4 +1,5 @@
 #nullable enable
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,33 +7,22 @@ using Autodesk.Revit.DB;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 
 namespace ConnectorRevit
 {
   public class TypeMap : ITypeMap
   {
     public IEnumerable<string> Categories => categoryToCategoryMap.Keys;
-    private readonly Dictionary<string, SingleCategoryMap> categoryToCategoryMap = new();
-    private readonly Dictionary<Base, ISingleValueToMap> baseToMappingValue = new();
+    [JsonProperty]
+    private Dictionary<string, SingleCategoryMap> categoryToCategoryMap = new();
+    [JsonIgnore]
+    private Dictionary<Base, ISingleValueToMap> baseToMappingValue = new();
 
-    public void AddIncomingTypes(Dictionary<string, List<ISingleValueToMap>> mappingValues, out bool newTypesExist)
-    {
-      newTypesExist = false;
-      foreach (var kvp in mappingValues)
-      {
-        var category = kvp.Key;
-        var mappingValueList = kvp.Value;
-
-        if (!categoryToCategoryMap.TryGetValue(category, out var singleCategoryMapping))
-        {
-          newTypesExist = true;
-          singleCategoryMapping = AddCategory(category, mappingValueList);
-          continue;
-        }
-
-        singleCategoryMapping.AddMappingValues(mappingValueList);
-      }
-    }
+    //public TypeMap(Dictionary<Base, MappingValue> baseToMappingValue)
+    //{
+    //  this.baseToMappingValue = baseToMappingValue;
+    //}
 
     public void AddIncomingType(Base @base, string incomingType, string category, string initialGuess, out bool isNewType, bool overwriteExisting = false)
     {
@@ -78,11 +68,19 @@ namespace ConnectorRevit
       }
     }
 
-    private SingleCategoryMap AddCategory(string category, ICollection<ISingleValueToMap>? mappingValues = null)
+    public ISingleValueToMap? TryGetMappingValueInCategory(string category, string incomingType)
     {
-      var newCategory = new SingleCategoryMap(category, mappingValues);
-      categoryToCategoryMap[category] = newCategory;
-      return newCategory;
+      if (!categoryToCategoryMap.TryGetValue(category, out var singleCategoryMap))
+      {
+        return null;
+      }
+
+      if (!singleCategoryMap.TryGetMappingValue(incomingType, out var singleValueToMap)) 
+      {
+        return null;
+      }
+
+      return singleValueToMap;
     }
   }
 }

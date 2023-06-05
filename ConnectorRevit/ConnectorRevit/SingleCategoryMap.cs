@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using Speckle.Core.Models;
+using Speckle.Newtonsoft.Json;
 using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace ConnectorRevit
@@ -13,36 +14,12 @@ namespace ConnectorRevit
   internal class SingleCategoryMap
   {
     private readonly string _category;
+    [JsonProperty]
     private Dictionary<string, ISingleValueToMap> mappingValues = new(StringComparer.OrdinalIgnoreCase);
 
     public SingleCategoryMap(string CategoryName)
     {
       _category = CategoryName;
-    }
-    public SingleCategoryMap(string CategoryName, ICollection<ISingleValueToMap>? mappingValues)
-    {
-      _category = CategoryName;
-
-      if (mappingValues != null && mappingValues.Count > 0)
-      {
-        this.mappingValues = mappingValues.ToDictionary(mv => mv.IncomingType, mv => mv);
-      }
-    }
-    public SingleCategoryMap(string CategoryName, Dictionary<string, ISingleValueToMap>? mappingValues)
-    {
-      _category = CategoryName;
-
-      if (mappingValues != null && mappingValues.Count > 0)
-      {
-        this.mappingValues = mappingValues;
-      }
-    }
-    public void AddMappingValues(List<ISingleValueToMap> mappingValues)
-    {
-      foreach (var mappingValue in mappingValues)
-      {
-        AddMappingValue(mappingValue);
-      }
     }
 
     public void AddMappingValue(ISingleValueToMap mappingValue)
@@ -50,9 +27,9 @@ namespace ConnectorRevit
       this.mappingValues[mappingValue.IncomingType] = mappingValue;
     }
 
-    public bool TryGetMappingValue(string type, out ISingleValueToMap singleValueToMap)
+    public bool TryGetMappingValue(string incomingType, out ISingleValueToMap singleValueToMap)
     {
-      return mappingValues.TryGetValue(type, out singleValueToMap);
+      return mappingValues.TryGetValue(incomingType, out singleValueToMap);
     }
 
     public IEnumerable<ISingleValueToMap> GetMappingValues()

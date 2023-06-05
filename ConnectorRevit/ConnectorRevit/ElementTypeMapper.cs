@@ -115,8 +115,8 @@ namespace ConnectorRevit
         if (exactTypeMatch) continue;
 
         hostTypes.AddCategoryWithTypesIfCategoryIsNew(category, elementTypes.Select(type => type.Name));
+        string initialGuess = DefineInitialGuess(typeMap, incomingType, category, elementTypes);
 
-        var initialGuess = GetMappedValue(elementTypes, category, incomingType);
         typeMap.AddIncomingType(@base, incomingType, category, initialGuess, out var isNewType);
         if (isNewType) newTypesExist = true;
       }
@@ -128,6 +128,27 @@ namespace ConnectorRevit
       );
 
       return hostTypes;
+    }
+
+    private static string DefineInitialGuess(ITypeMap typeMap, string? incomingType, string category, IEnumerable<ElementType> elementTypes)
+    {
+      var existingMappingValue = typeMap.TryGetMappingValueInCategory(category, incomingType);
+      string initialGuess;
+
+      if (existingMappingValue != null &&
+        (existingMappingValue.InitialGuess != null ||
+        existingMappingValue.OutgoingType != null))
+      {
+        initialGuess = existingMappingValue.OutgoingType ?? existingMappingValue.InitialGuess;
+        existingMappingValue.InitialGuess = initialGuess;
+        existingMappingValue.OutgoingType = null;
+      }
+      else
+      {
+        initialGuess = GetMappedValue(elementTypes, category, incomingType);
+      }
+
+      return initialGuess;
     }
 
     public Dictionary<string, List<MappingValue>>? DeserializeMappingAsDict(MappingSeting mappingSetting)
@@ -143,7 +164,13 @@ namespace ConnectorRevit
     {
       if (mappingSetting.MappingJson != null)
       {
-        return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson);
+        var settings = new JsonSerializerSettings
+        {
+          Converters = {
+            new AbstractConverter<MappingValue, ISingleValueToMap>()
+          },
+        };
+        return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson, settings);
       }
       return null;
     }
@@ -209,5 +236,18 @@ namespace ConnectorRevit
       }
       return d[n, m];
     }
+  }
+
+  public class AbstractConverter<TReal, TAbstract>
+    : JsonConverter where TReal : TAbstract
+  {
+    public override bool CanConvert(Type objectType)
+        => objectType == typeof(TAbstract);
+
+    public override object ReadJson(JsonReader reader, Type type, Object value, JsonSerializer jser)
+        => jser.Deserialize<TReal>(reader);
+
+    public override void WriteJson(JsonWriter writer, Object value, JsonSerializer jser)
+        => jser.Serialize(writer, value);
   }
 }
