@@ -156,50 +156,19 @@ namespace DesktopUI2.ViewModels
     //}
 
     public TypeMappingOnReceiveViewModel(
-      //Dictionary<string, List<MappingValue>> firstPassMapping,
       ITypeMap typeMap,
-      //Dictionary<string, List<string>> hostTypesDict,
       IHostTypeAsStringContainer container,
       bool newTypesExist = false
     )
     {
-      //Bindings = Locator.Current.GetService<ConnectorBindings>();
-
       Mapping = typeMap;
-      //_hostTypeValuesDict = hostTypesDict;
       hostTypeContainer = container;
-
-      //if (!hostTypeContainer.ContainsCategory(TypeCatMisc))
-      //{
-      //  throw new ArgumentException("Provided host type map does not contain a miscellaneous key with all element types");
-      //}
-
-      //// make sure hostTypeValuesDict has a key for each value category
-      //foreach (var key in Mapping.Categories)
-      //  hostTypeContainer.AddCategoryWithTypesIfCategoryIsNew(key, hostTypeContainer.GetAllTypes());
-      //  if (!hostTypeContainer.ContainsCategory(key))
-      //    _hostTypeValuesDict.Add(key, _hostTypeValuesDict[TypeCatMisc]);
-
-      //if (newTypesExist)
-      //{
-      //  // add key so it will show up in categories list
-      //  Mapping[UnmappedKey] = new List<MappingValue>();
-      //  _hostTypeValuesDict[UnmappedKey] = _hostTypeValuesDict[TypeCatMisc];
-      //}
-
-      //if (Mapping.HasCategory(UnmappedKey))
-      //  SelectedCategory = UnmappedKey;
-      //else
-      //  SelectedCategory = Mapping.Categories.First();
       SelectedCategory = Mapping.Categories.First();
 
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Mappings Open" } });
     }
 
-    //public ConnectorBindings Bindings { get; set; }
-
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
-    //private Dictionary<string, List<string>> _hostTypeValuesDict { get; } = new();
 
     private readonly IHostTypeAsStringContainer hostTypeContainer;
 
@@ -241,7 +210,7 @@ namespace DesktopUI2.ViewModels
       get => _selectedCategory;
       set
       {
-        _selectedCategory = value;
+        this.RaiseAndSetIfChanged(ref _selectedCategory, value);
         VisibleMappingValues = Mapping.GetValuesToMapOfCategory(value).ToList();
         SearchQuery = "";
         SearchResults = GetCategoryOrAll(value).ToList();

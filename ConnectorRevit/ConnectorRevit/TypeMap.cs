@@ -19,11 +19,6 @@ namespace ConnectorRevit
     [JsonIgnore]
     private Dictionary<Base, ISingleValueToMap> baseToMappingValue = new();
 
-    //public TypeMap(Dictionary<Base, MappingValue> baseToMappingValue)
-    //{
-    //  this.baseToMappingValue = baseToMappingValue;
-    //}
-
     public void AddIncomingType(Base @base, string incomingType, string category, string initialGuess, out bool isNewType, bool overwriteExisting = false)
     {
       isNewType = false;

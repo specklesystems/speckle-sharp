@@ -41,19 +41,11 @@ namespace ConnectorRevit
       currentMapping ??= new TypeMap();
 
       var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, flattenedCommit, storedObjects, currentMapping, out var newTypesExist);
-      //if (currentMapping == null)
-      //{
-      //  // TODO
-      //}
-
-      //currentMapping.AddIncomingTypes(incomingTypes, out newTypesExist);
       if (!newTypesExist && mappingSetting.Selection != ConnectorBindingsRevit.everyReceive) { return; }
 
       // show custom mapping dialog if the settings corrospond to what is being received
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
       
-      
-
       currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
         var mappingView = new MappingViewDialog
         {
@@ -61,8 +53,6 @@ namespace ConnectorRevit
         };
         return mappingView.ShowDialog<ITypeMap>();
       }).ConfigureAwait(false);
-
-       //await mappingView.ShowDialog<ITypeMap>().ConfigureAwait(true);
 
       while (vm.DoneMapping == false)
       {
@@ -130,7 +120,7 @@ namespace ConnectorRevit
       return hostTypes;
     }
 
-    private static string DefineInitialGuess(ITypeMap typeMap, string? incomingType, string category, IEnumerable<ElementType> elementTypes)
+    private static string DefineInitialGuess(ITypeMap typeMap, string incomingType, string category, IEnumerable<ElementType> elementTypes)
     {
       var existingMappingValue = typeMap.TryGetMappingValueInCategory(category, incomingType);
       string initialGuess;
@@ -166,9 +156,7 @@ namespace ConnectorRevit
       {
         var settings = new JsonSerializerSettings
         {
-          Converters = {
-            new AbstractConverter<MappingValue, ISingleValueToMap>()
-          },
+          Converters = { new AbstractConverter<MappingValue, ISingleValueToMap>() },
         };
         return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson, settings);
       }
@@ -178,10 +166,10 @@ namespace ConnectorRevit
     /// <summary>
     /// Gets the most similar host type of the same category for a single incoming type
     /// </summary>
-    /// <param name="hostTypes"></param>
+    /// <param name="elementTypes"></param>
     /// <param name="category"></param>
     /// <param name="speckleType"></param>
-    /// <returns>name of host type as string</returns>
+    /// <returns></returns>
     private static string GetMappedValue(IEnumerable<ElementType> elementTypes, string category, string speckleType)
     {
       var shortestDistance = int.MaxValue;
@@ -238,8 +226,7 @@ namespace ConnectorRevit
     }
   }
 
-  public class AbstractConverter<TReal, TAbstract>
-    : JsonConverter where TReal : TAbstract
+  public class AbstractConverter<TReal, TAbstract> : JsonConverter where TReal : TAbstract
   {
     public override bool CanConvert(Type objectType)
         => objectType == typeof(TAbstract);

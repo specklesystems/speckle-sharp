@@ -2,13 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Classes;
-using Objects.BuiltElements;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
-using DB = Autodesk.Revit.DB;
 using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.Revit
@@ -55,14 +52,6 @@ namespace Objects.Converter.Revit
       return elementTypeInfo.CategoryName;
     }
 
-    public IEnumerable<string> GetAllTypeNamesForBase(Base @base)
-    {
-      foreach (var type in GetAndCacheAvailibleTypes(@base))
-      {
-        yield return type.Name;
-      }
-    }
-    
     public bool CacheContainsTypeWithName(string baseType)
     {
       var type = conversionOperationCache.TryGet<ElementType>(baseType);
@@ -75,16 +64,6 @@ namespace Objects.Converter.Revit
     {
       return conversionOperationCache.GetAllObjectsOfType<ElementType>();
     }
-    
-    //public Dictionary<TKey, TValue> GetDictionaryOfCachedObjects<TKey, TValue>(Func<TValue, TKey> keyFactory)
-    //{
-    //  var returnDict = new Dictionary<TKey, TValue>();
-    //  foreach (var value in conversionOperationCache.GetAllObjectsOfType<TValue>())
-    //  {
-    //    returnDict[keyFactory(value)] = value;
-    //  }
-    //  return returnDict;
-    //}
 
     public IEnumerable<ElementType> GetAndCacheAvailibleTypes(Base @base)
     {
@@ -191,54 +170,5 @@ namespace Objects.Converter.Revit
       }
       return collector.WhereElementIsElementType().OfClass(type).Cast<T>();
     }
-
-    //private ElementFilter GetCategoryFilter(Base element)
-    //{
-    //  switch (element)
-    //  {
-    //    case BuiltElements.Wall _:
-    //      return new ElementMulticategoryFilter(Categories.wallCategories);
-    //    case Column _:
-    //      return new ElementMulticategoryFilter(Categories.columnCategories);
-    //    case Beam _:
-    //    case Brace _:
-    //      return new ElementMulticategoryFilter(Categories.beamCategories);
-    //    case Duct _:
-    //      return new ElementMulticategoryFilter(Categories.ductCategories);
-    //    case OSG.Element1D o:
-    //      if (o.type == OSG.ElementType1D.Column)
-    //        return new ElementMulticategoryFilter(Categories.columnCategories);
-    //      else if (o.type == OSG.ElementType1D.Beam || o.type == OSG.ElementType1D.Brace)
-    //        return new ElementMulticategoryFilter(Categories.beamCategories);
-    //      else return null;
-    //    case OSG.Element2D _:
-    //    case Floor _:
-    //      return new ElementMulticategoryFilter(Categories.floorCategories);
-    //    case Pipe _:
-    //      return new ElementMulticategoryFilter(Categories.pipeCategories);
-    //    case Roof _:
-    //      return new ElementCategoryFilter(BuiltInCategory.OST_Roofs);
-    //    default:
-    //      if (element["category"] != null)
-    //      {
-    //        var cat = Doc.Settings.Categories.Cast<Category>().FirstOrDefault(x => x.Name == element["category"].ToString());
-    //        if (cat != null)
-    //        {
-    //          return new ElementCategoryFilter(cat.Id);
-    //        }
-    //      }
-    //      return null;
-    //  }
-    //}
-
-    //private List<ElementType> GetElementTypesThatPassFilter<T>(ElementFilter filter)
-    //{
-    //  using var collector = new FilteredElementCollector(Doc);
-    //  if (filter != null)
-    //  {
-    //    return collector.WhereElementIsElementType().OfClass(typeof(T)).WherePasses(filter).ToElements().Cast<ElementType>().ToList();
-    //  }
-    //  return collector.WhereElementIsElementType().OfClass(typeof(T)).ToElements().Cast<ElementType>().ToList();
-    //}
   }
 }

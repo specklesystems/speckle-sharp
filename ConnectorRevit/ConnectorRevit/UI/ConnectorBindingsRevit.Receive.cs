@@ -87,7 +87,7 @@ namespace Speckle.ConnectorRevit.UI
           state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"),
           Preview,
           StoredObjects);
-        //await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
       }
       catch (Exception ex)
       {

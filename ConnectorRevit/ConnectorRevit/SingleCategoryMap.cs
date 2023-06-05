@@ -1,13 +1,8 @@
 #nullable enable
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using DesktopUI2.Models.TypeMappingOnReceive;
-using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
-using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace ConnectorRevit
 {
