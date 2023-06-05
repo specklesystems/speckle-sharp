@@ -12,7 +12,7 @@ using Splat;
 
 namespace DesktopUI2.ViewModels
 {
-  internal class TypeMappingOnReceiveViewModel : ReactiveObject, IRoutableViewModel
+  public class TypeMappingOnReceiveViewModel : ReactiveObject, IRoutableViewModel
   {
     public const string UnmappedKey = "New Incoming Types";
     private string _searchQuery;
@@ -21,15 +21,15 @@ namespace DesktopUI2.ViewModels
 
     private string _selectedCategory;
 
-    private MappingValue _selectedMappingValue;
+    private ISingleValueToMap _selectedMappingValue;
 
     private string _selectedType;
 
-    private List<MappingValue> _visibleMappingValues;
+    private List<ISingleValueToMap> _visibleMappingValues;
     public bool DoneMapping;
 
     private bool isSearching;
-    private string TypeCatMisc = "Miscellaneous"; // needs to match string in connectorRevit.Mappings
+    public const string TypeCatMisc = "Miscellaneous"; // needs to match string in connectorRevit.Mappings
 
     //this constructor is purely for xaml design purposes
     //public TypeMappingOnReceiveViewModel()
@@ -157,8 +157,8 @@ namespace DesktopUI2.ViewModels
     public TypeMappingOnReceiveViewModel(
       //Dictionary<string, List<MappingValue>> firstPassMapping,
       ITypeMap typeMap,
-      Dictionary<string, List<string>> hostTypesDict
-      //bool newTypesExist = false
+      Dictionary<string, List<string>> hostTypesDict,
+      bool newTypesExist = false
     )
     {
       //Bindings = Locator.Current.GetService<ConnectorBindings>();
@@ -237,30 +237,20 @@ namespace DesktopUI2.ViewModels
       get => _selectedCategory;
       set
       {
-        this.RaiseAndSetIfChanged(ref _selectedCategory, value);
-        if (value == UnmappedKey)
-        {
-          var tempList = new List<MappingValue>();
-          foreach (var key in Mapping.Categories)
-            tempList.AddRange(Mapping[key].Where(i => i.NewType));
-          VisibleMappingValues = tempList;
-        }
-        else
-        {
-          VisibleMappingValues = new List<MappingValue>(Mapping[value]);
-        }
+        _selectedCategory = value;
+        VisibleMappingValues = Mapping.GetValuesToMapOfCategory(value).ToList();
         SearchQuery = "";
         SearchResults = _hostTypeValuesDict[value];
       }
     }
 
-    public List<MappingValue> VisibleMappingValues
+    public List<ISingleValueToMap> VisibleMappingValues
     {
       get => _visibleMappingValues;
       set => this.RaiseAndSetIfChanged(ref _visibleMappingValues, value);
     }
 
-    public MappingValue SelectedMappingValue
+    public ISingleValueToMap SelectedMappingValue
     {
       get => _selectedMappingValue;
       set => this.RaiseAndSetIfChanged(ref _selectedMappingValue, value);

@@ -4,9 +4,10 @@ using System.Text;
 
 namespace DesktopUI2.Models.TypeMappingOnReceive
 {
-  internal interface ISingleValueToMap
+  public interface ISingleValueToMap
   {
     public string IncomingType { get; set; }
     public string InitialGuess { get; set; }
+    public string OutgoingType { get; set; }
   }
 }

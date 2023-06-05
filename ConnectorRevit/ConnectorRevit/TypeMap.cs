@@ -2,18 +2,20 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Speckle.Core.Models;
+using Autodesk.Revit.DB;
 using DesktopUI2.Models.TypeMappingOnReceive;
+using RevitSharedResources.Interfaces;
+using Speckle.Core.Models;
 
 namespace ConnectorRevit
 {
-  internal class TypeMapping : Base
+  public class TypeMap : ITypeMap
   {
-    public List<string> Categories = new List<string>();
-    private readonly Dictionary<string, SingleCategoryMapping> dataStorage = new();
+    public IEnumerable<string> Categories => categoryToCategoryMap.Keys;
+    private readonly Dictionary<string, SingleCategoryMap> categoryToCategoryMap = new();
+    private readonly Dictionary<Base, ISingleValueToMap> baseToMappingValue = new();
 
-    public void AddIncomingTypes(Dictionary<string, List<MappingValue>> mappingValues, out bool newTypesExist)
+    public void AddIncomingTypes(Dictionary<string, List<ISingleValueToMap>> mappingValues, out bool newTypesExist)
     {
       newTypesExist = false;
       foreach (var kvp in mappingValues)
@@ -21,10 +23,10 @@ namespace ConnectorRevit
         var category = kvp.Key;
         var mappingValueList = kvp.Value;
 
-        if (!dataStorage.TryGetValue(category, out var singleCategoryMapping))
+        if (!categoryToCategoryMap.TryGetValue(category, out var singleCategoryMapping))
         {
           newTypesExist = true;
-          singleCategoryMapping = AddCategory(category);
+          singleCategoryMapping = AddCategory(category, mappingValueList);
           continue;
         }
 
@@ -32,42 +34,52 @@ namespace ConnectorRevit
       }
     }
 
-    private SingleCategoryMapping AddCategory(string category, List<MappingValue>? mappingValues = null)
+    public void AddIncomingType(Base @base, string incomingType, string category, string initialGuess, out bool isNewType, bool overwriteExisting = false)
     {
-      var newCategory = new SingleCategoryMapping(category, mappingValues);
-      dataStorage[category] = newCategory;
+      isNewType = false;
+
+      // add empty category if it isn't already present
+      if (!categoryToCategoryMap.TryGetValue(category, out var categoryMappingValues))
+      {
+        categoryMappingValues = new SingleCategoryMap(category);
+        categoryToCategoryMap[category] = categoryMappingValues;
+      }
+
+      if (!categoryMappingValues.TryGetMappingValue(incomingType, out var singleValueToMap) || overwriteExisting)
+      {
+        isNewType = true;
+        singleValueToMap = new MappingValue(incomingType, initialGuess, true);
+        categoryMappingValues.AddMappingValue(singleValueToMap);
+      }
+
+      baseToMappingValue.Add(@base, singleValueToMap);
+    }
+
+    public bool HasCategory(string category)
+    {
+      return categoryToCategoryMap.ContainsKey(category);
+    }
+
+    public IEnumerable<ISingleValueToMap> GetValuesToMapOfCategory(string category)
+    {
+      if (!categoryToCategoryMap.TryGetValue(category, out var singleCategoryMap))
+      {
+        return Enumerable.Empty<ISingleValueToMap>();
+      }
+
+      return singleCategoryMap.GetMappingValues();
+    }
+
+    public IEnumerable<Base> GetAllMappedBases()
+    {
+      return baseToMappingValue.Keys;
+    }
+
+    private SingleCategoryMap AddCategory(string category, ICollection<ISingleValueToMap>? mappingValues = null)
+    {
+      var newCategory = new SingleCategoryMap(category, mappingValues);
+      categoryToCategoryMap[category] = newCategory;
       return newCategory;
     }
   }
-
-  internal class SingleCategoryMapping : Base
-  {
-    private readonly string _category;
-    private Dictionary<string, MappingValue> mappingValues = new();
-    public SingleCategoryMapping(string CategoryName) 
-    { 
-      _category = CategoryName;
-    }
-    public SingleCategoryMapping(string CategoryName, List<MappingValue>? mappingValues) 
-    { 
-      _category = CategoryName;
-
-      if (mappingValues != null && mappingValues.Count > 0)
-      {
-        this.mappingValues = mappingValues.ToDictionary(mv => mv.IncomingType, mv => mv);
-      }      
-    }
-    public void AddMappingValues(List<MappingValue> mappingValues, bool overwriteExisting = false)
-    {
-      foreach (var mappingValue in mappingValues)
-      {
-        if (this.mappingValues.ContainsKey(mappingValue.IncomingType) && !overwriteExisting)
-        {
-          continue;
-        }
-
-        this.mappingValues[mappingValue.IncomingType] = mappingValue;
-      }
-    }
-  } 
 }

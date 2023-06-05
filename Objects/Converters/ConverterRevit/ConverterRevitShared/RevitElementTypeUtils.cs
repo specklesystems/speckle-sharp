@@ -18,15 +18,35 @@ namespace Objects.Converter.Revit
     private ConversionOperationCache conversionOperationCache { get; } = new();
     public string? GetRevitTypeOfBase(Base @base)
     {
-      var type = @base["type"] as string;
-
-      // if the object is structural, we keep the type name in a different location
-      if (@base is Objects.Structural.Geometry.Element1D element1D)
-        type = element1D.property.name.Replace('X', 'x');
-      else if (@base is Objects.Structural.Geometry.Element2D element2D)
-        type = element2D.property.name;
-
-      return type;
+      string type = null;
+      switch (@base)
+      {
+        case OSG.Element1D el:
+          type = el.property?.name;
+          break;
+        case OSG.Element2D el:
+          type = el.property?.name;
+          break;
+      };
+      return type ?? @base["type"] as string;
+    }
+    
+    public void SetRevitTypeOfBase(Base @base, string type)
+    {
+      switch (@base)
+      {
+        case OSG.Element1D el:
+          if (el.property == null) goto default;
+          el.property.name = type;
+          break;
+        case OSG.Element2D el:
+          if (el.property == null) goto default;
+          el.property.name = type;
+          break;
+        default:
+          @base["type"] = type;
+          break;
+      };
     }
 
     public string GetRevitCategoryOfBase(Base @base)
@@ -51,10 +71,20 @@ namespace Objects.Converter.Revit
       return true;
     }
 
-    public void AddElementTypesInCategoryToCache(Base @base)
+    public IEnumerable<ElementType> GetAllCachedElementTypes()
     {
-
+      return conversionOperationCache.GetAllObjectsOfType<ElementType>();
     }
+    
+    //public Dictionary<TKey, TValue> GetDictionaryOfCachedObjects<TKey, TValue>(Func<TValue, TKey> keyFactory)
+    //{
+    //  var returnDict = new Dictionary<TKey, TValue>();
+    //  foreach (var value in conversionOperationCache.GetAllObjectsOfType<TValue>())
+    //  {
+    //    returnDict[keyFactory(value)] = value;
+    //  }
+    //  return returnDict;
+    //}
 
     public IEnumerable<ElementType> GetAndCacheAvailibleTypes(Base @base)
     {
@@ -153,7 +183,7 @@ namespace Objects.Converter.Revit
 
     private static IEnumerable<T> GetElementTypes<T>(Type type, List<BuiltInCategory> categories)
     {
-      using var collector = new FilteredElementCollector(Doc);
+      var collector = new FilteredElementCollector(Doc);
       if (categories.Count > 0)
       {
         using var filter = new ElementMulticategoryFilter(categories);

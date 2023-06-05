@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
+using ConnectorRevit;
 using ConnectorRevit.Revit;
 using ConnectorRevit.Storage;
 using DesktopUI2;
@@ -69,8 +70,23 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
+      //try
+      //{
+      //  await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+      //}
+      //catch (Exception ex)
+      //{
+      //  SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
+      //  progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
+      //}
+      
       try
       {
+        await RevitTask.RunAsync(() => ElementTypeMapper.Map(
+          converter, 
+          state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"),
+          Preview,
+          StoredObjects));
         await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
       }
       catch (Exception ex)
