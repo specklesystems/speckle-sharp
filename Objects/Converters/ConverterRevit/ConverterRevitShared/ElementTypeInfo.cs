@@ -125,6 +125,33 @@ namespace Objects.Converter.Revit
         _ => Undefined
       };
     }
+
+    private ElementTypeInfo GetElementTypeInfoOfCategory(string category)
+    {
+      switch (category)
+      {
+        case string a when a.Contains("beam"):
+        case string b when b.Contains("brace"):
+        case string c when c.Contains("framing"):
+          return StructuralFraming;
+
+        case string a when a.Contains("column"):
+          return Column;
+        case string a when a.Contains("duct"):
+          return Duct;
+        //case string a when a.Contains("material"):
+        //  return Material;
+        case string a when a.Contains("floor"):
+          return Floor;
+        case string a when a.Contains("pipe"):
+          return Pipe;
+        case string a when a.Contains("roof"):
+          return Roof;
+        case string a when a.Contains("wall"):
+          return Wall;
+      }
+      return Undefined;
+    }
   }
 
 }
