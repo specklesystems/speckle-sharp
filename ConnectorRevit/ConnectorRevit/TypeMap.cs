@@ -70,9 +70,12 @@ namespace ConnectorRevit
       return singleCategoryMap.GetMappingValues();
     }
 
-    public IEnumerable<Base> GetAllMappedBases()
+    public IEnumerable<(Base,ISingleValueToMap)> GetAllBasesWithMappings()
     {
-      return baseToMappingValue.Keys;
+      foreach (var kvp in baseToMappingValue)
+      {
+        yield return (kvp.Key, kvp.Value);
+      }
     }
 
     private SingleCategoryMap AddCategory(string category, ICollection<ISingleValueToMap>? mappingValues = null)

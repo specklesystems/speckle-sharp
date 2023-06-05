@@ -16,6 +16,7 @@ using Speckle.Newtonsoft.Json;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using System.Threading.Tasks;
 using ReactiveUI;
+using Avalonia.Threading;
 
 namespace ConnectorRevit
 {
@@ -39,7 +40,7 @@ namespace ConnectorRevit
       var currentMapping = DeserializeMapping(mappingSetting);
       currentMapping ??= new TypeMap();
 
-      var (incomingTypes, hostTypes) = GetIncomingTypes(typeRetriever, flattenedCommit, storedObjects, currentMapping, out var newTypesExist);
+      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, flattenedCommit, storedObjects, currentMapping, out var newTypesExist);
       //if (currentMapping == null)
       //{
       //  // TODO
@@ -49,25 +50,32 @@ namespace ConnectorRevit
       if (!newTypesExist && mappingSetting.Selection != ConnectorBindingsRevit.everyReceive) { return; }
 
       // show custom mapping dialog if the settings corrospond to what is being received
-      var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypes, newTypesExist);
-      MappingViewDialog mappingView = new MappingViewDialog
-      {
-        DataContext = vm
-      };
+      var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
+      
+      
 
-      currentMapping = await mappingView.ShowDialog<ITypeMap>().ConfigureAwait(true);
+      currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
+        var mappingView = new MappingViewDialog
+        {
+          DataContext = vm
+        };
+        return mappingView.ShowDialog<ITypeMap>();
+      }).ConfigureAwait(false);
+
+       //await mappingView.ShowDialog<ITypeMap>().ConfigureAwait(true);
 
       while (vm.DoneMapping == false)
       {
         //hostTypesDict = await ImportFamilyTypes(hostTypesDict).ConfigureAwait(true);
 
-        vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypes, newTypesExist);
-        mappingView = new MappingViewDialog
-        {
-          DataContext = vm
-        };
-
-        currentMapping = await mappingView.ShowDialog<ITypeMap>().ConfigureAwait(true);
+        vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
+        currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
+          var mappingView = new MappingViewDialog
+          {
+            DataContext = vm
+          };
+          return mappingView.ShowDialog<ITypeMap>();
+        }).ConfigureAwait(false);
       }
 
       // close the dialog
@@ -76,26 +84,22 @@ namespace ConnectorRevit
       mappingSetting.MappingJson = JsonConvert.SerializeObject(currentMapping);
 
       // update the mapping object for the user mapped types
-      SetMappedValues(currentMapping, flattenedCommit, storedObjects);
+      SetMappedValues(typeRetriever, currentMapping);
     }
 
-    private static void SetMappedValues(ITypeMap currentMapping, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects)
+    private static void SetMappedValues(IRevitElementTypeRetriever<ElementType> typeRetriever, ITypeMap currentMapping)
     {
-      foreach (var appObj in flattenedCommit)
+      foreach (var (@base, mappingValue) in currentMapping.GetAllBasesWithMappings())
       {
-        var @base = storedObjects[appObj.OriginalId];
-
-        //currentMapping.
-
+        typeRetriever.SetRevitTypeOfBase(@base, mappingValue.OutgoingType ?? mappingValue.InitialGuess);
       }
     }
 
-    public static (Dictionary<string, List<ISingleValueToMap>>, Dictionary<string, List<string>>) GetIncomingTypes(IRevitElementTypeRetriever<ElementType> typeRetriever, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, ITypeMap typeMap, out bool newTypesExist)
+    public static HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType> typeRetriever, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, ITypeMap typeMap, out bool newTypesExist)
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
-      var hostTypes = new Dictionary<string, List<string>>();
+      var hostTypes = new HostTypeAsStringContainer();
 
-      //var incomingTypes = new IncomingTypeContainer();
       newTypesExist = false;
       foreach (var appObj in flattenedCommit)
       {
@@ -110,39 +114,20 @@ namespace ConnectorRevit
 
         if (exactTypeMatch) continue;
 
-
+        hostTypes.AddCategoryWithTypesIfCategoryIsNew(category, elementTypes.Select(type => type.Name));
 
         var initialGuess = GetMappedValue(elementTypes, category, incomingType);
         typeMap.AddIncomingType(@base, incomingType, category, initialGuess, out var isNewType);
-
         if (isNewType) newTypesExist = true;
-        //if (!incomingTypes.TryGetValue(category, out var categoryTypes))
-        //{
-        //  categoryTypes = new List<ISingleValueToMap>();
-        //  incomingTypes[category] = categoryTypes;
-        //  hostTypes[category] = elementTypes.Select(type => type.Name).ToList();
-        //}
-        //else if (categoryTypes
-        //  .Where(mapValue => string.Equals(mapValue.IncomingType, incomingType, StringComparison.OrdinalIgnoreCase))
-        //  .Any())
-        //{
-        //  continue;
-        //}
-
-        //var initialGuess = GetMappedValue(elementTypes, category, incomingType);
-        //categoryTypes.Add(new MappingValue(incomingType, initialGuess, true));
       }
 
-      // add all host types to the "Miscellaneous" category
-      if (!hostTypes.ContainsKey(TypeMappingOnReceiveViewModel.TypeCatMisc))
-      {
-        hostTypes[TypeMappingOnReceiveViewModel.TypeCatMisc] = typeRetriever
+      hostTypes.SetAllTypes(
+        typeRetriever
           .GetAllCachedElementTypes()
           .Select(type => type.Name)
-          .ToList();
-      }
+      );
 
-      return (incomingTypes, hostTypes);
+      return hostTypes;
     }
 
     public Dictionary<string, List<MappingValue>>? DeserializeMappingAsDict(MappingSeting mappingSetting)

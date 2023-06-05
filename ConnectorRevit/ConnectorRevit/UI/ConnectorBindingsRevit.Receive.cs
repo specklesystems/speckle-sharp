@@ -82,12 +82,12 @@ namespace Speckle.ConnectorRevit.UI
       
       try
       {
-        await RevitTask.RunAsync(() => ElementTypeMapper.Map(
+        await ElementTypeMapper.Map(
           converter, 
           state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"),
           Preview,
-          StoredObjects));
-        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+          StoredObjects);
+        //await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
       }
       catch (Exception ex)
       {

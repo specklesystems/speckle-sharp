@@ -8,6 +8,7 @@ using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Logging;
+using Speckle.Newtonsoft.Json.Linq;
 using Splat;
 
 namespace DesktopUI2.ViewModels
@@ -157,24 +158,27 @@ namespace DesktopUI2.ViewModels
     public TypeMappingOnReceiveViewModel(
       //Dictionary<string, List<MappingValue>> firstPassMapping,
       ITypeMap typeMap,
-      Dictionary<string, List<string>> hostTypesDict,
+      //Dictionary<string, List<string>> hostTypesDict,
+      IHostTypeAsStringContainer container,
       bool newTypesExist = false
     )
     {
       //Bindings = Locator.Current.GetService<ConnectorBindings>();
 
       Mapping = typeMap;
-      _hostTypeValuesDict = hostTypesDict;
+      //_hostTypeValuesDict = hostTypesDict;
+      hostTypeContainer = container;
 
-      if (!_hostTypeValuesDict.ContainsKey(TypeCatMisc))
-      {
-        throw new ArgumentException("Provided host type map does not contain a miscellaneous key with all element types");
-      }
+      //if (!hostTypeContainer.ContainsCategory(TypeCatMisc))
+      //{
+      //  throw new ArgumentException("Provided host type map does not contain a miscellaneous key with all element types");
+      //}
 
-      // make sure hostTypeValuesDict has a key for each value category
-      foreach (var key in Mapping.Categories)
-        if (!_hostTypeValuesDict.ContainsKey(key))
-          _hostTypeValuesDict.Add(key, _hostTypeValuesDict[TypeCatMisc]);
+      //// make sure hostTypeValuesDict has a key for each value category
+      //foreach (var key in Mapping.Categories)
+      //  hostTypeContainer.AddCategoryWithTypesIfCategoryIsNew(key, hostTypeContainer.GetAllTypes());
+      //  if (!hostTypeContainer.ContainsCategory(key))
+      //    _hostTypeValuesDict.Add(key, _hostTypeValuesDict[TypeCatMisc]);
 
       //if (newTypesExist)
       //{
@@ -195,7 +199,9 @@ namespace DesktopUI2.ViewModels
     //public ConnectorBindings Bindings { get; set; }
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
-    private Dictionary<string, List<string>> _hostTypeValuesDict { get; } = new();
+    //private Dictionary<string, List<string>> _hostTypeValuesDict { get; } = new();
+
+    private readonly IHostTypeAsStringContainer hostTypeContainer;
 
     public string SearchQuery
     {
@@ -205,9 +211,7 @@ namespace DesktopUI2.ViewModels
         isSearching = true;
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
 
-        SearchResults = new List<string>(
-          _hostTypeValuesDict[SelectedCategory].Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList()
-        );
+        SearchResults = GetCategoryOrAll(SelectedCategory).Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList();
         this.RaisePropertyChanged(nameof(SearchResults));
         isSearching = false;
       }
@@ -240,7 +244,7 @@ namespace DesktopUI2.ViewModels
         _selectedCategory = value;
         VisibleMappingValues = Mapping.GetValuesToMapOfCategory(value).ToList();
         SearchQuery = "";
-        SearchResults = _hostTypeValuesDict[value];
+        SearchResults = GetCategoryOrAll(value).ToList();
       }
     }
 
@@ -254,6 +258,11 @@ namespace DesktopUI2.ViewModels
     {
       get => _selectedMappingValue;
       set => this.RaiseAndSetIfChanged(ref _selectedMappingValue, value);
+    }
+
+    private IEnumerable<string> GetCategoryOrAll(string category)
+    {
+      return hostTypeContainer.GetTypesInCategory(category) ?? hostTypeContainer.GetAllTypes();
     }
 
     public string UrlPathSegment => throw new NotImplementedException();
