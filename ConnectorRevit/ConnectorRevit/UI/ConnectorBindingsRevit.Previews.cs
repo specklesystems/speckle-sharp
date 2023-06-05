@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExternalService;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.UI.Selection;
@@ -29,6 +29,8 @@ using Avalonia.Threading;
 using Autodesk.Revit.DB.DirectContext3D;
 using Revit.Async;
 using DynamicData;
+using ConnectorRevit.Storage;
+using RevitSharedResources.Interfaces;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -69,18 +71,18 @@ namespace Speckle.ConnectorRevit.UI
           foreach (var previewObj in Preview)
             progress.Report.Log(previewObj);
 
-          List<ApplicationObject> applicationObjects = null;
+          IConvertedObjectsCache<Base, Element> convertedObjects = null;
           await RevitTask.RunAsync(
             app =>
             {
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
               {
                 t.Start();
-                applicationObjects = ConvertReceivedObjects(converter, progress);
+                convertedObjects = ConvertReceivedObjects(converter, progress);
                 t.Commit();
               }
 
-              AddMultipleRevitElementServers(applicationObjects);
+              AddMultipleRevitElementServers(convertedObjects);
             });
         }
         else // just generate the log
@@ -106,16 +108,16 @@ namespace Speckle.ConnectorRevit.UI
       UnregisterServers();
     }
 
-    public void AddMultipleRevitElementServers(List<ApplicationObject> applicationObjects)
+    public void AddMultipleRevitElementServers(IConvertedObjectsCache<Base, Element> convertedObjects)
     {
       ExternalService directContext3DService =
         ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.DirectContext3DService);
       MultiServerService msDirectContext3DService = directContext3DService as MultiServerService;
       IList<Guid> serverIds = msDirectContext3DService.GetActiveServerIds();
 
-      foreach (var appObj in applicationObjects)
+      foreach (var obj in convertedObjects.GetConvertedObjects())
       {
-        if (!(appObj.Converted.FirstOrDefault() is IDirectContext3DServer server))
+        if (obj is not IDirectContext3DServer server)
           continue;
 
         directContext3DService.AddServer(server);

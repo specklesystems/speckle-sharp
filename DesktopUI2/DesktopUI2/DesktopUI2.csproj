@@ -251,10 +251,10 @@
         </None>
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Avalonia" Version="0.10.19" />
-        <PackageReference Include="Avalonia.Desktop" Version="0.10.19" />
-        <PackageReference Include="Avalonia.Diagnostics" Version="0.10.19" />
-        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.19" />
+        <PackageReference Include="Avalonia" Version="0.10.21" />
+        <PackageReference Include="Avalonia.Desktop" Version="0.10.21" />
+        <PackageReference Include="Avalonia.Diagnostics" Version="0.10.21" />
+        <PackageReference Include="Avalonia.ReactiveUI" Version="0.10.21" />
         <PackageReference Include="Speckle.Material.Avalonia" Version="3.0.4" />
         <PackageReference Include="Speckle.Material.Icons.Avalonia" Version="1.2.0" />
     </ItemGroup>
