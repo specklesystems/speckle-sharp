@@ -2,14 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reactive;
-using System.Runtime.Serialization;
-using System.Text;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.Views.Windows.Dialogs;
 using ReactiveUI;
 using Speckle.Core.Logging;
-using Speckle.Newtonsoft.Json.Linq;
-using Splat;
 
 namespace DesktopUI2.ViewModels
 {

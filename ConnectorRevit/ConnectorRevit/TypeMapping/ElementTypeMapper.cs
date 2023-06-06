@@ -171,7 +171,14 @@ namespace ConnectorRevit.TypeMapping
         {
           Converters = { new AbstractConverter<MappingValue, ISingleValueToMap>() },
         };
-        return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson, settings);
+        try
+        {
+          return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson, settings);
+        }
+        catch
+        {
+          // couldn't deserialize so just return null
+        }
       }
       return null;
     }

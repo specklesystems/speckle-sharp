@@ -45,18 +45,6 @@ namespace Objects.Converter.Revit
           break;
       };
     }
-
-    public string GetRevitCategory(Base @base)
-    {
-      var elementTypeInfo = ElementTypeInfo.GetElementTypeInfoOfSpeckleObject(@base);
-      return elementTypeInfo.CategoryName;
-    }
-    
-    public string GetRevitCategory(string categoryName)
-    {
-      var elementTypeInfo = ElementTypeInfo.GetElementTypeInfoOfCategory(categoryName);
-      return elementTypeInfo.CategoryName;
-    }
     
     public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo(Base @base)
     {
@@ -68,7 +56,6 @@ namespace Objects.Converter.Revit
       return ElementTypeInfo.GetElementTypeInfoOfCategory(categoryName);
     }
 
-    public string UndefinedCategory => ElementTypeInfo.Undefined.CategoryName;
     public IElementTypeInfo<BuiltInCategory> UndefinedTypeInfo => ElementTypeInfo.Undefined;
 
     public bool CacheContainsTypeWithName(string baseType)
@@ -82,23 +69,6 @@ namespace Objects.Converter.Revit
     public IEnumerable<ElementType> GetAllCachedElementTypes()
     {
       return conversionOperationCache.GetAllObjectsOfType<ElementType>();
-    }
-
-    public IEnumerable<ElementType> GetAndCacheAvailibleTypes(Base @base)
-    {
-      var elementTypeInfo = ElementTypeInfo.GetElementTypeInfoOfSpeckleObject(@base);
-      var types = conversionOperationCache.GetOrAdd<IEnumerable<ElementType>>(
-        elementTypeInfo.CategoryName,
-        () => GetElementTypes<ElementType>(elementTypeInfo.ElementTypeType, elementTypeInfo.BuiltInCategories),
-        out var typesRetrieved);
-
-      // if type was added instead of retreived, add types to master cache to facilitate lookup later
-      if (!typesRetrieved)
-      {
-        conversionOperationCache.AddMany<ElementType>(types, type => type.Name);
-      }
-
-      return types;
     }
     
     public IEnumerable<ElementType> GetAndCacheAvailibleTypes(IElementTypeInfo<BuiltInCategory> typeInfo)
@@ -204,17 +174,6 @@ namespace Objects.Converter.Revit
         return collector.WhereElementIsElementType().OfClass(type).WherePasses(filter).Cast<T>();
       }
       return collector.WhereElementIsElementType().OfClass(type).Cast<T>();
-    }
-    
-    private static IEnumerable<T> GetElements<T>(Type type, List<BuiltInCategory> categories)
-    {
-      var collector = new FilteredElementCollector(Doc);
-      if (categories.Count > 0)
-      {
-        using var filter = new ElementMulticategoryFilter(categories);
-        return collector.WhereElementIsNotElementType().OfClass(type).WherePasses(filter).Cast<T>();
-      }
-      return collector.WhereElementIsNotElementType().OfClass(type).Cast<T>();
     }
   }
 }
