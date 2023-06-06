@@ -1,36 +1,62 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <RootNamespace>Speckle.ConnectorDynamo.Functions</RootNamespace>
-        <AssemblyName>SpeckleConnectorDynamoFunctions</AssemblyName>
-        <TargetFramework>net48</TargetFramework>
-        <AssemblyTitle>ConnectorDynamoFunctions</AssemblyTitle>
-        <Product>ConnectorDynamoFunctions</Product>
-        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    </PropertyGroup>
+  <!-- Implicit top import -->
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk"/>
 
-    <ItemGroup>
-        <Reference Include="System.Data.DataSetExtensions" />
-        <Reference Include="System.Net.Http" />
-    </ItemGroup>
-    <ItemGroup>
-        <None Include="SpeckleConnectorDynamoFunctions_DynamoCustomization.xml">
-            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-        </None>
-      <None Remove="SpeckleConnectorDynamoFunctionsImages.resources" />
-      <EmbeddedResource Remove="SpeckleConnectorDynamoFunctionsImages.resx" />
-      <None Include="SpeckleConnectorDynamoFunctionsImages.resx" />
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-        <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj" />
-    </ItemGroup>
-    <ItemGroup>
-        <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471" ExcludeAssets="runtime" />
-    </ItemGroup>
+  <PropertyGroup>
+    <RootNamespace>Speckle.ConnectorDynamo.Functions</RootNamespace>
+    <AssemblyName>SpeckleConnectorDynamoFunctions</AssemblyName>
+    <TargetFramework>net48</TargetFramework>
+    <AssemblyTitle>ConnectorDynamoFunctions</AssemblyTitle>
+    <Product>ConnectorDynamoFunctions</Product>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateResourceUsePreserializedResources>true</GenerateResourceUsePreserializedResources>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Data.DataSetExtensions"/>
+    <Reference Include="System.Net.Http"/>
+    <Reference Include="System.Resources.Extension"/>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="SpeckleConnectorDynamoFunctions_DynamoCustomization.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Remove="SpeckleConnectorDynamoFunctionsImages.resources"/>
+    <EmbeddedResource Remove="SpeckleConnectorDynamoFunctionsImages.resx"/>
+    <None Include="SpeckleConnectorDynamoFunctionsImages.resx"/>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\Core\Transports\DiskTransport\DiskTransport.csproj"/>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471"
+                      ExcludeAssets="runtime"/>
+  </ItemGroup>
   
-    <Target Name="BuildIconDll" BeforeTargets="Build">
-      <Message Text="Building icon dll" Importance="high" />
-      <GenerateResource Sources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resx" UseSourcePath="true" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" />
-      <CSC TargetType="library" Resources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
-    </Target>
+  <Target Name="BuildIconDll">
+    <Message Text="Building icon dll" Importance="high"/>
+    <GenerateResource Sources="$(ProjectDir)/SpeckleConnectorDynamoFunctionsImages.resx"
+                      UseSourcePath="true"
+                      OutputResources="$(ProjectDir)/SpeckleConnectorDynamoFunctionsImages.resources"/>
+    <CSC TargetType="library"
+         Resources="$(ProjectDir)/SpeckleConnectorDynamoFunctionsImages.resources"
+         OutputAssembly="$(IntermediateOutputPath)SpeckleConnectorDynamoFunctions.customization.dll"/>
+  </Target>
+
+  <Target Name="CopyIconDllToOutput"
+          DependsOnTargets="BuildIconDll" BeforeTargets="Build">
+    <Message Text="Adding icon dll to items" Importance="high"/>
+    <ItemGroup>
+      <Content Include="$(IntermediateOutputPath)SpeckleConnectorDynamoFunctions.customization.dll"
+               Link="SpeckleConnectorDynamoFunctions.customization.dll"
+               CopyToOutputDirectory="PreserveNewest"/>
+    </ItemGroup>
+  </Target>
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk"/>
+
+  <!-- Add CopyIconDllToOutput task to the build depends on list, this forces projects using this one to copy over the customization dll too -->
+  <PropertyGroup>
+    <BuildDependsOn>CopyIconDllToOutput;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
 </Project>
