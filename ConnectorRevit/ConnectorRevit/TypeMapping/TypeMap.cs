@@ -1,14 +1,11 @@
 #nullable enable
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using Autodesk.Revit.DB;
 using DesktopUI2.Models.TypeMappingOnReceive;
-using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
-namespace ConnectorRevit
+namespace ConnectorRevit.TypeMapping
 {
   public class TypeMap : ITypeMap
   {

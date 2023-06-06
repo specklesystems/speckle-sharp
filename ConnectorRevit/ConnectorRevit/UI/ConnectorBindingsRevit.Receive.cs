@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,16 +6,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
-using ConnectorRevit;
 using ConnectorRevit.Revit;
 using ConnectorRevit.Storage;
+using ConnectorRevit.TypeMapping;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using RevitSharedResources.Interfaces;
-using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -69,19 +67,17 @@ namespace Speckle.ConnectorRevit.UI
       converter.SetContextDocument(previousObjects);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
-      
+
+      var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
       try
       {
-        await ElementTypeMapper.Map(
+        await elementTypeMapper.Map(
           converter, 
-          state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"),
-          Preview,
-          StoredObjects,
-          CurrentDoc.Document).ConfigureAwait(false);
+          state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings")
+        ).ConfigureAwait(false);
       }
       catch (Exception ex)
       {
-        System.Diagnostics.Trace.WriteLine($"Threw exception of type {ex.GetType()}");
         SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
       }
@@ -129,7 +125,7 @@ namespace Speckle.ConnectorRevit.UI
           g.RollBack();
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
-      });
+      }).ConfigureAwait(false);
 
       if (!success)
       {

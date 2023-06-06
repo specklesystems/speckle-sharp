@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using Speckle.Newtonsoft.Json;
 
-namespace ConnectorRevit
+namespace ConnectorRevit.TypeMapping
 {
   internal class SingleCategoryMap
   {

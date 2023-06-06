@@ -1,9 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Autodesk.Revit.DB;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -15,15 +13,29 @@ using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using System.Threading.Tasks;
-using ReactiveUI;
 using Avalonia.Threading;
-using ConnectorRevit.TypeMapping;
+using Speckle.Core.Models.GraphTraversal;
 
-namespace ConnectorRevit
+namespace ConnectorRevit.TypeMapping
 {
-  internal class ElementTypeMapper
+  internal sealed class ElementTypeMapper
   {
-    public static async Task Map(ISpeckleConverter converter, ISetting mapOnReceiveSetting, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document document)
+    private List<Base> speckleElements = new();
+    private readonly Document document;
+    public ElementTypeMapper(ISpeckleConverter converter, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document doc)
+    {
+      document = doc;
+      var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
+      foreach (var appObj in flattenedCommit)
+      {
+        // add base and traverse nested elements
+        speckleElements.AddRange(traversalFunc.Traverse(storedObjects[appObj.OriginalId])
+          .Select(c => c.current)
+          .OfType<Base>()
+        );
+      }
+    }
+    public async Task Map(ISpeckleConverter converter, ISetting mapOnReceiveSetting)
     {
       if (converter is not IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
       {
@@ -41,7 +53,7 @@ namespace ConnectorRevit
       var currentMapping = DeserializeMapping(mappingSetting);
       currentMapping ??= new TypeMap();
 
-      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, flattenedCommit, storedObjects, currentMapping, out var newTypesExist);
+      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentMapping, out var newTypesExist);
       if (!newTypesExist && mappingSetting.Selection != ConnectorBindingsRevit.everyReceive) { return; }
 
       // show custom mapping dialog if the settings corrospond to what is being received
@@ -60,7 +72,6 @@ namespace ConnectorRevit
       {
         familyImporter ??= new FamilyImporter(document);
         await familyImporter.ImportFamilyTypes(hostTypesContainer, typeRetriever).ConfigureAwait(false);
-        //hostTypesDict = await ImportFamilyTypes(hostTypesDict).ConfigureAwait(true);
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
         currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
@@ -89,16 +100,14 @@ namespace ConnectorRevit
       }
     }
 
-    public static HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, ITypeMap typeMap, out bool newTypesExist)
+    public HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap typeMap, out bool newTypesExist)
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
       var hostTypes = new HostTypeAsStringContainer();
 
       newTypesExist = false;
-      foreach (var appObj in flattenedCommit)
+      foreach (var @base in speckleElements)
       {
-        var @base = storedObjects[appObj.OriginalId];
-
         var incomingType = typeRetriever.GetRevitTypeOfBase(@base);
         if (incomingType == null) continue; // TODO: do we want to throw an error (or at least log it)
 

@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.ViewModels;
 
 namespace ConnectorRevit
 {
-  internal class HostTypeAsStringContainer : IHostTypeAsStringContainer
+  internal sealed class HostTypeAsStringContainer : IHostTypeAsStringContainer
   {
     private readonly Dictionary<string, HashSet<string>> categoryToTypes = new(StringComparer.OrdinalIgnoreCase);
 
