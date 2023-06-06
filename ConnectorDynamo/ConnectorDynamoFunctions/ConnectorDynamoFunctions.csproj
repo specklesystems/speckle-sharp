@@ -57,6 +57,6 @@
 
   <!-- Add CopyIconDllToOutput task to the build depends on list, this forces projects using this one to copy over the customization dll too -->
   <PropertyGroup>
-    <BuildDependsOn>CopyIconDllToOutput;$(BuildDependsOn)</BuildDependsOn>
+    <BuildDependsOn>$(BuildDependsOn);CopyIconDllToOutput</BuildDependsOn>
   </PropertyGroup>
 </Project>
