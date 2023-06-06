@@ -11,6 +11,18 @@ namespace ConnectorRevit
   {
     private readonly Dictionary<string, HashSet<string>> categoryToTypes = new(StringComparer.OrdinalIgnoreCase);
 
+    public void AddTypesToCategory(string category, IEnumerable<string> newTypes)
+    {
+      if (!categoryToTypes.TryGetValue(category, out HashSet<string> existingTypes))
+      {
+        existingTypes = new HashSet<string>();
+        categoryToTypes.Add(category, existingTypes);
+      }
+      foreach (var type in newTypes)
+      {
+        existingTypes.Add(type);
+      }
+    }
     public void AddCategoryWithTypesIfCategoryIsNew(string category, IEnumerable<string> types) 
     {
       if (categoryToTypes.ContainsKey(category)) return;

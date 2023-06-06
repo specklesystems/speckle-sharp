@@ -76,12 +76,18 @@ namespace Speckle.ConnectorRevit.UI
           converter, 
           state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"),
           Preview,
-          StoredObjects).ConfigureAwait(false);
+          StoredObjects,
+          CurrentDoc.Document).ConfigureAwait(false);
       }
       catch (Exception ex)
       {
+        System.Diagnostics.Trace.WriteLine($"Threw exception of type {ex.GetType()}");
         SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
+      }
+      finally
+      {
+        MainViewModel.CloseDialog();
       }
 
       var (success, exception) = await RevitTask.RunAsync(app =>

@@ -6,13 +6,20 @@ using Speckle.Core.Models;
 
 namespace RevitSharedResources.Interfaces
 {
-  public interface IRevitElementTypeRetriever<TElementType>
+  public interface IRevitElementTypeRetriever<TElementType, TBuiltInCategory>
   {
     public string? GetRevitTypeOfBase(Base @base);
     public void SetRevitTypeOfBase(Base @base, string type);
-    public string GetRevitCategoryOfBase(Base @base);
+    public string GetRevitCategory(Base @base);
+    public string GetRevitCategory(string categoryName);
+    public string UndefinedCategory { get; }
+    public IElementTypeInfo<TBuiltInCategory> UndefinedTypeInfo { get; }
     public bool CacheContainsTypeWithName(string baseType);
     public IEnumerable<TElementType> GetAndCacheAvailibleTypes(Base @base);
+    public IEnumerable<TElementType> GetAndCacheAvailibleTypes(IElementTypeInfo<TBuiltInCategory> typeInfo);
     public IEnumerable<TElementType> GetAllCachedElementTypes();
+    public IElementTypeInfo<TBuiltInCategory> GetRevitTypeInfo(Base @base);
+    public IElementTypeInfo<TBuiltInCategory> GetRevitTypeInfo(string categoryName);
+
   }
 }

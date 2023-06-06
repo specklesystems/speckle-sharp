@@ -7,15 +7,27 @@ using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
 using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
+using Speckle.Core.Logging;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Windows.Forms;
 using Speckle.Core.Models;
+using RevitSharedResources.Interfaces;
+using DynamicData;
+using DesktopUI2.Models.TypeMappingOnReceive;
+using Avalonia.Threading;
 
 namespace ConnectorRevit.TypeMapping
 {
   internal class FamilyImporter
   {
+    private readonly Document document;
+
+    public FamilyImporter(Document document)
+    {
+      this.document = document;
+    }
+
     /// <summary>
     /// Imports new family types into Revit
     /// </summary>
@@ -23,110 +35,62 @@ namespace ConnectorRevit.TypeMapping
     /// <returns>
     /// New host types dictionary with newly imported types added (if applicable)
     /// </returns>
-    public async Task ImportFamilyTypes(HostTypeAsStringContainer hostTypesContainer, Document doc)
+    public async Task ImportFamilyTypes(HostTypeAsStringContainer hostTypesContainer, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
     {
-      var windowsDialog = new OpenFileDialog();
-      windowsDialog.Title = "Choose Revit Families";
-      windowsDialog.Filter = "Revit Families (*.rfa)|*.rfa";
-      windowsDialog.Multiselect = true;
-      var result = windowsDialog.ShowDialog();
+      var familyPaths = await Dispatcher.UIThread.InvokeAsync<string[]>(() => {
+        using var windowsDialog = new OpenFileDialog
+        {
+          Title = "Choose Revit Families",
+          Filter = "Revit Families (*.rfa)|*.rfa",
+          Multiselect = true
+        };
+        var _ = windowsDialog.ShowDialog();
+        return windowsDialog.FileNames;
+      }).ConfigureAwait(false);
+      //var windowsDialog = new OpenFileDialog
+      //{
+      //  Title = "Choose Revit Families",
+      //  Filter = "Revit Families (*.rfa)|*.rfa",
+      //  Multiselect = true
+      //};
+      //var result = windowsDialog.ShowDialog();
 
-      if (result == DialogResult.Cancel)
-      {
-        return;
-      }
+      //if (result == DialogResult.Cancel)
+      //{
+      //  return;
+      //}
 
       var allSymbols = new Dictionary<string, List<Symbol>>();
       var familyInfo = new Dictionary<string, FamilyInfo>();
 
-      foreach (var path in windowsDialog.FileNames)
+      foreach (var path in familyPaths)
       {
+        var xmlPath = path.Replace(".rfa", ".xml");
         string pathClone = string.Copy(path);
 
         //open family file as xml to extract all family symbols without loading all of them into the project
-        var symbols = new List<string>();
-        doc.Application.ExtractPartAtomFromFamilyFile(path, path + ".xml");
-        XmlDocument xmlDoc = new XmlDocument(); // Create an XML document object
-        xmlDoc.Load(path + ".xml");
+        await RevitTask.RunAsync(() => document.Application.ExtractPartAtomFromFamilyFile(path, xmlPath))
+          .ConfigureAwait(false);
+        var xmlDoc = new XmlDocument(); // Create an XML document object
+        xmlDoc.Load(xmlPath);
 
-        XmlNamespaceManager nsman = new XmlNamespaceManager(xmlDoc.NameTable);
+        var nsman = new XmlNamespaceManager(xmlDoc.NameTable);
         nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
 
         string familyName = pathClone.Split('\\').LastOrDefault().Split('.').FirstOrDefault();
         if (string.IsNullOrEmpty(familyName))
           continue;
 
-        Family match = null;
-        var catRoot = xmlDoc.GetElementsByTagName("category");
-        var category = TypeCatMisc;
+        var typeInfo = GetTypeInfo(xmlDoc, nsman, typeRetriever);
+        familyInfo.Add(familyName, new FamilyInfo(path, typeInfo.CategoryName));
 
-        foreach (var node in catRoot)
-        {
-          if (node is XmlElement xmlNode)
-          {
-            var term = xmlNode.SelectSingleNode("ab:term", nsman);
-            if (term != null)
-            {
-              category = GetTypeCategory(term.InnerText);
-              if (category == TypeCatMisc)
-                continue;
-
-              var filter = GetCustomTypeFilter(category);
-              var families = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(Family));
-              var list = families.ToElements().Cast<Family>().ToList();
-
-              match = list.FirstOrDefault(x => x.Name == familyName && filter.categories.Contains((BuiltInCategory)x.FamilyCategory?.Id.IntegerValue));
-              if (match != null)
-                break;
-            }
-          }
-        }
-
-        familyInfo.Add(familyName, new FamilyInfo(path, category));
-
-        // see which types have already been loaded into the project from the selected family
-        var loadedSymbols = new List<string>();
-        if (match != null) //family exists in project
-        {
-          var symbolIds = match.GetFamilySymbolIds();
-          foreach (var id in symbolIds)
-          {
-            var sym = CurrentDoc.Document.GetElement(id);
-            loadedSymbols.Add(sym.Name);
-          }
-        }
-
-        // get all types from XML document
-        XmlNodeList familySymbols;
-        try
-        {
-          var familyRoot = xmlDoc.GetElementsByTagName("A:family");
-          if (familyRoot.Count == 1)
-          {
-            nsman.AddNamespace("A", familyRoot[0].NamespaceURI);
-            nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
-            familySymbols = familyRoot[0].SelectNodes("A:part/ab:title", nsman);
-            if (familySymbols.Count > 0)
-              allSymbols[familyName] = new List<Symbol>();
-            foreach (var symbol in familySymbols)
-            {
-              if (symbol is XmlElement el)
-              {
-                if (loadedSymbols.Contains(el.InnerText))
-                  allSymbols[familyName].Add(new Symbol(el.InnerText, familyName, true));
-                else
-                  allSymbols[familyName].Add(new Symbol(el.InnerText, familyName));
-              }
-            }
-          }
-        }
-        catch (Exception e)
-        { }
+        var elementTypes = typeRetriever.GetAndCacheAvailibleTypes(typeInfo);
+        AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
 
         // delete the newly created xml file
         try
         {
-          System.IO.File.Delete(path + ".xml");
+          System.IO.File.Delete(xmlPath);
         }
         catch (Exception ex)
         { }
@@ -136,60 +100,131 @@ namespace ConnectorRevit.TypeMapping
       MainViewModel.CloseDialog();
 
       var vm = new ImportFamiliesDialogViewModel(allSymbols);
-      var importFamilies = new ImportFamiliesDialog
-      {
-        DataContext = vm
-      };
+      //var importFamilies = new ImportFamiliesDialog
+      //{
+      //  DataContext = vm
+      //};
 
-      await importFamilies.ShowDialog<object>();
+      //await importFamilies.ShowDialog<object>();
+
+      await Dispatcher.UIThread.InvokeAsync(async () => {
+        var importFamilies = new ImportFamiliesDialog
+        {
+          DataContext = vm
+        };
+        await importFamilies.ShowDialog().ConfigureAwait(true);
+      }).ConfigureAwait(false);
 
       if (vm.selectedFamilySymbols.Count == 0)
       {
         //close current dialog body
         MainViewModel.CloseDialog();
-        return hostTypesDict;
+        return;
       }
 
-      var newHostTypes = await RevitTask.RunAsync(app =>
+      await RevitTask.RunAsync(_ =>
       {
-        using (var t = new Transaction(doc, $"Import family types"))
+        using var t = new Transaction(document, $"Import family types");
+
+        t.Start();
+        var symbolsToLoad = new Dictionary<string, List<string>>();
+        foreach (var symbol in vm.selectedFamilySymbols)
         {
-          t.Start();
-          bool symbolLoaded = false;
-
-          foreach (var symbol in vm.selectedFamilySymbols)
+          bool successfullyImported = document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name);
+          if (successfullyImported)
           {
-            bool successfullyImported = doc.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name);
-            if (successfullyImported)
+            if (!symbolsToLoad.TryGetValue(symbol.FamilyName, out var symbolsOfFamily))
             {
-              symbolLoaded = true;
-              // add newly imported type to host types dict
-              hostTypesContainer.a
-              hostTypesDict[familyInfo[symbol.FamilyName].Category].Add(symbol.Name);
+              symbolsOfFamily = new List<string>();
+              symbolsToLoad.Add(symbol.FamilyName, symbolsOfFamily);
             }
+            symbolsOfFamily.Add(symbol.Name);
           }
-
-          if (symbolLoaded)
-          {
-            t.Commit();
-            Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
-              { "name", "Mappings Import Families" },
-              { "count", vm.selectedFamilySymbols.Count }});
-          }
-
-          else
-            t.RollBack();
-          return hostTypesDict;
         }
-      });
 
-
-
+        if (symbolsToLoad.Count > 0)
+        {
+          foreach (var kvp in symbolsToLoad)
+          {
+            hostTypesContainer.AddTypesToCategory(kvp.Key, kvp.Value);
+          }
+          t.Commit();
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
+            { "name", "Mappings Import Families" },
+            { "count", vm.selectedFamilySymbols.Count }});
+        }
+        else
+        {
+          t.RollBack();
+        }
+      }).ConfigureAwait(false);
 
       //close current dialog body
       MainViewModel.CloseDialog();
 
-      return newHostTypes;
+      return;
+    }
+
+    private static void AddSymbolToAllSymbols(Dictionary<string, List<Symbol>> allSymbols, XmlDocument xmlDoc, XmlNamespaceManager nsman, string familyName, IEnumerable<ElementType> elementTypes)
+    {
+      var familyRoot = xmlDoc.GetElementsByTagName("A:family");
+      if (familyRoot.Count != 1)
+      {
+        // TODO: logging
+        return;
+      }
+
+      nsman.AddNamespace("A", familyRoot[0].NamespaceURI);
+      nsman.AddNamespace("ab", "http://www.w3.org/2005/Atom");
+      var familySymbols = familyRoot[0].SelectNodes("A:part/ab:title", nsman);
+
+      if (familySymbols.Count == 0) return;
+
+      if (!allSymbols.TryGetValue(familyName, out var symbols))
+      {
+        symbols = new List<Symbol>();
+        allSymbols[familyName] = symbols;
+      }
+
+      var loadedSymbols = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+      foreach (var elementType in elementTypes)
+      {
+        if (elementType.FamilyName == familyName)
+        {
+          loadedSymbols.Add(elementType.Name);
+        }
+      }
+
+      foreach (var symbol in familySymbols)
+      {
+        if (symbol is not XmlElement el)
+        {
+          continue;
+        }
+
+        var isAlreadyLoaded = loadedSymbols.Contains(el.InnerText);
+        symbols.Add(new Symbol(el.InnerText, familyName, isAlreadyLoaded));
+      }
+    }
+
+    private IElementTypeInfo<BuiltInCategory> GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
+    {
+      var catRoot = xmlDoc.GetElementsByTagName("category");
+      var category = typeRetriever.UndefinedTypeInfo;
+      foreach (var node in catRoot)
+      {
+        if (node is not XmlElement xmlNode) continue;
+
+        var term = xmlNode.SelectSingleNode("ab:term", nsman);
+        if (term == null) continue;
+
+        category = typeRetriever.GetRevitTypeInfo(term.InnerText);
+
+        if (category != typeRetriever.UndefinedTypeInfo)
+          break;
+      }
+
+      return category;
     }
 
     public class FamilyInfo
@@ -202,51 +237,5 @@ namespace ConnectorRevit.TypeMapping
         Category = category;
       }
     }
-
-    /// <summary>
-    /// Gets the category of a given base object
-    /// </summary>
-    /// <param name="obj"></param>
-    /// <returns>name of category type as string</returns>
-    private string GetTypeCategory(string speckleType)
-    {
-      switch (speckleType)
-      {
-        #region General
-        case string a when a.Contains("beam"):
-        case string b when b.Contains("brace"):
-        case string c when c.Contains("framing"):
-          return TypeCatFraming;
-
-        case string a when a.Contains("column"):
-          return TypeCatColumns;
-
-        case string a when a.Contains("material"):
-          return TypeCatMaterials;
-
-        case string a when a.Contains("floor"):
-          return TypeCatFloors;
-
-        case string a when a.Contains("wall"):
-          return TypeCatWalls;
-          #endregion
-      }
-      return TypeCatMisc;
-    }
-    private const string TypeCatMaterials = "Materials";
-    private const string TypeCatFloors = "Floors";
-    private const string TypeCatWalls = "Walls";
-    private const string TypeCatFraming = "Framing";
-    private const string TypeCatColumns = "Columns";
-    private const string TypeCatMisc = "Miscellaneous";
-    private List<string> allTypeCategories = new List<string>
-    {
-      TypeCatColumns,
-      TypeCatFloors,
-      TypeCatFraming,
-      TypeCatMaterials,
-      TypeCatMisc,
-      TypeCatWalls
-    };
   }
 }

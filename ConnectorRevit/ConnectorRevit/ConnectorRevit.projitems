@@ -30,8 +30,9 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)ElementTypeMapper.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)HostTypeAsStringContainer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\ElementTypeMapper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\FamilyImporter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\HostTypeAsStringContainer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
@@ -42,11 +43,11 @@
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ErrorEater.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\FamilyLoadOption.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)SingleCategoryMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\SingleCategoryMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\ConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\StreamStateCache.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)TypeMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\TypeMap.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit .Settings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRevit.Mappings.cs" />

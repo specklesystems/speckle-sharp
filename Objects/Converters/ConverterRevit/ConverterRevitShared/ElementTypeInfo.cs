@@ -1,14 +1,16 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.BuiltElements;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.Revit
 {
-  public class ElementTypeInfo
+  public class ElementTypeInfo : IElementTypeInfo<BuiltInCategory>
   {
     protected ElementTypeInfo(string name, Type instanceType, Type familyType, List<BuiltInCategory> categories)
     {
@@ -21,8 +23,8 @@ namespace Objects.Converter.Revit
     public Type ElementInstanceType { get; }
     public Type ElementTypeType { get; }
     public List<BuiltInCategory> BuiltInCategories { get; }
-    public static ElementTypeInfo Column => new(
-      nameof(Column).ToLower(),
+    public static ElementTypeInfo Column { get; } = new(
+      nameof(Column),
       typeof(FamilyInstance),
       typeof(FamilySymbol),
       new List<BuiltInCategory>
@@ -31,7 +33,7 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_StructuralColumns
       });
 
-    public static ElementTypeInfo Duct => new(
+    public static ElementTypeInfo Duct { get; } = new(
       nameof(Duct),
       typeof(DB.Mechanical.Duct),
       typeof(DB.Mechanical.FlexDuctType),
@@ -41,7 +43,7 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_FlexDuctCurves
       });
 
-    public static ElementTypeInfo Floor => new(
+    public static ElementTypeInfo Floor { get; } = new(
       nameof(Floor),
       typeof(DB.Floor),
       typeof(DB.FloorType),
@@ -50,7 +52,7 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_Floors
       });
 
-    //public static ElementTypeInfo Material => new(
+    //public static ElementTypeInfo Material { get; } = new(
     //  nameof(Material), 
     //  typeof(DB.Material), 
     //  null,
@@ -61,7 +63,7 @@ namespace Objects.Converter.Revit
     //    BuiltInCategory.OST_WireMaterials
     //  });
 
-    public static ElementTypeInfo Pipe => new(
+    public static ElementTypeInfo Pipe { get; } = new(
       nameof(Pipe),
       typeof(DB.Plumbing.Pipe),
       typeof(DB.Plumbing.FlexPipeType),
@@ -71,7 +73,7 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_FlexPipeCurves
       });
 
-    public static ElementTypeInfo Roof => new(
+    public static ElementTypeInfo Roof { get; } = new(
       nameof(Roof),
       typeof(DB.RoofBase),
       typeof(DB.RoofType),
@@ -80,7 +82,7 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_Roofs,
       });
 
-    public static ElementTypeInfo StructuralFraming => new(
+    public static ElementTypeInfo StructuralFraming { get; } = new(
       nameof(StructuralFraming),
       typeof(DB.FamilyInstance),
       typeof(DB.FamilySymbol),
@@ -89,7 +91,7 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_StructuralFraming
       });
 
-    public static ElementTypeInfo Wall => new(
+    public static ElementTypeInfo Wall { get; } = new(
       nameof(Wall),
       typeof(DB.Wall),
       typeof(DB.WallType),
@@ -98,7 +100,7 @@ namespace Objects.Converter.Revit
         BuiltInCategory.OST_Walls
       });
 
-    public static ElementTypeInfo Undefined => new(
+    public static ElementTypeInfo Undefined { get; } = new (
       nameof(Undefined),
       null,
       null,
@@ -126,10 +128,20 @@ namespace Objects.Converter.Revit
       };
     }
 
-    private ElementTypeInfo GetElementTypeInfoOfCategory(string category)
+    public static ElementTypeInfo GetElementTypeInfoOfCategory(string categoryName)
     {
-      switch (category)
+      var match = typeof(ElementTypeInfo)
+        .GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+        .Where(field => field.FieldType == typeof(ElementTypeInfo))
+        .Select(field => field.GetValue(null) as ElementTypeInfo)
+        .FirstOrDefault(typeInfo => typeInfo?.CategoryName == categoryName);
+
+      if (match != null) return match;
+
+      categoryName = categoryName.ToLower();
+      switch (categoryName)
       {
+
         case string a when a.Contains("beam"):
         case string b when b.Contains("brace"):
         case string c when c.Contains("framing"):
@@ -153,5 +165,4 @@ namespace Objects.Converter.Revit
       return Undefined;
     }
   }
-
 }

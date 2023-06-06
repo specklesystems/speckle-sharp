@@ -17,16 +17,17 @@ using DesktopUI2.Models.TypeMappingOnReceive;
 using System.Threading.Tasks;
 using ReactiveUI;
 using Avalonia.Threading;
+using ConnectorRevit.TypeMapping;
 
 namespace ConnectorRevit
 {
   internal class ElementTypeMapper
   {
-    public static async Task Map(ISpeckleConverter converter, ISetting mapOnReceiveSetting, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects)
+    public static async Task Map(ISpeckleConverter converter, ISetting mapOnReceiveSetting, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document document)
     {
-      if (converter is not IRevitElementTypeRetriever<ElementType> typeRetriever)
+      if (converter is not IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
       {
-        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType>)}");
+        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
       }
 
       // Get Settings for recieve on mapping 
@@ -45,7 +46,8 @@ namespace ConnectorRevit
 
       // show custom mapping dialog if the settings corrospond to what is being received
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
-      
+      FamilyImporter familyImporter = null;
+
       currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
         var mappingView = new MappingViewDialog
         {
@@ -56,6 +58,8 @@ namespace ConnectorRevit
 
       while (vm.DoneMapping == false)
       {
+        familyImporter ??= new FamilyImporter(document);
+        await familyImporter.ImportFamilyTypes(hostTypesContainer, typeRetriever).ConfigureAwait(false);
         //hostTypesDict = await ImportFamilyTypes(hostTypesDict).ConfigureAwait(true);
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
@@ -77,7 +81,7 @@ namespace ConnectorRevit
       SetMappedValues(typeRetriever, currentMapping);
     }
 
-    private static void SetMappedValues(IRevitElementTypeRetriever<ElementType> typeRetriever, ITypeMap currentMapping)
+    private static void SetMappedValues(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap currentMapping)
     {
       foreach (var (@base, mappingValue) in currentMapping.GetAllBasesWithMappings())
       {
@@ -85,7 +89,7 @@ namespace ConnectorRevit
       }
     }
 
-    public static HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType> typeRetriever, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, ITypeMap typeMap, out bool newTypesExist)
+    public static HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, ITypeMap typeMap, out bool newTypesExist)
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
       var hostTypes = new HostTypeAsStringContainer();
@@ -98,16 +102,16 @@ namespace ConnectorRevit
         var incomingType = typeRetriever.GetRevitTypeOfBase(@base);
         if (incomingType == null) continue; // TODO: do we want to throw an error (or at least log it)
 
-        var category = typeRetriever.GetRevitCategoryOfBase(@base);
-        var elementTypes = typeRetriever.GetAndCacheAvailibleTypes(@base);
+        var typeInfo = typeRetriever.GetRevitTypeInfo(@base);
+        var elementTypes = typeRetriever.GetAndCacheAvailibleTypes(typeInfo);
         var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(incomingType);
 
         if (exactTypeMatch) continue;
 
-        hostTypes.AddCategoryWithTypesIfCategoryIsNew(category, elementTypes.Select(type => type.Name));
-        string initialGuess = DefineInitialGuess(typeMap, incomingType, category, elementTypes);
+        hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => type.Name));
+        string initialGuess = DefineInitialGuess(typeMap, incomingType, typeInfo.CategoryName, elementTypes);
 
-        typeMap.AddIncomingType(@base, incomingType, category, initialGuess, out var isNewType);
+        typeMap.AddIncomingType(@base, incomingType, typeInfo.CategoryName, initialGuess, out var isNewType);
         if (isNewType) newTypesExist = true;
       }
 
