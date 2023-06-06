@@ -1,4 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
   <PropertyGroup>
     <RootNamespace>Speckle.ConnectorDynamo</RootNamespace>
     <AssemblyName>SpeckleConnectorDynamo</AssemblyName>
@@ -96,13 +99,28 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
-
-  <Target Name="BuildIconDll" BeforeTargets="Build">
+  
+  <ItemGroup>
+    <None Remove="Assets\*.png" />
+    <Resource Include="Assets\CreateStream%4032.png" />
+    <Resource Include="Assets\Receiver%4032.png" />
+    <Resource Include="Assets\Sender%4032.png" />
+    <Resource Include="Assets\StreamView%4032.png" />
+  </ItemGroup>
+  
+  <Target Name="BuildIconDll">
     <Message Text="Building icon dll" Importance="high" />
     <GenerateResource Sources="$(ProjectDir)\SpeckleConnectorDynamoImages.resx" UseSourcePath="true" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" />
-    <CSC TargetType="library" Resources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamo.customization.dll" />
+    <CSC TargetType="library" Resources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(IntermediateOutputPath)SpeckleConnectorDynamo.customization.dll" />
   </Target>
-
+  
+  <Target Name="CopyIconDllToOutput" DependsOnTargets="BuildIconDll" BeforeTargets="Build">
+    <Message Text="Adding icon dll to items" Importance="high" />
+    <ItemGroup>
+      <Content Include="$(IntermediateOutputPath)SpeckleConnectorDynamo.customization.dll" Link="SpeckleConnectorDynamo.customization.dll" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+  </Target>
+  
   <Target Name="AfterBuildMigrated" AfterTargets="Build">
     <ItemGroup>
       <Dlls Include="$(OutDir)\**\*.*" />
@@ -115,4 +133,11 @@
     <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)\%(RecursiveDir)" />
     <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
   </Target>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <!-- Add CopyIconDllToOutput task to the build depends on list, this forces projects using this one to copy over the customization dll too -->
+  <PropertyGroup>
+    <BuildDependsOn>CopyIconDllToOutput;$(BuildDependsOn)</BuildDependsOn>
+  </PropertyGroup>
 </Project>
