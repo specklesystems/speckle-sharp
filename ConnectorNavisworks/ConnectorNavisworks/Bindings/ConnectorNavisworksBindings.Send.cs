@@ -67,15 +67,15 @@ public partial class ConnectorBindingsNavisworks
 
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-    var modelItemsToConvert = PrepareModelItemsToConvert(state, out int totalObjects);
+    var modelItemsToConvert = PrepareModelItemsToConvert(state);
 
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-    var conversions = PrepareElementsForConversion(state, modelItemsToConvert);
+    var conversions = PrepareElementsForConversion(modelItemsToConvert);
 
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-    _convertedCount = ElementAndViewsConversion(state, conversions, commitObject, totalObjects);
+    _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
 
     RestoreAutoSave();
 
@@ -140,15 +140,13 @@ public partial class ConnectorBindingsNavisworks
   /// <summary>
   /// Prepares the elements from the provided model items for conversion.
   /// </summary>
-  /// <param name="state">The stream state containing the filter selection.</param>
   /// <param name="modelItemsToConvert">The list of model items to convert.</param>
   /// <returns>A dictionary of elements ready for conversion.</returns>
   private Dictionary<Element, Tuple<Constants.ConversionState, Base>> PrepareElementsForConversion(
-    StreamState state,
     IReadOnlyList<ModelItem> modelItemsToConvert
   )
   {
-    _progressBar.BeginSubOperation(0.1, $"Building object-tree from {state.Filter.Selection.Count} selections.");
+    _progressBar.BeginSubOperation(0.1, $"Who's who? Let's check the ID cards...");
     var conversions = new Dictionary<Element, Tuple<Constants.ConversionState, Base>>();
 
     var totalObjects = modelItemsToConvert.Count;
@@ -194,15 +192,13 @@ public partial class ConnectorBindingsNavisworks
   /// <param name="state">The stream state.</param>
   /// <param name="totalObjects">Out parameter to return the total number of objects to convert.</param>
   /// <returns>A list of ModelItem objects that are ready to be converted.</returns>
-  private List<ModelItem> PrepareModelItemsToConvert(StreamState state, out int totalObjects)
+  private List<ModelItem> PrepareModelItemsToConvert(StreamState state)
   {
     _conversionProgressDict = new ConcurrentDictionary<string, int> { ["Conversion"] = 0 };
 
     var modelItemsToConvert = GetModelItemsForConversion(state);
 
-    totalObjects = modelItemsToConvert.Count;
-
-    _progressViewModel.Max = totalObjects;
+    _progressViewModel.Max = modelItemsToConvert.Count;
 
     return modelItemsToConvert.Where(e => e != null).ToList();
   }
@@ -225,16 +221,14 @@ public partial class ConnectorBindingsNavisworks
   /// <param name="state">The current stream state.</param>
   /// <param name="conversions">Dictionary of elements to be converted.</param>
   /// <param name="commitObject">The objects to commit.</param>
-  /// <param name="totalObjects">Total number of objects to convert.</param>
   /// <returns>Count of successfully converted objects.</returns>
   private int ElementAndViewsConversion(
     StreamState state,
     IDictionary<Element, Tuple<Constants.ConversionState, Base>> conversions,
-    Collection commitObject,
-    int totalObjects
+    Collection commitObject
   )
   {
-    _progressBar.BeginSubOperation(0.55, $"Converting {totalObjects} Elements.");
+    _progressBar.BeginSubOperation(0.55, $"Spinning the alchemy wheel, transmuting data...");
     _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", "objects" } });
     _conversionInvoker = new ConversionInvoker(_navisworksConverter);
     var converted = ConvertObjects(conversions);
@@ -246,9 +240,16 @@ public partial class ConnectorBindingsNavisworks
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
     }
 
-    _progressBar.StartNewSubOperation(0.66, "Reassembling the tree.");
+    _progressBar.StartNewSubOperation(0.66, "Building a family tree, data-style...");
     var elements = converted.ToDictionary(x => x.Key.PseudoId, x => x.Value.Item2);
     commitObject.elements = Element.BuildNestedObjectHierarchy(elements).ToList();
+
+    if (commitObject.elements.Count == 0)
+    {
+      RestoreAutoSave();
+      throw new SpeckleException("Zero objects remain unhidden in selection. Send stopped.");
+    }
+
     _progressViewModel.Report.Merge(_navisworksConverter.Report);
 
     _progressBar.StartNewSubOperation(0.75, "Sending Views.");
@@ -296,7 +297,10 @@ public partial class ConnectorBindingsNavisworks
   /// <returns>The ID of the sent object.</returns>
   private async Task<string> SendConvertedObjectsToSpeckle(StreamState state, Base commitObject)
   {
-    _progressBar.BeginSubOperation(1, $"Sending {_convertedCount} children to Speckle.");
+    _progressBar.BeginSubOperation(
+      1,
+      $"Pack your bags, data! That's {_convertedCount} objects going on a trip to the Speckle universe..."
+    );
 
     _navisworksConverter.SetConverterSettings(new Dictionary<string, string> { { "_Mode", null } });
 
@@ -331,6 +335,7 @@ public partial class ConnectorBindingsNavisworks
   /// <returns>The id of the created commit.</returns>
   private async Task<string> CreateCommit(StreamState state, string objectId)
   {
+    _progressBar.BeginSubOperation(1, "Sealing the deal... Your data's new life begins in Speckle!");
     // Define a new commit input with stream details, object ID, and commit message
     var commit = new CommitCreateInput
     {
@@ -393,6 +398,8 @@ public partial class ConnectorBindingsNavisworks
     var selectionBuilder = new SelectionHandler(state, _progressViewModel) { ProgressBar = _progressBar };
 
     selectionBuilder.GetFromFilter();
+
+    selectionBuilder.ValidateStartNodes();
 
     // Check if any items have been selected
     if (selectionBuilder.Count == 0)
