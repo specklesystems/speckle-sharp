@@ -17,6 +17,8 @@ public class SelectionHandler
   private readonly bool _fullTreeSetting;
   private readonly ProgressViewModel _progressViewModel;
   public ProgressInvoker ProgressBar;
+  private HashSet<ModelItem> _visited;
+  private int _descendantProgress;
 
   public SelectionHandler(StreamState state, ProgressViewModel progressViewModel)
   {
@@ -65,7 +67,7 @@ public class SelectionHandler
     var progressIncrement = 1.0 / count;
 
     // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0, "Getting objects from selection");
+    ProgressBar.BeginSubOperation(0, "Rolling up the sleeves... Time to handpick your favorite data items!");
 
     // Iterate over the selection and retrieve the corresponding model items
     for (var i = 0; i < count; i++)
@@ -236,7 +238,7 @@ public class SelectionHandler
 
   /// <summary>
   /// Populates the hierarchy by adding ancestor and descendant items to the unique model items.
-  /// Then omits hidden items based on their parent's visibility.
+  /// The unique model items have already been processed to validate that they are not hidden.
   /// </summary>
   public void PopulateHierarchyAndOmitHidden()
   {
@@ -250,105 +252,76 @@ public class SelectionHandler
 
     int updateInterval;
 
-    ProgressBar.BeginSubOperation(
-      0,
-      _fullTreeSetting
-        ? "Adding all hierarchical nodes. Hold on tight!"
-        : "Adding all selection descendant nodes. Buckle up!"
-    );
-
-    // Populate itemsToPopulate list
-    for (var i = 0; i < totalItems; i++)
+    var startNodes = _uniqueModelItems.ToList();
+    
+    if (_fullTreeSetting)
     {
-      var item = _uniqueModelItems.ElementAt(i);
+      var allAncestors = startNodes.SelectMany(e => e.Ancestors).Distinct().ToList();
 
-      // If the item is hidden, add it to the itemsToOmit list and continue
-      if (item.AncestorsAndSelf.Any(modelItem => modelItem.IsHidden))
-      {
-        itemsToOmit.Add(item);
-        continue;
-      }
-
-      // All Ancestors must therefore be visible, so add them to the itemsToPopulate list
-      if (_fullTreeSetting)
-      {
-        var ancestorCount = item.Ancestors.Count();
-        var ancestorIncrement = 1 / (double)ancestorCount;
-        updateInterval = Math.Max(ancestorCount / 10, 1); // Update the progress bar every 1% of progress
-
-        ProgressBar.BeginSubOperation(0, "Adding ancestors.");
-        ProgressBar.Update(0);
-
-        for (var a = 0; a < ancestorCount; a++)
+      ProgressLooper(
+        allAncestors.Count,
+        "Brb, time traveling to find your data's great-grandparents...",
+        i =>
         {
-          _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-          var ancestor = item.Ancestors.ElementAt(a);
-
-          itemsToPopulate.Add(ancestor);
-
-          if (a % updateInterval != 0)
-            continue;
-          double progress = (a + 1) * ancestorIncrement;
-          ProgressBar.Update(progress);
+          _uniqueModelItems.Add(allAncestors.ElementAt(i));
+          return true;
         }
-      }
-      ProgressBar.EndSubOperation();
-
-      // Add descendants and self to itemsToPopulate if they meet the specified criteria
-      var descendants = item.DescendantsAndSelf;
-      var descendantsCount = descendants.Count();
-      var descendantsIncrement = 1 / (double)descendantsCount;
-      updateInterval = Math.Max(descendantsCount / 10, 1); // Update the progress bar every 1% of progress
-
-      ProgressBar.BeginSubOperation(0, "Adding descendants.");
-      ProgressBar.Update(0);
-      for (var d = 0; d < descendantsCount; d++)
-      {
-        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-        var descendant = descendants.ElementAt(d);
-        itemsToPopulate.Add(descendant);
-
-        if (d % updateInterval != 0)
-          continue;
-        double progress = (d + 1) * descendantsIncrement;
-        ProgressBar.Update(progress);
-      }
-
-      ProgressBar.EndSubOperation();
+      );
     }
+    
+    _visited = new HashSet<ModelItem>();
+    _descendantProgress = 0;
+    var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
-    ProgressLooper(
-      itemsToPopulate.Count,
-      "Finding nested hidden nodes",
-      i =>
+    foreach (var node in startNodes)
+    {
+      TraverseDescendants(node, allDescendants);
+    }
+  }
+
+  private void TraverseDescendants(ModelItem startNode, int totalDescendants)
+  {
+    var descendantIncrement = 1 / (double)totalDescendants;
+    var validDescendants = new HashSet<ModelItem>();
+
+    Stack<ModelItem> stack = new();
+    stack.Push(startNode);
+
+    while (stack.Count > 0)
+    {
+      ModelItem currentNode = stack.Pop();
+
+      if (_visited.Contains(currentNode))
+        continue;
+      _visited.Add(currentNode);
+
+      if (currentNode.IsHidden)
       {
-        var item = itemsToPopulate.ElementAt(i);
-        if (item.AncestorsAndSelf.Any(a => a.IsHidden))
+        var descendantsCount = currentNode.Descendants.Count();
+        _descendantProgress += descendantsCount + 1;
+      }
+      else
+      {
+        validDescendants.Add(currentNode);
+        _descendantProgress++;
+      }
+
+      if (currentNode.Children.Any())
+      {
+        foreach (var child in currentNode.Children.Where(e=>!e.IsHidden))
         {
-          // Add hidden items to itemsToOmit list
-          itemsToOmit.Add(item);
+          stack.Push(child);
         }
-        return true;
       }
-    );
 
-    ProgressLooper(
-      itemsToOmit.Count,
-      "Omitting hidden nodes. Shhh, they won't know!",
-      i =>
-      {
-        var item = itemsToOmit.ElementAt(i);
-        // Remove items marked for omission from _uniqueModelItems
-        _uniqueModelItems.Remove(item);
-        return true;
-      }
-    );
+      _uniqueModelItems.AddRange(validDescendants);
 
-    // Add remaining items from itemsToPopulate to _uniqueModelItems
-    _uniqueModelItems.AddRange(itemsToPopulate.Except(itemsToOmit));
-   
+      if (_descendantProgress % descendantIncrement != 0)
+        continue;
+
+      double progress = _descendantProgress / (double)totalDescendants;
+      ProgressBar.Update(progress);
+    }
   }
 
   void ProgressLooper(int totalCount, string operationName, Func<int, bool> fn)
@@ -375,5 +348,14 @@ public class SelectionHandler
     }
 
     ProgressBar.EndSubOperation();
+  }
+
+  /// <summary>
+  /// Omits items that are hidden from the starting list of nodes if they are not visible in the model.
+  /// </summary>
+  public void ValidateStartNodes()
+  {
+    // Remove any nodes that are descendants of hidden nodes.
+    _uniqueModelItems.RemoveWhere(e => e.AncestorsAndSelf.Any(a => a.IsHidden));
   }
 }
