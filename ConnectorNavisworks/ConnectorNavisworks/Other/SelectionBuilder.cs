@@ -107,12 +107,20 @@ public class SelectionHandler
       return Enumerable.Empty<ModelItem>();
     }
 
-    // Get the hidden items from the saved viewpoint and invert their visibility
-    var items = savedViewpoint.GetVisibilityOverrides().Hidden;
-    items.Invert(Application.ActiveDocument);
+    // Makes the view active on the main thread.
+    (new Invoker()).Invoke(
+      (Action)(() => Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint)
+    );
 
-    // Add the visible items to the unique model items
-    _uniqueModelItems.AddRange(items);
+    var models = Application.ActiveDocument.Models;
+    Application.ActiveDocument.CurrentSelection.Clear();
+
+    foreach (var model in models)
+    {
+      var rootItem = model.RootItem;
+      if (!rootItem.IsHidden)
+        _uniqueModelItems.Add(rootItem);
+    }
 
     return _uniqueModelItems;
   }
@@ -129,15 +137,33 @@ public class SelectionHandler
       .Select(GetViews)
       .Where(x => x != null)
       .SelectMany(node => node.Flatten())
-      .Select(node => new { Reference = node?.Reference?.Split(':'), node?.Guid })
+      .Select(node => new { node.Reference, node.Guid })
       .ToList();
 
     // Find a match based on the saved view reference
     var viewPointMatch = flattenedViewpointList.FirstOrDefault(
       node =>
         node.Guid.ToString() == savedViewReference
-        || (node.Reference?.Length == 2 && node.Reference[1] == savedViewReference)
+        || (node.Reference == savedViewReference)
     );
+
+    if (viewPointMatch != null)
+      return ResolveSavedViewpoint(viewPointMatch, savedViewReference);
+    {
+      foreach (var node in flattenedViewpointList)
+      {
+        if (node.Guid.ToString() != savedViewReference)
+        {
+          if (node.Reference != savedViewReference)
+          {
+            continue;
+          }
+        }
+
+        viewPointMatch = node;
+        break;
+      }
+    }
 
     // If no match is found, return null; otherwise, resolve the SavedViewpoint
     return viewPointMatch == null ? null : ResolveSavedViewpoint(viewPointMatch, savedViewReference);
@@ -160,13 +186,15 @@ public class SelectionHandler
       }
     }
 
-    if (viewpointMatch?.Reference is not string[] { Length: 2 } reference)
-    {
-      return null;
-    }
 
-    using var savedRef = new SavedItemReference(reference[0], reference[1]);
-    using var resolvedReference = Application.ActiveDocument.ResolveReference(savedRef);
+    var savedRef = new SavedItemReference("LcOpSavedViewsElement", savedViewReference);
+
+    var invoker = new Invoker();
+    
+    var resolvedReference = invoker.Invoke(Application.ActiveDocument.ResolveReference, savedRef);
+    
+    
+    // var resolvedReference = Application.ActiveDocument.ResolveReference(savedRef);
     return (SavedViewpoint)resolvedReference;
   }
 
@@ -242,18 +270,11 @@ public class SelectionHandler
   /// </summary>
   public void PopulateHierarchyAndOmitHidden()
   {
-    // Check if _uniqueModelItems is null or empty
     if (_uniqueModelItems == null || !_uniqueModelItems.Any())
       return;
 
-    var itemsToPopulate = new HashSet<ModelItem>();
-    var itemsToOmit = new HashSet<ModelItem>();
-    var totalItems = _uniqueModelItems.Count;
-
-    int updateInterval;
-
     var startNodes = _uniqueModelItems.ToList();
-    
+
     if (_fullTreeSetting)
     {
       var allAncestors = startNodes.SelectMany(e => e.Ancestors).Distinct().ToList();
@@ -268,7 +289,7 @@ public class SelectionHandler
         }
       );
     }
-    
+
     _visited = new HashSet<ModelItem>();
     _descendantProgress = 0;
     var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
@@ -308,7 +329,7 @@ public class SelectionHandler
 
       if (currentNode.Children.Any())
       {
-        foreach (var child in currentNode.Children.Where(e=>!e.IsHidden))
+        foreach (var child in currentNode.Children.Where(e => !e.IsHidden))
         {
           stack.Push(child);
         }
