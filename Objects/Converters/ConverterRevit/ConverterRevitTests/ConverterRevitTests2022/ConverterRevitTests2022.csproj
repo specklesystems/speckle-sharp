@@ -5,7 +5,6 @@
         </ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
         <IsPackable>false</IsPackable>
         <AssemblyTitle>ConverterRevitTests</AssemblyTitle>
-        <Company>Autodesk Inc.</Company>
         <Product>ConverterRevitTests Revit C# .NET Add-In</Product>
         <Description>Revit Add-In Description for ConverterRevitTests</Description>
         <AssemblyVersion>2022.0.0.0</AssemblyVersion>
@@ -64,7 +63,8 @@
         <ProjectReference Include="..\..\..\..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\..\Objects\Objects.csproj" />
         <ProjectReference Include="..\..\ConverterRevit2022\ConverterRevit2022.csproj" />
-        <ProjectReference Include="..\TestGenerator\TestGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\xUnitRevit\speckle.xunit.runner.wpf\speckle.xunit.runner.wpf\speckle.xunit.runner.wpf.csproj" />
+        <ProjectReference Include="..\TestGenerator\TestGenerator.csproj" 
+                          OutputItemType="Analyzer" 
+                          ReferenceOutputAssembly="false" />
     </ItemGroup>
 </Project>
