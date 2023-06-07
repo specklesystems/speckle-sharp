@@ -43,6 +43,7 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Revit.Async" Version="2.0.1" />
+        <PackageReference Include="xUnitRevitUtils.2023" Version="1.0.6" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\..\ConnectorRevit\ConnectorRevit2023\ConnectorRevit2023.csproj" />
