@@ -112,8 +112,10 @@ namespace ConnectorRevit.TypeMapping
         if (incomingType == null) continue; // TODO: do we want to throw an error (or at least log it)
 
         var typeInfo = typeRetriever.GetRevitTypeInfo(@base);
+        if (typeInfo.ElementTypeType == null) continue;
+
         var elementTypes = typeRetriever.GetAndCacheAvailibleTypes(typeInfo);
-        var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(incomingType);
+        var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
 
         if (exactTypeMatch) continue;
 

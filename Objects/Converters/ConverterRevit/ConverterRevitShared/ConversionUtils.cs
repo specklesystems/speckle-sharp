@@ -646,28 +646,28 @@ namespace Objects.Converter.Revit
 
     #region  element types
     
-    private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
-    {
-      isExactMatch = false;
-      var filter = GetCategoryFilter(element);
-      var types = GetElementTypesThatPassFilter<T>(filter);
+    //private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
+    //{
+    //  isExactMatch = false;
+    //  var filter = GetCategoryFilter(element);
+    //  var types = GetElementTypesThatPassFilter<T>(filter);
 
-      if (types.Count == 0)
-      {
-        var name = typeof(T).Name;
-        if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
-          name = category;
+    //  if (types.Count == 0)
+    //  {
+    //    var name = typeof(T).Name;
+    //    if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
+    //      name = category;
 
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
+    //    appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
 
-        return default;
-      }
+    //    return default;
+    //  }
 
-      var family = (element["family"] as string)?.ToLower();
-      var type = GetTypeOfSpeckleObject(element)?.ToLower();
+    //  var family = (element["family"] as string)?.ToLower();
+    //  var type = GetTypeOfSpeckleObject(element)?.ToLower();
 
-      return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
-    }
+    //  return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
+    //}
 
     private T GetElementType<T>(Base element, string family, string type, List<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
     {

@@ -42,6 +42,9 @@ namespace ConverterRevitShared.Classes
     {
       foreach (var el in elements)
       {
+        var key = keyFactory(el);
+        if (cache.TryGetValue(key, out _)) continue;
+
         cache.Add(keyFactory(el), el);
       }
     }

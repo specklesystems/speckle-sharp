@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Classes;
 using RevitSharedResources.Interfaces;
@@ -56,11 +57,16 @@ namespace Objects.Converter.Revit
       return ElementTypeInfo.GetElementTypeInfoOfCategory(categoryName);
     }
 
+    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo<T>(Base @base)
+    {
+      return ElementTypeInfo.GetElementTypeInfo<T>(@base);
+    }
+
     public IElementTypeInfo<BuiltInCategory> UndefinedTypeInfo => ElementTypeInfo.Undefined;
 
-    public bool CacheContainsTypeWithName(string baseType)
+    public bool CacheContainsTypeWithName(string category, string baseType)
     {
-      var type = conversionOperationCache.TryGet<ElementType>(baseType);
+      var type = conversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(category, baseType));
       if (type == null) return false;
 
       return true;
@@ -81,89 +87,115 @@ namespace Objects.Converter.Revit
       // if type was added instead of retreived, add types to master cache to facilitate lookup later
       if (!typesRetrieved)
       {
-        conversionOperationCache.AddMany<ElementType>(types, type => type.Name);
+        conversionOperationCache.AddMany<ElementType>(types, type => GetUniqueTypeName(typeInfo.CategoryName, type.Name));
       }
 
       return types;
     }
 
-    //private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
-    //{
-    //  isExactMatch = false;
-    //  var filter = GetCategoryFilter(element);
-    //  var types = GetElementTypesThatPassFilter<T>(filter);
+    private string GetUniqueTypeName(string category, string type)
+    {
+      return category + "_" + type;
+    }
 
-    //  if (types.Count == 0)
-    //  {
-    //    var name = typeof(T).Name;
-    //    if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
-    //      name = category;
+    public ElementType? TryGetElementType(string category, string typeName)
+    {
+      return conversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(category, typeName));
+    }
 
-    //    appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
+    private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
+      where T : ElementType
+    {
+      var type = GetRevitTypeOfBase(element);
+      if (type == null)
+      {
+        throw new ArgumentException($"Could not find valid type of element of type \"{element.speckle_type}\"");
+      }
+      var typeInfo = GetRevitTypeInfo<T>(element);
+      var types = GetAndCacheAvailibleTypes(typeInfo);
 
-    //    return default;
-    //  }
+      isExactMatch = false;
+      if (!types.Any())
+      {
+        var name = typeof(T).Name;
+        if (element["category"] is string category && !string.IsNullOrWhiteSpace(category))
+          name = category;
 
-    //  var family = (element["family"] as string)?.ToLower();
-    //  var type = GetRevitTypeOfSpeckleObject(element)?.ToLower();
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not find any loaded family to use for category {name}.");
 
-    //  return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
-    //}
+        return default;
+      }
 
-    //private T GetElementType<T>(Base element, string family, string type, List<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
-    //{
-    //  isExactMatch = false;
-    //  ElementType match = null;
+      var exactType = conversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(typeInfo.CategoryName, type));
 
-    //  if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-    //  {
-    //    match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family && x.Name?.ToLower() == type);
-    //    isExactMatch = match != null;
-    //  }
+      if (exactType != null)
+      {
+        isExactMatch = true;
+        if (exactType is FamilySymbol fs && !fs.IsActive)
+          fs.Activate();
+        return (T)exactType;
+      }
 
-    //  //some elements only have one family so we didn't add such prop our schema
-    //  if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-    //  {
-    //    match = types.FirstOrDefault(x => x.Name?.ToLower() == type);
-    //    isExactMatch = match != null;
-    //  }
+      var family = (element["family"] as string)?.ToLower();
+      //var type = GetTypeOfSpeckleObject(element);
 
-    //  // match the type only for when we auto assign it
-    //  if (match == null && !string.IsNullOrEmpty(type))
-    //  {
-    //    match = types.FirstOrDefault(x =>
-    //    {
-    //      var symbolTypeParam = x.get_Parameter(DB.BuiltInParameter.ELEM_TYPE_PARAM);
-    //      var symbolTypeNameParam = x.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM);
-    //      if (symbolTypeParam != null && symbolTypeParam.AsValueString()?.ToLower() == type)
-    //        return true;
-    //      else if (symbolTypeNameParam != null && symbolTypeNameParam.AsValueString()?.ToLower() == type)
-    //        return true;
-    //      return false;
-    //    });
-    //    isExactMatch = match != null;
-    //  }
+      return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
+    }
 
-    //  if (match == null && !string.IsNullOrEmpty(family)) // try and match the family only.
-    //  {
-    //    match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family);
-    //  }
+    private T GetElementType<T>(Base element, string? family, string type, IEnumerable<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
+    {
+      isExactMatch = false;
+      ElementType match = null;
 
-    //  if (match == null) // okay, try something!
-    //  {
-    //    if (element is Objects.BuiltElements.Wall) // specifies the basic wall sub type as default
-    //      match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
-    //    match ??= types.First();
-    //  }
+      //if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
+      //{
+      //  match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family && x.Name?.ToLower() == type);
+      //  isExactMatch = match != null;
+      //}
 
-    //  if (!isExactMatch)
-    //    appObj.Update(logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+      ////some elements only have one family so we didn't add such prop our schema
+      //if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
+      //{
+      //  match = types.FirstOrDefault(x => x.Name?.ToLower() == type);
+      //  isExactMatch = match != null;
+      //}
 
-    //  if (match is FamilySymbol fs && !fs.IsActive)
-    //    fs.Activate();
+      //// match the type only for when we auto assign it
+      //if (match == null && !string.IsNullOrEmpty(type))
+      //{
+      //  match = types.FirstOrDefault(x =>
+      //  {
+      //    var symbolTypeParam = x.get_Parameter(DB.BuiltInParameter.ELEM_TYPE_PARAM);
+      //    var symbolTypeNameParam = x.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM);
+      //    if (symbolTypeParam != null && symbolTypeParam.AsValueString()?.ToLower() == type)
+      //      return true;
+      //    else if (symbolTypeNameParam != null && symbolTypeNameParam.AsValueString()?.ToLower() == type)
+      //      return true;
+      //    return false;
+      //  });
+      //  isExactMatch = match != null;
+      //}
 
-    //  return (T)(object)match;
-    //}
+      if (!string.IsNullOrEmpty(family)) // try and match the family only.
+      {
+        match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family);
+      }
+      
+      if (match == null)
+      {
+        if (element is Objects.BuiltElements.Wall) // specifies the basic wall sub type as default
+          match = types.Cast<WallType>().Where(o => o.Kind == WallKind.Basic).Cast<ElementType>().FirstOrDefault();
+        match ??= types.First();
+      }
+
+      if (!isExactMatch)
+        appObj.Update(logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+
+      if (match is FamilySymbol fs && !fs.IsActive)
+        fs.Activate();
+
+      return (T)(object)match;
+    }
 
     private static IEnumerable<T> GetElementTypes<T>(Type type, List<BuiltInCategory> categories)
     {

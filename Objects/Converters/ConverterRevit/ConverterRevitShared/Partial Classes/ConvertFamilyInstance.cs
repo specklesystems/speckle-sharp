@@ -731,7 +731,15 @@ namespace Objects.Converter.Revit
       {
         // mirroring
         // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
-        Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+        Group group = null;
+        try
+        {
+          group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+        }
+        catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+        {
+          // sometimes the group can't be made. Just try to mirror the element on its own
+        }
         var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
 
         try

@@ -10,7 +10,7 @@ namespace RevitSharedResources.Interfaces
   {
     public string? GetRevitTypeOfBase(Base @base);
     public void SetRevitTypeOfBase(Base @base, string type);
-    public bool CacheContainsTypeWithName(string baseType);
+    public bool CacheContainsTypeWithName(string category, string baseType);
     public IEnumerable<TElementType> GetAndCacheAvailibleTypes(IElementTypeInfo<TBuiltInCategory> typeInfo);
     public IEnumerable<TElementType> GetAllCachedElementTypes();
     public IElementTypeInfo<TBuiltInCategory> GetRevitTypeInfo(Base @base);

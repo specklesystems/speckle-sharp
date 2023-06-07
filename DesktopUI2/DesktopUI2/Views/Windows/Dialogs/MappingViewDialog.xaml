@@ -50,7 +50,7 @@
           Padding="10,0,30,0"
           VerticalAlignment="Center"
           FontSize="100"
-          Items="{Binding Mapping.Keys}"
+          Items="{Binding Mapping.Categories}"
           SelectedItem="{Binding SelectedCategory}" />
       </Grid>
     </Border>
