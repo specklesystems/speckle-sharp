@@ -63,7 +63,7 @@ namespace ConnectorRevit.TypeMapping
       currentMapping ??= new TypeMap();
 
       var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentMapping, out var numNewTypes);
-      if (numNewTypes == 0 && mappingSetting.Selection == ConnectorBindingsRevit.forNewTypes) { return; }
+      if (numNewTypes == 0 && mappingSetting.Selection != ConnectorBindingsRevit.everyReceive) { return; }
 
       if (mappingSetting.Selection == null)
       {
