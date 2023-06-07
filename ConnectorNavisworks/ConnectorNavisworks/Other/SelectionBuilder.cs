@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
@@ -32,23 +32,23 @@ public class SelectionHandler
   public int Count => _uniqueModelItems.Count;
   public IEnumerable<ModelItem> ModelItems => _uniqueModelItems.ToList().AsReadOnly();
 
-  internal void GetFromFilter()
+  public void GetFromFilter()
   {
     switch (_filter.Slug)
     {
-      case "manual":
+      case FilterTypes.Manual:
         _uniqueModelItems.AddRange(GetObjectsFromSelection());
         break;
 
-      case "sets":
+      case FilterTypes.Sets:
         _uniqueModelItems.AddRange(GetObjectsFromSavedSets());
         break;
 
-      case "clashes":
+      case FilterTypes.Clashes:
         // TODO: Implement GetObjectsFromClashResults
         break;
 
-      case "views":
+      case FilterTypes.Views:
         _uniqueModelItems.AddRange(GetObjectsFromSavedViewpoint());
         break;
     }

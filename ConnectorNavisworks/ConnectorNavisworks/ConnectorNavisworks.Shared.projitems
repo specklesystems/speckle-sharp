@@ -22,6 +22,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Elements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\FilterTypes.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Invokers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\SelectionBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
