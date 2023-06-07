@@ -137,7 +137,6 @@ namespace Objects.Converter.Revit
       }
 
       var family = (element["family"] as string)?.ToLower();
-      //var type = GetTypeOfSpeckleObject(element);
 
       return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
     }
@@ -146,35 +145,6 @@ namespace Objects.Converter.Revit
     {
       isExactMatch = false;
       ElementType match = null;
-
-      //if (!string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-      //{
-      //  match = types.FirstOrDefault(x => x.FamilyName?.ToLower() == family && x.Name?.ToLower() == type);
-      //  isExactMatch = match != null;
-      //}
-
-      ////some elements only have one family so we didn't add such prop our schema
-      //if (match == null && string.IsNullOrEmpty(family) && !string.IsNullOrEmpty(type))
-      //{
-      //  match = types.FirstOrDefault(x => x.Name?.ToLower() == type);
-      //  isExactMatch = match != null;
-      //}
-
-      //// match the type only for when we auto assign it
-      //if (match == null && !string.IsNullOrEmpty(type))
-      //{
-      //  match = types.FirstOrDefault(x =>
-      //  {
-      //    var symbolTypeParam = x.get_Parameter(DB.BuiltInParameter.ELEM_TYPE_PARAM);
-      //    var symbolTypeNameParam = x.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM);
-      //    if (symbolTypeParam != null && symbolTypeParam.AsValueString()?.ToLower() == type)
-      //      return true;
-      //    else if (symbolTypeNameParam != null && symbolTypeNameParam.AsValueString()?.ToLower() == type)
-      //      return true;
-      //    return false;
-      //  });
-      //  isExactMatch = match != null;
-      //}
 
       if (!string.IsNullOrEmpty(family)) // try and match the family only.
       {
