@@ -20,7 +20,7 @@ namespace Speckle.ConnectorRevit.UI
     const string StructuralWalls = "Structural Walls";
     const string ArchitecturalWalls = "Achitectural Walls";
 
-    public const string noMapping = "Never (default)";
+    public const string noMapping = "Never";
     public const string everyReceive = "Always";
     public const string forNewTypes = "For New Types";
 
@@ -47,7 +47,7 @@ namespace Speckle.ConnectorRevit.UI
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Selection = defaultValue, Description = "Determines the display style of imported meshes"},
-        new MappingSeting {Slug = "receive-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = mappingOptions, Selection = everyReceive, Description = "Determine how incoming object types are mapped to object types in the host application"},
+        new MappingSeting {Slug = "receive-mappings", Name = "Custom Type Mapping", Icon ="LocationSearching", Values = mappingOptions, Description = "Determine how incoming object types are mapped to object types in the host application"},
       };
     }
   }

@@ -44,7 +44,6 @@ namespace ConnectorRevit.TypeMapping
 
       // Get Settings for recieve on mapping 
       if (mapOnReceiveSetting is not MappingSeting mappingSetting
-        || mappingSetting.Selection == null
         || mappingSetting.Selection == ConnectorBindingsRevit.noMapping)
       {
         return;
@@ -53,11 +52,22 @@ namespace ConnectorRevit.TypeMapping
       var currentMapping = DeserializeMapping(mappingSetting);
       currentMapping ??= new TypeMap();
 
-      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentMapping, out var newTypesExist);
-      if (!newTypesExist && mappingSetting.Selection != ConnectorBindingsRevit.everyReceive) { return; }
+      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentMapping, out var numNewTypes);
+      if (numNewTypes == 0 && mappingSetting.Selection == ConnectorBindingsRevit.forNewTypes) { return; }
+
+      if (mappingSetting.Selection == null)
+      {
+        if (await Dispatcher.UIThread.InvokeAsync<bool>(() => {
+          var mappingView = new MissingIncomingTypesDialog();
+          return mappingView.ShowDialog<bool>();
+        }).ConfigureAwait(false) == false)
+        {
+          return;
+        }
+      }
 
       // show custom mapping dialog if the settings corrospond to what is being received
-      var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
+      var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       FamilyImporter familyImporter = null;
 
       currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
@@ -73,7 +83,7 @@ namespace ConnectorRevit.TypeMapping
         familyImporter ??= new FamilyImporter(document);
         await familyImporter.ImportFamilyTypes(hostTypesContainer, typeRetriever).ConfigureAwait(false);
 
-        vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, newTypesExist);
+        vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
         currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
           var mappingView = new MappingViewDialog
           {
@@ -100,12 +110,12 @@ namespace ConnectorRevit.TypeMapping
       }
     }
 
-    public HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap typeMap, out bool newTypesExist)
+    public HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap typeMap, out int numNewTypes)
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
       var hostTypes = new HostTypeAsStringContainer();
 
-      newTypesExist = false;
+      numNewTypes = 0;
       foreach (var @base in speckleElements)
       {
         var incomingType = typeRetriever.GetRevitTypeOfBase(@base);
@@ -123,7 +133,7 @@ namespace ConnectorRevit.TypeMapping
         string initialGuess = DefineInitialGuess(typeMap, incomingType, typeInfo.CategoryName, elementTypes);
 
         typeMap.AddIncomingType(@base, incomingType, typeInfo.CategoryName, initialGuess, out var isNewType);
-        if (isNewType) newTypesExist = true;
+        if (isNewType) numNewTypes++;
       }
 
       hostTypes.SetAllTypes(
