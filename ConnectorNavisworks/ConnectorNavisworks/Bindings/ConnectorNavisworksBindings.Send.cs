@@ -164,7 +164,7 @@ public partial class ConnectorBindingsNavisworks
       element.GetElement(modelItem);
       conversions.Add(element, new Tuple<Constants.ConversionState, Base>(Constants.ConversionState.ToConvert, null));
 
-      if (index % objectInterval == 0)
+      if (index % objectInterval == 0 || index == modelItemsToConvert.Count - 1)
         _progressBar.Update((index + 1) * objectIncrement);
     }
 
@@ -544,7 +544,7 @@ public partial class ConnectorBindingsNavisworks
       reportObject.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
       _progressViewModel.Report.Log(reportObject);
 
-      if (i % conversionInterval == 0)
+      if ((i % conversionInterval != 0) && i != conversions.Count)
         continue;
 
       double progress = (i + 1) * conversionIncrement;

@@ -29,9 +29,12 @@ public class SelectionHandler
       state.Settings.OfType<CheckBoxSetting>().FirstOrDefault(x => x.Slug == "full-tree")?.IsChecked ?? false;
   }
 
+
   public int Count => _uniqueModelItems.Count;
 
+
   public IEnumerable<ModelItem> ModelItems => _uniqueModelItems.ToList().AsReadOnly();
+
 
   /// <summary>
   /// Retrieves objects based on the selected filter type.
@@ -114,12 +117,18 @@ public class SelectionHandler
     var models = Application.ActiveDocument.Models;
     Application.ActiveDocument.CurrentSelection.Clear();
 
-    foreach (var model in models)
+    for (var i = 0; i < models.Count; i++)
     {
+      var model = models.ElementAt(i);
       var rootItem = model.RootItem;
       if (!rootItem.IsHidden)
         _uniqueModelItems.Add(rootItem);
+
+      ProgressBar.Update(i + 1 / (double)models.Count);
     }
+
+    // End the progress sub-operation
+    ProgressBar.EndSubOperation();
 
     return _uniqueModelItems;
   }
@@ -283,7 +292,7 @@ public class SelectionHandler
 
   private void TraverseDescendants(ModelItem startNode, int totalDescendants)
   {
-    var descendantIncrement = 1 / (double)totalDescendants;
+    var descendantInterval = totalDescendants / 100;
     var validDescendants = new HashSet<ModelItem>();
 
     Stack<ModelItem> stack = new();
@@ -314,7 +323,7 @@ public class SelectionHandler
 
       _uniqueModelItems.AddRange(validDescendants);
 
-      if (_descendantProgress % descendantIncrement != 0)
+      if (_descendantProgress % descendantInterval != 0)
         continue;
 
       double progress = _descendantProgress / (double)totalDescendants;
@@ -343,7 +352,7 @@ public class SelectionHandler
       if (!shouldContinue)
         break;
 
-      if (i % updateInterval != 0)
+      if (i % updateInterval != 0 && i != totalCount)
         continue;
 
       double progress = (i + 1) * increment;
