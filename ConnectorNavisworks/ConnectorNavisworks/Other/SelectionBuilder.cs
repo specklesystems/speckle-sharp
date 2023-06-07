@@ -13,12 +13,12 @@ namespace Speckle.ConnectorNavisworks.Other;
 public class SelectionHandler
 {
   private readonly ISelectionFilter _filter;
-  private readonly HashSet<ModelItem> _uniqueModelItems;
   private readonly bool _fullTreeSetting;
   private readonly ProgressViewModel _progressViewModel;
-  public ProgressInvoker ProgressBar;
-  private HashSet<ModelItem> _visited;
+  private readonly HashSet<ModelItem> _uniqueModelItems;
   private int _descendantProgress;
+  private HashSet<ModelItem> _visited;
+  public ProgressInvoker ProgressBar;
 
   public SelectionHandler(StreamState state, ProgressViewModel progressViewModel)
   {
@@ -30,8 +30,12 @@ public class SelectionHandler
   }
 
   public int Count => _uniqueModelItems.Count;
+
   public IEnumerable<ModelItem> ModelItems => _uniqueModelItems.ToList().AsReadOnly();
 
+  /// <summary>
+  /// Retrieves objects based on the selected filter type.
+  /// </summary>
   public void GetFromFilter()
   {
     switch (_filter.Slug)
@@ -42,10 +46,6 @@ public class SelectionHandler
 
       case FilterTypes.Sets:
         _uniqueModelItems.AddRange(GetObjectsFromSavedSets());
-        break;
-
-      case FilterTypes.Clashes:
-        // TODO: Implement GetObjectsFromClashResults
         break;
 
       case FilterTypes.Views:
@@ -96,19 +96,15 @@ public class SelectionHandler
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
     if (string.IsNullOrEmpty(selection))
-    {
       return Enumerable.Empty<ModelItem>();
-    }
 
     // Resolve the saved viewpoint based on the selection
     var savedViewpoint = ResolveSavedViewpoint(selection);
     if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides)
-    {
       return Enumerable.Empty<ModelItem>();
-    }
 
     // Makes the view active on the main thread.
-    (new Invoker()).Invoke(
+    new Invoker().Invoke(
       (Action)(() => Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint)
     );
 
@@ -142,9 +138,7 @@ public class SelectionHandler
 
     // Find a match based on the saved view reference
     var viewPointMatch = flattenedViewpointList.FirstOrDefault(
-      node =>
-        node.Guid.ToString() == savedViewReference
-        || (node.Reference == savedViewReference)
+      node => node.Guid.ToString() == savedViewReference || node.Reference == savedViewReference
     );
 
     if (viewPointMatch != null)
@@ -153,12 +147,8 @@ public class SelectionHandler
       foreach (var node in flattenedViewpointList)
       {
         if (node.Guid.ToString() != savedViewReference)
-        {
           if (node.Reference != savedViewReference)
-          {
             continue;
-          }
-        }
 
         viewPointMatch = node;
         break;
@@ -178,22 +168,16 @@ public class SelectionHandler
   private SavedViewpoint ResolveSavedViewpoint(dynamic viewpointMatch, string savedViewReference)
   {
     if (Guid.TryParse(savedViewReference, out var guid))
-    {
       // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
       if (savedViewReference != Guid.Empty.ToString())
-      {
         return (SavedViewpoint)Application.ActiveDocument.SavedViewpoints.ResolveGuid(guid);
-      }
-    }
-
 
     var savedRef = new SavedItemReference("LcOpSavedViewsElement", savedViewReference);
 
     var invoker = new Invoker();
-    
+
     var resolvedReference = invoker.Invoke(Application.ActiveDocument.ResolveReference, savedRef);
-    
-    
+
     // var resolvedReference = Application.ActiveDocument.ResolveReference(savedRef);
     return (SavedViewpoint)resolvedReference;
   }
@@ -250,16 +234,10 @@ public class SelectionHandler
     var savedItems = selections.Select(Application.ActiveDocument.SelectionSets.ResolveGuid).OfType<SelectionSet>();
 
     foreach (var item in savedItems)
-    {
       if (item.HasExplicitModelItems)
-      {
         _uniqueModelItems.AddRange(item.ExplicitModelItems);
-      }
       else if (item.HasSearch)
-      {
         _uniqueModelItems.AddRange(item.Search.FindAll(Application.ActiveDocument, false));
-      }
-    }
 
     return _uniqueModelItems;
   }
@@ -295,9 +273,7 @@ public class SelectionHandler
     var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
     foreach (var node in startNodes)
-    {
       TraverseDescendants(node, allDescendants);
-    }
   }
 
   private void TraverseDescendants(ModelItem startNode, int totalDescendants)
@@ -328,12 +304,8 @@ public class SelectionHandler
       }
 
       if (currentNode.Children.Any())
-      {
         foreach (var child in currentNode.Children.Where(e => !e.IsHidden))
-        {
           stack.Push(child);
-        }
-      }
 
       _uniqueModelItems.AddRange(validDescendants);
 
@@ -345,7 +317,7 @@ public class SelectionHandler
     }
   }
 
-  void ProgressLooper(int totalCount, string operationName, Func<int, bool> fn)
+  private void ProgressLooper(int totalCount, string operationName, Func<int, bool> fn)
   {
     var increment = 1.0 / totalCount;
     var updateInterval = Math.Max(totalCount / 100, 1);
