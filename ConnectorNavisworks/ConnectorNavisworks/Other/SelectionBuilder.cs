@@ -20,6 +20,11 @@ public class SelectionHandler
   private HashSet<ModelItem> _visited;
   public ProgressInvoker ProgressBar;
 
+  /// <summary>
+  /// Initializes a new instance of the SelectionHandler class with the specified StreamState and ProgressViewModel.
+  /// </summary>
+  /// <param name="state">The StreamState object containing the filter and settings.</param>
+  /// <param name="progressViewModel">The ProgressViewModel object for tracking progress.</param>
   public SelectionHandler(StreamState state, ProgressViewModel progressViewModel)
   {
     _progressViewModel = progressViewModel;
@@ -29,12 +34,9 @@ public class SelectionHandler
       state.Settings.OfType<CheckBoxSetting>().FirstOrDefault(x => x.Slug == "full-tree")?.IsChecked ?? false;
   }
 
-
   public int Count => _uniqueModelItems.Count;
 
-
   public IEnumerable<ModelItem> ModelItems => _uniqueModelItems.ToList().AsReadOnly();
-
 
   /// <summary>
   /// Retrieves objects based on the selected filter type.
@@ -290,6 +292,11 @@ public class SelectionHandler
       TraverseDescendants(node, allDescendants);
   }
 
+  /// <summary>
+  /// Traverses the descendants of a given model item and updates a progress bar.
+  /// </summary>
+  /// <param name="startNode">The starting node for traversal.</param>
+  /// <param name="totalDescendants">The total number of descendants.</param>
   private void TraverseDescendants(ModelItem startNode, int totalDescendants)
   {
     var descendantInterval = totalDescendants / 100;
@@ -331,6 +338,13 @@ public class SelectionHandler
     }
   }
 
+  /// <summary>
+  /// Executes a given function while updating a progress bar.
+  /// </summary>
+  /// <param name="totalCount">The total number of iterations.</param>
+  /// <param name="operationName">The name of the operation.</param>
+  /// <param name="fn">The function to execute on each iteration.</param>
+  /// <param name="fractionOfRemainingTime">The fraction of remaining time for the operation (optional).</param>
   private void ProgressLooper(
     int totalCount,
     string operationName,
