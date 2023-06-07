@@ -98,6 +98,11 @@ namespace Objects.Converter.Revit
       return types;
     }
 
+    public void InvalidateElementTypeCache(string categoryName)
+    {
+      conversionOperationCache.Invalidate<IEnumerable<ElementType>>(categoryName);
+    }
+
     #endregion
 
     private string GetUniqueTypeName(string category, string type)

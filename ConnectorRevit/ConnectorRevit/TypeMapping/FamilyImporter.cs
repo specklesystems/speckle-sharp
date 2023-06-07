@@ -90,12 +90,12 @@ namespace ConnectorRevit.TypeMapping
           bool successfullyImported = document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name);
           if (successfullyImported)
           {
-            if (!symbolsToLoad.TryGetValue(symbol.FamilyName, out var symbolsOfFamily))
+            if (!symbolsToLoad.TryGetValue(familyInfo[symbol.FamilyName].Category, out var symbolsOfCategory))
             {
-              symbolsOfFamily = new List<string>();
-              symbolsToLoad.Add(symbol.FamilyName, symbolsOfFamily);
+              symbolsOfCategory = new List<string>();
+              symbolsToLoad.Add(familyInfo[symbol.FamilyName].Category, symbolsOfCategory);
             }
-            symbolsOfFamily.Add(symbol.Name);
+            symbolsOfCategory.Add(symbol.Name);
           }
         }
 
@@ -104,6 +104,7 @@ namespace ConnectorRevit.TypeMapping
           foreach (var kvp in symbolsToLoad)
           {
             hostTypesContainer.AddTypesToCategory(kvp.Key, kvp.Value);
+            typeRetriever.InvalidateElementTypeCache(kvp.Key);
           }
           t.Commit();
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {

@@ -97,5 +97,20 @@ namespace ConverterRevitShared.Classes
       var typedCache = GetOrCreateCacheOfType<T>();
       AddMany(typedCache, elements, keyFactory);
     }
+
+    public void Invalidate<T>(string? key)
+    {
+      if (key == null)
+      {
+        objectCaches.Remove(typeof(T));
+        return;
+      }
+
+      var cache = TryGetCacheOfType<T>();
+
+      if (cache == null) return;
+
+      cache.Invalidate(key);
+    }
   }
 }

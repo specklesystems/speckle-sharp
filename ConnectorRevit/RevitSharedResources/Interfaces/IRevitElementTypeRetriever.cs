@@ -13,5 +13,6 @@ namespace RevitSharedResources.Interfaces
     public bool CacheContainsTypeWithName(string category, string baseType);
     public IEnumerable<TElementType> GetOrAddAvailibleTypes(IElementTypeInfo<TBuiltInCategory> typeInfo);
     public IEnumerable<TElementType> GetAllCachedElementTypes();
+    public void InvalidateElementTypeCache(string categoryName);
   }
 }

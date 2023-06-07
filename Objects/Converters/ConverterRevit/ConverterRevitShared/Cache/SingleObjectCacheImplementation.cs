@@ -32,5 +32,10 @@ namespace ConverterRevitShared.Cache
     {
       return dataStorage.Values;
     }
+
+    public void Invalidate(string key)
+    {
+      dataStorage.Remove(key);
+    }
   }
 }
