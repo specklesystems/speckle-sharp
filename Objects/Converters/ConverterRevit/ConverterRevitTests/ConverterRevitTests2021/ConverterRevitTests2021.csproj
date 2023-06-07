@@ -47,6 +47,7 @@
         </PackageReference>
         <PackageReference Include="ModPlus.Revit.API.2021" Version="4.0.0" />
         <PackageReference Include="Revit.Async" Version="2.0.1" />
+        <PackageReference Include="xUnitRevitUtils.2021" Version="1.0.6" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\..\ConnectorRevit\ConnectorRevit2021\ConnectorRevit2021.csproj" />
