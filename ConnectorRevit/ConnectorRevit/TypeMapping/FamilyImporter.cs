@@ -18,10 +18,14 @@ namespace ConnectorRevit.TypeMapping
   internal sealed class FamilyImporter
   {
     private readonly Document document;
+    private readonly IElementTypeInfoExposer<BuiltInCategory> elementTypeInfoExposer;
+    private readonly IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever;
 
-    public FamilyImporter(Document document)
+    public FamilyImporter(Document document, IElementTypeInfoExposer<BuiltInCategory> elementTypeInfoExposer, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
     {
       this.document = document;
+      this.elementTypeInfoExposer = elementTypeInfoExposer;
+      this.typeRetriever = typeRetriever;
     }
 
     /// <summary>
@@ -31,7 +35,7 @@ namespace ConnectorRevit.TypeMapping
     /// <returns>
     /// New host types dictionary with newly imported types added (if applicable)
     /// </returns>
-    public async Task ImportFamilyTypes(HostTypeAsStringContainer hostTypesContainer, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
+    public async Task ImportFamilyTypes(HostTypeAsStringContainer hostTypesContainer)
     {
       var familyPaths = await Dispatcher.UIThread.InvokeAsync<string[]>(() =>
       {
@@ -49,7 +53,7 @@ namespace ConnectorRevit.TypeMapping
 
       var allSymbols = new Dictionary<string, List<Symbol>>();
       var familyInfo = new Dictionary<string, FamilyInfo>();
-      await PopulateSymbolAndFamilyInfo(typeRetriever, familyPaths, allSymbols, familyInfo).ConfigureAwait(false);
+      await PopulateSymbolAndFamilyInfo(familyPaths, allSymbols, familyInfo).ConfigureAwait(false);
 
       var vm = new ImportFamiliesDialogViewModel(allSymbols);
       await Dispatcher.UIThread.InvokeAsync(async () =>
@@ -116,7 +120,7 @@ namespace ConnectorRevit.TypeMapping
       MainViewModel.CloseDialog();
     }
 
-    private async Task PopulateSymbolAndFamilyInfo(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, string[] familyPaths, Dictionary<string, List<Symbol>> allSymbols, Dictionary<string, FamilyInfo> familyInfo)
+    private async Task PopulateSymbolAndFamilyInfo(string[] familyPaths, Dictionary<string, List<Symbol>> allSymbols, Dictionary<string, FamilyInfo> familyInfo)
     {
       foreach (var path in familyPaths)
       {
@@ -136,10 +140,10 @@ namespace ConnectorRevit.TypeMapping
         if (string.IsNullOrEmpty(familyName))
           continue;
 
-        var typeInfo = GetTypeInfo(xmlDoc, nsman, typeRetriever);
+        var typeInfo = GetTypeInfo(xmlDoc, nsman);
         familyInfo.Add(familyName, new FamilyInfo(path, typeInfo.CategoryName));
 
-        var elementTypes = typeRetriever.GetAndCacheAvailibleTypes(typeInfo);
+        var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
         AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
 
         // delete the newly created xml file
@@ -197,10 +201,10 @@ namespace ConnectorRevit.TypeMapping
       }
     }
 
-    private IElementTypeInfo<BuiltInCategory> GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
+    private IElementTypeInfo<BuiltInCategory> GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
     {
       var catRoot = xmlDoc.GetElementsByTagName("category");
-      var category = typeRetriever.UndefinedTypeInfo;
+      var category = elementTypeInfoExposer.UndefinedTypeInfo;
       foreach (var node in catRoot)
       {
         if (node is not XmlElement xmlNode) continue;
@@ -208,9 +212,9 @@ namespace ConnectorRevit.TypeMapping
         var term = xmlNode.SelectSingleNode("ab:term", nsman);
         if (term == null) continue;
 
-        category = typeRetriever.GetRevitTypeInfo(term.InnerText);
+        category = elementTypeInfoExposer.GetRevitTypeInfo(term.InnerText);
 
-        if (category != typeRetriever.UndefinedTypeInfo)
+        if (category != elementTypeInfoExposer.UndefinedTypeInfo)
           break;
       }
 

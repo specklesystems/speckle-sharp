@@ -20,11 +20,26 @@ namespace ConnectorRevit.TypeMapping
 {
   internal sealed class ElementTypeMapper
   {
+    private readonly IElementTypeInfoExposer<BuiltInCategory> elementTypeInfoExposer;
+    private readonly IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever;
     private List<Base> speckleElements = new();
     private readonly Document document;
     public ElementTypeMapper(ISpeckleConverter converter, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document doc)
     {
       document = doc;
+
+      if (converter is not IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
+      {
+        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
+      }
+      else this.typeRetriever = typeRetriever;
+      
+      if (converter is not IElementTypeInfoExposer<BuiltInCategory> typeInfoExposer)
+      {
+        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
+      }
+      else this.elementTypeInfoExposer = typeInfoExposer;
+
       var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
       foreach (var appObj in flattenedCommit)
       {
@@ -35,13 +50,8 @@ namespace ConnectorRevit.TypeMapping
         );
       }
     }
-    public async Task Map(ISpeckleConverter converter, ISetting mapOnReceiveSetting)
+    public async Task Map(ISetting mapOnReceiveSetting)
     {
-      if (converter is not IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
-      {
-        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
-      }
-
       // Get Settings for recieve on mapping 
       if (mapOnReceiveSetting is not MappingSeting mappingSetting
         || mappingSetting.Selection == ConnectorBindingsRevit.noMapping)
@@ -80,8 +90,8 @@ namespace ConnectorRevit.TypeMapping
 
       while (vm.DoneMapping == false)
       {
-        familyImporter ??= new FamilyImporter(document);
-        await familyImporter.ImportFamilyTypes(hostTypesContainer, typeRetriever).ConfigureAwait(false);
+        familyImporter ??= new FamilyImporter(document, elementTypeInfoExposer, typeRetriever);
+        await familyImporter.ImportFamilyTypes(hostTypesContainer).ConfigureAwait(false);
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
         currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
@@ -106,7 +116,7 @@ namespace ConnectorRevit.TypeMapping
     {
       foreach (var (@base, mappingValue) in currentMapping.GetAllBasesWithMappings())
       {
-        typeRetriever.SetRevitTypeOfBase(@base, mappingValue.OutgoingType ?? mappingValue.InitialGuess);
+        typeRetriever.SetElementType(@base, mappingValue.OutgoingType ?? mappingValue.InitialGuess);
       }
     }
 
@@ -118,13 +128,13 @@ namespace ConnectorRevit.TypeMapping
       numNewTypes = 0;
       foreach (var @base in speckleElements)
       {
-        var incomingType = typeRetriever.GetRevitTypeOfBase(@base);
+        var incomingType = typeRetriever.GetElementType(@base);
         if (incomingType == null) continue; // TODO: do we want to throw an error (or at least log it)
 
-        var typeInfo = typeRetriever.GetRevitTypeInfo(@base);
+        var typeInfo = elementTypeInfoExposer.GetRevitTypeInfo(@base);
         if (typeInfo.ElementTypeType == null) continue;
 
-        var elementTypes = typeRetriever.GetAndCacheAvailibleTypes(typeInfo);
+        var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
         var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
 
         if (exactTypeMatch) continue;

@@ -8,13 +8,10 @@ namespace RevitSharedResources.Interfaces
 {
   public interface IRevitElementTypeRetriever<TElementType, TBuiltInCategory>
   {
-    public string? GetRevitTypeOfBase(Base @base);
-    public void SetRevitTypeOfBase(Base @base, string type);
+    public string? GetElementType(Base @base);
+    public void SetElementType(Base @base, string type);
     public bool CacheContainsTypeWithName(string category, string baseType);
-    public IEnumerable<TElementType> GetAndCacheAvailibleTypes(IElementTypeInfo<TBuiltInCategory> typeInfo);
+    public IEnumerable<TElementType> GetOrAddAvailibleTypes(IElementTypeInfo<TBuiltInCategory> typeInfo);
     public IEnumerable<TElementType> GetAllCachedElementTypes();
-    public IElementTypeInfo<TBuiltInCategory> GetRevitTypeInfo(Base @base);
-    public IElementTypeInfo<TBuiltInCategory> GetRevitTypeInfo(string categoryName);
-    public IElementTypeInfo<TBuiltInCategory> UndefinedTypeInfo { get; }
   }
 }

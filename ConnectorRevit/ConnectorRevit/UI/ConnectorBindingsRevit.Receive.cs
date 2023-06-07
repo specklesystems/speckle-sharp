@@ -71,10 +71,8 @@ namespace Speckle.ConnectorRevit.UI
       var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
       try
       {
-        await elementTypeMapper.Map(
-          converter, 
-          state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings")
-        ).ConfigureAwait(false);
+        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
+          .ConfigureAwait(false);
       }
       catch (Exception ex)
       {

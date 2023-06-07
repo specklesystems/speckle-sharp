@@ -11,10 +11,32 @@ using OSG = Objects.Structural.Geometry;
 
 namespace Objects.Converter.Revit
 {
-  public partial class ConverterRevit : IRevitElementTypeRetriever<ElementType, BuiltInCategory>
+  public partial class ConverterRevit : IRevitElementTypeRetriever<ElementType, BuiltInCategory>,
+    IElementTypeInfoExposer<BuiltInCategory>
   {
     private ConversionOperationCache conversionOperationCache { get; } = new();
-    public string? GetRevitTypeOfBase(Base @base)
+
+    #region IElementTypeInfoExposer
+    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo(Base @base)
+    {
+      return ElementTypeInfo.GetElementTypeInfoOfSpeckleObject(@base);
+    }
+
+    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo(string categoryName)
+    {
+      return ElementTypeInfo.GetElementTypeInfoOfCategory(categoryName);
+    }
+
+    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo<T>(Base @base)
+    {
+      return ElementTypeInfo.GetElementTypeInfo<T>(@base);
+    }
+
+    public IElementTypeInfo<BuiltInCategory> UndefinedTypeInfo => ElementTypeInfo.Undefined;
+    #endregion
+
+    #region IRevitElementTypeRetriever
+    public string? GetElementType(Base @base)
     {
       string type = null;
       switch (@base)
@@ -29,7 +51,7 @@ namespace Objects.Converter.Revit
       return type ?? @base["type"] as string;
     }
     
-    public void SetRevitTypeOfBase(Base @base, string type)
+    public void SetElementType(Base @base, string type)
     {
       switch (@base)
       {
@@ -46,23 +68,6 @@ namespace Objects.Converter.Revit
           break;
       };
     }
-    
-    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo(Base @base)
-    {
-      return ElementTypeInfo.GetElementTypeInfoOfSpeckleObject(@base);
-    }
-    
-    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo(string categoryName)
-    {
-      return ElementTypeInfo.GetElementTypeInfoOfCategory(categoryName);
-    }
-
-    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo<T>(Base @base)
-    {
-      return ElementTypeInfo.GetElementTypeInfo<T>(@base);
-    }
-
-    public IElementTypeInfo<BuiltInCategory> UndefinedTypeInfo => ElementTypeInfo.Undefined;
 
     public bool CacheContainsTypeWithName(string category, string baseType)
     {
@@ -77,7 +82,7 @@ namespace Objects.Converter.Revit
       return conversionOperationCache.GetAllObjectsOfType<ElementType>();
     }
     
-    public IEnumerable<ElementType> GetAndCacheAvailibleTypes(IElementTypeInfo<BuiltInCategory> typeInfo)
+    public IEnumerable<ElementType> GetOrAddAvailibleTypes(IElementTypeInfo<BuiltInCategory> typeInfo)
     {
       var types = conversionOperationCache.GetOrAdd<IEnumerable<ElementType>>(
         typeInfo.CategoryName,
@@ -93,26 +98,23 @@ namespace Objects.Converter.Revit
       return types;
     }
 
+    #endregion
+
     private string GetUniqueTypeName(string category, string type)
     {
       return category + "_" + type;
     }
 
-    public ElementType? TryGetElementType(string category, string typeName)
-    {
-      return conversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(category, typeName));
-    }
-
     private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
       where T : ElementType
     {
-      var type = GetRevitTypeOfBase(element);
+      var type = GetElementType(element);
       if (type == null)
       {
         throw new ArgumentException($"Could not find valid type of element of type \"{element.speckle_type}\"");
       }
       var typeInfo = GetRevitTypeInfo<T>(element);
-      var types = GetAndCacheAvailibleTypes(typeInfo);
+      var types = GetOrAddAvailibleTypes(typeInfo);
 
       isExactMatch = false;
       if (!types.Any())
