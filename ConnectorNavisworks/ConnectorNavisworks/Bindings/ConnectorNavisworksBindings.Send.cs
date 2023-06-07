@@ -430,7 +430,15 @@ public partial class ConnectorBindingsNavisworks
 
     if (state.Filter?.Slug == "views")
     {
-      var selectedViews = state.Filter.Selection.Select(_conversionInvoker.Convert).Where(c => c != null).ToList();
+      var selectionBuilder = new SelectionHandler(state, _progressViewModel) { ProgressBar = _progressBar };
+
+      var selectedViews = state.Filter.Selection
+        .Distinct()
+        .Select(selectionBuilder.ResolveSavedViewpoint)
+        .Select(_conversionInvoker.Convert)
+        .Where(c => c != null)
+        .ToList();
+
       views.AddRange(selectedViews);
     }
     // Only send current view if we aren't sending other views.

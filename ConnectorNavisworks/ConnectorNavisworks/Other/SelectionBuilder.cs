@@ -129,7 +129,7 @@ public class SelectionHandler
   /// </summary>
   /// <param name="savedViewReference">The saved view reference to resolve.</param>
   /// <returns>The resolved SavedViewpoint.</returns>
-  private SavedViewpoint ResolveSavedViewpoint(string savedViewReference)
+  public SavedViewpoint ResolveSavedViewpoint(string savedViewReference)
   {
     // Get a flattened list of viewpoints and their references
     var flattenedViewpointList = Application.ActiveDocument.SavedViewpoints.RootItem.Children
@@ -179,10 +179,10 @@ public class SelectionHandler
 
     var invoker = new Invoker();
 
-    var resolvedReference = invoker.Invoke(Application.ActiveDocument.ResolveReference, savedRef);
+    var resolvedReference = invoker.Invoke(Application.ActiveDocument.ResolveReference, savedRef) as SavedViewpoint;
 
     // var resolvedReference = Application.ActiveDocument.ResolveReference(savedRef);
-    return (SavedViewpoint)resolvedReference;
+    return resolvedReference;
   }
 
   /// <summary>
@@ -192,8 +192,10 @@ public class SelectionHandler
   /// <returns>The TreeNode representing the views for the given SavedItem.</returns>
   private TreeNode GetViews(SavedItem savedItem)
   {
+    var invoker = new Invoker();
     // Create a reference to the SavedItem
-    var reference = Application.ActiveDocument.SavedViewpoints.CreateReference(savedItem);
+    SavedItemReference reference =
+      invoker.Invoke(Application.ActiveDocument.SavedViewpoints.CreateReference, savedItem) as SavedItemReference;
 
     // Create a new TreeNode with properties based on the SavedItem
     var treeNode = new TreeNode

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Navisworks.Api;
@@ -55,6 +55,9 @@ public partial class ConverterNavisworks
             break;
           case Viewpoint item:
             @base = ViewpointToBase(item);
+            break;
+          case SavedViewpoint savedViewpoint:
+            @base = ViewpointToBase(savedViewpoint);
             break;
           default:
             return null;
