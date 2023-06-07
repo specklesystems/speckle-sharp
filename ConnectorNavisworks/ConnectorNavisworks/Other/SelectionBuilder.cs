@@ -67,7 +67,7 @@ public class SelectionHandler
     var progressIncrement = 1.0 / count;
 
     // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0, "Rolling up the sleeves... Time to handpick your favorite data items!");
+    ProgressBar.BeginSubOperation(0.1, "Rolling up the sleeves... Time to handpick your favorite data items!");
 
     // Iterate over the selection and retrieve the corresponding model items
     for (var i = 0; i < count; i++)
@@ -92,6 +92,9 @@ public class SelectionHandler
   private IEnumerable<ModelItem> GetObjectsFromSavedViewpoint()
   {
     _uniqueModelItems.Clear();
+
+    // Begin the progress sub-operation for getting objects from selection
+    ProgressBar.BeginSubOperation(0.1, "Checking the Canvas... Looking Closely!");
 
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
@@ -317,11 +320,16 @@ public class SelectionHandler
     }
   }
 
-  private void ProgressLooper(int totalCount, string operationName, Func<int, bool> fn)
+  private void ProgressLooper(
+    int totalCount,
+    string operationName,
+    Func<int, bool> fn,
+    double fractionOfRemainingTime = 0
+  )
   {
     var increment = 1.0 / totalCount;
     var updateInterval = Math.Max(totalCount / 100, 1);
-    ProgressBar.BeginSubOperation(0, operationName);
+    ProgressBar.BeginSubOperation(fractionOfRemainingTime, operationName);
     ProgressBar.Update(0);
 
     for (int i = 0; i < totalCount; i++)
