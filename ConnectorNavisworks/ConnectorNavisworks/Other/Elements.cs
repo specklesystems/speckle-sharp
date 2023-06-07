@@ -14,16 +14,6 @@ public class Element
   private ModelItem _modelItem;
 
   /// <summary>
-  /// Creates a new Element instance using a given pseudoId.
-  /// </summary>
-  /// <param name="pseudoId">The pseudoId used to create the Element instance.</param>
-  /// <returns>A new Element instance with its pseudoId set.</returns>
-  public static Element GetElement(string pseudoId)
-  {
-    return new Element(pseudoId);
-  }
-
-  /// <summary>
   /// Initializes a new instance of the Element class with a specified pseudoId and optionally a ModelItem.
   /// </summary>
   /// <param name="pseudoId">The pseudoId used to create the Element instance.</param>
@@ -32,6 +22,27 @@ public class Element
   {
     PseudoId = pseudoId;
     _modelItem = modelItem;
+  }
+
+  private Element(string pseudoId)
+  {
+    PseudoId = pseudoId;
+  }
+
+  public Element() { }
+
+  public ModelItem ModelItem => Resolve();
+
+  public string PseudoId { get; private set; }
+
+  /// <summary>
+  /// Creates a new Element instance using a given pseudoId.
+  /// </summary>
+  /// <param name="pseudoId">The pseudoId used to create the Element instance.</param>
+  /// <returns>A new Element instance with its pseudoId set.</returns>
+  public static Element GetElement(string pseudoId)
+  {
+    return new Element(pseudoId);
   }
 
   /// <summary>
@@ -43,16 +54,6 @@ public class Element
   {
     return new Element(GetPseudoId(modelItem), modelItem);
   }
-
-  public ModelItem ModelItem => Resolve();
-  public string PseudoId { get; private set; }
-
-  private Element(string pseudoId)
-  {
-    PseudoId = pseudoId;
-  }
-
-  public Element() { }
 
   /// <summary>
   /// Gets the PseudoId for the given ModelItem.
@@ -82,10 +83,9 @@ public class Element
       return _modelItem;
 
     if (PseudoId == Constants.RootNodePseudoId)
-    {
       return Application.ActiveDocument.Models.RootItems.First;
-    }
-    else if (PseudoId != null)
+
+    if (PseudoId != null)
     {
       int[] pathArray;
 
@@ -186,10 +186,10 @@ public class Element
   public static IEnumerable<Base> BuildNestedObjectHierarchy(Dictionary<string, Base> convertedDictionary)
   {
     // This dictionary is for looking up parents quickly
-    Dictionary<string, Base> lookupDictionary = new Dictionary<string, Base>();
+    Dictionary<string, Base> lookupDictionary = new();
 
     // This dictionary will hold potential root nodes until we confirm they are roots
-    Dictionary<string, Base> potentialRootNodes = new Dictionary<string, Base>();
+    Dictionary<string, Base> potentialRootNodes = new();
 
     // First pass: Create lookup dictionary and identify potential root nodes
     foreach (var pair in convertedDictionary)
@@ -203,9 +203,7 @@ public class Element
       lookupDictionary.Add(key, value);
 
       if (!lookupDictionary.ContainsKey(parentKey))
-      {
         potentialRootNodes.Add(key, value);
-      }
     }
 
     // Second pass: Attach child nodes to their parents, and confirm root nodes
@@ -243,14 +241,12 @@ public class Element
   /// Recursively prunes empty collections from the given node and its descendants.
   /// </summary>
   /// <param name="node">The node to start pruning from.</param>
-  static void PruneEmptyCollections(IDynamicMetaObjectProvider node)
+  private static void PruneEmptyCollections(IDynamicMetaObjectProvider node)
   {
     if (node is not Collection collection)
       return;
     if (collection.elements == null)
-    {
       return;
-    }
 
     for (int i = collection.elements.Count - 1; i >= 0; i--)
     {
@@ -260,14 +256,10 @@ public class Element
         collection.elements[i] is Collection childCollection
         && (childCollection.elements == null || childCollection.elements.Count == 0)
       )
-      {
         collection.elements.RemoveAt(i);
-      }
     }
 
     if (collection.elements.Count == 0)
-    {
       collection.elements = null;
-    }
   }
 }

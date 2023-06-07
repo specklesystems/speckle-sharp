@@ -1,6 +1,6 @@
 ﻿namespace Speckle.ConnectorNavisworks.Other;
 
-static class FilterTypes
+internal static class FilterTypes
 {
   public const string Manual = "manual";
   public const string Sets = "sets";

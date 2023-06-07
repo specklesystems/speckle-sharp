@@ -11,6 +11,4 @@ public static class Constants
     ToConvert = 2,
     Failed = 3
   }
-  
-
 }

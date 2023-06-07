@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
-using Speckle.Core.Kits;
 using Speckle.ConnectorNavisworks.Other;
+using Speckle.Core.Kits;
 using Application = Autodesk.Navisworks.Api.Application;
 using MenuItem = DesktopUI2.Models.MenuItem;
 
@@ -32,6 +32,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   }
 
   // Majority of interaction with Speckle will be through the saved selection and search Sets
+
 
   public static string HostAppName => HostApplications.Navisworks.Slug;
 
@@ -90,10 +91,10 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     var hash = Core.Models.Utilities.hashString(fileName, Core.Models.Utilities.HashingFuctions.MD5);
     return hash;
   }
-  
+
   public override List<string> GetObjectsInView() // this returns all visible doc objects.
   // TODO!
   {
-  throw new NotImplementedException();
+    throw new NotImplementedException();
   }
 }
