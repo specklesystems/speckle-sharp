@@ -433,8 +433,8 @@ public partial class ConnectorBindingsNavisworks
       var selectedViews = state.Filter.Selection.Select(_conversionInvoker.Convert).Where(c => c != null).ToList();
       views.AddRange(selectedViews);
     }
-
-    if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting { IsChecked: true })
+    // Only send current view if we aren't sending other views.
+    else if (CurrentSettings.Find(x => x.Slug == "current-view") is CheckBoxSetting { IsChecked: true })
     {
       var currentView = _conversionInvoker.Convert(_doc.CurrentViewpoint.ToViewpoint());
       var homeView = _conversionInvoker.Convert(_doc.HomeView);
