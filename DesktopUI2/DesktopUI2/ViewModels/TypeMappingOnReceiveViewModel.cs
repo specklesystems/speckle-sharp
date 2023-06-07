@@ -25,131 +25,7 @@ namespace DesktopUI2.ViewModels
     private List<ISingleValueToMap> _visibleMappingValues;
     public bool DoneMapping;
 
-    private bool isSearching;
-    public const string TypeCatMisc = "Miscellaneous"; // needs to match string in connectorRevit.Mappings
-
-    //this constructor is purely for xaml design purposes
-    //public TypeMappingOnReceiveViewModel()
-    //{
-    //  Mapping = new Dictionary<string, List<MappingValue>>
-    //{
-    //  {
-    //    "Materials",
-    //    new List<MappingValue>(
-    //      new List<MappingValue>
-    //      {
-    //        new("W12x19", "W12x19"),
-    //        new("Type1", "type123"),
-    //        new("anotherType", "anotherType"),
-    //        new("yetAnotherType", "differentType", true),
-    //        new("short", "short"),
-    //        new("a very very very long type name. Oh no", "a very very very long type name. Oh no")
-    //      }
-    //    )
-    //  },
-    //  {
-    //    "Beams",
-    //    new List<MappingValue>(
-    //      new List<MappingValue>
-    //      {
-    //        new("W12x19", "W12x19"),
-    //        new("Wood Beam", "type123"),
-    //        new("Glulam", "anotherType", true),
-    //        new("Conc Beam", "differentType"),
-    //        new("short", "short"),
-    //        new("a very very very long type name. Oh no", "a very very very long type name. Oh no")
-    //      }
-    //    )
-    //  },
-    //  {
-    //    "Columns",
-    //    new List<MappingValue>(new List<MappingValue> { new("W12x19", "W12x19"), new("col", "type123", true) })
-    //  }
-    //};
-
-    //  Mapping[UnmappedKey] = new List<MappingValue>();
-
-    //  _hostTypeValuesDict = new Dictionary<string, List<string>>
-    //{
-    //  {
-    //    "Materials",
-    //    new List<string>
-    //    {
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone",
-    //      "brick",
-    //      "sheep",
-    //      "wheat",
-    //      "stone"
-    //    }
-    //  },
-    //  {
-    //    "Beams",
-    //    new List<string> { "concrete", "tile" }
-    //  },
-    //  {
-    //    "Columns",
-    //    new List<string> { "brick", "gyp", "shearwall1" }
-    //  }
-    //};
-
-    //  var kv = Mapping.First();
-    //  SelectedCategory = kv.Key;
-    //}
+    public const string TypeCatMisc = "Miscellaneous";
 
     public TypeMappingOnReceiveViewModel(
       ITypeMap typeMap,
@@ -173,12 +49,10 @@ namespace DesktopUI2.ViewModels
       get => _searchQuery;
       set
       {
-        isSearching = true;
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
 
         SearchResults = GetCategoryOrAll(SelectedCategory).Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList();
         this.RaisePropertyChanged(nameof(SearchResults));
-        isSearching = false;
       }
     }
 
