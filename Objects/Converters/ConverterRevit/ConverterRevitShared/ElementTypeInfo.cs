@@ -156,24 +156,6 @@ namespace Objects.Converter.Revit
 
     public static ElementTypeInfo GetElementTypeInfoOfSpeckleObject(Base @base)
     {
-      //return @base switch
-      //{
-      //  Objects.BuiltElements.Column => Column,
-      //  Beam => StructuralFraming,
-      //  Brace => StructuralFraming,
-      //  Objects.BuiltElements.Duct => Duct,
-      //  OSG.Element1D e when e.type == OSG.ElementType1D.Column => Column,
-      //  OSG.Element1D e when e.type == OSG.ElementType1D.Beam => StructuralFraming,
-      //  OSG.Element1D e when e.type == OSG.ElementType1D.Brace => StructuralFraming,
-      //  OSG.Element2D => Floor,
-      //  Objects.BuiltElements.Floor => Floor,
-      //  //Objects.Other.Material => Material,
-      //  Objects.BuiltElements.Pipe => Pipe,
-      //  Objects.BuiltElements.Roof => Roof,
-      //  Objects.BuiltElements.Wall => Wall,
-      //  _ => Undefined
-      //};
-
       return @base switch
       {
         ////geometry
