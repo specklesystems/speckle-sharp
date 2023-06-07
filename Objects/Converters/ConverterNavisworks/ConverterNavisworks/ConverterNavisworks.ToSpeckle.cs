@@ -73,7 +73,6 @@ public partial class ConverterNavisworks
   public List<Base> ConvertToSpeckle(List<object> objects)
   {
     throw new NotImplementedException();
-    // return objects.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
   }
 
   public bool CanConvertToSpeckle(object @object)
@@ -212,9 +211,6 @@ public partial class ConverterNavisworks
 
   private static Base CategoryToSpeckle(ModelItem element)
   {
-    // var applicationId = PseudoIdFromModelItem(element);
-    // var applicationId = element.InstanceHashCode.ToString();
-
     var elementCategory = element.PropertyCategories.FindPropertyByName(
       PropertyCategoryNames.Item,
       DataPropertyNames.ItemIcon
@@ -259,10 +255,6 @@ public partial class ConverterNavisworks
     ((Collection)@base).name = string.IsNullOrEmpty(element.DisplayName)
       ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
       : element.DisplayName;
-    ;
-
-    // var elements = element.Children.Select(ModelItemToSpeckle).Where(childBase => childBase != null).ToList();
-
 
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason
