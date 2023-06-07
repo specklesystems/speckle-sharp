@@ -43,13 +43,12 @@
             <PrivateAssets>all</PrivateAssets>
         </PackageReference>
         <PackageReference Include="Revit.Async" Version="2.0.1" />
+        <PackageReference Include="xUnitRevitUtils.2023" Version="1.0.7" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\..\ConnectorRevit\ConnectorRevit2023\ConnectorRevit2023.csproj" />
         <ProjectReference Include="..\..\..\..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\..\Objects\Objects.csproj" />
         <ProjectReference Include="..\..\ConverterRevit2023\ConverterRevit2023.csproj" />
-        <ProjectReference Include="..\xUnitRevit\speckle.xunit.runner.wpf\speckle.xunit.runner.wpf\speckle.xunit.runner.wpf.csproj" />
-        <ProjectReference Include="..\xUnitRevit\xUnitRevitUtils\xUnitRevitUtils2023\xUnitRevitUtils2023.csproj" />
     </ItemGroup>
 </Project>
