@@ -41,7 +41,7 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
-    private static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(StreamState state, ProgressViewModel progress, Type converterType, UIDocument UIDoc)
+    private static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(IStreamState state, ProgressViewModel progress, Type converterType, UIDocument UIDoc)
     {
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(converterType);
@@ -53,7 +53,7 @@ namespace Speckle.ConnectorRevit.UI
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
 
-      Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken).ConfigureAwait(false);
       state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
       await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);

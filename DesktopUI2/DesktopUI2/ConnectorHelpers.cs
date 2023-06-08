@@ -1,9 +1,10 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Interfaces;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Controls.StreamEditControls;
 using Serilog.Events;
@@ -85,7 +86,7 @@ public static class ConnectorHelpers
   /// <returns>Requested Commit</returns>
   /// <exception cref="SpeckleException">Thrown when any client errors</exception>
   /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> requests a cancellation</exception>
-  public static async Task<Commit> GetCommitFromState(StreamState state, CancellationToken cancellationToken = default)
+  public static async Task<Commit> GetCommitFromState(IStreamState state, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
 
