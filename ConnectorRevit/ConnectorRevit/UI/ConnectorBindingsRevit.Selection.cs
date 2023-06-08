@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 using ConnectorRevit;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.UI
@@ -126,7 +127,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    private List<Element> GetSelectionFilterObjects(ISelectionFilter filter)
+    private List<Element> GetSelectionFilterObjects(ISpeckleConverter converter, ISelectionFilter filter)
     {
       var currentDoc = CurrentDoc.Document;
       var allDocs = GetLinkedDocuments();
@@ -243,38 +244,37 @@ namespace Speckle.ConnectorRevit.UI
             }
             return selection;
           case "view":
-            var viewFilter = filter as ListSelectionFilter;
-
-            var views = new FilteredElementCollector(currentDoc)
-              .WhereElementIsNotElementType()
-              .OfClass(typeof(View))
-              .Where(x => viewFilter.Selection.Contains(x.Name));
-
-            if (!views.Where(v => v is not ViewSchedule).Any())
             {
+              var viewFilter = filter as ListSelectionFilter;
+              using var collector = new FilteredElementCollector(currentDoc);
+              var views = collector
+                .WhereElementIsNotElementType()
+                .OfClass(typeof(View))
+                .Where(x => viewFilter.Selection.Contains(x.Name))
+                .ToList();
+
+              if (views.Count == 1)
+              {
+                converter.SetContextDocument(views[0]);
+              }
+
               foreach (var view in views)
               {
                 selection.Add(view);
+                var ids = selection.Select(x => x.UniqueId);
+
+                foreach (var doc in allDocs)
+                {
+                  selection.AddRange(new FilteredElementCollector(doc, view.Id)
+                  .WhereElementIsNotElementType()
+                  .WhereElementIsViewIndependent()
+                  //.Where(x => x.IsPhysicalElement())
+                  .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
+                  .ToList());
+                }
               }
               return selection;
             }
-
-            foreach (var view in views)
-            {
-              selection.Add(view);
-              var ids = selection.Select(x => x.UniqueId);
-
-              foreach (var doc in allDocs)
-              {
-                selection.AddRange(new FilteredElementCollector(doc, view.Id)
-                .WhereElementIsNotElementType()
-                .WhereElementIsViewIndependent()
-                //.Where(x => x.IsPhysicalElement())
-                .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
-                .ToList());
-              }
-            }
-            return selection;
 
           case "schedule":
             var scheduleFilter = filter as ListSelectionFilter;

@@ -110,11 +110,23 @@ namespace Objects.Converter.Revit
       {
         PreviouslyReceivedObjectIds = cache;
       }
-      else
+      else if (doc is DB.View view)
       {
-        Doc = (Document)doc;
+        // setting the view as a 2d view will result in no objects showing up, so only do it if it's a 3D view
+        if (view is View3D view3D)
+        {
+          ViewSpecificOptions = new Options() { View = view, ComputeReferences = true };
+        }
+      }
+      else if (doc is Document document)
+      {
+        Doc = document;
         Report.Log($"Using document: {Doc.PathName}");
         Report.Log($"Using units: {ModelUnits}");
+      }
+      else
+      {
+        throw new ArgumentException($"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}");
       }
     }
 
