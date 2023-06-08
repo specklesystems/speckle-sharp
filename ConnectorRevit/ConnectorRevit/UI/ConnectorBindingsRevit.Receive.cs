@@ -6,11 +6,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using Avalonia.Threading;
 using ConnectorRevit.Revit;
 using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
+using DesktopUI2.Models.Interfaces;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
@@ -27,9 +29,6 @@ namespace Speckle.ConnectorRevit.UI
 
   public partial class ConnectorBindingsRevit
   {
-    public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
-    public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
-
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -38,16 +37,15 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      await ReceiveStreamTestable(state, progress, Converter.GetType());
-
+      await ReceiveStreamTestable(state, progress, Converter.GetType(), CurrentDoc).ConfigureAwait(false);
       return state;
     }
 
-    private static async Task ReceiveStreamTestable(StreamState state, ProgressViewModel progress, Type converterType)
+    private static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(StreamState state, ProgressViewModel progress, Type converterType, UIDocument UIDoc)
     {
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(converterType);
-      converter.SetContextDocument(CurrentDoc.Document);
+      converter.SetContextDocument(UIDoc.Document);
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
@@ -86,11 +84,11 @@ namespace Speckle.ConnectorRevit.UI
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
       }
 
-      var (success, exception) = await RevitTask.RunAsync(app =>
+      var (convertedObjects, exception) = await RevitTask.RunAsync<(IConvertedObjectsCache<Base,Element>,Exception)>(app =>
       {
         string transactionName = $"Baking stream {state.StreamId}";
-        using var g = new TransactionGroup(CurrentDoc.Document, transactionName);
-        using var t = new Transaction(CurrentDoc.Document, transactionName);
+        using var g = new TransactionGroup(UIDoc.Document, transactionName);
+        using var t = new Transaction(UIDoc.Document, transactionName);
 
         g.Start();
         var failOpts = t.GetFailureHandlingOptions();
@@ -103,15 +101,15 @@ namespace Speckle.ConnectorRevit.UI
         {
           converter.SetContextDocument(t);
 
-          var convertedObjects = ConvertReceivedObjects(converter, progress, state.Settings, preview, storedObjects);
+          var convertedObjects = ConvertReceivedObjects(converter, progress, UIDoc, state.Settings, preview, storedObjects);
 
           if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previousObjects, convertedObjects);
+            DeleteObjects(previousObjects, convertedObjects, UIDoc.Document);
 
           previousObjects.AddConvertedElements(convertedObjects);
           t.Commit();
           g.Assimilate();
-          return (true, null);
+          return (convertedObjects, null);
         }
         catch (Exception ex)
         {
@@ -123,20 +121,22 @@ namespace Speckle.ConnectorRevit.UI
 
           t.RollBack();
           g.RollBack();
-          return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
+          return (null, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
-      });
+      }).ConfigureAwait(false);
 
-      if (!success)
+      if (exception != null)
       {
         //Don't wrap cancellation token (if it's ours!)
         if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
         throw new SpeckleException(exception.Message, exception);
       }
+
+      return convertedObjects;
     }
 
     //delete previously sent object that are no more in this stream
-    private static void DeleteObjects(IReceivedObjectIdMap<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects)
+    private static void DeleteObjects(IReceivedObjectIdMap<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects, Document document)
     {
       var previousAppIds = previousObjects.GetAllConvertedIds().ToList();
       for (var i = previousAppIds.Count - 1; i >=0; i--)
@@ -149,15 +149,15 @@ namespace Speckle.ConnectorRevit.UI
 
         foreach (var elementId in elementIdToDelete)
         {
-          var elementToDelete = CurrentDoc.Document.GetElement(elementId);
+          var elementToDelete = document.GetElement(elementId);
 
-          if (elementToDelete != null) CurrentDoc.Document.Delete(elementToDelete.Id);
+          if (elementToDelete != null) document.Delete(elementToDelete.Id);
           previousObjects.RemoveConvertedId(appId);
         }
       }
     }
 
-    private static IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, List<ISetting> settings, List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
+    private static IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress, UIDocument UIDoc, List<ISetting> settings, List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
     {
       var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
@@ -185,7 +185,7 @@ namespace Speckle.ConnectorRevit.UI
             continue;
 
           var convRes = converter.ConvertToNative(@base);
-          RefreshView();
+          RefreshView(UIDoc);
 
           switch (convRes)
           {
@@ -212,19 +212,19 @@ namespace Speckle.ConnectorRevit.UI
       return convertedObjectsCache;
     }
 
-    private static void RefreshView()
+    private static void RefreshView(UIDocument UIDoc)
     {
       //regenerate the document and then implement a hack to "refresh" the view
-      CurrentDoc.Document.Regenerate();
+      UIDoc.Document.Regenerate();
 
       // get the active ui view
-      var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+      var view = UIDoc.ActiveGraphicalView ?? UIDoc.Document.ActiveView;
       if (view is TableView)
       {
         return;
       }
 
-      var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+      var uiView = UIDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
       // "refresh" the active view
       uiView.Zoom(1);
