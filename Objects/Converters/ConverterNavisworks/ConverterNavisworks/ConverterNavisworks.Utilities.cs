@@ -17,6 +17,7 @@ internal static class ArrayExtension
   }
 }
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   private const string RootNodePseudoId = "___";

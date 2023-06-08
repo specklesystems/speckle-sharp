@@ -12,6 +12,8 @@ using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks;
 
+
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   public Base ConvertToSpeckle(object @object)
