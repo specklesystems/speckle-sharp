@@ -2,16 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
-using Objects.BuiltElements;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using OSG = Objects.Structural.Geometry;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
-using BERC = Objects.BuiltElements.Revit.Curve;
-using GE = Objects.Geometry;
-using STR = Objects.Structural;
 
 namespace Objects.Converter.Revit
 {
@@ -158,14 +154,6 @@ namespace Objects.Converter.Revit
     {
       return @base switch
       {
-        ////geometry
-        //ICurve _ => true,
-        //Geometry.Brep _ => true,
-        //Geometry.Mesh _ => true,
-        //// non revit built elems
-        //BE.Structure _ => true,
-        //BE.Alignment _ => true,
-        //built elems
         BER.AdaptiveComponent _ => FamilyInstance,
         BE.Beam _ => StructuralFraming,
         BE.Brace _ => StructuralFraming,
@@ -173,20 +161,9 @@ namespace Objects.Converter.Revit
 #if !REVIT2020 && !REVIT2021
         BE.Ceiling _ => Ceiling,
 #endif
-        //BERC.DetailCurve _ => true,
-        //BER.DirectShape _ => true,
-        //BER.FreeformElement _ => true,
         BER.FamilyInstance _ => FamilyInstance,
         BE.Floor _ => Floor,
-        //BE.Level _ => true,
-        //BERC.ModelCurve _ => true,
-        //BE.Opening _ => true,
-        //BERC.RoomBoundaryLine _ => true,
-        //BERC.SpaceSeparationLine _ => true,
         BE.Roof _ => Roof,
-        //BE.Topography _ => true,
-        //BER.RevitFaceWall _ => true,
-        //BER.RevitProfileWall _ => true,
         BE.Wall _ => Wall,
         BE.Duct _ => Duct,
         BE.Pipe _ => Pipe,
@@ -195,19 +172,10 @@ namespace Objects.Converter.Revit
         BE.Conduit _ => Conduit,
         BE.Revit.RevitRailing _ => Railing,
         Other.Revit.RevitInstance _ => FamilyInstance,
-        //BER.ParameterUpdater _ => true,
-        //BE.View3D _ => true,
-        //BE.Room _ => true,
-        //BE.GridLine _ => true,
-        //BE.Space _ => true,
-        //BE.Network _ => true,
-        //Structural
         OSG.Element1D e when e.type == OSG.ElementType1D.Beam => StructuralFraming,
         OSG.Element1D e when e.type == OSG.ElementType1D.Brace => StructuralFraming,
         OSG.Element1D e when e.type == OSG.ElementType1D.Column => Column,
         OSG.Element2D => Floor,
-        //Other.BlockInstance _ => true,
-        //Organization.DataTable _ => true,
         _ => Undefined,
       };
     }

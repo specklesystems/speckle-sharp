@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Classes;
 using RevitSharedResources.Interfaces;
@@ -47,6 +46,9 @@ namespace Objects.Converter.Revit
         case OSG.Element2D el:
           type = el.property?.name;
           break;
+        case Other.Revit.RevitInstance el:
+          type = el.typedDefinition?.type;
+          break;
       };
       return type ?? @base["type"] as string;
     }
@@ -62,6 +64,10 @@ namespace Objects.Converter.Revit
         case OSG.Element2D el:
           if (el.property == null) goto default;
           el.property.name = type;
+          break;
+        case Other.Revit.RevitInstance el:
+          if (el.typedDefinition == null) goto default;
+          el.typedDefinition.type = type;
           break;
         default:
           @base["type"] = type;
