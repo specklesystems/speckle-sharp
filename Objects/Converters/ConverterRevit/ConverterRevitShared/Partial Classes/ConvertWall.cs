@@ -234,24 +234,48 @@ namespace Objects.Converter.Revit
 
       var meshPanels = new List<Mesh>();
       var meshMullions = new List<Mesh>();
-      foreach (ElementId panelId in grid.GetPanelIds())
+
+      HashSet<int> idsInView = null;
+      if (ViewSpecificOptions != null)
       {
-        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
-        if (SubelementIds.Contains(panelId))
-          continue;
-        SubelementIds.Add(panelId);
-        meshPanels.AddRange(GetElementDisplayValue(wall.Document.GetElement(panelId)));
+        using var panelFilter = new ElementCategoryFilter(DB.BuiltInCategory.OST_CurtainWallPanels);
+        using var panelCollector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id)
+          .WhereElementIsNotElementType()
+          .WherePasses(panelFilter);
+
+        idsInView = new HashSet<int>(panelCollector.ToElementIds().Select(id => id.IntegerValue));
       }
-      foreach (ElementId mullionId in grid.GetMullionIds())
+      AddMeshesToList(grid.GetPanelIds(), meshPanels, idsInView);
+
+      idsInView = null;
+      if (ViewSpecificOptions != null)
       {
-        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
-        if (SubelementIds.Contains(mullionId))
-          continue;
-        SubelementIds.Add(mullionId);
-        meshMullions.AddRange(GetElementDisplayValue(wall.Document.GetElement(mullionId)));
+        using var mullionFilter = new ElementCategoryFilter(DB.BuiltInCategory.OST_CurtainWallMullions);
+        using var mullionCollector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id)
+          .WhereElementIsNotElementType()
+          .WherePasses(mullionFilter);
+
+        idsInView = new HashSet<int>(mullionCollector.ToElementIds().Select(id => id.IntegerValue));
       }
+      AddMeshesToList(grid.GetMullionIds(), meshMullions, idsInView);
 
       return (meshPanels, meshMullions);
+    }
+
+    private void AddMeshesToList(IEnumerable<ElementId> elementIds, List<Mesh> meshes, HashSet<int> acceptableElementIds = null)
+    {
+      foreach (var id in elementIds)
+      {
+        if (acceptableElementIds != null && !acceptableElementIds.Contains(id.IntegerValue))
+        {
+          continue;
+        }
+        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
+        if (SubelementIds.Contains(id))
+          continue;
+        SubelementIds.Add(id);
+        meshes.AddRange(GetElementDisplayValue(Doc.GetElement(id)));
+      }
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls
