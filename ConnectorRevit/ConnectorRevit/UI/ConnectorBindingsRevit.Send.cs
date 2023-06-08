@@ -176,7 +176,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       var commitId = await ConnectorHelpers
-        .CreateCommit(progress.CancellationToken, client, actualCommit)
+        .CreateCommit(client, actualCommit, progress.CancellationToken)
         .ConfigureAwait(false);
 
       return commitId;
