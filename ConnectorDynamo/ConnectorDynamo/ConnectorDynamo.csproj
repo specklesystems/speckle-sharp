@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
     <PropertyGroup>
         <RootNamespace>Speckle.ConnectorDynamo</RootNamespace>
         <AssemblyName>SpeckleConnectorDynamo</AssemblyName>
@@ -22,12 +22,18 @@
         <DyfFolder>$(PackageFolder)dyf\</DyfFolder>
     </PropertyGroup>
     <ItemGroup>
-        <Reference Include="PresentationCore" />
-        <Reference Include="PresentationFramework" />
-        <Reference Include="System.Xaml" />
-        <Reference Include="System.Data.DataSetExtensions" />
-        <Reference Include="Microsoft.CSharp" />
-        <Reference Include="WindowsBase" />
+      <Reference Include="PresentationCore" />
+      <Reference Include="PresentationFramework" />
+      <Reference Include="System" />
+      <Reference Include="System.Core" />
+      <Reference Include="System.Drawing" />
+      <Reference Include="System.Xaml" />
+      <Reference Include="System.Xml.Linq" />
+      <Reference Include="System.Data.DataSetExtensions" />
+      <Reference Include="Microsoft.CSharp" />
+      <Reference Include="System.Data" />
+      <Reference Include="System.Xml" />
+      <Reference Include="WindowsBase" />
     </ItemGroup>
     <ItemGroup>
         <PackageReference Include="DynamoVisualProgramming.Core" Version="2.8.0.2471"
@@ -157,27 +163,34 @@
 
     <Target Name="AfterBuildMigrated" AfterTargets="Build">
 
-        <CSC TargetType="library"
-            Resources="$(ProjectDir)\SpeckleConnectorDynamoImages.resx"
-            OutputAssembly="$(OutDir)SpeckleConnectorDynamo.customization.dll" />
-        <!-- Icons stuff end -->
-        <ItemGroup>
-            <Dlls Include="$(OutDir)\**\*.*" />
-            <!--<Pdbs
-            Include="$(OutDir)*.pdb" />-->
-            <SourceExtension Include="$(OutDir)*Extension_ViewExtensionDefinition.xml" />
-            <!--<XML
-            Include="$(OutDir)*.xml" />-->
-            <PackageJson Include="$(ProjectDir)pkg.json" />
-        </ItemGroup>
-        <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))" />
-        <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))" />
-        <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)\%(RecursiveDir)" />
-        <!--<Copy
-        SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />-->
-        <!--<Copy
-        SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />-->
-        <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
-        <Copy SourceFiles="@(SourceExtension)" DestinationFolder="$(ExtraFolder)" />
+      <!-- Icons stuff -->
+      <!-- Get System.Drawing.dll -->
+      <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.8">
+        <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
+      </GetReferenceAssemblyPaths>
+      <!-- Get assembly -->
+      <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
+        <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+      </GetAssemblyIdentity>
+      <!-- Generate customization dll -->
+      <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" UseSourcePath="true" Sources="$(ProjectDir)\SpeckleConnectorDynamoImages.resx" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
+      <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamo.customization.dll" Version="%(AssemblyInfo.Version)" />
+      <!-- Icons stuff end -->
+      <ItemGroup>
+        <Dlls Include="$(OutDir)\**\*.*" />
+        <!--<Pdbs Include="$(OutDir)*.pdb" />-->
+        <SourceExtension Include="$(OutDir)*Extension_ViewExtensionDefinition.xml" />
+        <!--<XML Include="$(OutDir)*.xml" />-->
+        <PackageJson Include="$(ProjectDir)pkg.json" />
+      </ItemGroup>
+      <MakeDir Directories="$(ExtraFolder)" Condition="!Exists($(ExtraFolder))">
+      </MakeDir>
+      <MakeDir Directories="$(DyfFolder)" Condition="!Exists($(DyfFolder))">
+      </MakeDir>
+      <Copy SourceFiles="@(Dlls)" DestinationFolder="$(BinFolder)\%(RecursiveDir)" />
+      <!--<Copy SourceFiles="@(Pdbs)" DestinationFolder="$(BinFolder)" />-->
+      <!--<Copy SourceFiles="@(XML)" DestinationFolder="$(BinFolder)" />-->
+      <Copy SourceFiles="@(PackageJson)" DestinationFolder="$(PackageFolder)" />
+      <Copy SourceFiles="@(SourceExtension)" DestinationFolder="$(ExtraFolder)" />
     </Target>
 </Project>

@@ -1,0 +1,16 @@
+{
+  "githubPullRequests.ignoredPullRequestBranches": [
+    "main"
+  ],
+  "editor.formatOnType": true,
+  "[csharp]": {
+    "editor.maxTokenizationLineLength": 2500,
+    "editor.formatOnSave": true,
+    "editor.formatOnType": true
+  },
+  "cSpell.words": [
+    "serilog"
+  ],
+  "dotnet-test-explorer.testProjectPath": "**/Test*.@(csproj|vbproj|fsproj)"
+  
+}

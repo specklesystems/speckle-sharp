@@ -6,6 +6,7 @@ orbs:
   codecov: codecov/codecov@3.2.2
   wait-for: cobli/wait-for@0.0.2
   discord: antonioned/discord@0.1.0
+  docker: circleci/docker@2.2.0
 
 # The main workflows for our monorepo pipeline.
 
@@ -55,15 +56,16 @@ commands:
           name: Build nuget packages
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
+            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
+            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Push nuget packages
-          command: dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
+          command: $HOME/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
 
   run-tests:
     parameters:
@@ -74,7 +76,7 @@ commands:
     steps:
       - run:
           name: << parameters.title >>
-          command: dotnet test << parameters.project >>
+          command: $HOME/.dotnet/dotnet test << parameters.project >>
             -c Release
             --logger:"junit;LogFileName={assembly}.results.xml"
             --results-directory=TestResults
@@ -83,17 +85,23 @@ commands:
 jobs: # Each project will have individual jobs for each specific task it has to execute (build, release...)
   build-sdk:
     docker:
-      - image: mcr.microsoft.com/dotnet/sdk:6.0
+      - image: cimg/base:2021.01
     steps:
       - cached-checkout
+      - run:
+          name: Install dotnet
+          command: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            $HOME/.dotnet/dotnet --version
       - run:
           name: Build SDK Projects
           command: |
             TAG=$(if [ "${CIRCLE_TAG}" ]; then echo $CIRCLE_TAG; else echo "2.0.999"; fi;)
-            SEMVER=$(echo "$TAG" | sed -e 's/\/[a-zA-Z-]*//')
+            NOPREFIX=$(echo $TAG | sed -e 's/^[a-zA-Z]*\///') 
+            SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            dotnet build SDK.slnf -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
+            $HOME/.dotnet/dotnet build SDK.slnf -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false -p:Version=$SEMVER -p:FileVersion=$VERSION
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run-tests:
@@ -106,37 +114,20 @@ jobs: # Each project will have individual jobs for each specific task it has to 
           path: TestResults
 
   test-core:
-    docker:
-      - image: "mcr.microsoft.com/dotnet/sdk:6.0" # dotnet
-      # Node, redis, postgres and speckle-server images for test server
-      - image: "cimg/node:16.15"
-      - image: "cimg/redis:7.0.5"
-      - image: "cimg/postgres:14.5"
-        environment:
-          POSTGRES_DB: speckle2_test
-          POSTGRES_PASSWORD: speckle
-          POSTGRES_USER: speckle
-      - image: "minio/minio"
-        command: server /data --console-address ":9001"
-      - image: "speckle/speckle-server:latest"
-        command: ["bash", "-c", "/wait && node bin/www"]
-        environment:
-          POSTGRES_URL: "127.0.0.1"
-          POSTGRES_USER: "speckle"
-          POSTGRES_PASSWORD: "speckle"
-          POSTGRES_DB: "speckle2_test"
-          REDIS_URL: "redis://127.0.0.1"
-          SESSION_SECRET: "keyboard cat"
-          STRATEGY_LOCAL: "true"
-          CANONICAL_URL: "http://localhost:3000"
-          S3_ENDPOINT: "http://127.0.0.1:9000"
-          S3_ACCESS_KEY: "minioadmin"
-          S3_SECRET_KEY: "minioadmin"
-          S3_BUCKET: "speckle-server"
-          S3_CREATE_BUCKET: "true"
-          WAIT_HOSTS: 127.0.0.1:5432, 127.0.0.1:6379, 127.0.0.1:9000
+    machine:
+      image: ubuntu-2204:2023.02.1
+      docker_layer_caching: true
+    resource_class: large
     steps:
       - cached-checkout
+      - run:
+          name: Install dotnet
+          command: |
+            curl -sSL https://dot.net/v1/dotnet-install.sh | bash /dev/stdin --channel Current
+            $HOME/.dotnet/dotnet --version
+      - run:
+          name: Startup the Speckle Server
+          command: docker compose -f Core/docker-compose.yml up -d
       - run-tests:
           title: Core Integration Tests
           project: Core/IntegrationTests/TestsIntegration.csproj
