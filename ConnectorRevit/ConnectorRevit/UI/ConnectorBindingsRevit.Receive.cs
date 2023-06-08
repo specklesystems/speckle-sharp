@@ -29,6 +29,7 @@ namespace Speckle.ConnectorRevit.UI
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
 
+    public CancellationTokenSource CurrentOperationCancellation { get; set; }
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -37,6 +38,7 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      CurrentOperationCancellation = progress.CancellationTokenSource;
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
@@ -132,6 +134,7 @@ namespace Speckle.ConnectorRevit.UI
         throw new SpeckleException(exception.Message, exception);
       }
 
+      CurrentOperationCancellation = null;
       return state;
     }
 
