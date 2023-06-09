@@ -5,10 +5,7 @@
         </ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
         <IsPackable>false</IsPackable>
         <AssemblyTitle>ConverterRevitTests</AssemblyTitle>
-        <Company>Autodesk Inc.</Company>
         <Product>ConverterRevitTests Revit C# .NET Add-In</Product>
-        <Description>Revit Add-In Description for ConverterRevitTests</Description>
-        <Copyright>Copyright (C) 2020 by Jeremy Tammik, Autodesk Inc.</Copyright>
         <AssemblyVersion>2021.0.0.0</AssemblyVersion>
         <FileVersion>2021.0.0.0</FileVersion>
         <StartAction>Program</StartAction>
@@ -23,6 +20,18 @@
         <DefineConstants>$(DefineConstants);REVIT2021</DefineConstants>
     </PropertyGroup>
 
+    <PropertyGroup>
+      <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+      <GeneratedFolder>..\ConverterRevitTestsShared\Generated\REVIT2021</GeneratedFolder>
+      <CompilerGeneratedFilesOutputPath>$(GeneratedFolder)</CompilerGeneratedFilesOutputPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Don't include source generator output in the compilation - this is implicitly included anyway.
+        the */** trick here ensures that there's at least one subdirectory, which indicates the files comes
+        from a source generator as opposed to something that is coming from some other tool. -->
+      <Compile Remove="$(GeneratedFolder)/*/**/*.cs" />
+    </ItemGroup>
 
     <Import Project="..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\..\..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
     <Import Project="..\packages\xunit.core.2.4.1\build\xunit.core.props" Condition="Exists('..\packages\xunit.core.2.4.1\build\xunit.core.props')" />
@@ -47,12 +56,15 @@
         </PackageReference>
         <PackageReference Include="ModPlus.Revit.API.2021" Version="4.0.0" />
         <PackageReference Include="Revit.Async" Version="2.0.1" />
-        <PackageReference Include="xUnitRevitUtils.2021" Version="1.0.6" />
+        <PackageReference Include="xUnitRevitUtils.2021" Version="1.0.7" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\..\ConnectorRevit\ConnectorRevit2021\ConnectorRevit2021.csproj" />
         <ProjectReference Include="..\..\..\..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\..\Objects\Objects.csproj" />
         <ProjectReference Include="..\..\ConverterRevit2021\ConverterRevit2021.csproj" />
+        <ProjectReference Include="..\TestGenerator\TestGenerator.csproj" 
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"/>
     </ItemGroup>
 </Project>

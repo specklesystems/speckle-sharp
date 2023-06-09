@@ -338,6 +338,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevit2024", "Objec
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorRevit2024", "ConnectorRevit\ConnectorRevit2024\ConnectorRevit2024.csproj", "{9A1E899A-F821-4519-AAD1-0789A4E9CCB3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConverterRevitTests2022", "Objects\Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTests2022\ConverterRevitTests2022.csproj", "{54E90327-5F48-468D-9349-17AACEAA0A77}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestGenerator", "Objects\Converters\ConverterRevit\ConverterRevitTests\TestGenerator\TestGenerator.csproj", "{6499CA05-6864-47AE-9204-B11B10C23417}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug Mac|Any CPU = Debug Mac|Any CPU
@@ -1767,6 +1771,38 @@ Global
 		{9A1E899A-F821-4519-AAD1-0789A4E9CCB3}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9A1E899A-F821-4519-AAD1-0789A4E9CCB3}.Release|x64.ActiveCfg = Release|Any CPU
 		{9A1E899A-F821-4519-AAD1-0789A4E9CCB3}.Release|x64.Build.0 = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Debug|x64.Build.0 = Debug|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release Mac|x64.Build.0 = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release|x64.ActiveCfg = Release|Any CPU
+		{54E90327-5F48-468D-9349-17AACEAA0A77}.Release|x64.Build.0 = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug Mac|Any CPU.ActiveCfg = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug Mac|Any CPU.Build.0 = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug Mac|x64.ActiveCfg = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug Mac|x64.Build.0 = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Debug|x64.Build.0 = Debug|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release Mac|Any CPU.ActiveCfg = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release Mac|Any CPU.Build.0 = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release Mac|x64.ActiveCfg = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release Mac|x64.Build.0 = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release|x64.ActiveCfg = Release|Any CPU
+		{6499CA05-6864-47AE-9204-B11B10C23417}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -1907,6 +1943,8 @@ Global
 		{1D1B6EDA-8FD9-4758-9195-C3476DB31F4E} = {25F45C77-279F-4608-86D1-87345EC42CB4}
 		{4C6B5FC0-37E2-442C-B647-2D6A544EFD64} = {925C0BF6-A0B1-4699-9C4B-078E01D652CC}
 		{9A1E899A-F821-4519-AAD1-0789A4E9CCB3} = {42A86931-7497-4A34-B2FD-060231CD0A8F}
+		{54E90327-5F48-468D-9349-17AACEAA0A77} = {25F45C77-279F-4608-86D1-87345EC42CB4}
+		{6499CA05-6864-47AE-9204-B11B10C23417} = {25F45C77-279F-4608-86D1-87345EC42CB4}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1D43D91B-4F01-4A78-8250-CC6F9BD93A14}
@@ -1938,6 +1976,7 @@ Global
 		Objects\Converters\ConverterDynamo\ConverterDynamoShared\ConverterDynamoShared.projitems*{4dbf45ee-3bce-47f4-b399-963b36a31951}*SharedItemsImports = 5
 		Objects\Converters\ConverterRevit\ConverterRevitShared\ConverterRevitShared.projitems*{4dbf45ee-3bce-47f4-b399-963b36a31951}*SharedItemsImports = 5
 		Objects\Converters\ConverterAutocadCivil\ConverterAutocadCivilShared\ConverterAutocadCivilShared.projitems*{50bc1552-3e7e-4c77-ac3a-aa7c572dfe09}*SharedItemsImports = 5
+		Objects\Converters\ConverterRevit\ConverterRevitTests\ConverterRevitTestsShared\ConverterRevitTestsShared.projitems*{54e90327-5f48-468d-9349-17aaceaa0a77}*SharedItemsImports = 5
 		ConnectorBentley\ConnectorBentleyShared\ConnectorBentleyShared.projitems*{57bf94a8-8f73-4d1a-91d2-b10cc64178b6}*SharedItemsImports = 5
 		ConnectorRevit\ConnectorRevit\ConnectorRevit.projitems*{586a5a37-93f6-427e-8df8-c10db4d6822a}*SharedItemsImports = 5
 		ConnectorAutocadCivil\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems*{58a88f1a-7489-46d2-949d-2fc3f68c8d84}*SharedItemsImports = 5
