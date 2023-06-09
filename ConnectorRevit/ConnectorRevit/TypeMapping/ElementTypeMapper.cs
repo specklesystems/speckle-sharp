@@ -16,6 +16,7 @@ using System.Threading.Tasks;
 using Avalonia.Threading;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
+using Speckle.Core.Logging;
 
 namespace ConnectorRevit.TypeMapping
 {
@@ -103,8 +104,15 @@ namespace ConnectorRevit.TypeMapping
 
       while (vm.DoneMapping == false)
       {
-        familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever);
-        await familyImporter.ImportFamilyTypes(hostTypesContainer).ConfigureAwait(false);
+        try
+        {
+          familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever);
+          await familyImporter.ImportFamilyTypes(hostTypesContainer).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+          SpeckleLog.Logger.Error("Error in importing family types", ex);
+        }
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
         currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
@@ -149,7 +157,11 @@ namespace ConnectorRevit.TypeMapping
       foreach (var @base in speckleElements)
       {
         var incomingType = typeRetriever.GetElementType(@base);
-        if (incomingType == null) continue; // TODO: do we want to throw an error (or at least log it)
+        if (incomingType == null)
+        {
+          SpeckleLog.Logger.Warning("Could not find incoming type on Base of type {baseType} with speckle_type {speckleType}", @base.GetType(), @base.speckle_type);
+          continue;
+        }
 
         var typeInfo = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(@base);
         if (typeInfo.ElementTypeType == null) continue;
