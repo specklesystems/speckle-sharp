@@ -34,7 +34,7 @@ public static class ConnectorHelpers
   /// <returns>The requested commit data</returns>
   /// <exception cref="SpeckleException">Thrown when any receive operation errors</exception>
   /// <exception cref="OperationCanceledException">Thrown when <paramref name="progress"/> requests a cancellation</exception>
-  public static async Task<Base> ReceiveCommit(Commit commit, StreamState state, ProgressViewModel progress)
+  public static async Task<Base> ReceiveCommit(Commit commit, IStreamState state, ProgressViewModel progress)
   {
     progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -166,7 +166,7 @@ public static class ConnectorHelpers
 
   /// <inheritdoc cref="TryCommitReceived(CancellationToken, Client, CommitReceivedInput, LogEventLevel)"/>
   public static async Task TryCommitReceived(
-    StreamState state,
+    IStreamState state,
     Commit commit,
     string sourceApplication,
     CancellationToken cancellationToken = default

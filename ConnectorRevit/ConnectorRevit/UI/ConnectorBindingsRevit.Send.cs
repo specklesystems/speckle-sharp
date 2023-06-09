@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
+using ConnectorRevit;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
@@ -30,8 +31,14 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
+      return await SendStreamTestable(state, new CommitSender(), progress, Converter.GetType())
+        .ConfigureAwait(false);
+    }
+
+    public static async Task<string> SendStreamTestable(StreamState state, ISpeckleObjectSender objectSender, ProgressViewModel progress, Type converterType) 
+    { 
       //make sure to instance a new copy so all values are reset correctly
-      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      var converter = (ISpeckleConverter)Activator.CreateInstance(converterType);
       converter.SetContextDocument(CurrentDoc.Document);
       converter.Report.ReportObjects.Clear();
 
@@ -142,21 +149,25 @@ namespace Speckle.ConnectorRevit.UI
 
       commitObjectBuilder.BuildCommitObject(commitObject);
 
-      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
+      //var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
-      var objectId = await Operations
-        .Send(
-          @object: commitObject,
-          cancellationToken: progress.CancellationToken,
-          transports: transports,
-          onProgressAction: dict => progress.Update(dict),
-          onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
-          disposeTransports: true
-        )
+      //var objectId = await Operations
+      //  .Send(
+      //    @object: commitObject,
+      //    cancellationToken: progress.CancellationToken,
+      //    transports: transports,
+      //    onProgressAction: dict => progress.Update(dict),
+      //    onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
+      //    disposeTransports: true
+      //  )
+      //  .ConfigureAwait(true);
+
+      var objectId = await objectSender.Send(client.Account, streamId, commitObject, progress)
         .ConfigureAwait(true);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
 
+      //var actualCommit = objectSender.CreateCommitInput(streamId, objectId, state, convertedCount);
       var actualCommit = new CommitCreateInput()
       {
         streamId = streamId,
@@ -171,9 +182,12 @@ namespace Speckle.ConnectorRevit.UI
         actualCommit.parents = new List<string>() { state.PreviousCommitId };
       }
 
-      var commitId = await ConnectorHelpers
-        .CreateCommit(progress.CancellationToken, client, actualCommit)
+      var commitId = await objectSender.CreateCommit(client, actualCommit, progress.CancellationToken)
         .ConfigureAwait(false);
+
+      //var commitId = await ConnectorHelpers
+      //  .CreateCommit(progress.CancellationToken, client, actualCommit)
+      //  .ConfigureAwait(false);
 
       return commitId;
     }

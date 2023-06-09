@@ -1,12 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Threading;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Interfaces;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
@@ -160,5 +163,46 @@ public class StreamState : IStreamState
     StreamId = stream.id;
     CachedStream = stream;
     Id = Guid.NewGuid().ToString();
+  }
+
+  /// <param name="cancellationToken">Progress cancellation token</param>
+  /// <param name="state">Current Stream card state (does not mutate)</param>
+  /// <returns>Requested Commit</returns>
+  /// <exception cref="SpeckleException">Thrown when any client errors</exception>
+  /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> requests a cancellation</exception>
+  public async Task<Commit> GetCommit(CancellationToken cancellationToken = default)
+  {
+    cancellationToken.ThrowIfCancellationRequested();
+
+    Commit commit;
+    try
+    {
+      if (CommitId == ConnectorHelpers.LatestCommitString) //if "latest", always make sure we get the latest commit
+      {
+        var res = await Client
+          .BranchGet(cancellationToken, StreamId, BranchName, 1)
+          .ConfigureAwait(false);
+        commit = res.commits.items.First();
+      }
+      else
+      {
+        var res = await Client.CommitGet(cancellationToken, StreamId, CommitId).ConfigureAwait(false);
+        commit = res;
+      }
+    }
+    catch (OperationCanceledException)
+    {
+      //Don't wrap cancellation exceptions
+      throw;
+    }
+    catch (Exception ex)
+    {
+      throw new SpeckleException(
+        $"Failed to fetch requested commit id: {CommitId} from branch: \"{BranchName}\" from stream: {StreamId}",
+        ex
+      );
+    }
+
+    return commit;
   }
 }

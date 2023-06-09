@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Avalonia.Threading;
+using ConnectorRevit;
 using ConnectorRevit.Revit;
 using ConnectorRevit.Storage;
 using DesktopUI2;
@@ -37,11 +38,18 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      await ReceiveStreamTestable(state, progress, Converter.GetType(), CurrentDoc).ConfigureAwait(false);
+      await ReceiveStreamTestable(state, new CommitReceiver(), progress, Converter.GetType(), CurrentDoc)
+        .ConfigureAwait(false);
       return state;
     }
 
-    private static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(IStreamState state, ProgressViewModel progress, Type converterType, UIDocument UIDoc)
+    private static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(
+      IStreamState state, 
+      ISpeckleObjectReceiver commitReceiver, 
+      ProgressViewModel progress, 
+      Type converterType, 
+      UIDocument UIDoc
+    )
     {
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(converterType);
@@ -53,13 +61,10 @@ namespace Speckle.ConnectorRevit.UI
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
 
-      Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken).ConfigureAwait(false);
+      var myCommit = await commitReceiver.GetCommitFromState(state, progress.CancellationToken).ConfigureAwait(false);
       state.LastCommit = myCommit;
-      Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);
-
-      //Preview.Clear();
-      //StoredObjects.Clear();
+      var commitObject = await commitReceiver.ReceiveCommit(myCommit, state, progress).ConfigureAwait(false);
+      await commitReceiver.TryCommitReceived(state, myCommit, ConnectorRevitUtils.RevitAppName, progress.CancellationToken).ConfigureAwait(false);
 
       var storedObjects = new Dictionary<string, Base>();
       var preview = FlattenCommitObject(commitObject, converter, storedObjects);

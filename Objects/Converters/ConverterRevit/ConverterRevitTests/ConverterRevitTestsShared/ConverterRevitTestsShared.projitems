@@ -11,6 +11,8 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AssertUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BrepTests.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DummyCommitReceiver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)DummyStreamState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Globals.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionTest.cs" />

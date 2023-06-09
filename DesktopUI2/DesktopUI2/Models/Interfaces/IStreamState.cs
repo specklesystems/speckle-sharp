@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
+using System.Threading;
 using DesktopUI2.Models.Settings;
 using Sentry;
 using Speckle.Core.Api;
@@ -21,5 +23,6 @@ namespace DesktopUI2.Models.Interfaces
     public string BranchName { get; }
     public string CommitId { get; }
     public Client Client { get; }
+    public Task<Commit> GetCommit(CancellationToken cancellationToken = default);
   }
 }

@@ -98,7 +98,7 @@ namespace Speckle.ConnectorRevit.UI
 
     }
 
-    private List<Document> GetLinkedDocuments(List<ISetting> settings)
+    private static List<Document> GetLinkedDocuments(List<ISetting> settings)
     {
       var docs = new List<Document>();
 
@@ -126,7 +126,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    private List<Element> GetSelectionFilterObjects(ISelectionFilter filter, List<ISetting> settings)
+    private static List<Element> GetSelectionFilterObjects(ISelectionFilter filter, List<ISetting> settings)
     {
       var currentDoc = CurrentDoc.Document;
       var allDocs = GetLinkedDocuments(settings);
@@ -391,7 +391,7 @@ namespace Speckle.ConnectorRevit.UI
 
     }
 
-    private string GetStringValue(Parameter p)
+    private static string GetStringValue(Parameter p)
     {
       string value = "";
       if (!p.HasValue)
