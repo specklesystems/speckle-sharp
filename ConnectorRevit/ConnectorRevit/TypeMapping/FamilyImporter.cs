@@ -18,13 +18,13 @@ namespace ConnectorRevit.TypeMapping
   internal sealed class FamilyImporter
   {
     private readonly Document document;
-    private readonly IElementTypeInfoExposer<BuiltInCategory> elementTypeInfoExposer;
+    private readonly IAllRevitCategoriesExposer<BuiltInCategory> revitCategoriesExposer;
     private readonly IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever;
 
-    public FamilyImporter(Document document, IElementTypeInfoExposer<BuiltInCategory> elementTypeInfoExposer, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
+    public FamilyImporter(Document document, IAllRevitCategoriesExposer<BuiltInCategory> revitCategoriesExposer, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
     {
       this.document = document;
-      this.elementTypeInfoExposer = elementTypeInfoExposer;
+      this.revitCategoriesExposer = revitCategoriesExposer;
       this.typeRetriever = typeRetriever;
     }
 
@@ -202,10 +202,10 @@ namespace ConnectorRevit.TypeMapping
       }
     }
 
-    private IElementTypeInfo<BuiltInCategory> GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
+    private IRevitCategoryInfo<BuiltInCategory> GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
     {
       var catRoot = xmlDoc.GetElementsByTagName("category");
-      var category = elementTypeInfoExposer.UndefinedTypeInfo;
+      var category = revitCategoriesExposer.AllCategories.UndefinedCategory;
       foreach (var node in catRoot)
       {
         if (node is not XmlElement xmlNode) continue;
@@ -213,9 +213,9 @@ namespace ConnectorRevit.TypeMapping
         var term = xmlNode.SelectSingleNode("ab:term", nsman);
         if (term == null) continue;
 
-        category = elementTypeInfoExposer.GetRevitTypeInfo(term.InnerText);
+        category = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(term.InnerText);
 
-        if (category != elementTypeInfoExposer.UndefinedTypeInfo)
+        if (category != revitCategoriesExposer.AllCategories.UndefinedCategory)
           break;
       }
 

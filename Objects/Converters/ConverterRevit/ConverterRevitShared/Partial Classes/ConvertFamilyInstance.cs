@@ -38,15 +38,15 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
+      if (@base == null && 
+        (revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
+        || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels))
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
-        else if (
-          Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category)
-        )
+        else if (revitFi is Mullion mullion)
         {
-          var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
+          var direction = ((DB.Line)mullion.LocationCurve).Direction;
           // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
           isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
         }
@@ -56,7 +56,7 @@ namespace Objects.Converter.Revit
       }
 
       //beams & braces
-      if (@base == null && Categories.beamCategories.Contains(revitFi.Category))
+      if (@base == null && AllRevitCategories.StructuralFraming.ContainsRevitCategory(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
           @base = BeamToSpeckle(revitFi, out notes);
@@ -66,7 +66,7 @@ namespace Objects.Converter.Revit
 
       //columns
       if (
-        @base == null && Categories.columnCategories.Contains(revitFi.Category)
+        @base == null && AllRevitCategories.Column.ContainsRevitCategory(revitFi.Category)
         || revitFi.StructuralType == StructuralType.Column
       )
         @base = ColumnToSpeckle(revitFi, out notes);

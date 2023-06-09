@@ -7,32 +7,19 @@ using ConverterRevitShared.Classes;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 using OSG = Objects.Structural.Geometry;
+using DB = Autodesk.Revit.DB;
 
 namespace Objects.Converter.Revit
 {
+  /// <summary>
+  /// Functionality related to retrieving, setting, and caching <see cref="DB.ElementType"/>s. Implements <see cref="IRevitElementTypeRetriever{TElementType, TBuiltInCategory}"/> and <see cref="IAllRevitCategoriesExposer{TBuiltInCategory}"/> in order for the connector to be able to access object info through the converter during mapping on receive.
+  /// </summary>
   public partial class ConverterRevit : IRevitElementTypeRetriever<ElementType, BuiltInCategory>,
-    IElementTypeInfoExposer<BuiltInCategory>
+    IAllRevitCategoriesExposer<BuiltInCategory>
   {
-    private ConversionOperationCache conversionOperationCache { get; } = new();
-
-    #region IElementTypeInfoExposer
-    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo(Base @base)
-    {
-      return ElementTypeInfo.GetElementTypeInfoOfSpeckleObject(@base);
-    }
-
-    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo(string categoryName)
-    {
-      return ElementTypeInfo.GetElementTypeInfoOfCategory(categoryName);
-    }
-
-    public IElementTypeInfo<BuiltInCategory> GetRevitTypeInfo<T>(Base @base)
-    {
-      return ElementTypeInfo.GetElementTypeInfo<T>(@base);
-    }
-
-    public IElementTypeInfo<BuiltInCategory> UndefinedTypeInfo => ElementTypeInfo.Undefined;
-    #endregion
+    private ConversionOperationCache ConversionOperationCache { get; } = new();
+    private static AllRevitCategories AllRevitCategoriesInstance { get; } = new();
+    public IAllRevitCategories<BuiltInCategory> AllCategories => AllRevitCategoriesInstance;
 
     #region IRevitElementTypeRetriever
     public string? GetElementType(Base @base)
@@ -48,6 +35,9 @@ namespace Objects.Converter.Revit
           break;
         case Other.Revit.RevitInstance el:
           type = el.typedDefinition?.type;
+          break;
+        case BuiltElements.TeklaStructures.TeklaBeam el:
+          type = el.profile?.name;
           break;
       };
       return type ?? @base["type"] as string;
@@ -69,6 +59,10 @@ namespace Objects.Converter.Revit
           if (el.typedDefinition == null) goto default;
           el.typedDefinition.type = type;
           break;
+        case BuiltElements.TeklaStructures.TeklaBeam el:
+          if (el.profile == null) goto default;
+          el.profile.name = type;
+          break;
         default:
           @base["type"] = type;
           break;
@@ -77,7 +71,7 @@ namespace Objects.Converter.Revit
 
     public bool CacheContainsTypeWithName(string category, string baseType)
     {
-      var type = conversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(category, baseType));
+      var type = ConversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(category, baseType));
       if (type == null) return false;
 
       return true;
@@ -85,12 +79,12 @@ namespace Objects.Converter.Revit
 
     public IEnumerable<ElementType> GetAllCachedElementTypes()
     {
-      return conversionOperationCache.GetAllObjectsOfType<ElementType>();
+      return ConversionOperationCache.GetAllObjectsOfType<ElementType>();
     }
     
-    public IEnumerable<ElementType> GetOrAddAvailibleTypes(IElementTypeInfo<BuiltInCategory> typeInfo)
+    public IEnumerable<ElementType> GetOrAddAvailibleTypes(IRevitCategoryInfo<BuiltInCategory> typeInfo)
     {
-      var types = conversionOperationCache.GetOrAdd<IEnumerable<ElementType>>(
+      var types = ConversionOperationCache.GetOrAdd<IEnumerable<ElementType>>(
         typeInfo.CategoryName,
         () => GetElementTypes<ElementType>(typeInfo.ElementTypeType, typeInfo.BuiltInCategories),
         out var typesRetrieved);
@@ -98,7 +92,7 @@ namespace Objects.Converter.Revit
       // if type was added instead of retreived, add types to master cache to facilitate lookup later
       if (!typesRetrieved)
       {
-        conversionOperationCache.AddMany<ElementType>(types, type => GetUniqueTypeName(typeInfo.CategoryName, type.Name));
+        ConversionOperationCache.AddMany<ElementType>(types, type => GetUniqueTypeName(typeInfo.CategoryName, type.Name));
       }
 
       return types;
@@ -106,7 +100,7 @@ namespace Objects.Converter.Revit
 
     public void InvalidateElementTypeCache(string categoryName)
     {
-      conversionOperationCache.Invalidate<IEnumerable<ElementType>>(categoryName);
+      ConversionOperationCache.Invalidate<IEnumerable<ElementType>>(categoryName);
     }
 
     #endregion
@@ -116,7 +110,7 @@ namespace Objects.Converter.Revit
       return category + "_" + type;
     }
 
-    private T GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
+    private T? GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
       where T : ElementType
     {
       var type = GetElementType(element);
@@ -124,7 +118,7 @@ namespace Objects.Converter.Revit
       {
         throw new ArgumentException($"Could not find valid type of element of type \"{element.speckle_type}\"");
       }
-      var typeInfo = GetRevitTypeInfo<T>(element);
+      var typeInfo = Revit.AllRevitCategories.GetRevitCategoryInfoStatic<T>(element);
       var types = GetOrAddAvailibleTypes(typeInfo);
 
       isExactMatch = false;
@@ -139,7 +133,7 @@ namespace Objects.Converter.Revit
         return default;
       }
 
-      var exactType = conversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(typeInfo.CategoryName, type));
+      var exactType = ConversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(typeInfo.CategoryName, type));
 
       if (exactType != null)
       {

@@ -18,7 +18,7 @@ namespace Objects.Converter.Revit
     {
       if (revitElement is DB.FamilyInstance familyInstance 
         && familyInstance.Location is LocationPoint lp
-        && (Categories.columnCategories.Contains(familyInstance.Category)
+        && (AllRevitCategories.Column.ContainsRevitCategory(familyInstance.Category)
           || familyInstance.StructuralType == StructuralType.Column))
       {
         //vertical columns are point based, and the point does not reflect the actual vertical location

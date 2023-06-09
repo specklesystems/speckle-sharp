@@ -19,7 +19,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.Previews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.SettingsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectContext3DServer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ElementTypeInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitCategoryInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />

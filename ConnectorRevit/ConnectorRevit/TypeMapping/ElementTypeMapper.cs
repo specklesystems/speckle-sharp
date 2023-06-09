@@ -15,15 +15,28 @@ using DesktopUI2.Models.TypeMappingOnReceive;
 using System.Threading.Tasks;
 using Avalonia.Threading;
 using Speckle.Core.Models.GraphTraversal;
+using DB = Autodesk.Revit.DB;
 
 namespace ConnectorRevit.TypeMapping
 {
+  /// <summary>
+  /// Responsible for parsing data received from Speckle for necessary <see cref="DB.ElementType"/>s, and then querying the current Revit document for <see cref="DB.ElementType"/>s that exist in the Project. This class then stores all of the data that it finds in an <see cref="ITypeMap"/> object that can be passed to DUI for user mapping.
+  /// </summary>
   internal sealed class ElementTypeMapper
   {
-    private readonly IElementTypeInfoExposer<BuiltInCategory> elementTypeInfoExposer;
+    private readonly IAllRevitCategoriesExposer<BuiltInCategory> revitCategoriesExposer;
     private readonly IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever;
     private List<Base> speckleElements = new();
     private readonly Document document;
+
+    /// <summary>
+    /// Initialize ElementTypeMapper. Will throw if the provided <see cref="ISpeckleConverter"/> does not also implement <see cref="IRevitElementTypeRetriever{DB.ElementType, DB.BuiltInCategory}"/> and <see cref="IElementTypeInfoExposer{DB.BuiltInCategory}"/>
+    /// </summary>
+    /// <param name="converter"></param>
+    /// <param name="flattenedCommit"></param>
+    /// <param name="storedObjects"></param>
+    /// <param name="doc"></param>
+    /// <exception cref="ArgumentException"></exception>
     public ElementTypeMapper(ISpeckleConverter converter, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document doc)
     {
       document = doc;
@@ -34,11 +47,11 @@ namespace ConnectorRevit.TypeMapping
       }
       else this.typeRetriever = typeRetriever;
       
-      if (converter is not IElementTypeInfoExposer<BuiltInCategory> typeInfoExposer)
+      if (converter is not IAllRevitCategoriesExposer<BuiltInCategory> typeInfoExposer)
       {
         throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
       }
-      else this.elementTypeInfoExposer = typeInfoExposer;
+      else this.revitCategoriesExposer = typeInfoExposer;
 
       var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
       foreach (var appObj in flattenedCommit)
@@ -90,7 +103,7 @@ namespace ConnectorRevit.TypeMapping
 
       while (vm.DoneMapping == false)
       {
-        familyImporter ??= new FamilyImporter(document, elementTypeInfoExposer, typeRetriever);
+        familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever);
         await familyImporter.ImportFamilyTypes(hostTypesContainer).ConfigureAwait(false);
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
@@ -120,6 +133,13 @@ namespace ConnectorRevit.TypeMapping
       }
     }
 
+    /// <summary>
+    /// Since an <see cref="DB.ElementType"/> is a Revit concept, this method just hands the <see cref="Base"/> object to the Converter to figure out the <see cref="DB.ElementType"/>. It also retrieves all possible <see cref="DB.ElementType"/>s for a given category of element and then saves it in a <see cref="HostTypeAsStringContainer"/>. This container will be passed to DUI for user mapping.
+    /// </summary>
+    /// <param name="typeRetriever"></param>
+    /// <param name="typeMap"></param>
+    /// <param name="numNewTypes"></param>
+    /// <returns></returns>
     public HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap typeMap, out int numNewTypes)
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
@@ -131,7 +151,7 @@ namespace ConnectorRevit.TypeMapping
         var incomingType = typeRetriever.GetElementType(@base);
         if (incomingType == null) continue; // TODO: do we want to throw an error (or at least log it)
 
-        var typeInfo = elementTypeInfoExposer.GetRevitTypeInfo(@base);
+        var typeInfo = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(@base);
         if (typeInfo.ElementTypeType == null) continue;
 
         var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
