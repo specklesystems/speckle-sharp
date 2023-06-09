@@ -6,6 +6,9 @@ using ConverterRevitShared.Cache;
 
 namespace ConverterRevitShared.Classes
 {
+  /// <summary>
+  /// Simple conversion cache to store elements that are retrieved and may be needed again throughout the conversion operation
+  /// </summary>
   internal class ConversionOperationCache
   {
     private readonly Dictionary<Type, SingleObjectCache> objectCaches = new();
