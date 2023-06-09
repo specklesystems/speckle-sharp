@@ -49,6 +49,9 @@ namespace Objects.Converter.Revit
         geom = element.get_Geometry(options);
       }
 
+      if (geom == null)
+        return displayMeshes;
+
       // retrieves all meshes and solids from a geometry element
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
