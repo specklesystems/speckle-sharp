@@ -253,6 +253,8 @@ namespace Speckle.ConnectorRevit.UI
                 .Where(x => viewFilter.Selection.Contains(x.Name))
                 .ToList();
 
+              // if the user is sending a single view, then we pass it to the converter in order for the converter
+              // to retreive element meshes that are specific to that view
               if (views.Count == 1)
               {
                 converter.SetContextDocument(views[0]);
