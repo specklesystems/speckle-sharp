@@ -49,13 +49,13 @@ namespace Objects.Converter.Revit
       var matIDs = element?.GetMaterialIds(false); 
       // Does not return the correct materials for some categories
       // Need to take different approach for MEP-Elements
-      if (matIDs == null || matIDs.Count() == 0 && element is MEPCurve)
+      if (matIDs == null || !matIDs.Any() &&  element is MEPCurve)
       {
         DB.Material mepMaterial = ConverterRevit.GetMEPSystemRevitMaterial(element);
-        matIDs?.Add(mepMaterial?.Id);
+        if (mepMaterial != null) matIDs.Add(mepMaterial.Id);
       }
 
-      if (matIDs == null || matIDs.Count() == 0)
+      if (matIDs == null || !matIDs.Any())
         return null;
 
       var materials = matIDs.Select(material => element.Document.GetElement(material) as DB.Material);
@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
     }
     public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, IEnumerable<DB.Material> materials, string units)
     {
-      if (materials == null || materials.Count() == 0) return null;
+      if (materials == null || !materials.Any()) return null;
       List<Objects.Other.MaterialQuantity> quantities = new List<Objects.Other.MaterialQuantity>();
 
       foreach (var material in materials)
