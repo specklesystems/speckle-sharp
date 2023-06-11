@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
@@ -23,9 +23,9 @@ namespace Objects.Converter.Revit
       if (material == null || element == null) 
         return null;
 
-      //Get quantities
+      // To-Do: These methods from the Revit API appear to have bugs.
       double volume = element.GetMaterialVolume(material.Id);
-      double area = element.GetMaterialArea(material.Id, false); //To-Do: Do we need Paint-Materials
+      double area = element.GetMaterialArea(material.Id, false);
 
       // Convert revit interal units to speckle commit units
       double factor = ScaleToSpeckle(1);
@@ -37,7 +37,6 @@ namespace Objects.Converter.Revit
 
       if (LocationToSpeckle(element) is ICurve curve)
         materialQuantity["length"] = curve.length;
-
       return materialQuantity;
     }
 
@@ -46,7 +45,16 @@ namespace Objects.Converter.Revit
     #region MaterialQuantities
     public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, string units)
     {
-      var matIDs = element?.GetMaterialIds(false);
+      
+      var matIDs = element?.GetMaterialIds(false); 
+      // Does not return the correct materials for some categories
+      // Need to take different approach for MEP-Elements
+      if (matIDs == null || matIDs.Count() == 0 && element is MEPCurve)
+      {
+        DB.Material mepMaterial = ConverterRevit.GetMEPSystemRevitMaterial(element);
+        matIDs?.Add(mepMaterial?.Id);
+      }
+
       if (matIDs == null || matIDs.Count() == 0)
         return null;
 
@@ -65,6 +73,7 @@ namespace Objects.Converter.Revit
     }
 
     #endregion
+    
   }
 
 }

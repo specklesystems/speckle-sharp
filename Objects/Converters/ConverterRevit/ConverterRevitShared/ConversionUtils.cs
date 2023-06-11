@@ -1147,6 +1147,16 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static RenderMaterial GetMEPSystemMaterial(Element e)
     {
+      DB.Material material = GetMEPSystemRevitMaterial(e);
+      return material != null ? RenderMaterialToSpeckle(material) : null;
+    }
+    /// <summary>
+    /// Retrieves the revit material from assigned system type for mep elements
+    /// </summary>
+    /// <param name="e">Revit element to parse</param>
+    /// <returns>Revit material of the element, null if no material found</returns>
+    public static DB.Material GetMEPSystemRevitMaterial(Element e)
+    {
       ElementId idType = ElementId.InvalidElementId;
 
       if (e is DB.MEPCurve dt)
@@ -1180,15 +1190,11 @@ namespace Objects.Converter.Revit
 
       if (e.Document.GetElement(idType) is MEPSystemType mechType)
       {
-        var mat = e.Document.GetElement(mechType.MaterialId) as DB.Material;
-        RenderMaterial material = RenderMaterialToSpeckle(mat);
-
-        return material;
+        return e.Document.GetElement(mechType.MaterialId) as DB.Material;
       }
 
       return null;
     }
-
     private static bool IsSupportedMEPCategory(Element e)
     {
       var categories = e.Document.Settings.Categories;
