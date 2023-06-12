@@ -30,32 +30,11 @@ namespace Speckle.ConnectorNavisworks.Entry;
     DisplayName = "Speckle\rCommunity"
   )
 ]
-//[Command(OneClickSend.Command,
-//    CallCanExecute = CallCanExecute.DocumentNotClear,
-//    LoadForCanExecute = true,
-//    Icon = "Resources/logo16.ico",
-//    LargeIcon = "Resources/logo32.ico",
-//    Shortcut = "Ctrl+Shift+Q",
-//    ToolTip = "Command to send selection to the document stream, or everything if nothing is selected",
-//    DisplayName = "Quick\rSend"
-//)]
 internal sealed class RibbonHandler : CommandHandlerPlugin
 {
   public override CommandState CanExecuteCommand(string commandId)
   {
-    var state = new CommandState(true);
-
-    // Currently there is only one command that needs responsive state management. There could be others.
-    //switch (commandId)
-    //{
-    //    case OneClickSend.Command:
-    //    {
-    //        state.IsEnabled = false; // Until I am ready to implement this
-    //                                 break;
-    //    }
-    //}
-
-    return state;
+    return new CommandState(true);
   }
 
   private static void LoadPlugin(string plugin, bool notAutomatedCheck = true, string command = "")
@@ -96,22 +75,23 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 
   public override int ExecuteCommand(string commandId, params string[] parameters)
   {
-    var buildVersion = "2023";
+    // ReSharper disable once RedundantAssignment
+    var buildVersion = string.Empty;
 
 #if NAVMAN17
-      buildVersion = "2020";
+    buildVersion = "2020";
 #endif
 #if NAVMAN18
-      buildVersion = "2021";
+    buildVersion = "2021";
 #endif
 #if NAVMAN19
-      buildVersion = "2022";
+    buildVersion = "2022";
 #endif
 #if NAVMAN20
     buildVersion = "2023";
 #endif
 #if NAVMAN21
-      buildVersion = "2024";
+    buildVersion = "2024";
 #endif
 
     // Version
