@@ -10,22 +10,23 @@ namespace Objects.Converter.Revit
   public static class Categories
   {
     /// <summary>
-    /// The list of supported BuiltIn category names in Speckle.
-    /// This list is auto-generated based on <see cref="RevitCategory"/> enum items.
-    /// It represents every item in the enum with an added `OST_` prefix.
-    /// </summary>
-    public static IReadOnlyList<string> BuiltInCategoryNames = Enum.GetNames(typeof(RevitCategory))
-      .Select(c => $"OST_{c}")
-      .ToList();
-
-    /// <summary>
     /// Returns the corresponding <see cref="RevitCategory"/> based on a given built-in category name
     /// </summary>
     /// <param name="builtInCategory">The name of the built-in category</param>
     /// <returns>The RevitCategory enum value that corresponds to the given name</returns>
     public static RevitCategory GetSchemaBuilderCategoryFromBuiltIn(string builtInCategory)
     {
-      return (RevitCategory)BuiltInCategoryNames.ToList().IndexOf(builtInCategory);
+      // Clean up built-in name "OST_Walls" to be just "WALLS"
+      var cleanName = builtInCategory
+        .Replace("OST_IOS", "") //for OST_IOSModelGroups
+        .Replace("OST_MEP", "") //for OST_MEPSpaces
+        .Replace("OST_", "") //for any other OST_blablabla
+        .Replace("_", " ");
+
+      var res = Enum.TryParse(cleanName, out RevitCategory cat);
+      if (!res)
+        throw new NotSupportedException($"Built-in category {builtInCategory} is not supported.");
+      return cat;
     }
 
     /// <summary>
@@ -35,7 +36,8 @@ namespace Objects.Converter.Revit
     /// <returns>The name of the built-in category that corresponds to the input RevitCategory</returns>
     public static string GetBuiltInFromSchemaBuilderCategory(RevitCategory c)
     {
-      return BuiltInCategoryNames[(int)c];
+      var name = Enum.GetName(typeof(RevitCategory), c);
+      return $"OST_{name}";
     }
   }
 }
