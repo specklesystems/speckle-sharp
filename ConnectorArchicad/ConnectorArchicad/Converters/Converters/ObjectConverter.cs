@@ -94,7 +94,8 @@ namespace Archicad.Converters
       var transformMatrixById = new Dictionary<string, Transform>();
       var transformedMeshById = new Dictionary<string, Mesh>();
 
-      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
       {
         foreach (var tc in elements)
         {

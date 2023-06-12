@@ -32,14 +32,16 @@ namespace Archicad.Communication
 
     public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters) where TParameters : class where TResult : class
     {
-      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandExecute, commandName))
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandExecute, commandName))
       {
         AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
 
         string requestMsg = SerializeRequest(request);
         //Console.WriteLine(requestMsg);
         string responseMsg;
-        using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandAPI, commandName))
+
+        using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandAPI, commandName))
           responseMsg = await ConnectionManager.Instance.Send(requestMsg);
         //Console.WriteLine(responseMsg);
         AddOnCommandResponse<TResult> response = DeserializeResponse<AddOnCommandResponse<TResult>>(responseMsg);

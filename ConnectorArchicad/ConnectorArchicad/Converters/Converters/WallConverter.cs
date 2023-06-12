@@ -19,8 +19,9 @@ namespace Archicad.Converters
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var walls = new List<Objects.BuiltElements.Archicad.ArchicadWall>();
-      
-      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {

@@ -18,7 +18,8 @@ namespace Archicad.Converters
     {
       var skylights = new List<Objects.BuiltElements.Archicad.ArchicadSkylight>();
 
-      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {

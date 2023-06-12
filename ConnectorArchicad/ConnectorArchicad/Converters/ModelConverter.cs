@@ -36,7 +36,8 @@ namespace Archicad.Operations
 
     public static MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
-      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.MeshToNative))
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.MeshToNative))
       {
         var mergedVertexIndices = new Dictionary<Vertex, int>();
         var originalToMergedVertexIndices = new List<int>();

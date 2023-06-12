@@ -4,8 +4,8 @@ namespace Speckle.Core.Helpers;
 
 public class State<T> : IDisposable where T : State<T>, new()
 {
-  [ThreadStatic] static T root;
-  [ThreadStatic] static T current;
+  static T root;
+  static T current;
   T previous = current;
 
   protected State()
@@ -36,11 +36,12 @@ public class State<T> : IDisposable where T : State<T>, new()
     previous = null;
   }
 
-  public static T Peek => current ?? new T();
+  public static T Peek => current;
 
   public static T Push()
   {
-    var top = (T) Peek.MemberwiseClone();
+    var peek = current ?? new T();
+    var top = (T) peek.MemberwiseClone();
     top.previous = current;
     return current = top;
   }

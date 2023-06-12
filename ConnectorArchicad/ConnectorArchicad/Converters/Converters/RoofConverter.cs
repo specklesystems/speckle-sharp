@@ -20,7 +20,8 @@ namespace Archicad.Converters
       var roofs = new List<Objects.BuiltElements.Archicad.ArchicadRoof>();
       var shells = new List<Objects.BuiltElements.Archicad.ArchicadShell>();
 
-      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
