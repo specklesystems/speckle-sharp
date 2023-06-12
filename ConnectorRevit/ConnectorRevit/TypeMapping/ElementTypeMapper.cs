@@ -83,6 +83,7 @@ namespace ConnectorRevit.TypeMapping
       {
         if (await Dispatcher.UIThread.InvokeAsync<bool>(() =>
         {
+          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Missing Types Dialog" } });
           var mappingView = new MissingIncomingTypesDialog();
           return mappingView.ShowDialog<bool>();
         }).ConfigureAwait(false) == false)
@@ -91,9 +92,11 @@ namespace ConnectorRevit.TypeMapping
         }
       }
 
-      // show custom mapping dialog if the settings corrospond to what is being received
+      // show custom mapping dialog if the settings correspond to what is being received
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       FamilyImporter familyImporter = null;
+
+
 
       currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
       {
@@ -134,6 +137,8 @@ namespace ConnectorRevit.TypeMapping
 
       // update the mapping object for the user mapped types
       SetMappedValues(typeRetriever, currentMapping);
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
     }
 
     private static void SetMappedValues(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap currentMapping)

@@ -1,17 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Xml;
 using Autodesk.Revit.DB;
+using Avalonia.Threading;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
-using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
-using Speckle.Core.Logging;
-using System.Threading.Tasks;
-using System.Xml;
-using System.Windows.Forms;
 using RevitSharedResources.Interfaces;
-using Avalonia.Threading;
+using Speckle.Core.Logging;
+using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
 
 namespace ConnectorRevit.TypeMapping
 {
@@ -108,7 +108,8 @@ namespace ConnectorRevit.TypeMapping
           }
           t.Commit();
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
-            { "name", "Mappings Import Families" },
+            { "name", "Type Map" },
+            { "method", "Import Types" },
             { "count", vm.selectedFamilySymbols.Count }});
         }
         else
