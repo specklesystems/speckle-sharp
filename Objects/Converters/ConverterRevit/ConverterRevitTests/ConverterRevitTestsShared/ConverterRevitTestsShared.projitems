@@ -14,6 +14,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)DummyCommitReceiver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DummyStreamState.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Globals.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)LocalCommitSender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleUtils.cs" />

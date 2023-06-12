@@ -8,7 +8,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit
 {
-  internal class CommitReceiver : ISpeckleObjectReceiver
+  internal sealed class CommitReceiver : ISpeckleObjectReceiver
   {
     public async Task<Commit> GetCommitFromState(IStreamState state, CancellationToken token)
     {

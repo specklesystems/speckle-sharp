@@ -101,53 +101,53 @@ public static class DefaultTraversal
 
   #region Helper Functions
 
-  internal static readonly string[] elementsAliases = { "elements", "@elements" };
+  public static readonly string[] elementsAliases = { "elements", "@elements" };
 
-  internal static IEnumerable<string> ElementsAliases(Base _)
+  public static IEnumerable<string> ElementsAliases(Base _)
   {
     return elementsAliases;
   }
 
-  internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+  public static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
 
-  internal static readonly string[] ignoreProps = new[] { "@blockDefinition" }.Concat(displayValueAliases).ToArray();
+  public static readonly string[] ignoreProps = new[] { "@blockDefinition" }.Concat(displayValueAliases).ToArray();
 
-  internal static IEnumerable<string> DisplayValueAliases(Base _)
+  public static IEnumerable<string> DisplayValueAliases(Base _)
   {
     return displayValueAliases;
   }
 
-  internal static IEnumerable<string> None(Base _)
+  public static IEnumerable<string> None(Base _)
   {
     return Enumerable.Empty<string>();
   }
 
-  internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
+  public static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
   {
     return x => x.GetMembers(includeMembers).Keys;
   }
 
-  internal static SelectMembers DynamicMembers()
+  public static SelectMembers DynamicMembers()
   {
     return x => x.GetDynamicMembers();
   }
 
-  internal static SelectMembers Concat(params SelectMembers[] selectProps)
+  public static SelectMembers Concat(params SelectMembers[] selectProps)
   {
     return x => selectProps.SelectMany(i => i.Invoke(x));
   }
 
-  internal static SelectMembers Except(SelectMembers selectProps, IEnumerable<string> excludeProps)
+  public static SelectMembers Except(SelectMembers selectProps, IEnumerable<string> excludeProps)
   {
     return x => selectProps.Invoke(x).Except(excludeProps);
   }
 
-  internal static bool HasElements(Base x)
+  public static bool HasElements(Base x)
   {
     return elementsAliases.Any(m => x[m] != null);
   }
 
-  internal static bool HasDisplayValue(Base x)
+  public static bool HasDisplayValue(Base x)
   {
     return displayValueAliases.Any(m => x[m] != null);
   }

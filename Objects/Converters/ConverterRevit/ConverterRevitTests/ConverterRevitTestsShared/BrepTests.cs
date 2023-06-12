@@ -56,7 +56,7 @@ namespace ConverterRevitTests
       {
         converter.SetContextDocument(fixture.NewDoc);
         native = converter.BrepToDirectShape(brep, out List<string> notes);
-      }, fixture.NewDoc, converter);
+      }, fixture.NewDoc.Document, converter);
 
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
     }
@@ -81,7 +81,7 @@ namespace ConverterRevitTests
       var geo = ds.get_Geometry(new Options());
       if (!(geo.First() is Solid solid))
         throw new Exception("DS was not composed of a solid.");
-      var converted = converter.BrepToSpeckle(solid, fixture.NewDoc);
+      var converted = converter.BrepToSpeckle(solid, fixture.NewDoc.Document);
       var nativeconverted = converter.BrepToNative(converted, out List<string> notes);
       Assert.NotNull(nativeconverted);
     }

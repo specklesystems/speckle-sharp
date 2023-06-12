@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Timers;
@@ -17,7 +17,7 @@ namespace Speckle.ConnectorRevit.UI
   {
     public static UIApplication RevitApp;
 
-    public static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
+    public UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
 
     public Timer SelectionTimer;
 

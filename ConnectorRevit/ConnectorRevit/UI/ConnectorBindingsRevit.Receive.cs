@@ -43,7 +43,7 @@ namespace Speckle.ConnectorRevit.UI
       return state;
     }
 
-    private static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(
+    public static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(
       IStreamState state, 
       ISpeckleObjectReceiver commitReceiver, 
       ProgressViewModel progress, 
@@ -81,7 +81,7 @@ namespace Speckle.ConnectorRevit.UI
 
       try
       {
-        await RevitTask.RunAsync(() => UpdateForCustomMapping(progress, myCommit.sourceApplication, state.Settings, preview, storedObjects));
+        //await RevitTask.RunAsync(() => UpdateForCustomMapping(progress, myCommit.sourceApplication, state.Settings, preview, storedObjects));
       }
       catch (Exception ex)
       {

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using Avalonia.Threading;
 using ConnectorRevit;
 using DesktopUI2;
@@ -31,15 +32,15 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      return await SendStreamTestable(state, new CommitSender(), progress, Converter.GetType())
+      return await SendStreamTestable(state, new CommitSender(), progress, Converter.GetType(), CurrentDoc)
         .ConfigureAwait(false);
     }
 
-    public static async Task<string> SendStreamTestable(StreamState state, ISpeckleObjectSender objectSender, ProgressViewModel progress, Type converterType) 
+    public static async Task<string> SendStreamTestable(StreamState state, ISpeckleObjectSender objectSender, ProgressViewModel progress, Type converterType, UIDocument UIDoc) 
     { 
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(converterType);
-      converter.SetContextDocument(CurrentDoc.Document);
+      converter.SetContextDocument(UIDoc.Document);
       converter.Report.ReportObjects.Clear();
 
       // set converter settings as tuples (setting slug, setting selection)
@@ -51,7 +52,7 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjects(state.Filter, state.Settings);
+      var selectedObjects = GetSelectionFilterObjects(state.Filter, state.Settings, UIDoc.Document);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!selectedObjects.Any())
@@ -64,7 +65,7 @@ namespace Speckle.ConnectorRevit.UI
           .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })
           .ToList()
       );
-      var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Collection();
+      var commitObject = converter.ConvertToSpeckle(UIDoc.Document) ?? new Collection();
       RevitCommitObjectBuilder commitObjectBuilder = new(CommitCollectionStrategy.ByCollection);
 
       progress.Report = new ProgressReport();
@@ -162,7 +163,7 @@ namespace Speckle.ConnectorRevit.UI
       //  )
       //  .ConfigureAwait(true);
 
-      var objectId = await objectSender.Send(client.Account, streamId, commitObject, progress)
+      var objectId = await objectSender.Send(client?.Account, streamId, commitObject, progress)
         .ConfigureAwait(true);
 
       progress.CancellationToken.ThrowIfCancellationRequested();

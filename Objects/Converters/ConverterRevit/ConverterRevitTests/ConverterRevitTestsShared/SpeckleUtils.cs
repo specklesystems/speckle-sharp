@@ -11,6 +11,7 @@ using Speckle.Core.Models;
 using Xunit;
 using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 
 namespace ConverterRevitTests
 {
@@ -72,12 +73,31 @@ namespace ConverterRevitTests
       }
     }
 
+    //
+    // Summary:
+    //     Opens and activates a ui document if not open already
+    //
+    // Parameters:
+    //   filePath:
+    //     Path to the file to open
+    public static UIDocument OpenUIDoc(string filePath)
+    {
+      Assert.NotNull(xru.Uiapp);
+      UIDocument doc = null;
+      xru.UiContext.Send(delegate
+      {
+        doc = xru.Uiapp.OpenAndActivateDocument(filePath);
+      }, null);
+      Assert.NotNull(doc);
+      return doc;
+    }
+
     internal static void DeleteElement(object obj)
     {
       switch (obj)
       {
-        case IList list:
-          foreach (var item in list)
+        case IEnumerable enumerable:
+          foreach (var item in enumerable)
             DeleteElement(item);
           break;
         case ApplicationObject o:

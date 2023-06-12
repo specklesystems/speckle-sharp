@@ -98,7 +98,7 @@ namespace Speckle.ConnectorRevit.UI
 
     }
 
-    private static List<Document> GetLinkedDocuments(List<ISetting> settings)
+    private static List<Document> GetLinkedDocuments(List<ISetting> settings, Document document)
     {
       var docs = new List<Document>();
 
@@ -109,7 +109,7 @@ namespace Speckle.ConnectorRevit.UI
 
 
       //TODO: is the name the most safe way to look for it?
-      var linkedRVTs = new FilteredElementCollector(CurrentDoc.Document).OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(RevitLinkType)).ToElements().Cast<RevitLinkType>().Select(x => x.Name.Replace(".rvt", ""));
+      var linkedRVTs = new FilteredElementCollector(document).OfCategory(BuiltInCategory.OST_RvtLinks).OfClass(typeof(RevitLinkType)).ToElements().Cast<RevitLinkType>().Select(x => x.Name.Replace(".rvt", ""));
       foreach (Document revitDoc in RevitApp.Application.Documents)
       {
         if (revitDoc.IsLinked && linkedRVTs.Contains(revitDoc.Title))
@@ -126,11 +126,10 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    private static List<Element> GetSelectionFilterObjects(ISelectionFilter filter, List<ISetting> settings)
+    public static List<Element> GetSelectionFilterObjects(ISelectionFilter filter, List<ISetting> settings, Document document)
     {
-      var currentDoc = CurrentDoc.Document;
-      var allDocs = GetLinkedDocuments(settings);
-      allDocs.Add(currentDoc);
+      var allDocs = GetLinkedDocuments(settings, document);
+      allDocs.Add(document);
 
       var selection = new List<Element>();
       try
@@ -140,7 +139,7 @@ namespace Speckle.ConnectorRevit.UI
         {
 
           case "manual":
-            selection = filter.Selection.Select(x => CurrentDoc.Document.GetElement(x)).Where(x => x != null).ToList();
+            selection = filter.Selection.Select(x => document.GetElement(x)).Where(x => x != null).ToList();
             var linkedFiles = selection.Where(x => x is RevitLinkInstance).Cast<RevitLinkInstance>().ToList();
 
             foreach (var linkedFile in linkedFiles)
@@ -154,9 +153,9 @@ namespace Speckle.ConnectorRevit.UI
 
           case "all":
             //add these only for the current doc
-            if (!currentDoc.IsFamilyDocument)
+            if (!document.IsFamilyDocument)
             {
-              selection.Add(currentDoc.ProjectInformation);
+              selection.Add(document.ProjectInformation);
             }
             else
             {
@@ -166,10 +165,10 @@ namespace Speckle.ConnectorRevit.UI
               new ElementClassFilter(typeof(GenericForm)),
               new ElementClassFilter(typeof(GeomCombination)),
               };
-              selection.AddRange(new FilteredElementCollector(currentDoc).WherePasses(new LogicalOrFilter(filters)).ToElements());
+              selection.AddRange(new FilteredElementCollector(document).WherePasses(new LogicalOrFilter(filters)).ToElements());
             }
-            selection.AddRange(currentDoc.Views2D());
-            selection.AddRange(currentDoc.Views3D());
+            selection.AddRange(document.Views2D());
+            selection.AddRange(document.Views3D());
 
             //and these for every linked doc
             foreach (var doc in allDocs)
@@ -183,7 +182,7 @@ namespace Speckle.ConnectorRevit.UI
           case "category":
             var catFilter = filter as ListSelectionFilter;
             var bics = new List<BuiltInCategory>();
-            var categories = ConnectorRevitUtils.GetCategories(currentDoc);
+            var categories = ConnectorRevitUtils.GetCategories(document);
             IList<ElementFilter> elementFilters = new List<ElementFilter>();
 
             foreach (var cat in catFilter.Selection)
@@ -245,7 +244,7 @@ namespace Speckle.ConnectorRevit.UI
           case "view":
             var viewFilter = filter as ListSelectionFilter;
 
-            var views = new FilteredElementCollector(currentDoc)
+            var views = new FilteredElementCollector(document)
               .WhereElementIsNotElementType()
               .OfClass(typeof(View))
               .Where(x => viewFilter.Selection.Contains(x.Name));
@@ -279,7 +278,7 @@ namespace Speckle.ConnectorRevit.UI
           case "schedule":
             var scheduleFilter = filter as ListSelectionFilter;
 
-            var schedules = new FilteredElementCollector(currentDoc)
+            var schedules = new FilteredElementCollector(document)
               .WhereElementIsNotElementType()
               .OfClass(typeof(ViewSchedule))
               .Where(x => scheduleFilter.Selection.Contains(x.Name));
@@ -294,25 +293,25 @@ namespace Speckle.ConnectorRevit.UI
             var projectInfoFilter = filter as ListSelectionFilter;
 
             if (projectInfoFilter.Selection.Contains("Project Info"))
-              selection.Add(currentDoc.ProjectInformation);
+              selection.Add(document.ProjectInformation);
 
             if (projectInfoFilter.Selection.Contains("Views 2D"))
-              selection.AddRange(currentDoc.Views2D());
+              selection.AddRange(document.Views2D());
 
             if (projectInfoFilter.Selection.Contains("Views 3D"))
-              selection.AddRange(currentDoc.Views3D());
+              selection.AddRange(document.Views3D());
 
             if (projectInfoFilter.Selection.Contains("Levels"))
-              selection.AddRange(currentDoc.Levels());
+              selection.AddRange(document.Levels());
 
             if (projectInfoFilter.Selection.Contains("Families & Types"))
-              selection.AddRange(currentDoc.SupportedTypes());
+              selection.AddRange(document.SupportedTypes());
 
             return selection;
 
           case "workset":
             var worksetFilter = filter as ListSelectionFilter;
-            var worksets = new FilteredWorksetCollector(currentDoc).Where(x => worksetFilter.Selection.Contains(x.Name)).Select(x => x.Id).ToList();
+            var worksets = new FilteredWorksetCollector(document).Where(x => worksetFilter.Selection.Contains(x.Name)).Select(x => x.Id).ToList();
             foreach (var doc in allDocs)
             {
               var collector = new FilteredElementCollector(doc);
