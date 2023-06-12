@@ -16,6 +16,7 @@ using Column = Objects.BuiltElements.Column;
 using Door = Objects.BuiltElements.Archicad.ArchicadDoor;
 using Floor = Objects.BuiltElements.Floor;
 using Roof = Objects.BuiltElements.Roof;
+using Room = Objects.BuiltElements.Archicad.ArchicadRoom;
 using Wall = Objects.BuiltElements.Wall;
 using Window = Objects.BuiltElements.Archicad.ArchicadWindow;
 using Skylight = Objects.BuiltElements.Archicad.ArchicadSkylight;
@@ -166,7 +167,10 @@ namespace Archicad
       CancellationToken token
     )
     {
-      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(applicationIds), token);
+      var retval = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetElementsType(applicationIds),
+        token
+      );
       return retval;
     }
 
@@ -197,7 +201,10 @@ namespace Archicad
       CancellationToken token
     )
     {
-      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(applicationIds), token);
+      var retval = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.GetModelForElements(applicationIds),
+        token
+      );
       return retval;
     }
 
@@ -234,7 +241,8 @@ namespace Archicad
     private async Task<IEnumerable<SubElementData>?> GetAllSubElements(string apllicationId)
     {
       IEnumerable<SubElementData>? currentSubElements = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetSubElementInfo(apllicationId)
+        new Communication.Commands.GetSubElementInfo(apllicationId),
+        CancellationToken.None
       );
 
       return currentSubElements;

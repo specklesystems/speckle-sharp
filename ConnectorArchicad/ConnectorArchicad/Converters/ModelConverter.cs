@@ -7,7 +7,6 @@ using Objects.Geometry;
 using Objects.Other;
 using Objects.Utils;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using static Archicad.Model.MeshModel;
 
 namespace Archicad.Operations

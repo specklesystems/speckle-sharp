@@ -9,7 +9,6 @@ using Objects;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Core.Logging;
 
 namespace Archicad.Converters
 {

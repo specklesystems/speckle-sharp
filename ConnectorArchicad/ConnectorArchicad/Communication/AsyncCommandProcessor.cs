@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Speckle.Core.Logging;
 
 namespace Archicad.Communication
 {
@@ -24,7 +23,7 @@ namespace Archicad.Communication
     {
       try
       {
-        return Task.Run(() => command.Execute(), token);
+        return Task.Run(command.Execute, token);
       }
       catch (Exception e)
       {

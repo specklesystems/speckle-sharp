@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 

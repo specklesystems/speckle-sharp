@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Objects.BuiltElements.Archicad;
-using Speckle.Core.Logging;
 
 namespace Archicad.Communication.Commands
 {

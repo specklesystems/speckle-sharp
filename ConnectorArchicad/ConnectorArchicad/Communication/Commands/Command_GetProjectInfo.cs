@@ -1,5 +1,4 @@
 using System.Threading.Tasks;
-using Speckle.Core.Logging;
 using Speckle.Newtonsoft.Json;
 
 namespace Archicad.Communication.Commands

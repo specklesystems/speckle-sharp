@@ -18,8 +18,9 @@ namespace Archicad
       Type elementType,
       IEnumerable<TraversalContext> elements,
       ConversionOptions conversionOptions,
-      CancellationToken token)
-    {
+      CancellationToken token
+    )
+      {
       try
       {
         var elementConverter = GetConverterForElement(elementType, conversionOptions, true);
@@ -35,7 +36,8 @@ namespace Archicad
     private async Task<bool> ConvertReceivedObjects(
       List<TraversalContext> flattenObjects,
       ConverterArchicad converter,
-      ProgressViewModel progress)
+      ProgressViewModel progress
+    )
     {
       Dictionary<Type, IEnumerable<TraversalContext>> receivedObjects;
 
