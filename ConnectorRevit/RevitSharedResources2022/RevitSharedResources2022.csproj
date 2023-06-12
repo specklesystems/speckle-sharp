@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);REVIT2022</DefineConstants>
+    <RootNamespace>RevitSharedResources</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Speckle.Revit.API" Version="2022.0.2.1" IncludeAssets="compile;build" PrivateAssets="all" />
+  </ItemGroup>
+
+  <Import Project="..\RevitSharedResources\RevitSharedResources.projitems" Label="Shared" />
+
+</Project>

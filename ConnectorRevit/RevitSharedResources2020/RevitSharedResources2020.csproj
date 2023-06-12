@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <DefineConstants>$(DefineConstants);REVIT2020</DefineConstants>
+    <RootNamespace>RevitSharedResources</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" />
+  </ItemGroup>
+
+  <Import Project="..\RevitSharedResources\RevitSharedResources.projitems" Label="Shared"/>
+</Project>
