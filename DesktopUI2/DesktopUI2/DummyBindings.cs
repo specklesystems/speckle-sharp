@@ -199,7 +199,7 @@ public class DummyBindings : ConnectorBindings
         Selection = "Default",
         Description = "Determines the display style of imported meshes"
       },
-      new MappingSeting
+      new MappingSetting
       {
         Slug = "recieve-mappings",
         Name = "Custom Type Mapping",

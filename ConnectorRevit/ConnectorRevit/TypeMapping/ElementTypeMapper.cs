@@ -2,21 +2,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Avalonia.Threading;
 using DesktopUI2.Models.Settings;
+using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
-using Speckle.Core.Models;
-using Speckle.Newtonsoft.Json;
-using DesktopUI2.Models.TypeMappingOnReceive;
-using System.Threading.Tasks;
-using Avalonia.Threading;
-using Speckle.Core.Models.GraphTraversal;
-using DB = Autodesk.Revit.DB;
 using Speckle.Core.Logging;
+using Speckle.Core.Models;
+using Speckle.Core.Models.GraphTraversal;
+using Speckle.Newtonsoft.Json;
+using DB = Autodesk.Revit.DB;
 
 namespace ConnectorRevit.TypeMapping
 {
@@ -47,12 +47,12 @@ namespace ConnectorRevit.TypeMapping
         throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
       }
       else this.typeRetriever = typeRetriever;
-      
+
       if (converter is not IAllRevitCategoriesExposer<BuiltInCategory> typeInfoExposer)
       {
         throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
       }
-      else this.revitCategoriesExposer = typeInfoExposer;
+      else revitCategoriesExposer = typeInfoExposer;
 
       var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
       foreach (var appObj in flattenedCommit)
@@ -67,7 +67,7 @@ namespace ConnectorRevit.TypeMapping
     public async Task Map(ISetting mapOnReceiveSetting)
     {
       // Get Settings for recieve on mapping 
-      if (mapOnReceiveSetting is not MappingSeting mappingSetting
+      if (mapOnReceiveSetting is not MappingSetting mappingSetting
         || mappingSetting.Selection == ConnectorBindingsRevit.noMapping)
       {
         return;
@@ -81,7 +81,8 @@ namespace ConnectorRevit.TypeMapping
 
       if (mappingSetting.Selection == null)
       {
-        if (await Dispatcher.UIThread.InvokeAsync<bool>(() => {
+        if (await Dispatcher.UIThread.InvokeAsync<bool>(() =>
+        {
           var mappingView = new MissingIncomingTypesDialog();
           return mappingView.ShowDialog<bool>();
         }).ConfigureAwait(false) == false)
@@ -94,7 +95,8 @@ namespace ConnectorRevit.TypeMapping
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       FamilyImporter familyImporter = null;
 
-      currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
+      currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
+      {
         var mappingView = new MappingViewDialog
         {
           DataContext = vm
@@ -115,7 +117,8 @@ namespace ConnectorRevit.TypeMapping
         }
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
-        currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() => {
+        currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
+        {
           var mappingView = new MappingViewDialog
           {
             DataContext = vm
@@ -208,7 +211,7 @@ namespace ConnectorRevit.TypeMapping
       return initialGuess;
     }
 
-    public Dictionary<string, List<MappingValue>>? DeserializeMappingAsDict(MappingSeting mappingSetting)
+    public Dictionary<string, List<MappingValue>>? DeserializeMappingAsDict(MappingSetting mappingSetting)
     {
       if (mappingSetting.MappingJson != null)
       {
@@ -216,8 +219,8 @@ namespace ConnectorRevit.TypeMapping
       }
       return null;
     }
-    
-    public static ITypeMap? DeserializeMapping(MappingSeting mappingSetting)
+
+    public static ITypeMap? DeserializeMapping(MappingSetting mappingSetting)
     {
       if (mappingSetting.MappingJson != null)
       {
