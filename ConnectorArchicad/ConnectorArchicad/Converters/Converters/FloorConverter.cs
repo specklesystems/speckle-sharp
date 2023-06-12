@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Objects;
+using Objects.BuiltElements;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 
@@ -49,7 +50,8 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result.ToList(); ;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token)
     {
       var data = await AsyncCommandProcessor.Execute(
         new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)), token);

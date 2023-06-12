@@ -7,10 +7,10 @@ using Archicad.Communication;
 using Archicad.Model;
 using Archicad.Operations;
 using DynamicData;
+using Objects.BuiltElements;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Core.Logging;
 
 namespace Archicad.Converters
 {
@@ -24,7 +24,10 @@ namespace Archicad.Converters
 
     #region --- Functions ---
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var directShapes = new List<Objects.BuiltElements.Archicad.DirectShape>();
 

@@ -58,7 +58,8 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token)
     {
       var data = await AsyncCommandProcessor.Execute(
         new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)), token);

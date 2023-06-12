@@ -56,7 +56,8 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token)
     {
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadBeam> data =
