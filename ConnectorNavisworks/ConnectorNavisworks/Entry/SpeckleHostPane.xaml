@@ -5,7 +5,7 @@
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"    
   xmlns:av="clr-namespace:AvaloniaHwndHost;assembly=AvaloniaHwndHost"  
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-  Width="400" Height="400"
+  Width="450" Height="650"
   mc:Ignorable="d">
     <Grid>
        <av:AvaloniaHwndHost x:Name="AvaloniaHost" />
