@@ -45,7 +45,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         // first check if commit is the same and preview objects have already been generated
-        Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+        Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
         progress.Report = new ProgressReport();
 
         if (commit.id != SelectedReceiveCommit)
@@ -159,10 +159,10 @@ namespace Speckle.ConnectorRevit.UI
     {
       try
       {
+        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
         var filterObjs = GetSelectionFilterObjects(state.Filter, state.Settings, CurrentDoc.Document);
         foreach (var filterObj in filterObjs)
         {
-          var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
           var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
           if (!converter.CanConvertToSpeckle(filterObj))

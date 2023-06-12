@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
+using Speckle.ConnectorNavisworks.Other;
 using Speckle.Core.Kits;
 using Application = Autodesk.Navisworks.Api.Application;
 using MenuItem = DesktopUI2.Models.MenuItem;
@@ -12,7 +14,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 {
   // Much of the interaction in Navisworks is through the ActiveDocument API
   private static Document _doc;
-  private static Control _control;
+  internal static Control Control;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
 
@@ -22,8 +24,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     _doc.SelectionSets.ToSavedItemCollection();
 
     // Sets the Main Thread Control to Invoke commands on.
-    _control = new Control();
-    _control.CreateControl();
+    Control = new Control();
+    Control.CreateControl();
 
     _defaultKit = KitManager.GetDefaultKit();
     _navisworksConverter = _defaultKit?.LoadConverter(Utilities.VersionedAppName);
@@ -88,5 +90,11 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     var fileName = _doc.CurrentFileName;
     var hash = Core.Models.Utilities.hashString(fileName, Core.Models.Utilities.HashingFuctions.MD5);
     return hash;
+  }
+
+  public override List<string> GetObjectsInView() // this returns all visible doc objects.
+  // TODO!
+  {
+    throw new NotImplementedException();
   }
 }
