@@ -323,7 +323,7 @@ public partial class ConnectorBindingsNavisworks
     };
 
     var commitId = await ConnectorHelpers
-      .CreateCommit(progress.CancellationToken, client, commit)
+      .CreateCommit(client, commit, progress.CancellationToken)
       .ConfigureAwait(false);
     return commitId;
   }
