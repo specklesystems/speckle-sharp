@@ -31,16 +31,16 @@ namespace Archicad.Communication
       return JsonConvert.DeserializeObject<TResponse>(obj, settings);
     }
 
-    public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters, CumulativeTimer cumulativeTimer) where TParameters : class where TResult : class
+    public static async Task<TResult> Execute<TParameters, TResult>(string commandName, TParameters parameters) where TParameters : class where TResult : class
     {
-      using (cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandExecute, commandName))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandExecute, commandName))
       {
         AddOnCommandRequest<TParameters> request = new AddOnCommandRequest<TParameters>(commandName, parameters);
 
         string requestMsg = SerializeRequest(request);
         //Console.WriteLine(requestMsg);
         string responseMsg;
-        using (cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandAPI, commandName))
+        using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.HttpCommandAPI, commandName))
           responseMsg = await ConnectionManager.Instance.Send(requestMsg);
         //Console.WriteLine(responseMsg);
         AddOnCommandResponse<TResult> response = DeserializeResponse<AddOnCommandResponse<TResult>>(responseMsg);

@@ -15,12 +15,12 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Roof);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var roofs = new List<Objects.BuiltElements.Archicad.ArchicadRoof>();
       var shells = new List<Objects.BuiltElements.Archicad.ArchicadShell>();
 
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
@@ -44,8 +44,8 @@ namespace Archicad.Converters
         }
       }
 
-      var resultRoofs = roofs.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoof(roofs), token, cumulativeTimer) : null;
-      var resultShells = shells.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateShell(shells), token, cumulativeTimer) : null;
+      var resultRoofs = roofs.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoof(roofs), token) : null;
+      var resultShells = shells.Count > 0 ? await AsyncCommandProcessor.Execute(new Communication.Commands.CreateShell(shells), token) : null;
 
       var result = new List<ApplicationObject> ();
       if (resultRoofs is not null)
@@ -57,10 +57,10 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       var data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)), token, cumulativeTimer);
+        new Communication.Commands.GetRoofData(elements.Select(e => e.applicationId)), token);
 
       var Roofs = new List<Base>();
       foreach (var roof in data)
@@ -80,7 +80,7 @@ namespace Archicad.Converters
       }
 
      var shelldData = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)), token, cumulativeTimer);
+        new Communication.Commands.GetShellData(elements.Select(e => e.applicationId)), token);
 
       var Shells = new List<Base>();
       foreach (var shell in shelldData)

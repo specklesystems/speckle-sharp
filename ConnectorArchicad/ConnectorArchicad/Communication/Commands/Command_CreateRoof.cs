@@ -40,9 +40,9 @@ namespace Archicad.Communication.Commands
       Roofs = roofs;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateRoof", new Parameters(Roofs), cumulativeTimer);
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateRoof", new Parameters(Roofs));
       return result == null ? null : result.ApplicationObjects;
     }
   }

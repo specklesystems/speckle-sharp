@@ -68,9 +68,9 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<object> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<object> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("SelectElements", new Parameters(ElementIds, Deselect), cumulativeTimer);
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("SelectElements", new Parameters(ElementIds, Deselect));
       return result;
     }
 

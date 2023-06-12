@@ -15,9 +15,9 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<Model.ProjectInfoData> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<Model.ProjectInfoData> Execute()
     {
-      return await HttpCommandExecutor.Execute<Parameters, Model.ProjectInfoData>("GetProjectInfo", null, cumulativeTimer);
+      return await HttpCommandExecutor.Execute<Parameters, Model.ProjectInfoData>("GetProjectInfo", null);
     }
 
     #endregion

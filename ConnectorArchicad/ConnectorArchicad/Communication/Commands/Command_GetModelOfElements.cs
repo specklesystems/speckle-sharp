@@ -35,10 +35,10 @@ namespace Archicad.Communication.Commands
     }
 
 
-    public async Task<IEnumerable<Model.ElementModelData>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<Model.ElementModelData>> Execute()
     {
       Result result =
-        await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ApplicationIds), cumulativeTimer);
+        await HttpCommandExecutor.Execute<Parameters, Result>("GetModelForElements", new Parameters(ApplicationIds));
       return result.Models;
     }
   }

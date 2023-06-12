@@ -35,12 +35,11 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadWall>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ArchicadWall>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetWallData",
-        new Parameters(ApplicationIds),
-        cumulativeTimer
+        new Parameters(ApplicationIds)
       );
       foreach (var wall in result.Datas)
         wall.units = Units.Meters;

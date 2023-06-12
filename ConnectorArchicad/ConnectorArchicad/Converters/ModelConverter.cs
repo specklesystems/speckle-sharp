@@ -35,9 +35,9 @@ namespace Archicad.Operations
       return meshes;
     }
 
-    public static MeshModel MeshToNative(IEnumerable<Mesh> meshes, CumulativeTimer cumulativeTimer)
+    public static MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.MeshToNative))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.MeshToNative))
       {
         var mergedVertexIndices = new Dictionary<Vertex, int>();
         var originalToMergedVertexIndices = new List<int>();

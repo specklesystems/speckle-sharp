@@ -15,11 +15,11 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Archicad.ArchicadWindow);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var windows = new List<Objects.BuiltElements.Archicad.ArchicadWindow>();
 
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
@@ -41,17 +41,17 @@ namespace Archicad.Converters
         }
       }
       
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWindow(windows), token, cumulativeTimer);
+      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWindow(windows), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       // Get subelements
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadWindow> datas =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWindowData(elementModels.Select(e => e.applicationId)), cumulativeTimer);
+        await AsyncCommandProcessor.Execute(new Communication.Commands.GetWindowData(elementModels.Select(e => e.applicationId)));
 
       if (datas is null)
       {

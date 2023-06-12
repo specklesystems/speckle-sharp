@@ -121,24 +121,19 @@ namespace Archicad.Launcher
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      using (var op = SerilogTimings.Operation.Begin("Receive stream {streamId}", state.StreamId))
+      using (var timer = Archicad.Helpers.Timer.CreateReceive(state.StreamId))
       {
-        var cumulativeTimer = new CumulativeTimer();
-
-        Base commitObject = await Helpers.Receive(IdentifyStream(state));
+        Base commitObject = await Speckle.Core.Api.Helpers.Receive(IdentifyStream(state));
         if (commitObject is not null)
-          await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress, cumulativeTimer);
+          await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
 
         await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
 
         if (commitObject == null)
         {
-          op.Cancel();
+          timer.Cancel();
           throw new SpeckleException("Failed to receive specified");
         }
-
-        cumulativeTimer.EnrichSerilogOperation(op);
-        op.Complete();
       }
 
       return state;
@@ -161,7 +156,7 @@ namespace Archicad.Launcher
       if (commitObject == null)
         throw new SpeckleException("Failed to convert objects to speckle: conversion returned null");
 
-      return await Helpers.Send(
+      return await Speckle.Core.Api.Helpers.Send(
         IdentifyStream(state),
         commitObject,
         state.CommitMessage,

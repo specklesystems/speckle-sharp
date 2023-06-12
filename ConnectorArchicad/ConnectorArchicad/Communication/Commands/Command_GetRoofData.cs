@@ -35,9 +35,9 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadRoof>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ArchicadRoof>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoofData", new Parameters(ApplicationIds), cumulativeTimer);
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoofData", new Parameters(ApplicationIds));
       foreach (var roof in result.Datas)
         roof.units = Units.Meters;
 

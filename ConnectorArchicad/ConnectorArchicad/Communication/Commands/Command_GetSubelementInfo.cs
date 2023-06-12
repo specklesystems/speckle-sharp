@@ -35,12 +35,11 @@ namespace Archicad.Communication.Commands
       ApplicationId = applicationId;
     }
 
-    public async Task<IEnumerable<SubElementData>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<SubElementData>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetSubelementInfo",
-        new Parameters(ApplicationId),
-        cumulativeTimer
+        new Parameters(ApplicationId)
       );
       return result.Datas;
     }

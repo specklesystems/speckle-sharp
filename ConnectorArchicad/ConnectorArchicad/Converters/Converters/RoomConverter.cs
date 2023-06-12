@@ -17,11 +17,11 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Room);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var rooms = new List<Objects.BuiltElements.Archicad.ArchicadRoom>();
 
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
@@ -48,18 +48,18 @@ namespace Archicad.Converters
         }
       }
 
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoom(rooms), token, cumulativeTimer);
+      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateRoom(rooms), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadRoom> data =
         await AsyncCommandProcessor.Execute(
           new Communication.Commands.GetRoomData(elementModels.Select(e => e.applicationId)),
-          token, cumulativeTimer);
+          token);
       if (data is null)
       {
         return new List<Base>();

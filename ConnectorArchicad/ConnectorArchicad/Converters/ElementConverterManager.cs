@@ -166,7 +166,7 @@ namespace Archicad
       CancellationToken token
     )
     {
-      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(applicationIds), token, null);
+      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetElementsType(applicationIds), token);
       return retval;
     }
 
@@ -178,7 +178,7 @@ namespace Archicad
     {
       var rawModels = await GetModelForElements(applicationIds, token); // Model data, like meshes
       var elementConverter = ElementConverterManager.Instance.GetConverterForElement(elementType, null, false); // Object converter
-      var convertedObjects = await elementConverter.ConvertToSpeckle(rawModels, null, token); // Deserialization
+      var convertedObjects = await elementConverter.ConvertToSpeckle(rawModels, token); // Deserialization
 
       foreach (var convertedObject in convertedObjects)
       {
@@ -197,7 +197,7 @@ namespace Archicad
       CancellationToken token
     )
     {
-      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(applicationIds), token, null);
+      var retval = await AsyncCommandProcessor.Execute(new Communication.Commands.GetModelForElements(applicationIds), token);
       return retval;
     }
 

@@ -5,6 +5,6 @@ namespace Archicad.Communication.Commands
 {
   internal interface ICommand<TResult>
   {
-    Task<TResult> Execute(CumulativeTimer cumulativeTimer);
+    Task<TResult> Execute();
   }
 }

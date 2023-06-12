@@ -24,11 +24,11 @@ namespace Archicad.Converters
 
     #region --- Functions ---
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var directShapes = new List<Objects.BuiltElements.Archicad.DirectShape>();
 
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
@@ -49,7 +49,7 @@ namespace Archicad.Converters
                 if (meshes == null)
                   continue;
 
-                meshModel = ModelConverter.MeshToNative(meshes, cumulativeTimer);
+                meshModel = ModelConverter.MeshToNative(meshes);
               }
 
               directShape["model"] = meshModel;
@@ -62,12 +62,12 @@ namespace Archicad.Converters
       IEnumerable<ApplicationObject> result;
       result = await AsyncCommandProcessor.Execute(
         new Communication.Commands.CreateDirectShape(directShapes),
-        token, cumulativeTimer
+        token
       );
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       return Task.FromResult(
         new List<Base>(

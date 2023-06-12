@@ -24,10 +24,15 @@ namespace Archicad.Helpers
       context.cumulativeTimer = new CumulativeTimer();
     }
 
+    public void Cancel ()
+    {
+      serilogOperation.Cancel();
+    }
+
     void IDisposable.Dispose()
     {
       Context context = Context.Peek;
-      context?.cumulativeTimer.EnrichSerilogOperation(serilogOperation);
+      context?.cumulativeTimer?.EnrichSerilogOperation(serilogOperation);
       serilogOperation.Complete();
     }
   }

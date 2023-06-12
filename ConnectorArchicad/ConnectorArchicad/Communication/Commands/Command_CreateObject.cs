@@ -42,9 +42,9 @@ namespace Archicad.Communication.Commands
       MeshModels = meshModels;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects, MeshModels), cumulativeTimer);
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateObject", new Parameters(Objects, MeshModels));
       return result == null ? null : result.ApplicationObjects;
     }
   }

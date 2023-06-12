@@ -35,9 +35,9 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadShell>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ArchicadShell>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetShellData", new Parameters(ApplicationIds), cumulativeTimer);
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("GetShellData", new Parameters(ApplicationIds));
       foreach (var shell in result.Datas)
         shell.units = Units.Meters;
 

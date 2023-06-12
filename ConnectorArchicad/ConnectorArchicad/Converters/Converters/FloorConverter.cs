@@ -15,11 +15,11 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Floor);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var floors = new List<Objects.BuiltElements.Archicad.ArchicadFloor>();
 
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
@@ -44,15 +44,15 @@ namespace Archicad.Converters
       }
 
       IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateFloor(floors), token, cumulativeTimer);
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateFloor(floors), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList(); ;
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       var data = await AsyncCommandProcessor.Execute(
-        new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)), token, cumulativeTimer);
+        new Communication.Commands.GetFloorData(elements.Select(e => e.applicationId)), token);
 
       var floors = new List<Base>();
       foreach (var slab in data)

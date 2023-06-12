@@ -15,11 +15,11 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Archicad.ArchicadDoor);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var doors = new List<Objects.BuiltElements.Archicad.ArchicadDoor>();
 
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
@@ -42,16 +42,16 @@ namespace Archicad.Converters
       }
 
       IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token, cumulativeTimer);
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateDoor(doors), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadDoor> datas =
-        await AsyncCommandProcessor.Execute(new Communication.Commands.GetDoorData(elementModels.Select(e => e.applicationId)), cumulativeTimer);
+        await AsyncCommandProcessor.Execute(new Communication.Commands.GetDoorData(elementModels.Select(e => e.applicationId)));
 
       if (datas is null)
       {

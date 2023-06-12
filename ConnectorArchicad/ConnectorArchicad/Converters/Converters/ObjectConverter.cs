@@ -88,14 +88,14 @@ namespace Archicad.Converters
       return meshesIds;
     }
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var archicadObjects = new List<Archicad.ArchicadObject>();
       var meshModels = new List<MeshModel>();
       var transformMatrixById = new Dictionary<string, Transform>();
       var transformedMeshById = new Dictionary<string, Mesh>();
 
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
       {
         foreach (var tc in elements)
         {
@@ -127,7 +127,7 @@ namespace Archicad.Converters
           if (!archicadObjects.Any(archicadObject => archicadObject.modelIds.SequenceEqual(meshIdHashes)))
           {
             var meshes = meshIdHashes.ConvertAll(meshIdHash => transformedMeshById[meshIdHash]);
-            var meshModel = ModelConverter.MeshToNative(meshes, cumulativeTimer);
+            var meshModel = ModelConverter.MeshToNative(meshes);
             meshModels.Add(meshModel);
           }
 
@@ -144,11 +144,11 @@ namespace Archicad.Converters
       }
 
       IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateObject(archicadObjects, meshModels), token, cumulativeTimer);
+      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateObject(archicadObjects, meshModels), token);
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       // Objects not stored on the server
       return new List<Base>();

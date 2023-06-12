@@ -17,11 +17,11 @@ namespace Archicad.Converters
   {
     public Type Type => typeof(Objects.BuiltElements.Wall);
 
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var walls = new List<Objects.BuiltElements.Archicad.ArchicadWall>();
       
-      using (cumulativeTimer.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
+      using (Archicad.Helpers.Timer.Context.Peek.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
         foreach (var tc in elements)
         {
@@ -48,12 +48,12 @@ namespace Archicad.Converters
         }
       }
 
-      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWall(walls), token, cumulativeTimer);
+      var result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateWall(walls), token);
 
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CumulativeTimer cumulativeTimer, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
       List<Base> walls = new List<Base>();
       var elementModels = elements as ElementModelData[] ?? elements.ToArray();
@@ -61,7 +61,7 @@ namespace Archicad.Converters
       IEnumerable<Objects.BuiltElements.Archicad.ArchicadWall> data =
         await AsyncCommandProcessor.Execute(
           new Communication.Commands.GetWallData(elementModels.Select(e => e.applicationId)),
-          token, cumulativeTimer);
+          token);
 
       if (data is null)
         return walls;

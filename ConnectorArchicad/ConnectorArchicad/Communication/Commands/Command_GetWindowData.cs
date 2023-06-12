@@ -35,12 +35,11 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadWindow>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ArchicadWindow>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetWindowData",
-        new Parameters(ApplicationIds),
-        cumulativeTimer
+        new Parameters(ApplicationIds)
       );
       //foreach (var subelement in result.Datas)
       //subelement.units = Units.Meters;

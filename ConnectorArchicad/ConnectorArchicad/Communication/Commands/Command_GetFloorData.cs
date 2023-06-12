@@ -35,12 +35,11 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadFloor>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ArchicadFloor>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetSlabData",
-        new Parameters(ApplicationIds),
-        cumulativeTimer
+        new Parameters(ApplicationIds)
       );
       foreach (var floor in result.Datas)
         floor.units = Units.Meters;

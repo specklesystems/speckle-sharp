@@ -70,12 +70,11 @@ namespace Archicad.Communication.Commands
 
     #region --- Functions ---
 
-    public async Task<Dictionary<string, IEnumerable<string>>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<Dictionary<string, IEnumerable<string>>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetElementTypes",
-        new Parameters(ApplicationIds),
-        cumulativeTimer
+        new Parameters(ApplicationIds)
       );
       return result.ElementTypes
         .GroupBy(row => row.ElementType)

@@ -12,12 +12,11 @@ namespace Archicad.Communication.Commands
     [JsonObject(MemberSerialization.OptIn)]
     private sealed class Result { }
 
-    public async Task<object> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<object> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "FinishReceiveTransaction",
-        new Parameters(),
-        cumulativeTimer
+        new Parameters()
       );
       return result;
     }

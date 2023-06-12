@@ -35,12 +35,11 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadBeam>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ArchicadBeam>> Execute()
     {
       Result result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "GetBeamData",
-        new Parameters(ApplicationIds),
-        cumulativeTimer
+        new Parameters(ApplicationIds)
       );
       foreach (var beam in result.Datas)
         beam.units = Units.Meters;

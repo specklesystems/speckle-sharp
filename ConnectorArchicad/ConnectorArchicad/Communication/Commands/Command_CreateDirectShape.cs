@@ -40,12 +40,11 @@ namespace Archicad.Communication.Commands
       DirectShapes = directShapes;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
       var result = await HttpCommandExecutor.Execute<Parameters, Result>(
         "CreateDirectShape",
-        new Parameters(DirectShapes),
-        cumulativeTimer
+        new Parameters(DirectShapes)
       );
       return result == null ? null : result.ApplicationObjects;
     }

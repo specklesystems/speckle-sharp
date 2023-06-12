@@ -35,9 +35,9 @@ namespace Archicad.Communication.Commands
       Datas = datas;
     }
 
-    public async Task<IEnumerable<ApplicationObject>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ApplicationObject>> Execute()
     {
-      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateZone", new Parameters(Datas), cumulativeTimer);
+      Result result = await HttpCommandExecutor.Execute<Parameters, Result>("CreateZone", new Parameters(Datas));
       return result == null ? null : result.ApplicationObjects;
     }
   }

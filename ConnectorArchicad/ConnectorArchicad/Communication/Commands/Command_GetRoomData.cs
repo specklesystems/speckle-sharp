@@ -35,9 +35,9 @@ namespace Archicad.Communication.Commands
       ApplicationIds = applicationIds;
     }
 
-    public async Task<IEnumerable<ArchicadRoom>> Execute(CumulativeTimer cumulativeTimer)
+    public async Task<IEnumerable<ArchicadRoom>> Execute()
     {
-      var result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoomData", new Parameters(ApplicationIds), cumulativeTimer);
+      var result = await HttpCommandExecutor.Execute<Parameters, Result>("GetRoomData", new Parameters(ApplicationIds));
       foreach (var room in result.Rooms)
         room.units = Units.Meters;
 
