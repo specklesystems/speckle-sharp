@@ -80,7 +80,8 @@ namespace ConverterRevitTests
     internal async Task<IConvertedObjectsCache<Base,Element>> SpeckleToNative<T>(
       UIDocument doc,
       Action<T, T> assert,
-      Func<T, T, Task> assertAsync
+      Func<T, T, Task> assertAsync,
+      IConvertedObjectsCache<Base, Element> previouslyConvertedObjectsCache = null
     ) where T : Element
     {
       await NativeToSpeckle(doc).ConfigureAwait(false);
@@ -92,10 +93,20 @@ namespace ConverterRevitTests
         fixture.NewDoc
       ).ConfigureAwait(false);
 
-      foreach (var convertedObject in receivedObjects.GetConvertedObjects())
+      var sourceObjects = ConnectorBindingsRevit.GetSelectionFilterObjects(fixture.StreamState.Filter, fixture.StreamState.Settings, doc.Document);
+
+      foreach (var obj in sourceObjects)
       {
-        var sourceObject = (T)doc.Document.GetElement(convertedObject.applicationId);
-        var destObject = (T)receivedObjects.GetCreatedObjectsFromConvertedId(convertedObject.applicationId).First();
+        var sourceObject = (T)obj;
+        var destObject = (T)receivedObjects.GetCreatedObjectsFromConvertedId(obj.UniqueId).First();
+
+        if (previouslyConvertedObjectsCache != null)
+        {
+          // make sure the previousObject was updated instead of a new one being created
+          var previousObject = previouslyConvertedObjectsCache.GetCreatedObjectsFromConvertedId(obj.UniqueId).First();
+          Assert.Equal(previousObject.UniqueId, destObject.UniqueId);
+        }
+        
         assert?.Invoke(sourceObject, destObject);
         if (assertAsync != null)
         {
@@ -115,7 +126,7 @@ namespace ConverterRevitTests
       where T : Element
     {
       var initialObjs = await SpeckleToNative(fixture.SourceDoc, assert, assertAsync).ConfigureAwait(false);
-      _ = await SpeckleToNative(fixture.UpdatedDoc, assert, assertAsync).ConfigureAwait(false);
+      _ = await SpeckleToNative(fixture.UpdatedDoc, assert, assertAsync, initialObjs).ConfigureAwait(false);
 
       SpeckleUtils.DeleteElement(initialObjs.GetCreatedObjects());
     }

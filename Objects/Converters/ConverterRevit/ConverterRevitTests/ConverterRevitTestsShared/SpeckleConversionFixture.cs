@@ -63,7 +63,8 @@ namespace ConverterRevitTests
       {
         Slug = "category",
         Selection = categories
-          .Select(cat => DB.Category.GetCategory(SourceDoc.Document, cat).Name)
+          .Select(cat => DB.Category.GetCategory(SourceDoc.Document, cat)?.Name)
+          .Where(cat => cat != null)
           .ToList()
       };
     }
