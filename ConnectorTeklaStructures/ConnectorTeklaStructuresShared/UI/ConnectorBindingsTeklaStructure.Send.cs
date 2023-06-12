@@ -164,7 +164,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
       return commitId;
     }
 

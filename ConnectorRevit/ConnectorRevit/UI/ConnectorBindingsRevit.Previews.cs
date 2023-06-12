@@ -45,7 +45,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         // first check if commit is the same and preview objects have already been generated
-        Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+        Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
         progress.Report = new ProgressReport();
 
         if (commit.id != SelectedReceiveCommit)
