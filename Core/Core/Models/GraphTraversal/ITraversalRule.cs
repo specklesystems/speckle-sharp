@@ -27,11 +27,11 @@ public interface ITraversalRule
 /// </summary>
 public sealed class DefaultRule : ITraversalRule
 {
-  private static DefaultRule? instance;
+  private static DefaultRule? _instance;
 
   private DefaultRule() { }
 
-  public static DefaultRule Instance => instance ??= new DefaultRule();
+  public static DefaultRule Instance => _instance ??= new DefaultRule();
 
   public IEnumerable<string> MembersToTraverse(Base b)
   {

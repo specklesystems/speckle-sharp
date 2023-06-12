@@ -44,10 +44,10 @@ namespace Speckle.ConnectorTeklaStructures.UI
 
       Exceptions.Clear();
 
-      Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorTeklaStructuresUtils.TeklaStructuresAppName);
+      await ConnectorHelpers.TryCommitReceived(state, myCommit, ConnectorTeklaStructuresUtils.TeklaStructuresAppName, progress.CancellationToken);
       
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;

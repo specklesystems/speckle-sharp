@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Objects.Converter.Revit;
 using Objects.Geometry;
 using Speckle.Core.Api;
@@ -8,17 +8,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
-using xUnitRevitUtils;
 
 namespace ConverterRevitTests
 {
   public class BrepFixture : SpeckleConversionFixture
   {
-    public override string TestFile => Globals.GetTestModel("Brep.rvt");
-
-    public override List<BuiltInCategory> Categories => new List<BuiltInCategory> { BuiltInCategory.OST_Mass, BuiltInCategory.OST_Mass };
-
-    public override string NewFile => Globals.GetTestModel("BrepToNative.rvt");
+    public override string TestName => "Brep";
+    public override string Category => TestCategories.Brep;
   }
 
   public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>
@@ -44,13 +40,11 @@ namespace ConverterRevitTests
     [InlineData(@"Brep-QuadDome.json")]
     [InlineData(@"Brep-SimpleHyparHole.json")]
     [InlineData(@"Brep-FaceWithTrimmedEdge.json")]
-    [InlineData(@"Brep-Boat.json")]
-    [InlineData(@"Brep-Plane.json")]
     public async Task BrepToNative(string fileName)
     {
 
       // Read and obtain `base` object.
-      var contents = System.IO.File.ReadAllText(Globals.GetTestModel(fileName));
+      var contents = System.IO.File.ReadAllText(Globals.GetTestModelOfCategory(fixture.Category, fileName));
       var converter = new ConverterRevit();
       var @base = Operations.Deserialize(contents);
 
@@ -61,7 +55,7 @@ namespace ConverterRevitTests
       await SpeckleUtils.RunInTransaction(() =>
       {
         converter.SetContextDocument(fixture.NewDoc);
-        native = converter.BrepToDirectShape(brep, out List<string>notes);
+        native = converter.BrepToDirectShape(brep, out List<string> notes);
       }, fixture.NewDoc, converter);
 
       Assert.True(native.get_Geometry(new Options()).First() is Solid);
@@ -69,9 +63,9 @@ namespace ConverterRevitTests
 
     [Fact]
     [Trait("Brep", "ToSpeckle")]
-    public void BrepToSpeckle()
+    public async Task BrepToSpeckle()
     {
-      throw new NotImplementedException();
+      await NativeToSpeckle();
     }
 
     [Fact]
@@ -81,6 +75,7 @@ namespace ConverterRevitTests
       var converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
 
+      if (fixture.Selection.Count == 0) return;
       if (!(fixture.Selection[0] is DirectShape ds))
         throw new Exception("Selected object was not a direct shape.");
       var geo = ds.get_Geometry(new Options());

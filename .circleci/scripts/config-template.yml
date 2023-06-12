@@ -60,12 +60,12 @@ commands:
             SEMVER=$(echo "$NOPREFIX" | sed -e 's/\/[a-zA-Z-]*//')
             VER=$(echo "$SEMVER" | sed -e 's/-.*//')
             VERSION=$(echo $VER.$WORKFLOW_NUM)
-            dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
+            $HOME/.dotnet/dotnet pack All.sln -p:Version=$SEMVER -p:FileVersion=$VERSION -c Release -p:WarningLevel=0 -p:IsDesktopBuild=false
           environment:
             WORKFLOW_NUM: << pipeline.number >>
       - run:
           name: Push nuget packages
-          command: dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
+          command: $HOME/.dotnet/dotnet nuget push "**/*.nupkg" -s https://api.nuget.org/v3/index.json -k $NUGET_APIKEY -n --skip-duplicate
 
   run-tests:
     parameters:
