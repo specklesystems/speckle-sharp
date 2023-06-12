@@ -37,6 +37,15 @@ namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
+    private bool GetCivilDocument(ApplicationObject appObj, out CivilDocument doc)
+    {
+      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
+      doc = CivilApplication.ActiveDocument;
+      if (doc is null)
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
+      return doc is null ? false : true;
+    }
+
     // stations
     public Station StationToSpeckle(CivilDB.Station station)
     {
@@ -171,13 +180,8 @@ namespace Objects.Converter.AutocadCivil
       var civilAlignment = alignment as CivilAlignment;
 
       // get civil doc
-      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
-      var civilDoc = CivilApplication.ActiveDocument;
-      if (civilDoc == null)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
-        return appObj;
-      }
+      if (!GetCivilDocument(appObj, out CivilDocument civilDoc))
+        return appObj;  
 
       // create or retrieve alignment, and parent if it exists
       CivilDB.Alignment _alignment = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.Alignment : null;
@@ -444,8 +448,25 @@ namespace Objects.Converter.AutocadCivil
 #endregion
 
     // profiles
-    public Profile ProfileToSpeckle(CivilDB.Profile profile)
+    public CivilProfile ProfileToSpeckle(CivilDB.Profile profile)
     {
+      // TODO: get surface name of surface profiles from profile view
+      var _profile = new CivilProfile();
+
+      // get profile props
+      _profile.type = profile.ProfileType.ToString();
+      _profile.offset = profile.Offset;
+      if (profile.StyleName != null)
+        _profile.style = profile.StyleName;
+      if (profile.Description != null)
+        _profile["description"] = profile.Description;
+      if (profile.Name != null)
+        _profile.name = profile.Name;
+
+      // get profile stations
+      _profile.startStation = profile.StartingStation;
+      _profile.endStation = profile.EndingStation;
+
       // get the profile entity curves
       List<ICurve> curves = new List<ICurve>();
       for (int i = 0; i < profile.Entities.Count; i++)
@@ -469,6 +490,20 @@ namespace Objects.Converter.AutocadCivil
             break;
         }
       }
+      _profile.curves = curves;
+
+      // if offset profile, get offset distance and parent
+      _profile.offset = profile.Offset;
+      if (profile.OffsetParameters.ParentProfileId != ObjectId.Null)
+      {
+        try
+        {
+          var parent = Trans.GetObject(profile.OffsetParameters.ParentProfileId, OpenMode.ForRead) as CivilDB.Profile;
+          if (parent != null && parent.Name != null)
+            _profile.parent = parent.Name;
+        }
+        catch { }
+      }
 
       // get points of vertical intersection (PVIs)
       List<Point> pvisConverted = new List<Point>();
@@ -478,23 +513,11 @@ namespace Objects.Converter.AutocadCivil
         pvisConverted.Add(PointToSpeckle(new Point2d(pvi.Station, pvi.Elevation)));
         pvis.Add(new Point3d(pvi.Station, pvi.Elevation, 0));
       }
+      _profile.pvis = pvisConverted;
 
-      var _profile = new Profile();
-      _profile.name = profile.Name;
-      _profile.curves = curves;
-      _profile.startStation = profile.StartingStation;
-      _profile.endStation = profile.EndingStation;
+
       if (pvisConverted.Count > 1) _profile.displayValue = PolylineToSpeckle(pvis, profile.Closed);
       _profile.units = ModelUnits;
-
-      // add civil3d props if they exist
-      if (profile.StyleName != null)
-        _profile["style"] = profile.StyleName;
-      if (profile.Description != null)
-        _profile["description"] = profile.Description;
-      _profile["type"] = profile.ProfileType.ToString();
-      if (pvisConverted.Count > 0) _profile["pvis"] = pvisConverted;
-      try { _profile["offset"] = profile.Offset; } catch { }
 
       return _profile;
     }
@@ -517,6 +540,97 @@ namespace Objects.Converter.AutocadCivil
       var end = new Point2d(endStation, endElevation);
       return LineToSpeckle(new LineSegment2d(start, end));
     }
+
+    /*
+    public ApplicationObject ProfileToNative(Profile profile)
+    {
+      var appObj = new ApplicationObject(profile.id, profile.speckle_type) { applicationId = profile.applicationId };
+      var existingObjs = GetExistingElementsByApplicationId(profile.applicationId);
+      var civilProfile = profile as CivilProfile;
+
+      // get civil doc
+      if (!GetCivilDocument(out CivilDocument civilDoc))
+        return appObj;
+
+      // create or retrieve alignment, and parent if it exists
+      CivilDB.Profile _profile = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.Profile : null;
+      var parent = civilProfile != null ? GetFromObjectIdCollection(civilProfile.parent, civilDoc.get()) : ObjectId.Null;
+      bool isUpdate = true;
+      if (_profile == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create) // just create a new profile
+      {
+        isUpdate = false;
+
+        // get civil props for creation
+#region properties
+        var name = string.IsNullOrEmpty(profile.name) ? profile.applicationId : profile.name; // names need to be unique on creation (but not send i guess??)
+        var layer = Doc.Database.LayerZero;
+
+        // type
+        var type = CivilDB.ProfileType.File;
+        if (civilProfile != null)
+          if (Enum.TryParse(civilProfile.type, out CivilDB.ProfileType civilType))
+            type = civilType;
+
+        // style
+        var docStyles = new ObjectIdCollection();
+        foreach (ObjectId styleId in civilDoc.Styles.ProfileStyles) docStyles.Add(styleId);
+        var style = civilProfile != null ?
+          GetFromObjectIdCollection(civilProfile.style, docStyles, true) : civilDoc.Styles.ProfileStyles.First();
+
+#endregion
+
+        try
+        {
+          // add new profile to doc
+          // ⚠ this will throw if name is not unique!!
+          var id = ObjectId.Null;
+          switch (type)
+          {
+            // A surface profile—often called an existing ground (EG) profile—is extracted from a surface, showing the changes in elevation along a particular route
+            case CivilDB.ProfileType.EG:
+             
+              if (parent == ObjectId.Null) goto default; 
+              try
+              {
+                id = CivilDB.Profile.CreateFromSurface(Doc, );
+              }
+              catch
+              {
+              }
+              break;
+            default:
+              try
+              {
+                id = CivilDB.Profile.CreateFromGeCurve();
+              }
+              catch
+              {
+                
+              }
+              break;
+          }
+          if (!id.IsValid)
+          {
+            appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Create method returned null");
+            return appObj;
+          }
+          _profile = Trans.GetObject(id, OpenMode.ForWrite) as CivilDB.Profile;
+        }
+        catch (System.Exception e)
+        {
+          appObj.Update(status: ApplicationObject.State.Failed, logItem: $"{e.Message}");
+          return appObj;
+        }
+      }
+
+      if (_profile == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"returned null after bake");
+        return appObj;
+      }
+
+    }
+    */
 
     // featurelines
     public Featureline FeatureLineToSpeckle(CivilDB.FeatureLine featureline)
@@ -716,13 +830,8 @@ namespace Objects.Converter.AutocadCivil
       var existingObjs = GetExistingElementsByApplicationId(mesh.applicationId);
 
       // get civil doc
-      BlockTableRecord modelSpaceRecord = Doc.Database.GetModelSpace();
-      var civilDoc = CivilApplication.ActiveDocument;
-      if (civilDoc == null)
-      {
-        appObj.Update(status: ApplicationObject.State.Failed, logItem: $"Could not retrieve civil3d document");
+      if (!GetCivilDocument(appObj, out CivilDocument civilDoc))
         return appObj;
-      }
 
       // create or retrieve tin surface
       CivilDB.TinSurface _surface = existingObjs.Any() ? Trans.GetObject(existingObjs.FirstOrDefault(), OpenMode.ForWrite) as CivilDB.TinSurface : null;
