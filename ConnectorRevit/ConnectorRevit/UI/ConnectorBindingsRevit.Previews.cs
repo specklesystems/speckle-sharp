@@ -160,7 +160,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var filterObjs = GetSelectionFilterObjects(state.Filter, state.Settings, CurrentDoc.Document);
+        var filterObjs = GetSelectionFilterObjects(converter, state.Filter, state.Settings, CurrentDoc.Document);
         foreach (var filterObj in filterObjs)
         {
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);

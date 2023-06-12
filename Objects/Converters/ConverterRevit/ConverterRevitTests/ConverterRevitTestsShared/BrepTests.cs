@@ -54,7 +54,7 @@ namespace ConverterRevitTests
 
       await SpeckleUtils.RunInTransaction(() =>
       {
-        converter.SetContextDocument(fixture.NewDoc);
+        converter.SetContextDocument(fixture.NewDoc.Document);
         native = converter.BrepToDirectShape(brep, out List<string> notes);
       }, fixture.NewDoc.Document, converter);
 
@@ -73,7 +73,7 @@ namespace ConverterRevitTests
     public void BrepSelectionToNative()
     {
       var converter = new ConverterRevit();
-      converter.SetContextDocument(fixture.NewDoc);
+      converter.SetContextDocument(fixture.NewDoc.Document);
 
       if (fixture.Selection.Count == 0) return;
       if (!(fixture.Selection[0] is DirectShape ds))

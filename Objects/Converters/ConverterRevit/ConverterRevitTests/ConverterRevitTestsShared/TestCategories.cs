@@ -36,7 +36,7 @@ namespace ConverterRevitTests
       },
       { Brep, new List<BuiltInCategory>()
         {
-          BuiltInCategory.OST_Mass
+          BuiltInCategory.OST_GenericModel
         }
       },
       { Column, new List<BuiltInCategory>()

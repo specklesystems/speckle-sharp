@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
@@ -60,6 +61,12 @@ namespace Objects.Converter.Revit
     public IReceivedObjectIdMap<Base, Element> PreviouslyReceivedObjectIds { get; set; }
 
     /// <summary>
+    /// Cache to keep track of relationship between objects that have been converted during the current receive
+    /// operation. This will eventually get dumped into a <see cref="IReceivedObjectIdMap{TFrom, TTo}"/>
+    /// </summary>
+    public IConvertedObjectsCache<Base, Element> ConvertedObjectsCache { get; set; }
+
+    /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
     public Element CurrentHostElement { get; set; }
@@ -111,6 +118,10 @@ namespace Objects.Converter.Revit
       else if (doc is IReceivedObjectIdMap<Base, Element> cache)
       {
         PreviouslyReceivedObjectIds = cache;
+      }
+      else if (doc is IConvertedObjectsCache<Base, Element> convertedObjectsCache)
+      {
+        ConvertedObjectsCache = convertedObjectsCache;
       }
       else if (doc is DB.View view)
       {
@@ -442,7 +453,25 @@ namespace Objects.Converter.Revit
       return speckleSchema;
     }
 
-    public object ConvertToNative(Base @object)
+    public object ConvertToNative(Base @base)
+    {
+      var appObject = ConvertToNativeApplicationObject(@base);
+      if (appObject == null)
+      {
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
+        var boo = @base["isHackySpeckleCamera"] as bool?;
+        if (boo == true)
+          return ViewOrientation3DToNative(@base);
+      }
+      else if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+      {
+        ConvertedObjectsCache.AddConvertedObjects(@base, typedList);
+      }
+      return appObject;
+    }
+      
+    public ApplicationObject ConvertToNativeApplicationObject(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
       Settings.TryGetValue("preview", out string isPreview);
@@ -662,14 +691,6 @@ namespace Objects.Converter.Revit
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
-
-        //hacky but the current comments camera is not a Base object
-        //used only from DUI and not for normal geometry conversion
-        case Base b:
-          var boo = b["isHackySpeckleCamera"] as bool?;
-          if (boo == true)
-            return ViewOrientation3DToNative(b);
-          return null;
 
         default:
           return null;

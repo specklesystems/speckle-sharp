@@ -127,7 +127,7 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    public static List<Element> GetSelectionFilterObjects(ISelectionFilter filter, List<ISetting> settings, Document document)
+    public static List<Element> GetSelectionFilterObjects(ISpeckleConverter converter, ISelectionFilter filter, List<ISetting> settings, Document document)
     {
       var allDocs = GetLinkedDocuments(settings, document);
       allDocs.Add(document);
@@ -196,7 +196,6 @@ namespace Speckle.ConnectorRevit.UI
             {
               selection.AddRange(new FilteredElementCollector(doc)
              .WhereElementIsNotElementType()
-             .WhereElementIsViewIndependent()
              .WherePasses(categoryFilter).ToList());
             }
             return selection;
@@ -245,7 +244,7 @@ namespace Speckle.ConnectorRevit.UI
           case "view":
             {
               var viewFilter = filter as ListSelectionFilter;
-              using var collector = new FilteredElementCollector(currentDoc);
+              using var collector = new FilteredElementCollector(document);
               var views = collector
                 .WhereElementIsNotElementType()
                 .OfClass(typeof(View))

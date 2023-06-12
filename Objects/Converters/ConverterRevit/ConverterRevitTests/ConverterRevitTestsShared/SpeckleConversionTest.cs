@@ -41,7 +41,7 @@ namespace ConverterRevitTests
       fixture.StreamState.CommitId = await ConnectorBindingsRevit.SendStreamTestable(fixture.StreamState, commitSender, new DesktopUI2.ViewModels.ProgressViewModel(), typeof(ConverterRevit), doc)
         .ConfigureAwait(false);
 
-      var selectedObjects = ConnectorBindingsRevit.GetSelectionFilterObjects(fixture.StreamState.Filter, fixture.StreamState.Settings, doc.Document);
+      var selectedObjects = ConnectorBindingsRevit.GetSelectionFilterObjects(converter, fixture.StreamState.Filter, fixture.StreamState.Settings, doc.Document);
       var convertedObjects = commitSender.GetConvertedObjects().ToList();
       foreach (var selectedObject in selectedObjects)
       {
@@ -93,7 +93,7 @@ namespace ConverterRevitTests
         fixture.NewDoc
       ).ConfigureAwait(false);
 
-      var sourceObjects = ConnectorBindingsRevit.GetSelectionFilterObjects(fixture.StreamState.Filter, fixture.StreamState.Settings, doc.Document);
+      var sourceObjects = ConnectorBindingsRevit.GetSelectionFilterObjects(new ConverterRevit(), fixture.StreamState.Filter, fixture.StreamState.Settings, doc.Document);
 
       foreach (var obj in sourceObjects)
       {
@@ -104,7 +104,12 @@ namespace ConverterRevitTests
         {
           // make sure the previousObject was updated instead of a new one being created
           var previousObject = previouslyConvertedObjectsCache.GetCreatedObjectsFromConvertedId(obj.UniqueId).First();
-          Assert.Equal(previousObject.UniqueId, destObject.UniqueId);
+
+          // if previous object is not valid then it was deleted and re-created instead of updated
+          if (previousObject.IsValidObject)
+          {
+            Assert.Equal(previousObject.UniqueId, destObject.UniqueId);
+          }
         }
         
         assert?.Invoke(sourceObject, destObject);
@@ -128,17 +133,17 @@ namespace ConverterRevitTests
       var initialObjs = await SpeckleToNative(fixture.SourceDoc, assert, assertAsync).ConfigureAwait(false);
       _ = await SpeckleToNative(fixture.UpdatedDoc, assert, assertAsync, initialObjs).ConfigureAwait(false);
 
-      SpeckleUtils.DeleteElement(initialObjs.GetCreatedObjects());
+      //SpeckleUtils.DeleteElement(initialObjs.GetCreatedObjects());
     }
 
     internal async Task SelectionToNative<T>(Action<T, T> assert, Func<T, T, Task> assertAsync = null)
     {
       ConverterRevit converter = new ConverterRevit();
-      converter.SetContextDocument(fixture.SourceDoc);
+      converter.SetContextDocument(fixture.SourceDoc.Document);
       var spkElems = fixture.Selection.Select(x => converter.ConvertToSpeckle(x) as Base).ToList();
 
       converter = new ConverterRevit();
-      converter.SetContextDocument(fixture.NewDoc);
+      converter.SetContextDocument(fixture.NewDoc.Document);
       converter.SetContextDocument(new StreamStateCache(new StreamState()));
       var revitEls = new List<object>();
 

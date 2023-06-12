@@ -52,7 +52,7 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjects(state.Filter, state.Settings, UIDoc.Document);
+      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter, state.Settings, UIDoc.Document);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!selectedObjects.Any())
@@ -150,19 +150,6 @@ namespace Speckle.ConnectorRevit.UI
 
       commitObjectBuilder.BuildCommitObject(commitObject);
 
-      //var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
-
-      //var objectId = await Operations
-      //  .Send(
-      //    @object: commitObject,
-      //    cancellationToken: progress.CancellationToken,
-      //    transports: transports,
-      //    onProgressAction: dict => progress.Update(dict),
-      //    onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
-      //    disposeTransports: true
-      //  )
-      //  .ConfigureAwait(true);
-
       var objectId = await objectSender.Send(client?.Account, streamId, commitObject, progress)
         .ConfigureAwait(true);
 
@@ -185,10 +172,6 @@ namespace Speckle.ConnectorRevit.UI
 
       var commitId = await objectSender.CreateCommit(client, actualCommit, progress.CancellationToken)
         .ConfigureAwait(false);
-
-      //var commitId = await ConnectorHelpers
-      //  .CreateCommit(progress.CancellationToken, client, actualCommit)
-      //  .ConfigureAwait(false);
 
       return commitId;
     }

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -90,6 +90,8 @@ namespace Objects.Converter.Revit
       BuiltInCategory.OST_RoofSoffit,
       BuiltInCategory.OST_Roofs,
       BuiltInCategory.OST_Rooms,
+      BuiltInCategory.OST_RoomSeparationLines,
+      BuiltInCategory.OST_Schedules,
       BuiltInCategory.OST_SecurityDevices,
       BuiltInCategory.OST_ShaftOpening,
       BuiltInCategory.OST_Site,
@@ -239,6 +241,9 @@ namespace Objects.Converter.Revit
       "OST_Ramps",
       "OST_Roads",
       "OST_Roofs",
+      "OST_Rooms",
+      "OST_RoomSeparationLines",
+      "OST_Schedules",
       "OST_SecurityDevices",
       "OST_StructConnectionShearStuds",
       "OST_Signage",

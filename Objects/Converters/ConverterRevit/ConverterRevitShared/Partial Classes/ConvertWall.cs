@@ -139,6 +139,7 @@ namespace Objects.Converter.Revit
         }
         else
         {
+          TrySetParam(revitWall, BuiltInParameter.WALL_HEIGHT_TYPE, ElementId.InvalidElementId);
           TrySetParam(revitWall, BuiltInParameter.WALL_USER_HEIGHT_PARAM, speckleWall.height, speckleWall.units);
         }
 
