@@ -12,6 +12,8 @@ namespace Objects.Converter.Revit
   {
     public Options SolidDisplayValueOptions = new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true };
 
+    public Options ViewSpecificOptions { get; set; }
+
     /// <summary>
     /// Retreives the meshes on an element to use as the speckle displayvalue
     /// </summary>
@@ -36,7 +38,7 @@ namespace Objects.Converter.Revit
         return displayMeshes;
       }
 
-      options ??= new Options();
+      options = ViewSpecificOptions ?? options ?? new Options();
 
       GeometryElement geom = null;
       try
