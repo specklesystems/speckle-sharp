@@ -29,8 +29,7 @@ You can log in to your account:
 - from Manager, available at https://speckle.systems/download/
 - or, if using our latest release, you can also log in directly from the Navisworks Connector.
 
-![login](https://user-images.githubusercontent.com/2679513/159454529-6b85eb3b-e964-4b39-87ba-286799771e3d.gif)
-
+![login](https://github.com/specklesystems/speckle-sharp/assets/760691/f5f816fa-ded1-46cc-acca-c424916bed9b)
 
 ### Debugging
 
