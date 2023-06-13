@@ -1,36 +1,43 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <AssemblyName>Objects.Converter.SAP2000</AssemblyName>
-        <RootNamespace>Objects.Converter.SAP2000</RootNamespace>
-        <CopyToKitFolder>true</CopyToKitFolder>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Objects.Converter.SAP2000</AssemblyName>
+    <RootNamespace>Objects.Converter.SAP2000</RootNamespace>
+    <CopyToKitFolder>true</CopyToKitFolder>
+  </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-        <DefineConstants>TRACE;SAP2000</DefineConstants>
-    </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;SAP2000</DefineConstants>
+  </PropertyGroup>
 
-    <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-        <DefineConstants>TRACE;SAP2000</DefineConstants>
-    </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;SAP2000</DefineConstants>
+  </PropertyGroup>
 
-    <Import Project="..\ConverterCSIShared\ConverterCSIShared.projitems" Label="Shared" />
+  <Import Project="..\ConverterCSIShared\ConverterCSIShared.projitems" Label="Shared"/>
 
-    <ItemGroup>
-        <PackageReference Include="CSiAPIv1" Version="1.0.0" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CSiAPIv1" Version="1.0.0"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
-        <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
-        <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj"/>
+    <ProjectReference Include="..\..\..\Objects\Objects.csproj"/>
+    <ProjectReference Include="..\..\StructuralUtilities\PolygonMesher\PolygonMesher.csproj"/>
+  </ItemGroup>
 
-    <ItemGroup>
-        <Reference Include="CSiAPIv1">
-            <HintPath>..\..\..\..\..\..\..\..\..\Program Files\Computers and Structures\SAP2000
-                23\CSiAPIv1.dll</HintPath>
-        </Reference>
-    </ItemGroup>
+  <ItemGroup>
+    <Reference Include="CSiAPIv1">
+      <HintPath>..\..\..\..\..\..\..\..\..\Program Files\Computers and Structures\SAP2000
+        23\CSiAPIv1.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <Target Name="CopyDependenciesToKitfolder" AfterTargets="CopyToKitFolder"
+    Condition="'$(IsDesktopBuild)' == true">
+    <Message Text="Copying dependencies to kit folder"/>
+    <Exec Condition="$([MSBuild]::IsOsPlatform('Windows'))"
+      Command="xcopy /Y /S &quot;$(TargetDir)PolygonMesher.dll&quot; &quot;$(AppData)\Speckle\Kits\Objects\&quot;"/>
+  </Target>
 </Project>
