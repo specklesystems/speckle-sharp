@@ -138,18 +138,6 @@ namespace ConverterRevitTests
       EqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
       EqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
-
-      if (sourceElem is FamilyInstance fi && fi.Host != null && destElem is FamilyInstance fi2)
-      {
-        Assert.Equal(fi.Host.Name, fi2.Host.Name);
-      }
-
-      //rotation
-      //for some reasons, rotation of hosted families stopped working in 2021.1 ...?
-      if (sourceElem.Location is LocationPoint && sourceElem is FamilyInstance fi3 && fi3.Host == null)
-        Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation, 3);
-
-
       //walls
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_USER_HEIGHT_PARAM);
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_OFFSET);
@@ -157,6 +145,27 @@ namespace ConverterRevitTests
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_BASE_CONSTRAINT);
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
+
+      if (!(sourceElem is FamilyInstance fi && destElem is FamilyInstance fi2))
+      {
+        return;
+      }
+
+      // we can't just compare the rotation value of two elements because the rotation of may only differ by .0003
+      // but one could be 6.281 (almost 2pi) and the other could be 0
+      var rotation = Math.Abs(ConverterRevit.GetSignedRotation(fi.GetTotalTransform(), fi2.GetTotalTransform()));
+      Assert.True(rotation < .001);
+
+      if (fi.Host != null)
+      {
+        return;
+      }
+
+      // workplane based elements can be tough to receive with the correct host
+      if (fi.Symbol.Family.FamilyPlacementType != FamilyPlacementType.WorkPlaneBased)
+      {
+        Assert.Equal(fi.Host.Name, fi2.Host.Name);
+      }
     }
 
     internal static void OpeningEqual(DB.Element sourceElem, DB.Element destElem)

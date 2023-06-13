@@ -685,12 +685,8 @@ namespace Objects.Converter.Revit
             IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
             if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
               InstanceVoidCutUtils.AddInstanceVoidCut(Doc, CurrentHostElement, familyInstance);
-            try
-            {
-              if (lvlParams.ElementAtOrDefault(0) != null)
-                lvlParams[0].Set(level.Id); // this can be null
-            }
-            catch { }
+            if (lvlParams.ElementAtOrDefault(0) != null && level != null)
+              lvlParams[0].Set(level.Id);
             break;
 
           case FamilyPlacementType.OneLevelBased when CurrentHostElement is FootPrintRoof roof: // handle receiving mullions on a curtain roof
@@ -758,15 +754,7 @@ namespace Objects.Converter.Revit
         familyInstance.flipFacing();
 
       var currentTransform = familyInstance.GetTotalTransform();
-      var desiredBasisX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
-      var currentBasisX = new Vector(currentTransform.BasisX.X, currentTransform.BasisX.Y, currentTransform.BasisX.Z);
-
-      // rotation about the z axis (signed)
-      var rotation = Math.Atan2(
-        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
-        new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)),
-        Vector.DotProduct(desiredBasisX, currentBasisX)
-      );
+      double rotation = GetSignedRotation(transform, currentTransform);
 
       if (Math.Abs(rotation) > TOLERANCE && familyInstance.Location is LocationPoint location)
       {
@@ -786,6 +774,20 @@ namespace Objects.Converter.Revit
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
       appObj = SetHostedElements(instance, familyInstance, appObj);
       return appObj;
+    }
+
+    public static double GetSignedRotation(Transform desiredTransform, Transform actualTransform)
+    {
+      var desiredBasisX = new Vector(desiredTransform.BasisX.X, desiredTransform.BasisX.Y, desiredTransform.BasisX.Z);
+      var currentBasisX = new Vector(actualTransform.BasisX.X, actualTransform.BasisX.Y, actualTransform.BasisX.Z);
+
+      // rotation about the z axis (signed)
+      var rotation = Math.Atan2(
+        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
+        new Vector(actualTransform.BasisZ.X, actualTransform.BasisZ.Y, actualTransform.BasisZ.Z)),
+        Vector.DotProduct(desiredBasisX, currentBasisX)
+      );
+      return rotation;
     }
 
     public RevitInstance RevitInstanceToSpeckle(

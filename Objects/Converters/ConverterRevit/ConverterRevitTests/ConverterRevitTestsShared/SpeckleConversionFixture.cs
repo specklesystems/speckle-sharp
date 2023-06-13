@@ -20,10 +20,7 @@ namespace ConverterRevitTests
     public UIDocument UpdatedDoc { get; set; }
     public UIDocument NewDoc { get; set; }
     public StreamState StreamState { get; } = new();
-    public IList<DB.Element> RevitElements { get; set; }
-    public IList<DB.Element> UpdatedRevitElements { get; set; }
     public List<DB.Element> Selection { get; set; }
-    public string TemplateFile => Globals.GetTestModel("template.rte");
     public string TestClassName { get; set; }
     public virtual string TestName { get; }
     public abstract string Category { get; }
@@ -39,25 +36,17 @@ namespace ConverterRevitTests
         throw new System.Exception($"Category, {Category.ToLower()} is not a recognized category");
       }
 
-
-      ElementMulticategoryFilter filter = new ElementMulticategoryFilter(categories);
-
-      //get selection before opening docs, if any
-      Selection = xru.GetActiveSelection().ToList();
       SourceDoc = SpeckleUtils.OpenUIDoc(TestFile);
 
       if (File.Exists(UpdatedTestFile))
       {
         UpdatedDoc = SpeckleUtils.OpenUIDoc(UpdatedTestFile);
-        UpdatedRevitElements = new FilteredElementCollector(UpdatedDoc.Document).WhereElementIsNotElementType().WherePasses(filter).ToElements();
       }
 
       if (File.Exists(NewFile))
       {
         NewDoc = SpeckleUtils.OpenUIDoc(NewFile);
       }
-
-      RevitElements = new FilteredElementCollector(SourceDoc.Document).WhereElementIsNotElementType().WherePasses(filter).ToElements();
 
       this.StreamState.Filter = new ListSelectionFilter
       {

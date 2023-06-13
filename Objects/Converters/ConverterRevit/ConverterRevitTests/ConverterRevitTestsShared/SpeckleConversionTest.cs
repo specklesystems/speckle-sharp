@@ -133,7 +133,7 @@ namespace ConverterRevitTests
       var initialObjs = await SpeckleToNative(fixture.SourceDoc, assert, assertAsync).ConfigureAwait(false);
       _ = await SpeckleToNative(fixture.UpdatedDoc, assert, assertAsync, initialObjs).ConfigureAwait(false);
 
-      //SpeckleUtils.DeleteElement(initialObjs.GetCreatedObjects());
+      SpeckleUtils.DeleteElement(initialObjs.GetCreatedObjects());
     }
 
     internal async Task SelectionToNative<T>(Action<T, T> assert, Func<T, T, Task> assertAsync = null)
