@@ -106,6 +106,9 @@ public partial class ConnectorBindingsNavisworks
 
     var commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
 
+    _cachedCommit = null;
+    _cachedConversion = null;
+    
     Cursor.Current = Cursors.Default;
 
     return commitId;
