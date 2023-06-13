@@ -375,3 +375,4 @@ ConnectorArchicad/AddOn/Build*
 ConnectorArchicad/ConnectorArchicad/Properties
 **/dist/
 
+**/*.customization.dll

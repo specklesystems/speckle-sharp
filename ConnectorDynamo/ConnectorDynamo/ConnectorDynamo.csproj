@@ -110,14 +110,14 @@
   
   <Target Name="BuildIconDll">
     <Message Text="Building icon dll" Importance="high" />
-    <GenerateResource Sources="$(ProjectDir)\SpeckleConnectorDynamoImages.resx" UseSourcePath="true" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" />
-    <CSC TargetType="library" Resources="$(ProjectDir)\SpeckleConnectorDynamoImages.resources" OutputAssembly="$(IntermediateOutputPath)SpeckleConnectorDynamo.customization.dll" />
+    <GenerateResource Sources="$(ProjectDir)SpeckleConnectorDynamoImages.resx" UseSourcePath="true" OutputResources="$(ProjectDir)SpeckleConnectorDynamoImages.resources" />
+    <CSC TargetType="library" Resources="$(ProjectDir)SpeckleConnectorDynamoImages.resources" OutputAssembly="$(ProjectDir)SpeckleConnectorDynamo.customization.dll" />
   </Target>
   
   <Target Name="CopyIconDllToOutput" DependsOnTargets="BuildIconDll" BeforeTargets="Build">
     <Message Text="Adding icon dll to items" Importance="high" />
     <ItemGroup>
-      <Content Include="$(IntermediateOutputPath)SpeckleConnectorDynamo.customization.dll" Link="SpeckleConnectorDynamo.customization.dll" CopyToOutputDirectory="PreserveNewest" />
+      <Content Include="$(ProjectDir)SpeckleConnectorDynamo.customization.dll" Link="SpeckleConnectorDynamo.customization.dll" CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
   </Target>
   
@@ -138,6 +138,6 @@
 
   <!-- Add CopyIconDllToOutput task to the build depends on list, this forces projects using this one to copy over the customization dll too -->
   <PropertyGroup>
-    <BuildDependsOn>$(BuildDependsOn);CopyIconDllToOutput</BuildDependsOn>
+    <BuildDependsOn>CopyIconDllToOutput;$(BuildDependsOn)</BuildDependsOn>
   </PropertyGroup>
 </Project>
