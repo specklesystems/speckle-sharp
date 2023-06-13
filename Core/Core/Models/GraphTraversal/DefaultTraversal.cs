@@ -81,12 +81,12 @@ public static class DefaultTraversal
     return elementsPropAliases;
   }
 
-  public static IEnumerable<string> None(Base _)
+  internal static IEnumerable<string> None(Base _)
   {
     return Enumerable.Empty<string>();
   }
 
-  public static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
+  internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
   {
     return x => x.GetMembers(includeMembers).Keys;
   }
