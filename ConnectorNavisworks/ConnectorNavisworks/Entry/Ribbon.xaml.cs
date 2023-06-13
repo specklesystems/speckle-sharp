@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
 using System.Windows.Forms;
-using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Plugins;
 using Speckle.ConnectorNavisworks.Bindings;
 using Speckle.Core.Logging;
@@ -42,11 +41,11 @@ namespace Speckle.ConnectorNavisworks.Entry;
     Shortcut = "Ctrl+Shift+R",
     ToolTip = "Retries sending the last complete conversion to Speckle.",
     DisplayName = "Retry\rSend"
-  ),
+  )
 ]
 internal sealed class RibbonHandler : CommandHandlerPlugin
 {
-  readonly static Dictionary<Plugin, bool> LoadedPlugins = new();
+  private readonly static Dictionary<Plugin, bool> LoadedPlugins = new();
 
   /// <summary>
   /// Determines the state of a command in Navisworks.
@@ -137,31 +136,6 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
     return pluginRecord.IsLoaded && pluginRecord is DockPanePluginRecord && pluginRecord.IsEnabled;
   }
 
-#if DEBUG
-  /// <summary>
-  /// Shows a message box displaying plugin information.
-  /// </summary>
-  private static void ShowPluginInfoMessageBox()
-  {
-    var sb = new StringBuilder();
-    foreach (var pr in NavisworksApp.Plugins.PluginRecords)
-    {
-      sb.AppendLine(pr.Name + ": " + pr.DisplayName + ", " + pr.Id);
-    }
-
-    MessageBox.Show(sb.ToString());
-  }
-
-  /// <summary>
-  /// Shows a message box indicating that the plugin was not loaded.
-  /// </summary>
-  /// <param name="command">The command associated with the plugin.</param>
-  private static void ShowPluginNotLoadedMessageBox(string command)
-  {
-    MessageBox.Show(command + " Plugin not loaded.");
-  }
-#endif
-
   public override int ExecuteCommand(string commandId, params string[] parameters)
   {
     // ReSharper disable once RedundantAssignment
@@ -216,16 +190,16 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
       {
         LoadPlugin(RetryLastConversionSend.Plugin, command: commandId);
 
-        var plugin = LoadedPlugins.TryGetValue(
-          NavisworksApp.Plugins.FindPlugin(RetryLastConversionSend.Plugin + ".Speckle").LoadedPlugin,
-          out var loaded
-        );
+        var retryPlugin = NavisworksApp.Plugins.FindPlugin(RetryLastConversionSend.Plugin + ".Speckle").LoadedPlugin;
 
-        if (plugin && loaded)
-        {
+        LoadedPlugins.TryGetValue(retryPlugin, out var loaded);
+
+        if (loaded)
           try
           {
-            ConnectorBindingsNavisworks.RetryLastConversionSend();
+            var speckleCommand = retryPlugin as SpeckleNavisworksCommandPlugin;
+
+            speckleCommand?.Bindings.RetryLastConversionSend();
           }
           catch (NotImplementedException)
           {
@@ -235,7 +209,6 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
           {
             MessageBox.Show(ex.Message);
           }
-        }
 
         break;
       }
@@ -263,4 +236,26 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 
     return 0;
   }
+
+#if DEBUG
+  /// <summary>
+  /// Shows a message box displaying plugin information.
+  /// </summary>
+  private static void ShowPluginInfoMessageBox()
+  {
+    var sb = new StringBuilder();
+    foreach (var pr in NavisworksApp.Plugins.PluginRecords) sb.AppendLine(pr.Name + ": " + pr.DisplayName + ", " + pr.Id);
+
+    MessageBox.Show(sb.ToString());
+  }
+
+  /// <summary>
+  /// Shows a message box indicating that the plugin was not loaded.
+  /// </summary>
+  /// <param name="command">The command associated with the plugin.</param>
+  private static void ShowPluginNotLoadedMessageBox(string command)
+  {
+    MessageBox.Show(command + " Plugin not loaded.");
+  }
+#endif
 }

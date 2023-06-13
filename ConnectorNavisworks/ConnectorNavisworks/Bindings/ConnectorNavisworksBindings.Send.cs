@@ -33,7 +33,9 @@ public partial class ConnectorBindingsNavisworks
   private ProgressInvoker _progressBar;
   private ProgressViewModel _progressViewModel;
 
+
   public override bool CanPreviewSend => false;
+
 
   /// <summary>
   /// Gets a new instance of a commit object with initial properties.
@@ -92,6 +94,7 @@ public partial class ConnectorBindingsNavisworks
     _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
 
     _cachedConversion = commitObject.elements;
+    _cachedState = state;
 
     RestoreAutoSave();
 
@@ -108,7 +111,7 @@ public partial class ConnectorBindingsNavisworks
 
     _cachedCommit = null;
     _cachedConversion = null;
-    
+
     Cursor.Current = Cursors.Default;
 
     return commitId;
@@ -333,6 +336,7 @@ public partial class ConnectorBindingsNavisworks
   private async Task<string> CreateCommit(StreamState state, string objectId)
   {
     _progressBar.BeginSubOperation(1, "Sealing the deal... Your data's new life begins in Speckle!");
+
     // Define a new commit input with stream details, object ID, and commit message
     var commit = new CommitCreateInput
     {
@@ -551,7 +555,7 @@ public partial class ConnectorBindingsNavisworks
       reportObject.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
       _progressViewModel.Report.Log(reportObject);
 
-      if ((i % conversionInterval != 0) && i != conversions.Count)
+      if (i % conversionInterval != 0 && i != conversions.Count)
         continue;
 
       double progress = (i + 1) * conversionIncrement;
