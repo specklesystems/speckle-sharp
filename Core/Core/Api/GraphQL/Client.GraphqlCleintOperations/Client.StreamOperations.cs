@@ -15,17 +15,7 @@ public partial class Client
   /// </summary>
   /// <param name="id">Id of the stream to get</param>
   /// <returns></returns>
-  public Task<bool> StreamExists(string id)
-  {
-    return StreamExists(CancellationToken.None, id);
-  }
-
-  /// <summary>
-  /// Cheks if a stream exists by id.
-  /// </summary>
-  /// <param name="id">Id of the stream to get</param>
-  /// <returns></returns>
-  public async Task<bool> StreamExists(CancellationToken cancellationToken, string id)
+  public async Task<bool> IsStreamAccessible(string id, CancellationToken cancellationToken = default)
   {
     try
     {
@@ -43,11 +33,15 @@ public partial class Client
 
       return stream.id == id;
     }
-    catch
+    catch (SpeckleGraphQLForbiddenException<StreamData>)
     {
-      //ignore
+      return false;
     }
-    return false;
+    catch (SpeckleGraphQLStreamNotFoundException<StreamData>)
+    {
+      return false;
+    }
+
   }
 
 

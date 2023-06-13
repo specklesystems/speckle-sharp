@@ -101,7 +101,7 @@ public class Api
   }
 
   [Test, Order(12)]
-  public async Task StreamExists()
+  public async Task IsStreamAccessible()
   {
     var res = await myClient.StreamExists(streamId).ConfigureAwait(false);
 

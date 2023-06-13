@@ -734,7 +734,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     {
       var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
 
-      if (!await streamState.Client.StreamExists(streamState.StreamId).ConfigureAwait(true))
+      if (!await streamState.Client.IsStreamAccessible(streamState.StreamId).ConfigureAwait(true))
       {
         Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
         return;
@@ -759,7 +759,7 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
       try
       {
-        if (!await svm.Client.StreamExists(svm.Stream.id).ConfigureAwait(true))
+        if (!await svm.Client.IsStreamAccessible(svm.Stream.id).ConfigureAwait(true))
         {
           Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
           return;
