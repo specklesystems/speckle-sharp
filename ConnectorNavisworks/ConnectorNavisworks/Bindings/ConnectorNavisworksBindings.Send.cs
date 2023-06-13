@@ -76,6 +76,7 @@ public partial class ConnectorBindingsNavisworks
     DisableAutoSave();
     SetupProgressViewModel();
     SetupConverter(state);
+    _navisworksConverter.SetContextDocument(_doc);
 
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
