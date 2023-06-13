@@ -763,9 +763,8 @@ namespace Objects.Converter.Revit
       if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
         familyInstance.flipFacing();
 
-
       currentTransform = GetTransformThatConsidersHandAndFaceFlipping(familyInstance);
-      EditTransformForHandAndFaceFlipping(transform, familyInstance);
+      transform = GetEditedTransformForHandAndFaceFlipping(transform, instance.handFlipped, instance.facingFlipped);
       double rotation = GetSignedRotation(transform, currentTransform);
 
       if (Math.Abs(rotation) > TOLERANCE && familyInstance.Location is LocationPoint location)
@@ -804,28 +803,56 @@ namespace Objects.Converter.Revit
     public static Transform GetTransformThatConsidersHandAndFaceFlipping(DB.FamilyInstance fi)
     {
       var transform = fi.GetTotalTransform();
-      EditTransformForHandAndFaceFlipping(transform, fi);
-      return transform;
+      return GetEditedTransformForHandAndFaceFlipping(transform, fi.HandFlipped, fi.FacingFlipped);
     }
 
     /// <summary>
     /// For some reason I'll never understand, the reflection of Revit elements DOES NOT show up in the element's transform
     /// https://forums.autodesk.com/t5/revit-api-forum/gettransform-does-not-include-reflection-into-the-transformation/m-p/10334547
-    /// therefore we need to adjust the desired transform to reflect the flipping of the element,
-    /// and we don't actually know if we can flip an element until it is already baked which is why we don't 
-    /// immediately bake the transform considering these reflections
+    /// therefore we need to adjust the desired transform to reflect the flipping of the element.
     /// </summary>
     /// <param name=""></param>
     /// <param name="fi"></param>
-    private static void EditTransformForHandAndFaceFlipping(DB.Transform transform, DB.FamilyInstance fi)
+    private static Transform GetEditedTransformForHandAndFaceFlipping(DB.Transform transform, bool handFlipped, bool facingFlipped)
     {
-      if (fi.HandFlipped)
+      var newTransform = transform;
+      if (handFlipped)
       {
-        transform.BasisX = new XYZ(transform.BasisX.X * -1, transform.BasisX.Y, transform.BasisX.Z);
+        newTransform *= yAxisReflection;
       }
-      if (fi.FacingFlipped)
+      if (facingFlipped)
       {
-        transform.BasisY = new XYZ(transform.BasisY.X, transform.BasisY.Y * -1, transform.BasisY.Z);
+        newTransform *= xAxisReflection;
+      }
+      return newTransform;
+    }
+
+
+    private static Transform _yAxisReflection;
+    private static Transform yAxisReflection
+    {
+      get
+      {
+        if (_yAxisReflection != null) return _yAxisReflection;
+
+        var _transform = new Transform(Transform.Identity);
+        _transform.BasisX = new XYZ(-1, 0, 0);
+        _yAxisReflection = _transform;
+        return _yAxisReflection;
+      }
+    }
+    
+    private static Transform _xAxisReflection;
+    private static Transform xAxisReflection
+    {
+      get
+      {
+        if (_xAxisReflection != null) return _xAxisReflection;
+
+        var _transform = new Transform(Transform.Identity);
+        _transform.BasisY = new XYZ(0, -1, 0);
+        _xAxisReflection = _transform;
+        return _xAxisReflection;
       }
     }
     public RevitInstance RevitInstanceToSpeckle(

@@ -75,10 +75,10 @@ namespace ConverterRevitTests
         //// if none of the tests failed, close the documents
         //if (!testsFailed)
         //{
-        //SpeckleUtils.OpenUIDoc(Globals.GetTestModel("blank.rvt"));
-        //xru.CloseDoc(SourceDoc?.Document);
-        //xru.CloseDoc(UpdatedDoc?.Document);
-        //xru.CloseDoc(NewDoc?.Document);
+        SpeckleUtils.OpenUIDoc(Globals.GetTestModel("blank.rvt"));
+        xru.CloseDoc(SourceDoc?.Document);
+        xru.CloseDoc(UpdatedDoc?.Document);
+        xru.CloseDoc(NewDoc?.Document);
         //}
 
         return Task.CompletedTask;

@@ -74,7 +74,7 @@ namespace ConverterRevitTests
     ) where T : Element
     {
       var convertedObjs = await SpeckleToNative(fixture.SourceDoc, assert, assertAsync).ConfigureAwait(false);
-      //SpeckleUtils.DeleteElement(convertedObjs.GetCreatedObjects());
+      SpeckleUtils.DeleteElement(convertedObjs.GetCreatedObjects());
     }
     
     /// <summary>
