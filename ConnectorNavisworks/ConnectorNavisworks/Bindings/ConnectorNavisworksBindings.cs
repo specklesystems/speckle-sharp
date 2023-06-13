@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
 using DesktopUI2;
+using DesktopUI2.ViewModels;
 using Speckle.ConnectorNavisworks.Other;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Application = Autodesk.Navisworks.Api.Application;
 using MenuItem = DesktopUI2.Models.MenuItem;
 
@@ -17,6 +19,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   internal static Control Control;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
+  private static object _cachedCommit;
+  private static object _cachedConversion;
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
@@ -37,6 +41,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   public static string HostAppName => HostApplications.Navisworks.Slug;
 
   public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
+
+  public static bool CachedConversion => _cachedConversion != null && _cachedCommit != null;
 
   public override string GetActiveViewName()
   {
@@ -96,5 +102,20 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   // TODO!
   {
     throw new NotImplementedException();
+  }
+
+  public static void RetryLastConversionSend()
+  {
+    if (_doc == null)
+    {
+      return;
+    }
+
+    if (_cachedConversion == null || _cachedCommit == null)
+    {
+      throw new SpeckleException("Cant retry last conversion: no cached conversion or commit found.");
+    }
+
+    MessageBox.Show("Retrying");
   }
 }

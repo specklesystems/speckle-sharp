@@ -66,6 +66,8 @@ public partial class ConnectorBindingsNavisworks
     _progressViewModel = progress;
     Collection commitObject = CommitObject;
 
+    _cachedCommit = commitObject;
+
     // Perform the validation checks - will throw if something is wrong
     ValidateBeforeSending(state);
 
@@ -88,6 +90,8 @@ public partial class ConnectorBindingsNavisworks
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
     _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
+
+    _cachedConversion = commitObject.elements;
 
     RestoreAutoSave();
 
