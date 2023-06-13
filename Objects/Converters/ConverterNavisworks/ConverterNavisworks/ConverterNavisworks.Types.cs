@@ -2,4 +2,4 @@
 
 namespace Objects.Core.Models;
 
-internal sealed class GeometryNode : Base { }
+internal sealed class GeometryNode : Base {}
