@@ -9,9 +9,7 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Avalonia.Threading;
 using ConnectorRevit;
-using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using Serilog.Context;
@@ -19,7 +17,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -32,7 +29,7 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="state">StreamState passed by the UI</param>
     public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
     {
-      return await SendStreamTestable(state, new CommitSender(), progress, Converter.GetType(), CurrentDoc)
+      return await SendStreamTestable(state, new SpeckleObjectServerSender(), progress, Converter.GetType(), CurrentDoc)
         .ConfigureAwait(false);
     }
 

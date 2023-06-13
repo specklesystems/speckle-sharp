@@ -30,9 +30,9 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)CommitReceiver.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)CommitSender.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ICommitReceiver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpeckleObjectServerReceiver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SpeckleObjectServerSender.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ISpeckleObjectReceiver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ISpeckleObjectSender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />

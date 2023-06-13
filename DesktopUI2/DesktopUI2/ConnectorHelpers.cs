@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Interfaces;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Controls.StreamEditControls;
 using Serilog.Events;
@@ -34,7 +33,7 @@ public static class ConnectorHelpers
   /// <returns>The requested commit data</returns>
   /// <exception cref="SpeckleException">Thrown when any receive operation errors</exception>
   /// <exception cref="OperationCanceledException">Thrown when <paramref name="progress"/> requests a cancellation</exception>
-  public static async Task<Base> ReceiveCommit(Commit commit, IStreamState state, ProgressViewModel progress)
+  public static async Task<Base> ReceiveCommit(Commit commit, StreamState state, ProgressViewModel progress)
   {
     progress.CancellationToken.ThrowIfCancellationRequested();
 
@@ -82,7 +81,7 @@ public static class ConnectorHelpers
   /// <returns>Requested Commit</returns>
   /// <exception cref="SpeckleException">Thrown when any client errors</exception>
   /// <exception cref="OperationCanceledException">Thrown when <paramref name="cancellationToken"/> requests a cancellation</exception>
-  public static async Task<Commit> GetCommitFromState(IStreamState state, CancellationToken cancellationToken = default)
+  public static async Task<Commit> GetCommitFromState(StreamState state, CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
 
@@ -141,7 +140,7 @@ public static class ConnectorHelpers
 
   /// <inheritdoc cref="TryCommitReceived(CancellationToken, Client, CommitReceivedInput, LogEventLevel)"/>
   public static async Task TryCommitReceived(
-    IStreamState state,
+    StreamState state,
     Commit commit,
     string sourceApplication,
     CancellationToken cancellationToken = default

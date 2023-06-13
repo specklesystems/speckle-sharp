@@ -1,28 +1,24 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ConnectorRevit;
 using ConverterRevitTests;
-using DesktopUI2;
 using DesktopUI2.ViewModels;
-using Objects.Organization;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
-using Speckle.Core.Transports;
 
 namespace ConverterRevitTestsShared
 {
-  internal class LocalCommitSender : ISpeckleObjectSender
+  internal class SpeckleObjectLocalSender : ISpeckleObjectSender
   {
     private ISpeckleConverter converter;
     private SpeckleConversionFixture fixture;
-    public LocalCommitSender(ISpeckleConverter converter, SpeckleConversionFixture fixture)
+    public SpeckleObjectLocalSender(ISpeckleConverter converter, SpeckleConversionFixture fixture)
     {
       this.converter = converter;
       this.fixture = fixture;
@@ -54,30 +50,5 @@ namespace ConverterRevitTestsShared
       return await Operations.Send(@object: commitObject, cancellationToken: progress.CancellationToken)
         .ConfigureAwait(true);
     }
-
-    ///// <summary>
-    ///// Traverses until finds a convertable object (or fallback) then traverses members
-    ///// </summary>
-    ///// <param name="converter"></param>
-    ///// <returns></returns>
-    //private static GraphTraversal CreateBIMTraverseFunc(ISpeckleConverter converter)
-    //{
-    //  var bimElementRule = TraversalRule
-    //    .NewTraversalRule()
-    //    .When(converter.CanConvertToNative)
-    //    .ContinueTraversing(DefaultTraversal.ElementsAliases);
-
-    //  //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
-    //  var ignoreResultsRule = TraversalRule
-    //    .NewTraversalRule()
-    //    .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
-    //    .ContinueTraversing(DefaultTraversal.None);
-
-    //  var ignoreProjectInfoRule
-
-    //  var defaultRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(DefaultTraversal.Members());
-
-    //  return new GraphTraversal(bimElementRule, ignoreResultsRule, defaultRule);
-    //}
   }
 }

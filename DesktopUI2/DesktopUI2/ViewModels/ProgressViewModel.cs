@@ -5,14 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Web;
 using Avalonia.Threading;
-using DesktopUI2.Models.Interfaces;
 using ReactiveUI;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace DesktopUI2.ViewModels;
 
-public class ProgressViewModel : ReactiveObject, IProgressViewModel
+public class ProgressViewModel : ReactiveObject
 {
   private bool _isPreviewProgressing;
 

@@ -1,34 +1,31 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ConnectorRevit;
 using ConverterRevitTests;
-using DesktopUI2.Models.Interfaces;
+using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
 
 namespace ConverterRevitTestsShared
 {
-  internal sealed class IntegrationTestCommitReceiver : ISpeckleObjectReceiver
+  internal sealed class SpeckleObjectLocalReceiver : ISpeckleObjectReceiver
   {
     private SpeckleConversionFixture fixture;
 
-    public IntegrationTestCommitReceiver(SpeckleConversionFixture fixture)
+    public SpeckleObjectLocalReceiver(SpeckleConversionFixture fixture)
     {
       this.fixture = fixture;
     }
 
-    public async Task<Commit> GetCommitFromState(IStreamState state, CancellationToken cancellationToken)
+    public async Task<Commit> GetCommitFromState(StreamState state, CancellationToken cancellationToken)
     {
       return fixture.Commits[state.CommitId];
     }
 
-    public async Task<Base> ReceiveCommit(Commit commit, IStreamState state, ProgressViewModel progress)
+    public async Task<Base> ReceiveCommit(Commit commit, StreamState state, ProgressViewModel progress)
     {
       Base? commitObject = await Operations
         .Receive(
@@ -62,7 +59,7 @@ namespace ConverterRevitTestsShared
       return commitObject;
     }
 
-    public async Task TryCommitReceived(IStreamState state, Commit myCommit, string revitAppName, CancellationToken cancellationToken)
+    public async Task TryCommitReceived(StreamState state, Commit myCommit, string revitAppName, CancellationToken cancellationToken)
     {
       // do nothing here
     }

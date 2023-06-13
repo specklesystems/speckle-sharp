@@ -1,13 +1,8 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using DesktopUI2;
-using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-using Speckle.ConnectorRevit;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
@@ -15,7 +10,7 @@ using Speckle.Core.Transports;
 
 namespace ConnectorRevit
 {
-  internal class CommitSender : ISpeckleObjectSender
+  internal class SpeckleObjectServerSender : ISpeckleObjectSender
   {
     public async Task<string> CreateCommit(Client client, CommitCreateInput actualCommit, CancellationToken cancellationToken)
     {

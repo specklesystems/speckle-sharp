@@ -37,7 +37,7 @@ namespace ConverterRevitTests
     {
       var converter = new ConverterRevit();
       converter.SetContextDocument(doc.Document);
-      var commitSender = new LocalCommitSender(converter, fixture);
+      var commitSender = new SpeckleObjectLocalSender(converter, fixture);
       fixture.StreamState.CommitId = await ConnectorBindingsRevit.SendStreamTestable(fixture.StreamState, commitSender, new DesktopUI2.ViewModels.ProgressViewModel(), typeof(ConverterRevit), doc)
         .ConfigureAwait(false);
 
@@ -87,7 +87,7 @@ namespace ConverterRevitTests
       await NativeToSpeckle(doc).ConfigureAwait(false);
       var receivedObjects = await ConnectorBindingsRevit.ReceiveStreamTestable(
         fixture.StreamState,
-        new IntegrationTestCommitReceiver(fixture), 
+        new SpeckleObjectLocalReceiver(fixture), 
         new DesktopUI2.ViewModels.ProgressViewModel(), 
         typeof(ConverterRevit), 
         fixture.NewDoc

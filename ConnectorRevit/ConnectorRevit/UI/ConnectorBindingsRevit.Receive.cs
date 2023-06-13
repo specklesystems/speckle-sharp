@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,15 +10,11 @@ using Avalonia.Threading;
 using ConnectorRevit;
 using ConnectorRevit.Revit;
 using ConnectorRevit.Storage;
-using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Interfaces;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using RevitSharedResources.Interfaces;
-using Serilog;
-using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
@@ -38,13 +33,13 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      await ReceiveStreamTestable(state, new CommitReceiver(), progress, Converter.GetType(), CurrentDoc)
+      await ReceiveStreamTestable(state, new SpeckleObjectServerReceiver(), progress, Converter.GetType(), CurrentDoc)
         .ConfigureAwait(false);
       return state;
     }
 
     public static async Task<IConvertedObjectsCache<Base, Element>> ReceiveStreamTestable(
-      IStreamState state, 
+      StreamState state, 
       ISpeckleObjectReceiver commitReceiver, 
       ProgressViewModel progress, 
       Type converterType, 

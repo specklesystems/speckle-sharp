@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Interfaces;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -21,7 +20,7 @@ namespace DesktopUI2.Models;
 /// account information so a `Client` can be recreated.
 /// </summary>
 [JsonObject(MemberSerialization.OptIn)]
-public class StreamState : IStreamState
+public class StreamState
 {
   private Client _client;
 
