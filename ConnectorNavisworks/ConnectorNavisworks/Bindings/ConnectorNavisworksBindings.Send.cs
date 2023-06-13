@@ -33,9 +33,7 @@ public partial class ConnectorBindingsNavisworks
   private ProgressInvoker _progressBar;
   private ProgressViewModel _progressViewModel;
 
-
   public override bool CanPreviewSend => false;
-
 
   /// <summary>
   /// Gets a new instance of a commit object with initial properties.
@@ -68,6 +66,8 @@ public partial class ConnectorBindingsNavisworks
     _progressViewModel = progress;
     Collection commitObject = CommitObject;
 
+    _cachedConversion = null;
+    _cachedState = state;
     _cachedCommit = commitObject;
 
     // Perform the validation checks - will throw if something is wrong
@@ -94,7 +94,6 @@ public partial class ConnectorBindingsNavisworks
     _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
 
     _cachedConversion = commitObject.elements;
-    _cachedState = state;
 
     RestoreAutoSave();
 

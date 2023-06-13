@@ -44,5 +44,9 @@ public partial class ConnectorBindingsNavisworks
     MainViewModel.GoHome();
 
     _navisworksConverter.SetContextDocument(doc);
+
+    _cachedCommit = null;
+    _cachedConversion = null;
+    _cachedState = null;
   }
 }
