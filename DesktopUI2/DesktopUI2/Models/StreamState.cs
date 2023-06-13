@@ -1,14 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 
