@@ -146,17 +146,28 @@ namespace ConverterRevitTests
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_HEIGHT_TYPE);
       EqualParam(sourceElem, destElem, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
 
+      if (sourceElem.Location is LocationPoint locationPoint1)
+      {
+        var locationPoint2 = destElem.Location as LocationPoint;
+        Assert.Equal(locationPoint1.Point.X, locationPoint2.Point.X, 2);
+        Assert.Equal(locationPoint1.Point.Y, locationPoint2.Point.Y, 2);
+        Assert.Equal(locationPoint1.Point.Z, locationPoint2.Point.Z, 2);
+      }
+
       if (!(sourceElem is FamilyInstance fi && destElem is FamilyInstance fi2))
       {
         return;
       }
 
+      var t1 = ConverterRevit.GetTransformThatConsidersHandAndFaceFlipping(fi);
+      var t2 = ConverterRevit.GetTransformThatConsidersHandAndFaceFlipping(fi2);
+
       // we can't just compare the rotation value of two elements because the rotation of may only differ by .0003
       // but one could be 6.281 (almost 2pi) and the other could be 0
-      var rotation = Math.Abs(ConverterRevit.GetSignedRotation(fi.GetTotalTransform(), fi2.GetTotalTransform()));
+      var rotation = Math.Abs(ConverterRevit.GetSignedRotation(t1, t2));
       Assert.True(rotation < .001);
 
-      if (fi.Host != null)
+      if (fi.Host == null)
       {
         return;
       }

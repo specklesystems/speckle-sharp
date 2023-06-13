@@ -30,7 +30,7 @@ namespace ConverterRevitTestsShared
       var defaultTraversal = DefaultTraversal.CreateBIMTraverseFunc(converter);
       return defaultTraversal.Traverse(commitObject)
         .Select(tc => tc.current)
-        .Where(tc => converter.CanConvertToNative(tc));
+        .Where(@base => @base.applicationId != null);
     }
     public async Task<string> CreateCommit(Client client, CommitCreateInput actualCommit, CancellationToken cancellationToken)
     {

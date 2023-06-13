@@ -723,6 +723,16 @@ namespace Objects.Converter.Revit
 
       Doc.Regenerate(); //required for mirroring and face flipping to work!
 
+      var currentTransform = familyInstance.GetTotalTransform();
+
+      ElementTransformUtils.MoveElement(familyInstance.Document,
+        familyInstance.Id,
+        new XYZ(
+          insertionPoint.X - currentTransform.Origin.X,
+          insertionPoint.Y - currentTransform.Origin.Y,
+          insertionPoint.Z - currentTransform.Origin.Z)
+        );
+
       if (instance.mirrored != familyInstance.Mirrored)
       {
         // mirroring
@@ -753,7 +763,9 @@ namespace Objects.Converter.Revit
       if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
         familyInstance.flipFacing();
 
-      var currentTransform = familyInstance.GetTotalTransform();
+
+      currentTransform = GetTransformThatConsidersHandAndFaceFlipping(familyInstance);
+      EditTransformForHandAndFaceFlipping(transform, familyInstance);
       double rotation = GetSignedRotation(transform, currentTransform);
 
       if (Math.Abs(rotation) > TOLERANCE && familyInstance.Location is LocationPoint location)
@@ -781,7 +793,6 @@ namespace Objects.Converter.Revit
       var desiredBasisX = new Vector(desiredTransform.BasisX.X, desiredTransform.BasisX.Y, desiredTransform.BasisX.Z);
       var currentBasisX = new Vector(actualTransform.BasisX.X, actualTransform.BasisX.Y, actualTransform.BasisX.Z);
 
-      // rotation about the z axis (signed)
       var rotation = Math.Atan2(
         Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
         new Vector(actualTransform.BasisZ.X, actualTransform.BasisZ.Y, actualTransform.BasisZ.Z)),
@@ -790,6 +801,33 @@ namespace Objects.Converter.Revit
       return rotation;
     }
 
+    public static Transform GetTransformThatConsidersHandAndFaceFlipping(DB.FamilyInstance fi)
+    {
+      var transform = fi.GetTotalTransform();
+      EditTransformForHandAndFaceFlipping(transform, fi);
+      return transform;
+    }
+
+    /// <summary>
+    /// For some reason I'll never understand, the reflection of Revit elements DOES NOT show up in the element's transform
+    /// https://forums.autodesk.com/t5/revit-api-forum/gettransform-does-not-include-reflection-into-the-transformation/m-p/10334547
+    /// therefore we need to adjust the desired transform to reflect the flipping of the element,
+    /// and we don't actually know if we can flip an element until it is already baked which is why we don't 
+    /// immediately bake the transform considering these reflections
+    /// </summary>
+    /// <param name=""></param>
+    /// <param name="fi"></param>
+    private static void EditTransformForHandAndFaceFlipping(DB.Transform transform, DB.FamilyInstance fi)
+    {
+      if (fi.HandFlipped)
+      {
+        transform.BasisX = new XYZ(transform.BasisX.X * -1, transform.BasisX.Y, transform.BasisX.Z);
+      }
+      if (fi.FacingFlipped)
+      {
+        transform.BasisY = new XYZ(transform.BasisY.X, transform.BasisY.Y * -1, transform.BasisY.Z);
+      }
+    }
     public RevitInstance RevitInstanceToSpeckle(
       DB.FamilyInstance instance,
       out List<string> notes,

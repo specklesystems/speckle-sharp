@@ -33,7 +33,7 @@ namespace ConverterRevitTests
     {
       await NativeToSpeckle(fixture.SourceDoc).ConfigureAwait(false);
     }
-    internal async Task NativeToSpeckle(UIDocument doc)
+    internal async Task<List<Base>> NativeToSpeckle(UIDocument doc)
     {
       var converter = new ConverterRevit();
       converter.SetContextDocument(doc.Document);
@@ -43,13 +43,21 @@ namespace ConverterRevitTests
 
       var selectedObjects = ConnectorBindingsRevit.GetSelectionFilterObjects(converter, fixture.StreamState.Filter, fixture.StreamState.Settings, doc.Document);
       var convertedObjects = commitSender.GetConvertedObjects().ToList();
+      var speckleObjectsToReceive = new List<Base>();
       foreach (var selectedObject in selectedObjects)
       {
+        var convertedObject = convertedObjects.FirstOrDefault(b => b.applicationId == selectedObject.UniqueId);
+        if (convertedObject == null)
+        {
+          throw new Exception($"could not find converted object corresponding to document element with uniqueId {selectedObject.UniqueId}. The element was either not converted or was converted without setting the applicationId");
+        }
         AssertUtils.ValidSpeckleElement(
           selectedObject, 
-          convertedObjects.FirstOrDefault(b => b.applicationId == selectedObject.UniqueId)
+          convertedObject
         );
+        speckleObjectsToReceive.Add( convertedObject );
       }
+      return speckleObjectsToReceive;
     }
 
     /// <summary>
@@ -66,7 +74,7 @@ namespace ConverterRevitTests
     ) where T : Element
     {
       var convertedObjs = await SpeckleToNative(fixture.SourceDoc, assert, assertAsync).ConfigureAwait(false);
-      SpeckleUtils.DeleteElement(convertedObjs.GetCreatedObjects());
+      //SpeckleUtils.DeleteElement(convertedObjs.GetCreatedObjects());
     }
     
     /// <summary>
@@ -84,7 +92,7 @@ namespace ConverterRevitTests
       IConvertedObjectsCache<Base, Element> previouslyConvertedObjectsCache = null
     ) where T : Element
     {
-      await NativeToSpeckle(doc).ConfigureAwait(false);
+      var speckleObjectsToReceive = await NativeToSpeckle(doc).ConfigureAwait(false);
       var receivedObjects = await ConnectorBindingsRevit.ReceiveStreamTestable(
         fixture.StreamState,
         new SpeckleObjectLocalReceiver(fixture), 
@@ -93,17 +101,22 @@ namespace ConverterRevitTests
         fixture.NewDoc
       ).ConfigureAwait(false);
 
-      var sourceObjects = ConnectorBindingsRevit.GetSelectionFilterObjects(new ConverterRevit(), fixture.StreamState.Filter, fixture.StreamState.Settings, doc.Document);
-
-      foreach (var obj in sourceObjects)
+      var converter = new ConverterRevit();
+      converter.SetContextDocument(doc.Document);
+      foreach (var speckleObj in speckleObjectsToReceive)
       {
-        var sourceObject = (T)obj;
-        var destObject = (T)receivedObjects.GetCreatedObjectsFromConvertedId(obj.UniqueId).First();
+        if (!converter.CanConvertToNative(speckleObj))
+        {
+          continue;
+        }
+
+        var sourceObject = (T)doc.Document.GetElement(speckleObj.applicationId);
+        var destObject = (T)receivedObjects.GetCreatedObjectsFromConvertedId(speckleObj.applicationId).First();
 
         if (previouslyConvertedObjectsCache != null)
         {
           // make sure the previousObject was updated instead of a new one being created
-          var previousObject = previouslyConvertedObjectsCache.GetCreatedObjectsFromConvertedId(obj.UniqueId).First();
+          var previousObject = previouslyConvertedObjectsCache.GetCreatedObjectsFromConvertedId(speckleObj.applicationId).First();
 
           // if previous object is not valid then it was deleted and re-created instead of updated
           if (previousObject.IsValidObject)

@@ -74,7 +74,9 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_ArcWallRectOpening,
           BuiltInCategory.OST_FloorOpening,
           BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_Floors
+          BuiltInCategory.OST_Floors,
+          BuiltInCategory.OST_LightingFixtures,
+          //BuiltInCategory.OST_GenericModel // this one is breaking conversion of familyInstance file because of window subelement conversions.
         }
       },
       { Floor, new List<BuiltInCategory>()

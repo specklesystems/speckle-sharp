@@ -152,7 +152,6 @@ namespace Speckle.ConnectorRevit.UI
 
       progress.CancellationToken.ThrowIfCancellationRequested();
 
-      //var actualCommit = objectSender.CreateCommitInput(streamId, objectId, state, convertedCount);
       var actualCommit = new CommitCreateInput()
       {
         streamId = streamId,

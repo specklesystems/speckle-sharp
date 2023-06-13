@@ -20,7 +20,7 @@ namespace ConverterRevitTests
     public UIDocument UpdatedDoc { get; set; }
     public UIDocument NewDoc { get; set; }
     public StreamState StreamState { get; } = new();
-    public List<DB.Element> Selection { get; set; }
+    public List<DB.Element> Selection { get; set; } = new();
     public string TestClassName { get; set; }
     public virtual string TestName { get; }
     public abstract string Category { get; }
@@ -60,7 +60,7 @@ namespace ConverterRevitTests
 
     public async Task InitializeAsync()
     {
-      await SpeckleUtils.Throttler.WaitAsync();
+      await SpeckleUtils.Throttler.WaitAsync().ConfigureAwait(false);
       Initialize();
     }
 
@@ -76,9 +76,9 @@ namespace ConverterRevitTests
         //if (!testsFailed)
         //{
         //SpeckleUtils.OpenUIDoc(Globals.GetTestModel("blank.rvt"));
-        //xru.CloseDoc(SourceDoc.Document);
-        //xru.CloseDoc(UpdatedDoc.Document);
-        //xru.CloseDoc(NewDoc.Document);
+        //xru.CloseDoc(SourceDoc?.Document);
+        //xru.CloseDoc(UpdatedDoc?.Document);
+        //xru.CloseDoc(NewDoc?.Document);
         //}
 
         return Task.CompletedTask;
