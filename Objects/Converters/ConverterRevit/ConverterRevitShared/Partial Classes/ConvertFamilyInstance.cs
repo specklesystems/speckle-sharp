@@ -819,7 +819,7 @@ namespace Objects.Converter.Revit
       var _instance = new RevitInstance();
       _instance.transform = transform;
       _instance.typedDefinition = definition;
-      _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);
+      _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM) ?? ConvertAndCacheLevel(instance, BuiltInParameter.SCHEDULE_LEVEL_PARAM);
       _instance.facingFlipped = instance.FacingFlipped;
       _instance.handFlipped = instance.HandFlipped;
       _instance.mirrored = instance.Mirrored;
