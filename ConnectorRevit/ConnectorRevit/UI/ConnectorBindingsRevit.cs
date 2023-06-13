@@ -17,7 +17,7 @@ namespace Speckle.ConnectorRevit.UI
   {
     public static UIApplication RevitApp;
 
-    public UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
+    public static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
 
     public Timer SelectionTimer;
 
