@@ -154,7 +154,7 @@ public partial class ConnectorBindingsNavisworks
     var conversions = new Dictionary<Element, Tuple<Constants.ConversionState, Base>>();
 
     var totalObjects = modelItemsToConvert.Count;
-    var objectIncrement = 1 / (double)totalObjects;
+    var objectIncrement = 1 / Math.Max((double)totalObjects, 1);
     var objectInterval = Math.Max(totalObjects / 100, 1);
 
     for (int index = 0; index < modelItemsToConvert.Count; index++)
@@ -478,7 +478,7 @@ public partial class ConnectorBindingsNavisworks
       .ToDictionary(c => c.Key, c => c.Value);
 
     int convertedCount = 0;
-    var conversionIncrement = 1.0 / conversions.Count;
+    var conversionIncrement = conversions.Count != 0 ? 1.0 / conversions.Count : 0.0;
     var conversionInterval = Math.Max(conversions.Count / 100, 1);
 
     for (var i = 0; i < conversions.Count; i++)
