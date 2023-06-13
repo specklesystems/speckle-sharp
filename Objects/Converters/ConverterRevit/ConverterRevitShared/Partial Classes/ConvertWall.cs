@@ -232,26 +232,39 @@ namespace Objects.Converter.Revit
     {
       var grid = wall.CurtainGrid;
 
-      var meshPanels = new List<Mesh>();
-      var meshMullions = new List<Mesh>();
-      foreach (ElementId panelId in grid.GetPanelIds())
-      {
-        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
-        if (SubelementIds.Contains(panelId))
-          continue;
-        SubelementIds.Add(panelId);
-        meshPanels.AddRange(GetElementDisplayValue(wall.Document.GetElement(panelId)));
-      }
-      foreach (ElementId mullionId in grid.GetMullionIds())
-      {
-        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
-        if (SubelementIds.Contains(mullionId))
-          continue;
-        SubelementIds.Add(mullionId);
-        meshMullions.AddRange(GetElementDisplayValue(wall.Document.GetElement(mullionId)));
-      }
+      var meshPanels = GetWallSubElementMeshes(grid.GetPanelIds(), BuiltInCategory.OST_CurtainWallPanels);
+      var meshMullions = GetWallSubElementMeshes(grid.GetMullionIds(), BuiltInCategory.OST_CurtainWallMullions);
 
       return (meshPanels, meshMullions);
+    }
+
+    private List<Mesh> GetWallSubElementMeshes(IEnumerable<ElementId> elementIds, BuiltInCategory category)
+    {
+      var meshes = new List<Mesh>();
+      HashSet<int> idsInView = null;
+      if (ViewSpecificOptions != null)
+      {
+        using var filter = new ElementCategoryFilter(category);
+        using var collector = new FilteredElementCollector(Doc, ViewSpecificOptions.View.Id)
+          .WhereElementIsNotElementType()
+          .WherePasses(filter);
+
+        idsInView = new HashSet<int>(collector.ToElementIds().Select(id => id.IntegerValue));
+      }
+
+      foreach (var id in elementIds)
+      {
+        if (idsInView != null && !idsInView.Contains(id.IntegerValue))
+        {
+          continue;
+        }
+        //TODO: sort these so we consistently get sub-elements from the wall element in case also individual sub-elements are sent
+        if (SubelementIds.Contains(id))
+          continue;
+        SubelementIds.Add(id);
+        meshes.AddRange(GetElementDisplayValue(Doc.GetElement(id)));
+      }
+      return meshes;
     }
 
     //this is to prevent duplicated panels & mullions from being sent in curtain walls

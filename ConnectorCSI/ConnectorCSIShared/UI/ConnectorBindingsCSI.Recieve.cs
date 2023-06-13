@@ -52,10 +52,10 @@ namespace Speckle.ConnectorCSI.UI
       Exceptions.Clear();
 
 
-      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = commit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, GetHostAppVersion(Model));
+      await ConnectorHelpers.TryCommitReceived(state, commit, GetHostAppVersion(Model), progress.CancellationToken);
       
       Preview.Clear();
       StoredObjects.Clear();

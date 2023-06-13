@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.ComApi;
 
 namespace Objects.Converter.Navisworks;
 
@@ -19,27 +17,10 @@ internal static class ArrayExtension
   }
 }
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   private const string RootNodePseudoId = "___";
-
-  private static string PseudoIdFromModelItem(ModelItem element)
-  {
-    // The path for ModelItems is their node position at each level of the Models tree.
-    // This is the de facto UID for that element within the file at that time.
-    if (element == null)
-      return null;
-
-    var path = ComApiBridge.ToInwOaPath(element);
-
-    // Acknowledging that if a collection contains >=10000 children then this indexing will be inadequate
-    var pointer = ((Array)path.ArrayData)
-      .ToArray<int>()
-      .Aggregate("", (current, value) => current + value.ToString(CultureInfo.InvariantCulture).PadLeft(4, '0') + "-")
-      .TrimEnd('-');
-
-    return pointer;
-  }
 
   /// <summary>
   ///   Checks is the Element is hidden or if any of its ancestors is hidden
