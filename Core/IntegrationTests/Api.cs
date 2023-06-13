@@ -103,7 +103,7 @@ public class Api
   [Test, Order(12)]
   public async Task IsStreamAccessible()
   {
-    var res = await myClient.StreamExists(streamId).ConfigureAwait(false);
+    var res = await myClient.IsStreamAccessible(streamId).ConfigureAwait(false);
 
     Assert.True(res);
   }
