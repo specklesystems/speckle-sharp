@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 using Speckle.Core.Api;
@@ -90,10 +92,50 @@ public class StreamWrapper
     StreamId = streamId;
   }
 
+  public static Regex Fe2UrlRegex =
+    new(
+      @"(?:http://|https://)[^/\?]*/projects/(?<projectId>[\w\d]+)/?(?:models/(?<firstModel>[\w\d]+(?:@[\w\d]+)?)(?:,(?<multiModels>[\w\d]+(?:@[\w\d]+)?))*)?"
+    );
+
+  private void ParseFe2RegexMatch(Match match)
+  {
+    var projectId = match.Groups["projectId"];
+    var firstModel = match.Groups["firstModel"];
+    var multiModels = match.Groups["multiModels"];
+
+    if (!projectId.Success)
+      throw new SpeckleException("The provided url is not a valid Speckle url");
+    if (!firstModel.Success)
+      throw new SpeckleException("The provided url is not pointing to any model in the project.");
+    if (multiModels.Success)
+      throw new NotSupportedException("Multi-model urls are not supported yet");
+
+    StreamId = projectId.Value;
+    if (firstModel.Value.Contains('@'))
+    {
+      //Model contains pointer to specific version
+      var res = firstModel.Value.Split('@');
+      BranchName = res[0];
+      ObjectId = res[1];
+    }
+    else
+    {
+      // Model has no version pointer
+      BranchName = firstModel.Value;
+    }
+  }
+
   private void StreamWrapperFromUrl(string streamUrl)
   {
-    Uri uri = new(streamUrl, true);
+    var fe2Match = Fe2UrlRegex.Match(streamUrl);
+    if (fe2Match.Success)
+    {
+      //NEW FRONTEND URL!
+      ParseFe2RegexMatch(fe2Match);
+      return;
+    }
 
+    Uri uri = new(streamUrl, true);
     ServerUrl = uri.GetLeftPart(UriPartial.Authority);
     // Note: this is a hack. It's because new Uri() is parsed escaped in .net framework; wheareas in .netstandard it's not.
     // Tests pass in Core without this hack.
