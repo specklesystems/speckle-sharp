@@ -1,4 +1,5 @@
-﻿using CSiAPIv1;
+using System;
+using CSiAPIv1;
 using Objects.Structural.CSI.Properties;
 using Speckle.Core.Models;
 
@@ -6,9 +7,9 @@ namespace Objects.Converter.CSI
 {
   public partial class ConverterCSI
   {
-    public void WallPropertyToNative(CSIProperty2D Wall, ref ApplicationObject appObj)
+    public string WallPropertyToNative(CSIProperty2D Wall)
     {
-      appObj.Update(status: ApplicationObject.State.Skipped, logItem: "Wall properties are not currently supported on receive");
+      throw new Exception("Wall properties are not currently supported on receive");
     }
     public CSIProperty2D WallPropertyToSpeckle(string property)
     {
