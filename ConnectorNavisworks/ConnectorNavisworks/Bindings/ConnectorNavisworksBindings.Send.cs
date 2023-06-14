@@ -346,8 +346,14 @@ public partial class ConnectorBindingsNavisworks
       sourceApplication = HostAppNameVersion
     };
 
+    var commitId = "";
+
+#if DEBUG
+    if (!isRetrying)
+      throw new SpeckleException("Debug mode: commit not created.");
+#endif
     // Use the helper function to create the commit and retrieve the commit ID
-    var commitId = await ConnectorHelpers
+    commitId = await ConnectorHelpers
       .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
       .ConfigureAwait(false);
 
