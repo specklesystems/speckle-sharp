@@ -10,6 +10,8 @@ public sealed class TraversalContext
   public readonly TraversalContext? parent;
   public readonly string? propName;
 
+  public Dictionary<string, object> UserData { get;} = new Dictionary<string, object> ();
+
   public TraversalContext(Base current, string? propName = null, TraversalContext? parent = null)
   {
     this.current = current;

@@ -20,72 +20,58 @@ namespace Archicad.Converters
 
     public Type Type => null;
 
+    private const string _cumulativeTransformKey = "cumulativeTransformId";
+
     #endregion
 
     #region --- Functions ---
 
     static List<Mesh> GetDisplayValue(Base element)
     {
-      List<Mesh> meshes = null;
-      var m = element["displayValue"] ?? element["@displayValue"];
-      if (m is List<Mesh> meshList)
-        meshes = meshList;
-      else if (m is List<object> objectList)
-        meshes = objectList.Cast<Mesh>().ToList();
-      return meshes;
+      return DefaultTraversal.displayValueAliases.Concat(DefaultTraversal.geometryAliases)
+        .SelectMany(m => {
+          if (element[m] is IEnumerable<object> meshes)
+            return meshes.Where(mesh => mesh is Mesh).Cast<Mesh>();
+          return new List<Mesh>();
+          }
+        ).ToList();
     }
 
-    static List<string> TraverseDefinitions(Base element, Transform baseTransform, Transform transform, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
+    private static TraversalContext StoreTransformationMatrix(TraversalContext tc, Dictionary<string, Transform> transformMatrixById)
     {
-      // calculate commulative transforms
-      Transform commulativeTansform = baseTransform * transform;
-      commulativeTansform.id = Utilities.hashString(baseTransform.id + transform.id);
-      transformMatrixById.TryAdd(commulativeTansform.id, commulativeTansform);
-      
-      // get the geometry
-      List<Mesh> meshes = null;
-      if (element is Mesh mesh)
-        meshes = new List<Mesh>() { mesh };
-      else
-        meshes = GetDisplayValue(element);
-
-      // in case no instance-level geometry, get it from definition
-      Base definition = null;
-      if (meshes == null)
+      if (tc.parent != null)
       {
-        definition = (Base)(element["definition"] ?? element["@definition"]);
-        if (definition != null)
-          meshes = GetDisplayValue(definition);
+        var currentTransform = (Transform)(tc.current["transform"]) ?? new Transform();
+        string parentCumulativeTransformId = (string)tc.parent.UserData.GetValueOrDefault(_cumulativeTransformKey, "");
+        string cumulativeTransformId = Utilities.hashString(parentCumulativeTransformId + currentTransform.id);
+        tc.UserData[_cumulativeTransformKey] = cumulativeTransformId;
+        transformMatrixById.TryAdd(cumulativeTransformId, transformMatrixById[parentCumulativeTransformId] * currentTransform);
       }
+      else
+      {
+        tc.UserData[_cumulativeTransformKey] = "";
+        transformMatrixById.TryAdd("", new Transform());
+      }
+      return tc;
+    }
 
-      // transform meshes
-      var meshesIds = meshes?.ConvertAll(mesh => Utilities.hashString(commulativeTansform.id + mesh.id));
-      meshes = meshes?.Select(mesh => {
-        var transformedMeshId = Utilities.hashString(commulativeTansform.id + mesh.id);
+    private static List<string> Store(TraversalContext tc, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
+    {
+      var meshes = GetDisplayValue(tc.current);
+      return meshes.Select(mesh => {
+        string cumulativeTransformId = (string)tc.UserData[_cumulativeTransformKey];
+        var transformedMeshId = Utilities.hashString(cumulativeTransformId + mesh.id);
         if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
         {
           transformedMesh = (Mesh)mesh.ShallowCopy();
-          transformedMesh.Transform (commulativeTansform);
+          transformedMesh.Transform(transformMatrixById[cumulativeTransformId]);
           transformedMesh.id = transformedMeshId;
           transformedMeshById.Add(transformedMeshId, transformedMesh);
         }
-        return transformedMesh;
+        return transformedMeshId;
       }).ToList();
-
-      // continue traversal via "elements" of definition
-      if (definition != null)
-      { 
-        var subElements = definition["elements"] ?? definition["@elements"];
-        var subElementList = subElements is List<Base> baseList ? baseList : (subElements is List<object> objList ? objList.Cast<Base>().ToList() : null);
-        subElementList?.ForEach(subElement =>
-        {
-          var subElementTransform = (Transform)(subElement["transform"]) ?? new Transform();
-          meshesIds.AddRange(TraverseDefinitions(subElement, commulativeTansform, subElementTransform, transformMatrixById, transformedMeshById));
-        });
-      }
-
-      return meshesIds;
     }
+
 
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
@@ -109,12 +95,11 @@ namespace Archicad.Converters
 
         List<string> meshIdHashes;
         {
-          Transform baseTransform = new Transform();
-          baseTransform.id = "1530eda076784bfaa61728b060ed8d43";
-          Transform newTransform = new Transform();
-          newTransform.id = "0cecc0af9be7465b958d736618817315";
-
-          meshIdHashes = TraverseDefinitions(element, baseTransform, newTransform, transformMatrixById, transformedMeshById);
+          meshIdHashes = DefaultTraversal.CreateDefinitionTraverseFunc().Traverse(element)
+            .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
+            .Where(tc => DefaultTraversal.HasDisplayValue(tc.current) || DefaultTraversal.HasGeometry (tc.current))
+            .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))
+            .ToList();
 
           if (meshIdHashes == null)
             continue;

@@ -60,6 +60,26 @@ public static class DefaultTraversal
     return new GraphTraversal(bimElementRule, IgnoreResultsRule, DefaultRule);
   }
 
+  public static GraphTraversal CreateDefinitionTraverseFunc()
+  {
+    var elementsTraversal = TraversalRule
+      .NewTraversalRule()
+      .When(HasElements)
+      .ContinueTraversing(ElementsAliases);
+
+    var geometryTraversal = TraversalRule
+      .NewTraversalRule()
+      .When(HasGeometry)
+      .ContinueTraversing(GeometryAliases);
+
+    var definitionTraversal = TraversalRule
+      .NewTraversalRule()
+      .When(HasDefiniton)
+      .ContinueTraversing(DefinitionAliases);
+
+    return new GraphTraversal(elementsTraversal, geometryTraversal, definitionTraversal);
+  }
+
   //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
   #region Helper Functions
 
@@ -74,11 +94,52 @@ public static class DefaultTraversal
     .When(_ => true)
     .ContinueTraversing(Members());
 
-  internal static readonly string[] elementsPropAliases = { "elements", "@elements" };
+  public static readonly string[] elementsPropAliases = { "elements", "@elements" };
 
   internal static IEnumerable<string> ElementsAliases(Base _)
   {
     return elementsPropAliases;
+  }
+
+  public static bool HasElements(Base x)
+  {
+    return elementsPropAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly string[] definitionAliases = { "definition", "@definition" };
+
+  internal static IEnumerable<string> DefinitionAliases(Base _)
+  {
+    return definitionAliases;
+  }
+
+  public static bool HasDefiniton(Base x)
+  {
+    return definitionAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+
+  internal static IEnumerable<string> DisplayValueAliases(Base _)
+  {
+    return displayValueAliases;
+  }
+
+  public static bool HasDisplayValue(Base x)
+  {
+    return displayValueAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly string[] geometryAliases = { "geometry", "@geometry" };
+
+  internal static IEnumerable<string> GeometryAliases(Base _)
+  {
+    return geometryAliases;
+  }
+
+  public static bool HasGeometry(Base x)
+  {
+    return geometryAliases.Any(m => x[m] != null);
   }
 
   internal static IEnumerable<string> None(Base _)
@@ -89,13 +150,6 @@ public static class DefaultTraversal
   internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
   {
     return x => x.GetMembers(includeMembers).Keys;
-  }
-
-  internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
-
-  internal static bool HasDisplayValue(Base x)
-  {
-    return displayValueAliases.Any(m => x[m] != null);
   }
 
   #endregion
