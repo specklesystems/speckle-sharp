@@ -107,7 +107,7 @@ public class StreamWrapper
       throw new SpeckleException("The provided url is not a valid Speckle url");
     if (!firstModel.Success)
       throw new SpeckleException("The provided url is not pointing to any model in the project.");
-    if (multiModels.Success)
+    if (multiModels.Success || firstModel.Value == "all")
       throw new NotSupportedException("Multi-model urls are not supported yet");
 
     StreamId = projectId.Value;

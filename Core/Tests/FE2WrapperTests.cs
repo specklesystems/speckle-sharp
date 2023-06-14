@@ -28,6 +28,7 @@ public class FE2WrapperTests
     Assert.That(streamWrapper.ObjectId, Is.EqualTo(expectedObjectId));
   }
 
+  [TestCase("https://latest.speckle.systems/projects/92b620fb17/models/all")]
   [TestCase("https://latest.speckle.systems/projects/92b620fb17/models/0fe8ca21c0,76fd8a01c8")]
   [TestCase("https://latest.speckle.systems/projects/92b620fb17/models/A,76fd8a01c8@7dc324e4bb,B@C,D@E,F")]
   public void ParseFE2NotSupportedLinks(string url)
