@@ -109,10 +109,8 @@ namespace Archicad.Converters
 
         List<string> meshIdHashes;
         {
-          Transform baseTransform = new Transform();
-          baseTransform.id = "1530eda076784bfaa61728b060ed8d43";
-          Transform newTransform = new Transform();
-          newTransform.id = "0cecc0af9be7465b958d736618817315";
+          var baseTransform = new Transform { id = "1530eda076784bfaa61728b060ed8d43" };
+          var newTransform = new Transform { id = "0cecc0af9be7465b958d736618817315" };
 
           meshIdHashes = TraverseDefinitions(element, baseTransform, newTransform, transformMatrixById, transformedMeshById);
 
