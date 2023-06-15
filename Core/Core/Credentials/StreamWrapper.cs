@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using GraphQL;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -92,42 +93,59 @@ public class StreamWrapper
     StreamId = streamId;
   }
 
-  public static Regex Fe2UrlRegex =
+  private static readonly Regex Fe2UrlRegex =
     new(
-      @"(?:http://|https://)[^/\?]*/projects/(?<projectId>[\w\d]+)/?(?:models/(?<firstModel>[\w\d]+(?:@[\w\d]+)?)(?:,(?<multiModels>[\w\d]+(?:@[\w\d]+)?))*)?"
+      @"/projects/(?<projectId>[\w\d]+)/?(?:models/(?<model>[\w\d]+(?:@[\w\d]+)?)(?:,(?<additionalModels>[\w\d]+(?:@[\w\d]+)?))*)?"
     );
 
   private void ParseFe2RegexMatch(Match match)
   {
     var projectId = match.Groups["projectId"];
-    var firstModel = match.Groups["firstModel"];
-    var multiModels = match.Groups["multiModels"];
+    var model = match.Groups["model"];
+    var additionalModels = match.Groups["additionalModels"];
 
     if (!projectId.Success)
       throw new SpeckleException("The provided url is not a valid Speckle url");
-    if (!firstModel.Success)
+    if (!model.Success)
       throw new SpeckleException("The provided url is not pointing to any model in the project.");
-    if (multiModels.Success || firstModel.Value == "all")
+    if (additionalModels.Success || model.Value == "all")
       throw new NotSupportedException("Multi-model urls are not supported yet");
 
+    (string branchName, string objectId) = ParseFe2ModelValue(model.Value);
+    // var task = GetBranchNameById(projectId.Value, branchName);
+    // if (task.Exception != null)
+    // {
+    //   throw task.Exception;
+    // }
     StreamId = projectId.Value;
-    if (firstModel.Value.Contains('@'))
-    {
-      //Model contains pointer to specific version
-      var res = firstModel.Value.Split('@');
-      BranchName = res[0];
-      ObjectId = res[1];
-    }
-    else
-    {
-      // Model has no version pointer
-      BranchName = firstModel.Value;
-    }
+    BranchName = branchName;
+    CommitId = objectId;
+  }
+
+  private static (string branchName, string objectId) ParseFe2ModelValue(string modelValue)
+  {
+    //TODO: Right now the first return item in this function is the BranchID, not the BranchName! i.e. won't really work until we clarify what's to be done here.
+    if (!modelValue.Contains('@'))
+      return (modelValue, null);
+    var res = modelValue.Split('@');
+    return (res[0], res[1]);
+  }
+
+  public async Task<string> GetBranchNameById(string projectId, string modelId)
+  {
+    var acc = AccountManager.GetAccounts().First(acc => acc.serverInfo.url == ServerUrl);
+    var client = new Client(acc);
+    var result = await client.ModelGet(projectId, modelId);
+    client.Dispose();
+    return result.model.name;
   }
 
   private void StreamWrapperFromUrl(string streamUrl)
   {
-    var fe2Match = Fe2UrlRegex.Match(streamUrl);
+    Uri uri = new(streamUrl, true);
+    ServerUrl = uri.GetLeftPart(UriPartial.Authority);
+
+    var fe2Match = Fe2UrlRegex.Match(uri.AbsolutePath);
     if (fe2Match.Success)
     {
       //NEW FRONTEND URL!
@@ -135,8 +153,6 @@ public class StreamWrapper
       return;
     }
 
-    Uri uri = new(streamUrl, true);
-    ServerUrl = uri.GetLeftPart(UriPartial.Authority);
     // Note: this is a hack. It's because new Uri() is parsed escaped in .net framework; wheareas in .netstandard it's not.
     // Tests pass in Core without this hack.
     if (uri.Segments.Length >= 4 && uri.Segments[3]?.ToLowerInvariant() == "branches/")
