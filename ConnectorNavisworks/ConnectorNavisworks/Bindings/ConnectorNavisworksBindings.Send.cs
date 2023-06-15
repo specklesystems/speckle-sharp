@@ -66,6 +66,11 @@ public partial class ConnectorBindingsNavisworks
     _progressViewModel = progress;
     Collection commitObject = CommitObject;
 
+    // Reset the cached conversion and commit objects
+    _cachedConversion = null;
+    _cachedState = state;
+    _cachedCommit = commitObject;
+
     // Perform the validation checks - will throw if something is wrong
     ValidateBeforeSending(state);
 
@@ -76,6 +81,7 @@ public partial class ConnectorBindingsNavisworks
     DisableAutoSave();
     SetupProgressViewModel();
     SetupConverter(state);
+    _navisworksConverter.SetContextDocument(_doc);
 
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
@@ -89,6 +95,8 @@ public partial class ConnectorBindingsNavisworks
 
     _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
 
+    _cachedConversion = commitObject.elements;
+
     RestoreAutoSave();
 
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
@@ -101,6 +109,10 @@ public partial class ConnectorBindingsNavisworks
     _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
     var commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
+
+    // On success, cancel the conversion and commit object cache
+    _cachedCommit = null;
+    _cachedConversion = null;
 
     Cursor.Current = Cursors.Default;
 
@@ -154,7 +166,7 @@ public partial class ConnectorBindingsNavisworks
     var conversions = new Dictionary<Element, Tuple<Constants.ConversionState, Base>>();
 
     var totalObjects = modelItemsToConvert.Count;
-    var objectIncrement = 1 / (double)totalObjects;
+    var objectIncrement = 1 / Math.Max((double)totalObjects, 1);
     var objectInterval = Math.Max(totalObjects / 100, 1);
 
     for (int index = 0; index < modelItemsToConvert.Count; index++)
@@ -326,6 +338,7 @@ public partial class ConnectorBindingsNavisworks
   private async Task<string> CreateCommit(StreamState state, string objectId)
   {
     _progressBar.BeginSubOperation(1, "Sealing the deal... Your data's new life begins in Speckle!");
+
     // Define a new commit input with stream details, object ID, and commit message
     var commit = new CommitCreateInput
     {
@@ -336,8 +349,15 @@ public partial class ConnectorBindingsNavisworks
       sourceApplication = HostAppNameVersion
     };
 
+    string commitId;
+
+    // This block enables forcing a failed send to test the caching feature
+    // #if DEBUG
+    //     if (!isRetrying)
+    //       throw new SpeckleException("Debug mode: commit not created.");
+    // #endif
     // Use the helper function to create the commit and retrieve the commit ID
-    var commitId = await ConnectorHelpers
+    commitId = await ConnectorHelpers
       .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
       .ConfigureAwait(false);
 
@@ -478,7 +498,7 @@ public partial class ConnectorBindingsNavisworks
       .ToDictionary(c => c.Key, c => c.Value);
 
     int convertedCount = 0;
-    var conversionIncrement = 1.0 / conversions.Count;
+    var conversionIncrement = conversions.Count != 0 ? 1.0 / conversions.Count : 0.0;
     var conversionInterval = Math.Max(conversions.Count / 100, 1);
 
     for (var i = 0; i < conversions.Count; i++)
@@ -544,7 +564,7 @@ public partial class ConnectorBindingsNavisworks
       reportObject.Update(status: ApplicationObject.State.Created, logItem: $"Sent as {converted.speckle_type}");
       _progressViewModel.Report.Log(reportObject);
 
-      if ((i % conversionInterval != 0) && i != conversions.Count)
+      if (i % conversionInterval != 0 && i != conversions.Count)
         continue;
 
       double progress = (i + 1) * conversionIncrement;
