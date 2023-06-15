@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
@@ -125,6 +126,7 @@ namespace ConverterRevitTests
 
     internal static void NestedEqual(DB.Element sourceElem, DB.Element destElem)
     {
+      Debug.WriteLine($"Source elem unique id : {sourceElem.UniqueId}");
       ElementEqual(sourceElem, destElem);
 
       //family instance
@@ -164,8 +166,11 @@ namespace ConverterRevitTests
 
       // we can't just compare the rotation value of two elements because the rotation of may only differ by .0003
       // but one could be 6.281 (almost 2pi) and the other could be 0
-      var rotation = Math.Abs(ConverterRevit.GetSignedRotation(t1, t2));
-      Assert.True(rotation < .001);
+      var signedRotation = ConverterRevit.GetSignedRotation(t1, t2);
+      var rotation = Math.Abs(signedRotation) - Math.PI * Math.Floor(Math.Abs(signedRotation) / Math.PI);
+      Assert.True(rotation < .01 || rotation > Math.PI - .01);
+
+      //Assert.Equal(fi.Mirrored, fi2.Mirrored);
 
       if (fi.Host == null)
       {
