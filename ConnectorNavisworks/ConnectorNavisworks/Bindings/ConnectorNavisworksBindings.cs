@@ -156,6 +156,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
         return;
     }
 
+    // nullify the cached conversion and commit on success.
     _cachedCommit = null;
     _cachedConversion = null;
     isRetrying = false;

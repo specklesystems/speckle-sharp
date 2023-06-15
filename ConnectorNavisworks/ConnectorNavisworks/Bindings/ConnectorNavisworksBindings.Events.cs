@@ -45,6 +45,7 @@ public partial class ConnectorBindingsNavisworks
 
     _navisworksConverter.SetContextDocument(doc);
 
+    // Nullify any cached commit and conversions
     _cachedCommit = null;
     _cachedConversion = null;
     _cachedState = null;

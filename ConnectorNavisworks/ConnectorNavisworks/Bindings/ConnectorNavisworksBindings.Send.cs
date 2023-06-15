@@ -66,6 +66,7 @@ public partial class ConnectorBindingsNavisworks
     _progressViewModel = progress;
     Collection commitObject = CommitObject;
 
+    // Reset the cached conversion and commit objects
     _cachedConversion = null;
     _cachedState = state;
     _cachedCommit = commitObject;
@@ -108,6 +109,7 @@ public partial class ConnectorBindingsNavisworks
 
     var commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
 
+    // On success, cancel the conversion and commit object cache
     _cachedCommit = null;
     _cachedConversion = null;
 
@@ -348,6 +350,7 @@ public partial class ConnectorBindingsNavisworks
 
     string commitId;
 
+    // This block enables forcing a failed send to test the caching feature
     // #if DEBUG
     //     if (!isRetrying)
     //       throw new SpeckleException("Debug mode: commit not created.");
