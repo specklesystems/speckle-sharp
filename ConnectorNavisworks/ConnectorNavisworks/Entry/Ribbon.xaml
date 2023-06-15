@@ -13,6 +13,8 @@
                                     Size="Large" KeyTip="Q" ShowText="True" Orientation="Vertical" />-->
                 <gui:NWRibbonButton x:Uid="Button_Speckle_Community" IsVisible="False" Id="Speckle_Community"
                                     Size="Large" KeyTip="Q" ShowText="True" Orientation="Vertical" />
+                <gui:NWRibbonButton x:Uid="Button_Speckle_Speckle_RetryLastConversionSend" IsVisible="False" Id="Speckle_RetryLastConversionSend"
+                                    Size="Large" KeyTip="S" ShowText="True" Orientation="Vertical" />
             </RibbonPanelSource>
         </RibbonPanel>
     </RibbonTab>
