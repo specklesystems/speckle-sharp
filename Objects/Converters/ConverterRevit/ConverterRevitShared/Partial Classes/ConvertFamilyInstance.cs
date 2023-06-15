@@ -858,51 +858,25 @@ namespace Objects.Converter.Revit
     /// For some reason I'll never understand, the reflection of Revit elements DOES NOT show up in the element's transform
     /// <para>https://forums.autodesk.com/t5/revit-api-forum/gettransform-does-not-include-reflection-into-the-transformation/m-p/10334547</para>
     /// therefore we need to adjust the desired transform to reflect the flipping of the element.
+    /// if the instance is either hand or facing flipped (but not both) then the transform is left handed
+    /// and we need to multiply the corrosponding basis by -1
     /// </summary>
     /// <param name=""></param>
     /// <param name="fi"></param>
-    private static Transform GetEditedTransformForHandAndFaceFlipping(DB.Transform transform, bool handFlipped, bool facingFlipped)
+    public static Transform GetEditedTransformForHandAndFaceFlipping(DB.Transform transform, bool handFlipped, bool facingFlipped)
     {
       var newTransform = transform;
-      if (handFlipped)
+      if (handFlipped && !facingFlipped)
       {
-        newTransform = yAxisReflection * newTransform;
+        newTransform.BasisX *= -1;
       }
-      if (facingFlipped)
+      if (facingFlipped && !handFlipped)
       {
-        newTransform = xAxisReflection * newTransform;
+        newTransform.BasisY *= -1;
       }
       return newTransform;
     }
 
-
-    private static Transform _yAxisReflection;
-    private static Transform yAxisReflection
-    {
-      get
-      {
-        if (_yAxisReflection != null) return _yAxisReflection;
-
-        var _transform = new Transform(Transform.Identity);
-        _transform.BasisX = new XYZ(-1, 0, 0);
-        _yAxisReflection = _transform;
-        return _yAxisReflection;
-      }
-    }
-    
-    private static Transform _xAxisReflection;
-    private static Transform xAxisReflection
-    {
-      get
-      {
-        if (_xAxisReflection != null) return _xAxisReflection;
-
-        var _transform = new Transform(Transform.Identity);
-        _transform.BasisY = new XYZ(0, -1, 0);
-        _xAxisReflection = _transform;
-        return _xAxisReflection;
-      }
-    }
     public RevitInstance RevitInstanceToSpeckle(
       DB.FamilyInstance instance,
       out List<string> notes,
