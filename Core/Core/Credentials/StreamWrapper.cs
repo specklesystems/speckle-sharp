@@ -150,15 +150,6 @@ public class StreamWrapper
     return (res[0], res[1], null); // Model has version attached
   }
 
-  public async Task<string> GetBranchNameById(string projectId, string modelId)
-  {
-    var acc = AccountManager.GetAccounts().First(acc => acc.serverInfo.url == ServerUrl);
-    var client = new Client(acc);
-    var result = await client.ModelGet(projectId, modelId);
-    client.Dispose();
-    return result.model.name;
-  }
-
   private void StreamWrapperFromUrl(string streamUrl)
   {
     Uri uri = new(streamUrl, true);

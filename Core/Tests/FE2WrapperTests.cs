@@ -63,12 +63,4 @@ public class Fe2WrapperTests
   {
     Assert.Throws<SpeckleException>(() => new StreamWrapper(url));
   }
-
-  [TestCase("https://latest.speckle.systems/projects/92b620fb17/models/76fd8a01c8")]
-  public async Task TestBranchIdToNameSwap(string url)
-  {
-    var wrapper = new StreamWrapper(url);
-    var res = await wrapper.GetBranchNameById(wrapper.StreamId, wrapper.BranchName);
-    Console.WriteLine(res);
-  }
 }
