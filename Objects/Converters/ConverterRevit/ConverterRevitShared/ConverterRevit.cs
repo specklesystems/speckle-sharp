@@ -18,7 +18,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit : ISpeckleConverter
   {
-#if REVIT2023
+#if REVIT2024
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2024);
+#elif REVIT2023
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2023);
 #elif REVIT2022
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2022);
@@ -26,7 +28,7 @@ namespace Objects.Converter.Revit
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2021);
 #elif REVIT2020
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2020);
-#else
+#elif REVIT2019
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
@@ -110,11 +112,23 @@ namespace Objects.Converter.Revit
       {
         PreviouslyReceivedObjectIds = cache;
       }
-      else
+      else if (doc is DB.View view)
       {
-        Doc = (Document)doc;
+        // setting the view as a 2d view will result in no objects showing up, so only do it if it's a 3D view
+        if (view is View3D view3D)
+        {
+          ViewSpecificOptions = new Options() { View = view, ComputeReferences = true };
+        }
+      }
+      else if (doc is Document document)
+      {
+        Doc = document;
         Report.Log($"Using document: {Doc.PathName}");
         Report.Log($"Using units: {ModelUnits}");
+      }
+      else
+      {
+        throw new ArgumentException($"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}");
       }
     }
 

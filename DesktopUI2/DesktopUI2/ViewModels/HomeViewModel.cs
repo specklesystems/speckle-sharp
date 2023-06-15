@@ -517,6 +517,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       SavedStreams[i].Dispose();
       SavedStreams.RemoveAt(i);
 
+      SavedStreams = SavedStreams.ToList();
+
       WriteStreamsToFile();
 
       this.RaisePropertyChanged(nameof(SavedStreams));

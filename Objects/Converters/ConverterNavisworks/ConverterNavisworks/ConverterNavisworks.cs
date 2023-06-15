@@ -10,7 +10,7 @@ namespace Objects.Converter.Navisworks;
 public partial class ConverterNavisworks : ISpeckleConverter
 {
 #if NAVMAN21
-    public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
+  private readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2024);
 #elif NAVMAN20
   public readonly static string VersionedAppName = HostApplications.Navisworks.GetVersion(HostAppVersion.v2023);
 #elif NAVMAN19
@@ -34,9 +34,7 @@ public partial class ConverterNavisworks : ISpeckleConverter
   /// </summary>
   public ProgressReport Report { get; } = new();
 
-  /// <summary>
-  ///   Decides what to do when an element being received already exists
-  /// </summary>
+  /// <inheritdoc />
   public ReceiveMode ReceiveMode { get; set; }
 
   private static Document Doc { get; set; }
@@ -46,48 +44,41 @@ public partial class ConverterNavisworks : ISpeckleConverter
     return new[] { VersionedAppName };
   }
 
-  /// <summary>
-  ///   Sets the application document that the converter is targeting
-  /// </summary>
-  /// <param name="doc">The current application document</param>
   public void SetContextDocument(object doc)
   {
-    Doc = (Document)doc;
-    // This sets the correct ElevationMode flag for model orientation.
+    if (doc != null && doc is not Document)
+      throw new ArgumentException("Only Navisworks Document types are supported.");
+
+    if (Doc == null && doc != null)
+      Doc = (Document)doc;
+
+    if (Doc == null && doc == null)
+      Doc = Application.ActiveDocument;
+
+    // This sets or resets the correct ElevationMode flag for model orientation.
+    // Needs to be called every time a Send is initiated to reflect the options
     SetModelOrientationMode();
     SetModelBoundingBox();
     SetTransformVector3D();
   }
 
   private List<ApplicationObject> _contextObjects = new();
+
   public IReadOnlyList<ApplicationObject> ContextObjects => _contextObjects;
 
-  // Add a new method to allow adding items to the list.
-  public void AddContextObject(ApplicationObject contextObject)
-  {
-    _contextObjects.Add(contextObject);
-  }
-
-  /// <summary>
-  ///   Some converters need to know which other objects are being converted, in order to sort relationships between them
-  ///   (ie, Revit). Use this method to set them.
-  /// </summary>
-  /// <param name="objects"></param>
+  /// <inheritdoc />
   public void SetContextObjects(List<ApplicationObject> objects)
   {
     _contextObjects = objects ?? throw new ArgumentNullException(nameof(objects));
   }
 
-  /// <summary>
-  ///   Some converters need to know which objects have been converted before in order to update them (ie, Revit). Use this
-  ///   method to set them.
-  /// </summary>
-  /// <param name="objects"></param>
+  /// <inheritdoc />
   public void SetPreviousContextObjects(List<ApplicationObject> objects)
   {
     throw new NotImplementedException();
   }
 
+  /// <inheritdoc />
   public void SetConverterSettings(object settings)
   {
     if (settings is not Dictionary<string, string> newSettings)

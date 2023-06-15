@@ -382,13 +382,7 @@ namespace Objects.Converter.Revit
           }
           break;
         case StorageType.Integer:
-#if REVIT2023
-
-          if (rp.Definition.GetDataType() == SpecTypeId.Boolean.YesNo)
-            sp.value = Convert.ToBoolean(rp.AsInteger());
-          else
-            sp.value = rp.AsInteger();
-#else
+#if REVIT2020 || REVIT2021 || REVIT2022
           switch (rp.Definition.ParameterType)
           {
             case ParameterType.YesNo:
@@ -398,6 +392,11 @@ namespace Objects.Converter.Revit
               sp.value = rp.AsInteger();
               break;
           }
+#else
+          if (rp.Definition.GetDataType() == SpecTypeId.Boolean.YesNo)
+            sp.value = Convert.ToBoolean(rp.AsInteger());
+          else
+            sp.value = rp.AsInteger();
 #endif
           break;
         case StorageType.String:

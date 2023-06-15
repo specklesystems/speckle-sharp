@@ -64,7 +64,13 @@ namespace Objects.Converter.Revit
           else
           {
             revitBeam = (DB.FamilyInstance)docObj;
-            (revitBeam.Location as LocationCurve).Curve = baseLine;
+
+            // if we combine the following two statements, it results in an error that the beam is unable to be
+            // bent into position. For some reason separating the curve variable declaration and the curve setting
+            // fixes this issue. I'm not sure if this is a permanent fix. If not, then I think the solution is to 
+            // disassociate the beam from the current workplane and then setting the new curve
+            var existingCurve = (revitBeam.Location as LocationCurve).Curve;
+            existingCurve = baseLine;
 
             // check for a type change
             if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)

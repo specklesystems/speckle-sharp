@@ -128,7 +128,7 @@ public partial class ConnectorBindingsNavisworks
       // TODO: This is a defensive measure to prevent sending millions of objects that are hidden in the
       // current view but not hidden explicitly in the saved view. Optionally if this is not the case we could send visible items in the
       // current view with the viewpoint as it is saved.
-      case false when !((SavedViewpoint)savedItem).ContainsVisibilityOverrides:
+      case false when savedItem is SavedViewpoint { ContainsVisibilityOverrides: false }:
         return null;
       case false:
         return treeNode;
