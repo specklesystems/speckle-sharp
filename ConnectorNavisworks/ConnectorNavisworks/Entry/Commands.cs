@@ -6,10 +6,11 @@ public abstract class LaunchSpeckleConnector
   public const string Plugin = "SpeckleUI";
 }
 
-//public class OneClickSend
-//{
-//    public const string Command = "Speckle_OneClickSend";
-//}
+public abstract class RetryLastConversionSend
+{
+  public const string Command = "Speckle_RetryLastConversionSend";
+  public const string Plugin = "SpeckleUI";
+}
 
 public abstract class Community
 {
