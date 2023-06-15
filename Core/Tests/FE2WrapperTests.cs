@@ -38,7 +38,9 @@ public class Fe2WrapperTests
 
   [TestCase("https://latest.speckle.systems/")]
   [TestCase("https://latest.speckle.systems/projects")]
+  [TestCase("https://latest.speckle.systems/projects/")]
   [TestCase("https://latest.speckle.systems/projects/92b620fb17")]
+  [TestCase("https://latest.speckle.systems/projects/92b620fb17/")]
   [TestCase("https://latest.speckle.systems/projects/92b620fb17/models/")]
   public void ParseFe2InvalidLinks(string url)
   {
@@ -49,7 +51,7 @@ public class Fe2WrapperTests
   public async Task TestBranchIdToNameSwap(string url)
   {
     var wrapper = new StreamWrapper(url);
-    var res = wrapper.GetBranchNameById(wrapper.StreamId, wrapper.BranchName);
+    var res = await wrapper.GetBranchNameById(wrapper.StreamId, wrapper.BranchName);
     Console.WriteLine(res);
   }
 }

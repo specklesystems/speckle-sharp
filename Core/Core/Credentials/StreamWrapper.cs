@@ -95,7 +95,7 @@ public class StreamWrapper
 
   private static readonly Regex Fe2UrlRegex =
     new(
-      @"/projects/(?<projectId>[\w\d]+)/?(?:models/(?<model>[\w\d]+(?:@[\w\d]+)?)(?:,(?<additionalModels>[\w\d]+(?:@[\w\d]+)?))*)?"
+      @"/projects/(?<projectId>[\w\d]+)(?:/models/(?<model>[\w\d]+(?:@[\w\d]+)?)(?:,(?<additionalModels>[\w\d]+(?:@[\w\d]+)?))*)?"
     );
 
   private void ParseFe2RegexMatch(Match match)
@@ -111,19 +111,20 @@ public class StreamWrapper
     if (additionalModels.Success || model.Value == "all")
       throw new NotSupportedException("Multi-model urls are not supported yet");
 
-    (string branchName, string objectId) = ParseFe2ModelValue(model.Value);
+    (string branchId, string commitId) = ParseFe2ModelValue(model.Value);
     // var task = GetBranchNameById(projectId.Value, branchName);
     // if (task.Exception != null)
     // {
     //   throw task.Exception;
     // }
     StreamId = projectId.Value;
-    BranchName = branchName;
-    CommitId = objectId;
+    BranchName = branchId;
+    CommitId = commitId;
   }
 
-  private static (string branchName, string objectId) ParseFe2ModelValue(string modelValue)
+  private static (string branchId, string commitId) ParseFe2ModelValue(string modelValue)
   {
+    //BRANCHID@VERSIONID or BRANCHID OR OBJECTID 32 CHARS LONG
     //TODO: Right now the first return item in this function is the BranchID, not the BranchName! i.e. won't really work until we clarify what's to be done here.
     if (!modelValue.Contains('@'))
       return (modelValue, null);
