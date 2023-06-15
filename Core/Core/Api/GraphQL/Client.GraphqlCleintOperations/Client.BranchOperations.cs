@@ -213,4 +213,34 @@ public partial class Client
     var res = await ExecuteGraphQLRequest<Dictionary<string, object>>(request, cancellationToken).ConfigureAwait(false);
     return (bool)res["branchDelete"];
   }
+
+  public class Project
+  {
+    public Model model { get; set; }
+  }
+
+  public class Model
+  {
+    public string name { get; set; }
+  }
+
+  public class ProjectData
+  {
+    public Project project { get; set; }
+  }
+
+  public async Task<Project> ModelGet(string projectId, string modelId)
+  {
+    const string query =
+      @"query ($projectId: String!, $modelId: String!, ) {
+        project(id: $projectId) {
+          model(id: $modelId) {
+            name
+          }
+        }
+      }";
+    var data = await ExecuteGraphQLRequest<ProjectData>(new GraphQLRequest(query, new { projectId, modelId }))
+      .ConfigureAwait(false);
+    return data.project;
+  }
 }

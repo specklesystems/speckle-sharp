@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -93,11 +94,21 @@ public class StreamWrapper
     StreamId = streamId;
   }
 
+  /// <summary>
+  /// The ReGex pattern to determine if a URL's AbsolutePath is a Frontend2 URL or not.
+  /// This is used in conjunction with <see cref="ParseFe2ModelValue"/> to extract the correct values into the instance.
+  /// </summary>
   private static readonly Regex Fe2UrlRegex =
     new(
       @"/projects/(?<projectId>[\w\d]+)(?:/models/(?<model>[\w\d]+(?:@[\w\d]+)?)(?:,(?<additionalModels>[\w\d]+(?:@[\w\d]+)?))*)?"
     );
 
+  /// <summary>
+  /// Parses a FrontEnd2 URL Regex match and assigns it's data to this StreamWrapper instance.
+  /// </summary>
+  /// <param name="match">A regex match coming from <see cref="Fe2UrlRegex"/></param>
+  /// <exception cref="SpeckleException">Will throw when the URL is not properly formatted.</exception>
+  /// <exception cref="NotSupportedException">Will throw when the URL is correct, but is not currently supported by the StreamWrapper class.</exception>
   private void ParseFe2RegexMatch(Match match)
   {
     var projectId = match.Groups["projectId"];
@@ -111,25 +122,32 @@ public class StreamWrapper
     if (additionalModels.Success || model.Value == "all")
       throw new NotSupportedException("Multi-model urls are not supported yet");
 
-    (string branchId, string commitId) = ParseFe2ModelValue(model.Value);
-    // var task = GetBranchNameById(projectId.Value, branchName);
-    // if (task.Exception != null)
-    // {
-    //   throw task.Exception;
-    // }
+    var modelRes = ParseFe2ModelValue(model.Value);
+
+    // INFO: The Branch endpoint is being updated to fallback to checking a branch ID if no name is found.
+    // Assigning the BranchID as the BranchName is a workaround to support FE2 links in the old StreamWrapper.
+    // A better solution must be redesigned taking into account all the new Frontend2 URL features.
     StreamId = projectId.Value;
-    BranchName = branchId;
-    CommitId = commitId;
+    BranchName = modelRes.branchId;
+    CommitId = modelRes.commitId;
+    ObjectId = modelRes.objectId;
   }
 
-  private static (string branchId, string commitId) ParseFe2ModelValue(string modelValue)
+  /// <summary>
+  /// Parses the segment of the FE2 URL that represents a modelID, modelID@versionID or objectID.
+  /// It is meant to parse a single value. If url is multi-model it should be used once per model.
+  /// </summary>
+  /// <param name="modelValue">The a single value of the model url segment</param>
+  /// <returns>A tuple containing the branch, commit and object information for that value. Each value can be null</returns>
+  /// <remarks>Determines if a modelValue is an ObjectId by checking it's length is exactly 32 chars long.</remarks>
+  private static (string? branchId, string? commitId, string? objectId) ParseFe2ModelValue(string modelValue)
   {
-    //BRANCHID@VERSIONID or BRANCHID OR OBJECTID 32 CHARS LONG
-    //TODO: Right now the first return item in this function is the BranchID, not the BranchName! i.e. won't really work until we clarify what's to be done here.
+    if (modelValue.Length == 32)
+      return (null, null, modelValue); // Model value is an ObjectID
     if (!modelValue.Contains('@'))
-      return (modelValue, null);
+      return (modelValue, null, null); // Model has no version attached
     var res = modelValue.Split('@');
-    return (res[0], res[1]);
+    return (res[0], res[1], null); // Model has version attached
   }
 
   public async Task<string> GetBranchNameById(string projectId, string modelId)

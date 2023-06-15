@@ -7,22 +7,39 @@ namespace TestsUnit;
 [TestFixture]
 public class Fe2WrapperTests
 {
-  [TestCase("https://latest.speckle.systems/projects/92b620fb17/models/76fd8a01c8", "92b620fb17", "76fd8a01c8")]
+  [TestCase(
+    "https://latest.speckle.systems/projects/92b620fb17/models/76fd8a01c8",
+    StreamWrapperType.Branch,
+    "92b620fb17",
+    "76fd8a01c8"
+  )]
   [TestCase(
     "https://latest.speckle.systems/projects/92b620fb17/models/76fd8a01c8@7dc324e4bb",
+    StreamWrapperType.Commit,
     "92b620fb17",
     "76fd8a01c8",
     "7dc324e4bb"
   )]
+  [TestCase(
+    "https://latest.speckle.systems/projects/92b620fb17/models/bdd52d7fd174328a080770e2a7fef98a",
+    StreamWrapperType.Object,
+    "92b620fb17",
+    null,
+    null,
+    "bdd52d7fd174328a080770e2a7fef98a"
+  )]
   public void ParseFe2Links(
     string url,
+    StreamWrapperType expectedType,
     string expectedProjectId,
-    string expectedBranchId,
-    string? expectedCommitId = null
+    string? expectedBranchId = null,
+    string? expectedCommitId = null,
+    string? expectedObjectId = null
   )
   {
     var streamWrapper = new StreamWrapper(url);
     Assert.NotNull(streamWrapper);
+    Assert.That(streamWrapper.Type, Is.EqualTo(expectedType));
     Assert.That(streamWrapper.StreamId, Is.EqualTo(expectedProjectId));
     Assert.That(streamWrapper.BranchName, Is.EqualTo(expectedBranchId));
     Assert.That(streamWrapper.CommitId, Is.EqualTo(expectedCommitId));
