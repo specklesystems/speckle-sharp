@@ -36,8 +36,8 @@ namespace Speckle.ConnectorNavisworks.Entry;
   Command(
     RetryLastConversionSend.Command,
     LoadForCanExecute = true,
-    Icon = "Resources/logo16.ico",
-    LargeIcon = "Resources/logo32.ico",
+    Icon = "Resources/retry16.ico",
+    LargeIcon = "Resources/retry32.ico",
     Shortcut = "Ctrl+Shift+R",
     ToolTip = "Retries sending the last complete conversion to Speckle.",
     DisplayName = "Retry\rSend"
@@ -244,7 +244,8 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   private static void ShowPluginInfoMessageBox()
   {
     var sb = new StringBuilder();
-    foreach (var pr in NavisworksApp.Plugins.PluginRecords) sb.AppendLine(pr.Name + ": " + pr.DisplayName + ", " + pr.Id);
+    foreach (var pr in NavisworksApp.Plugins.PluginRecords)
+      sb.AppendLine(pr.Name + ": " + pr.DisplayName + ", " + pr.Id);
 
     MessageBox.Show(sb.ToString());
   }
