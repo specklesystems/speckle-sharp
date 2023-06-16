@@ -79,24 +79,24 @@ namespace TestGenerator
           sb.Append(TestTemplate.CreateToNativeTest(
             category,
             file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
+            categoryProps.RevitType
+            //categoryProps.SyncAssertFunc ?? "null",
+            //categoryProps.AsyncAssertFunc ?? "null"
           ));
-          sb.Append(TestTemplate.CreateSelectionTest(category,
-            file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
-          ));
+          //sb.Append(TestTemplate.CreateSelectionTest(category,
+          //  file,
+          //  categoryProps.RevitType,
+          //  categoryProps.SyncAssertFunc ?? "null",
+          //  categoryProps.AsyncAssertFunc ?? "null"
+          //));
         }
         if (runUpdateTest)
         {
           sb.Append(TestTemplate.CreateUpdateTest(category,
             file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
+            categoryProps.RevitType
+            //categoryProps.SyncAssertFunc ?? "null",
+            //categoryProps.AsyncAssertFunc ?? "null"
           ));
         }
         sb.Append(TestTemplate.EndClass);

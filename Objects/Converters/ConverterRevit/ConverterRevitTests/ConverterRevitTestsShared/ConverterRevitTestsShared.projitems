@@ -9,6 +9,9 @@
     <Import_RootNamespace>ConverterRevitTestsShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)AssertionClasses\AssertionFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssertionClasses\AssertFamilyInstancesEqual.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssertionClasses\IAssertEqual.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AssertUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BrepTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleObjectLocalReceiver.cs" />

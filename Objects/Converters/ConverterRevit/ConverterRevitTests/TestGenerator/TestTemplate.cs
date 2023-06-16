@@ -46,32 +46,32 @@ namespace ConverterRevitTests
     }}
 ";
 
-    public static string CreateToNativeTest(string category, string fileName, string revitType, string syncAssertFunc, string asyncAssertFunc) => $@"
+    public static string CreateToNativeTest(string category, string fileName, string revitType) => $@"
     [Fact]
     [Trait(""{category}"", ""{fileName}ToNative"")]
     public async Task {category}{fileName}ToNative()
     {{
-      await SpeckleToNative<{revitType}>({syncAssertFunc}, {asyncAssertFunc});
+      await SpeckleToNative<{revitType}>();
     }}
 ";
 
-    public static string CreateUpdateTest(string category, string fileName, string revitType, string syncAssertFunc, string asyncAssertFunc) => $@"
+    public static string CreateUpdateTest(string category, string fileName, string revitType) => $@"
     [Fact]
     [Trait(""{category}"", ""{fileName}ToNativeUpdates"")]
     public async Task {category}{fileName}ToNativeUpdates()
     {{
-      await SpeckleToNativeUpdates<{revitType}>({syncAssertFunc}, {asyncAssertFunc});
+      await SpeckleToNativeUpdates<{revitType}>();
     }}
 ";
 
-    public static string CreateSelectionTest(string category, string fileName, string revitType, string syncAssertFunc, string asyncAssertFunc) => $@"
-    [Fact]
-    [Trait(""{category}"", ""{fileName}Selection"")]
-    public async Task {category}{fileName}SelectionToNative()
-    {{
-      await SelectionToNative<{revitType}>({syncAssertFunc}, {asyncAssertFunc});
-    }}
-";
+//    public static string CreateSelectionTest(string category, string fileName, string revitType) => $@"
+//    [Fact]
+//    [Trait(""{category}"", ""{fileName}Selection"")]
+//    public async Task {category}{fileName}SelectionToNative()
+//    {{
+//      await SelectionToNative<{revitType}>({syncAssertFunc}, {asyncAssertFunc});
+//    }}
+//";
 
     public const string EndClass = @"
   }

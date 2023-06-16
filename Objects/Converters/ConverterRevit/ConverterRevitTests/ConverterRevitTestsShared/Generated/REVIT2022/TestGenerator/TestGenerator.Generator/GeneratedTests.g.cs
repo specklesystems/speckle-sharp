@@ -215,48 +215,126 @@ namespace ConverterRevitTests
 
   }
 
-  public class FamilyInstanceFamilyInstanceFixture : SpeckleConversionFixture
+  public class FamilyInstanceFaceBasedFixture : SpeckleConversionFixture
   {
     public override string Category => "FamilyInstance";
-    public override string TestName => "FamilyInstance";
+    public override string TestName => "FaceBased";
 
-    public FamilyInstanceFamilyInstanceFixture() : base()
+    public FamilyInstanceFaceBasedFixture() : base()
     {
     }
   }
 
-  public class FamilyInstanceFamilyInstanceTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFamilyInstanceFixture>
+  public class FamilyInstanceFaceBasedTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFaceBasedFixture>
   {
-    public FamilyInstanceFamilyInstanceTests(FamilyInstanceFamilyInstanceFixture fixture) : base(fixture)
+    public FamilyInstanceFaceBasedTests(FamilyInstanceFaceBasedFixture fixture) : base(fixture)
     {
     }
 
     [Fact]
-    [Trait("FamilyInstance", "FamilyInstanceToSpeckle")]
-    public async Task FamilyInstanceFamilyInstanceToSpeckle()
+    [Trait("FamilyInstance", "FaceBasedToSpeckle")]
+    public async Task FamilyInstanceFaceBasedToSpeckle()
     {
       await NativeToSpeckle();
     }
 
     [Fact]
-    [Trait("FamilyInstance", "FamilyInstanceToNative")]
-    public async Task FamilyInstanceFamilyInstanceToNative()
+    [Trait("FamilyInstance", "FaceBasedToNative")]
+    public async Task FamilyInstanceFaceBasedToNative()
     {
       await SpeckleToNative<DB.Element>(AssertUtils.NestedEqual, null);
     }
 
     [Fact]
-    [Trait("FamilyInstance", "FamilyInstanceSelection")]
-    public async Task FamilyInstanceFamilyInstanceSelectionToNative()
+    [Trait("FamilyInstance", "FaceBasedSelection")]
+    public async Task FamilyInstanceFaceBasedSelectionToNative()
+    {
+      await SelectionToNative<DB.Element>(AssertUtils.NestedEqual, null);
+    }
+
+  }
+
+  public class FamilyInstancePointBasedInstancesFixture : SpeckleConversionFixture
+  {
+    public override string Category => "FamilyInstance";
+    public override string TestName => "PointBasedInstances";
+
+    public FamilyInstancePointBasedInstancesFixture() : base()
+    {
+    }
+  }
+
+  public class FamilyInstancePointBasedInstancesTests : SpeckleConversionTest, IClassFixture<FamilyInstancePointBasedInstancesFixture>
+  {
+    public FamilyInstancePointBasedInstancesTests(FamilyInstancePointBasedInstancesFixture fixture) : base(fixture)
+    {
+    }
+
+    [Fact]
+    [Trait("FamilyInstance", "PointBasedInstancesToSpeckle")]
+    public async Task FamilyInstancePointBasedInstancesToSpeckle()
+    {
+      await NativeToSpeckle();
+    }
+
+    [Fact]
+    [Trait("FamilyInstance", "PointBasedInstancesToNative")]
+    public async Task FamilyInstancePointBasedInstancesToNative()
+    {
+      await SpeckleToNative<DB.Element>(AssertUtils.NestedEqual, null);
+    }
+
+    [Fact]
+    [Trait("FamilyInstance", "PointBasedInstancesSelection")]
+    public async Task FamilyInstancePointBasedInstancesSelectionToNative()
     {
       await SelectionToNative<DB.Element>(AssertUtils.NestedEqual, null);
     }
 
     [Fact]
-    [Trait("FamilyInstance", "FamilyInstanceToNativeUpdates")]
-    public async Task FamilyInstanceFamilyInstanceToNativeUpdates()
+    [Trait("FamilyInstance", "PointBasedInstancesToNativeUpdates")]
+    public async Task FamilyInstancePointBasedInstancesToNativeUpdates()
     {
       await SpeckleToNativeUpdates<DB.Element>(AssertUtils.NestedEqual, null);
+    }
+
+  }
+
+  public class FamilyInstanceWallFloorCeilingRoofBasedFixture : SpeckleConversionFixture
+  {
+    public override string Category => "FamilyInstance";
+    public override string TestName => "WallFloorCeilingRoofBased";
+
+    public FamilyInstanceWallFloorCeilingRoofBasedFixture() : base()
+    {
+    }
+  }
+
+  public class FamilyInstanceWallFloorCeilingRoofBasedTests : SpeckleConversionTest, IClassFixture<FamilyInstanceWallFloorCeilingRoofBasedFixture>
+  {
+    public FamilyInstanceWallFloorCeilingRoofBasedTests(FamilyInstanceWallFloorCeilingRoofBasedFixture fixture) : base(fixture)
+    {
+    }
+
+    [Fact]
+    [Trait("FamilyInstance", "WallFloorCeilingRoofBasedToSpeckle")]
+    public async Task FamilyInstanceWallFloorCeilingRoofBasedToSpeckle()
+    {
+      await NativeToSpeckle();
+    }
+
+    [Fact]
+    [Trait("FamilyInstance", "WallFloorCeilingRoofBasedToNative")]
+    public async Task FamilyInstanceWallFloorCeilingRoofBasedToNative()
+    {
+      await SpeckleToNative<DB.Element>(AssertUtils.NestedEqual, null);
+    }
+
+    [Fact]
+    [Trait("FamilyInstance", "WallFloorCeilingRoofBasedSelection")]
+    public async Task FamilyInstanceWallFloorCeilingRoofBasedSelectionToNative()
+    {
+      await SelectionToNative<DB.Element>(AssertUtils.NestedEqual, null);
     }
 
   }

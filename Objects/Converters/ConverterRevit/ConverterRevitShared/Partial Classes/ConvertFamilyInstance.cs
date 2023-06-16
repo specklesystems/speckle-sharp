@@ -563,6 +563,8 @@ namespace Objects.Converter.Revit
     }
 
     // revit instances
+    public const string faceFlipFailErrorMsg = "This element should be facing flipped, but a Revit API limitation prevented this from happening programmatically";
+    public const string handFlipFailErrorMsg = "This element should be hand flipped, but a Revit API limitation prevented this from happening programmatically";
     public ApplicationObject RevitInstanceToNative(RevitInstance instance)
     {
       DB.FamilyInstance familyInstance = null;
@@ -746,7 +748,7 @@ namespace Objects.Converter.Revit
           else
           {
             subt.RollBack();
-            appObj.Update(logItem: "This element should be hand flipped, but a Revit API limitation prevented this from happening programmatically");
+            appObj.Update(logItem: handFlipFailErrorMsg);
           }
         }
       }
@@ -772,7 +774,7 @@ namespace Objects.Converter.Revit
           else
           {
             subt.RollBack();
-            appObj.Update(logItem: "This element should be facing flipped, but a Revit API limitation prevented this from happening programmatically");
+            appObj.Update(logItem: faceFlipFailErrorMsg);
           }
         }
       }
