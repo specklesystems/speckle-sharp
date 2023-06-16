@@ -90,16 +90,15 @@ namespace ConverterRevitTests
     {
       var speckleObjectsToReceive = await NativeToSpeckle(doc).ConfigureAwait(false);
 
-      var progressVM = new DesktopUI2.ViewModels.ProgressViewModel();
       var receivedObjects = await ConnectorBindingsRevit.ReceiveStreamTestable(
         fixture.StreamState,
-        new SpeckleObjectLocalReceiver(fixture), 
-        progressVM, 
+        new SpeckleObjectLocalReceiver(fixture),
+        new DesktopUI2.ViewModels.ProgressViewModel(), 
         typeof(ConverterRevit), 
         fixture.NewDoc
       ).ConfigureAwait(false);
 
-      IAssertEqual assertionFactory = new AssertionFactory(progressVM.Report.ReportObjects);
+      IAssertEqual assertionFactory = new AssertionFactory();
 
       var converter = new ConverterRevit();
       converter.SetContextDocument(doc.Document);
@@ -110,8 +109,8 @@ namespace ConverterRevitTests
           continue;
         }
 
-        var sourceObject = (T)doc.Document.GetElement(speckleObj.applicationId);
-        var destObject = (T)receivedObjects.GetCreatedObjectsFromConvertedId(speckleObj.applicationId).First();
+        var sourceObject = doc.Document.GetElement(speckleObj.applicationId);
+        var destObject = receivedObjects.GetCreatedObjectsFromConvertedId(speckleObj.applicationId).First();
 
         if (previouslyConvertedObjectsCache != null)
         {

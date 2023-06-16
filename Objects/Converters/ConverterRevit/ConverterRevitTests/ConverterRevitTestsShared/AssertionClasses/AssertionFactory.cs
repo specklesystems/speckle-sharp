@@ -9,13 +9,7 @@ namespace ConverterRevitTestsShared.AssertionClasses
 {
   internal class AssertionFactory : IAssertEqual
   {
-    private Dictionary<string, ApplicationObject> _reportObjects;
-    public AssertionFactory(Dictionary<string, ApplicationObject> reportObjs)
-    {
-      _reportObjects = reportObjs;
-    }
-
-    public async Task Handle<T>(T sourceElement, T destElement, Base speckleElement)
+    public async Task Handle<T>(T sourceElement, T destElement, Base _)
       where T : Element
     {
       switch (sourceElement)
@@ -30,8 +24,7 @@ namespace ConverterRevitTestsShared.AssertionClasses
           AssertUtils.DuctEqual(duct, destElement as DB.Mechanical.Duct);
           break;
         case DB.FamilyInstance fi:
-          await new AssertFamilyInstancesEqual(_reportObjects).Handle(fi, destElement as FamilyInstance, speckleElement)
-            .ConfigureAwait(false);
+          AssertUtils.FamilyInstanceEqual(fi, destElement as FamilyInstance);
           break;
         case DB.Floor floor:
           await AssertUtils.FloorEqual(floor, destElement as DB.Floor).ConfigureAwait(false);
