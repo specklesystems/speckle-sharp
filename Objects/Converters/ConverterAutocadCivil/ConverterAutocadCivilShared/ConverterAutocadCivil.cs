@@ -1,4 +1,4 @@
-﻿using Autodesk.AutoCAD.ApplicationServices;
+using Autodesk.AutoCAD.ApplicationServices;
 using Autodesk.AutoCAD.DatabaseServices;
 using Objects.Other;
 using Objects.Structural.Properties.Profiles;
@@ -31,7 +31,6 @@ using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
 
-
 namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil : ISpeckleConverter
@@ -63,7 +62,9 @@ namespace Objects.Converter.AutocadCivil
     public string Author => "Speckle";
     public string WebsiteOrEmail => "https://speckle.systems";
     public ProgressReport Report { get; private set; } = new ProgressReport();
+
     public IEnumerable<string> GetServicedApplications() => new string[] { AutocadAppName };
+
     public Document Doc { get; private set; }
     public Transaction Trans { get; private set; } // TODO: evaluate if this should be here
     public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
@@ -95,6 +96,7 @@ namespace Objects.Converter.AutocadCivil
       Base @base = null;
       ApplicationObject reportObj = null;
       DisplayStyle style = null;
+      Base extensionDictionary = null;
       List<string> notes = new List<string>();
 
       switch (@object)
@@ -112,6 +114,7 @@ namespace Objects.Converter.AutocadCivil
           //In an AutoCAD session, you can get the Handle of a DBObject from its ObjectId using the ObjectId.Handle or Handle property.
           reportObj = new ApplicationObject(obj.Handle.ToString(), obj.GetType().Name) { applicationId = appId };
           style = DisplayStyleToSpeckle(obj as Entity);
+          extensionDictionary = obj.GetObjectExtensionDictionaryAsBase();
 
           switch (obj)
           {
@@ -252,16 +255,23 @@ namespace Objects.Converter.AutocadCivil
         default:
           if (reportObj != null)
           {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
+            reportObj.Update(
+              status: ApplicationObject.State.Skipped,
+              logItem: $"{@object.GetType()} type not supported"
+            );
             Report.UpdateReportObject(reportObj);
           }
           return @base;
       }
 
-      if (@base is null) return @base;
+      if (@base is null)
+        return @base;
 
       if (style != null)
         @base["displayStyle"] = style;
+
+      if (extensionDictionary != null)
+        @base["extensionDictionary"] = extensionDictionary;
 
       if (reportObj != null)
       {
@@ -287,7 +297,9 @@ namespace Objects.Converter.AutocadCivil
       bool isFromAutoCAD = @object[AutocadPropName] != null ? true : false;
       bool isFromCivil = @object[CivilPropName] != null ? true : false;
       object acadObj = null;
-      var reportObj = Report.ReportObjects.ContainsKey(@object.id) ? new ApplicationObject(@object.id, @object.speckle_type) : null;
+      var reportObj = Report.ReportObjects.ContainsKey(@object.id)
+        ? new ApplicationObject(@object.id, @object.speckle_type)
+        : null;
       List<string> notes = new List<string>();
       switch (@object)
       {
@@ -336,7 +348,7 @@ namespace Objects.Converter.AutocadCivil
           break;
 
         /*
-        case Surface o: 
+        case Surface o:
           return SurfaceToNative(o);
 
         */
@@ -378,7 +390,10 @@ namespace Objects.Converter.AutocadCivil
         default:
           if (reportObj != null)
           {
-            reportObj.Update(status: ApplicationObject.State.Skipped, logItem: $"{@object.GetType()} type not supported");
+            reportObj.Update(
+              status: ApplicationObject.State.Skipped,
+              logItem: $"{@object.GetType()} type not supported"
+            );
             Report.UpdateReportObject(reportObj);
           }
           throw new NotSupportedException();
@@ -388,13 +403,22 @@ namespace Objects.Converter.AutocadCivil
       {
         case ApplicationObject o: // some to native methods return an application object (if object is baked to doc during conv)
           acadObj = o.Converted.Any() ? o.Converted : null;
-          if (reportObj != null) reportObj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, container: o.Container, log: o.Log);
+          if (reportObj != null)
+            reportObj.Update(
+              status: o.Status,
+              createdIds: o.CreatedIds,
+              converted: o.Converted,
+              container: o.Container,
+              log: o.Log
+            );
           break;
         default:
-          if (reportObj != null) reportObj.Update(log: notes);
+          if (reportObj != null)
+            reportObj.Update(log: notes);
           break;
       }
-      if (reportObj != null) Report.UpdateReportObject(reportObj);
+      if (reportObj != null)
+        Report.UpdateReportObject(reportObj);
       return acadObj;
     }
 
@@ -449,13 +473,13 @@ namespace Objects.Converter.AutocadCivil
 #endif
 
             default:
-              {
+            {
 #if ADVANCESTEEL2023
                 return CanConvertASToSpeckle(o);
 #else
-                return false;
+              return false;
 #endif
-              }
+            }
           }
 
         case Acad.Geometry.Point3d _:
