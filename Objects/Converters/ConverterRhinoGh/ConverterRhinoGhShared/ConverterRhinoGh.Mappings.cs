@@ -60,9 +60,24 @@ public partial class ConverterRhinoGh
 
         //NOTE: this works for BOTH the Wall.cs class and RevitWall.cs class etc :)
         case Wall o:
-          var extrusion = (RH.Extrusion)@object.Geometry;
-          var bottomCrv = extrusion.Profile3d(new RH.ComponentIndex(RH.ComponentIndexType.ExtrusionBottomProfile, 0));
-          var topCrv = extrusion.Profile3d(new RH.ComponentIndex(RH.ComponentIndexType.ExtrusionTopProfile, 0));
+          var wallBrep = @object.Geometry is RH.Brep wallB ? wallB : ((RH.Extrusion)@object.Geometry)?.ToBrep();
+          if (wallBrep == null)
+          {
+            throw new ArgumentException("Wall geometry can only be a brep or extrusion");
+          }
+
+          var wallEdges = wallBrep.DuplicateNakedEdgeCurves(true, false);
+          var topBottomEdges = wallEdges
+            .Where(o => Math.Abs(o.PointAtStart.Z - o.PointAtEnd.Z) < Doc.ModelAbsoluteTolerance)
+            .OrderBy(o => o.PointAtStart.Z)
+            .ToList();
+          if (topBottomEdges.Count != 2)
+          {
+            throw new ArgumentException("Wall geometry has invalid edges");
+          }
+
+          var bottomCrv = topBottomEdges.First();
+          var topCrv = topBottomEdges.Last();
           var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
           o.height = height;
           o.baseLine = CurveToSpeckle(bottomCrv);
