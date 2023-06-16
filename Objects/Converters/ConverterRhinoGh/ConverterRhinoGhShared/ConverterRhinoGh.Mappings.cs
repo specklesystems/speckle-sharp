@@ -11,6 +11,7 @@ using Speckle.Core.Models;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Plane = Objects.Geometry.Plane;
 
 namespace Objects.Converter.RhinoGh;
 
@@ -120,12 +121,13 @@ public partial class ConverterRhinoGh
           {
             o.basePoint = PointToSpeckle(p);
           }
-          else if (@object is InstanceObject)
+          else if (@object is InstanceObject instanceObject)
           {
-            var block = BlockInstanceToSpeckle(@object as InstanceObject);
-            o.basePoint = block.GetInsertionPlane().origin;
-            block.transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector4 translation);
-            o.rotation = Math.Acos(rotation.W) * 2;
+            var block = BlockInstanceToSpeckle(instanceObject);
+            var plane = block.GetInsertionPlane();
+            o.basePoint = plane.origin;
+            var angle = RH.Vector3d.VectorAngle(RH.Vector3d.XAxis, VectorToNative(plane.xdir), RH.Plane.WorldXY);
+            o.rotation = angle;
           }
 
           break;
