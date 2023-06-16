@@ -163,7 +163,7 @@ namespace Objects.Converter.CSI
       var name = CreateAreaFromPoints(area.topology.Select(t => t.basePoint), propName, out var success);
       SetAreaProperties(name, area);
 
-      if (area.openings.Count > 0)
+      if (area.openings?.Count > 0)
       {
         foreach (var opening in area.openings)
         {
@@ -202,6 +202,17 @@ namespace Objects.Converter.CSI
         Y.Add(ScaleToNative(point.y, point.units));
         Z.Add(ScaleToNative(point.z, point.units));
         numPoints++;
+      }
+
+      if (Math.Abs(X.Last() - X.First()) < .01 
+        && Math.Abs(Y.Last() - Y.First()) < .01
+        && Math.Abs(Z.Last() - Z.First()) < .01
+      )
+      {
+        X.RemoveAt(X.Count- 1);
+        Y.RemoveAt(Y.Count- 1);
+        Z.RemoveAt(Z.Count- 1);
+        numPoints--;
       }
       var x = X.ToArray();
       var y = Y.ToArray();
