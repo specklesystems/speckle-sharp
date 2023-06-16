@@ -150,7 +150,6 @@ namespace Objects.Other.Revit
     public Base parameters { get; set; }
     public string elementId { get; set; }
     public string placementType => typedDefinition.placementType;
-    public string type => typedDefinition.type;
 
     [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()

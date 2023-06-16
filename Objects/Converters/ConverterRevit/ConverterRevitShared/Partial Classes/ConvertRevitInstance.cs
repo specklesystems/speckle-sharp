@@ -31,7 +31,17 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj))
         return appObj;
 
-      var familySymbol = GetElementType<FamilySymbol>(instance, appObj, out bool isExactMatch);
+      FamilySymbol familySymbol;
+      bool isExactMatch;
+      if (instance is Objects.Other.Instance speckleInstance)
+      {
+        var definition = speckleInstance.definition as RevitSymbolElementType;
+        familySymbol = GetElementType<FamilySymbol>(definition, appObj, out isExactMatch);
+      }
+      else
+      {
+        familySymbol = GetElementType<FamilySymbol>(instance, appObj, out isExactMatch);
+      }
       if (familySymbol == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);

@@ -2,7 +2,7 @@ using Objects.Other;
 
 namespace Objects.BuiltElements.Revit.Interfaces
 {
-  public interface IRevitFamilyInstance : IHasRevitSymbolType
+  public interface IRevitFamilyInstance
   {
     bool facingFlipped { get; set; }
     string placementType { get; }
