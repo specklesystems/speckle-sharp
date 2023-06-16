@@ -36,6 +36,8 @@ namespace ConverterRevitTests
         throw new System.Exception($"Category, {Category.ToLower()} is not a recognized category");
       }
 
+      var selection = xru.GetActiveSelection();
+
       SourceDoc = SpeckleUtils.OpenUIDoc(TestFile);
 
       if (File.Exists(UpdatedTestFile))
@@ -48,14 +50,24 @@ namespace ConverterRevitTests
         NewDoc = SpeckleUtils.OpenUIDoc(NewFile);
       }
 
-      this.StreamState.Filter = new ListSelectionFilter
+      if (selection.Count > 0)
       {
-        Slug = "category",
-        Selection = categories
-          .Select(cat => DB.Category.GetCategory(SourceDoc.Document, cat)?.Name)
-          .Where(cat => cat != null)
-          .ToList()
-      };
+        this.StreamState.Filter = new ManualSelectionFilter()
+        {
+          Selection = selection.Select(el => el.UniqueId).ToList()
+        };
+      }
+      else
+      {
+        this.StreamState.Filter = new ListSelectionFilter
+        {
+          Slug = "category",
+          Selection = categories
+            .Select(cat => DB.Category.GetCategory(SourceDoc.Document, cat)?.Name)
+            .Where(cat => cat != null)
+            .ToList()
+        };
+      }
     }
 
     public async Task InitializeAsync()
@@ -75,10 +87,10 @@ namespace ConverterRevitTests
         //// if none of the tests failed, close the documents
         //if (!testsFailed)
         //{
-        //SpeckleUtils.OpenUIDoc(Globals.GetTestModel("blank.rvt"));
-        //xru.CloseDoc(SourceDoc?.Document);
-        //xru.CloseDoc(UpdatedDoc?.Document);
-        //xru.CloseDoc(NewDoc?.Document);
+        SpeckleUtils.OpenUIDoc(Globals.GetTestModel("blank.rvt"));
+        xru.CloseDoc(SourceDoc?.Document);
+        xru.CloseDoc(UpdatedDoc?.Document);
+        xru.CloseDoc(NewDoc?.Document);
         //}
 
         return Task.CompletedTask;

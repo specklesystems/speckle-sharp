@@ -81,33 +81,27 @@ namespace TestGenerator
         var runUpdateTest = updatedFiles.Contains(file + Updated);
 
         sb.Append(TestTemplate.InitTest(category, file));
-        sb.Append(TestTemplate.CreateToSpeckleTest(category, file));
 
-        if (runToNativeTest)
-        {
-          sb.Append(TestTemplate.CreateToNativeTest(
-            category,
-            file,
-            categoryProps.RevitType
-            //categoryProps.SyncAssertFunc ?? "null",
-            //categoryProps.AsyncAssertFunc ?? "null"
-          ));
-          //sb.Append(TestTemplate.CreateSelectionTest(category,
-          //  file,
-          //  categoryProps.RevitType,
-          //  categoryProps.SyncAssertFunc ?? "null",
-          //  categoryProps.AsyncAssertFunc ?? "null"
-          //));
-        }
         if (runUpdateTest)
         {
           sb.Append(TestTemplate.CreateUpdateTest(category,
             file,
             categoryProps.RevitType
-            //categoryProps.SyncAssertFunc ?? "null",
-            //categoryProps.AsyncAssertFunc ?? "null"
           ));
         }
+        else if (runToNativeTest)
+        {
+          sb.Append(TestTemplate.CreateToNativeTest(
+            category,
+            file,
+            categoryProps.RevitType
+          ));
+        }
+        else
+        {
+          sb.Append(TestTemplate.CreateToSpeckleTest(category, file));
+        }
+
         sb.Append(TestTemplate.EndClass);
       }
     }

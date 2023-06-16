@@ -23,24 +23,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("AdaptiveComponent", "AdaptiveComponentToSpeckle")]
-    public async Task AdaptiveComponentAdaptiveComponentToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
     [Trait("AdaptiveComponent", "AdaptiveComponentToNative")]
     public async Task AdaptiveComponentAdaptiveComponentToNative()
     {
-      await SpeckleToNative<DB.FamilyInstance>(AssertUtils.AdaptiveComponentEqual, null);
-    }
-
-    [Fact]
-    [Trait("AdaptiveComponent", "AdaptiveComponentSelection")]
-    public async Task AdaptiveComponentAdaptiveComponentSelectionToNative()
-    {
-      await SelectionToNative<DB.FamilyInstance>(AssertUtils.AdaptiveComponentEqual, null);
+      await SpeckleToNative();
     }
 
   }
@@ -62,31 +48,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Beam", "BeamToSpeckle")]
-    public async Task BeamBeamToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
-    [Trait("Beam", "BeamToNative")]
-    public async Task BeamBeamToNative()
-    {
-      await SpeckleToNative<DB.FamilyInstance>(AssertUtils.FamilyInstanceEqual, null);
-    }
-
-    [Fact]
-    [Trait("Beam", "BeamSelection")]
-    public async Task BeamBeamSelectionToNative()
-    {
-      await SelectionToNative<DB.FamilyInstance>(AssertUtils.FamilyInstanceEqual, null);
-    }
-
-    [Fact]
     [Trait("Beam", "BeamToNativeUpdates")]
     public async Task BeamBeamToNativeUpdates()
     {
-      await SpeckleToNativeUpdates<DB.FamilyInstance>(AssertUtils.FamilyInstanceEqual, null);
+      await SpeckleToNativeUpdates();
     }
 
   }
@@ -108,31 +73,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Column", "ColumnToSpeckle")]
-    public async Task ColumnColumnToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
-    [Trait("Column", "ColumnToNative")]
-    public async Task ColumnColumnToNative()
-    {
-      await SpeckleToNative<DB.FamilyInstance>(AssertUtils.FamilyInstanceEqual, null);
-    }
-
-    [Fact]
-    [Trait("Column", "ColumnSelection")]
-    public async Task ColumnColumnSelectionToNative()
-    {
-      await SelectionToNative<DB.FamilyInstance>(AssertUtils.FamilyInstanceEqual, null);
-    }
-
-    [Fact]
     [Trait("Column", "ColumnToNativeUpdates")]
     public async Task ColumnColumnToNativeUpdates()
     {
-      await SpeckleToNativeUpdates<DB.FamilyInstance>(AssertUtils.FamilyInstanceEqual, null);
+      await SpeckleToNativeUpdates();
     }
 
   }
@@ -154,24 +98,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Curve", "CurveToSpeckle")]
-    public async Task CurveCurveToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
     [Trait("Curve", "CurveToNative")]
     public async Task CurveCurveToNative()
     {
-      await SpeckleToNative<DB.CurveElement>(AssertUtils.CurveEqual, null);
-    }
-
-    [Fact]
-    [Trait("Curve", "CurveSelection")]
-    public async Task CurveCurveSelectionToNative()
-    {
-      await SelectionToNative<DB.CurveElement>(AssertUtils.CurveEqual, null);
+      await SpeckleToNative();
     }
 
   }
@@ -193,24 +123,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("DirectShape", "DirectShapeToSpeckle")]
-    public async Task DirectShapeDirectShapeToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
     [Trait("DirectShape", "DirectShapeToNative")]
     public async Task DirectShapeDirectShapeToNative()
     {
-      await SpeckleToNative<DB.DirectShape>(AssertUtils.DirectShapeEqual, null);
-    }
-
-    [Fact]
-    [Trait("DirectShape", "DirectShapeSelection")]
-    public async Task DirectShapeDirectShapeSelectionToNative()
-    {
-      await SelectionToNative<DB.DirectShape>(AssertUtils.DirectShapeEqual, null);
+      await SpeckleToNative();
     }
 
   }
@@ -232,31 +148,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("FamilyInstance", "FamilyInstanceToSpeckle")]
-    public async Task FamilyInstanceFamilyInstanceToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
-    [Trait("FamilyInstance", "FamilyInstanceToNative")]
-    public async Task FamilyInstanceFamilyInstanceToNative()
-    {
-      await SpeckleToNative<DB.Element>(AssertUtils.NestedEqual, null);
-    }
-
-    [Fact]
-    [Trait("FamilyInstance", "FamilyInstanceSelection")]
-    public async Task FamilyInstanceFamilyInstanceSelectionToNative()
-    {
-      await SelectionToNative<DB.Element>(AssertUtils.NestedEqual, null);
-    }
-
-    [Fact]
     [Trait("FamilyInstance", "FamilyInstanceToNativeUpdates")]
     public async Task FamilyInstanceFamilyInstanceToNativeUpdates()
     {
-      await SpeckleToNativeUpdates<DB.Element>(AssertUtils.NestedEqual, null);
+      await SpeckleToNativeUpdates();
     }
 
   }
@@ -278,24 +173,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Floor", "FloorToSpeckle")]
-    public async Task FloorFloorToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
     [Trait("Floor", "FloorToNative")]
     public async Task FloorFloorToNative()
     {
-      await SpeckleToNative<DB.Floor>(null, AssertUtils.FloorEqual);
-    }
-
-    [Fact]
-    [Trait("Floor", "FloorSelection")]
-    public async Task FloorFloorSelectionToNative()
-    {
-      await SelectionToNative<DB.Floor>(null, AssertUtils.FloorEqual);
+      await SpeckleToNative();
     }
 
   }
@@ -317,24 +198,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Opening", "OpeningToSpeckle")]
-    public async Task OpeningOpeningToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
     [Trait("Opening", "OpeningToNative")]
     public async Task OpeningOpeningToNative()
     {
-      await SpeckleToNative<DB.Element>(AssertUtils.OpeningEqual, null);
-    }
-
-    [Fact]
-    [Trait("Opening", "OpeningSelection")]
-    public async Task OpeningOpeningSelectionToNative()
-    {
-      await SelectionToNative<DB.Element>(AssertUtils.OpeningEqual, null);
+      await SpeckleToNative();
     }
 
   }
@@ -356,24 +223,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Roof", "RoofToSpeckle")]
-    public async Task RoofRoofToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
     [Trait("Roof", "RoofToNative")]
     public async Task RoofRoofToNative()
     {
-      await SpeckleToNative<DB.RoofBase>(AssertUtils.RoofEqual, null);
-    }
-
-    [Fact]
-    [Trait("Roof", "RoofSelection")]
-    public async Task RoofRoofSelectionToNative()
-    {
-      await SelectionToNative<DB.RoofBase>(AssertUtils.RoofEqual, null);
+      await SpeckleToNative();
     }
 
   }
@@ -420,31 +273,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Schedule", "ScheduleToSpeckle")]
-    public async Task ScheduleScheduleToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
-    [Trait("Schedule", "ScheduleToNative")]
-    public async Task ScheduleScheduleToNative()
-    {
-      await SpeckleToNative<DB.ViewSchedule>(null, AssertUtils.ScheduleEqual);
-    }
-
-    [Fact]
-    [Trait("Schedule", "ScheduleSelection")]
-    public async Task ScheduleScheduleSelectionToNative()
-    {
-      await SelectionToNative<DB.ViewSchedule>(null, AssertUtils.ScheduleEqual);
-    }
-
-    [Fact]
     [Trait("Schedule", "ScheduleToNativeUpdates")]
     public async Task ScheduleScheduleToNativeUpdates()
     {
-      await SpeckleToNativeUpdates<DB.ViewSchedule>(null, AssertUtils.ScheduleEqual);
+      await SpeckleToNativeUpdates();
     }
 
   }
@@ -466,31 +298,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Wall", "WallToSpeckle")]
-    public async Task WallWallToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
-    [Trait("Wall", "WallToNative")]
-    public async Task WallWallToNative()
-    {
-      await SpeckleToNative<DB.Wall>(AssertUtils.WallEqual, null);
-    }
-
-    [Fact]
-    [Trait("Wall", "WallSelection")]
-    public async Task WallWallSelectionToNative()
-    {
-      await SelectionToNative<DB.Wall>(AssertUtils.WallEqual, null);
-    }
-
-    [Fact]
     [Trait("Wall", "WallToNativeUpdates")]
     public async Task WallWallToNativeUpdates()
     {
-      await SpeckleToNativeUpdates<DB.Wall>(AssertUtils.WallEqual, null);
+      await SpeckleToNativeUpdates();
     }
 
   }
@@ -512,24 +323,10 @@ namespace ConverterRevitTests
     }
 
     [Fact]
-    [Trait("Wire", "WireToSpeckle")]
-    public async Task WireWireToSpeckle()
-    {
-      await NativeToSpeckle();
-    }
-
-    [Fact]
     [Trait("Wire", "WireToNative")]
     public async Task WireWireToNative()
     {
-      await SpeckleToNative<DB.Electrical.Wire>(AssertUtils.WireEqual, null);
-    }
-
-    [Fact]
-    [Trait("Wire", "WireSelection")]
-    public async Task WireWireSelectionToNative()
-    {
-      await SelectionToNative<DB.Electrical.Wire>(AssertUtils.WireEqual, null);
+      await SpeckleToNative();
     }
 
   }

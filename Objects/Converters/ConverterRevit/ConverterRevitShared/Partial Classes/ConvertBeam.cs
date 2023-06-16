@@ -3,6 +3,7 @@ using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -65,12 +66,18 @@ namespace Objects.Converter.Revit
           {
             revitBeam = (DB.FamilyInstance)docObj;
 
-            // if we combine the following two statements, it results in an error that the beam is unable to be
-            // bent into position. For some reason separating the curve variable declaration and the curve setting
-            // fixes this issue. I'm not sure if this is a permanent fix. If not, then I think the solution is to 
-            // disassociate the beam from the current workplane and then setting the new curve
-            var existingCurve = (revitBeam.Location as LocationCurve).Curve;
-            existingCurve = baseLine;
+            // this is a bit of a hack, but if the beam is associated with a plane and then you try to move the
+            // beam off the plane, it will fail. Also workplane parameter is readonly so we can't change it :)
+            // therefore what we need to do is move one of the sides of the beam up slightly and this
+            // will disassociate the beam from the plane. This change in end elevation will get removed
+            // when we set the beam curve to a new curve
+            if (!string.IsNullOrEmpty(GetParamValue<string>(revitBeam, BuiltInParameter.SKETCH_PLANE_PARAM)))
+            {
+              var currentOffset0 = GetParamValue<double>(revitBeam, BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION);
+              TrySetParam(revitBeam, BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION, currentOffset0 + 1);
+            }
+
+            (revitBeam.Location as LocationCurve).Curve = baseLine;
 
             // check for a type change
             if (isExactMatch && revitType.Id.IntegerValue != familySymbol.Id.IntegerValue)

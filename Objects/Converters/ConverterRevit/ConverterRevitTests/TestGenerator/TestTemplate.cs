@@ -51,7 +51,7 @@ namespace ConverterRevitTests
     [Trait(""{category}"", ""{fileName}ToNative"")]
     public async Task {category}{fileName}ToNative()
     {{
-      await SpeckleToNative<{revitType}>();
+      await SpeckleToNative();
     }}
 ";
 
@@ -60,7 +60,7 @@ namespace ConverterRevitTests
     [Trait(""{category}"", ""{fileName}ToNativeUpdates"")]
     public async Task {category}{fileName}ToNativeUpdates()
     {{
-      await SpeckleToNativeUpdates<{revitType}>();
+      await SpeckleToNativeUpdates();
     }}
 ";
 
