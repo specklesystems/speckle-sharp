@@ -131,77 +131,27 @@ namespace ConverterRevitTests
 
   }
 
-  public class FamilyInstanceFaceBasedFixture : SpeckleConversionFixture
+  public class FamilyInstanceFamilyInstanceFixture : SpeckleConversionFixture
   {
     public override string Category => "FamilyInstance";
-    public override string TestName => "FaceBased";
+    public override string TestName => "FamilyInstance";
 
-    public FamilyInstanceFaceBasedFixture() : base()
+    public FamilyInstanceFamilyInstanceFixture() : base()
     {
     }
   }
 
-  public class FamilyInstanceFaceBasedTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFaceBasedFixture>
+  public class FamilyInstanceFamilyInstanceTests : SpeckleConversionTest, IClassFixture<FamilyInstanceFamilyInstanceFixture>
   {
-    public FamilyInstanceFaceBasedTests(FamilyInstanceFaceBasedFixture fixture) : base(fixture)
+    public FamilyInstanceFamilyInstanceTests(FamilyInstanceFamilyInstanceFixture fixture) : base(fixture)
     {
     }
 
     [Fact]
-    [Trait("FamilyInstance", "FaceBasedToNative")]
-    public async Task FamilyInstanceFaceBasedToNative()
-    {
-      await SpeckleToNative();
-    }
-
-  }
-
-  public class FamilyInstancePointBasedInstancesFixture : SpeckleConversionFixture
-  {
-    public override string Category => "FamilyInstance";
-    public override string TestName => "PointBasedInstances";
-
-    public FamilyInstancePointBasedInstancesFixture() : base()
-    {
-    }
-  }
-
-  public class FamilyInstancePointBasedInstancesTests : SpeckleConversionTest, IClassFixture<FamilyInstancePointBasedInstancesFixture>
-  {
-    public FamilyInstancePointBasedInstancesTests(FamilyInstancePointBasedInstancesFixture fixture) : base(fixture)
-    {
-    }
-
-    [Fact]
-    [Trait("FamilyInstance", "PointBasedInstancesToNativeUpdates")]
-    public async Task FamilyInstancePointBasedInstancesToNativeUpdates()
+    [Trait("FamilyInstance", "FamilyInstanceToNativeUpdates")]
+    public async Task FamilyInstanceFamilyInstanceToNativeUpdates()
     {
       await SpeckleToNativeUpdates();
-    }
-
-  }
-
-  public class FamilyInstanceWallFloorCeilingRoofBasedFixture : SpeckleConversionFixture
-  {
-    public override string Category => "FamilyInstance";
-    public override string TestName => "WallFloorCeilingRoofBased";
-
-    public FamilyInstanceWallFloorCeilingRoofBasedFixture() : base()
-    {
-    }
-  }
-
-  public class FamilyInstanceWallFloorCeilingRoofBasedTests : SpeckleConversionTest, IClassFixture<FamilyInstanceWallFloorCeilingRoofBasedFixture>
-  {
-    public FamilyInstanceWallFloorCeilingRoofBasedTests(FamilyInstanceWallFloorCeilingRoofBasedFixture fixture) : base(fixture)
-    {
-    }
-
-    [Fact]
-    [Trait("FamilyInstance", "WallFloorCeilingRoofBasedToNative")]
-    public async Task FamilyInstanceWallFloorCeilingRoofBasedToNative()
-    {
-      await SpeckleToNative();
     }
 
   }

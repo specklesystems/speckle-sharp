@@ -1,12 +1,14 @@
 using System.Collections.Generic;
+using Objects.BuiltElements.Revit.Interfaces;
 using Objects.Geometry;
+using Objects.Other;
 using Objects.Utils;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.Revit;
 
-public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
+public class FamilyInstance : Base, IDisplayValue<List<Mesh>>, IRevitFamilyInstance
 {
   public FamilyInstance() { }
 
@@ -44,6 +46,8 @@ public class FamilyInstance : Base, IDisplayValue<List<Mesh>>
   public bool mirrored { get; set; }
   public Base parameters { get; set; }
   public string elementId { get; set; }
+  public string placementType { get; set; }
+  public Transform transform { get; set; }
 
   [DetachProperty]
   public List<Base> elements { get; set; }

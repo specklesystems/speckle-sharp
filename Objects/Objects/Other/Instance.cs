@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.BuiltElements.Revit.Interfaces;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -140,7 +141,7 @@ namespace Objects.Other
 
 namespace Objects.Other.Revit
 {
-  public class RevitInstance : Instance<RevitSymbolElementType>
+  public class RevitInstance : Instance<RevitSymbolElementType>, IRevitFamilyInstance
   {
     public Level level { get; set; }
     public bool facingFlipped { get; set; }
@@ -148,6 +149,8 @@ namespace Objects.Other.Revit
     public bool mirrored { get; set; }
     public Base parameters { get; set; }
     public string elementId { get; set; }
+    public string placementType => typedDefinition.placementType;
+    public string type => typedDefinition.type;
 
     [SchemaComputed("transformedGeometry")]
     public List<ITransformable> GetTransformedGeometry()
