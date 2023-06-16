@@ -44,11 +44,19 @@ public partial class ConverterNavisworks : ISpeckleConverter
     return new[] { VersionedAppName };
   }
 
-  /// <inheritdoc />
   public void SetContextDocument(object doc)
   {
-    Doc = (Document)doc;
-    // This sets the correct ElevationMode flag for model orientation.
+    if (doc != null && doc is not Document)
+      throw new ArgumentException("Only Navisworks Document types are supported.");
+
+    if (Doc == null && doc != null)
+      Doc = (Document)doc;
+
+    if (Doc == null && doc == null)
+      Doc = Application.ActiveDocument;
+
+    // This sets or resets the correct ElevationMode flag for model orientation.
+    // Needs to be called every time a Send is initiated to reflect the options
     SetModelOrientationMode();
     SetModelBoundingBox();
     SetTransformVector3D();
