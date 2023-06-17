@@ -10,6 +10,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using ReactiveUI;
 using Speckle.ConnectorNavisworks.Other;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -64,41 +65,51 @@ public partial class ConnectorBindingsNavisworks
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
     _progressViewModel = progress;
-    Collection commitObject = CommitObject;
-
-    // Reset the cached conversion and commit objects
-    _cachedConversion = null;
-    _cachedState = state;
-    _cachedCommit = commitObject;
-
-    // Perform the validation checks - will throw if something is wrong
-    ValidateBeforeSending(state);
-
-    Cursor.Current = Cursors.WaitCursor;
+    Collection commitObject;
     var applicationProgress = Application.BeginProgress("Send to Speckle.");
     _progressBar = new ProgressInvoker(applicationProgress);
 
-    DisableAutoSave();
-    SetupProgressViewModel();
-    SetupConverter(state);
+    if (PersistCache == false || CachedConversion == false)
+    {
+      commitObject = CommitObject;
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      // Reset the cached conversion and commit objects
+      CachedConvertedElements = null;
+      _cachedState = state;
+      _cachedCommit = commitObject;
 
-    var modelItemsToConvert = PrepareModelItemsToConvert(state);
+      // Perform the validation checks - will throw if something is wrong
+      ValidateBeforeSending(state);
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      Cursor.Current = Cursors.WaitCursor;
 
-    var conversions = PrepareElementsForConversion(modelItemsToConvert);
+      DisableAutoSave();
+      SetupProgressViewModel();
+      SetupConverter(state);
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-    _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
+      var modelItemsToConvert = PrepareModelItemsToConvert(state);
 
-    _cachedConversion = commitObject.elements;
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-    RestoreAutoSave();
+      var conversions = PrepareElementsForConversion(modelItemsToConvert);
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+      _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
+
+      CachedConvertedElements = commitObject.elements;
+
+      RestoreAutoSave();
+
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+    }
+    else
+    {
+      commitObject = _cachedCommit as Collection;
+      commitObject.elements = CachedConvertedElements as List<Base>;
+    }
 
     var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
 
@@ -109,11 +120,23 @@ public partial class ConnectorBindingsNavisworks
 
     var commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
 
-    // On success, cancel the conversion and commit object cache
-    _cachedCommit = null;
-    _cachedConversion = null;
+    if (PersistCache == false)
+    {
+      // On success, cancel the conversion and commit object cache
+      _cachedCommit = null;
+      CachedConvertedElements = null;
+    }
 
     Cursor.Current = Cursors.Default;
+
+    try
+    {
+      Application.EndProgress();
+    }
+    catch (InvalidOperationException)
+    {
+      // ignored
+    }
 
     return commitId;
   }
@@ -145,8 +168,16 @@ public partial class ConnectorBindingsNavisworks
 
     _progressViewModel.CancellationToken.Register(() =>
     {
-      _progressBar.Cancel();
-      Application.EndProgress();
+      try
+      {
+        _progressBar.Cancel();
+        Application.EndProgress();
+      }
+      catch (InvalidOperationException)
+      {
+        // ignored
+      }
+
       RestoreAutoSave();
       Cursor.Current = Cursors.Default;
     });
