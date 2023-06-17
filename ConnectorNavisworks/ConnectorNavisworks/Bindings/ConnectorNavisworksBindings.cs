@@ -29,7 +29,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   private static StreamState _cachedState;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
-  private bool _isRetrying;
+  // private bool _isRetrying;
   internal static bool PersistCache;
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
@@ -122,7 +122,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
     if (_cachedCommit is Collection commitObject)
     {
-      _isRetrying = true;
+      // _isRetrying = true;
 
       var applicationProgress = Application.BeginProgress("Retrying that send to Speckle.");
       _progressBar = new ProgressInvoker(applicationProgress);
@@ -161,6 +161,6 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     // nullify the cached conversion and commit on success.
     _cachedCommit = null;
     CachedConvertedElements = null;
-    _isRetrying = false;
+    // _isRetrying = false;
   }
 }

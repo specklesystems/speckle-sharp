@@ -10,7 +10,6 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using ReactiveUI;
 using Speckle.ConnectorNavisworks.Other;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -108,7 +107,7 @@ public partial class ConnectorBindingsNavisworks
     else
     {
       commitObject = _cachedCommit as Collection;
-      commitObject.elements = CachedConvertedElements as List<Base>;
+      if (commitObject != null) commitObject.elements = CachedConvertedElements;
     }
 
     var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
@@ -379,15 +378,14 @@ public partial class ConnectorBindingsNavisworks
       sourceApplication = HostAppNameVersion
     };
 
-    string commitId;
-
-    // This block enables forcing a failed send to test the caching feature
-    // #if DEBUG
-    //     if (!isRetrying)
-    //       throw new SpeckleException("Debug mode: commit not created.");
-    // #endif
-    // Use the helper function to create the commit and retrieve the commit ID
-    commitId = await ConnectorHelpers
+    string commitId =
+      // This block enables forcing a failed send to test the caching feature
+      // #if DEBUG
+      //     if (!isRetrying)
+      //       throw new SpeckleException("Debug mode: commit not created.");
+      // #endif
+      // Use the helper function to create the commit and retrieve the commit ID
+      await ConnectorHelpers
       .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
       .ConfigureAwait(false);
 

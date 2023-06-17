@@ -4,11 +4,9 @@ using System.Diagnostics;
 using System.Text;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api.Plugins;
-using Material.Icons.Avalonia;
 using Speckle.ConnectorNavisworks.Bindings;
 using Speckle.Core.Logging;
 using NavisworksApp = Autodesk.Navisworks.Api.Application;
-using ToolTip = Avalonia.Controls.ToolTip;
 
 namespace Speckle.ConnectorNavisworks.Entry;
 
@@ -57,7 +55,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     Icon = "Resources/logo16.ico",
     LargeIcon = "Resources/logo32.ico",
     ToolTip = "Cache persistence is on.",
-    ExtendedToolTip = "Cache persistence is on. If you send a model, the converted objects will be held in memory and will be sent to the Stream and Branch you specify. No setting chnages will be applied.",
+    ExtendedToolTip = "Cache persistence is on. If you send a model, the converted objects will be held in memory and will be sent to the Stream and Branch you specify. No setting changes will be applied.",
     DisplayName = "Cache"
   ),
 ]
