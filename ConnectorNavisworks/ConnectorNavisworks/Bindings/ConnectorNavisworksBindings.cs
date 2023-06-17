@@ -25,6 +25,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   private static Document _doc;
   internal static Control Control;
   private static object _cachedCommit;
+
   internal static List<Base> CachedConvertedElements;
   private static StreamState _cachedState;
   private ISpeckleKit _defaultKit;
@@ -49,8 +50,10 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
 
+
   public static bool CachedConversion =>
     CachedConvertedElements != null && CachedConvertedElements.Any() && _cachedCommit != null;
+
 
   public override string GetActiveViewName()
   {
@@ -117,6 +120,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     if (_doc == null)
       return;
 
+
     if (CachedConvertedElements == null || _cachedCommit == null)
       throw new SpeckleException("Cant retry last conversion: no cached conversion or commit found.");
 
@@ -129,6 +133,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
       _progressViewModel = new ProgressViewModel();
 
       commitObject.elements = CachedConvertedElements;
+
       var state = _cachedState;
 
       var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
@@ -160,6 +165,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
     // nullify the cached conversion and commit on success.
     _cachedCommit = null;
+
     CachedConvertedElements = null;
     // _isRetrying = false;
   }

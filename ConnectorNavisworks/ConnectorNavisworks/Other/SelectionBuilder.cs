@@ -69,7 +69,7 @@ public class SelectionHandler
     // Selections are modelItem pseudo-ids.
     var selection = _filter.Selection;
     var count = selection.Count;
-    var progressIncrement = 1.0 / count;
+    var progressIncrement = 1.0 / count != 0 ? count : 1.0;
 
     // Begin the progress sub-operation for getting objects from selection
     ProgressBar.BeginSubOperation(0.1, "Rolling up the sleeves... Time to handpick your favorite data items!");
@@ -299,7 +299,7 @@ public class SelectionHandler
   /// <param name="totalDescendants">The total number of descendants.</param>
   private void TraverseDescendants(ModelItem startNode, int totalDescendants)
   {
-    var descendantInterval = totalDescendants / 100;
+    var descendantInterval = Math.Max(totalDescendants / 100.0, 1);
     var validDescendants = new HashSet<ModelItem>();
 
     Stack<ModelItem> stack = new();
@@ -352,7 +352,7 @@ public class SelectionHandler
     double fractionOfRemainingTime = 0
   )
   {
-    var increment = 1.0 / totalCount;
+    var increment = 1.0 / totalCount != 0 ? 1.0 / totalCount : 1.0;
     var updateInterval = Math.Max(totalCount / 100, 1);
     ProgressBar.BeginSubOperation(fractionOfRemainingTime, operationName);
     ProgressBar.Update(0);

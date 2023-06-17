@@ -64,6 +64,7 @@ public partial class ConnectorBindingsNavisworks
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
     _progressViewModel = progress;
+
     Collection commitObject;
     var applicationProgress = Application.BeginProgress("Send to Speckle.");
     _progressBar = new ProgressInvoker(applicationProgress);
@@ -91,6 +92,7 @@ public partial class ConnectorBindingsNavisworks
       var modelItemsToConvert = PrepareModelItemsToConvert(state);
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
 
       var conversions = PrepareElementsForConversion(modelItemsToConvert);
 
@@ -125,6 +127,7 @@ public partial class ConnectorBindingsNavisworks
       _cachedCommit = null;
       CachedConvertedElements = null;
     }
+
 
     Cursor.Current = Cursors.Default;
 
@@ -195,7 +198,7 @@ public partial class ConnectorBindingsNavisworks
     var conversions = new Dictionary<Element, Tuple<Constants.ConversionState, Base>>();
 
     var totalObjects = modelItemsToConvert.Count;
-    var objectIncrement = 1 / (double)totalObjects;
+    var objectIncrement = 1 / Math.Max((double)totalObjects, 1);
     var objectInterval = Math.Max(totalObjects / 100, 1);
 
     for (int index = 0; index < modelItemsToConvert.Count; index++)
@@ -378,6 +381,7 @@ public partial class ConnectorBindingsNavisworks
       sourceApplication = HostAppNameVersion
     };
 
+
     string commitId =
       // This block enables forcing a failed send to test the caching feature
       // #if DEBUG
@@ -386,6 +390,7 @@ public partial class ConnectorBindingsNavisworks
       // #endif
       // Use the helper function to create the commit and retrieve the commit ID
       await ConnectorHelpers
+
       .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
       .ConfigureAwait(false);
 
@@ -526,7 +531,7 @@ public partial class ConnectorBindingsNavisworks
       .ToDictionary(c => c.Key, c => c.Value);
 
     int convertedCount = 0;
-    var conversionIncrement = 1.0 / conversions.Count;
+    var conversionIncrement = conversions.Count != 0 ? 1.0 / conversions.Count : 0.0;
     var conversionInterval = Math.Max(conversions.Count / 100, 1);
 
     for (var i = 0; i < conversions.Count; i++)

@@ -1,4 +1,4 @@
-﻿<RibbonControl
+<RibbonControl
   x:Uid="Speckle_Ribbon"
   xmlns="clr-namespace:Autodesk.Windows;assembly=AdWindows"
   xmlns:gui="clr-namespace:Autodesk.Navisworks.Gui.Roamer.AIRLook;assembly=navisworks.gui.roamer"
