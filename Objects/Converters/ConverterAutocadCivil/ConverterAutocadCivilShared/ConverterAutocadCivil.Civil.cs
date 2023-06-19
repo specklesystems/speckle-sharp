@@ -494,16 +494,17 @@ namespace Objects.Converter.AutocadCivil
 
       // if offset profile, get offset distance and parent
       _profile.offset = profile.Offset;
-      if (profile.OffsetParameters.ParentProfileId != ObjectId.Null)
+      try
       {
-        try
+        if (profile.OffsetParameters.ParentProfileId != ObjectId.Null)
         {
           var parent = Trans.GetObject(profile.OffsetParameters.ParentProfileId, OpenMode.ForRead) as CivilDB.Profile;
           if (parent != null && parent.Name != null)
             _profile.parent = parent.Name;
+        
         }
-        catch { }
       }
+      catch { }
 
       // get points of vertical intersection (PVIs)
       List<Point> pvisConverted = new List<Point>();
