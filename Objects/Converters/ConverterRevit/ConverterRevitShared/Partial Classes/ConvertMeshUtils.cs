@@ -23,7 +23,7 @@ namespace Objects.Converter.Revit
     /// <remarks>
     /// See https://www.revitapidocs.com/2023/e0f15010-0e19-6216-e2f0-ab7978145daa.htm for a full Geometry Object inheritance
     /// </remarks>
-    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool isConvertedAsInstance = false)
+    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool isConvertedAsInstance = false, bool hasModifiedInstanceGeometry = false)
     {
       var displayMeshes = new List<Mesh>();
 
@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
       {
         foreach (var id in g.GetMemberIds())
         {
-          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance);
+          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance, hasModifiedInstanceGeometry);
           displayMeshes.AddRange(groupMeshes);
         }
         return displayMeshes;
@@ -55,7 +55,7 @@ namespace Objects.Converter.Revit
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
       SortGeometry(geom);
-      void SortGeometry(GeometryElement geom)
+      void SortGeometry(GeometryElement geom, Transform inverseTransform = null)
       {
         foreach (GeometryObject geomObj in geom)
         {
@@ -63,14 +63,37 @@ namespace Objects.Converter.Revit
           {
             case Solid solid:
               if (solid.Faces.Size > 0 && Math.Abs(solid.SurfaceArea) > 0) // skip invalid solid
+              {
+                if (inverseTransform != null)
+                {
+                  try
+                  {
+                    solid = SolidUtils.CreateTransformed(solid, inverseTransform);
+                  }
+                  catch (Exception e)
+                  { }
+                }
                 solids.Add(solid);
+              }
               break;
             case DB.Mesh mesh:
+              if (inverseTransform != null)
+              {
+                try
+                {
+                  mesh = mesh.get_Transformed(inverseTransform);
+                }
+                catch (Exception e)
+                { }
+              }
               meshes.Add(mesh);
               break;
             case GeometryInstance instance:
-              var instanceGeo = isConvertedAsInstance ? instance.GetSymbolGeometry() : instance.GetInstanceGeometry();
-              SortGeometry(instanceGeo);
+              var instanceGeo = isConvertedAsInstance && !hasModifiedInstanceGeometry ? 
+                instance.GetSymbolGeometry() : 
+                instance.GetInstanceGeometry();
+              inverseTransform = isConvertedAsInstance && hasModifiedInstanceGeometry ? instance.Transform.Inverse : null;
+              SortGeometry(instanceGeo, inverseTransform);
               break;
             case GeometryElement element:
               SortGeometry(element);
