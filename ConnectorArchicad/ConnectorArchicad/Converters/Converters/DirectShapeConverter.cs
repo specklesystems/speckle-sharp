@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -30,35 +30,41 @@ namespace Archicad.Converters
     )
     {
       var directShapes = new List<Objects.BuiltElements.Archicad.DirectShape>();
-      foreach (var tc in elements)
+
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.DirectShape directShape:
-            // get the geometry
-            MeshModel meshModel = null;
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.DirectShape directShape:
+              // get the geometry
+              MeshModel meshModel = null;
 
-            {
-              List<Mesh> meshes = null;
-              var m = directShape["displayValue"] ?? directShape["@displayValue"];
-              if (m is List<Mesh>)
-                meshes = (List<Mesh>)m;
-              else if (m is List<object>)
-                meshes = ((List<object>)m).Cast<Mesh>().ToList();
+              {
+                List<Mesh> meshes = null;
+                var m = directShape["displayValue"] ?? directShape["@displayValue"];
+                if (m is List<Mesh>)
+                  meshes = (List<Mesh>)m;
+                else if (m is List<object>)
+                  meshes = ((List<object>)m).Cast<Mesh>().ToList();
 
-              if (meshes == null)
-                continue;
+                if (meshes == null)
+                  continue;
 
-              meshModel = ModelConverter.MeshToNative(meshes);
-            }
+                meshModel = ModelConverter.MeshToNative(meshes);
+              }
 
-            directShape["model"] = meshModel;
-            directShapes.Add(directShape);
-            break;
+              directShape["model"] = meshModel;
+              directShapes.Add(directShape);
+              break;
+          }
         }
       }
 
-      var result = await AsyncCommandProcessor.Execute(
+      IEnumerable<ApplicationObject> result;
+      result = await AsyncCommandProcessor.Execute(
         new Communication.Commands.CreateDirectShape(directShapes),
         token
       );

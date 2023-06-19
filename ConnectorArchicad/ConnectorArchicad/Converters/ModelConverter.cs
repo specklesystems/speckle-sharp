@@ -36,195 +36,200 @@ namespace Archicad.Operations
 
     public static MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
-      var mergedVertexIndices = new Dictionary<Vertex, int>();
-      var originalToMergedVertexIndices = new List<int>();
-      var neigbourPolygonsByEdge = new Dictionary<Tuple<int, int>, List<int>>();
-
-      var vertexOffset = 0;
-
-      var meshModel = new MeshModel();
-      var enumerable = meshes as Mesh[] ?? meshes.ToArray();
-
-      #region Local Funcitions
-      // converts from original to merged vertex index
-      int ToMergedVertexIndex(int i) => originalToMergedVertexIndices[i + vertexOffset];
-
-      // try to find the list of neighbouring polygons of an edge
-      // returns true if the edge or its inversion is present in neigbourPolygonsByEdge dictionary as key
-      bool TryGetNeigPolygonListByEdge(ref Tuple<int, int> edge, out List<int> neigbourPolygonIdxs)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.MeshToNative))
       {
-        if (neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIdxs))
-          return true;
-        edge = new Tuple<int, int>(edge.Item2, edge.Item1);
-        return neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIdxs);
-      }
-      #endregion
+        var mergedVertexIndices = new Dictionary<Vertex, int>();
+        var originalToMergedVertexIndices = new List<int>();
+        var neigbourPolygonsByEdge = new Dictionary<Tuple<int, int>, List<int>>();
 
-      foreach (var mesh in enumerable)
-      {
-        var renderMaterial = mesh["renderMaterial"] as RenderMaterial;
-        MeshModel.Material material = null;
-        if (renderMaterial != null)
+        var vertexOffset = 0;
+
+        var meshModel = new MeshModel();
+        var enumerable = meshes as Mesh[] ?? meshes.ToArray();
+
+        #region Local Funcitions
+        // converts from original to merged vertex index
+        int ToMergedVertexIndex(int i) => originalToMergedVertexIndices[i + vertexOffset];
+
+        // try to find the list of neighbouring polygons of an edge
+        // returns true if the edge or its inversion is present in neigbourPolygonsByEdge dictionary as key
+        bool TryGetNeigPolygonListByEdge(ref Tuple<int, int> edge, out List<int> neigbourPolygonIdxs)
         {
-          material = MaterialToNative(renderMaterial);
-          meshModel.materials.Add(material);
+          if (neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIdxs))
+            return true;
+          edge = new Tuple<int, int>(edge.Item2, edge.Item1);
+          return neigbourPolygonsByEdge.TryGetValue(edge, out neigbourPolygonIdxs);
         }
+        #endregion
 
-        foreach (var vertex in mesh.GetPoints().Select(p => Utils.PointToNative(p)))
+        foreach (var mesh in enumerable)
         {
-          if (mergedVertexIndices.TryGetValue(vertex, out int idx))
+          var renderMaterial = mesh["renderMaterial"] as RenderMaterial;
+          MeshModel.Material material = null;
+          if (renderMaterial != null)
           {
-            originalToMergedVertexIndices.Add(idx);
+            material = MaterialToNative(renderMaterial);
+            meshModel.materials.Add(material);
           }
-          else
+
+          foreach (var vertex in mesh.GetPoints().Select(p => Utils.PointToNative(p)))
           {
-            originalToMergedVertexIndices.Add(mergedVertexIndices.Count);
-            mergedVertexIndices.Add(vertex, mergedVertexIndices.Count);
-            meshModel.vertices.Add(vertex);
-          }
-        }
-
-        for (var i = 0; i < mesh.faces.Count; ++i)
-        {
-          var polygon = new Polygon();
-          var neigPolygonsByEdgesToCheckIfSmooth = new List<Tuple<Tuple<int, int>, Polygon>>();
-
-          var n = mesh.faces[i];
-          if (n < 3) n += 3;
-
-          int firstVertexIdx = i + 1;
-          int lastVertexIdx = i + n;
-
-          int startVertexIdx = firstVertexIdx;
-          int endVertexIdx = startVertexIdx;
-
-          bool stop = false;
-          while (!stop)
-          {
-            // calculate startVertexIdx - skip similar vertices for startVertexIdx
+            if (mergedVertexIndices.TryGetValue(vertex, out int idx))
             {
-              var mergedVertexIndexToSkip = ToMergedVertexIndex(mesh.faces[startVertexIdx]);
+              originalToMergedVertexIndices.Add(idx);
+            }
+            else
+            {
+              originalToMergedVertexIndices.Add(mergedVertexIndices.Count);
+              mergedVertexIndices.Add(vertex, mergedVertexIndices.Count);
+              meshModel.vertices.Add(vertex);
+            }
+          }
 
-              while (true)
+          for (var i = 0; i < mesh.faces.Count; ++i)
+          {
+            var polygon = new Polygon();
+            var neigPolygonsByEdgesToCheckIfSmooth = new List<Tuple<Tuple<int, int>, Polygon>>();
+
+            var n = mesh.faces[i];
+            if (n < 3) n += 3;
+
+            int firstVertexIdx = i + 1;
+            int lastVertexIdx = i + n;
+
+            int startVertexIdx = firstVertexIdx;
+            int endVertexIdx = startVertexIdx;
+
+            bool stop = false;
+            while (!stop)
+            {
+              // calculate startVertexIdx - skip similar vertices for startVertexIdx
               {
-                bool looped = false;
+                var mergedVertexIndexToSkip = ToMergedVertexIndex(mesh.faces[startVertexIdx]);
 
-                // get the next index
-                var nextVertexIndex = startVertexIdx + 1;
-                if (nextVertexIndex > lastVertexIdx)
+                while (true)
                 {
-                  nextVertexIndex = firstVertexIdx;
-                  looped = true;
-                }
+                  bool looped = false;
 
-                if (mergedVertexIndexToSkip == ToMergedVertexIndex(mesh.faces[nextVertexIndex]))
-                {
-                  if (looped)
+                  // get the next index
+                  var nextVertexIndex = startVertexIdx + 1;
+                  if (nextVertexIndex > lastVertexIdx)
                   {
-                    stop = true;
+                    nextVertexIndex = firstVertexIdx;
+                    looped = true;
+                  }
+
+                  if (mergedVertexIndexToSkip == ToMergedVertexIndex(mesh.faces[nextVertexIndex]))
+                  {
+                    if (looped)
+                    {
+                      stop = true;
+                      break;
+                    }
+
+                    startVertexIdx = nextVertexIndex;
+                  }
+                  else
+                  {
                     break;
                   }
-
-                  startVertexIdx = nextVertexIndex;
                 }
-                else {
+
+                if (stop)
                   break;
-                }
               }
 
-              if (stop)
-                break;
-            }
-
-            // calculate endVertexIdx
-            if (startVertexIdx == lastVertexIdx)
-            {
-              endVertexIdx = firstVertexIdx;
-              stop = true;
-            }
-            else
-              endVertexIdx = startVertexIdx + 1;
-
-            // get merged indices
-            int startMergedVertexIdx = ToMergedVertexIndex(mesh.faces[startVertexIdx]);
-            int endMergedVertexIdx = ToMergedVertexIndex(mesh.faces[endVertexIdx]);
-            polygon.pointIds.Add(startMergedVertexIdx);
-
-            // process the edge
-            var edge = new Tuple<int, int>(startMergedVertexIdx, endMergedVertexIdx);
-            if (TryGetNeigPolygonListByEdge(ref edge, out List<int> neigbourPolygonIdxs))
-            {
-              if (!neigbourPolygonIdxs.Contains(meshModel.polygons.Count))
+              // calculate endVertexIdx
+              if (startVertexIdx == lastVertexIdx)
               {
-                neigbourPolygonIdxs.Add(meshModel.polygons.Count);
-
-                if (neigbourPolygonIdxs.Count > 2)
-                  meshModel.edges[edge] = EdgeStatus.HiddenEdge;
-                else
-                  neigPolygonsByEdgesToCheckIfSmooth.Add(new Tuple<Tuple<int, int>, Polygon>(edge, meshModel.polygons[neigbourPolygonIdxs[0]]));
+                endVertexIdx = firstVertexIdx;
+                stop = true;
               }
-            }
-            else
-            {
-              neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
-              meshModel.edges.Add(edge, EdgeStatus.VisibleEdge);
-            }
+              else
+                endVertexIdx = startVertexIdx + 1;
 
-            startVertexIdx = endVertexIdx;
-          }
+              // get merged indices
+              int startMergedVertexIdx = ToMergedVertexIndex(mesh.faces[startVertexIdx]);
+              int endMergedVertexIdx = ToMergedVertexIndex(mesh.faces[endVertexIdx]);
+              polygon.pointIds.Add(startMergedVertexIdx);
 
-          foreach (var neigPolygonByEdge in neigPolygonsByEdgesToCheckIfSmooth)
-          {
-            if (IsHiddenEdge(neigPolygonByEdge.Item1, neigPolygonByEdge.Item2, polygon, meshModel))
-            {
-              meshModel.edges[neigPolygonByEdge.Item1] = EdgeStatus.HiddenEdge;
-            }
-          }
-
-          if (material != null)
-          {
-            polygon.material = meshModel.materials.Count - 1;
-          }
-
-          // check result polygon
-          if (polygon.pointIds.Count >= 3)
-          {
-            if (meshModel.IsCoplanar(polygon))
-            {
-              meshModel.polygons.Add(polygon);
-            }
-            else
-            {
-              var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh, includeIndicators: false);
-              for (int triangleStartIdx = 0; triangleStartIdx < triangleFaces.Count; triangleStartIdx += 3)
+              // process the edge
+              var edge = new Tuple<int, int>(startMergedVertexIdx, endMergedVertexIdx);
+              if (TryGetNeigPolygonListByEdge(ref edge, out List<int> neigbourPolygonIdxs))
               {
-                var triangle = new Polygon { material = polygon.material };
-                for (int triangleVertexIdx = 0; triangleVertexIdx < 3; triangleVertexIdx++)
+                if (!neigbourPolygonIdxs.Contains(meshModel.polygons.Count))
                 {
-                  int edgeStartIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + triangleVertexIdx]);
-                  int edgeEndIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + ((triangleVertexIdx + 1) % 3)]);
-                  var edge = new Tuple<int, int>(edgeStartIdx, edgeEndIdx);
+                  neigbourPolygonIdxs.Add(meshModel.polygons.Count);
 
-                  if (!TryGetNeigPolygonListByEdge(ref edge, out List<int> neigPolygonIdxs))
-                  {
-                    neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
-                    meshModel.edges.Add(edge, EdgeStatus.HiddenEdge);
-                  }
-                  triangle.pointIds.Add(edgeStartIdx);
+                  if (neigbourPolygonIdxs.Count > 2)
+                    meshModel.edges[edge] = EdgeStatus.HiddenEdge;
+                  else
+                    neigPolygonsByEdgesToCheckIfSmooth.Add(new Tuple<Tuple<int, int>, Polygon>(edge, meshModel.polygons[neigbourPolygonIdxs[0]]));
                 }
-                meshModel.polygons.Add(triangle);
+              }
+              else
+              {
+                neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
+                meshModel.edges.Add(edge, EdgeStatus.VisibleEdge);
+              }
+
+              startVertexIdx = endVertexIdx;
+            }
+
+            foreach (var neigPolygonByEdge in neigPolygonsByEdgesToCheckIfSmooth)
+            {
+              if (IsHiddenEdge(neigPolygonByEdge.Item1, neigPolygonByEdge.Item2, polygon, meshModel))
+              {
+                meshModel.edges[neigPolygonByEdge.Item1] = EdgeStatus.HiddenEdge;
               }
             }
+
+            if (material != null)
+            {
+              polygon.material = meshModel.materials.Count - 1;
+            }
+
+            // check result polygon
+            if (polygon.pointIds.Count >= 3)
+            {
+              if (meshModel.IsCoplanar(polygon))
+              {
+                meshModel.polygons.Add(polygon);
+              }
+              else
+              {
+                var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh, includeIndicators: false);
+                for (int triangleStartIdx = 0; triangleStartIdx < triangleFaces.Count; triangleStartIdx += 3)
+                {
+                  var triangle = new Polygon { material = polygon.material };
+                  for (int triangleVertexIdx = 0; triangleVertexIdx < 3; triangleVertexIdx++)
+                  {
+                    int edgeStartIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + triangleVertexIdx]);
+                    int edgeEndIdx = ToMergedVertexIndex(triangleFaces[triangleStartIdx + ((triangleVertexIdx + 1) % 3)]);
+                    var edge = new Tuple<int, int>(edgeStartIdx, edgeEndIdx);
+
+                    if (!TryGetNeigPolygonListByEdge(ref edge, out List<int> neigPolygonIdxs))
+                    {
+                      neigbourPolygonsByEdge.Add(edge, new List<int> { meshModel.polygons.Count });
+                      meshModel.edges.Add(edge, EdgeStatus.HiddenEdge);
+                    }
+                    triangle.pointIds.Add(edgeStartIdx);
+                  }
+                  meshModel.polygons.Add(triangle);
+                }
+              }
+            }
+
+            i += n;
           }
+          vertexOffset += mesh.VerticesCount;
 
-          i += n;
+          meshModel.ids.Add(mesh.id);
         }
-        vertexOffset += mesh.VerticesCount;
-
-        meshModel.ids.Add(mesh.id);
-      }
 
       return meshModel;
+      }
     }
 
     public static MeshModel MeshToNative2(IEnumerable<Mesh> meshes)
