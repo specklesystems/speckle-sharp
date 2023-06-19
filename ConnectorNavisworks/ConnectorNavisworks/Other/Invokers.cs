@@ -121,7 +121,8 @@ public sealed class ProgressInvoker : Invoker
   /// </summary>
   public void Cancel()
   {
-    Invoke(new Action(_progressBar.Cancel), null);
+    if (!_progressBar.IsDisposed)
+      Invoke(new Action(_progressBar.Cancel), null);
   }
 }
 
