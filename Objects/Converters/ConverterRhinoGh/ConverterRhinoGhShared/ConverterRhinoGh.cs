@@ -10,6 +10,7 @@ using System.Reflection;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.BuiltElements.Revit.Curve;
+using Objects.Converter.RhinoGh.Utils;
 using Objects.Geometry;
 using Objects.Organization;
 using Objects.Other;
@@ -40,6 +41,11 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     public static string RhinoAppName = HostApplications.Rhino.GetVersion(HostAppVersion.v7);
 #endif
 
+  // const?
+  public static string RhinoPropName = "RhinoProps";
+
+  public string ModelUnits { get; private set; }
+
   public enum MeshSettings
   {
     Default,
@@ -50,8 +56,23 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
   public bool PreprocessGeometry;
 
-  public ConverterRhinoGh()
+
+  // would put elsewhere
+  private readonly IRhinoDictionaryParser rhinoDictionaryParser;
+  private readonly IRhinoDocInfo rhinoDocInfo;
+  private readonly IRhinoObjectsSchema rhinoObjectsSchema;
+  private readonly IRhinoUnits rhinoUnits;
+  private readonly IRhinoUserInfo rhinoUserInfo;
+
+  internal ConverterRhinoGh(
+            IRhinoDictionaryParser rhinoDictionaryParser,
+            IRhinoDocInfo rhinoDocInfo,
+            IRhinoObjectsSchema rhinoObjectsSchema,
+            IRhinoUnits rhinoUnits,
+            IRhinoUserInfo rhinoUserInfo)
   {
+    ModelUnits = rhinoUnits.UnitToSpeckle(Doc.ModelUnitSystem);
+
     var ver = Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
   }
 
@@ -153,6 +174,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       switch (@object)
       {
         case RhinoObject ro:
+
           var roId = ro.Attributes.GetUserString(ApplicationIdKey) ?? ro.Id.ToString();
           reportObj = new ApplicationObject(ro.Id.ToString(), ro.ObjectType.ToString()) { applicationId = roId };
           material = RenderMaterialToSpeckle(ro.GetMaterial(true));
@@ -177,6 +199,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
           if (!(@object is InstanceObject))
             @object = ro.Geometry; // block instance check
+
           break;
 
         case Layer l:
@@ -323,7 +346,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
       if (@base is null)
         return @base;
 
-      GetUserInfo(@base, out List<string> attributeNotes, userDictionary, userStrings, objName);
+      rhinoUserInfo.GetUserInfo(@base, out List<string> attributeNotes, userDictionary, userStrings, objName);
+
       notes.AddRange(attributeNotes);
       if (material != null)
         @base["renderMaterial"] = material;
@@ -494,7 +518,8 @@ public partial class ConverterRhinoGh : ISpeckleConverter
     PreprocessGeometry = true;
     // get schema if it exists
     RhinoObject obj = @object as RhinoObject;
-    string schema = GetSchema(obj, out string[] args);
+
+    string schema = rhinoObjectsSchema.GetSchema(obj, SpeckleSchemaKey, out string[] args);
 
     Base schemaBase = null;
     var notes = new List<string>();
@@ -648,7 +673,7 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   {
     // get schema if it exists
     RhinoObject obj = @object as RhinoObject;
-    string schema = GetSchema(obj, out string[] args);
+    string schema = rhinoObjectsSchema.GetSchema(obj, SpeckleSchemaKey, out string[] args);
 
     switch (obj.Geometry)
     {

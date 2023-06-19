@@ -132,7 +132,7 @@ public partial class ConverterRhinoGh
 
   public RenderMaterial RenderMaterialToNative(Other.RenderMaterial speckleMaterial)
   {
-    var commitInfo = GetCommitInfo();
+    var commitInfo = rhinoDocInfo.GetCommitInfo(Doc);
     var speckleName =
       ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {speckleMaterial.name}" : $"{speckleMaterial.name}";
 
@@ -322,7 +322,7 @@ public partial class ConverterRhinoGh
     notes = new List<string>();
 
     // get the definition name
-    var commitInfo = GetCommitInfo();
+    var commitInfo = rhinoDocInfo.GetCommitInfo(Doc);
     string definitionName = definition is BlockDefinition blockDef
       ? blockDef.name
       : definition is RevitSymbolElementType revitDef
@@ -424,7 +424,10 @@ public partial class ConverterRhinoGh
         ReceiveMode == ReceiveMode.Create ? $"{commitInfo}{RH.Layer.PathSeparator}{geoLayer}" : $"{geoLayer}";
       int index = 1;
       if (layerName != null)
-        GetLayer(Doc, layerName, out index, true);
+      {
+        rhinoDocInfo.GetLayer(Doc, layerName, out index, true);
+      }
+
       attribute.LayerIndex = index;
 
       // display
@@ -443,7 +446,7 @@ public partial class ConverterRhinoGh
       if (renderMaterial != null)
       {
         var material = RenderMaterialToNative(renderMaterial);
-        attribute.MaterialIndex = GetMaterialIndex(material?.Name);
+        attribute.MaterialIndex = rhinoDocInfo.GetMaterialIndex(Doc, material?.Name);
         attribute.MaterialSource = RH.ObjectMaterialSource.MaterialFromObject;
       }
 
@@ -653,7 +656,7 @@ public partial class ConverterRhinoGh
       _text.RichText = text.richText;
     else
       _text.PlainText = text.value;
-    _text.TextHeight = ScaleToNative(text.height, text.units);
+    _text.TextHeight = rhinoUnits.ScaleToNative(text.height, text.units, ModelUnits);
     _text.TextRotationRadians = text.rotation;
 
     // rhino props
@@ -665,7 +668,7 @@ public partial class ConverterRhinoGh
       {
         var value = sourceAppProps[scaleProp] as double?;
         if (value.HasValue)
-          sourceAppProps[scaleProp] = ScaleToNative(value.Value, text.units);
+          sourceAppProps[scaleProp] = rhinoUnits.ScaleToNative(value.Value, text.units, ModelUnits);
       }
       Utilities.SetApplicationProps(_text, typeof(TextEntity), sourceAppProps);
       RH.DimensionStyle dimensionStyle = Doc.DimStyles.FindName(

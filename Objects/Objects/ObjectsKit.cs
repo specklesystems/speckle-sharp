@@ -88,6 +88,10 @@ public class ObjectsKit : ISpeckleKit
 
     var assembly = Assembly.LoadFrom(path);
 
+    // IMH: so... instantiation as it is loaded from a given assembly would need some thought
+    // at worst the container could be passed in and elements resolved within the constructor
+    // might be possible to have the types in the assembly added to DI and use a named factory to instantiate this converter
+    // If only one ISpeckleConverter is created it could be resolved here if added to DI, would need some investigation
     var converterInstance = assembly
       .GetTypes()
       .Where(type => typeof(ISpeckleConverter).IsAssignableFrom(type))

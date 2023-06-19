@@ -16,7 +16,23 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Geometry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Other.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Structural.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Utils.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\IRhinoDictionaryParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\IRhinoObjectSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\IRhinoUserInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RhinoObjectSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RhinoUserInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\IRhinoUnits.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RhinoDictionaryParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RhinoUnits.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\RhinoDocInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Utils\IRhinoDocInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RhinoMaterialConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRhinoMaterialConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RhinoObjectConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)IRhinoObjectConverter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)KnotListEncoder.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)Directory.Build.props" />
   </ItemGroup>
 </Project>
