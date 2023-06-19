@@ -679,8 +679,10 @@ namespace Objects.Converter.Revit
 
       // rotation about the z axis (signed)
       var rotation = Math.Atan2(
-        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
-        new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)),
+        Vector.DotProduct(
+          Vector.CrossProduct(desiredBasisX, currentBasisX),
+          new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)
+        ),
         Vector.DotProduct(desiredBasisX, currentBasisX)
       );
 
@@ -777,7 +779,12 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var meshes = GetElementDisplayValue(instance, new Options() { DetailLevel = ViewDetailLevel.Fine }, true, instance.HasModifiedGeometry());
+        var meshes = GetElementDisplayValue(
+          instance,
+          new Options() { DetailLevel = ViewDetailLevel.Fine },
+          true,
+          instance.HasModifiedGeometry()
+        );
         symbol.displayValue = meshes;
       }
       catch (Exception e)

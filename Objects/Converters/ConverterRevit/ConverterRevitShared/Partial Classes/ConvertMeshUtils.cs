@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +9,11 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public Options SolidDisplayValueOptions = new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true };
+    public Options SolidDisplayValueOptions = new Options()
+    {
+      DetailLevel = ViewDetailLevel.Fine,
+      ComputeReferences = true
+    };
 
     public Options ViewSpecificOptions { get; set; }
 
@@ -23,7 +26,12 @@ namespace Objects.Converter.Revit
     /// <remarks>
     /// See https://www.revitapidocs.com/2023/e0f15010-0e19-6216-e2f0-ab7978145daa.htm for a full Geometry Object inheritance
     /// </remarks>
-    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool isConvertedAsInstance = false, bool hasModifiedInstanceGeometry = false)
+    public List<Mesh> GetElementDisplayValue(
+      DB.Element element,
+      Options options = null,
+      bool isConvertedAsInstance = false,
+      bool hasModifiedInstanceGeometry = false
+    )
     {
       var displayMeshes = new List<Mesh>();
 
@@ -32,7 +40,12 @@ namespace Objects.Converter.Revit
       {
         foreach (var id in g.GetMemberIds())
         {
-          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance, hasModifiedInstanceGeometry);
+          var groupMeshes = GetElementDisplayValue(
+            element.Document.GetElement(id),
+            options,
+            isConvertedAsInstance,
+            hasModifiedInstanceGeometry
+          );
           displayMeshes.AddRange(groupMeshes);
         }
         return displayMeshes;
@@ -70,8 +83,7 @@ namespace Objects.Converter.Revit
                   {
                     solid = SolidUtils.CreateTransformed(solid, inverseTransform);
                   }
-                  catch (Exception e)
-                  { }
+                  catch (Exception e) { }
                 }
                 solids.Add(solid);
               }
@@ -83,16 +95,17 @@ namespace Objects.Converter.Revit
                 {
                   mesh = mesh.get_Transformed(inverseTransform);
                 }
-                catch (Exception e)
-                { }
+                catch (Exception e) { }
               }
               meshes.Add(mesh);
               break;
             case GeometryInstance instance:
-              var instanceGeo = isConvertedAsInstance && !hasModifiedInstanceGeometry ? 
-                instance.GetSymbolGeometry() : 
-                instance.GetInstanceGeometry();
-              inverseTransform = isConvertedAsInstance && hasModifiedInstanceGeometry ? instance.Transform.Inverse : null;
+              var instanceGeo =
+                isConvertedAsInstance && !hasModifiedInstanceGeometry
+                  ? instance.GetSymbolGeometry()
+                  : instance.GetInstanceGeometry();
+              inverseTransform =
+                isConvertedAsInstance && hasModifiedInstanceGeometry ? instance.Transform.Inverse : null;
               SortGeometry(instanceGeo, inverseTransform);
               break;
             case GeometryElement element:
@@ -115,7 +128,11 @@ namespace Objects.Converter.Revit
     /// <param name="meshes"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    private List<Mesh> ConvertMeshesByRenderMaterial(List<DB.Mesh> meshes, Document d, bool doNotTransformWithReferencePoint = false)
+    private List<Mesh> ConvertMeshesByRenderMaterial(
+      List<DB.Mesh> meshes,
+      Document d,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       MeshBuildHelper buildHelper = new MeshBuildHelper();
 
@@ -135,7 +152,11 @@ namespace Objects.Converter.Revit
     /// <param name="solids"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    private List<Mesh> ConvertSolidsByRenderMaterial(IEnumerable<Solid> solids, Document d, bool doNotTransformWithReferencePoint = false)
+    private List<Mesh> ConvertSolidsByRenderMaterial(
+      IEnumerable<Solid> solids,
+      Document d,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
 
@@ -161,7 +182,8 @@ namespace Objects.Converter.Revit
         int numberOfFaces = 0;
         foreach (DB.Mesh mesh in meshData.Value)
         {
-          if (mesh == null) continue;
+          if (mesh == null)
+            continue;
           numberOfVertices += mesh.Vertices.Count * 3;
           numberOfFaces += mesh.NumTriangles * 4;
         }
@@ -170,7 +192,8 @@ namespace Objects.Converter.Revit
         meshData.Key.vertices.Capacity = numberOfVertices;
         foreach (DB.Mesh mesh in meshData.Value)
         {
-          if (mesh == null) continue;
+          if (mesh == null)
+            continue;
           ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d, doNotTransformWithReferencePoint);
         }
       }
@@ -184,7 +207,13 @@ namespace Objects.Converter.Revit
     /// <param name="mesh">The revit mesh to convert</param>
     /// <param name="faces">The faces list to add to</param>
     /// <param name="vertices">The vertices list to add to</param>
-    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices, Document doc, bool doNotTransformWithReferencePoint = false)
+    private void ConvertMeshData(
+      DB.Mesh mesh,
+      List<int> faces,
+      List<double> vertices,
+      Document doc,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       int faceIndexOffset = vertices.Count / 3;
 
