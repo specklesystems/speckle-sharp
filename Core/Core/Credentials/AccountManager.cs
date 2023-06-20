@@ -107,7 +107,7 @@ public static class AccountManager
       var request = new GraphQLRequest
       {
         Query =
-          @"query { user { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
+          @"query { activeUser { id name email company avatar streams { totalCount } commits { totalCount } } serverInfo { name company adminContact description version} }"
       };
 
       var res = await client.SendQueryAsync<UserServerInfoResponse>(request).ConfigureAwait(false);
