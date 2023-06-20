@@ -89,12 +89,12 @@ public class ServerAccountComponent : GH_SpeckleTaskCapableComponent<Account>
       }
 
       var task = Task.Run(
-        () =>
+        async () =>
         {
           var acc = new Account();
           acc.token = token;
-          acc.serverInfo = AccountManager.GetServerInfo($"{url.Scheme}://{url.Host}").Result;
-          acc.userInfo = acc.Validate().Result;
+          acc.serverInfo = await AccountManager.GetServerInfo($"{url.Scheme}://{url.Host}").ConfigureAwait(false);
+          acc.userInfo = await acc.Validate().ConfigureAwait(false);
           return acc;
         },
         CancelToken
