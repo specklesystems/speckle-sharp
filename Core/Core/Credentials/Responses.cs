@@ -1,3 +1,4 @@
+using System;
 using Speckle.Core.Api;
 
 namespace Speckle.Core.Credentials;
@@ -8,9 +9,15 @@ public class UserServerInfoResponse
   public ServerInfo serverInfo { get; set; }
 }
 
+[Obsolete("Use activeUser query and ActiveUserResponse instead", true)]
 public class UserInfoResponse
 {
   public UserInfo user { get; set; }
+}
+
+public class ActiveUserResponse
+{
+  public UserInfo activeUser { get; set; }
 }
 
 public class UserInfo
