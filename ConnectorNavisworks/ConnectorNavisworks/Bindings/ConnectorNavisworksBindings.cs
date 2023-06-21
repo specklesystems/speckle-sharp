@@ -25,11 +25,13 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   private static Document _doc;
   internal static Control Control;
   private static object _cachedCommit;
-  private static object _cachedConversion;
+
+  internal static List<Base> CachedConvertedElements;
   private static StreamState _cachedState;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
-  private bool isRetrying;
+  // private bool _isRetrying;
+  internal static bool PersistCache;
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
@@ -48,7 +50,10 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
   public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
 
-  public static bool CachedConversion => _cachedConversion != null && _cachedCommit != null;
+
+  public static bool CachedConversion =>
+    CachedConvertedElements != null && CachedConvertedElements.Any() && _cachedCommit != null;
+
 
   public override string GetActiveViewName()
   {
@@ -115,18 +120,20 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     if (_doc == null)
       return;
 
-    if (_cachedConversion == null || _cachedCommit == null)
+
+    if (CachedConvertedElements == null || _cachedCommit == null)
       throw new SpeckleException("Cant retry last conversion: no cached conversion or commit found.");
 
     if (_cachedCommit is Collection commitObject)
     {
-      isRetrying = true;
+      // _isRetrying = true;
 
       var applicationProgress = Application.BeginProgress("Retrying that send to Speckle.");
       _progressBar = new ProgressInvoker(applicationProgress);
       _progressViewModel = new ProgressViewModel();
 
-      commitObject.elements = _cachedConversion as List<Base>;
+      commitObject.elements = CachedConvertedElements;
+
       var state = _cachedState;
 
       var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
@@ -158,7 +165,8 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
     // nullify the cached conversion and commit on success.
     _cachedCommit = null;
-    _cachedConversion = null;
-    isRetrying = false;
+
+    CachedConvertedElements = null;
+    // _isRetrying = false;
   }
 }

@@ -35,6 +35,9 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\empty32.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="$(MSBuildThisFileDirectory)Resources\forum16.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

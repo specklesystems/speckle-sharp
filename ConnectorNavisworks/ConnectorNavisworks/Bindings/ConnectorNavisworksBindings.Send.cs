@@ -64,42 +64,53 @@ public partial class ConnectorBindingsNavisworks
   public override async Task<string> SendStream(StreamState state, ProgressViewModel progress)
   {
     _progressViewModel = progress;
-    Collection commitObject = CommitObject;
 
-    // Reset the cached conversion and commit objects
-    _cachedConversion = null;
-    _cachedState = state;
-    _cachedCommit = commitObject;
-
-    // Perform the validation checks - will throw if something is wrong
-    ValidateBeforeSending(state);
-
-    Cursor.Current = Cursors.WaitCursor;
+    Collection commitObject;
     var applicationProgress = Application.BeginProgress("Send to Speckle.");
     _progressBar = new ProgressInvoker(applicationProgress);
 
-    DisableAutoSave();
-    SetupProgressViewModel();
-    SetupConverter(state);
-    _navisworksConverter.SetContextDocument(_doc);
+    if (PersistCache == false || CachedConversion == false)
+    {
+      commitObject = CommitObject;
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      // Reset the cached conversion and commit objects
+      CachedConvertedElements = null;
+      _cachedState = state;
+      _cachedCommit = commitObject;
 
-    var modelItemsToConvert = PrepareModelItemsToConvert(state);
+      // Perform the validation checks - will throw if something is wrong
+      ValidateBeforeSending(state);
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      Cursor.Current = Cursors.WaitCursor;
 
-    var conversions = PrepareElementsForConversion(modelItemsToConvert);
+      DisableAutoSave();
+      SetupProgressViewModel();
+      SetupConverter(state);
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-    _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
+      var modelItemsToConvert = PrepareModelItemsToConvert(state);
 
-    _cachedConversion = commitObject.elements;
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-    RestoreAutoSave();
 
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      var conversions = PrepareElementsForConversion(modelItemsToConvert);
+
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+      _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
+
+      CachedConvertedElements = commitObject.elements;
+
+      RestoreAutoSave();
+
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+    }
+    else
+    {
+      commitObject = _cachedCommit as Collection;
+      if (commitObject != null) commitObject.elements = CachedConvertedElements;
+    }
 
     var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
 
@@ -110,11 +121,24 @@ public partial class ConnectorBindingsNavisworks
 
     var commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
 
-    // On success, cancel the conversion and commit object cache
-    _cachedCommit = null;
-    _cachedConversion = null;
+    if (PersistCache == false)
+    {
+      // On success, cancel the conversion and commit object cache
+      _cachedCommit = null;
+      CachedConvertedElements = null;
+    }
+
 
     Cursor.Current = Cursors.Default;
+
+    try
+    {
+      Application.EndProgress();
+    }
+    catch (InvalidOperationException)
+    {
+      // ignored
+    }
 
     return commitId;
   }
@@ -146,8 +170,16 @@ public partial class ConnectorBindingsNavisworks
 
     _progressViewModel.CancellationToken.Register(() =>
     {
-      _progressBar.Cancel();
-      Application.EndProgress();
+      try
+      {
+        _progressBar.Cancel();
+        Application.EndProgress();
+      }
+      catch (InvalidOperationException)
+      {
+        // ignored
+      }
+
       RestoreAutoSave();
       Cursor.Current = Cursors.Default;
     });
@@ -166,7 +198,7 @@ public partial class ConnectorBindingsNavisworks
     var conversions = new Dictionary<Element, Tuple<Constants.ConversionState, Base>>();
 
     var totalObjects = modelItemsToConvert.Count;
-    var objectIncrement = 1 / (double)totalObjects;
+    var objectIncrement = 1 / Math.Max((double)totalObjects, 1);
     var objectInterval = Math.Max(totalObjects / 100, 1);
 
     for (int index = 0; index < modelItemsToConvert.Count; index++)
@@ -349,15 +381,16 @@ public partial class ConnectorBindingsNavisworks
       sourceApplication = HostAppNameVersion
     };
 
-    string commitId;
 
-    // This block enables forcing a failed send to test the caching feature
-    // #if DEBUG
-    //     if (!isRetrying)
-    //       throw new SpeckleException("Debug mode: commit not created.");
-    // #endif
-    // Use the helper function to create the commit and retrieve the commit ID
-    commitId = await ConnectorHelpers
+    string commitId =
+      // This block enables forcing a failed send to test the caching feature
+      // #if DEBUG
+      //     if (!isRetrying)
+      //       throw new SpeckleException("Debug mode: commit not created.");
+      // #endif
+      // Use the helper function to create the commit and retrieve the commit ID
+      await ConnectorHelpers
+
       .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
       .ConfigureAwait(false);
 
@@ -498,7 +531,7 @@ public partial class ConnectorBindingsNavisworks
       .ToDictionary(c => c.Key, c => c.Value);
 
     int convertedCount = 0;
-    var conversionIncrement = 1.0 / conversions.Count;
+    var conversionIncrement = conversions.Count != 0 ? 1.0 / conversions.Count : 0.0;
     var conversionInterval = Math.Max(conversions.Count / 100, 1);
 
     for (var i = 0; i < conversions.Count; i++)

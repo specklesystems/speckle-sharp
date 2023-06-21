@@ -47,7 +47,7 @@ public partial class ConnectorBindingsNavisworks
 
     // Nullify any cached commit and conversions
     _cachedCommit = null;
-    _cachedConversion = null;
+    CachedConvertedElements = null;
     _cachedState = null;
   }
 }

@@ -26,7 +26,6 @@ namespace Speckle.ConnectorNavisworks.Entry;
   ),
   Command(
     Community.Command,
-    LoadForCanExecute = true,
     Icon = "Resources/forum16.png",
     LargeIcon = "Resources/forum32.png",
     Shortcut = "Ctrl+Shift+C",
@@ -41,7 +40,24 @@ namespace Speckle.ConnectorNavisworks.Entry;
     Shortcut = "Ctrl+Shift+R",
     ToolTip = "Retries sending the last complete conversion to Speckle.",
     DisplayName = "Retry\rSend"
-  )
+  ),
+  Command(
+    TurnPersistCacheOn.Command,
+    LoadForCanExecute = true,
+    Icon = "Resources/empty32.ico",
+    LargeIcon = "Resources/empty32.ico",
+    ToolTip = "Cache persistence is off.",
+    DisplayName = "Cache"
+  ),
+  Command(
+    TurnPersistCacheOff.Command,
+    LoadForCanExecute = true,
+    Icon = "Resources/logo16.ico",
+    LargeIcon = "Resources/logo32.ico",
+    ToolTip = "Cache persistence is on.",
+    ExtendedToolTip = "Cache persistence is on. If you send a model, the converted objects will be held in memory and will be sent to the Stream and Branch you specify. No setting changes will be applied.",
+    DisplayName = "Cache"
+  ),
 ]
 internal sealed class RibbonHandler : CommandHandlerPlugin
 {
@@ -54,9 +70,34 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// <returns>The state of the command.</returns>
   public override CommandState CanExecuteCommand(string commandId)
   {
-    return commandId == RetryLastConversionSend.Command
-      ? new CommandState(ConnectorBindingsNavisworks.CachedConversion)
-      : new CommandState(true);
+
+    return commandId switch
+    {
+      TurnPersistCacheOn.Command
+        => new CommandState
+        {
+#if DEBUG
+          IsVisible = !ConnectorBindingsNavisworks.PersistCache,
+#else
+          IsVisible = false,
+#endif
+          IsEnabled = !ConnectorBindingsNavisworks.PersistCache
+        },
+      TurnPersistCacheOff.Command
+        => new CommandState
+        {
+#if DEBUG
+          IsVisible = ConnectorBindingsNavisworks.PersistCache,
+#else
+          IsVisible = false,
+#endif
+          IsEnabled = ConnectorBindingsNavisworks.PersistCache
+        },
+      _
+        => commandId == RetryLastConversionSend.Command
+          ? new CommandState(ConnectorBindingsNavisworks.CachedConversion)
+          : new CommandState(true)
+    };
   }
 
   /// <summary>
@@ -173,13 +214,6 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 
     switch (commandId)
     {
-      //case OneClickSend.Command:
-      //{
-      //    OneClickSendCommand.SendCommand();
-      //    break;
-      //}
-
-
       case LaunchSpeckleConnector.Command:
       {
         LoadPlugin(LaunchSpeckleConnector.Plugin, command: commandId);
@@ -215,14 +249,17 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 
       case Community.Command:
       {
-        try
-        {
-          Process.Start("https://speckle.community/tag/navisworks");
-        }
-        catch
-        {
-          // ignored
-        }
+        Process.Start("https://speckle.community/tag/navisworks");
+        break;
+      }
+
+      case TurnPersistCacheOff.Command
+      or TurnPersistCacheOn.Command:
+      {
+        ConnectorBindingsNavisworks.PersistCache = !ConnectorBindingsNavisworks.PersistCache;
+
+        if (ConnectorBindingsNavisworks.PersistCache == false)
+          ConnectorBindingsNavisworks.CachedConvertedElements = null;
 
         break;
       }
