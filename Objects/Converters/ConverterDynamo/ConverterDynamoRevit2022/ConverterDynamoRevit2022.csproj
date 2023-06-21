@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\..\ConnectorRevit\RevitSharedResources\RevitSharedResources.csproj" />
+        <ProjectReference Include="..\..\..\..\ConnectorRevit\RevitSharedResources2022\RevitSharedResources2022.csproj" />
         <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
         <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
         <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />
