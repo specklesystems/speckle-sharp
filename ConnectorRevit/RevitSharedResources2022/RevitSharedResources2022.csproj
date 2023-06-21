@@ -4,6 +4,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <DefineConstants>$(DefineConstants);REVIT2022</DefineConstants>
     <RootNamespace>RevitSharedResources</RootNamespace>
+    <IsPackable>true</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
