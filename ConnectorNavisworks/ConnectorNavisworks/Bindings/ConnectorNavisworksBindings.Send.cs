@@ -61,67 +61,77 @@ public partial class ConnectorBindingsNavisworks
   {
     _progressViewModel = progress;
 
-    Collection commitObject;
+    string commitId;
     var applicationProgress = Application.BeginProgress("Send to Speckle.");
     _progressBar = new ProgressInvoker(applicationProgress);
 
-    if (PersistCache == false || CachedConversion == false)
+    SetupProgressViewModel();
+    SetupConverter(state);
+    InitializeManagerOptionsForSend(state);
+
+    try
     {
-      commitObject = CommitObject;
+      Collection commitObject;
+      if (PersistCache == false || CachedConversion == false)
+      {
+        commitObject = CommitObject;
 
-      // Reset the cached conversion and commit objects
-      CachedConvertedElements = null;
-      _cachedState = state;
-      _cachedCommit = commitObject;
+        // Reset the cached conversion and commit objects
+        CachedConvertedElements = null;
+        _cachedState = state;
+        _cachedCommit = commitObject;
 
-      // Perform the validation checks - will throw if something is wrong
-      ValidateBeforeSending(state);
+        // Perform the validation checks - will throw if something is wrong
+        ValidateBeforeSending(state);
 
-      Cursor.Current = Cursors.WaitCursor;
+        Cursor.Current = Cursors.WaitCursor;
 
-      _settingsHandler.DisableAutoSave();
-      SetupProgressViewModel();
-      SetupConverter(state);
+        _settingsHandler.DisableAutoSave();
+
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+        var modelItemsToConvert = PrepareModelItemsToConvert(state);
+
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+        var conversions = PrepareElementsForConversion(modelItemsToConvert);
+
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
+        _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
+
+        CachedConvertedElements = commitObject.elements;
+
+        _settingsHandler.RestoreAutoSave();
+
+        _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      }
+      else
+      {
+        commitObject = _cachedCommit as Collection;
+        if (commitObject != null)
+          commitObject.elements = CachedConvertedElements;
+      }
+
+      var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
+
+      if (_progressViewModel.Report.OperationErrors.Any())
+        ConnectorHelpers.DefaultSendErrorHandler("", _progressViewModel.Report.OperationErrors.Last());
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-      var modelItemsToConvert = PrepareModelItemsToConvert(state);
+      commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
 
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-      var conversions = PrepareElementsForConversion(modelItemsToConvert);
-
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-      _convertedCount = ElementAndViewsConversion(state, conversions, commitObject);
-
-      CachedConvertedElements = commitObject.elements;
-
-      _settingsHandler.RestoreAutoSave();
-
-      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+      if (PersistCache == false)
+      {
+        // On success, cancel the conversion and commit object cache
+        _cachedCommit = null;
+        CachedConvertedElements = null;
+      }
     }
-    else
+    finally
     {
-      commitObject = _cachedCommit as Collection;
-      if (commitObject != null)
-        commitObject.elements = CachedConvertedElements;
-    }
-
-    var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
-
-    if (_progressViewModel.Report.OperationErrors.Any())
-      ConnectorHelpers.DefaultSendErrorHandler("", _progressViewModel.Report.OperationErrors.Last());
-
-    _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
-
-    var commitId = await CreateCommit(state, objectId).ConfigureAwait(false);
-
-    if (PersistCache == false)
-    {
-      // On success, cancel the conversion and commit object cache
-      _cachedCommit = null;
-      CachedConvertedElements = null;
+      ResetOptionsManager();
     }
 
     Cursor.Current = Cursors.Default;
@@ -136,6 +146,21 @@ public partial class ConnectorBindingsNavisworks
     }
 
     return commitId;
+  }
+
+  /// <summary>
+  ///
+  /// </summary>
+  /// <param name="state"></param>
+  /// <exception cref="NotImplementedException"></exception>
+  private void InitializeManagerOptionsForSend(StreamState state)
+  {
+    throw new NotImplementedException();
+  }
+
+  private void ResetOptionsManager()
+  {
+    throw new NotImplementedException();
   }
 
   /// <summary>
