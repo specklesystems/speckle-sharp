@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
-using Autodesk.Navisworks.Api.Interop;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
@@ -17,8 +16,6 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
 using static Speckle.ConnectorNavisworks.Other.Utilities;
-using static Autodesk.Navisworks.Api.Interop.LcOpRegistry;
-using static Autodesk.Navisworks.Api.Interop.LcUOption;
 using Application = Autodesk.Navisworks.Api.Application;
 using Cursor = System.Windows.Forms.Cursor;
 
@@ -26,7 +23,6 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 
 public partial class ConnectorBindingsNavisworks
 {
-  private bool _autosaveSetting;
   private ConversionInvoker _conversionInvoker;
   private ConcurrentDictionary<string, int> _conversionProgressDict;
   private int _convertedCount;
@@ -83,7 +79,7 @@ public partial class ConnectorBindingsNavisworks
 
       Cursor.Current = Cursors.WaitCursor;
 
-      DisableAutoSave();
+      _settingsHandler.DisableAutoSave();
       SetupProgressViewModel();
       SetupConverter(state);
 
@@ -93,7 +89,6 @@ public partial class ConnectorBindingsNavisworks
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
-
       var conversions = PrepareElementsForConversion(modelItemsToConvert);
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
@@ -102,14 +97,15 @@ public partial class ConnectorBindingsNavisworks
 
       CachedConvertedElements = commitObject.elements;
 
-      RestoreAutoSave();
+      _settingsHandler.RestoreAutoSave();
 
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
     }
     else
     {
       commitObject = _cachedCommit as Collection;
-      if (commitObject != null) commitObject.elements = CachedConvertedElements;
+      if (commitObject != null)
+        commitObject.elements = CachedConvertedElements;
     }
 
     var objectId = await SendConvertedObjectsToSpeckle(state, commitObject).ConfigureAwait(false);
@@ -127,7 +123,6 @@ public partial class ConnectorBindingsNavisworks
       _cachedCommit = null;
       CachedConvertedElements = null;
     }
-
 
     Cursor.Current = Cursors.Default;
 
@@ -180,7 +175,7 @@ public partial class ConnectorBindingsNavisworks
         // ignored
       }
 
-      RestoreAutoSave();
+      _settingsHandler.RestoreAutoSave();
       Cursor.Current = Cursors.Default;
     });
   }
@@ -272,7 +267,7 @@ public partial class ConnectorBindingsNavisworks
 
     if (convertedCount == 0)
     {
-      RestoreAutoSave();
+      _settingsHandler.RestoreAutoSave();
       throw new SpeckleException("Zero objects converted successfully. Send stopped.");
     }
 
@@ -282,7 +277,7 @@ public partial class ConnectorBindingsNavisworks
 
     if (commitObject.elements.Count == 0)
     {
-      RestoreAutoSave();
+      _settingsHandler.RestoreAutoSave();
       throw new SpeckleException("Zero objects remain unhidden in selection. Send stopped.");
     }
 
@@ -381,50 +376,18 @@ public partial class ConnectorBindingsNavisworks
       sourceApplication = HostAppNameVersion
     };
 
-
     string commitId =
-      // This block enables forcing a failed send to test the caching feature
-      // #if DEBUG
-      //     if (!isRetrying)
-      //       throw new SpeckleException("Debug mode: commit not created.");
-      // #endif
-      // Use the helper function to create the commit and retrieve the commit ID
-      await ConnectorHelpers
-
+    // This block enables forcing a failed send to test the caching feature
+    // #if DEBUG
+    //     if (!isRetrying)
+    //       throw new SpeckleException("Debug mode: commit not created.");
+    // #endif
+    // Use the helper function to create the commit and retrieve the commit ID
+    await ConnectorHelpers
       .CreateCommit(state.Client, commit, _progressViewModel.CancellationToken)
       .ConfigureAwait(false);
 
     return commitId;
-  }
-
-  /// <summary>
-  /// Temporarily disables the auto-save feature to prevent any disruption during the send process.
-  /// </summary>
-  private void DisableAutoSave()
-  {
-    using var optionLock = new LcUOptionLock();
-    var rootOptions = GetRoot(optionLock);
-    _autosaveSetting = rootOptions.GetBoolean("general.autosave.enable");
-
-    if (!_autosaveSetting)
-      return;
-
-    rootOptions.SetBoolean("general.autosave.enable", false);
-    SaveGlobalOptions();
-  }
-
-  /// <summary>
-  /// Restores the auto-save setting to its original state after the send process.
-  /// </summary>
-  private void RestoreAutoSave()
-  {
-    if (!_autosaveSetting)
-      return;
-
-    using var optionLock = new LcUOptionLock();
-    var rootOptions = GetRoot(optionLock);
-    rootOptions.SetBoolean("general.autosave.enable", true);
-    SaveGlobalOptions();
   }
 
   /// <summary>

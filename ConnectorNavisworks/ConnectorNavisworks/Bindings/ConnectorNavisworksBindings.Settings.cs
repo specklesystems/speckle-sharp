@@ -70,6 +70,20 @@ public partial class ConnectorBindingsNavisworks
         Name = "Include Full Hierarchy",
         IsChecked = false,
         Description = "Include the full root to leaf selection hierarchy of nodes in the commit."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "internal-properties",
+        Name = "Expose Internal Properties",
+        IsChecked = false,
+        Description = "Include the internal properties that reflect option types. Can be useful for downstream data analysis."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "internal-property-names",
+        Name = "Internal Property Names",
+        IsChecked = false,
+        Description = "Commit properties with the Navisworks internal names. Can be useful for downstream data analysis removing internationalization."
       }
     };
   }
