@@ -199,16 +199,14 @@ namespace Speckle.ConnectorRevit.UI
     {
       var selection = GetSelectionFilterObjects(converter, filter);
 
+      //By default, do not include design options
+      //If one is selected in Revit, also send those objects: https://speckle.community/t/revit-design-option-settings-are-ignored-in-everything-stream/3182/8
       var activeDesignOption = DesignOption.GetActiveDesignOptionId(CurrentDoc.Document);
       if (activeDesignOption != ElementId.InvalidElementId)
-      {
-        var includeAllDesignOptions = CurrentSettings?.FirstOrDefault(x => x.Slug == "include-design-options") as CheckBoxSetting;
-        if (includeAllDesignOptions == null || !includeAllDesignOptions.IsChecked)
-        {
-          selection = selection.Where(x => x.DesignOption == null || x.DesignOption.Id == activeDesignOption).ToList();
-        }
-      }
-
+        selection = selection.Where(x => x.DesignOption == null || x.DesignOption.Id == activeDesignOption).ToList(); 
+      else
+        selection = selection.Where(x => x.DesignOption == null).ToList();
+        
       return selection;
     }
 
