@@ -1,19 +1,37 @@
-﻿<RibbonControl
-    x:Uid="Speckle_Ribbon"
-    xmlns="clr-namespace:Autodesk.Windows;assembly=AdWindows"
-    xmlns:gui="clr-namespace:Autodesk.Navisworks.Gui.Roamer.AIRLook;assembly=navisworks.gui.roamer"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <RibbonTab Id="Speckle" KeyTip="SP">
-        <!-- SPECKLE -->
-        <RibbonPanel x:Uid="RibbonPanel">
-            <RibbonPanelSource Id="RibbonPanelSource" x:Uid="RibbonPanelSource" KeyTip="SP" Title="Speckle">
-                <gui:NWRibbonButton x:Uid="Button_Speckle_LaunchSpeckleConnector" IsVisible="False" Id="Speckle_Launch"
-                                    Size="Large" KeyTip="S" ShowText="True" Orientation="Vertical" />
-                <!--<gui:NWRibbonButton x:Uid="Button_Speckle_OneClickSend" IsVisible="False" Id="Speckle_OneClickSend"
-                                    Size="Large" KeyTip="Q" ShowText="True" Orientation="Vertical" />-->
-                <gui:NWRibbonButton x:Uid="Button_Speckle_Community" IsVisible="False" Id="Speckle_Community"
-                                    Size="Large" KeyTip="Q" ShowText="True" Orientation="Vertical" />
-            </RibbonPanelSource>
-        </RibbonPanel>
-    </RibbonTab>
+<RibbonControl
+  x:Uid="Speckle_Ribbon"
+  xmlns="clr-namespace:Autodesk.Windows;assembly=AdWindows"
+  xmlns:gui="clr-namespace:Autodesk.Navisworks.Gui.Roamer.AIRLook;assembly=navisworks.gui.roamer"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <RibbonTab Id="Speckle" KeyTip="SP">
+    <!-- SPECKLE -->
+    <RibbonPanel x:Uid="RibbonPanel">
+      <RibbonPanelSource Id="RibbonPanelSource" x:Uid="RibbonPanelSource" KeyTip="SP" Title="Speckle">
+        <gui:NWRibbonButton x:Uid="Button_Speckle_LaunchSpeckleConnector" IsVisible="False" Id="Speckle_Launch"
+                            Size="Large" KeyTip="S" ShowText="True" Orientation="Vertical" />
+        <RibbonSeparator x:Uid="RibbonSeparator_1" />
+
+        <gui:NWRibbonButton x:Uid="Button_Speckle_Community" IsVisible="False" Id="Speckle_Community"
+                            Size="Large" KeyTip="Q" ShowText="True" Orientation="Vertical" />
+      </RibbonPanelSource>
+    </RibbonPanel>
+    <RibbonPanel x:Uid="RibbonPanel2">
+      <RibbonPanelSource Id="RibbonPanelSource2" x:Uid="RibbonPanelSource2" KeyTip="SD" Title="Developer">
+
+        <gui:NWRibbonButton x:Uid="Button_Speckle_RetryLastConversionSend"
+                            Id="Speckle_RetryLastConversionSend"
+                            Size="Large" KeyTip="S" ShowText="True" Orientation="Vertical" />
+        
+        <gui:NWRibbonButton x:Uid="TurnPersistCacheOff" Id="Speckle_PersistCache_Off"
+                            Size="Large"
+                            ShowText="True"
+                            Orientation="Vertical" />
+        
+        <gui:NWRibbonButton x:Uid="TurnPersistCacheOn" Id="Speckle_PersistCache_On"
+                            Size="Large"
+                            ShowText="True"
+                            Orientation="Vertical" />
+         </RibbonPanelSource>
+    </RibbonPanel>
+  </RibbonTab>
 </RibbonControl>

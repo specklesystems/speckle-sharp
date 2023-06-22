@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -699,10 +699,10 @@ namespace Objects.Converter.Revit
     public Geometry.Surface FaceToSpeckle(DB.Face face, DB.BoundingBoxUV uvBox, Document doc, string units = null)
     {
 
-#if (REVIT2021 || REVIT2022 || REVIT2023)
-      var surf = DB.ExportUtils.GetNurbsSurfaceDataForSurface(face.GetSurface());
-#else
+#if REVIT2020
       var surf = DB.ExportUtils.GetNurbsSurfaceDataForFace(face);
+#else
+      var surf = DB.ExportUtils.GetNurbsSurfaceDataForSurface(face.GetSurface());
 #endif
       var spcklSurface = NurbsSurfaceToSpeckle(surf, face.GetBoundingBox(), doc, units ?? ModelUnits);
       return spcklSurface;

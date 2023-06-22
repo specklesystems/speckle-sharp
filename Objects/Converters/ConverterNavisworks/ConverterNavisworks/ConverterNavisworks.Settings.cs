@@ -5,6 +5,7 @@ using Autodesk.Navisworks.Api;
 
 namespace Objects.Converter.Navisworks;
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   public enum Transforms

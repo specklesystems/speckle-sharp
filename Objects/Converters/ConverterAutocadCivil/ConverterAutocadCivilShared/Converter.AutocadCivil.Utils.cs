@@ -30,6 +30,7 @@ namespace Objects.Converter.AutocadCivil
     {
       return (BlockTableRecord)SymbolUtilityServices.GetBlockModelSpaceId(db).GetObject(OpenMode.ForWrite);
     }
+
     public static ObjectId Append(this BlockTableRecord owner, Entity entity)
     {
       if (!entity.IsNewObject)
@@ -38,6 +39,35 @@ namespace Objects.Converter.AutocadCivil
       var id = owner.AppendEntity(entity);
       tr.AddNewlyCreatedDBObject(entity, true);
       return id;
+    }
+
+    public static Base GetObjectExtensionDictionaryAsBase(this DBObject source)
+    {
+      if (source is null || source.ExtensionDictionary == ObjectId.Null)
+        return null;
+
+      var extensionDictionaryBase = new Base();
+      var tr = source.Database.TransactionManager.TopTransaction;
+      var extensionDictionary = tr.GetObject(source.ExtensionDictionary, OpenMode.ForRead, false) as DBDictionary;
+      foreach (var entry in extensionDictionary)
+      {
+        var xRecord = tr.GetObject(entry.Value, OpenMode.ForRead) as Xrecord; // sometimes these can be RXClass objects, in property sets
+        if (xRecord != null)
+        {
+          var entryBase = new Base();
+          foreach (var xEntry in xRecord.Data)
+          {
+            entryBase[xEntry.TypeCode.ToString()] = xEntry.Value;
+          }
+          try
+          {
+            extensionDictionaryBase[$"{entry.Key}"] = entryBase;
+          }
+          catch (Exception e) { }
+        }
+      }
+
+      return extensionDictionaryBase;
     }
   }
 
@@ -90,13 +120,16 @@ namespace Objects.Converter.AutocadCivil
       {
         handle = new Handle(Convert.ToInt64(str, 16));
       }
-      catch { return false; }
+      catch
+      {
+        return false;
+      }
       return true;
     }
 
     /// <summary>
     /// Returns, if found, the corresponding doc element.
-    /// The doc object can be null if the user deleted it. 
+    /// The doc object can be null if the user deleted it.
     /// </summary>
     /// <param name="applicationId">Id of the application that originally created the element, in autocadcivil it's the handle</param>
     /// <returns>The element, if found, otherwise null</returns>
@@ -122,10 +155,11 @@ namespace Objects.Converter.AutocadCivil
       if (res.Status == PromptStatus.None || res.Status == PromptStatus.Error)
         return ids;
 
-      // loop through all obj with an appId 
+      // loop through all obj with an appId
       foreach (var appIdObj in res.Value.GetObjectIds())
       {
-        if (appIdObj.IsErased) continue;
+        if (appIdObj.IsErased)
+          continue;
 
         // get the db object from id
         var obj = Trans.GetObject(appIdObj, OpenMode.ForRead);
@@ -184,7 +218,9 @@ namespace Objects.Converter.AutocadCivil
         if (_transform == null || _transform == new Matrix3d())
         {
           // get from settings
-          var referencePointSetting = Settings.ContainsKey("reference-point") ? Settings["reference-point"] : string.Empty;
+          var referencePointSetting = Settings.ContainsKey("reference-point")
+            ? Settings["reference-point"]
+            : string.Empty;
           _transform = GetReferencePointTransform(referencePointSetting);
         }
         return _transform;
@@ -203,8 +239,15 @@ namespace Objects.Converter.AutocadCivil
           var cs = Doc.Editor.CurrentUserCoordinateSystem.CoordinateSystem3d;
           if (cs != null)
             referencePointTransform = Matrix3d.AlignCoordinateSystem(
-                Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis,
-                cs.Origin, cs.Xaxis, cs.Yaxis, cs.Zaxis);
+              Point3d.Origin,
+              Vector3d.XAxis,
+              Vector3d.YAxis,
+              Vector3d.ZAxis,
+              cs.Origin,
+              cs.Xaxis,
+              cs.Yaxis,
+              cs.Zaxis
+            );
           break;
         default: // try to see if this is a named UCS
           using (Transaction tr = Doc.Database.TransactionManager.StartTransaction())
@@ -214,8 +257,15 @@ namespace Objects.Converter.AutocadCivil
             {
               var ucsRecord = tr.GetObject(UCSTable[type], OpenMode.ForRead) as UcsTableRecord;
               referencePointTransform = Matrix3d.AlignCoordinateSystem(
-                Point3d.Origin, Vector3d.XAxis, Vector3d.YAxis, Vector3d.ZAxis,
-                ucsRecord.Origin, ucsRecord.XAxis, ucsRecord.YAxis, ucsRecord.XAxis.CrossProduct(ucsRecord.YAxis));
+                Point3d.Origin,
+                Vector3d.XAxis,
+                Vector3d.YAxis,
+                Vector3d.ZAxis,
+                ucsRecord.Origin,
+                ucsRecord.XAxis,
+                ucsRecord.YAxis,
+                ucsRecord.XAxis.CrossProduct(ucsRecord.YAxis)
+              );
             }
             tr.Commit();
           }
@@ -300,6 +350,7 @@ namespace Objects.Converter.AutocadCivil
         return _modelUnits;
       }
     }
+
     private void SetUnits(Base geom)
     {
       geom["units"] = ModelUnits;
@@ -344,6 +395,5 @@ namespace Objects.Converter.AutocadCivil
     }
 
     #endregion
-
   }
 }

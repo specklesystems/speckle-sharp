@@ -6,34 +6,34 @@ namespace Speckle.Core.Models.GraphTraversal;
 
 /// <summary>
 /// A traversal rule defines the conditional traversal behaviour when traversing a given <see cref="Base"/> objects.
-/// Specifies what members to traverse if any provided <see cref="conditions"/> are met.
+/// Specifies what members to traverse if any provided <see cref="_conditions"/> are met.
 /// </summary>
 /// <remarks>Follows the builder pattern to ensure that a rule is complete before usable, see usages</remarks>
-public sealed class TraversalRule : ITraversalRule, ITraversalBuilderWhen, ITraversalBuilderTraverse
+public sealed class TraversalRule : ITraversalRule, ITraversalBuilderTraverse
 {
-  private List<WhenCondition> conditions;
-  private SelectMembers membersToTraverse;
+  private readonly List<WhenCondition> _conditions;
+  private SelectMembers _membersToTraverse;
 
   private TraversalRule()
   {
-    conditions = new List<WhenCondition>();
+    _conditions = new List<WhenCondition>();
   }
 
   public ITraversalRule ContinueTraversing(SelectMembers membersToTraverse)
   {
-    this.membersToTraverse = membersToTraverse;
+    this._membersToTraverse = membersToTraverse;
     return this;
   }
 
   public ITraversalBuilderTraverse When(WhenCondition condition)
   {
-    conditions.Add(condition);
+    _conditions.Add(condition);
     return this;
   }
 
   bool ITraversalRule.DoesRuleHold(Base o)
   {
-    foreach (var condition in conditions)
+    foreach (var condition in _conditions)
       if (condition.Invoke(o))
         return true;
     return false;
@@ -41,7 +41,7 @@ public sealed class TraversalRule : ITraversalRule, ITraversalBuilderWhen, ITrav
 
   IEnumerable<string> ITraversalRule.MembersToTraverse(Base o)
   {
-    return membersToTraverse(o).Distinct(); //TODO distinct is expensive, there may be a better way for us to avoid duplicates
+    return _membersToTraverse(o).Distinct(); //TODO distinct is expensive, there may be a better way for us to avoid duplicates
   }
 
   /// <returns>a new Traversal Rule to be initialised using the Builder Pattern interfaces</returns>
