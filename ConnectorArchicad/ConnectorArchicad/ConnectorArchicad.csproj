@@ -16,4 +16,17 @@
     <ProjectReference Include="..\..\Objects\Objects\Objects.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Properties\OperationNameTemplates.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OperationNameTemplates.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Update="Properties\OperationNameTemplates.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>OperationNameTemplates.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
 </Project>

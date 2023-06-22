@@ -337,7 +337,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
   public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
   {
     // first check if commit is the same and preview objects have already been generated
-    Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+    Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     progress.Report = new ProgressReport();
 
     if (commit.id != SelectedReceiveCommit)
@@ -450,7 +450,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
     converter.SetContextDocument(Doc);
     converter.ReceiveMode = state.ReceiveMode;
 
-    Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+    Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
     state.LastCommit = commit;
 
     if (SelectedReceiveCommit != commit.id)
@@ -467,7 +467,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
     if (Preview.Count == 0)
     {
       commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.RhinoAppName);
+      await ConnectorHelpers.TryCommitReceived(state, commit, Utils.RhinoAppName, progress.CancellationToken);
     }
 
     // get commit layer name
@@ -1255,7 +1255,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
     if (state.PreviousCommitId != null)
       actualCommit.parents = new List<string> { state.PreviousCommitId };
 
-    var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+    var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
     return commitId;
   }
 

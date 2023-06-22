@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
@@ -13,6 +12,8 @@ using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks;
 
+
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   public Base ConvertToSpeckle(object @object)
@@ -45,26 +46,6 @@ public partial class ConverterNavisworks
 
         @base = ModelItemToSpeckle(element);
 
-        if (@base == null)
-          return null;
-
-        // convertedIds should be populated with all the pseudoIds of nested children already converted in traversal
-        // the DescendantsAndSelf helper method means we don't need to reference recursion
-        // the "__" prefix is skipped in object serialization so we can use Base object to pass data back to the Connector
-        var list = element.DescendantsAndSelf
-          .Select(
-            x =>
-              ((Array)ToInwOaPath(x).ArrayData)
-                .ToArray<int>()
-                .Aggregate(
-                  "",
-                  (current, value) => current + value.ToString(CultureInfo.InvariantCulture).PadLeft(4, '0') + "-"
-                )
-                .TrimEnd('-')
-          )
-          .ToList();
-        @base["__convertedIds"] = list;
-
         return @base;
 
       case "views":
@@ -76,6 +57,9 @@ public partial class ConverterNavisworks
             break;
           case Viewpoint item:
             @base = ViewpointToBase(item);
+            break;
+          case SavedViewpoint savedViewpoint:
+            @base = ViewpointToBase(savedViewpoint);
             break;
           default:
             return null;
@@ -90,7 +74,7 @@ public partial class ConverterNavisworks
 
   public List<Base> ConvertToSpeckle(List<object> objects)
   {
-    return objects.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
+    throw new NotImplementedException();
   }
 
   public bool CanConvertToSpeckle(object @object)
@@ -98,16 +82,7 @@ public partial class ConverterNavisworks
     if (@object is ModelItem modelItem)
       return CanConvertToSpeckle(modelItem);
 
-    // is expecting @object to be a pseudoId string
-    if (@object is not string pseudoId)
-      return false;
-
-    if (pseudoId == RootNodePseudoId)
-      return CanConvertToSpeckle(Application.ActiveDocument.Models.RootItems.First);
-
-    var item = PointerToModelItem(pseudoId);
-
-    return CanConvertToSpeckle(item);
+    return false;
   }
 
   private static SavedViewpoint ReferenceOrGuidToSavedViewpoint(string referenceOrGuid)
@@ -238,8 +213,6 @@ public partial class ConverterNavisworks
 
   private static Base CategoryToSpeckle(ModelItem element)
   {
-    var applicationId = PseudoIdFromModelItem(element);
-
     var elementCategory = element.PropertyCategories.FindPropertyByName(
       PropertyCategoryNames.Item,
       DataPropertyNames.ItemIcon
@@ -248,8 +221,8 @@ public partial class ConverterNavisworks
 
     return elementCategoryType switch
     {
-      "Geometry" => new GeometryNode { applicationId = applicationId },
-      _ => new Collection { applicationId = applicationId, collectionType = elementCategoryType }
+      "Geometry" => new GeometryNode(),
+      _ => new Collection { collectionType = elementCategoryType }
     };
   }
 
@@ -265,6 +238,9 @@ public partial class ConverterNavisworks
     {
       GeometryToSpeckle(element, @base);
       AddItemProperties(element, @base);
+      @base["name"] = string.IsNullOrEmpty(element.DisplayName)
+        ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
+        : element.DisplayName;
 
       return @base;
     }
@@ -278,16 +254,16 @@ public partial class ConverterNavisworks
     if (element.Descendants.All(x => x.IsHidden))
       return null;
 
-    ((Collection)@base).name = element.DisplayName;
-
-    var elements = element.Children.Select(ModelItemToSpeckle).Where(childBase => childBase != null).ToList();
+    ((Collection)@base).name = string.IsNullOrEmpty(element.DisplayName)
+      ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
+      : element.DisplayName;
 
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason
-    if (!elements.Any())
+    if (!element.Children.Any(CanConvertToSpeckle))
       return null;
 
-    ((Collection)@base).elements = elements;
+    // ((Collection)@base).elements = elements;
 
     AddItemProperties(element, @base);
 
@@ -338,7 +314,13 @@ public partial class ConverterNavisworks
 
     var protoPath = (InwOaPath)State.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
 
-    var oneBasedArray = Array.CreateInstance(typeof(int), new int[1] { pathArray.Length }, new int[1] { 1 });
+    // ReSharper disable once RedundantExplicitArraySize
+    var oneBasedArray = Array.CreateInstance(
+      typeof(int),
+      new int[1] { pathArray.Length },
+      // ReSharper disable once RedundantExplicitArraySize
+      new int[1] { 1 }
+    );
 
     Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
 

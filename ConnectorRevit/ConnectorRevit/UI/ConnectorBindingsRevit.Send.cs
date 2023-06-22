@@ -48,7 +48,7 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjects(state.Filter);
+      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!selectedObjects.Any())
@@ -176,7 +176,7 @@ namespace Speckle.ConnectorRevit.UI
       }
 
       var commitId = await ConnectorHelpers
-        .CreateCommit(progress.CancellationToken, client, actualCommit)
+        .CreateCommit(client, actualCommit, progress.CancellationToken)
         .ConfigureAwait(false);
 
       return commitId;

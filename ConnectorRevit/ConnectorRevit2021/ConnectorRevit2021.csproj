@@ -34,7 +34,7 @@
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
-    <ProjectReference Include="..\RevitSharedResources\RevitSharedResources.csproj" />
+    <ProjectReference Include="..\RevitSharedResources2021\RevitSharedResources2021.csproj" />
   </ItemGroup>
   
   <Target Name="Clean">

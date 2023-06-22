@@ -9,6 +9,42 @@ namespace Speckle.Core.Api;
 
 public partial class Client
 {
+
+  /// <summary>
+  /// Cheks if a stream exists by id.
+  /// </summary>
+  /// <param name="id">Id of the stream to get</param>
+  /// <returns></returns>
+  public async Task<bool> IsStreamAccessible(string id, CancellationToken cancellationToken = default)
+  {
+    try
+    {
+      var request = new GraphQLRequest
+      {
+        Query =
+          $@"query Stream($id: String!) {{
+                      stream(id: $id) {{
+                        id
+                      }}
+                    }}",
+        Variables = new { id }
+      };
+      var stream = (await ExecuteGraphQLRequest<StreamData>(request, cancellationToken).ConfigureAwait(false)).stream;
+
+      return stream.id == id;
+    }
+    catch (SpeckleGraphQLForbiddenException<StreamData>)
+    {
+      return false;
+    }
+    catch (SpeckleGraphQLStreamNotFoundException<StreamData>)
+    {
+      return false;
+    }
+
+  }
+
+
   /// <summary>
   /// Gets a stream by id including basic branch info (id, name, description, and total commit count).
   /// For detailed commit and branch info, use StreamGetCommits and StreamGetBranches respectively.

@@ -14,7 +14,10 @@ using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using Vector = Objects.Geometry.Vector;
 using Objects.BuiltElements.Revit;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
+using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit
 {
@@ -56,7 +59,7 @@ namespace Objects.Converter.Revit
       }
 
       //beams & braces
-      if (@base == null && AllRevitCategories.StructuralFraming.ContainsRevitCategory(revitFi.Category))
+      if (@base == null && SHC.beamCategories.HasCategory(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
           @base = BeamToSpeckle(revitFi, out notes);
@@ -66,7 +69,7 @@ namespace Objects.Converter.Revit
 
       //columns
       if (
-        @base == null && AllRevitCategories.Column.ContainsRevitCategory(revitFi.Category)
+        @base == null && SHC.columnCategories.HasCategory(revitFi.Category)
         || revitFi.StructuralType == StructuralType.Column
       )
         @base = ColumnToSpeckle(revitFi, out notes);
@@ -771,8 +774,10 @@ namespace Objects.Converter.Revit
 
       // rotation about the z axis (signed)
       var rotation = Math.Atan2(
-        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
-        new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)),
+        Vector.DotProduct(
+          Vector.CrossProduct(desiredBasisX, currentBasisX),
+          new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)
+        ),
         Vector.DotProduct(desiredBasisX, currentBasisX)
       );
 

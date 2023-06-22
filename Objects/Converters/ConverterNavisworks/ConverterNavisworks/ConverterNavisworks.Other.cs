@@ -5,6 +5,7 @@ using Color = System.Drawing.Color;
 
 namespace Objects.Converter.Navisworks;
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   private static Color NavisworksColorToColor(Autodesk.Navisworks.Api.Color color)

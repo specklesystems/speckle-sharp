@@ -209,7 +209,7 @@ namespace Speckle.ConnectorCSI.UI
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      return await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      return await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
       
     }
   }
