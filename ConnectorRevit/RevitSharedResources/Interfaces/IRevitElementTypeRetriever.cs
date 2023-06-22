@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using Autodesk.Revit.DB;
 using Speckle.Core.Models;
 
 namespace RevitSharedResources.Interfaces
@@ -11,13 +12,13 @@ namespace RevitSharedResources.Interfaces
   /// </summary>
   /// <typeparam name="TElementType"></typeparam>
   /// <typeparam name="TBuiltInCategory"></typeparam>
-  public interface IRevitElementTypeRetriever<TElementType, TBuiltInCategory>
+  public interface IRevitElementTypeRetriever
   {
     public string? GetElementType(Base @base);
     public void SetElementType(Base @base, string type);
     public bool CacheContainsTypeWithName(string category, string baseType);
-    public IEnumerable<TElementType> GetOrAddAvailibleTypes(IRevitCategoryInfo<TBuiltInCategory> typeInfo);
-    public IEnumerable<TElementType> GetAllCachedElementTypes();
+    public IEnumerable<ElementType> GetOrAddAvailibleTypes(IRevitCategoryInfo typeInfo);
+    public IEnumerable<ElementType> GetAllCachedElementTypes();
     public void InvalidateElementTypeCache(string categoryName);
   }
 }

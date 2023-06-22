@@ -25,13 +25,13 @@ namespace ConnectorRevit.TypeMapping
   /// </summary>
   internal sealed class ElementTypeMapper
   {
-    private readonly IAllRevitCategoriesExposer<BuiltInCategory> revitCategoriesExposer;
-    private readonly IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever;
+    private readonly IAllRevitCategoriesExposer revitCategoriesExposer;
+    private readonly IRevitElementTypeRetriever typeRetriever;
     private List<Base> speckleElements = new();
     private readonly Document document;
 
     /// <summary>
-    /// Initialize ElementTypeMapper. Will throw if the provided <see cref="ISpeckleConverter"/> does not also implement <see cref="IRevitElementTypeRetriever{DB.ElementType, DB.BuiltInCategory}"/> and <see cref="IElementTypeInfoExposer{DB.BuiltInCategory}"/>
+    /// Initialize ElementTypeMapper. Will throw if the provided <see cref="ISpeckleConverter"/> does not also implement <see cref="IRevitElementTypeRetriever"/> and <see cref="IElementTypeInfoExposer"/>
     /// </summary>
     /// <param name="converter"></param>
     /// <param name="flattenedCommit"></param>
@@ -42,15 +42,15 @@ namespace ConnectorRevit.TypeMapping
     {
       document = doc;
 
-      if (converter is not IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
+      if (converter is not IRevitElementTypeRetriever typeRetriever)
       {
-        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
+        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
       }
       else this.typeRetriever = typeRetriever;
 
-      if (converter is not IAllRevitCategoriesExposer<BuiltInCategory> typeInfoExposer)
+      if (converter is not IAllRevitCategoriesExposer typeInfoExposer)
       {
-        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever<ElementType, BuiltInCategory>)}");
+        throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
       }
       else revitCategoriesExposer = typeInfoExposer;
 
@@ -96,8 +96,6 @@ namespace ConnectorRevit.TypeMapping
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       FamilyImporter familyImporter = null;
 
-
-
       currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
       {
         var mappingView = new MappingViewDialog
@@ -141,7 +139,7 @@ namespace ConnectorRevit.TypeMapping
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
     }
 
-    private static void SetMappedValues(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap currentMapping)
+    private static void SetMappedValues(IRevitElementTypeRetriever typeRetriever, ITypeMap currentMapping)
     {
       foreach (var (@base, mappingValue) in currentMapping.GetAllBasesWithMappings())
       {
@@ -156,7 +154,7 @@ namespace ConnectorRevit.TypeMapping
     /// <param name="typeMap"></param>
     /// <param name="numNewTypes"></param>
     /// <returns></returns>
-    public HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever, ITypeMap typeMap, out int numNewTypes)
+    public HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever typeRetriever, ITypeMap typeMap, out int numNewTypes)
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
       var hostTypes = new HostTypeAsStringContainer();

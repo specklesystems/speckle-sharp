@@ -59,7 +59,7 @@ namespace Objects.Converter.Revit
       }
 
       //beams & braces
-      if (@base == null && SHC.beamCategories.HasCategory(revitFi.Category))
+      if (@base == null && SHC.StructuralFraming.BuiltInCategories.HasCategory(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
           @base = BeamToSpeckle(revitFi, out notes);
@@ -69,7 +69,7 @@ namespace Objects.Converter.Revit
 
       //columns
       if (
-        @base == null && SHC.columnCategories.HasCategory(revitFi.Category)
+        @base == null && SHC.Column.BuiltInCategories.HasCategory(revitFi.Category)
         || revitFi.StructuralType == StructuralType.Column
       )
         @base = ColumnToSpeckle(revitFi, out notes);

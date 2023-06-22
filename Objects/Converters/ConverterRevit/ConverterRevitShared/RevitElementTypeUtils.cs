@@ -12,14 +12,14 @@ using DB = Autodesk.Revit.DB;
 namespace Objects.Converter.Revit
 {
   /// <summary>
-  /// Functionality related to retrieving, setting, and caching <see cref="DB.ElementType"/>s. Implements <see cref="IRevitElementTypeRetriever{TElementType, TBuiltInCategory}"/> and <see cref="IAllRevitCategoriesExposer{TBuiltInCategory}"/> in order for the connector to be able to access object info through the converter during mapping on receive.
+  /// Functionality related to retrieving, setting, and caching <see cref="DB.ElementType"/>s. Implements <see cref="IRevitElementTypeRetriever"/> and <see cref="IAllRevitCategoriesExposer"/> in order for the connector to be able to access object info through the converter during mapping on receive.
   /// </summary>
-  public partial class ConverterRevit : IRevitElementTypeRetriever<ElementType, BuiltInCategory>,
-    IAllRevitCategoriesExposer<BuiltInCategory>
+  public partial class ConverterRevit : IRevitElementTypeRetriever,
+    IAllRevitCategoriesExposer
   {
     private ConversionOperationCache ConversionOperationCache { get; } = new();
     private static AllRevitCategories AllRevitCategoriesInstance { get; } = new();
-    public IAllRevitCategories<BuiltInCategory> AllCategories => AllRevitCategoriesInstance;
+    public IAllRevitCategories AllCategories => AllRevitCategoriesInstance;
 
     #region IRevitElementTypeRetriever
     public string? GetElementType(Base @base)
@@ -82,7 +82,7 @@ namespace Objects.Converter.Revit
       return ConversionOperationCache.GetAllObjectsOfType<ElementType>();
     }
     
-    public IEnumerable<ElementType> GetOrAddAvailibleTypes(IRevitCategoryInfo<BuiltInCategory> typeInfo)
+    public IEnumerable<ElementType> GetOrAddAvailibleTypes(IRevitCategoryInfo typeInfo)
     {
       var types = ConversionOperationCache.GetOrAdd<IEnumerable<ElementType>>(
         typeInfo.CategoryName,
@@ -174,7 +174,7 @@ namespace Objects.Converter.Revit
       return (T)(object)match;
     }
 
-    private static IEnumerable<T> GetElementTypes<T>(Type type, List<BuiltInCategory> categories)
+    private static IEnumerable<T> GetElementTypes<T>(Type type, ICollection<BuiltInCategory> categories)
     {
       var collector = new FilteredElementCollector(Doc);
       if (categories.Count > 0)

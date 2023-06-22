@@ -1,6 +1,7 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
+using DB = Autodesk.Revit.DB;
 
 namespace RevitSharedResources.Helpers;
 
@@ -9,27 +10,6 @@ namespace RevitSharedResources.Helpers;
 /// </summary>
 public static class Categories
 {
-  public static readonly List<BuiltInCategory> columnCategories =
-    new() { BuiltInCategory.OST_Columns, BuiltInCategory.OST_StructuralColumns };
-
-  public static readonly List<BuiltInCategory> beamCategories = new() { BuiltInCategory.OST_StructuralFraming };
-
-  public static readonly List<BuiltInCategory> ductCategories =
-    new() { BuiltInCategory.OST_DuctCurves, BuiltInCategory.OST_FlexDuctCurves };
-
-  public static readonly List<BuiltInCategory> pipeCategories =
-    new() { BuiltInCategory.OST_PipeCurves, BuiltInCategory.OST_FlexPipeCurves };
-
-  public static readonly List<BuiltInCategory> wallCategories = new() { BuiltInCategory.OST_Walls };
-  public static readonly List<BuiltInCategory> floorCategories = new() { BuiltInCategory.OST_Floors };
-
-  public static readonly List<BuiltInCategory> curtainWallSubElements =
-    new() { BuiltInCategory.OST_CurtainWallMullions, BuiltInCategory.OST_CurtainWallPanels };
-
-  /// <summary>
-  /// List of currently supported Categories (for sending only)
-  /// The contained items will vary depending on the target Revit version
-  /// </summary>
   public static IReadOnlyList<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>
   {
     BuiltInCategory.OST_Areas,
@@ -129,4 +109,134 @@ public static class Categories
     BuiltInCategory.OST_MechanicalControlDevices,
 #endif
   };
+
+  public static Dictionary<string, RevitCategoryInfo> All { get; } = new(StringComparer.OrdinalIgnoreCase)
+  {
+    { nameof(CableTray), CableTray },
+    { nameof(Ceiling), Ceiling },
+    { nameof(Column), Column },
+    { nameof(Conduit), Conduit },
+    { nameof(Duct), Duct },
+    { nameof(Floor), Floor },
+    { nameof(FamilyInstance), FamilyInstance },
+    { nameof(Pipe), Pipe },
+    { nameof(Roof), Roof },
+    { nameof(Railing), Railing },
+    { nameof(StructuralFraming), StructuralFraming },
+    { nameof(Wall), Wall },
+    { nameof(Wire), Wire },
+    { nameof(Undefined), Undefined },
+  };
+  public static RevitCategoryInfo CableTray { get; } = new(
+    nameof(CableTray),
+    typeof(DB.Electrical.CableTray),
+    typeof(DB.Electrical.CableTrayType),
+    new List<BuiltInCategory>()
+  );
+  public static RevitCategoryInfo Ceiling { get; } = new(
+    nameof(Ceiling),
+    typeof(DB.Ceiling),
+    typeof(CeilingType),
+    new List<BuiltInCategory>()
+  );
+  public static RevitCategoryInfo Column { get; } = new(
+    nameof(Column),
+    typeof(FamilyInstance),
+    typeof(FamilySymbol),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_Columns,
+        BuiltInCategory.OST_StructuralColumns
+    });
+  public static RevitCategoryInfo Conduit { get; } = new(
+    nameof(Conduit),
+    typeof(DB.Electrical.Conduit),
+    typeof(DB.Electrical.ConduitType),
+    new List<BuiltInCategory>()
+  );
+  public static RevitCategoryInfo Duct { get; } = new(
+    nameof(Duct),
+    typeof(DB.Mechanical.Duct),
+    typeof(DB.Mechanical.FlexDuctType),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_DuctCurves,
+        BuiltInCategory.OST_FlexDuctCurves
+    });
+  public static RevitCategoryInfo Floor { get; } = new(
+    nameof(Floor),
+    typeof(DB.Floor),
+    typeof(DB.FloorType),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_Floors
+    });
+  public static RevitCategoryInfo FamilyInstance { get; } = new(
+    nameof(FamilyInstance),
+    typeof(DB.FamilyInstance),
+    typeof(DB.FamilySymbol),
+    new List<BuiltInCategory>()
+    );
+  //public static RevitCategoryInfo Material { get; } = new(
+  //  nameof(Material), 
+  //  typeof(DB.Material), 
+  //  null,
+  //  new List<BuiltInCategory> 
+  //  { 
+  //    BuiltInCategory.OST_Materials, 
+  //    BuiltInCategory.OST_PipeMaterials,
+  //    BuiltInCategory.OST_WireMaterials
+  //  });
+  public static RevitCategoryInfo Pipe { get; } = new(
+    nameof(Pipe),
+    typeof(DB.Plumbing.Pipe),
+    typeof(DB.Plumbing.FlexPipeType),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_PipeCurves,
+        BuiltInCategory.OST_FlexPipeCurves
+    });
+  public static RevitCategoryInfo Roof { get; } = new(
+    nameof(Roof),
+    typeof(DB.RoofBase),
+    typeof(DB.RoofType),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_Roofs,
+    });
+  public static RevitCategoryInfo Railing { get; } = new(
+    nameof(Railing),
+    typeof(DB.Architecture.Railing),
+    typeof(DB.Architecture.RailingType),
+    new List<BuiltInCategory>()
+    );
+  public static RevitCategoryInfo StructuralFraming { get; } = new(
+    nameof(StructuralFraming),
+    typeof(DB.FamilyInstance),
+    typeof(DB.FamilySymbol),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_StructuralFraming
+    },
+    new List<string> { "beam", "brace", "framing" });
+  public static RevitCategoryInfo Wall { get; } = new(
+    nameof(Wall),
+    typeof(DB.Wall),
+    typeof(DB.WallType),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_Walls
+    });
+  public static RevitCategoryInfo Wire { get; } = new(
+    nameof(Wire),
+    typeof(DB.Electrical.Wire),
+    typeof(DB.Electrical.WireType),
+    new List<BuiltInCategory>()
+    );
+  public static RevitCategoryInfo Undefined { get; } = new(
+    nameof(Undefined),
+    null,
+    null,
+    new List<BuiltInCategory>()
+    );
 }

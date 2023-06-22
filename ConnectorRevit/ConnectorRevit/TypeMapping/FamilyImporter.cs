@@ -18,10 +18,10 @@ namespace ConnectorRevit.TypeMapping
   internal sealed class FamilyImporter
   {
     private readonly Document document;
-    private readonly IAllRevitCategoriesExposer<BuiltInCategory> revitCategoriesExposer;
-    private readonly IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever;
+    private readonly IAllRevitCategoriesExposer revitCategoriesExposer;
+    private readonly IRevitElementTypeRetriever typeRetriever;
 
-    public FamilyImporter(Document document, IAllRevitCategoriesExposer<BuiltInCategory> revitCategoriesExposer, IRevitElementTypeRetriever<ElementType, BuiltInCategory> typeRetriever)
+    public FamilyImporter(Document document, IAllRevitCategoriesExposer revitCategoriesExposer, IRevitElementTypeRetriever typeRetriever)
     {
       this.document = document;
       this.revitCategoriesExposer = revitCategoriesExposer;
@@ -203,7 +203,7 @@ namespace ConnectorRevit.TypeMapping
       }
     }
 
-    private IRevitCategoryInfo<BuiltInCategory> GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
+    private IRevitCategoryInfo GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
     {
       var catRoot = xmlDoc.GetElementsByTagName("category");
       var category = revitCategoriesExposer.AllCategories.UndefinedCategory;
