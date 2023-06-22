@@ -77,12 +77,12 @@ public static class AccountManager
 
     var request = new GraphQLRequest { Query = @" query { activeUser { name email id company } }" };
 
-    var response = await gqlClient.SendQueryAsync<UserInfoResponse>(request).ConfigureAwait(false);
+    var response = await gqlClient.SendQueryAsync<ActiveUserResponse>(request).ConfigureAwait(false);
 
     if (response.Errors != null)
       return null;
 
-    return response.Data.user;
+    return response.Data.activeUser;
   }
 
   /// <summary>
