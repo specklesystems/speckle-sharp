@@ -34,7 +34,7 @@
     </NoWarn>
 
     <!-- False if running on CI, will prevent copying of files to local folders -->
-    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">false</IsDesktopBuild>
+    <IsDesktopBuild Condition="'$(IsDesktopBuild)' == ''">true</IsDesktopBuild>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
