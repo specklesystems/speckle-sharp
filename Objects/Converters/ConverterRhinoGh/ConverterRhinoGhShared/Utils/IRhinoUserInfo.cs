@@ -9,7 +9,7 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.RhinoGh.Utils;
 
-internal interface IRhinoUserInfo
+public interface IRhinoUserInfo
 {
   /// <summary>
   /// Attaches the provided user strings, user dictionaries, and and name to Base

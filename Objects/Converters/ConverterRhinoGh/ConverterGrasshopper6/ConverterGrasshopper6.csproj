@@ -21,6 +21,7 @@
 
     <ItemGroup>
         <PackageReference Include="Grasshopper" Version="6.28.20199.17141" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
     </ItemGroup>
 
     <ItemGroup>

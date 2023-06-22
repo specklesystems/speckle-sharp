@@ -90,7 +90,7 @@ public partial class ConverterRhinoGh
           if (view.isOrthogonal)
             viewport.ChangeToParallelProjection(true);
 
-          var commitInfo = GetCommitInfo();
+          var commitInfo = rhinoDocInfo.GetCommitInfo(Doc);
           bakedViewName = ReceiveMode == ReceiveMode.Create ? $"{commitInfo} - {view.name}" : $"{view.name}";
 
           var res = Doc.NamedViews.Add(bakedViewName, viewport.Id);

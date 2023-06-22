@@ -9,7 +9,7 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.RhinoGh.Utils;
 
-internal sealed class RhinoDictionaryParser : IRhinoDictionaryParser
+public sealed class RhinoDictionaryParser : IRhinoDictionaryParser
 {
   /// <summary>
   /// Copies an ArchivableDictionary to a Base

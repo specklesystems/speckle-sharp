@@ -9,7 +9,7 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.RhinoGh.Utils;
 
-internal sealed class RhinoObjectsSchema : IRhinoObjectsSchema
+public sealed class RhinoObjectsSchema : IRhinoObjectsSchema
 {
   public string GetSchema(RhinoObject obj, string key, out string[] args)
   {

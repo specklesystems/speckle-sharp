@@ -8,7 +8,7 @@ using static Objects.Converter.RhinoGh.Utils.IRhinoUnits;
 
 namespace Objects.Converter.RhinoGh.Utils;
 
-internal interface IRhinoDictionaryParser
+public interface IRhinoDictionaryParser
 {
   /// <summary>
   /// Copies an ArchivableDictionary to a Base

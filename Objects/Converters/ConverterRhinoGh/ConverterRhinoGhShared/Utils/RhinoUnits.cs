@@ -7,7 +7,7 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.RhinoGh.Utils;
 
-internal sealed class RhinoUnits : IRhinoUnits
+public sealed class RhinoUnits : IRhinoUnits
 {
   public string UnitToSpeckle(UnitSystem us)
   {

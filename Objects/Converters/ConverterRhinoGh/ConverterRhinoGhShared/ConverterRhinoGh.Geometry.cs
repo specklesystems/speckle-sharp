@@ -58,7 +58,7 @@ public partial class ConverterRhinoGh
   // Rh Capture?
   public RH.Point PointToNative(Point pt)
   {
-    double scaleFactor = ScaleToNative(1, pt.units);
+    double scaleFactor = rhinoUnits.ScaleToNative(1, pt.units, ModelUnits);
     var myPoint = new RH.Point(new RH.Point3d(pt.x * scaleFactor, pt.y * scaleFactor, pt.z * scaleFactor));
 
     return myPoint;
@@ -77,7 +77,7 @@ public partial class ConverterRhinoGh
 
   public RH.Vector3d VectorToNative(Vector pt)
   {
-    return new RH.Vector3d(ScaleToNative(pt.x, pt.units), ScaleToNative(pt.y, pt.units), ScaleToNative(pt.z, pt.units));
+    return new RH.Vector3d(rhinoUnits.ScaleToNative(pt.x, pt.units, ModelUnits), rhinoUnits.ScaleToNative(pt.y, pt.units, ModelUnits), rhinoUnits.ScaleToNative(pt.z, pt.units, ModelUnits));
   }
 
   // Interval
@@ -89,7 +89,7 @@ public partial class ConverterRhinoGh
 
   public RH.Interval IntervalToNative(Interval interval, string units = Units.None)
   {
-    return new RH.Interval(ScaleToNative((double)interval.start, units), ScaleToNative((double)interval.end, units));
+    return new RH.Interval(rhinoUnits.ScaleToNative((double)interval.start, units, ModelUnits), rhinoUnits.ScaleToNative((double) interval.end, units, ModelUnits));
   }
 
   // Plane
@@ -185,7 +185,7 @@ public partial class ConverterRhinoGh
 
   public RH.ArcCurve CircleToNative(Circle circ)
   {
-    RH.Circle circle = new(PlaneToNative(circ.plane), ScaleToNative((double)circ.radius, circ.units));
+    RH.Circle circle = new(PlaneToNative(circ.plane), rhinoUnits.ScaleToNative((double) circ.radius, circ.units, ModelUnits));
 
     var myCircle = new RH.ArcCurve(circle);
     if (circ.domain != null)
@@ -266,8 +266,8 @@ public partial class ConverterRhinoGh
     RH.Ellipse elp =
       new(
         PlaneToNative(e.plane),
-        ScaleToNative((double)e.firstRadius, e.units),
-        ScaleToNative((double)e.secondRadius, e.units)
+        rhinoUnits.ScaleToNative((double) e.firstRadius, e.units, ModelUnits),
+        rhinoUnits.ScaleToNative((double) e.secondRadius, e.units, ModelUnits)
       );
     var myEllp = elp.ToNurbsCurve();
 
@@ -763,7 +763,7 @@ public partial class ConverterRhinoGh
     int numPoints = pointcloud.points.Count / 3;
     List<double> sPoints = pointcloud.points;
     RH.Point3d[] rhPoints = new RH.Point3d[numPoints];
-    double scaleFactor = ScaleToNative(1, pointcloud.units);
+    double scaleFactor = rhinoUnits.ScaleToNative(1, pointcloud.units, ModelUnits);
 
     for (int i = 0; i < numPoints; i++)
       rhPoints[i] = new RH.Point3d(
@@ -1119,9 +1119,9 @@ public partial class ConverterRhinoGh
           l.Select(
               p =>
                 new ControlPoint(
-                  ScaleToNative(p.x, p.units),
-                  ScaleToNative(p.y, p.units),
-                  ScaleToNative(p.z, p.units),
+                  rhinoUnits.ScaleToNative(p.x, p.units, ModelUnits),
+                  rhinoUnits.ScaleToNative(p.y, p.units, ModelUnits),
+                  rhinoUnits.ScaleToNative(p.z, p.units, ModelUnits),
                   p.weight,
                   p.units
                 )

@@ -9,7 +9,7 @@ using Speckle.Core.Models;
 namespace Objects.Converter.RhinoGh.Utils;
 
 // better name would be useful, could be split out, feels a bit big :D
-internal sealed class RhinoDocInfo : IRhinoDocInfo
+public sealed class RhinoDocInfo : IRhinoDocInfo
 {
   // why public?
   public const string INVALID_RHINO_CHARS = @"{}()";

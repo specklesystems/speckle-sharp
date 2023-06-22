@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Objects.Utils;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -57,9 +58,11 @@ public class ObjectsKit : ISpeckleKit
   {
     try
     {
-      _converters = GetAvailableConverters();
-      if (_loadedConverters.TryGetValue(app, out Type t))
-        return (ISpeckleConverter)Activator.CreateInstance(t);
+      // ***  Caching expects ISpeckleConverter and that it can be created parameterlessly, would need
+      //      wholesale swap to factory + create()
+      ////_converters = GetAvailableConverters();
+      ////if (_loadedConverters.TryGetValue(app, out Type t))
+      ////  return (ISpeckleConverter)Activator.CreateInstance(t);
 
       var converterInstance = LoadConverterFromDisk(app);
       _loadedConverters[app] = converterInstance.GetType();
@@ -68,15 +71,15 @@ public class ObjectsKit : ISpeckleKit
     }
     catch (Exception ex)
     {
-      SpeckleLog.Logger.Warning(ex, "Failed to load converter for app {app}", app);
+      SpeckleLog.Logger.Warning(ex, $"Failed to load converter for app {app}");
       throw new KitException($"Failed to load converter for app {app}", this, ex);
     }
   }
 
   private static ISpeckleConverter LoadConverterFromDisk(string app)
   {
-    var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
+    var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
     var path = Path.Combine(basePath!, $"Objects.Converter.{app}.dll");
 
     //fallback to the default folder, in case the Objects.dll was loaded in the app domain for other reasons
@@ -88,15 +91,9 @@ public class ObjectsKit : ISpeckleKit
 
     var assembly = Assembly.LoadFrom(path);
 
-    // IMH: so... instantiation as it is loaded from a given assembly would need some thought
-    // at worst the container could be passed in and elements resolved within the constructor
-    // might be possible to have the types in the assembly added to DI and use a named factory to instantiate this converter
-    // If only one ISpeckleConverter is created it could be resolved here if added to DI, would need some investigation
-    var converterInstance = assembly
-      .GetTypes()
-      .Where(type => typeof(ISpeckleConverter).IsAssignableFrom(type))
-      .Select(type => (ISpeckleConverter)Activator.CreateInstance(type))
-      .First(converter => converter.GetServicedApplications().Contains(app));
+    var factory = (ISpeckleConverterFactory) Activator.CreateInstance(assembly.GetTypes().FirstOrDefault(x => typeof(ISpeckleConverterFactory).IsAssignableFrom(x)));
+
+    var converterInstance = factory.Create();
 
     SpeckleLog.Logger
       .ForContext<ObjectsKit>()

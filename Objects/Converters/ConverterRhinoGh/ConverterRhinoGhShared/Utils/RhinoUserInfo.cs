@@ -10,7 +10,7 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.RhinoGh.Utils;
 
-internal sealed class RhinoUserInfo : IRhinoUserInfo
+public sealed class RhinoUserInfo : IRhinoUserInfo
 {
   private const string USER_STRINGS = "userStrings";
   private const string USER_DICTIONARY = "userStrings";

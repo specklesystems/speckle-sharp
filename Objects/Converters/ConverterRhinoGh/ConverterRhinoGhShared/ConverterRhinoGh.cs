@@ -22,6 +22,7 @@ using Rhino.Display;
 using Rhino.DocObjects;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Plane = Objects.Geometry.Plane;
 using RH = Rhino.Geometry;
@@ -64,14 +65,18 @@ public partial class ConverterRhinoGh : ISpeckleConverter
   private readonly IRhinoUnits rhinoUnits;
   private readonly IRhinoUserInfo rhinoUserInfo;
 
-  internal ConverterRhinoGh(
+  public ConverterRhinoGh(
             IRhinoDictionaryParser rhinoDictionaryParser,
             IRhinoDocInfo rhinoDocInfo,
             IRhinoObjectsSchema rhinoObjectsSchema,
             IRhinoUnits rhinoUnits,
             IRhinoUserInfo rhinoUserInfo)
   {
-    ModelUnits = rhinoUnits.UnitToSpeckle(Doc.ModelUnitSystem);
+    this.rhinoDictionaryParser = rhinoDictionaryParser;
+    this.rhinoDocInfo = rhinoDocInfo;
+    this.rhinoObjectsSchema = rhinoObjectsSchema;
+    this.rhinoUnits = rhinoUnits;
+    this.rhinoUserInfo = rhinoUserInfo;
 
     var ver = Assembly.GetAssembly(typeof(ConverterRhinoGh)).GetName().Version;
   }
@@ -126,7 +131,12 @@ public partial class ConverterRhinoGh : ISpeckleConverter
 
   public void SetContextDocument(object doc)
   {
-    Doc = (RhinoDoc)doc;
+    Doc = (RhinoDoc) doc;
+
+    if(Doc != null)
+    {
+      ModelUnits = rhinoUnits.UnitToSpeckle(Doc.ModelUnitSystem);
+    }
   }
 
   // speckle user string for custom schemas
