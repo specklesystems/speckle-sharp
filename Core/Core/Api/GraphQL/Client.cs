@@ -53,7 +53,7 @@ public partial class Client : IDisposable
         WebSocketProtocol = "graphql-ws",
         ConfigureWebSocketConnectionInitPayload = _ =>
         {
-          return Http.CanAddAuth(account.token, out string? authValue) ? null : new { Authorization = authValue };
+          return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
         },
         OnWebsocketConnected = OnWebSocketConnect
       },
@@ -242,9 +242,7 @@ public partial class Client : IDisposable
         errors.Any(
           e =>
             e.Extensions != null
-            && (
-              e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
-            )
+            && (e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND")))
         )
       )
         throw new SpeckleGraphQLStreamNotFoundException<T>(request, response);
