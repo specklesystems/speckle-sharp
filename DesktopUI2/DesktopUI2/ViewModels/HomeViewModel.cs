@@ -14,6 +14,7 @@ using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using DesktopUI2.Models;
+using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog.Icons;
@@ -638,6 +639,13 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   public async void AddFromUrlCommand()
   {
+    var vm = new TypeMappingOnReceiveViewModel();
+
+    var mappingView = new MappingViewDialog
+    {
+      DataContext = vm
+    };
+    await mappingView.ShowDialog<ITypeMap>();
     var clipboard = await Application.Current.Clipboard.GetTextAsync().ConfigureAwait(true);
 
     Uri uri;

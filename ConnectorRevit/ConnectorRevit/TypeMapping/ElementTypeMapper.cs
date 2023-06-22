@@ -60,6 +60,7 @@ namespace ConnectorRevit.TypeMapping
         // add base and traverse nested elements
         speckleElements.AddRange(traversalFunc.Traverse(storedObjects[appObj.OriginalId])
           .Select(c => c.current)
+          .Where(converter.CanConvertToNative)
           .OfType<Base>()
         );
       }
@@ -169,6 +170,8 @@ namespace ConnectorRevit.TypeMapping
           continue;
         }
 
+        var incomingFamily = typeRetriever.GetElementFamily(@base);
+
         var typeInfo = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(@base);
         if (typeInfo.ElementTypeType == null) continue;
 
@@ -180,7 +183,7 @@ namespace ConnectorRevit.TypeMapping
         hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => type.Name));
         string initialGuess = DefineInitialGuess(typeMap, incomingType, typeInfo.CategoryName, elementTypes);
 
-        typeMap.AddIncomingType(@base, incomingType, typeInfo.CategoryName, initialGuess, out var isNewType);
+        typeMap.AddIncomingType(@base, incomingType, incomingFamily, typeInfo.CategoryName, initialGuess, out var isNewType);
         if (isNewType) numNewTypes++;
       }
 
@@ -258,7 +261,7 @@ namespace ConnectorRevit.TypeMapping
       foreach (var elementType in elementTypes)
       {
         var distance = LevenshteinDistance(speckleType, elementType.Name);
-        if (distance < int.MaxValue)
+        if (distance < shortestDistance)
         {
           shortestDistance = distance;
           closestType = elementType.Name;

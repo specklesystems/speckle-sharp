@@ -22,7 +22,7 @@
 
   </UserControl.Styles>
   <Design.DataContext>
-    <viewModels:MappingViewModel />
+    <viewModels:TypeMappingOnReceiveViewModel />
   </Design.DataContext>
 
   <Grid MinHeight="600" RowDefinitions="auto, auto,*,auto">
@@ -90,16 +90,17 @@
             <ListBox
               Items="{Binding VisibleMappingValues}"
               ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-              SelectedItem="{Binding SelectedMappingValue}">
+              SelectedItems="{Binding SelectedMappingValues}"
+              SelectionMode="Multiple">
               <ListBox.ItemTemplate>
                 <DataTemplate>
                   <Grid ColumnDefinitions="*,*">
                     <TextBlock
                       Grid.Column="0"
                       Margin="5"
-                      VerticalAlignment="Center"
-                      Text="{Binding IncomingType}"
-                      TextTrimming="CharacterEllipsis" />
+                      Text="{Binding IncomingTypeDisplayName}"
+                      TextTrimming="CharacterEllipsis"
+                      TextWrapping="Wrap" />
                     <TextBlock
                       Name="OutgoingType"
                       Grid.Column="1"
@@ -107,7 +108,9 @@
                       VerticalAlignment="Center"
                       Focusable="False"
                       IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                      Text="{Binding OutgoingType}" />
+                      Text="{Binding OutgoingType}"
+                      TextTrimming="CharacterEllipsis"
+                      TextWrapping="Wrap" />
                     <TextBlock
                       Grid.Column="1"
                       Margin="0"
@@ -115,7 +118,9 @@
                       Focusable="False"
                       Foreground="Gray"
                       IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-                      Text="{Binding InitialGuess}" />
+                      Text="{Binding InitialGuess}"
+                      TextTrimming="CharacterEllipsis"
+                      TextWrapping="Wrap" />
                   </Grid>
                 </DataTemplate>
               </ListBox.ItemTemplate>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using DesktopUI2.Models.TypeMappingOnReceive;
@@ -26,6 +27,50 @@ namespace DesktopUI2.ViewModels
     public bool DoneMapping;
 
     public const string TypeCatMisc = "Miscellaneous";
+
+    //this constructor is purely for xaml design purposes
+    public TypeMappingOnReceiveViewModel()
+    {
+      VisibleMappingValues = new List<ISingleValueToMap>()
+      {
+        new MappingValue("W12x19", "W12x19"),
+        new MappingValue("Type1", "type123"),
+        new MappingValue("anotherType", "anotherType"),
+        new MappingValue("incoming type", "existingType", "incomingFam"),
+        new MappingValue("yetAnotherType", "differentType", "inFam", true),
+        new MappingValue("short", "short"),
+        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+        new MappingValue("W12x19", "W12x19"),
+        new MappingValue("Type1", "type123"),
+        new MappingValue("anotherType", "anotherType"),
+        new MappingValue("incoming type", "existingType", "incomingFam"),
+        new MappingValue("yetAnotherType", "differentType", "inFam", true),
+        new MappingValue("short", "short"),
+        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+        new MappingValue("W12x19", "W12x19"),
+        new MappingValue("Type1", "type123"),
+        new MappingValue("anotherType", "anotherType"),
+        new MappingValue("incoming type", "existingType", "incomingFam"),
+        new MappingValue("yetAnotherType", "differentType", "inFam", true),
+        new MappingValue("short", "short"),
+        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+        new MappingValue("W12x19", "W12x19"),
+        new MappingValue("Type1", "type123"),
+        new MappingValue("anotherType", "anotherType"),
+        new MappingValue("incoming type", "existingType", "incomingFam"),
+        new MappingValue("yetAnotherType", "differentType", "inFam", true),
+        new MappingValue("short", "short"),
+        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+      };
+
+      SearchResults = new List<string>
+      {
+        "brick",
+        "sheep",
+        "wheat",
+        "stone",
+      };
+    }
 
     public TypeMappingOnReceiveViewModel(
       ITypeMap typeMap,
@@ -67,8 +112,13 @@ namespace DesktopUI2.ViewModels
       get => _selectedType;
       set
       {
-        if (SelectedMappingValue != null)
-          SelectedMappingValue.OutgoingType = value;
+        if (SelectedMappingValues.Count > 0)
+        {
+          foreach (var val in SelectedMappingValues)
+          {
+            val.OutgoingType = value;
+          }
+        }
         this.RaiseAndSetIfChanged(ref _selectedType, value);
       }
     }
@@ -93,11 +143,7 @@ namespace DesktopUI2.ViewModels
       set => this.RaiseAndSetIfChanged(ref _visibleMappingValues, value);
     }
 
-    public ISingleValueToMap SelectedMappingValue
-    {
-      get => _selectedMappingValue;
-      set => this.RaiseAndSetIfChanged(ref _selectedMappingValue, value);
-    }
+    public ObservableCollection<ISingleValueToMap> SelectedMappingValues { get; } = new();
 
     private IEnumerable<string> GetCategoryOrAll(string category)
     {

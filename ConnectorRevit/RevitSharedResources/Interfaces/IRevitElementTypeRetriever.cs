@@ -16,6 +16,8 @@ namespace RevitSharedResources.Interfaces
   {
     public string? GetElementType(Base @base);
     public void SetElementType(Base @base, string type);
+    public string? GetElementFamily(Base @base);
+    public void SetElementFamily(Base @base, string family);
     public bool CacheContainsTypeWithName(string category, string baseType);
     public IEnumerable<ElementType> GetOrAddAvailibleTypes(IRevitCategoryInfo typeInfo);
     public IEnumerable<ElementType> GetAllCachedElementTypes();

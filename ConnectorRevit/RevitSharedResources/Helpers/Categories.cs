@@ -110,23 +110,31 @@ public static class Categories
 #endif
   };
 
-  public static Dictionary<string, RevitCategoryInfo> All { get; } = new(StringComparer.OrdinalIgnoreCase)
+  public static Dictionary<string, RevitCategoryInfo> All { get; } 
+
+  static Categories()
   {
-    { nameof(CableTray), CableTray },
-    { nameof(Ceiling), Ceiling },
-    { nameof(Column), Column },
-    { nameof(Conduit), Conduit },
-    { nameof(Duct), Duct },
-    { nameof(Floor), Floor },
-    { nameof(FamilyInstance), FamilyInstance },
-    { nameof(Pipe), Pipe },
-    { nameof(Roof), Roof },
-    { nameof(Railing), Railing },
-    { nameof(StructuralFraming), StructuralFraming },
-    { nameof(Wall), Wall },
-    { nameof(Wire), Wire },
-    { nameof(Undefined), Undefined },
-  };
+    All = new(StringComparer.OrdinalIgnoreCase)
+    {
+      { nameof(CableTray), CableTray },
+      { nameof(Ceiling), Ceiling },
+      { nameof(Column), Column },
+      { nameof(Conduit), Conduit },
+      { nameof(Door), Door },
+      { nameof(Duct), Duct },
+      { nameof(FamilyInstance), FamilyInstance },
+      { nameof(Floor), Floor },
+      { nameof(Furniture), Furniture },
+      { nameof(Pipe), Pipe },
+      { nameof(Roof), Roof },
+      { nameof(Railing), Railing },
+      { nameof(StructuralFraming), StructuralFraming },
+      { nameof(Wall), Wall },
+      { nameof(Window), Window },
+      { nameof(Wire), Wire },
+      { nameof(Undefined), Undefined },
+    };
+  }
   public static RevitCategoryInfo CableTray { get; } = new(
     nameof(CableTray),
     typeof(DB.Electrical.CableTray),
@@ -154,6 +162,14 @@ public static class Categories
     typeof(DB.Electrical.ConduitType),
     new List<BuiltInCategory>()
   );
+  public static RevitCategoryInfo Door { get; } = new(
+    nameof(Door),
+    typeof(DB.FamilyInstance),
+    typeof(DB.FamilySymbol),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_Doors
+    });
   public static RevitCategoryInfo Duct { get; } = new(
     nameof(Duct),
     typeof(DB.Mechanical.Duct),
@@ -163,6 +179,12 @@ public static class Categories
         BuiltInCategory.OST_DuctCurves,
         BuiltInCategory.OST_FlexDuctCurves
     });
+  public static RevitCategoryInfo FamilyInstance { get; } = new(
+    nameof(FamilyInstance),
+    typeof(DB.FamilyInstance),
+    typeof(DB.FamilySymbol),
+    new List<BuiltInCategory>()
+    );
   public static RevitCategoryInfo Floor { get; } = new(
     nameof(Floor),
     typeof(DB.Floor),
@@ -171,12 +193,14 @@ public static class Categories
     {
         BuiltInCategory.OST_Floors
     });
-  public static RevitCategoryInfo FamilyInstance { get; } = new(
-    nameof(FamilyInstance),
+  public static RevitCategoryInfo Furniture { get; } = new(
+    nameof(Furniture),
     typeof(DB.FamilyInstance),
     typeof(DB.FamilySymbol),
-    new List<BuiltInCategory>()
-    );
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_Furniture
+    });
   //public static RevitCategoryInfo Material { get; } = new(
   //  nameof(Material), 
   //  typeof(DB.Material), 
@@ -226,6 +250,14 @@ public static class Categories
     new List<BuiltInCategory>
     {
         BuiltInCategory.OST_Walls
+    });
+  public static RevitCategoryInfo Window { get; } = new(
+    nameof(Window),
+    typeof(DB.FamilyInstance),
+    typeof(DB.FamilySymbol),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_Windows
     });
   public static RevitCategoryInfo Wire { get; } = new(
     nameof(Wire),

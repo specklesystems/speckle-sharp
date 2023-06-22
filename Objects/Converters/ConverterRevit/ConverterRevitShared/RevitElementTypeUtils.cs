@@ -68,6 +68,31 @@ namespace Objects.Converter.Revit
           break;
       };
     }
+    public string? GetElementFamily(Base @base)
+    {
+      string family = null;
+      switch (@base)
+      {
+        case Other.Revit.RevitInstance el:
+          family = el.typedDefinition?.family;
+          break;
+      };
+      return family ?? @base["family"] as string;
+    }
+    
+    public void SetElementFamily(Base @base, string family)
+    {
+      switch (@base)
+      {
+        case Other.Revit.RevitInstance el:
+          if (el.typedDefinition == null) goto default;
+          el.typedDefinition.family = family;
+          break;
+        default:
+          @base["family"] = family;
+          break;
+      };
+    }
 
     public bool CacheContainsTypeWithName(string category, string baseType)
     {

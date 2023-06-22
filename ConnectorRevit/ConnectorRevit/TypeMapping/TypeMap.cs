@@ -14,10 +14,15 @@ namespace ConnectorRevit.TypeMapping
     private Dictionary<string, SingleCategoryMap> categoryToCategoryMap = new();
     [JsonIgnore]
     private Dictionary<Base, ISingleValueToMap> baseToMappingValue = new();
+    [JsonIgnore]
+    private HashSet<string> baseIds = new();
 
-    public void AddIncomingType(Base @base, string incomingType, string category, string initialGuess, out bool isNewType, bool overwriteExisting = false)
+    public void AddIncomingType(Base @base, string incomingType, string incomingFamily, string category, string initialGuess, out bool isNewType, bool overwriteExisting = false)
     {
       isNewType = false;
+
+      if (baseIds.Contains(@base.id)) return;
+      baseIds.Add(@base.id);
 
       // add empty category if it isn't already present
       if (!categoryToCategoryMap.TryGetValue(category, out var categoryMappingValues))
@@ -29,7 +34,7 @@ namespace ConnectorRevit.TypeMapping
       if (!categoryMappingValues.TryGetMappingValue(incomingType, out var singleValueToMap) || overwriteExisting)
       {
         isNewType = true;
-        singleValueToMap = new MappingValue(incomingType, initialGuess, true);
+        singleValueToMap = new MappingValue(incomingType, initialGuess, incomingFamily, true);
         categoryMappingValues.AddMappingValue(singleValueToMap);
       }
 

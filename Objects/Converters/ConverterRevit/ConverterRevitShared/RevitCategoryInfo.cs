@@ -32,7 +32,7 @@ namespace Objects.Converter.Revit
 
     public static RevitCategoryInfo GetRevitCategoryInfoStatic(Base @base)
     {
-      return @base switch
+      var categoryInfo = @base switch
       {
         BER.AdaptiveComponent _ => SHC.FamilyInstance,
         BE.Beam _ => SHC.StructuralFraming,
@@ -58,6 +58,16 @@ namespace Objects.Converter.Revit
         OSG.Element2D => SHC.Floor,
         _ => SHC.Undefined,
       };
+
+      if (categoryInfo != SHC.FamilyInstance) return categoryInfo;
+
+      var instanceCategory = @base["category"] as string;
+      if (string.IsNullOrEmpty(instanceCategory)) return categoryInfo;
+
+      var newCategoryInfo = GetRevitCategoryInfoStatic(instanceCategory);
+
+      if (newCategoryInfo != SHC.Undefined) return newCategoryInfo;
+      return categoryInfo;
     }
 
     /// <summary>
@@ -67,8 +77,10 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static RevitCategoryInfo GetRevitCategoryInfoStatic(string categoryName)
     {
-      var match = SHC.All[categoryName];
-      if (match != default) return match;
+      if (SHC.All.TryGetValue(categoryName, out var match))
+      {
+        return match;
+      }
 
       foreach (var categoryInfo in SHC.All.Values)
       {
