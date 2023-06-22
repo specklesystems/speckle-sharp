@@ -13,11 +13,6 @@ using Autodesk.AutoCAD.DatabaseServices;
 using Autodesk.AutoCAD.Geometry;
 using Autodesk.AutoCAD.EditorInput;
 
-#if ADVANCESTEEL2023
-using Autodesk.AdvanceSteel.DocumentManagement;
-using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
-#endif
-
 #if CIVIL2021 || CIVIL2022 || CIVIL2023
 using Autodesk.Aec.ApplicationServices;
 #endif
