@@ -246,6 +246,17 @@ public partial class Client : IDisposable
         errors.Any(
           e =>
             e.Extensions != null
+            && (
+              e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
+            )
+        )
+      )
+        throw new SpeckleGraphQLStreamNotFoundException<T>(request, response);
+
+      if (
+        errors.Any(
+          e =>
+            e.Extensions != null
             && e.Extensions.Contains(new KeyValuePair<string, object>("code", "INTERNAL_SERVER_ERROR"))
         )
       )

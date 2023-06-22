@@ -120,7 +120,11 @@ private:
 
 			location.AppendToLocal (IO::Name (FolderName));
 			location.AppendToLocal (IO::Name ("bin"));
+#ifdef DEBUG
 			location.AppendToLocal (IO::Name ("Debug"));
+#else
+			location.AppendToLocal (IO::Name ("Release"));
+#endif
 			location.AppendToLocal (IO::Name ("net6.0"));
 			location.AppendToLocal (IO::Name (FileName));
 		}
