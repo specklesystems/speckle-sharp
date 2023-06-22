@@ -351,7 +351,8 @@ namespace Objects.Converter.AutocadCivil
       };
 
       // add attributes
-      instance["attributes"] = attributes;
+      if (attributes.Any())
+        instance["attributes"] = attributes;
 
       return instance;
     }

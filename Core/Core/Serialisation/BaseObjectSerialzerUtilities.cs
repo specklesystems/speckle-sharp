@@ -217,9 +217,23 @@ internal static class SerializationUtilities
       var type = KitManager.Types.FirstOrDefault(tp => tp.FullName == typeName);
       if (type != null)
         return type;
+
+      //To allow for backwards compatibility saving deserialization target types.
+      //We also check a ".Deprecated" prefixed namespace
+      string deprecatedTypeName = GetDeprecatedTypeName(typeName);
+
+      var deprecatedType = KitManager.Types.FirstOrDefault(tp => tp.FullName == deprecatedTypeName);
+      if (deprecatedType != null)
+        return deprecatedType;
     }
 
     return typeof(Base);
+  }
+
+  internal static string GetDeprecatedTypeName(string typeName, string deprecatedSubstring = "Deprecated.")
+  {
+    int lastDotIndex = typeName.LastIndexOf('.');
+    return typeName.Insert(lastDotIndex + 1, deprecatedSubstring);
   }
 
   internal static Dictionary<string, PropertyInfo> GetTypePropeties(string objFullType)

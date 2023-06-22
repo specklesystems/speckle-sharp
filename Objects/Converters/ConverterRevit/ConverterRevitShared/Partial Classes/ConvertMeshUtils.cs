@@ -12,6 +12,13 @@ namespace Objects.Converter.Revit
   {
     public Options SolidDisplayValueOptions = new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true };
 
+    public Options ViewSpecificOptions { get; set; }
+
+    /// <summary>
+    /// We're caching a dictionary of graphic styles and their ids as it can be a costly operation doing Document.GetElement(solid.GraphicsStyleId) for every solid
+    /// </summary>
+    private Dictionary<string, GraphicsStyle> _graphicStyleCache = new Dictionary<string, GraphicsStyle>();
+
     /// <summary>
     /// Retreives the meshes on an element to use as the speckle displayvalue
     /// </summary>
@@ -36,7 +43,7 @@ namespace Objects.Converter.Revit
         return displayMeshes;
       }
 
-      options ??= new Options();
+      options = ViewSpecificOptions ?? options ?? new Options();
 
       GeometryElement geom = null;
       try
@@ -49,6 +56,9 @@ namespace Objects.Converter.Revit
         geom = element.get_Geometry(options);
       }
 
+      if (geom == null)
+        return displayMeshes;
+
       // retrieves all meshes and solids from a geometry element
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
@@ -60,11 +70,16 @@ namespace Objects.Converter.Revit
           switch (geomObj)
           {
             case Solid solid:
-              if (solid.Faces.Size > 0 && Math.Abs(solid.SurfaceArea) > 0) // skip invalid solid
+              // skip invalid solid
+              if (solid.Faces.Size == 0 || Math.Abs(solid.SurfaceArea) == 0)
+                break;
+
+              if (!IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document))
                 solids.Add(solid);
               break;
             case DB.Mesh mesh:
-              meshes.Add(mesh);
+              if (!IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document))
+                meshes.Add(mesh);
               break;
             case GeometryInstance instance:
               var instanceGeo = isConvertedAsInstance ? instance.GetSymbolGeometry() : instance.GetInstanceGeometry();
@@ -82,6 +97,23 @@ namespace Objects.Converter.Revit
       displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, isConvertedAsInstance));
 
       return displayMeshes;
+    }
+
+    /// <summary>
+    /// Exclude light source cones and potentially other geometries by their graphic style
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="doc"></param>
+    /// <returns></returns>
+    private bool IsSkippableGraphicStyle(ElementId id, Document doc)
+    {
+      if (!_graphicStyleCache.ContainsKey(id.ToString()))
+        _graphicStyleCache.Add(id.ToString(), doc.GetElement(id) as GraphicsStyle);
+      var graphicStyle = _graphicStyleCache[id.ToString()];
+
+      if (graphicStyle != null && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)(BuiltInCategory.OST_LightingFixtureSource))
+        return true;
+      return false;
     }
 
     /// <summary>

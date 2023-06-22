@@ -372,6 +372,5 @@ speckle-sharp-ci-tools
 .circleci/contiuation-config.yml
 ConnectorNavisworks/ConnectorNavisworks/Sample Models
 ConnectorArchicad/AddOn/Build*
-ConnectorArchicad/ConnectorArchicad/Properties
 **/dist/
 
