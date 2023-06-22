@@ -137,7 +137,7 @@ namespace Speckle.ConnectorRevit.UI
         CurrentDoc.Document.ActiveView.Id
       ).WhereElementIsNotElementType();
       var elementIds = collector.ToElements().Select(el => el.UniqueId).ToList();
-      ;
+
 
       return elementIds;
     }
@@ -188,6 +188,30 @@ namespace Speckle.ConnectorRevit.UI
 
       return docs;
     }
+
+    /// <summary>
+    /// Given the filter in use by a stream returns the document elements that match it.
+    /// The elements returned are filtered by Design Option based on setting value
+    /// </summary>
+    /// <param name="filter"></param>
+    /// <returns></returns>
+    private List<Element> GetSelectionFilterObjectsWithDesignOptions(ISpeckleConverter converter, ISelectionFilter filter)
+    {
+      var selection = GetSelectionFilterObjects(converter, filter);
+
+      var activeDesignOption = DesignOption.GetActiveDesignOptionId(CurrentDoc.Document);
+      if (activeDesignOption != ElementId.InvalidElementId)
+      {
+        var includeAllDesignOptions = CurrentSettings?.FirstOrDefault(x => x.Slug == "include-design-options") as CheckBoxSetting;
+        if (includeAllDesignOptions == null || !includeAllDesignOptions.IsChecked)
+        {
+          selection = selection.Where(x => x.DesignOption == null || x.DesignOption.Id == activeDesignOption).ToList();
+        }
+      }
+
+      return selection;
+    }
+
 
     /// <summary>
     /// Given the filter in use by a stream returns the document elements that match it.

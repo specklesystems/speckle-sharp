@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using DesktopUI2.Models.Settings;
@@ -44,6 +44,7 @@ namespace Speckle.ConnectorRevit.UI
         new CheckBoxSetting {Slug = "linkedmodels-send", Name = "Send Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models in the selection filters when sending"},
         new CheckBoxSetting {Slug = "linkedmodels-receive", Name = "Receive Linked Models", Icon ="Link", IsChecked= false, Description = "Include Linked Models when receiving NOTE: elements from linked models will be received in the current document"},
         new CheckBoxSetting {Slug = "recieve-objects-mesh", Name = "Receive Objects as Direct Mesh", Icon = "Link", IsChecked = false, Description = "Recieve the stream as a Meshes only"},
+        new CheckBoxSetting {Slug = "include-design-options", Name = "Include Design Options", Icon ="CheckAll", IsChecked= false, Description = "Include all design options that satisfy the current selection filter"},
         new MultiSelectBoxSetting { Slug = "disallow-join", Name = "Disallow Join For Elements", Icon = "CallSplit", Description = "Determine which objects should not be allowed to join by default when receiving",
           Values = new List<string>() { ArchitecturalWalls, StructuralWalls, StructuralFraming } },
         new ListBoxSetting {Slug = "pretty-mesh", Name = "Mesh Import Method", Icon ="ChartTimelineVarient", Values = prettyMeshOptions, Selection = defaultValue, Description = "Determines the display style of imported meshes"},
