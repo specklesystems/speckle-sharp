@@ -67,7 +67,7 @@ public static class AccountManager
   public static async Task<UserInfo> GetUserInfo(string token, string server)
   {
     using var httpClient = Http.GetHttpProxyClient();
-    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+    Http.AddAuthHeader(httpClient, token);
 
     using var gqlClient = new GraphQLHttpClient(
       new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },
@@ -96,7 +96,7 @@ public static class AccountManager
     try
     {
       using var httpClient = Http.GetHttpProxyClient();
-      httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+      Http.AddAuthHeader(httpClient, token);
 
       using var client = new GraphQLHttpClient(
         new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(server), "/graphql") },

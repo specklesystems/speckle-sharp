@@ -72,9 +72,8 @@ public class Account : IEquatable<Account>
   public async Task<UserInfo> Validate()
   {
     using var httpClient = Http.GetHttpProxyClient();
-
-    httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
-
+    Http.AddAuthHeader(httpClient, token);
+    
     using var gqlClient = new GraphQLHttpClient(
       new GraphQLHttpClientOptions { EndPoint = new Uri(new Uri(serverInfo.url), "/graphql") },
       new NewtonsoftJsonSerializer(),
