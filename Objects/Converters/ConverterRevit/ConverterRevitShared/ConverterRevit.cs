@@ -4,6 +4,8 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -51,7 +53,8 @@ namespace Objects.Converter.Revit
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } =
+      new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
@@ -112,11 +115,23 @@ namespace Objects.Converter.Revit
       {
         PreviouslyReceivedObjectIds = cache;
       }
-      else
+      else if (doc is DB.View view)
       {
-        Doc = (Document)doc;
+        // setting the view as a 2d view will result in no objects showing up, so only do it if it's a 3D view
+        if (view is View3D view3D)
+        {
+          ViewSpecificOptions = new Options() { View = view, ComputeReferences = true };
+        }
+      }
+      else if (doc is Document document)
+      {
+        Doc = document;
         Report.Log($"Using document: {Doc.PathName}");
         Report.Log($"Using units: {ModelUnits}");
+      }
+      else
+      {
+        throw new ArgumentException($"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}");
       }
     }
 
@@ -505,7 +520,11 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
+          return TryDirectShapeToNative(
+            new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId },
+            o.displayValue,
+            ToNativeMeshSetting
+          );
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);

@@ -730,9 +730,18 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
+
+
     if (streamAccountWrapper != null)
     {
       var streamState = new StreamState(streamAccountWrapper as StreamAccountWrapper);
+
+      if (!await streamState.Client.IsStreamAccessible(streamState.StreamId).ConfigureAwait(true))
+      {
+        Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
+        return;
+      }
+
       MainViewModel.RouterInstance.Navigate.Execute(
         new StreamViewModel(streamState, HostScreen, RemoveSavedStreamCommand)
       );
@@ -745,9 +754,19 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
     if (await CheckIsOffline().ConfigureAwait(true))
       return;
 
+
+
     if (streamViewModel != null && streamViewModel is StreamViewModel svm && !svm.NoAccess)
+    {
+
       try
       {
+        if (!await svm.Client.IsStreamAccessible(svm.Stream.id).ConfigureAwait(true))
+        {
+          Dialogs.ShowDialog("Stream not found", "Please ensure the stream exists and that you have access to it.", DialogIconKind.Error);
+          return;
+        }
+
         svm.UpdateVisualParentAndInit(HostScreen);
         MainViewModel.RouterInstance.Navigate.Execute(svm);
         Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream Edit" } });
@@ -757,6 +776,8 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
       {
         SpeckleLog.Logger.Error(ex, "Failed to open saved stream {exceptionMessage}", ex.Message);
       }
+    }
+
   }
 
   public void ToggleDarkThemeCommand()

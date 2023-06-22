@@ -63,6 +63,13 @@ public partial class ConnectorBindingsNavisworks
         Name = "Include View",
         IsChecked = true,
         Description = "Include the current display view in the commit."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "full-tree",
+        Name = "Include Full Hierarchy",
+        IsChecked = false,
+        Description = "Include the full root to leaf selection hierarchy of nodes in the commit."
       }
     };
   }

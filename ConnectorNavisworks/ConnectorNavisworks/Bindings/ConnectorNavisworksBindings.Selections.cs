@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
-using static Speckle.ConnectorNavisworks.Utilities;
+using Speckle.ConnectorNavisworks.Other;
 using Application = Autodesk.Navisworks.Api.Application;
 using Cursor = System.Windows.Forms.Cursor;
 
@@ -27,20 +27,13 @@ public partial class ConnectorBindingsNavisworks
     // Storing as a Set for consistency with the converter's handling of fragments and paths.
     var selectedObjects = new HashSet<string>();
 
-    var selectedItems = appSelectedItems;
-    var visible = selectedItems.Where(IsElementVisible);
-    //.SelectMany(x=>x.DescendantsAndSelf)
+    var visible = appSelectedItems.Where(IsElementVisible);
     var visibleItems = visible.ToList();
-    var ids = visibleItems.Select(GetPseudoId).Where(x => x != null);
+    var ids = visibleItems.Select(i => new Element().GetElement(i).PseudoId).Where(x => x != null);
 
     selectedObjects.UnionWith(ids);
 
     Cursor.Current = Cursors.Default;
-
-    if (visibleItems.Any() && selectedObjects.Count == 0)
-    {
-      // Handle Root Node Selection
-    }
 
     return selectedObjects.ToList();
   }
