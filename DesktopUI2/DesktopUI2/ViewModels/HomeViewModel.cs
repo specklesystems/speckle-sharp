@@ -639,13 +639,6 @@ public class HomeViewModel : ReactiveObject, IRoutableViewModel
 
   public async void AddFromUrlCommand()
   {
-    var vm = new TypeMappingOnReceiveViewModel();
-
-    var mappingView = new MappingViewDialog
-    {
-      DataContext = vm
-    };
-    await mappingView.ShowDialog<ITypeMap>();
     var clipboard = await Application.Current.Clipboard.GetTextAsync().ConfigureAwait(true);
 
     Uri uri;
