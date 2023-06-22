@@ -39,15 +39,23 @@
     </ItemGroup>
 
     <Target Name="AfterBuildMigrated" AfterTargets="Build">
-        <!-- Generate customization dll -->
-        <CSC TargetType="library"
-            Resources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resx"
-            OutputAssembly="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
-        <!-- Icons stuff end -->
-        <ItemGroup>
-            <Dll Include="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
-        </ItemGroup>
+      <!-- Icons stuff -->
+      <!-- Get System.Drawing.dll -->
+      <GetReferenceAssemblyPaths TargetFrameworkMoniker=".NETFramework, Version=v4.8">
+        <Output TaskParameter="FullFrameworkReferenceAssemblyPaths" PropertyName="FrameworkAssembliesPath" />
+      </GetReferenceAssemblyPaths>
+      <!-- Get assembly -->
+      <GetAssemblyIdentity AssemblyFiles="$(OutDir)$(TargetName).dll">
+        <Output TaskParameter="Assemblies" ItemName="AssemblyInfo" />
+      </GetAssemblyIdentity>
+      <!-- Generate customization dll -->
+      <GenerateResource SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" UseSourcePath="true" Sources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resx" OutputResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" References="$(FrameworkAssembliesPath)System.Drawing.dll" />
+      <AL SdkToolsPath="$(TargetFrameworkSDKToolsDirectory)" TargetType="library" EmbedResources="$(ProjectDir)\SpeckleConnectorDynamoFunctionsImages.resources" OutputAssembly="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" Version="%(AssemblyInfo.Version)" />
+      <!-- Icons stuff end -->
+      <ItemGroup>
+        <Dll Include="$(OutDir)SpeckleConnectorDynamoFunctions.customization.dll" />
+      </ItemGroup>
         <Copy SourceFiles="@(Dll)"
-            DestinationFolder="$(ProjectDir)\..\ConnectorDynamo\bin\$(ConfigurationName)" />
+            DestinationFolder="$(ProjectDir)\..\ConnectorDynamo\bin\$(ConfigurationName)\win-x64\" />
     </Target>
 </Project>

@@ -15,7 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.Bolts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.Plates.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.ASGeometry.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)advancesteel\ConverterAutocadCivil.Beams.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Advancesteel\ConverterAutocadCivil.Beams.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\ASBaseProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\ASPropertiesCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\ASProperty.cs" />
@@ -33,5 +33,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Civil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterAutocadCivil.Geometry.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="$(MSBuildThisFileDirectory)AdvanceSteel\" />
   </ItemGroup>
 </Project>

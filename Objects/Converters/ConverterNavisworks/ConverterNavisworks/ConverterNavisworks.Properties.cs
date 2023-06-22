@@ -9,11 +9,13 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.Navisworks;
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   private static Base GetPropertiesBase(ModelItem element)
   {
-    Base propertiesBase = new();
+    Base propertiesBase = new() { ["name"] = "Properties" };
+
     PropertyCategoryCollection userVisiblePropertyCategories = element.GetUserFilteredPropertyCategories();
 
     foreach (PropertyCategory propertyCategory in userVisiblePropertyCategories)

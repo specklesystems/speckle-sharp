@@ -102,7 +102,11 @@ public class ExtendSpeckleObjectByKeyValueV2TaskComponent : SelectKitTaskCapable
         if (inputObj != null)
         {
           var value = inputObj.GetType().GetProperty("Value")?.GetValue(inputObj);
-          if (Converter.CanConvertToSpeckle(value))
+          if (value is Base baseObj)
+          {
+            @base = baseObj;
+          }
+          else if (Converter.CanConvertToSpeckle(value))
           {
             @base = Converter.ConvertToSpeckle(value);
             AddRuntimeMessage(

@@ -11,6 +11,7 @@ using Speckle.Core.Models;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Plane = Objects.Geometry.Plane;
 
 namespace Objects.Converter.RhinoGh;
 
@@ -59,9 +60,24 @@ public partial class ConverterRhinoGh
 
         //NOTE: this works for BOTH the Wall.cs class and RevitWall.cs class etc :)
         case Wall o:
-          var extrusion = (RH.Extrusion)@object.Geometry;
-          var bottomCrv = extrusion.Profile3d(new RH.ComponentIndex(RH.ComponentIndexType.ExtrusionBottomProfile, 0));
-          var topCrv = extrusion.Profile3d(new RH.ComponentIndex(RH.ComponentIndexType.ExtrusionTopProfile, 0));
+          var wallBrep = @object.Geometry is RH.Brep wallB ? wallB : ((RH.Extrusion)@object.Geometry)?.ToBrep();
+          if (wallBrep == null)
+          {
+            throw new ArgumentException("Wall geometry can only be a brep or extrusion");
+          }
+
+          var wallEdges = wallBrep.DuplicateNakedEdgeCurves(true, false);
+          var topBottomEdges = wallEdges
+            .Where(o => Math.Abs(o.PointAtStart.Z - o.PointAtEnd.Z) < Doc.ModelAbsoluteTolerance)
+            .OrderBy(o => o.PointAtStart.Z)
+            .ToList();
+          if (topBottomEdges.Count != 2)
+          {
+            throw new ArgumentException("Wall geometry has invalid edges");
+          }
+
+          var bottomCrv = topBottomEdges.First();
+          var topCrv = topBottomEdges.Last();
           var height = topCrv.PointAtStart.Z - bottomCrv.PointAtStart.Z;
           o.height = height;
           o.baseLine = CurveToSpeckle(bottomCrv);
@@ -120,12 +136,13 @@ public partial class ConverterRhinoGh
           {
             o.basePoint = PointToSpeckle(p);
           }
-          else if (@object is InstanceObject)
+          else if (@object is InstanceObject instanceObject)
           {
-            var block = BlockInstanceToSpeckle(@object as InstanceObject);
-            o.basePoint = block.GetInsertionPlane().origin;
-            block.transform.Decompose(out Vector3 scale, out Quaternion rotation, out Vector4 translation);
-            o.rotation = Math.Acos(rotation.W) * 2;
+            var block = BlockInstanceToSpeckle(instanceObject);
+            var plane = block.GetInsertionPlane();
+            o.basePoint = plane.origin;
+            var angle = RH.Vector3d.VectorAngle(RH.Vector3d.XAxis, VectorToNative(plane.xdir), RH.Plane.WorldXY);
+            o.rotation = angle;
           }
 
           break;

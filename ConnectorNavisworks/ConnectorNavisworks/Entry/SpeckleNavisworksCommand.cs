@@ -15,7 +15,7 @@ using Application = Autodesk.Navisworks.Api.Application;
 namespace Speckle.ConnectorNavisworks.Entry;
 
 [
-  DockPanePlugin(400, 400, FixedSize = false, AutoScroll = true, MinimumHeight = 410, MinimumWidth = 250),
+  DockPanePlugin(450, 750, FixedSize = false, AutoScroll = true, MinimumHeight = 410, MinimumWidth = 250),
   Plugin(
     LaunchSpeckleConnector.Plugin,
     "Speckle",
@@ -27,6 +27,8 @@ namespace Speckle.ConnectorNavisworks.Entry;
 ]
 internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
 {
+  internal ConnectorBindingsNavisworks Bindings;
+
   public override Control CreateControlPane()
   {
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
@@ -42,9 +44,9 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
 
     var navisworksActiveDocument = Application.ActiveDocument;
 
-    var bindings = new ConnectorBindingsNavisworks(navisworksActiveDocument);
-    bindings.RegisterAppEvents();
-    var viewModel = new MainViewModel(bindings);
+    Bindings = new ConnectorBindingsNavisworks(navisworksActiveDocument);
+    Bindings.RegisterAppEvents();
+    var viewModel = new MainViewModel(Bindings);
 
     Analytics.TrackEvent(Analytics.Events.Registered, null, false);
 

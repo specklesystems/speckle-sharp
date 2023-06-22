@@ -289,11 +289,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
       var stream = await state.Client.StreamGet(state.StreamId);
 
-      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = commit;
 
       Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.VersionedAppName);
+      await ConnectorHelpers.TryCommitReceived(state, commit, Utils.VersionedAppName, progress.CancellationToken);
 
       // invoke conversions on the main thread via control
       try
@@ -1020,7 +1020,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         actualCommit.parents = new List<string>() { state.PreviousCommitId };
       }
 
-      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
       return commitId;
     }
 
