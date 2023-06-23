@@ -74,60 +74,53 @@
         FontWeight="Bold">
         Assigned To
       </TextBlock>
-      <ScrollViewer
-        Name="ScrollParent"
+      <Border
         Grid.Row="1"
         Grid.ColumnSpan="2"
+        Margin="10,5,10,10"
         assists:ShadowAssist.ShadowDepth="Depth2"
-        Background="Transparent"
-        VerticalScrollBarVisibility="Auto">
-        <Border
-          Margin="10,5,15,10"
-          assists:ShadowAssist.ShadowDepth="Depth2"
-          Background="{DynamicResource MaterialDesignCardBackground}"
-          CornerRadius="5">
-          <StackPanel>
-            <ListBox
-              Items="{Binding VisibleMappingValues}"
-              ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-              SelectedItems="{Binding SelectedMappingValues}"
-              SelectionMode="Multiple">
-              <ListBox.ItemTemplate>
-                <DataTemplate>
-                  <Grid ColumnDefinitions="*,*">
-                    <TextBlock
-                      Grid.Column="0"
-                      Margin="5"
-                      Text="{Binding IncomingTypeDisplayName}"
-                      TextTrimming="CharacterEllipsis"
-                      TextWrapping="Wrap" />
-                    <TextBlock
-                      Name="OutgoingType"
-                      Grid.Column="1"
-                      Margin="0"
-                      VerticalAlignment="Center"
-                      Focusable="False"
-                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                      Text="{Binding OutgoingType}"
-                      TextTrimming="CharacterEllipsis"
-                      TextWrapping="Wrap" />
-                    <TextBlock
-                      Grid.Column="1"
-                      Margin="0"
-                      VerticalAlignment="Center"
-                      Focusable="False"
-                      Foreground="Gray"
-                      IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-                      Text="{Binding InitialGuess}"
-                      TextTrimming="CharacterEllipsis"
-                      TextWrapping="Wrap" />
-                  </Grid>
-                </DataTemplate>
-              </ListBox.ItemTemplate>
-            </ListBox>
-          </StackPanel>
-        </Border>
-      </ScrollViewer>
+        Background="{DynamicResource MaterialDesignCardBackground}"
+        CornerRadius="5">
+        <ListBox
+          Height="{Binding $parent[Border].Bounds.Height}"
+          Items="{Binding VisibleMappingValues}"
+          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+          SelectedItems="{Binding SelectedMappingValues}"
+          SelectionMode="Multiple">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <Grid ColumnDefinitions="*,*">
+                <TextBlock
+                  Grid.Column="0"
+                  Margin="5"
+                  Text="{Binding IncomingTypeDisplayName}"
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="Wrap" />
+                <TextBlock
+                  Name="OutgoingType"
+                  Grid.Column="1"
+                  Margin="0"
+                  VerticalAlignment="Center"
+                  Focusable="False"
+                  IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                  Text="{Binding OutgoingType}"
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="Wrap" />
+                <TextBlock
+                  Grid.Column="1"
+                  Margin="0"
+                  VerticalAlignment="Center"
+                  Focusable="False"
+                  Foreground="Gray"
+                  IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
+                  Text="{Binding InitialGuess}"
+                  TextTrimming="CharacterEllipsis"
+                  TextWrapping="Wrap" />
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
     </Grid>
 
 
