@@ -233,7 +233,7 @@ public partial class ConverterNavisworks
     var @base = CategoryToSpeckle(element);
 
     var firstChild = element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName));
-    var parent = element.Ancestors.LastOrDefault(p => !string.IsNullOrEmpty(p.DisplayName));
+    var parent = element.Ancestors.FirstOrDefault(p => !string.IsNullOrEmpty(p.DisplayName));
 
     var resolvedName = string.IsNullOrEmpty(element.DisplayName)
       ? string.IsNullOrEmpty(firstChild?.DisplayName)
@@ -241,7 +241,7 @@ public partial class ConverterNavisworks
         : firstChild.DisplayName
       : element.DisplayName;
 
-    ((Collection)@base).name = string.IsNullOrEmpty(resolvedName)
+    @base["name"] = string.IsNullOrEmpty(resolvedName)
       ? (
         element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
       ).ToString()
