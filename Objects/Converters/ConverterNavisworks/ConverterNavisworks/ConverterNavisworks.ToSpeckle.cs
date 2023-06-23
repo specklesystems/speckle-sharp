@@ -242,7 +242,9 @@ public partial class ConverterNavisworks
       : element.DisplayName;
 
     ((Collection)@base).name = string.IsNullOrEmpty(resolvedName)
-      ? element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon).ToString()
+      ? (
+        element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
+      ).ToString()
       : GetSanitizedPropertyName(resolvedName);
 
     // Geometry items have no children
