@@ -131,7 +131,7 @@ public partial class ConnectorBindingsNavisworks
     }
     finally
     {
-      ResetOptionsManager();
+      _settingsHandler.RestoreInternalPropertiesDisplay();
     }
 
     Cursor.Current = Cursors.Default;
@@ -149,18 +149,19 @@ public partial class ConnectorBindingsNavisworks
   }
 
   /// <summary>
-  ///
+  /// The SettingsManager can be seeded with the options for the conversion.
   /// </summary>
   /// <param name="state"></param>
   /// <exception cref="NotImplementedException"></exception>
   private void InitializeManagerOptionsForSend(StreamState state)
   {
-    throw new NotImplementedException();
-  }
+    var internalPropertySettings = state.Settings.Find(x => x.Slug == "internal-properties");
+    var internalPropertyNames = state.Settings.Find(x => x.Slug == "internal-property-names");
 
-  private void ResetOptionsManager()
-  {
-    throw new NotImplementedException();
+    if (internalPropertySettings != null && ((CheckBoxSetting)internalPropertySettings).IsChecked)
+      _settingsHandler.ShowInternalProperties();
+    if (internalPropertyNames != null && ((CheckBoxSetting)internalPropertyNames).IsChecked)
+      _settingsHandler.UseInternalPropertyNames();
   }
 
   /// <summary>
@@ -177,6 +178,7 @@ public partial class ConnectorBindingsNavisworks
 
     if (state.Filter == null)
       throw new InvalidOperationException("No filter provided. Nothing to Send.");
+
     if (state.Filter.Slug == "all")
       throw new InvalidOperationException("Everything Mode is not yet implemented. Send stopped.");
   }
