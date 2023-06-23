@@ -14,7 +14,10 @@ using RevitInstance = Objects.Other.Revit.RevitInstance;
 using RevitSymbolElementType = Objects.BuiltElements.Revit.RevitSymbolElementType;
 using Vector = Objects.Geometry.Vector;
 using Objects.BuiltElements.Revit;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
+using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace Objects.Converter.Revit
 {
@@ -38,13 +41,11 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null && Categories.curtainWallSubElements.Contains(revitFi.Category))
+      if (@base == null && SHC.curtainWallSubElements.HasCategory(revitFi.Category))
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
-        else if (
-          Categories.Contains(new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }, revitFi.Category)
-        )
+        else if (new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }.HasCategory(revitFi.Category))
         {
           var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
           // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
@@ -56,7 +57,7 @@ namespace Objects.Converter.Revit
       }
 
       //beams & braces
-      if (@base == null && Categories.beamCategories.Contains(revitFi.Category))
+      if (@base == null && SHC.beamCategories.HasCategory(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
           @base = BeamToSpeckle(revitFi, out notes);
@@ -66,7 +67,7 @@ namespace Objects.Converter.Revit
 
       //columns
       if (
-        @base == null && Categories.columnCategories.Contains(revitFi.Category)
+        @base == null && SHC.columnCategories.HasCategory(revitFi.Category)
         || revitFi.StructuralType == StructuralType.Column
       )
         @base = ColumnToSpeckle(revitFi, out notes);
