@@ -19,12 +19,25 @@ public partial class NavisworksOptionsManager
   {
     using var optionLock = new LcUOptionLock();
     var rootOptions = GetRoot(optionLock);
-    _autosaveSetting = rootOptions.GetBoolean("general.autosave.enable");
+    var currentSetting = rootOptions.GetBoolean("general.autosave.enable");
 
-    if (_autosaveSetting == enable)
-      return;
+    switch (enable)
+    {
+      // Autosave wasn't turned on at the time that the send operation was started
+      case false when currentSetting == false:
+        _autosaveSetting = false;
+        return;
+      // Autosave was turned on at the time that the send operation was started 
+      case false:
+        _autosaveSetting = true;
+        rootOptions.SetBoolean("general.autosave.enable", false);
+        break;
+      // turn autosave back on if it was on before Send
+      case true when _autosaveSetting:
+        rootOptions.SetBoolean("general.autosave.enable", true);
+        break;
+    }
 
-    rootOptions.SetBoolean("general.autosave.enable", enable);
     SaveGlobalOptions();
   }
 
