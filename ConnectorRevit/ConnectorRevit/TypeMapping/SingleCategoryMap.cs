@@ -19,17 +19,26 @@ namespace ConnectorRevit.TypeMapping
 
     public void AddMappingValue(ISingleValueToMap mappingValue)
     {
-      this.mappingValues[mappingValue.IncomingType] = mappingValue;
+      if (mappingValue is not RevitMappingValue revitMappingValue)
+      {
+        throw new ArgumentException($"the {nameof(AddMappingValue)} function is expecting to be passed a {nameof(RevitMappingValue)}, but was passed a value of type {mappingValue.GetType()}");
+      }
+      this.mappingValues[UniqueTypeName(revitMappingValue.IncomingFamily, revitMappingValue.IncomingType)] = mappingValue;
     }
 
-    public bool TryGetMappingValue(string incomingType, out ISingleValueToMap singleValueToMap)
+    public bool TryGetMappingValue(string? incomingFamily, string incomingType, out ISingleValueToMap singleValueToMap)
     {
-      return mappingValues.TryGetValue(incomingType, out singleValueToMap);
+      return mappingValues.TryGetValue(UniqueTypeName(incomingFamily, incomingType), out singleValueToMap);
     }
 
     public IEnumerable<ISingleValueToMap> GetMappingValues()
     {
       return mappingValues.Values;
+    }
+
+    private static string UniqueTypeName(string? family, string type)
+    {
+      return $"{family}{type}";
     }
   }
 }

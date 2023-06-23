@@ -40,7 +40,9 @@ namespace Objects.Converter.Revit
           type = el.profile?.name;
           break;
       };
-      return type ?? @base["type"] as string;
+
+      if (!string.IsNullOrEmpty(type)) return type;
+      return @base["type"] as string;
     }
     
     public void SetElementType(Base @base, string type)

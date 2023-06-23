@@ -17,7 +17,7 @@ namespace ConnectorRevit.TypeMapping
     [JsonIgnore]
     private HashSet<string> baseIds = new();
 
-    public void AddIncomingType(Base @base, string incomingType, string incomingFamily, string category, string initialGuess, out bool isNewType, bool overwriteExisting = false)
+    public void AddIncomingType(Base @base, string incomingType, string? incomingFamily, string category, ISingleHostType initialGuess, out bool isNewType, bool overwriteExisting = false)
     {
       isNewType = false;
 
@@ -31,10 +31,10 @@ namespace ConnectorRevit.TypeMapping
         categoryToCategoryMap[category] = categoryMappingValues;
       }
 
-      if (!categoryMappingValues.TryGetMappingValue(incomingType, out var singleValueToMap) || overwriteExisting)
+      if (!categoryMappingValues.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap) || overwriteExisting)
       {
         isNewType = true;
-        singleValueToMap = new MappingValue(incomingType, initialGuess, incomingFamily, true);
+        singleValueToMap = new RevitMappingValue(incomingType, initialGuess, incomingFamily, true);
         categoryMappingValues.AddMappingValue(singleValueToMap);
       }
 
@@ -64,14 +64,14 @@ namespace ConnectorRevit.TypeMapping
       }
     }
 
-    public ISingleValueToMap? TryGetMappingValueInCategory(string category, string incomingType)
+    public ISingleValueToMap? TryGetMappingValueInCategory(string category, string? incomingFamily, string incomingType)
     {
       if (!categoryToCategoryMap.TryGetValue(category, out var singleCategoryMap))
       {
         return null;
       }
 
-      if (!singleCategoryMap.TryGetMappingValue(incomingType, out var singleValueToMap)) 
+      if (!singleCategoryMap.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap)) 
       {
         return null;
       }

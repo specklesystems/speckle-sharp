@@ -97,7 +97,7 @@ namespace ConnectorRevit.TypeMapping
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       FamilyImporter familyImporter = null;
 
-      currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
+      await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
       {
         var mappingView = new MappingViewDialog
         {
@@ -119,7 +119,7 @@ namespace ConnectorRevit.TypeMapping
         }
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
-        currentMapping = await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
+        await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
         {
           var mappingView = new MappingViewDialog
           {
@@ -140,25 +140,32 @@ namespace ConnectorRevit.TypeMapping
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
     }
 
-    private static void SetMappedValues(IRevitElementTypeRetriever typeRetriever, ITypeMap currentMapping)
+    private static void SetMappedValues(IRevitElementTypeRetriever typeRetriever, TypeMap currentMapping)
     {
       foreach (var (@base, mappingValue) in currentMapping.GetAllBasesWithMappings())
       {
-        typeRetriever.SetElementType(@base, mappingValue.OutgoingType ?? mappingValue.InitialGuess);
+        var mappedHostType = mappingValue.MappedHostType ?? mappingValue.InitialGuess;
+        if (mappedHostType == null) continue;
+
+        if (mappedHostType is RevitHostType revitHostType)
+        {
+          typeRetriever.SetElementFamily(@base, revitHostType.HostFamilyName);
+        }
+        typeRetriever.SetElementType(@base, mappedHostType.HostTypeName);
       }
     }
 
     /// <summary>
-    /// Since an <see cref="DB.ElementType"/> is a Revit concept, this method just hands the <see cref="Base"/> object to the Converter to figure out the <see cref="DB.ElementType"/>. It also retrieves all possible <see cref="DB.ElementType"/>s for a given category of element and then saves it in a <see cref="HostTypeAsStringContainer"/>. This container will be passed to DUI for user mapping.
+    /// Since an <see cref="DB.ElementType"/> is a Revit concept, this method just hands the <see cref="Base"/> object to the Converter to figure out the <see cref="DB.ElementType"/>. It also retrieves all possible <see cref="DB.ElementType"/>s for a given category of element and then saves it in a <see cref="HostTypeContainer"/>. This container will be passed to DUI for user mapping.
     /// </summary>
     /// <param name="typeRetriever"></param>
     /// <param name="typeMap"></param>
     /// <param name="numNewTypes"></param>
     /// <returns></returns>
-    public HostTypeAsStringContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever typeRetriever, ITypeMap typeMap, out int numNewTypes)
+    public HostTypeContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever typeRetriever, TypeMap typeMap, out int numNewTypes)
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
-      var hostTypes = new HostTypeAsStringContainer();
+      var hostTypes = new HostTypeContainer();
 
       numNewTypes = 0;
       foreach (var @base in speckleElements)
@@ -180,8 +187,8 @@ namespace ConnectorRevit.TypeMapping
 
         if (exactTypeMatch) continue;
 
-        hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => type.Name));
-        string initialGuess = DefineInitialGuess(typeMap, incomingType, typeInfo.CategoryName, elementTypes);
+        hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => new RevitHostType(type.FamilyName, type.Name)));
+        var initialGuess = DefineInitialGuess(typeMap, incomingFamily, incomingType, typeInfo.CategoryName, elementTypes);
 
         typeMap.AddIncomingType(@base, incomingType, incomingFamily, typeInfo.CategoryName, initialGuess, out var isNewType);
         if (isNewType) numNewTypes++;
@@ -190,31 +197,22 @@ namespace ConnectorRevit.TypeMapping
       hostTypes.SetAllTypes(
         typeRetriever
           .GetAllCachedElementTypes()
-          .Select(type => type.Name)
+          .Select(type => new RevitHostType(type.FamilyName, type.Name))
       );
 
       return hostTypes;
     }
 
-    private static string DefineInitialGuess(ITypeMap typeMap, string incomingType, string category, IEnumerable<ElementType> elementTypes)
+    private static ISingleHostType DefineInitialGuess(TypeMap typeMap, string? incomingFamily, string incomingType, string category, IEnumerable<ElementType> elementTypes)
     {
-      var existingMappingValue = typeMap.TryGetMappingValueInCategory(category, incomingType);
-      string initialGuess;
+      var existingMappingValue = typeMap.TryGetMappingValueInCategory(category, incomingFamily, incomingType);
 
-      if (existingMappingValue != null &&
-        (existingMappingValue.InitialGuess != null ||
-        existingMappingValue.OutgoingType != null))
+      if (existingMappingValue != null && existingMappingValue.InitialGuess != null)
       {
-        initialGuess = existingMappingValue.OutgoingType ?? existingMappingValue.InitialGuess;
-        existingMappingValue.InitialGuess = initialGuess;
-        existingMappingValue.OutgoingType = null;
-      }
-      else
-      {
-        initialGuess = GetMappedValue(elementTypes, category, incomingType);
+        return existingMappingValue.MappedHostType ?? existingMappingValue.InitialGuess;
       }
 
-      return initialGuess;
+      return GetMappedValue(elementTypes, category, incomingType);
     }
 
     public Dictionary<string, List<MappingValue>>? DeserializeMappingAsDict(MappingSetting mappingSetting)
@@ -226,13 +224,16 @@ namespace ConnectorRevit.TypeMapping
       return null;
     }
 
-    public static ITypeMap? DeserializeMapping(MappingSetting mappingSetting)
+    public static TypeMap? DeserializeMapping(MappingSetting mappingSetting)
     {
       if (mappingSetting.MappingJson != null)
       {
         var settings = new JsonSerializerSettings
         {
-          Converters = { new AbstractConverter<MappingValue, ISingleValueToMap>() },
+          Converters = { 
+            new AbstractConverter<RevitMappingValue, ISingleValueToMap>(),
+            new AbstractConverter<RevitHostType, ISingleHostType>(),
+          },
         };
         try
         {
@@ -253,9 +254,10 @@ namespace ConnectorRevit.TypeMapping
     /// <param name="category"></param>
     /// <param name="speckleType"></param>
     /// <returns></returns>
-    private static string GetMappedValue(IEnumerable<ElementType> elementTypes, string category, string speckleType)
+    private static ISingleHostType GetMappedValue(IEnumerable<ElementType> elementTypes, string category, string speckleType)
     {
       var shortestDistance = int.MaxValue;
+      var closestFamily = string.Empty;
       var closestType = $"No families of the category \"{category}\" are loaded into the project";
 
       foreach (var elementType in elementTypes)
@@ -264,11 +266,12 @@ namespace ConnectorRevit.TypeMapping
         if (distance < shortestDistance)
         {
           shortestDistance = distance;
+          closestFamily = elementType.FamilyName;
           closestType = elementType.Name;
         }
       }
 
-      return closestType;
+      return new RevitHostType(closestFamily, closestType);
     }
 
     /// <summary>

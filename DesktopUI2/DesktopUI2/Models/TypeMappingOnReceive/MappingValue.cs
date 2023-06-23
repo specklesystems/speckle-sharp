@@ -9,50 +9,33 @@ namespace DesktopUI2.Models.TypeMappingOnReceive
   [DataContract]
   public class MappingValue : ReactiveObject, ISingleValueToMap
   {
-    private string _initialGuess;
-    private string _outgoingType;
-
-    public MappingValue(string inType, string inGuess, string inFamily = null, bool inNewType = false)
+    public MappingValue(string inType, ISingleHostType inGuess, bool inNewType = false)
     {
       IncomingType = inType;
       InitialGuess = inGuess;
-      IncomingFamily = inFamily;
       NewType = inNewType;
     }
 
     [DataMember]
     public string IncomingType { get; set; }
-    [DataMember]
-    public string IncomingFamily { get; set; }
     public bool NewType { get; set; }
 
+    private ISingleHostType _initialGuess;
     [DataMember]
-    public string InitialGuess
+    public ISingleHostType InitialGuess
     {
       get => _initialGuess;
       set => this.RaiseAndSetIfChanged(ref _initialGuess, value);
     }
 
+    private ISingleHostType _mappedHostType;
     [DataMember]
-    public string OutgoingType
+    public ISingleHostType MappedHostType
     {
-      get => _outgoingType;
-      set => this.RaiseAndSetIfChanged(ref _outgoingType, value);
+      get => _mappedHostType;
+      set => this.RaiseAndSetIfChanged(ref _mappedHostType, value);
     }
 
-    public string IncomingTypeDisplayName
-    {
-      get
-      {
-        var sb = new StringBuilder();
-        if (!string.IsNullOrEmpty(IncomingFamily))
-        {
-          sb.Append(IncomingFamily);
-          sb.Append(' ');
-        }
-        sb.Append(IncomingType);
-        return sb.ToString();
-      }
-    }
+    public virtual string IncomingTypeDisplayName => IncomingType;
   }
 }

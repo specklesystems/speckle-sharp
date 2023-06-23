@@ -102,8 +102,8 @@
                   Margin="0"
                   VerticalAlignment="Center"
                   Focusable="False"
-                  IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
-                  Text="{Binding OutgoingType}"
+                  IsVisible="{Binding MappedHostType, Converter={x:Static ObjectConverters.IsNotNull}}"
+                  Text="{Binding MappedHostType.HostTypeDisplayName}"
                   TextTrimming="CharacterEllipsis"
                   TextWrapping="Wrap" />
                 <TextBlock
@@ -112,8 +112,8 @@
                   VerticalAlignment="Center"
                   Focusable="False"
                   Foreground="Gray"
-                  IsVisible="{Binding OutgoingType, Converter={x:Static StringConverters.IsNullOrEmpty}}"
-                  Text="{Binding InitialGuess}"
+                  IsVisible="{Binding MappedHostType, Converter={x:Static ObjectConverters.IsNull}}"
+                  Text="{Binding InitialGuess.HostTypeDisplayName}"
                   TextTrimming="CharacterEllipsis"
                   TextWrapping="Wrap" />
               </Grid>
@@ -169,7 +169,13 @@
             Margin="0,0,0,8"
             Classes="Chip"
             Items="{Binding SearchResults}"
-            SelectedItem="{Binding SelectedType}" />
+            SelectedItem="{Binding SelectedType}">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding HostTypeDisplayName}" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
         </StackPanel>
       </ScrollViewer>
       <Grid ColumnDefinitions="*, auto, *">

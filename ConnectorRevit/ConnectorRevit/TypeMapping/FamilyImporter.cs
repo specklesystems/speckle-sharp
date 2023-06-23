@@ -6,6 +6,7 @@ using System.Windows.Forms;
 using System.Xml;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
+using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
@@ -35,7 +36,7 @@ namespace ConnectorRevit.TypeMapping
     /// <returns>
     /// New host types dictionary with newly imported types added (if applicable)
     /// </returns>
-    public async Task ImportFamilyTypes(HostTypeAsStringContainer hostTypesContainer)
+    public async Task ImportFamilyTypes(HostTypeContainer hostTypesContainer)
     {
       var familyPaths = await Dispatcher.UIThread.InvokeAsync<string[]>(() =>
       {
@@ -77,14 +78,14 @@ namespace ConnectorRevit.TypeMapping
       return;
     }
 
-    private async Task ImportTypesIntoDocument(HostTypeAsStringContainer hostTypesContainer, Dictionary<string, FamilyInfo> familyInfo, ImportFamiliesDialogViewModel vm)
+    private async Task ImportTypesIntoDocument(HostTypeContainer hostTypesContainer, Dictionary<string, FamilyInfo> familyInfo, ImportFamiliesDialogViewModel vm)
     {
       await RevitTask.RunAsync(_ =>
       {
         using var t = new Transaction(document, $"Import family types");
 
         t.Start();
-        var symbolsToLoad = new Dictionary<string, List<string>>();
+        var symbolsToLoad = new Dictionary<string, List<ISingleHostType>>();
         foreach (var symbol in vm.selectedFamilySymbols)
         {
           bool successfullyImported = document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name);
@@ -92,10 +93,10 @@ namespace ConnectorRevit.TypeMapping
           {
             if (!symbolsToLoad.TryGetValue(familyInfo[symbol.FamilyName].Category, out var symbolsOfCategory))
             {
-              symbolsOfCategory = new List<string>();
+              symbolsOfCategory = new List<ISingleHostType>();
               symbolsToLoad.Add(familyInfo[symbol.FamilyName].Category, symbolsOfCategory);
             }
-            symbolsOfCategory.Add(symbol.Name);
+            symbolsOfCategory.Add(new RevitHostType(symbol.FamilyName, symbol.Name));
           }
         }
 

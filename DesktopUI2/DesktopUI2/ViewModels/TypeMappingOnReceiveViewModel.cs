@@ -15,13 +15,9 @@ namespace DesktopUI2.ViewModels
     public const string UnmappedKey = "New Incoming Types";
     private string _searchQuery;
 
-    private List<string> _searchResults;
-
     private string _selectedCategory;
 
     private ISingleValueToMap _selectedMappingValue;
-
-    private string _selectedType;
 
     private List<ISingleValueToMap> _visibleMappingValues;
     public bool DoneMapping;
@@ -31,50 +27,50 @@ namespace DesktopUI2.ViewModels
     //this constructor is purely for xaml design purposes
     public TypeMappingOnReceiveViewModel()
     {
-      VisibleMappingValues = new List<ISingleValueToMap>()
-      {
-        new MappingValue("W12x19", "W12x19"),
-        new MappingValue("Type1", "type123"),
-        new MappingValue("anotherType", "anotherType"),
-        new MappingValue("incoming type", "existingType", "incomingFam"),
-        new MappingValue("yetAnotherType", "differentType", "inFam", true),
-        new MappingValue("short", "short"),
-        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-        new MappingValue("W12x19", "W12x19"),
-        new MappingValue("Type1", "type123"),
-        new MappingValue("anotherType", "anotherType"),
-        new MappingValue("incoming type", "existingType", "incomingFam"),
-        new MappingValue("yetAnotherType", "differentType", "inFam", true),
-        new MappingValue("short", "short"),
-        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-        new MappingValue("W12x19", "W12x19"),
-        new MappingValue("Type1", "type123"),
-        new MappingValue("anotherType", "anotherType"),
-        new MappingValue("incoming type", "existingType", "incomingFam"),
-        new MappingValue("yetAnotherType", "differentType", "inFam", true),
-        new MappingValue("short", "short"),
-        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-        new MappingValue("W12x19", "W12x19"),
-        new MappingValue("Type1", "type123"),
-        new MappingValue("anotherType", "anotherType"),
-        new MappingValue("incoming type", "existingType", "incomingFam"),
-        new MappingValue("yetAnotherType", "differentType", "inFam", true),
-        new MappingValue("short", "short"),
-        new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-      };
+      //VisibleMappingValues = new List<ISingleValueToMap>()
+      //{
+      //  new MappingValue("W12x19", "W12x19"),
+      //  new MappingValue("Type1", "type123"),
+      //  new MappingValue("anotherType", "anotherType"),
+      //  new MappingValue("incoming type", "existingType"),
+      //  new MappingValue("yetAnotherType", "differentType", true),
+      //  new MappingValue("short", "short"),
+      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+      //  new MappingValue("W12x19", "W12x19"),
+      //  new MappingValue("Type1", "type123"),
+      //  new MappingValue("anotherType", "anotherType"),
+      //  new MappingValue("incoming type", "existingType"),
+      //  new MappingValue("yetAnotherType", "differentType", true),
+      //  new MappingValue("short", "short"),
+      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+      //  new MappingValue("W12x19", "W12x19"),
+      //  new MappingValue("Type1", "type123"),
+      //  new MappingValue("anotherType", "anotherType"),
+      //  new MappingValue("incoming type", "existingType"),
+      //  new MappingValue("yetAnotherType", "differentType", true),
+      //  new MappingValue("short", "short"),
+      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+      //  new MappingValue("W12x19", "W12x19"),
+      //  new MappingValue("Type1", "type123"),
+      //  new MappingValue("anotherType", "anotherType"),
+      //  new MappingValue("incoming type", "existingType"),
+      //  new MappingValue("yetAnotherType", "differentType", true),
+      //  new MappingValue("short", "short"),
+      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
+      //};
 
-      SearchResults = new List<string>
+      SearchResults = new List<ISingleHostType>()
       {
-        "brick",
-        "sheep",
-        "wheat",
-        "stone",
+        new HostType("brick"),
+        new HostType("sheep"),
+        new HostType("wheat"),
+        new HostType("stone"),
       };
     }
 
     public TypeMappingOnReceiveViewModel(
       ITypeMap typeMap,
-      IHostTypeAsStringContainer container,
+      IHostTypeContainer container,
       bool newTypesExist = false
     )
     {
@@ -87,7 +83,7 @@ namespace DesktopUI2.ViewModels
 
     public ReactiveCommand<Unit, Unit> GoBack => MainViewModel.RouterInstance.NavigateBack;
 
-    private readonly IHostTypeAsStringContainer hostTypeContainer;
+    private readonly IHostTypeContainer hostTypeContainer;
 
     public string SearchQuery
     {
@@ -96,18 +92,13 @@ namespace DesktopUI2.ViewModels
       {
         this.RaiseAndSetIfChanged(ref _searchQuery, value);
 
-        SearchResults = GetCategoryOrAll(SelectedCategory).Where(v => v.ToLower().Contains(SearchQuery.ToLower())).ToList();
+        SearchResults = GetCategoryOrAll(SelectedCategory).Where(ht => ht.HostTypeDisplayName.ToLower().Contains(SearchQuery.ToLower())).ToList();
         this.RaisePropertyChanged(nameof(SearchResults));
       }
     }
 
-    public List<string> SearchResults
-    {
-      get => _searchResults;
-      set => this.RaiseAndSetIfChanged(ref _searchResults, value);
-    }
-
-    public string SelectedType
+    private ISingleHostType _selectedType;
+    public ISingleHostType SelectedType
     {
       get => _selectedType;
       set
@@ -116,7 +107,7 @@ namespace DesktopUI2.ViewModels
         {
           foreach (var val in SelectedMappingValues)
           {
-            val.OutgoingType = value;
+            val.MappedHostType = value;
           }
         }
         this.RaiseAndSetIfChanged(ref _selectedType, value);
@@ -134,6 +125,7 @@ namespace DesktopUI2.ViewModels
         VisibleMappingValues = Mapping.GetValuesToMapOfCategory(value).ToList();
         SearchQuery = "";
         SearchResults = GetCategoryOrAll(value).ToList();
+        SelectedMappingValues.Clear();
       }
     }
 
@@ -145,7 +137,14 @@ namespace DesktopUI2.ViewModels
 
     public ObservableCollection<ISingleValueToMap> SelectedMappingValues { get; } = new();
 
-    private IEnumerable<string> GetCategoryOrAll(string category)
+    private List<ISingleHostType> _searchResults;
+    public List<ISingleHostType> SearchResults
+    {
+      get => _searchResults;
+      set => this.RaiseAndSetIfChanged(ref _searchResults, value);
+    }
+
+    private ICollection<ISingleHostType> GetCategoryOrAll(string category)
     {
       return hostTypeContainer.GetTypesInCategory(category) ?? hostTypeContainer.GetAllTypes();
     }
