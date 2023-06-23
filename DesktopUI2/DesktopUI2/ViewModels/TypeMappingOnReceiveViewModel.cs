@@ -24,50 +24,6 @@ namespace DesktopUI2.ViewModels
 
     public const string TypeCatMisc = "Miscellaneous";
 
-    //this constructor is purely for xaml design purposes
-    public TypeMappingOnReceiveViewModel()
-    {
-      //VisibleMappingValues = new List<ISingleValueToMap>()
-      //{
-      //  new MappingValue("W12x19", "W12x19"),
-      //  new MappingValue("Type1", "type123"),
-      //  new MappingValue("anotherType", "anotherType"),
-      //  new MappingValue("incoming type", "existingType"),
-      //  new MappingValue("yetAnotherType", "differentType", true),
-      //  new MappingValue("short", "short"),
-      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-      //  new MappingValue("W12x19", "W12x19"),
-      //  new MappingValue("Type1", "type123"),
-      //  new MappingValue("anotherType", "anotherType"),
-      //  new MappingValue("incoming type", "existingType"),
-      //  new MappingValue("yetAnotherType", "differentType", true),
-      //  new MappingValue("short", "short"),
-      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-      //  new MappingValue("W12x19", "W12x19"),
-      //  new MappingValue("Type1", "type123"),
-      //  new MappingValue("anotherType", "anotherType"),
-      //  new MappingValue("incoming type", "existingType"),
-      //  new MappingValue("yetAnotherType", "differentType", true),
-      //  new MappingValue("short", "short"),
-      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-      //  new MappingValue("W12x19", "W12x19"),
-      //  new MappingValue("Type1", "type123"),
-      //  new MappingValue("anotherType", "anotherType"),
-      //  new MappingValue("incoming type", "existingType"),
-      //  new MappingValue("yetAnotherType", "differentType", true),
-      //  new MappingValue("short", "short"),
-      //  new MappingValue("a very very very long type name. Oh no", "a very very very long type name. Oh no"),
-      //};
-
-      SearchResults = new List<ISingleHostType>()
-      {
-        new HostType("brick"),
-        new HostType("sheep"),
-        new HostType("wheat"),
-        new HostType("stone"),
-      };
-    }
-
     public TypeMappingOnReceiveViewModel(
       ITypeMap typeMap,
       IHostTypeContainer container,
