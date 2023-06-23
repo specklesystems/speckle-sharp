@@ -89,7 +89,7 @@ namespace Objects.Converter.Revit
 
               if (!IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document))
                 solids.Add(solid);
-              }
+              
               break;
             case DB.Mesh mesh:
               if (!IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document))
