@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
@@ -37,19 +38,64 @@ namespace Archicad.Converters
         ).ToList();
     }
 
-    private static TraversalContext StoreTransformationMatrix(TraversalContext tc, Dictionary<string, Transform> transformMatrixById)
+    public sealed class ArchicadDefinitionTraversalContext : TraversalContext<ArchicadDefinitionTraversalContext>
+    {
+      public string cumulativeTransformKey { get; set; }
+      public ArchicadDefinitionTraversalContext(Base current, string? propName = null, ArchicadDefinitionTraversalContext? parent = default)
+        : base(current, propName, parent)
+      {
+        /*var parentMatrix = parent?.matrix ?? Matrix4x4.Identity;
+        if (current is Instance instance)
+        {
+          //matrix = parentMatrix * instance.Transform.matrix; //TODO: I haven't checked this maths, and this doesn't take into account if the parent has different units to the child.
+        }*/
+
+      }
+    }
+
+    public sealed class ArchicadDefinitionTraversal : GraphTraversal<ArchicadDefinitionTraversalContext>
+    {
+      public ArchicadDefinitionTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
+      protected override ArchicadDefinitionTraversalContext NewContext(Base current, string? propName, ArchicadDefinitionTraversalContext? parent)
+      {
+        return new ArchicadDefinitionTraversalContext(current, propName, parent);
+      }
+    }
+
+    public static ArchicadDefinitionTraversal CreateArchicadDefinitionTraverseFunc()
+    {
+      var elementsTraversal = TraversalRule
+            .NewTraversalRule()
+            .When(DefaultTraversal.HasElements)
+            .ContinueTraversing(DefaultTraversal.ElementsAliases);
+
+      var geometryTraversal = TraversalRule
+        .NewTraversalRule()
+        .When(DefaultTraversal.HasGeometry)
+        .ContinueTraversing(DefaultTraversal.GeometryAliases);
+
+      var definitionTraversal = TraversalRule
+        .NewTraversalRule()
+        .When(DefaultTraversal.HasDefiniton)
+        .ContinueTraversing(DefaultTraversal.DefinitionAliases);
+
+      return new ArchicadDefinitionTraversal(elementsTraversal, geometryTraversal, definitionTraversal);
+    }
+
+
+    private static TraversalContext StoreTransformationMatrix(ArchicadDefinitionTraversalContext tc, Dictionary<string, Transform> transformMatrixById)
     {
       if (tc.parent != null)
       {
         var currentTransform = (Transform)(tc.current["transform"]) ?? new Transform();
-        string parentCumulativeTransformId = (string)tc.parent.UserData.GetValueOrDefault(_cumulativeTransformKey, "");
+        string parentCumulativeTransformId = (tc.parent as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
         string cumulativeTransformId = Utilities.hashString(parentCumulativeTransformId + currentTransform.id);
-        tc.UserData[_cumulativeTransformKey] = cumulativeTransformId;
+        tc.cumulativeTransformKey = cumulativeTransformId;
         transformMatrixById.TryAdd(cumulativeTransformId, transformMatrixById[parentCumulativeTransformId] * currentTransform);
       }
       else
       {
-        tc.UserData[_cumulativeTransformKey] = "";
+        tc.cumulativeTransformKey = "";
         transformMatrixById.TryAdd("", new Transform());
       }
       return tc;
@@ -59,7 +105,7 @@ namespace Archicad.Converters
     {
       var meshes = GetDisplayValue(tc.current);
       return meshes.Select(mesh => {
-        string cumulativeTransformId = (string)tc.UserData[_cumulativeTransformKey];
+        string cumulativeTransformId = (tc as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
         var transformedMeshId = Utilities.hashString(cumulativeTransformId + mesh.id);
         if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
         {
@@ -95,7 +141,7 @@ namespace Archicad.Converters
 
         List<string> meshIdHashes;
         {
-          meshIdHashes = DefaultTraversal.CreateDefinitionTraverseFunc().Traverse(element)
+          meshIdHashes = CreateArchicadDefinitionTraverseFunc().Traverse(element)
             .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
             .Where(tc => DefaultTraversal.HasDisplayValue(tc.current) || DefaultTraversal.HasGeometry (tc.current))
             .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))

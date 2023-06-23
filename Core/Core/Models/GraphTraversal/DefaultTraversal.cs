@@ -96,7 +96,7 @@ public static class DefaultTraversal
 
   public static readonly string[] elementsPropAliases = { "elements", "@elements" };
 
-  internal static IEnumerable<string> ElementsAliases(Base _)
+  public static IEnumerable<string> ElementsAliases(Base _)
   {
     return elementsPropAliases;
   }
@@ -108,7 +108,7 @@ public static class DefaultTraversal
 
   public static readonly string[] definitionAliases = { "definition", "@definition" };
 
-  internal static IEnumerable<string> DefinitionAliases(Base _)
+  public static IEnumerable<string> DefinitionAliases(Base _)
   {
     return definitionAliases;
   }
@@ -132,7 +132,7 @@ public static class DefaultTraversal
 
   public static readonly string[] geometryAliases = { "geometry", "@geometry" };
 
-  internal static IEnumerable<string> GeometryAliases(Base _)
+  public static IEnumerable<string> GeometryAliases(Base _)
   {
     return geometryAliases;
   }
