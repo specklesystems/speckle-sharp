@@ -113,7 +113,8 @@ public enum RevitCategory
   VibrationManagement = 106,
   Walls = 107,
   StructConnectionWelds = 108,
-  Windows = 109
+  Windows = 109,
+  Railings = 110
 }
 
 public enum LocationLine
