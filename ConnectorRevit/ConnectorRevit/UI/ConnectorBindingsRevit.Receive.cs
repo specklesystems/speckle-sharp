@@ -146,7 +146,18 @@ namespace Speckle.ConnectorRevit.UI
         {
           var elementToDelete = CurrentDoc.Document.GetElement(elementId);
 
-          if (elementToDelete != null) CurrentDoc.Document.Delete(elementToDelete.Id);
+          if (elementToDelete != null && !elementToDelete.Pinned && elementToDelete.IsValidObject)
+          {
+            try
+            {
+              CurrentDoc.Document.Delete(elementToDelete.Id);
+            }
+            catch
+            {
+              // unable to delete previously recieved object
+            }
+          }
+
           previousObjects.RemoveConvertedId(appId);
         }
       }
