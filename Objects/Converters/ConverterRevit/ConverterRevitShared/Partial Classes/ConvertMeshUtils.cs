@@ -139,7 +139,10 @@ namespace Objects.Converter.Revit
         _graphicStyleCache.Add(id.ToString(), doc.GetElement(id) as GraphicsStyle);
       var graphicStyle = _graphicStyleCache[id.ToString()];
 
-      if (graphicStyle != null && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)(BuiltInCategory.OST_LightingFixtureSource))
+      if (
+        graphicStyle != null
+        && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)(BuiltInCategory.OST_LightingFixtureSource)
+      )
         return true;
       return false;
     }
