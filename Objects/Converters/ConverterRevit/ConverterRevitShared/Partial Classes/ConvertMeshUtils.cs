@@ -88,12 +88,21 @@ namespace Objects.Converter.Revit
                 break;
 
               if (!IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document))
+              {
+                if (inverseTransform != null)
+                  solid = SolidUtils.CreateTransformed(solid, inverseTransform);
+
                 solids.Add(solid);
-              
+              }
               break;
             case DB.Mesh mesh:
               if (!IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document))
+              {
+                if (inverseTransform != null)
+                  mesh = mesh.get_Transformed(inverseTransform);
+
                 meshes.Add(mesh);
+              }
               break;
             case GeometryInstance instance:
               var instanceGeo =
