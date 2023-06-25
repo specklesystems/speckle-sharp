@@ -102,7 +102,8 @@ namespace Objects.Converter.Revit
     /// <returns>true f the element's quantities needs to be computetd based on the geometry.returns>
     private bool RequiresGeometryComputation(DB.Element element)
     {
-      if (element.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Windows || element.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Doors) return true;
+      if (element.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Windows || 
+        element.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Doors) return true;
       return false;
     }
     private void GetGeometry(DB.Element element, out List<DB.Mesh> meshes, out List<DB.Solid> solids, bool isConvertedAsInstance = false, DB.Options options = null)
