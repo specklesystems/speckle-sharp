@@ -77,6 +77,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public static RevitCategoryInfo GetRevitCategoryInfoStatic(string categoryName)
     {
+      categoryName = categoryName.Replace(" ", "");
       if (SHC.All.TryGetValue(categoryName, out var match))
       {
         return match;
