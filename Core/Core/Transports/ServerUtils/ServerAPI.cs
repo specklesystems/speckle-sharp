@@ -29,7 +29,7 @@ public class ServerApi : IDisposable, IServerApi
   private HashSet<int> RETRY_CODES = new() { 408, 502, 503, 504 };
   private int RETRY_COUNT = 3;
 
-  public ServerApi(string baseUri, string authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
+  public ServerApi(string baseUri, string? authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
   {
     BaseUri = baseUri;
     CancellationToken = CancellationToken.None;
@@ -43,10 +43,7 @@ public class ServerApi : IDisposable, IServerApi
     Client.BaseAddress = new Uri(baseUri);
     Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
 
-    if (authorizationToken.ToLowerInvariant().Contains("bearer"))
-      Client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
-    else
-      Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
+    Http.AddAuthHeader(Client, authorizationToken);
   }
 
   private int RetriedCount { get; set; }
