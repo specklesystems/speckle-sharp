@@ -84,7 +84,7 @@ namespace Archicad.Operations
             var n = mesh.faces[i];
             if (n < 3) n += 3;
 
-            for (var vertexIdx = i + 1; vertexIdx <= i + n; vertexIdx++)
+            for (var vertexIdx = i+1; vertexIdx <= i+n; vertexIdx++)
             {
               var pointId = ToMergedVertexIndex(mesh.faces[vertexIdx]);
               if (polygon.pointIds.Count == 0 || pointId != polygon.pointIds[^1])
