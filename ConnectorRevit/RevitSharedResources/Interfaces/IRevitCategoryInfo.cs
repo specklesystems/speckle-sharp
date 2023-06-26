@@ -13,5 +13,6 @@ namespace RevitSharedResources.Interfaces
     public Type ElementInstanceType { get; }
     public Type ElementTypeType { get; }
     public ICollection<BuiltInCategory> BuiltInCategories { get; }
+    public bool ContainsRevitCategory(Category category);
   }
 }

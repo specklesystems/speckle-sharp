@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Autodesk.Revit.DB;
 using Speckle.Core.Models;
 
@@ -11,5 +12,6 @@ namespace RevitSharedResources.Interfaces
     public IRevitCategoryInfo GetRevitCategoryInfo(Base @base);
     public IRevitCategoryInfo GetRevitCategoryInfo(string categoryName);
     public IRevitCategoryInfo UndefinedCategory { get; }
+    public IEnumerable<IRevitCategoryInfo> All { get; }
   }
 }

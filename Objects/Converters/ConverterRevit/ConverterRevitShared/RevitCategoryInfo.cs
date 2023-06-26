@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
   {
     #region IAllRevitCategories
     public IRevitCategoryInfo UndefinedCategory => SHC.Undefined;
-
+    public IEnumerable<IRevitCategoryInfo> All => SHC.All.Values;
     public IRevitCategoryInfo GetRevitCategoryInfo(Base @base)
     {
       return GetRevitCategoryInfoStatic(@base);

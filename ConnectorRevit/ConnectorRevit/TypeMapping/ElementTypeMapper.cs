@@ -216,9 +216,9 @@ namespace ConnectorRevit.TypeMapping
         if (typeInfo.ElementTypeType == null) continue;
 
         var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
-        var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
+        //var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
 
-        if (exactTypeMatch) continue;
+        //if (exactTypeMatch) continue;
 
         hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => new RevitHostType(type.FamilyName, type.Name)));
         var initialGuess = DefineInitialGuess(typeMap, incomingFamily, incomingType, typeInfo.CategoryName, elementTypes);

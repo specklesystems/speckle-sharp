@@ -86,17 +86,32 @@ namespace ConnectorRevit.TypeMapping
 
         t.Start();
         var symbolsToLoad = new Dictionary<string, List<ISingleHostType>>();
+        var familyNameToCategoryMap = new Dictionary<string, IEnumerable<IRevitCategoryInfo>>();
         foreach (var symbol in vm.selectedFamilySymbols)
         {
-          bool successfullyImported = document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name);
-          if (successfullyImported)
+          bool successfullyImported = document.LoadFamilySymbol(familyInfo[symbol.FamilyName].Path, symbol.Name, out var importedSymbol);
+
+          if (!successfullyImported) continue;
+
+          // get all possible speckle-defined mapping categories that the newly imported symbol may belong to.
+          // cache the values per each family that is imported
+          if (!familyNameToCategoryMap.TryGetValue(symbol.FamilyName, out var categories))
           {
-            if (!symbolsToLoad.TryGetValue(familyInfo[symbol.FamilyName].Category, out var symbolsOfCategory))
+            categories = GetRevitCategoryInfoOfFamilySymbol(importedSymbol);
+            familyNameToCategoryMap.Add(symbol.FamilyName, categories);
+          }
+
+          var revitHostType = new RevitHostType(symbol.FamilyName, symbol.Name);
+          // for each predefined category that the imported symbol may belong to,
+          // add the newly imported host type so that the user can map it
+          foreach (var revitCategory in categories)
+          {
+            if (!symbolsToLoad.TryGetValue(revitCategory.CategoryName, out var symbolsOfCategory))
             {
               symbolsOfCategory = new List<ISingleHostType>();
-              symbolsToLoad.Add(familyInfo[symbol.FamilyName].Category, symbolsOfCategory);
+              symbolsToLoad.Add(revitCategory.CategoryName, symbolsOfCategory);
             }
-            symbolsOfCategory.Add(new RevitHostType(symbol.FamilyName, symbol.Name));
+            symbolsOfCategory.Add(revitHostType);
           }
         }
 
@@ -144,7 +159,7 @@ namespace ConnectorRevit.TypeMapping
           continue;
 
         var typeInfo = GetTypeInfo(xmlDoc, nsman);
-        familyInfo.Add(familyName, new FamilyInfo(path, typeInfo.CategoryName));
+        familyInfo.Add(familyName, new FamilyInfo(path));
 
         var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
         AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
@@ -223,14 +238,34 @@ namespace ConnectorRevit.TypeMapping
       return category;
     }
 
+    public IEnumerable<IRevitCategoryInfo> GetRevitCategoryInfoOfFamilySymbol(FamilySymbol familySymbol)
+    {
+      var allPotentialMatches = revitCategoriesExposer.AllCategories.All
+        .Where(info => info.ElementTypeType == typeof(FamilySymbol))
+        .ToList();
+
+      var narrowerMatches = allPotentialMatches
+        .Where(info => info.ContainsRevitCategory(familySymbol.Category));
+
+      if (narrowerMatches.Any())
+      {
+        return narrowerMatches;
+      }
+      else
+      {
+        // because we know that none of the categories contain the revit category that we're looking for
+        // then filter out every match that has any defined category
+        return allPotentialMatches
+          .Where(info => info.BuiltInCategories.Count == 0);
+      }
+    }
+
     public class FamilyInfo
     {
       public string Path { get; set; }
-      public string Category { get; set; }
-      public FamilyInfo(string path, string category)
+      public FamilyInfo(string path)
       {
         Path = path;
-        Category = category;
       }
     }
   }
