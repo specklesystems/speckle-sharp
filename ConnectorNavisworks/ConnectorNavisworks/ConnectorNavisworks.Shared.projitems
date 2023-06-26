@@ -20,6 +20,9 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Commands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Manager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Autosave.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Properties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Constants.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Elements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\FilterTypes.cs" />
