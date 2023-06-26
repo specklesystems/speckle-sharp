@@ -8,6 +8,7 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
+using Speckle.ConnectorNavisworks.NavisworksOptions;
 using Speckle.ConnectorNavisworks.Other;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -30,8 +31,11 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   private static StreamState _cachedState;
   private ISpeckleKit _defaultKit;
   private ISpeckleConverter _navisworksConverter;
+
   // private bool _isRetrying;
   internal static bool PersistCache;
+
+  private NavisworksOptionsManager _settingsHandler;
 
   public ConnectorBindingsNavisworks(Document navisworksActiveDocument)
   {
@@ -44,16 +48,15 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
 
     _defaultKit = KitManager.GetDefaultKit();
     _navisworksConverter = _defaultKit?.LoadConverter(Utilities.VersionedAppName);
+    _settingsHandler = new NavisworksOptionsManager();
   }
 
   public static string HostAppName => HostApplications.Navisworks.Slug;
 
   public static string HostAppNameVersion => Utilities.VersionedAppName.Replace("Navisworks", "Navisworks ");
 
-
   public static bool CachedConversion =>
     CachedConvertedElements != null && CachedConvertedElements.Any() && _cachedCommit != null;
-
 
   public override string GetActiveViewName()
   {
@@ -119,7 +122,6 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
   {
     if (_doc == null)
       return;
-
 
     if (CachedConvertedElements == null || _cachedCommit == null)
       throw new SpeckleException("Cant retry last conversion: no cached conversion or commit found.");

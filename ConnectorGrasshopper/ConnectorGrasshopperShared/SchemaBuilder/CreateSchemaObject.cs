@@ -314,9 +314,11 @@ public class CreateSchemaObject : SelectKitComponentBase, IGH_VariableParameterC
     valueList.ListMode = GH_ValueListMode.DropDown;
     valueList.ListItems.Clear();
 
+    values = values.OrderBy(x=>x).ToList();
+
     for (int i = 0; i < values.Count; i++)
       valueList.ListItems.Add(new GH_ValueListItem(values[i], i.ToString()));
-
+    
     valueList.Attributes.Pivot = new PointF(x - 200, y - 10);
 
     return valueList;
