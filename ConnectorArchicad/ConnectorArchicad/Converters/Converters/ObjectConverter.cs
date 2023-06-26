@@ -45,12 +45,6 @@ namespace Archicad.Converters
       public ArchicadDefinitionTraversalContext(Base current, string? propName = null, ArchicadDefinitionTraversalContext? parent = default)
         : base(current, propName, parent)
       {
-        /*var parentMatrix = parent?.matrix ?? Matrix4x4.Identity;
-        if (current is Instance instance)
-        {
-          //matrix = parentMatrix * instance.Transform.matrix; //TODO: I haven't checked this maths, and this doesn't take into account if the parent has different units to the child.
-        }*/
-
       }
     }
 
@@ -105,7 +99,12 @@ namespace Archicad.Converters
 
     private static List<string> Store(TraversalContext tc, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
     {
-      var meshes = GetDisplayValue(tc.current);
+      List<Mesh> meshes = null;
+      if (tc.current is Mesh mesh)
+        meshes = new List<Mesh>() { mesh };
+      else
+        meshes = GetDisplayValue(tc.current);
+
       return meshes.Select(mesh => {
         string cumulativeTransformId = (tc as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
         var transformedMeshId = Utilities.hashString(cumulativeTransformId + mesh.id);
@@ -148,7 +147,7 @@ namespace Archicad.Converters
           {
             meshIdHashes = CreateArchicadDefinitionTraverseFunc().Traverse(element)
               .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
-              .Where(tc => DefaultTraversal.HasDisplayValue(tc.current) || DefaultTraversal.HasGeometry(tc.current))
+              .Where(tc => (tc.current is Mesh) || DefaultTraversal.HasDisplayValue(tc.current) || DefaultTraversal.HasGeometry(tc.current))
               .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))
               .ToList();
 
