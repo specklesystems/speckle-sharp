@@ -199,14 +199,10 @@ namespace Speckle.ConnectorRevit.UI
     {
       var selection = GetSelectionFilterObjects(converter, filter);
 
-      //By default, do not include design options
-      //If one is selected in Revit, also send those objects: https://speckle.community/t/revit-design-option-settings-are-ignored-in-everything-stream/3182/8
-      var activeDesignOption = DesignOption.GetActiveDesignOptionId(CurrentDoc.Document);
-      if (activeDesignOption != ElementId.InvalidElementId)
-        selection = selection.Where(x => x.DesignOption == null || x.DesignOption.Id == activeDesignOption).ToList(); 
-      else
-        selection = selection.Where(x => x.DesignOption == null).ToList();
-        
+      //Only include the Main Model objects and those part of a Primary Design Option
+      //https://speckle.community/t/revit-design-option-settings-are-ignored-in-everything-stream/3182/8
+      selection = selection.Where(x => x.DesignOption == null || x.DesignOption.IsPrimary).ToList();
+
       return selection;
     }
 
