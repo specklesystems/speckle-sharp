@@ -41,6 +41,7 @@ namespace Archicad.Converters
     public sealed class ArchicadDefinitionTraversalContext : TraversalContext<ArchicadDefinitionTraversalContext>
     {
       public string cumulativeTransformKey { get; set; }
+
       public ArchicadDefinitionTraversalContext(Base current, string? propName = null, ArchicadDefinitionTraversalContext? parent = default)
         : base(current, propName, parent)
       {
@@ -56,6 +57,7 @@ namespace Archicad.Converters
     public sealed class ArchicadDefinitionTraversal : GraphTraversal<ArchicadDefinitionTraversalContext>
     {
       public ArchicadDefinitionTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
+
       protected override ArchicadDefinitionTraversalContext NewContext(Base current, string? propName, ArchicadDefinitionTraversalContext? parent)
       {
         return new ArchicadDefinitionTraversalContext(current, propName, parent);
@@ -65,9 +67,9 @@ namespace Archicad.Converters
     public static ArchicadDefinitionTraversal CreateArchicadDefinitionTraverseFunc()
     {
       var elementsTraversal = TraversalRule
-            .NewTraversalRule()
-            .When(DefaultTraversal.HasElements)
-            .ContinueTraversing(DefaultTraversal.ElementsAliases);
+        .NewTraversalRule()
+        .When(DefaultTraversal.HasElements)
+        .ContinueTraversing(DefaultTraversal.ElementsAliases);
 
       var geometryTraversal = TraversalRule
         .NewTraversalRule()

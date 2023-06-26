@@ -4,7 +4,6 @@ using System.Collections.Generic;
 
 namespace Speckle.Core.Models.GraphTraversal;
 
-
 public class TraversalContext
 {
   public Base current { get; }
