@@ -207,9 +207,13 @@ namespace Objects.Converter.Revit
       if (categories.Count > 0)
       {
         using var filter = new ElementMulticategoryFilter(categories);
-        return collector.WhereElementIsElementType().OfClass(type).WherePasses(filter).Cast<T>();
+        collector = collector.WherePasses(filter);
       }
-      return collector.WhereElementIsElementType().OfClass(type).Cast<T>();
+      if (type != null)
+      {
+        collector = collector.OfClass(type);
+      }
+      return collector.WhereElementIsElementType().Cast<T>();
     }
   }
 }

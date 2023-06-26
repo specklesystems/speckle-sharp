@@ -167,8 +167,7 @@ namespace ConnectorRevit.TypeMapping
       var familyRoot = xmlDoc.GetElementsByTagName("A:family");
       if (familyRoot.Count != 1)
       {
-        SpeckleLog.Logger.Error("Incorrect assumption of how the partAtom family format works for family named {familyName}", familyName);
-        return;
+        throw new SpeckleException($"Incorrect assumption of how the partAtom family format works for family named {familyName}");
       }
 
       nsman.AddNamespace("A", familyRoot[0].NamespaceURI);

@@ -70,6 +70,7 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
         var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
@@ -78,13 +79,15 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
+        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
+        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
       }
       finally
       {
         MainViewModel.CloseDialog();
       }
+#pragma warning restore CA1031 // Do not catch general exception types
 
       var (success, exception) = await RevitTask.RunAsync(app =>
       {

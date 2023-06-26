@@ -126,6 +126,7 @@ public static class Categories
       { nameof(Floor), Floor },
       { nameof(Furniture), Furniture },
       { nameof(Pipe), Pipe },
+      { nameof(PlumbingFixture), PlumbingFixture},
       { nameof(Roof), Roof },
       { nameof(Railing), Railing },
       { nameof(StructuralFraming), StructuralFraming },
@@ -219,6 +220,14 @@ public static class Categories
     {
         BuiltInCategory.OST_PipeCurves,
         BuiltInCategory.OST_FlexPipeCurves
+    });
+  public static RevitCategoryInfo PlumbingFixture { get; } = new(
+    nameof(PlumbingFixture),
+    typeof(DB.FamilyInstance),
+    typeof(DB.FamilySymbol),
+    new List<BuiltInCategory>
+    {
+        BuiltInCategory.OST_PlumbingFixtures
     });
   public static RevitCategoryInfo Roof { get; } = new(
     nameof(Roof),

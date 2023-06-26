@@ -746,7 +746,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         _branchesViewModel.Remove(_branchesViewModel.Last());
 
       if (!IsReceiver)
-        _branchesViewModel.Add(new BranchViewModel(new Branch {name = "Add New Branch"}, "Plus"));
+        _branchesViewModel.Add(new BranchViewModel(new Branch { name = "Add New Branch" }, "Plus"));
 
       return _branchesViewModel;
     }
@@ -859,7 +859,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
       else if (!SearchQuery.Replace(" ", "").Any())
         ClearSearchCommand();
       else
-        _searchQueryItems = _searchQuery.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries).ToList();
+        _searchQueryItems = _searchQuery.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries).ToList();
       this.RaisePropertyChanged(nameof(FilteredReport));
     }
   }
@@ -1201,7 +1201,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
         Analytics.TrackEvent(
           Analytics.Events.DUIAction,
-          new Dictionary<string, object> {{"name", "Branch Create"}}
+          new Dictionary<string, object> { { "name", "Branch Create" } }
         );
       }
       catch (Exception ex)
@@ -1224,7 +1224,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     var summary = string.Join("\n", reportObjectSummaries);
 
     await Application.Current.Clipboard.SetTextAsync(summary).ConfigureAwait(true);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Copy Report"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Copy Report" } });
   }
 
   public void ClearSearchCommand()
@@ -1236,13 +1236,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
   {
     MainViewModel.RouterInstance.Navigate.Execute(new CollaboratorsViewModel(HostScreen, this));
 
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Share Open"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Share Open" } });
   }
 
   public void EditSavedStreamCommand()
   {
     MainViewModel.RouterInstance.Navigate.Execute(this);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Stream Edit"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream Edit" } });
   }
 
   public async void ViewOnlineSavedStreamCommand()
@@ -1251,13 +1251,13 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     await Task.Delay(100).ConfigureAwait(true);
 
     OpenUrl(Url);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Stream View"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream View" } });
   }
 
   private void OpenUrl(string url)
   {
     //to open urls in .net core must set UseShellExecute = true
-    Process.Start(new ProcessStartInfo(url) {UseShellExecute = true});
+    Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
   }
 
   public async void CopyStreamURLCommand()
@@ -1265,7 +1265,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     //ensure click transition has finished
     await Task.Delay(100).ConfigureAwait(true);
     Application.Current.Clipboard.SetTextAsync(Url);
-    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", "Stream Copy Link"}});
+    Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Stream Copy Link" } });
   }
 
   public async void SendCommand()
@@ -1367,7 +1367,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
       string previewName = IsReceiver ? "Preview Receive" : "Preview Send";
 
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> {{"name", previewName}});
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", previewName } });
 
       if (IsReceiver)
         await Task.Run(() => Bindings.PreviewReceive(StreamState, Progress)).ConfigureAwait(true);
@@ -1481,6 +1481,11 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private void HandleCommandException(Exception ex, [CallerMemberName] string commandName = "UnknownCommand")
   {
+    HandleCommandException(ex, Progress.CancellationToken.IsCancellationRequested, commandName);
+  }
+
+  public static void HandleCommandException(Exception ex, bool isUserCancel, [CallerMemberName] string commandName = "UnknownCommand")
+  {
     string commandPrettyName = commandName.EndsWith("Command")
       ? commandName.Substring(0, commandName.Length - "Command".Length)
       : commandName;
@@ -1493,7 +1498,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         // NOTE: We expect an OperationCanceledException to occur when our CancellationToken is cancelled.
         // If our token wasn't cancelled, then this is highly unexpected, and treated with HIGH SEVERITY!
         // Likely, another deeper token was cancelled, and the exception wasn't handled correctly somewhere deeper.
-        bool isUserCancel = Progress.CancellationToken.IsCancellationRequested;
 
         logLevel = isUserCancel ? LogEventLevel.Information : LogEventLevel.Error;
         notificationViewModel = new PopUpNotificationViewModel

@@ -74,26 +74,64 @@ namespace ConnectorRevit.TypeMapping
         return;
       }
 
-      var currentMapping = DeserializeMapping(mappingSetting);
-      currentMapping ??= new TypeMap();
-
+      var currentMapping = DeserializeMapping(mappingSetting, out var previousMappingExists) ?? new TypeMap();
       var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentMapping, out var numNewTypes);
-      if (numNewTypes == 0 && mappingSetting.Selection != ConnectorBindingsRevit.everyReceive) { return; }
 
-      if (mappingSetting.Selection == null)
+      if (await ShouldShowCustomMappingDialog(mappingSetting.Selection, numNewTypes).ConfigureAwait(false))
       {
-        if (await Dispatcher.UIThread.InvokeAsync<bool>(() =>
-        {
-          Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Missing Types Dialog" } });
-          var mappingView = new MissingIncomingTypesDialog();
-          return mappingView.ShowDialog<bool>();
-        }).ConfigureAwait(false) == false)
-        {
-          return;
-        }
+        // show custom mapping dialog if the settings correspond to what is being received
+        await ShowCustomMappingDialog(currentMapping, hostTypesContainer, numNewTypes).ConfigureAwait(false);
+
+        // close the dialog
+        MainViewModel.CloseDialog();
+
+        mappingSetting.MappingJson = JsonConvert.SerializeObject(currentMapping);
+      }
+      else if (!previousMappingExists)
+      {
+        // if we're not showing the user the custom mapping dialog and the user doesn't have an existing mapping
+        // then we're done here
+        return;
       }
 
-      // show custom mapping dialog if the settings correspond to what is being received
+      // update the mapping object for the user mapped types
+      SetMappedValues(typeRetriever, currentMapping);
+
+      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
+    }
+
+    private async Task<bool> ShouldShowCustomMappingDialog(string listBoxSelection, int numNewTypes)
+    {
+      if (listBoxSelection == ConnectorBindingsRevit.everyReceive)
+      {
+        return true;
+      }
+      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0) 
+      {
+        return true;
+      }
+      else if (listBoxSelection == null
+        && numNewTypes > 0
+        && await ShowMissingIncomingTypesDialog().ConfigureAwait(false)
+      )
+      {
+        return true;
+      }
+      return false;
+    }
+
+    private static async Task<bool> ShowMissingIncomingTypesDialog()
+    {
+      return await Dispatcher.UIThread.InvokeAsync<bool>(() =>
+      {
+        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Missing Types Dialog" } });
+        var mappingView = new MissingIncomingTypesDialog();
+        return mappingView.ShowDialog<bool>();
+      }).ConfigureAwait(false);
+    }
+
+    private async Task ShowCustomMappingDialog(TypeMap? currentMapping, HostTypeContainer hostTypesContainer, int numNewTypes)
+    {
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       FamilyImporter familyImporter = null;
 
@@ -113,9 +151,14 @@ namespace ConnectorRevit.TypeMapping
           familyImporter ??= new FamilyImporter(document, revitCategoriesExposer, typeRetriever);
           await familyImporter.ImportFamilyTypes(hostTypesContainer).ConfigureAwait(false);
         }
+        catch (SpeckleException ex)
+        {
+          StreamViewModel.HandleCommandException(ex, false, "ImportTypesCommand");
+        }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error("Error in importing family types", ex);
+          var speckleEx = new SpeckleException(ex.Message, ex);
+          StreamViewModel.HandleCommandException(speckleEx, false, "ImportTypesCommand");
         }
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
@@ -128,16 +171,6 @@ namespace ConnectorRevit.TypeMapping
           return mappingView.ShowDialog<ITypeMap>();
         }).ConfigureAwait(false);
       }
-
-      // close the dialog
-      MainViewModel.CloseDialog();
-
-      mappingSetting.MappingJson = JsonConvert.SerializeObject(currentMapping);
-
-      // update the mapping object for the user mapped types
-      SetMappedValues(typeRetriever, currentMapping);
-
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
     }
 
     private static void SetMappedValues(IRevitElementTypeRetriever typeRetriever, TypeMap currentMapping)
@@ -224,7 +257,7 @@ namespace ConnectorRevit.TypeMapping
       return null;
     }
 
-    public static TypeMap? DeserializeMapping(MappingSetting mappingSetting)
+    public static TypeMap? DeserializeMapping(MappingSetting mappingSetting, out bool previousMappingExists)
     {
       if (mappingSetting.MappingJson != null)
       {
@@ -237,6 +270,7 @@ namespace ConnectorRevit.TypeMapping
         };
         try
         {
+          previousMappingExists = true;
           return JsonConvert.DeserializeObject<TypeMap>(mappingSetting.MappingJson, settings);
         }
         catch
@@ -244,6 +278,7 @@ namespace ConnectorRevit.TypeMapping
           // couldn't deserialize so just return null
         }
       }
+      previousMappingExists = false;
       return null;
     }
 

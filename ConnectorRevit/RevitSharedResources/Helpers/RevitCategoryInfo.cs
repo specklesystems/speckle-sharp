@@ -6,7 +6,7 @@ using RevitSharedResources.Interfaces;
 
 namespace RevitSharedResources.Helpers
 {
-  public struct RevitCategoryInfo : IRevitCategoryInfo
+  public class RevitCategoryInfo : IRevitCategoryInfo
   {
     public RevitCategoryInfo(string name, Type instanceType, Type familyType, List<BuiltInCategory> categories, List<string> categoryAliases = null)
     {
@@ -26,7 +26,5 @@ namespace RevitSharedResources.Helpers
     {
       return BuiltInCategories.Select(x => (int)x).Contains(category.Id.IntegerValue);
     }
-    public static bool operator ==(RevitCategoryInfo left, RevitCategoryInfo right) => left.Equals(right);
-    public static bool operator !=(RevitCategoryInfo left, RevitCategoryInfo right) => !(left == right);
   }
 }
