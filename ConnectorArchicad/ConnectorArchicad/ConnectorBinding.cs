@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,7 +8,6 @@ using Archicad.Model;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Speckle.Core.Api;
 using Speckle.Core.Credentials;
@@ -122,14 +121,20 @@ namespace Archicad.Launcher
 
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      Base commitObject = await Helpers.Receive(IdentifyStream(state));
-      if (commitObject is not null)
-        await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
+      using (var timer = Archicad.Helpers.Timer.CreateReceive(state.StreamId))
+      {
+        Base commitObject = await Speckle.Core.Api.Helpers.Receive(IdentifyStream(state));
+        if (commitObject is not null)
+          await ElementConverterManager.Instance.ConvertToNative(state, commitObject, progress);
 
-      await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
+        await AsyncCommandProcessor.Execute(new Communication.Commands.FinishReceiveTransaction());
 
-      if (commitObject == null)
-        throw new SpeckleException("Failed to receive specified");
+        if (commitObject == null)
+        {
+          timer.Cancel();
+          throw new SpeckleException("Failed to receive specified");
+        }
+      }
 
       return state;
     }
@@ -151,7 +156,7 @@ namespace Archicad.Launcher
       if (commitObject == null)
         throw new SpeckleException("Failed to convert objects to speckle: conversion returned null");
 
-      return await Helpers.Send(
+      return await Speckle.Core.Api.Helpers.Send(
         IdentifyStream(state),
         commitObject,
         state.CommitMessage,

@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
-using DynamicData;
 using Objects;
 using Objects.BuiltElements.Archicad;
 using Objects.Geometry;
@@ -21,27 +20,32 @@ namespace Archicad.Converters
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
       var rooms = new List<Objects.BuiltElements.Archicad.ArchicadRoom>();
-      foreach (var tc in elements)
+
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, Type.Name))
       {
-        switch (tc.current)
+        foreach (var tc in elements)
         {
-          case Objects.BuiltElements.Archicad.ArchicadRoom archiRoom:
-            rooms.Add(archiRoom);
-            break;
-          case Objects.BuiltElements.Room room:
-            Objects.BuiltElements.Archicad.ArchicadRoom newRoom = new Objects.BuiltElements.Archicad.ArchicadRoom
-            {
-              id = room.id,
-              applicationId = room.applicationId,
-              shape = Utils.PolycurvesToElementShape(room.outline, room.voids),
-              name = room.name,
-              number = room.number,
-              basePoint = (room.basePoint != null) ? Utils.ScaleToNative(room.basePoint) : new Point()
-            };
+          switch (tc.current)
+          {
+            case Objects.BuiltElements.Archicad.ArchicadRoom archiRoom:
+              rooms.Add(archiRoom);
+              break;
+            case Objects.BuiltElements.Room room:
+              Objects.BuiltElements.Archicad.ArchicadRoom newRoom = new Objects.BuiltElements.Archicad.ArchicadRoom
+              {
+                id = room.id,
+                applicationId = room.applicationId,
+                shape = Utils.PolycurvesToElementShape(room.outline, room.voids),
+                name = room.name,
+                number = room.number,
+                basePoint = (room.basePoint != null) ? Utils.ScaleToNative(room.basePoint) : new Point()
+              };
 
-            rooms.Add(newRoom);
+              rooms.Add(newRoom);
 
-            break;
+              break;
+          }
         }
       }
 

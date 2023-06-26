@@ -36,102 +36,106 @@ namespace Archicad.Operations
 
     public static MeshModel MeshToNative(IEnumerable<Mesh> meshes)
     {
-      var mergedVertexIndices = new Dictionary<Vertex, int>();
-      var originalToMergedVertexIndices = new List<int>();
-      var neigbourPolygonsByEdge = new Dictionary<Tuple<int, int>, List<int>>();
-      var polygonNormals = new Dictionary<Polygon, System.Numerics.Vector3>();
-
-      var vertexOffset = 0;
-
-      var meshModel = new MeshModel();
-      var enumerable = meshes as Mesh[] ?? meshes.ToArray();
-
-      #region Local Funcitions
-      // converts from original to merged vertex index
-      int ToMergedVertexIndex(int i) => originalToMergedVertexIndices[i + vertexOffset];
-      #endregion
-
-      foreach (var mesh in enumerable)
+      var context = Archicad.Helpers.Timer.Context.Peek;
+      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.MeshToNative))
       {
-        MeshModel.Material material = null;
-        if (mesh["renderMaterial"] is RenderMaterial renderMaterial)
+        var mergedVertexIndices = new Dictionary<Vertex, int>();
+        var originalToMergedVertexIndices = new List<int>();
+        var neigbourPolygonsByEdge = new Dictionary<Tuple<int, int>, List<int>>();
+        var polygonNormals = new Dictionary<Polygon, System.Numerics.Vector3>();
+
+        var vertexOffset = 0;
+
+        var meshModel = new MeshModel();
+        var enumerable = meshes as Mesh[] ?? meshes.ToArray();
+
+        #region Local Funcitions
+        // converts from original to merged vertex index
+        int ToMergedVertexIndex(int i) => originalToMergedVertexIndices[i + vertexOffset];
+        #endregion
+
+        foreach (var mesh in enumerable)
         {
-          material = MaterialToNative(renderMaterial);
-          meshModel.materials.Add(material);
-        }
-
-        foreach (var vertex in mesh.GetPoints().Select(p => Utils.PointToNative(p)))
-        {
-          if (mergedVertexIndices.TryGetValue(vertex, out int idx))
+          MeshModel.Material material = null;
+          if (mesh["renderMaterial"] is RenderMaterial renderMaterial)
           {
-            originalToMergedVertexIndices.Add(idx);
-          }
-          else
-          {
-            originalToMergedVertexIndices.Add(mergedVertexIndices.Count);
-            mergedVertexIndices.Add(vertex, mergedVertexIndices.Count);
-            meshModel.vertices.Add(vertex);
-          }
-        }
-
-        for (var i = 0; i < mesh.faces.Count; ++i)
-        {
-          var polygon = new Polygon();
-
-          var n = mesh.faces[i];
-          if (n < 3) n += 3;
-
-          for (var vertexIdx = i+1; vertexIdx <= i+n; vertexIdx++)
-          {
-            var pointId = ToMergedVertexIndex(mesh.faces[vertexIdx]);
-            if (polygon.pointIds.Count == 0 || pointId != polygon.pointIds[^1])
-              polygon.pointIds.Add(pointId);
+            material = MaterialToNative(renderMaterial);
+            meshModel.materials.Add(material);
           }
 
-          if (polygon.pointIds[0] == polygon.pointIds[^1])
+          foreach (var vertex in mesh.GetPoints().Select(p => Utils.PointToNative(p)))
           {
-            polygon.pointIds.RemoveAt(0);
-          }
-
-          if (material != null)
-          {
-            polygon.material = meshModel.materials.Count - 1;
-          }
-
-          // check result polygon
-          if (polygon.pointIds.Count >= 3)
-          {
-            if (meshModel.IsCoplanar(polygon))
+            if (mergedVertexIndices.TryGetValue(vertex, out int idx))
             {
-              ProcessPolygonEdges(meshModel, neigbourPolygonsByEdge, polygonNormals, polygon);
-              meshModel.polygons.Add(polygon);
+              originalToMergedVertexIndices.Add(idx);
             }
             else
             {
-              var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh, includeIndicators: false);
-              for (int triangleStartIdx = 0; triangleStartIdx < triangleFaces.Count; triangleStartIdx += 3)
-              {
-                var triangle = new Polygon { material = polygon.material };
-                for (int triangleVertexIdx = 0; triangleVertexIdx < 3; triangleVertexIdx++)
-                {
-                  int trianglePointId = ToMergedVertexIndex(triangleFaces[triangleStartIdx + triangleVertexIdx]);
-                  triangle.pointIds.Add(trianglePointId);
-                }
-
-                ProcessPolygonEdges(meshModel, neigbourPolygonsByEdge, polygonNormals, triangle);
-                meshModel.polygons.Add(triangle);
-              }
+              originalToMergedVertexIndices.Add(mergedVertexIndices.Count);
+              mergedVertexIndices.Add(vertex, mergedVertexIndices.Count);
+              meshModel.vertices.Add(vertex);
             }
           }
 
-          i += n;
+          for (var i = 0; i < mesh.faces.Count; ++i)
+          {
+            var polygon = new Polygon();
+
+            var n = mesh.faces[i];
+            if (n < 3) n += 3;
+
+            for (var vertexIdx = i + 1; vertexIdx <= i + n; vertexIdx++)
+            {
+              var pointId = ToMergedVertexIndex(mesh.faces[vertexIdx]);
+              if (polygon.pointIds.Count == 0 || pointId != polygon.pointIds[^1])
+                polygon.pointIds.Add(pointId);
+            }
+
+            if (polygon.pointIds[0] == polygon.pointIds[^1])
+            {
+              polygon.pointIds.RemoveAt(0);
+            }
+
+            if (material != null)
+            {
+              polygon.material = meshModel.materials.Count - 1;
+            }
+
+            // check result polygon
+            if (polygon.pointIds.Count >= 3)
+            {
+              if (meshModel.IsCoplanar(polygon))
+              {
+                ProcessPolygonEdges(meshModel, neigbourPolygonsByEdge, polygonNormals, polygon);
+                meshModel.polygons.Add(polygon);
+              }
+              else
+              {
+                var triangleFaces = MeshTriangulationHelper.TriangulateFace(i, mesh, includeIndicators: false);
+                for (int triangleStartIdx = 0; triangleStartIdx < triangleFaces.Count; triangleStartIdx += 3)
+                {
+                  var triangle = new Polygon { material = polygon.material };
+                  for (int triangleVertexIdx = 0; triangleVertexIdx < 3; triangleVertexIdx++)
+                  {
+                    int trianglePointId = ToMergedVertexIndex(triangleFaces[triangleStartIdx + triangleVertexIdx]);
+                    triangle.pointIds.Add(trianglePointId);
+                  }
+
+                  ProcessPolygonEdges(meshModel, neigbourPolygonsByEdge, polygonNormals, triangle);
+                  meshModel.polygons.Add(triangle);
+                }
+              }
+            }
+
+            i += n;
+          }
+          vertexOffset += mesh.VerticesCount;
+
+          meshModel.ids.Add(mesh.id);
         }
-        vertexOffset += mesh.VerticesCount;
 
-        meshModel.ids.Add(mesh.id);
+        return meshModel;
       }
-
-      return meshModel;
     }
 
     public static MeshModel MeshToNative2(IEnumerable<Mesh> meshes)
