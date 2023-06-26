@@ -13,23 +13,21 @@
   </PropertyGroup>
   <Import Project="..\ConnectorAutocadCivil\ConnectorAutocadCivilShared.projitems" Label="Shared" />
   <Target Name="Clean">
-    <RemoveDir
-        Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2024" />
+    <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2024" />
   </Target>
-  <Target Name="AfterBuildMigrated" AfterTargets="PostBuildEvent"
-      Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+  <Target Name="AfterBuildMigrated" AfterTargets="PostBuildEvent" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
     <Message Text="Calling 2024 post build" Importance="high" />
-    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true"
-        Targets="AfterBuildDebug" />
+    <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
   </Target>
   <Target Name="AfterBuildDebug">
     <ItemGroup>
       <SourceDLLs Include="$(TargetDir)\**\*.*" />
     </ItemGroup>
-    <Copy
-        DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2024\%(RecursiveDir)"
-        SourceFiles="@(SourceDLLs)" />
+    <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2024\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
   </Target>
+  <ItemGroup>
+    <PackageReference Include="Speckle.AutoCAD.API" Version="2024.0.0" />
+  </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
@@ -40,8 +38,5 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Speckle.AutoCAD.API" Version="2024.0.0" IncludeAssets="compile;build" PrivateAssets="all"/>
   </ItemGroup>
 </Project>
