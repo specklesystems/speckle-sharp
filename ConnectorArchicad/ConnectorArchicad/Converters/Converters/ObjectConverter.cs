@@ -30,8 +30,7 @@ namespace Archicad.Converters
     static List<Mesh> GetDisplayValue(Base element)
     {
       return DefaultTraversal.displayValueAliases.Concat(DefaultTraversal.geometryAliases)
-        .SelectMany(m =>
-        {
+        .SelectMany(m => {
           if (element[m] is IEnumerable<object> meshes)
             return meshes.Where(mesh => mesh is Mesh).Cast<Mesh>();
           return new List<Mesh>();
@@ -105,8 +104,7 @@ namespace Archicad.Converters
     private static List<string> Store(TraversalContext tc, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
     {
       var meshes = GetDisplayValue(tc.current);
-      return meshes.Select(mesh =>
-      {
+      return meshes.Select(mesh => {
         string cumulativeTransformId = (tc as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
         var transformedMeshId = Utilities.hashString(cumulativeTransformId + mesh.id);
         if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
