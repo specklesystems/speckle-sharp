@@ -237,9 +237,6 @@ EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ConverterNavisworks", "Objects\Converters\ConverterNavisworks\ConverterNavisworks\ConverterNavisworks.shproj", "{C3232EF3-2000-44C6-A330-B94531C9CC83}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Navisworks", "Navisworks", "{B6887DDC-B9B9-4B00-95DC-1DD930A1E901}"
-	ProjectSection(SolutionItems) = preProject
-		ConnectorNavisworks\README.md = ConnectorNavisworks\README.md
-	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConnectorNavisworks2023", "ConnectorNavisworks\ConnectorNavisworks2023\ConnectorNavisworks2023.csproj", "{74E39841-B2FA-494D-AC40-A6E505DE6B33}"
 EndProject
