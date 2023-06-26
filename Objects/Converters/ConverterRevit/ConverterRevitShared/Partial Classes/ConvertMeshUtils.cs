@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,9 +9,18 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public Options SolidDisplayValueOptions = new Options() { DetailLevel = ViewDetailLevel.Fine, ComputeReferences = true };
+    public Options SolidDisplayValueOptions = new Options()
+    {
+      DetailLevel = ViewDetailLevel.Fine,
+      ComputeReferences = true
+    };
 
     public Options ViewSpecificOptions { get; set; }
+
+    /// <summary>
+    /// We're caching a dictionary of graphic styles and their ids as it can be a costly operation doing Document.GetElement(solid.GraphicsStyleId) for every solid
+    /// </summary>
+    private Dictionary<string, GraphicsStyle> _graphicStyleCache = new Dictionary<string, GraphicsStyle>();
 
     /// <summary>
     /// Retreives the meshes on an element to use as the speckle displayvalue
@@ -23,7 +31,12 @@ namespace Objects.Converter.Revit
     /// <remarks>
     /// See https://www.revitapidocs.com/2023/e0f15010-0e19-6216-e2f0-ab7978145daa.htm for a full Geometry Object inheritance
     /// </remarks>
-    public List<Mesh> GetElementDisplayValue(DB.Element element, Options options = null, bool isConvertedAsInstance = false)
+    public List<Mesh> GetElementDisplayValue(
+      DB.Element element,
+      Options options = null,
+      bool isConvertedAsInstance = false,
+      bool hasModifiedInstanceGeometry = false
+    )
     {
       var displayMeshes = new List<Mesh>();
 
@@ -32,7 +45,12 @@ namespace Objects.Converter.Revit
       {
         foreach (var id in g.GetMemberIds())
         {
-          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance);
+          var groupMeshes = GetElementDisplayValue(
+            element.Document.GetElement(id),
+            options,
+            isConvertedAsInstance,
+            hasModifiedInstanceGeometry
+          );
           displayMeshes.AddRange(groupMeshes);
         }
         return displayMeshes;
@@ -51,26 +69,49 @@ namespace Objects.Converter.Revit
         geom = element.get_Geometry(options);
       }
 
+      if (geom == null)
+        return displayMeshes;
+
       // retrieves all meshes and solids from a geometry element
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
       SortGeometry(geom);
-      void SortGeometry(GeometryElement geom)
+      void SortGeometry(GeometryElement geom, Transform inverseTransform = null)
       {
         foreach (GeometryObject geomObj in geom)
         {
           switch (geomObj)
           {
             case Solid solid:
-              if (solid.Faces.Size > 0 && Math.Abs(solid.SurfaceArea) > 0) // skip invalid solid
+              // skip invalid solid
+              if (solid.Faces.Size == 0 || Math.Abs(solid.SurfaceArea) == 0)
+                break;
+
+              if (!IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document))
+              {
+                if (inverseTransform != null)
+                  solid = SolidUtils.CreateTransformed(solid, inverseTransform);
+
                 solids.Add(solid);
+              }
               break;
             case DB.Mesh mesh:
-              meshes.Add(mesh);
+              if (!IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document))
+              {
+                if (inverseTransform != null)
+                  mesh = mesh.get_Transformed(inverseTransform);
+
+                meshes.Add(mesh);
+              }
               break;
             case GeometryInstance instance:
-              var instanceGeo = isConvertedAsInstance ? instance.GetSymbolGeometry() : instance.GetInstanceGeometry();
-              SortGeometry(instanceGeo);
+              var instanceGeo =
+                isConvertedAsInstance && !hasModifiedInstanceGeometry
+                  ? instance.GetSymbolGeometry()
+                  : instance.GetInstanceGeometry();
+              inverseTransform =
+                isConvertedAsInstance && hasModifiedInstanceGeometry ? instance.Transform.Inverse : null;
+              SortGeometry(instanceGeo, inverseTransform);
               break;
             case GeometryElement element:
               SortGeometry(element);
@@ -87,12 +128,36 @@ namespace Objects.Converter.Revit
     }
 
     /// <summary>
+    /// Exclude light source cones and potentially other geometries by their graphic style
+    /// </summary>
+    /// <param name="id"></param>
+    /// <param name="doc"></param>
+    /// <returns></returns>
+    private bool IsSkippableGraphicStyle(ElementId id, Document doc)
+    {
+      if (!_graphicStyleCache.ContainsKey(id.ToString()))
+        _graphicStyleCache.Add(id.ToString(), doc.GetElement(id) as GraphicsStyle);
+      var graphicStyle = _graphicStyleCache[id.ToString()];
+
+      if (
+        graphicStyle != null
+        && graphicStyle.GraphicsStyleCategory.Id.IntegerValue == (int)(BuiltInCategory.OST_LightingFixtureSource)
+      )
+        return true;
+      return false;
+    }
+
+    /// <summary>
     /// Given a collection of <paramref name="meshes"/>, will create one <see cref="Mesh"/> per distinct <see cref="DB.Material"/>
     /// </summary>
     /// <param name="meshes"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    private List<Mesh> ConvertMeshesByRenderMaterial(List<DB.Mesh> meshes, Document d, bool doNotTransformWithReferencePoint = false)
+    private List<Mesh> ConvertMeshesByRenderMaterial(
+      List<DB.Mesh> meshes,
+      Document d,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       MeshBuildHelper buildHelper = new MeshBuildHelper();
 
@@ -112,7 +177,11 @@ namespace Objects.Converter.Revit
     /// <param name="solids"></param>
     /// <param name="d"></param>
     /// <returns></returns>
-    private List<Mesh> ConvertSolidsByRenderMaterial(IEnumerable<Solid> solids, Document d, bool doNotTransformWithReferencePoint = false)
+    private List<Mesh> ConvertSolidsByRenderMaterial(
+      IEnumerable<Solid> solids,
+      Document d,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       MeshBuildHelper meshBuildHelper = new MeshBuildHelper();
 
@@ -138,7 +207,8 @@ namespace Objects.Converter.Revit
         int numberOfFaces = 0;
         foreach (DB.Mesh mesh in meshData.Value)
         {
-          if (mesh == null) continue;
+          if (mesh == null)
+            continue;
           numberOfVertices += mesh.Vertices.Count * 3;
           numberOfFaces += mesh.NumTriangles * 4;
         }
@@ -147,7 +217,8 @@ namespace Objects.Converter.Revit
         meshData.Key.vertices.Capacity = numberOfVertices;
         foreach (DB.Mesh mesh in meshData.Value)
         {
-          if (mesh == null) continue;
+          if (mesh == null)
+            continue;
           ConvertMeshData(mesh, meshData.Key.faces, meshData.Key.vertices, d, doNotTransformWithReferencePoint);
         }
       }
@@ -161,7 +232,13 @@ namespace Objects.Converter.Revit
     /// <param name="mesh">The revit mesh to convert</param>
     /// <param name="faces">The faces list to add to</param>
     /// <param name="vertices">The vertices list to add to</param>
-    private void ConvertMeshData(DB.Mesh mesh, List<int> faces, List<double> vertices, Document doc, bool doNotTransformWithReferencePoint = false)
+    private void ConvertMeshData(
+      DB.Mesh mesh,
+      List<int> faces,
+      List<double> vertices,
+      Document doc,
+      bool doNotTransformWithReferencePoint = false
+    )
     {
       int faceIndexOffset = vertices.Count / 3;
 

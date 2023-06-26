@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Speckle.Core.Kits;
 using Speckle.Newtonsoft.Json;
