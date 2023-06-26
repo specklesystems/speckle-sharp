@@ -60,26 +60,6 @@ public static class DefaultTraversal
     return new GraphTraversal(bimElementRule, IgnoreResultsRule, DefaultRule);
   }
 
-  public static GraphTraversal CreateDefinitionTraverseFunc()
-  {
-    var elementsTraversal = TraversalRule
-      .NewTraversalRule()
-      .When(HasElements)
-      .ContinueTraversing(ElementsAliases);
-
-    var geometryTraversal = TraversalRule
-      .NewTraversalRule()
-      .When(HasGeometry)
-      .ContinueTraversing(GeometryAliases);
-
-    var definitionTraversal = TraversalRule
-      .NewTraversalRule()
-      .When(HasDefiniton)
-      .ContinueTraversing(DefinitionAliases);
-
-    return new GraphTraversal(elementsTraversal, geometryTraversal, definitionTraversal);
-  }
-
   //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
   #region Helper Functions
 

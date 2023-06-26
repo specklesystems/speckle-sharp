@@ -37,7 +37,6 @@ public class TraversalContext<T> : TraversalContext where T : TraversalContext
   }
 }
 
-
 public class GraphTraversal : GraphTraversal<TraversalContext>
 {
   public GraphTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
@@ -109,7 +108,7 @@ public abstract class GraphTraversal<T> where T : TraversalContext
   }
 
   protected abstract T NewContext(Base current, string? propName, T? parent);
-  
+
   /// <summary>
   /// Traverses supported Collections yielding <see cref="Base"/> objects.
   /// Does not traverse <see cref="Base"/>, only (potentially nested) collections.
