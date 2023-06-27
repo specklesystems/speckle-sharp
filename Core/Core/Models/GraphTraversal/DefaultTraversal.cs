@@ -74,11 +74,52 @@ public static class DefaultTraversal
     .When(_ => true)
     .ContinueTraversing(Members());
 
-  internal static readonly string[] elementsPropAliases = { "elements", "@elements" };
+  public static readonly string[] elementsPropAliases = { "elements", "@elements" };
 
-  internal static IEnumerable<string> ElementsAliases(Base _)
+  public static IEnumerable<string> ElementsAliases(Base _)
   {
     return elementsPropAliases;
+  }
+
+  public static bool HasElements(Base x)
+  {
+    return elementsPropAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly string[] definitionAliases = { "definition", "@definition" };
+
+  public static IEnumerable<string> DefinitionAliases(Base _)
+  {
+    return definitionAliases;
+  }
+
+  public static bool HasDefiniton(Base x)
+  {
+    return definitionAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+
+  public static IEnumerable<string> DisplayValueAliases(Base _)
+  {
+    return displayValueAliases;
+  }
+
+  public static bool HasDisplayValue(Base x)
+  {
+    return displayValueAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly string[] geometryAliases = { "geometry", "@geometry" };
+
+  public static IEnumerable<string> GeometryAliases(Base _)
+  {
+    return geometryAliases;
+  }
+
+  public static bool HasGeometry(Base x)
+  {
+    return geometryAliases.Any(m => x[m] != null);
   }
 
   internal static IEnumerable<string> None(Base _)
@@ -89,13 +130,6 @@ public static class DefaultTraversal
   internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
   {
     return x => x.GetMembers(includeMembers).Keys;
-  }
-
-  internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
-
-  internal static bool HasDisplayValue(Base x)
-  {
-    return displayValueAliases.Any(m => x[m] != null);
   }
 
   #endregion
