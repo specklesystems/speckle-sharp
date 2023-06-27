@@ -167,8 +167,9 @@ public partial class ConverterNavisworks
               );
               break;
             case System.Runtime.InteropServices.COMException:
+            case NotSupportedException:
               SpeckleLog.Logger.Information(
-                "A selected view's viewpoint has no focal distance set and the getter throws, this is rare but possible and frankly terrible from Navisworks. The focal distance will be set to 1m"
+                "A selected view's viewpoint has no focal distance set and the getter throws either of two errors, this is rare but possible and frankly terrible from Navisworks. The focal distance will be set to 1m"
               );
               break;
             default:
