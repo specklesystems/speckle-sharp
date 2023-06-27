@@ -453,7 +453,8 @@ namespace Objects.Converter.AutocadCivil
 
       var definition = new BlockDefinition()
       {
-        name = GetBlockDefName(record),
+        name = GetBlockDefName(record).name,
+        anonymousName = GetBlockDefName(record).anonymousName,
         basePoint = PointToSpeckle(record.Origin),
         geometry = geometry,
         units = ModelUnits
@@ -644,11 +645,10 @@ namespace Objects.Converter.AutocadCivil
     /// </summary>
     /// <param name="btr">BlockTableRecord object</param>
     /// <returns>block table record name</returns>
-    private string GetBlockDefName(BlockTableRecord btr)
+    private (string name, string anonymousName) GetBlockDefName(BlockTableRecord btr)
     {
-      var fullName = btr.Name;
-      var curVisibilityName = string.Empty;
-
+      var name = btr.Name;
+      var anonymousName = string.Empty;
       if (btr.IsAnonymous || btr.IsDynamicBlock)
       {
         var referenceIds = btr.GetBlockReferenceIds(true, false);
@@ -656,7 +656,7 @@ namespace Objects.Converter.AutocadCivil
         BlockReference reference =
           referenceId != ObjectId.Null ? Trans.GetObject(referenceId, OpenMode.ForRead) as BlockReference : null;
         if (reference == null)
-          return fullName;
+          return (name, anonymousName);
 
         if (btr.IsAnonymous)
         {
@@ -665,7 +665,10 @@ namespace Objects.Converter.AutocadCivil
               ? Trans.GetObject(reference.DynamicBlockTableRecord, OpenMode.ForRead) as BlockTableRecord
               : null;
           if (dynamicBlock != null)
-            fullName = dynamicBlock.Name;
+          {
+            anonymousName = btr.Name;
+            name = dynamicBlock.Name;
+          }
         }
 
         var descriptiveProps = new List<string>();
@@ -674,10 +677,10 @@ namespace Objects.Converter.AutocadCivil
             descriptiveProps.Add(value);
 
         if (descriptiveProps.Count > 0)
-          fullName = $"{fullName}_{String.Join("_", descriptiveProps.ToArray())}";
+          name = $"{name}_{String.Join("_", descriptiveProps.ToArray())}";
       }
 
-      return fullName;
+      return (name,anonymousName);
     }
 
     private bool IsSimpleType(object value, out string stringValue)

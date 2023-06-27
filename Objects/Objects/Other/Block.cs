@@ -21,7 +21,7 @@ public class BlockDefinition : Base
   }
 
   public string name { get; set; }
-
+  public string anonymousName { get; set; }
   /// <summary>
   /// The definition base point of the block
   /// </summary>
