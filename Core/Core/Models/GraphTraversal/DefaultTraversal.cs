@@ -100,7 +100,7 @@ public static class DefaultTraversal
 
   public static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
 
-  internal static IEnumerable<string> DisplayValueAliases(Base _)
+  public static IEnumerable<string> DisplayValueAliases(Base _)
   {
     return displayValueAliases;
   }

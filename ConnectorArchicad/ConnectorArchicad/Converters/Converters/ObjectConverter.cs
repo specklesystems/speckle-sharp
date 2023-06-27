@@ -27,15 +27,13 @@ namespace Archicad.Converters
 
     #region --- Functions ---
 
-    static List<Mesh> GetDisplayValue(Base element)
+    static List<Mesh> GetMesh (Base element)
     {
-      return DefaultTraversal.displayValueAliases.Concat(DefaultTraversal.geometryAliases)
-        .SelectMany(m => {
-          if (element[m] is IEnumerable<object> meshes)
-            return meshes.Where(mesh => mesh is Mesh).Cast<Mesh>();
-          return new List<Mesh>();
-        }
-        ).ToList();
+      List<Mesh> meshes = new List<Mesh>();
+      if (element is Mesh mesh)
+        meshes.Add (mesh);
+
+      return meshes;
     }
 
     public sealed class ArchicadDefinitionTraversalContext : TraversalContext<ArchicadDefinitionTraversalContext>
@@ -60,24 +58,33 @@ namespace Archicad.Converters
 
     public static ArchicadDefinitionTraversal CreateArchicadDefinitionTraverseFunc()
     {
+      // hosted elements traversal #1: via the elements field
       var elementsTraversal = TraversalRule
         .NewTraversalRule()
         .When(DefaultTraversal.HasElements)
         .ContinueTraversing(DefaultTraversal.ElementsAliases);
 
+      // hosted elements traversal #2: BlockInstance elements could be stored in geometry field
+      // geometry traversal #2: visiting the elements in geometry field (Meshes)
       var geometryTraversal = TraversalRule
         .NewTraversalRule()
         .When(DefaultTraversal.HasGeometry)
         .ContinueTraversing(DefaultTraversal.GeometryAliases);
 
+      // instance <-> definition traversal
       var definitionTraversal = TraversalRule
         .NewTraversalRule()
         .When(DefaultTraversal.HasDefiniton)
         .ContinueTraversing(DefaultTraversal.DefinitionAliases);
 
-      return new ArchicadDefinitionTraversal(elementsTraversal, geometryTraversal, definitionTraversal);
-    }
+      // geometry traversal #1: visiting the elements in displayValue field (Meshes)
+      var displayValueTraversal = TraversalRule
+        .NewTraversalRule()
+        .When(DefaultTraversal.HasDisplayValue)
+        .ContinueTraversing(DefaultTraversal.DisplayValueAliases);
 
+      return new ArchicadDefinitionTraversal(elementsTraversal, geometryTraversal, definitionTraversal, displayValueTraversal);
+    }
 
     private static TraversalContext StoreTransformationMatrix(ArchicadDefinitionTraversalContext tc, Dictionary<string, Transform> transformMatrixById)
     {
@@ -99,11 +106,7 @@ namespace Archicad.Converters
 
     private static List<string> Store(TraversalContext tc, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
     {
-      List<Mesh> meshes = null;
-      if (tc.current is Mesh mesh)
-        meshes = new List<Mesh>() { mesh };
-      else
-        meshes = GetDisplayValue(tc.current);
+      var meshes = GetMesh(tc.current);
 
       return meshes.Select(mesh => {
         string cumulativeTransformId = (tc as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
@@ -130,6 +133,8 @@ namespace Archicad.Converters
       var context = Archicad.Helpers.Timer.Context.Peek;
       using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
       {
+        ArchicadDefinitionTraversal traversal = CreateArchicadDefinitionTraverseFunc();
+
         foreach (var tc in elements)
         {
           var element = tc.current;
@@ -145,9 +150,8 @@ namespace Archicad.Converters
 
           List<string> meshIdHashes;
           {
-            meshIdHashes = CreateArchicadDefinitionTraverseFunc().Traverse(element)
+            meshIdHashes = traversal.Traverse(element)
               .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
-              .Where(tc => (tc.current is Mesh) || DefaultTraversal.HasDisplayValue(tc.current) || DefaultTraversal.HasGeometry(tc.current))
               .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))
               .ToList();
 
