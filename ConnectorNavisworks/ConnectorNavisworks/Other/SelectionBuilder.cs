@@ -107,14 +107,26 @@ public class SelectionHandler
       return Enumerable.Empty<ModelItem>();
 
     // Resolve the saved viewpoint based on the selection
-    var savedViewpoint = ResolveSavedViewpoint(selection);
-    if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides)
-      return Enumerable.Empty<ModelItem>();
-
     // Makes the view active on the main thread.
+
+    var success = false;
+
     new Invoker().Invoke(
-      (Action)(() => Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint)
+      (Action)(
+        () =>
+        {
+          var savedViewpoint = ResolveSavedViewpoint(selection);
+          if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
+            return;
+
+          Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
+          success = true;
+        }
+      )
     );
+
+    if (!success)
+      return Enumerable.Empty<ModelItem>();
 
     var models = Application.ActiveDocument.Models;
     Application.ActiveDocument.CurrentSelection.Clear();
@@ -156,7 +168,7 @@ public class SelectionHandler
     );
 
     if (viewPointMatch != null)
-      return ResolveSavedViewpoint(viewPointMatch, savedViewReference);
+      return ResolveSavedViewpointMatch(savedViewReference);
     {
       foreach (var node in flattenedViewpointList)
       {
@@ -170,7 +182,7 @@ public class SelectionHandler
     }
 
     // If no match is found, return null; otherwise, resolve the SavedViewpoint
-    return viewPointMatch == null ? null : ResolveSavedViewpoint(viewPointMatch, savedViewReference);
+    return viewPointMatch == null ? null : ResolveSavedViewpointMatch(savedViewReference);
   }
 
   /// <summary>
@@ -179,7 +191,7 @@ public class SelectionHandler
   /// <param name="viewpointMatch">The dynamic object representing the viewpoint match.</param>
   /// <param name="savedViewReference">The saved view reference to resolve.</param>
   /// <returns>The resolved SavedViewpoint.</returns>
-  private SavedViewpoint ResolveSavedViewpoint(dynamic viewpointMatch, string savedViewReference)
+  private SavedViewpoint ResolveSavedViewpointMatch(string savedViewReference)
   {
     if (Guid.TryParse(savedViewReference, out var guid))
       // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
@@ -216,7 +228,8 @@ public class SelectionHandler
       IndexWith = nameof(TreeNode.Reference),
       // Rather than version check Navisworks host application we feature check
       // to see if Guid is set correctly on viewpoints.
-      Reference = savedItem.Guid.ToString() == Guid.Empty.ToString() ? reference.SavedItemId : savedItem.Guid.ToString()
+      Reference =
+        savedItem.Guid.ToString() == Guid.Empty.ToString() ? reference?.SavedItemId : savedItem.Guid.ToString()
     };
 
     // Handle different cases based on whether the SavedItem is a group or not
