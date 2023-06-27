@@ -1466,6 +1466,11 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
 
   private void HandleCommandException(Exception ex, [CallerMemberName] string commandName = "UnknownCommand")
   {
+    HandleCommandException(ex, Progress.CancellationToken.IsCancellationRequested, commandName);
+  }
+
+  public static void HandleCommandException(Exception ex, bool isUserCancel, [CallerMemberName] string commandName = "UnknownCommand")
+  {
     string commandPrettyName = commandName.EndsWith("Command")
       ? commandName.Substring(0, commandName.Length - "Command".Length)
       : commandName;
@@ -1478,7 +1483,6 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
         // NOTE: We expect an OperationCanceledException to occur when our CancellationToken is cancelled.
         // If our token wasn't cancelled, then this is highly unexpected, and treated with HIGH SEVERITY!
         // Likely, another deeper token was cancelled, and the exception wasn't handled correctly somewhere deeper.
-        bool isUserCancel = Progress.CancellationToken.IsCancellationRequested;
 
         logLevel = isUserCancel ? LogEventLevel.Information : LogEventLevel.Error;
         notificationViewModel = new PopUpNotificationViewModel
