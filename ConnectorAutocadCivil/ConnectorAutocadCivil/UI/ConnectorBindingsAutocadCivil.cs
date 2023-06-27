@@ -672,7 +672,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                   Utils.SetStyle(display, o, LineTypeDictionary);
 
                 // add property sets if this is Civil3D
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
                 try
                 {
                   if (obj["propertySets"] is IReadOnlyList<object> list)
@@ -1120,7 +1120,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 converted[key] = obj.ExtensionDictionary.GetUserString(key);
               */
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
               // add property sets if this is Civil3D
               var propertySets = obj.GetPropertySets(tr);
               if (propertySets.Count > 0)
