@@ -451,10 +451,11 @@ namespace Objects.Converter.AutocadCivil
         }
       }
 
+      (string name, string anonymousName) = GetBlockDefName(record);
       var definition = new BlockDefinition()
       {
-        name = GetBlockDefName(record).name,
-        anonymousName = GetBlockDefName(record).anonymousName,
+        name = name,
+        anonymousName = anonymousName,
         basePoint = PointToSpeckle(record.Origin),
         geometry = geometry,
         units = ModelUnits
