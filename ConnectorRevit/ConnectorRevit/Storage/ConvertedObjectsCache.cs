@@ -12,6 +12,7 @@ namespace ConnectorRevit.Storage
 
     public void AddConvertedObjects(Base converted, IList<Element> created)
     {
+      if (string.IsNullOrEmpty(converted.applicationId)) return;
       convertedObjects[converted.applicationId] = (converted, created.ToList());
     }
 

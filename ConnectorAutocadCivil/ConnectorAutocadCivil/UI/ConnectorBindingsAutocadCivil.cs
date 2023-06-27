@@ -22,7 +22,6 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using static Speckle.ConnectorAutocadCivil.Utils;
 
 #if ADVANCESTEEL2023
@@ -260,14 +259,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       Doc.Editor.SetImpliedSelection(new ObjectId[0]);
       Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
-    }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-      Dictionary<string, List<MappingValue>> Mapping
-    )
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
     }
 
     #endregion

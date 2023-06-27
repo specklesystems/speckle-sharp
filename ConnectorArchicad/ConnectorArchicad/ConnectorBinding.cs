@@ -14,7 +14,6 @@ using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace Archicad.Launcher
 {
@@ -176,14 +175,6 @@ namespace Archicad.Launcher
         CommitId = state.CommitId != "latest" ? state.CommitId : null
       };
       return stream.ToString();
-    }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-      Dictionary<string, List<MappingValue>> Mapping
-    )
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
     }
   }
 }

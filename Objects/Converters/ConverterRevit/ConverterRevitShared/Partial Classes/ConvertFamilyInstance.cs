@@ -41,13 +41,15 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null && SHC.curtainWallSubElements.HasCategory(revitFi.Category))
+      if (@base == null && 
+        (revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
+        || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels))
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
-        else if (new List<BuiltInCategory> { BuiltInCategory.OST_CurtainWallMullions }.HasCategory(revitFi.Category))
+        else if (revitFi is Mullion mullion)
         {
-          var direction = ((DB.Line)((Mullion)revitFi).LocationCurve).Direction;
+          var direction = ((DB.Line)mullion.LocationCurve).Direction;
           // TODO: add support for more severly sloped mullions. This isn't very robust at the moment
           isUGridLine = Math.Abs(direction.X) > Math.Abs(direction.Y);
         }
@@ -57,7 +59,7 @@ namespace Objects.Converter.Revit
       }
 
       //beams & braces
-      if (@base == null && SHC.beamCategories.HasCategory(revitFi.Category))
+      if (@base == null && SHC.StructuralFraming.BuiltInCategories.HasCategory(revitFi.Category))
       {
         if (revitFi.StructuralType == StructuralType.Beam)
           @base = BeamToSpeckle(revitFi, out notes);
@@ -67,7 +69,7 @@ namespace Objects.Converter.Revit
 
       //columns
       if (
-        @base == null && SHC.columnCategories.HasCategory(revitFi.Category)
+        @base == null && SHC.Column.BuiltInCategories.HasCategory(revitFi.Category)
         || revitFi.StructuralType == StructuralType.Column
       )
         @base = ColumnToSpeckle(revitFi, out notes);
@@ -648,7 +650,15 @@ namespace Objects.Converter.Revit
       {
         // mirroring
         // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
-        Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+        Group group = null;
+        try
+        {
+          group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+        }
+        catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+        {
+          // sometimes the group can't be made. Just try to mirror the element on its own
+        }
         var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
 
         try

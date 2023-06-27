@@ -13,7 +13,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Filters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Selections.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.File.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Mapping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Events.cs" />

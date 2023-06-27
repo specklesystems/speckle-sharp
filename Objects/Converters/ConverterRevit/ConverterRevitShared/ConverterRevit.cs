@@ -47,7 +47,7 @@ namespace Objects.Converter.Revit
 
     private const double TOLERANCE = 0.0164042; // 5mm in ft
 
-    public Document Doc { get; private set; }
+    public static Document Doc { get; private set; }
 
     /// <summary>
     /// <para>To know which other objects are being converted, in order to sort relationships between them.

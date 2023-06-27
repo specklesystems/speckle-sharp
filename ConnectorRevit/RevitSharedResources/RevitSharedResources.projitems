@@ -11,7 +11,12 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Categories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Helpers\Extensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Helpers\RevitCategoryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAllRevitCategories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IAllRevitCategoriesExposer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IConvertedObjectsCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IReceivedObjectIdMap.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitCategoryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitElementTypeRetriever.cs" />
   </ItemGroup>
 </Project>
