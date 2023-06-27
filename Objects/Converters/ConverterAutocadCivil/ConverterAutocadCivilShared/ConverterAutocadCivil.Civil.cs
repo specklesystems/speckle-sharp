@@ -1,4 +1,4 @@
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -726,7 +726,7 @@ namespace Objects.Converter.AutocadCivil
       {
         var triangleVertices = new List<Point3d> { triangle.Vertex1.Location, triangle.Vertex2.Location, triangle.Vertex3.Location };
 
-#if CIVIL2023 // skip any triangles that are hidden in the surface!
+#if CIVIL2023 || CIVIL2024 // skip any triangles that are hidden in the surface!
         if (!triangle.IsVisible)
         {
           triangle.Dispose();
