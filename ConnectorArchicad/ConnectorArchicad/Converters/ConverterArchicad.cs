@@ -67,19 +67,22 @@ namespace Objects.Converter.Archicad
         Objects.BuiltElements.Wall _ => true,
 
         // Archicad elements
-        Objects.BuiltElements.Archicad.ArchicadDoor => true,
-        Objects.BuiltElements.Archicad.ArchicadWindow => true,
-        Objects.BuiltElements.Archicad.ArchicadSkylight => true,
+        Objects.BuiltElements.Archicad.ArchicadDoor _ => true,
+        Objects.BuiltElements.Archicad.ArchicadWindow _ => true,
+        Objects.BuiltElements.Archicad.ArchicadSkylight _ => true,
         Objects.BuiltElements.Archicad.DirectShape _ => true,
 
         // Revit elements
-        Objects.BuiltElements.Revit.FamilyInstance => true,
-        Objects.Other.Revit.RevitInstance => true,
+        Objects.BuiltElements.Revit.FamilyInstance _ => true,
+        Objects.Other.Revit.RevitInstance _ => true,
+
+        // Other
+        Objects.Other.BlockInstance _ => true,
 
         // Speckle geomtries
-        Mesh _ => true,
-        Brep _ => true,
-
+        Objects.Geometry.Mesh _ => true,
+        Objects.Geometry.Brep _ => true,
+ 
         _ => false
       };
     }

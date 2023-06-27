@@ -12,7 +12,6 @@ using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks;
 
-
 // ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
@@ -233,14 +232,26 @@ public partial class ConverterNavisworks
 
     var @base = CategoryToSpeckle(element);
 
+    var firstChild = element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName));
+    var parent = element.Ancestors.FirstOrDefault(p => !string.IsNullOrEmpty(p.DisplayName));
+
+    var resolvedName = string.IsNullOrEmpty(element.DisplayName)
+      ? string.IsNullOrEmpty(firstChild?.DisplayName)
+        ? parent?.DisplayName
+        : firstChild.DisplayName
+      : element.DisplayName;
+
+    @base["name"] = string.IsNullOrEmpty(resolvedName)
+      ? (
+        element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
+      ).ToString()
+      : GetSanitizedPropertyName(resolvedName);
+
     // Geometry items have no children
     if (element.HasGeometry)
     {
       GeometryToSpeckle(element, @base);
       AddItemProperties(element, @base);
-      @base["name"] = string.IsNullOrEmpty(element.DisplayName)
-        ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
-        : element.DisplayName;
 
       return @base;
     }
@@ -253,10 +264,6 @@ public partial class ConverterNavisworks
     // invalid if it has no children, or no children through hiding
     if (element.Descendants.All(x => x.IsHidden))
       return null;
-
-    ((Collection)@base).name = string.IsNullOrEmpty(element.DisplayName)
-      ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
-      : element.DisplayName;
 
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason

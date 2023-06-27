@@ -26,7 +26,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
 using Speckle.Newtonsoft.Json;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using Utilities = Speckle.Core.Models.Utilities;
 
 namespace SpeckleRhino;
@@ -320,14 +319,6 @@ public class ConnectorBindingsRhino : ConnectorBindings
       Doc.Objects.UnselectAll(false);
 
     Doc.Views.Redraw();
-  }
-
-  public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-    Dictionary<string, List<MappingValue>> Mapping
-  )
-  {
-    await Task.Delay(TimeSpan.FromMilliseconds(500));
-    return new Dictionary<string, List<MappingValue>>();
   }
 
   #endregion

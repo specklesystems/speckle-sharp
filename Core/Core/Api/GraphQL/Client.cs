@@ -37,11 +37,7 @@ public partial class Client : IDisposable
     Account = account;
 
     HttpClient = Http.GetHttpProxyClient();
-
-    if (account.token.ToLowerInvariant().Contains("bearer"))
-      HttpClient.DefaultRequestHeaders.Add("Authorization", account.token);
-    else
-      HttpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {account.token}");
+    Http.AddAuthHeader(HttpClient, account.token);
 
     HttpClient.DefaultRequestHeaders.Add("apollographql-client-name", Setup.HostApplication);
     HttpClient.DefaultRequestHeaders.Add(
@@ -55,9 +51,9 @@ public partial class Client : IDisposable
         EndPoint = new Uri(new Uri(account.serverInfo.url), "/graphql"),
         UseWebSocketForQueriesAndMutations = false,
         WebSocketProtocol = "graphql-ws",
-        ConfigureWebSocketConnectionInitPayload = opts =>
+        ConfigureWebSocketConnectionInitPayload = _ =>
         {
-          return new { Authorization = $"Bearer {account.token}" };
+          return Http.CanAddAuth(account.token, out string? authValue) ? new { Authorization = authValue } : null;
         },
         OnWebsocketConnected = OnWebSocketConnect
       },
@@ -246,9 +242,7 @@ public partial class Client : IDisposable
         errors.Any(
           e =>
             e.Extensions != null
-            && (
-              e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND"))
-            )
+            && (e.Extensions.Contains(new KeyValuePair<string, object>("code", "STREAM_NOT_FOUND")))
         )
       )
         throw new SpeckleGraphQLStreamNotFoundException<T>(request, response);
