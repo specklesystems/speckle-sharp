@@ -342,7 +342,7 @@ namespace Objects.Converter.AutocadCivil
 
       if (definition == null)
         return null;
-
+      definition.position = PointToSpeckle(reference.Position);
       var instance = new BlockInstance()
       {
         transform = new Transform(reference.BlockTransform.ToArray(), ModelUnits),

@@ -26,7 +26,7 @@ public class BlockDefinition : Base
   /// The definition base point of the block
   /// </summary>
   public Point basePoint { get; set; }
-
+  public Point position { get; set; }
   [DetachProperty]
   public List<Base> geometry { get; set; }
 
