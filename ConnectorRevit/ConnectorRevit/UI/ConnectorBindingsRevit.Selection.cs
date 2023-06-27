@@ -209,6 +209,18 @@ namespace Speckle.ConnectorRevit.UI
 
     private static List<Element> FilterHiddenDesignOptions(List<Element> selection)
     {
+      using var collector = new FilteredElementCollector(CurrentDoc.Document);
+      var designOptionsExist = collector
+        .OfClass(typeof(DesignOption))
+        .Cast<DesignOption>()
+        .Where(option => option.IsPrimary == false)
+        .Any();
+
+      if (!designOptionsExist)
+      {
+        return selection;
+      }
+
       //Only include the Main Model objects and those part of a Primary Design Option
       //https://speckle.community/t/revit-design-option-settings-are-ignored-in-everything-stream/3182/8
       var activeDesignOption = DesignOption.GetActiveDesignOptionId(CurrentDoc.Document);
