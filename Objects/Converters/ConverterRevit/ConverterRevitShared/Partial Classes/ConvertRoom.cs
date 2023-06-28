@@ -59,8 +59,10 @@ namespace Objects.Converter.Revit
 
       speckleRoom.displayValue = GetElementDisplayValue(revitRoom);
       var phase = Doc.GetElement(revitRoom.get_Parameter(BuiltInParameter.ROOM_PHASE).AsElementId());
-      if(phase!=null)
-      speckleRoom["phaseCreated"] = phase.Name;
+      if (phase != null)
+      {
+        speckleRoom["phaseCreated"] = phase.Name;
+      }
 
       return speckleRoom;
     }
