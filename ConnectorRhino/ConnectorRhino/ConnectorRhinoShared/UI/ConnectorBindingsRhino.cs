@@ -593,7 +593,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
               continue;
             }
 
-            layers.Add(layer.FullPath, layer);
+            layers.Add(path, layer);
           }
           #endregion
 
