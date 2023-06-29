@@ -4,6 +4,7 @@
     <AssemblyName>SpeckleConnectorTeklaStructures</AssemblyName>
     <TargetFramework>net471</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <AssemblyTitle>ConnectorTeklaStructures2022</AssemblyTitle>
     <Product>ConnectorTeklaStructures2022</Product>
     <DefineConstants>$(DefineConstants);TeklaStructures2022</DefineConstants>
