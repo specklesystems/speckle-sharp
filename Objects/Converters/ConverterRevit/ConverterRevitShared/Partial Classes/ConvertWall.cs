@@ -211,7 +211,6 @@ namespace Objects.Converter.Revit
         }
         speckleWall.elements = elements;
       }
-    
 
       GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>
       {
