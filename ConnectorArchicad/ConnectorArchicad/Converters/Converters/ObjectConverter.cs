@@ -61,10 +61,10 @@ namespace Archicad.Converters
       static IEnumerable<string> AllAliases(Base _)
       {
         return DefaultTraversal.elementsPropAliases       // hosted elements traversal #1: via the elements field
-          .Concat (DefaultTraversal.geometryAliases)      // hosted elements traversal #2: BlockInstance elements could be stored in geometry field
+          .Concat (DefaultTraversal.geometryPropAliases)      // hosted elements traversal #2: BlockInstance elements could be stored in geometry field
                                                           // geometry traversal #2: visiting the elements in geometry field (Meshes)
-          .Concat(DefaultTraversal.definitionAliases)     // instance <-> definition traversal
-          .Concat(DefaultTraversal.displayValueAliases);  // geometry traversal #1: visiting the elements in displayValue field (Meshes)
+          .Concat(DefaultTraversal.definitionPropAliases)     // instance <-> definition traversal
+          .Concat(DefaultTraversal.displayValuePropAliases);  // geometry traversal #1: visiting the elements in displayValue field (Meshes)
       }
 
       var traversalRule = TraversalRule

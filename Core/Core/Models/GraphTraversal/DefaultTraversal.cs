@@ -1,5 +1,7 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using Speckle.Core.Kits;
 
@@ -21,7 +23,7 @@ public static class DefaultTraversal
       .NewTraversalRule()
       .When(converter.CanConvertToNative)
       .When(HasDisplayValue)
-      .ContinueTraversing(ElementsAliases);
+      .ContinueTraversing(_ => elementsPropAliases);
 
     return new GraphTraversal(convertableRule, IgnoreResultsRule, DefaultRule);
   }
@@ -30,7 +32,7 @@ public static class DefaultTraversal
   /// Traverses until finds a convertable object then HALTS deeper traversal
   /// </summary>
   /// <remarks>
-  /// Current <see cref="Objects.Converter.Revit.ConverterRevit"/> does traversal,
+  /// Current <see cref="Converter{TInput,TOutput}.Revit.ConverterRevit"/> does traversal,
   /// so this traversal is a shallow traversal for directly convertable objects,
   /// and a deep traversal for all other types
   /// </remarks>
@@ -40,7 +42,10 @@ public static class DefaultTraversal
   {
     var convertableRule = TraversalRule.NewTraversalRule().When(converter.CanConvertToNative).ContinueTraversing(None);
 
-    var displayValueRule = TraversalRule.NewTraversalRule().When(HasDisplayValue).ContinueTraversing(ElementsAliases);
+    var displayValueRule = TraversalRule
+      .NewTraversalRule()
+      .When(HasDisplayValue)
+      .ContinueTraversing(_ => displayValueAndElementsPropAliases);
 
     return new GraphTraversal(convertableRule, displayValueRule, IgnoreResultsRule, DefaultRule);
   }
@@ -74,8 +79,9 @@ public static class DefaultTraversal
     .When(_ => true)
     .ContinueTraversing(Members());
 
-  public static readonly string[] elementsPropAliases = { "elements", "@elements" };
+  public static readonly IReadOnlyList<string> elementsPropAliases = new[] { "elements", "@elements" };
 
+  [Pure]
   public static IEnumerable<string> ElementsAliases(Base _)
   {
     return elementsPropAliases;
@@ -86,42 +92,46 @@ public static class DefaultTraversal
     return elementsPropAliases.Any(m => x[m] != null);
   }
 
-  public static readonly string[] definitionAliases = { "definition", "@definition" };
+  public static readonly IReadOnlyList<string> definitionPropAliases = new[] { "definition", "@definition" };
 
+  [Pure]
   public static IEnumerable<string> DefinitionAliases(Base _)
   {
-    return definitionAliases;
+    return definitionPropAliases;
   }
 
-  public static bool HasDefiniton(Base x)
+  public static bool HasDefinition(Base x)
   {
-    return definitionAliases.Any(m => x[m] != null);
+    return definitionPropAliases.Any(m => x[m] != null);
   }
 
-  public static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+  public static readonly IReadOnlyList<string> displayValuePropAliases = new[] { "displayValue", "@displayValue" };
 
+  [Pure]
   public static IEnumerable<string> DisplayValueAliases(Base _)
   {
-    return displayValueAliases;
+    return displayValuePropAliases;
   }
 
   public static bool HasDisplayValue(Base x)
   {
-    return displayValueAliases.Any(m => x[m] != null);
+    return displayValuePropAliases.Any(m => x[m] != null);
   }
 
-  public static readonly string[] geometryAliases = { "geometry", "@geometry" };
+  public static readonly IReadOnlyList<string> geometryPropAliases = new[] { "geometry", "@geometry" };
 
+  [Pure]
   public static IEnumerable<string> GeometryAliases(Base _)
   {
-    return geometryAliases;
+    return geometryPropAliases;
   }
 
   public static bool HasGeometry(Base x)
   {
-    return geometryAliases.Any(m => x[m] != null);
+    return geometryPropAliases.Any(m => x[m] != null);
   }
 
+  [Pure]
   internal static IEnumerable<string> None(Base _)
   {
     return Enumerable.Empty<string>();
@@ -130,6 +140,16 @@ public static class DefaultTraversal
   internal static SelectMembers Members(DynamicBaseMemberType includeMembers = DynamicBase.DefaultIncludeMembers)
   {
     return x => x.GetMembers(includeMembers).Keys;
+  }
+
+  public static readonly string[] displayValueAndElementsPropAliases = displayValuePropAliases
+    .Concat(elementsPropAliases)
+    .ToArray();
+
+  [Pure]
+  public static IEnumerable<string> DisplayValueAndElementsAliases(Base _)
+  {
+    return displayValueAndElementsPropAliases;
   }
 
   #endregion
