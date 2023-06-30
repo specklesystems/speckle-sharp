@@ -216,7 +216,7 @@ namespace ConnectorRevit.TypeMapping
         if (typeInfo.ElementTypeType == null) continue;
 
         var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
-        //var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
+        var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
 
         //if (exactTypeMatch) continue;
 
@@ -224,7 +224,7 @@ namespace ConnectorRevit.TypeMapping
         var initialGuess = DefineInitialGuess(typeMap, incomingFamily, incomingType, typeInfo.CategoryName, elementTypes);
 
         typeMap.AddIncomingType(@base, incomingType, incomingFamily, typeInfo.CategoryName, initialGuess, out var isNewType);
-        if (isNewType) numNewTypes++;
+        if (isNewType && !exactTypeMatch) numNewTypes++;
       }
 
       hostTypes.SetAllTypes(
