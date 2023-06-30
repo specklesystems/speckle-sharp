@@ -195,21 +195,7 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        // curtain walls have two meshes, one for panels and one for mullions
-        // adding mullions as sub-elements so they can be correctly displayed in viewers etc
-        var (panelsMesh, mullionsMesh) = GetCurtainWallDisplayMesh(revitWall);
         speckleWall["renderMaterial"] = new Other.RenderMaterial() { opacity = 0.2, diffuse = System.Drawing.Color.AliceBlue.ToArgb() };
-        speckleWall.displayValue = panelsMesh;
-
-        var elements = new List<Base>();
-        if (mullionsMesh.Count > 0) //Only add mullions object if they have meshes 
-        {
-          elements.Add(new Base
-          {
-            ["@displayValue"] = mullionsMesh
-          });
-        }
-        speckleWall.elements = elements;
       }
 
       GetAllRevitParamsAndIds(speckleWall, revitWall, new List<string>

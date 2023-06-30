@@ -2,9 +2,8 @@ using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Structure;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
+using Objects.Other;
 using Speckle.Core.Models;
-using Speckle.netDxf.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using DB = Autodesk.Revit.DB;
@@ -24,21 +23,23 @@ namespace Objects.Converter.Revit
     {
       if (material == null || element == null) 
         return null;
-      double volume = 0;double area=0;
+      double volume = 0;
+      double area=0;
 
       if(element is DB.MEPCurve )
       {
+        // Area and Volume are computed based on geometry elements
         GetGeometry(element, out List<DB.Mesh> meshes, out List<DB.Solid> solids);
-        volume = solids.Select(s => s.Volume).Sum();
-        var a = solids.Select(s => s.Faces.Cast<DB.Face>().Select(face => face.Area).Max());
+        volume = solids.Sum(s => s.Volume);
         area = solids.Select(s => s.Faces.Cast<DB.Face>().Select(face => face.Area).Max()).Sum();
       }
       else if (RequiresGeometryComputation(element))
       {
+        // Area and Volume are computed based on geometry elements
         GetGeometry(element, out List<DB.Mesh> meshes, out List<DB.Solid> solids);
-        volume = solids.Where(solid => solid.Volume > 0 && !solid.Faces.IsEmpty && solid.Faces.get_Item(0).MaterialElementId == material.Id)
-                   .Sum(solid => solid.Volume);
-        var all = solids.Where(solid => solid.Volume > 0 && !solid.Faces.IsEmpty && solid.Faces.get_Item(0).MaterialElementId == material.Id)
+        var filteredSolids = solids.Where(solid => solid.Volume > 0 && !solid.Faces.IsEmpty && solid.Faces.get_Item(0).MaterialElementId == material.Id);
+        volume = filteredSolids.Sum(solid => solid.Volume);
+        area  = filteredSolids
           .Select(solid => solid.Faces.Cast<Face>().Select(face => face.Area)
           .Max()).Sum();
       }
@@ -58,6 +59,10 @@ namespace Objects.Converter.Revit
 
       if (LocationToSpeckle(element) is ICurve curve)
         materialQuantity["length"] = curve.length;
+      else if (element is DB.Architecture.Railing)
+        materialQuantity["length"] = (element as DB.Architecture.Railing).GetPath().Sum(e => e.Length)*factor;
+      else if (element is DB.Architecture.TopRail)
+        materialQuantity["length"] = (element as DB.Architecture.TopRail).GetPath().Sum(e => e.Length) * factor;
       return materialQuantity;
     }
 
@@ -66,7 +71,6 @@ namespace Objects.Converter.Revit
     #region MaterialQuantities
     public IEnumerable<Objects.Other.MaterialQuantity> MaterialQuantitiesToSpeckle(DB.Element element, string units)
     {
-      
       var matIDs = element?.GetMaterialIds(false); 
       // Does not return the correct materials for some categories
       // Need to take different approach for MEP-Elements
@@ -75,10 +79,12 @@ namespace Objects.Converter.Revit
         DB.Material mepMaterial = ConverterRevit.GetMEPSystemRevitMaterial(element);
         if (mepMaterial != null) matIDs.Add(mepMaterial.Id);
       }
-
+      else  if (matIDs == null || !matIDs.Any() && (element is DB.Architecture.Railing|| element is DB.Architecture.TopRail))
+      {
+        matIDs = GetMaterialsFromGeometry(element).ToList();
+      }
       if (matIDs == null || !matIDs.Any())
         return null;
-
       var materials = matIDs.Select(material => element.Document.GetElement(material) as DB.Material);
       return MaterialQuantitiesToSpeckle(element, materials, units);
     }
@@ -103,9 +109,20 @@ namespace Objects.Converter.Revit
     private bool RequiresGeometryComputation(DB.Element element)
     {
       if (element.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Windows || 
-        element.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Doors) return true;
+        element.Category.Id.IntegerValue == (int)BuiltInCategory.OST_Doors ||
+        element is DB.Architecture.Railing||
+        element is DB.Architecture.TopRail) return true;
       return false;
     }
+
+    private IEnumerable<DB.ElementId> GetMaterialsFromGeometry(DB.Element element, bool isConverterAsInstance=false, DB.Options options=null)
+    {
+      GetGeometry(element, out List<DB.Mesh> meshes, out List<DB.Solid> solids);
+      HashSet<ElementId> materialIds = new HashSet<ElementId>();
+
+      return solids.Where(solid => solid.Volume > 0 && !solid.Faces.IsEmpty).Select(m => m.Faces.get_Item(0).MaterialElementId).Distinct();
+    }
+
     private void GetGeometry(DB.Element element, out List<DB.Mesh> meshes, out List<DB.Solid> solids, bool isConvertedAsInstance = false, DB.Options options = null)
     {
       options ??= new DB.Options();
@@ -134,7 +151,7 @@ namespace Objects.Converter.Revit
             switch (geomObj)
             {
               case DB.Solid solid:
-                if (solid.Faces.Size > 0 && Math.Abs(solid.SurfaceArea) > 0) // skip invalid solid
+                if (solid.Faces.Size > 0 && System.Math.Abs(solid.SurfaceArea) > 0) // skip invalid solid
                   sol.Add(solid);
                 break;
               case DB.Mesh mesh:
