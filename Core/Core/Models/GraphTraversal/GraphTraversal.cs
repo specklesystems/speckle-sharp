@@ -1,7 +1,6 @@
 #nullable enable
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Speckle.Core.Models.GraphTraversal;
 
@@ -74,10 +73,7 @@ public abstract class GraphTraversal<T> where T : TraversalContext
       Base current = head.current;
       var activeRule = GetActiveRuleOrDefault(current);
 
-      var toTraverse = activeRule.MembersToTraverse(current).ToList();
-
-      _ = 0;
-      foreach (string childProp in toTraverse)
+      foreach (string childProp in activeRule.MembersToTraverse(current))
         TraverseMemberToStack(stack, current[childProp], childProp, head);
     }
   }
