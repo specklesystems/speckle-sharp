@@ -1,6 +1,7 @@
 #nullable enable
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Speckle.Core.Models.GraphTraversal;
 
@@ -9,19 +10,18 @@ public class TraversalContext
   public Base current { get; }
   public virtual TraversalContext? parent { get; }
   public string? propName { get; }
-  
+
   public TraversalContext(Base current, string? propName = null, TraversalContext? parent = default)
-  : this(current, propName)
+    : this(current, propName)
   {
     this.parent = parent;
   }
-  
+
   protected TraversalContext(Base current, string? propName = null)
   {
     this.current = current;
     this.propName = propName;
   }
-
 }
 
 public class TraversalContext<T> : TraversalContext where T : TraversalContext
@@ -29,8 +29,7 @@ public class TraversalContext<T> : TraversalContext where T : TraversalContext
   public override TraversalContext? parent => typedParent;
   public T? typedParent { get; }
 
-  public TraversalContext(Base current, string? propName = null, T? parent = default)
-  : base(current, propName)
+  public TraversalContext(Base current, string? propName = null, T? parent = default) : base(current, propName)
   {
     this.typedParent = parent;
   }
@@ -39,6 +38,7 @@ public class TraversalContext<T> : TraversalContext where T : TraversalContext
 public class GraphTraversal : GraphTraversal<TraversalContext>
 {
   public GraphTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
+
   protected override TraversalContext NewContext(Base current, string? propName, TraversalContext? parent)
   {
     return new TraversalContext<TraversalContext>(current, propName, parent);
@@ -48,6 +48,7 @@ public class GraphTraversal : GraphTraversal<TraversalContext>
 public abstract class GraphTraversal<T> where T : TraversalContext
 {
   private readonly ITraversalRule[] rules;
+
   protected GraphTraversal(params ITraversalRule[] traversalRule)
   {
     rules = traversalRule;
@@ -73,7 +74,10 @@ public abstract class GraphTraversal<T> where T : TraversalContext
       Base current = head.current;
       var activeRule = GetActiveRuleOrDefault(current);
 
-      foreach (string childProp in activeRule.MembersToTraverse(current))
+      var toTraverse = activeRule.MembersToTraverse(current).ToList();
+
+      _ = 0;
+      foreach (string childProp in toTraverse)
         TraverseMemberToStack(stack, current[childProp], childProp, head);
     }
   }
