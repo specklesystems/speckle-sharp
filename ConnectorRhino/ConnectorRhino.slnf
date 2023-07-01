@@ -8,6 +8,7 @@
       "ConnectorGrasshopper\\ConnectorGrasshopperUtils\\ConnectorGrasshopperUtils.csproj",
       "ConnectorRhino\\ConnectorRhino6\\ConnectorRhino6.csproj",
       "ConnectorRhino\\ConnectorRhino7\\ConnectorRhino7.csproj",
+      "ConnectorRhino\\ConnectorRhinoWebUI\\ConnectorRhinoWebUI.csproj",
       "ConnectorRhino\\ConnectorRhino\\ConnectorRhinoShared\\ConnectorRhinoShared.shproj",
       "Core\\Core\\Core.csproj",
       "Core\\Tests\\TestsUnit.csproj",
