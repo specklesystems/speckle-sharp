@@ -299,8 +299,8 @@ public partial class ConnectorBindingsNavisworks
     }
 
     _progressBar.StartNewSubOperation(0.66, "Building a family tree, data-style...");
-    var elements = converted.ToDictionary(x => x.Key.PseudoId, x => x.Value.Item2);
-    commitObject.elements = Element.BuildNestedObjectHierarchy(elements).ToList();
+
+    commitObject.elements = Element.BuildNestedObjectHierarchy(converted).ToList();
 
     if (commitObject.elements.Count == 0)
     {
