@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -183,8 +183,12 @@ public class Element
   /// </summary>
   /// <param name="convertedDictionary">The input dictionary to be converted into a hierarchical structure.</param>
   /// <returns>An IEnumerable of root nodes representing the hierarchical structure.</returns>
-  public static IEnumerable<Base> BuildNestedObjectHierarchy(Dictionary<string, Base> convertedDictionary)
+  public static IEnumerable<Base> BuildNestedObjectHierarchy(
+    Dictionary<Element, Tuple<Constants.ConversionState, Base>> converted
+  )
   {
+    var convertedDictionary = converted.ToDictionary(x => x.Key.PseudoId, x => (x.Value.Item2, x.Key));
+
     // This dictionary is for looking up parents quickly
     Dictionary<string, Base> lookupDictionary = new();
 
@@ -194,16 +198,23 @@ public class Element
     // First pass: Create lookup dictionary and identify potential root nodes
     foreach (var pair in convertedDictionary)
     {
-      string key = pair.Key;
-      Base value = pair.Value;
+      var element = pair.Value.Item2;
+      var pseudoId = element.PseudoId;
+      var baseNode = pair.Value.Item1;
+      var modelItem = element.ModelItem;
+      var type = baseNode.GetType().Name;
 
-      string[] parts = key.Split('-');
+      // Geometry Nodes can add all the properties to the FirstObject classification - this will help with the selection logic
+      if (type == "GeometryNode")
+        AddPropertyStackToGeometryNode(converted, modelItem, baseNode);
+
+      string[] parts = pseudoId.Split('-');
       string parentKey = string.Join("-", parts.Take(parts.Length - 1));
 
-      lookupDictionary.Add(key, value);
+      lookupDictionary.Add(pseudoId, baseNode);
 
       if (!lookupDictionary.ContainsKey(parentKey))
-        potentialRootNodes.Add(key, value);
+        potentialRootNodes.Add(pseudoId, baseNode);
     }
 
     // Second pass: Attach child nodes to their parents, and confirm root nodes
