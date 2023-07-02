@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
@@ -235,6 +235,55 @@ public class Element
     rootNodes.RemoveAll(node => node is Collection { elements: null });
 
     return rootNodes;
+  }
+
+  /// <summary>
+  /// Adds the property stack to a geometry node based on converted elements and model item.
+  /// </summary>
+  /// <param name="converted">The converted dictionary of elements.</param>
+  /// <param name="modelItem">The model item to process.</param>
+  /// <param name="baseNode">The base node to update with the property stack.</param>
+  private static void AddPropertyStackToGeometryNode(
+    Dictionary<Element, Tuple<Constants.ConversionState, Base>> converted,
+    ModelItem modelItem,
+    DynamicBase baseNode
+  )
+  {
+    var firstObjectAncestor = modelItem.FindFirstObjectAncestor();
+    var ancestors = modelItem.Ancestors;
+    var trimmedAncestors = ancestors.TakeWhile(ancestor => ancestor != firstObjectAncestor).Append(firstObjectAncestor);
+
+    var propertyStack = trimmedAncestors
+      .Select(item => converted.FirstOrDefault(keyValuePair => Equals(keyValuePair.Key.ModelItem, item)))
+      .Select(kVp => kVp.Value.Item2["properties"] as Base)
+      .SelectMany(
+        propertySet => propertySet?.GetMembers().Where(member => member.Value is Base),
+        (_, propertyCategory) =>
+          new { Category = propertyCategory.Key, Properties = ((Base)propertyCategory.Value).GetMembers() }
+      )
+      .SelectMany(
+        categoryProperties => categoryProperties.Properties,
+        (categoryProperties, property) =>
+          new { ConcatenatedKey = $"{categoryProperties.Category}--{property.Key}", property.Value }
+      )
+      .Where(property => property.Value != null && !string.IsNullOrEmpty(property.Value.ToString()))
+      .GroupBy(property => property.ConcatenatedKey) // Grouping properties by concatenated key
+      .Where(group => group.Select(item => item.Value).Distinct().Count() == 1) // Filtering groups with a single distinct value
+      .ToDictionary(group => group.Key, group => group.First().Value) // Creating a dictionary from the grouped values
+      .Select(
+        kVp =>
+          new
+          {
+            Category = kVp.Key.Substring(0, kVp.Key.IndexOf("--", StringComparison.Ordinal)), // Extracting the category from the key
+            Property = kVp.Key.Substring(kVp.Key.IndexOf("--", StringComparison.Ordinal) + 2), // Extracting the property from the key
+            kVp.Value
+          }
+      )
+      .Where(item => item.Category != "Internal") // Filtering out properties with Category "Internal"
+      .GroupBy(item => item.Category) // Grouping properties by category
+      .ToDictionary(group => group.Key, group => group.ToDictionary(item => item.Property, item => item.Value)); // Creating the nested dictionary
+
+    baseNode["property-stack"] = propertyStack;
   }
 
   /// <summary>
