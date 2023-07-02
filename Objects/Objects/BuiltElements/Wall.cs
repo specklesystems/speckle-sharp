@@ -151,6 +151,10 @@ namespace Objects.BuiltElements.Revit
     public Level level { get; set; }
     public Level topLevel { get; set; }
     public Base parameters { get; set; }
+    
+    [DetachProperty]
+    public List<Base> openings { get; set; }
+    
     public string elementId { get; set; }
   }
 

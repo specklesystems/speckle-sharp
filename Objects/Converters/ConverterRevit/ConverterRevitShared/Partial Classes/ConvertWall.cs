@@ -177,7 +177,7 @@ namespace Objects.Converter.Revit
       speckleWall.topOffset = GetParamValue<double>(revitWall, BuiltInParameter.WALL_TOP_OFFSET);
       speckleWall.structural = GetParamValue<bool>(revitWall, BuiltInParameter.WALL_STRUCTURAL_SIGNIFICANT);
       speckleWall.flipped = revitWall.Flipped;
-
+      speckleWall.openings = GetWallOpeningElements(revitWall);
       //CreateVoids(revitWall, speckleWall);
 
       if (revitWall.CurtainGrid == null)
@@ -227,7 +227,21 @@ namespace Objects.Converter.Revit
       if (hostedNotes.Any()) notes.AddRange(hostedNotes);
       return speckleWall;
     }
-
+    private List<Base> GetWallOpeningElements(DB.Wall revitWall)
+    {
+      var openings = new List<Base>();
+      IList<ElementId> wallOpenings = revitWall.GetDependentElements(new ElementClassFilter(typeof(Opening)));
+      foreach (var openingId in wallOpenings)
+      {
+        var opening = Doc.GetElement(openingId);
+        if (opening is Opening)
+        {
+          var openingSpeckle = OpeningToSpeckle((Opening)opening);
+          openings.Add(openingSpeckle);
+        }
+      }
+      return openings;
+    }
     private (List<Mesh>, List<Mesh>) GetCurtainWallDisplayMesh(DB.Wall wall)
     {
       var grid = wall.CurtainGrid;
