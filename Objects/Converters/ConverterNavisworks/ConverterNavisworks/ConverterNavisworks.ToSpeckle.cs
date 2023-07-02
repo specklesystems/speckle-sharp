@@ -135,7 +135,7 @@ public partial class ConverterNavisworks
 
     string cameraType;
     string zoom;
-    double zoomValue = 1;
+    double zoomValue;
 
     switch (vp.Projection)
     {
