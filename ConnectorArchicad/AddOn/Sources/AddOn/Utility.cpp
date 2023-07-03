@@ -38,6 +38,7 @@ GS::ErrCode GetTypeNameFromElementType (const API_Elem_Head& header, GS::UniStri
 #ifdef ServerMainVers_2600
 	return ACAPI_Goodies_GetElemTypeName (header.type, typeName);
 #else
+	UNUSED (header);
 	typeName = "Archicad Element"; // ACAPI_Goodies_GetElemTypeName not implemented in Archicad 25
 	return NoError;
 #endif

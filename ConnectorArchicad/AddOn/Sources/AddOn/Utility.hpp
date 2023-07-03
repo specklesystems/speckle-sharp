@@ -5,6 +5,8 @@
 #include "ACAPinc.h"
 #include "ResourceIds.hpp"
 
+#define UNUSED(x) (void)(x)
+
 
 namespace Utility {
 
