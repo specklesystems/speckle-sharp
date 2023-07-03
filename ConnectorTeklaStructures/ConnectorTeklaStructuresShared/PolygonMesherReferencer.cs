@@ -1,3 +1,4 @@
+using System;
 using StructuralUtilities.PolygonMesher;
 
 namespace ConnectorTeklaStructuresShared
