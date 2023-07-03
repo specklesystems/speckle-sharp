@@ -356,7 +356,7 @@ public class Element
       }
     }
 
-    baseNode["property-stack"] = propertyStack;
+    // baseNode["property-stack"] = propertyStack;
   }
 
   /// <summary>
