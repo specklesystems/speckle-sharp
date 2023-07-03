@@ -138,7 +138,6 @@ namespace Speckle.ConnectorRevit.UI
       ).WhereElementIsNotElementType();
       var elementIds = collector.ToElements().Select(el => el.UniqueId).ToList();
 
-
       return elementIds;
     }
 
@@ -195,7 +194,10 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     /// <param name="filter"></param>
     /// <returns></returns>
-    private List<Element> GetSelectionFilterObjectsWithDesignOptions(ISpeckleConverter converter, ISelectionFilter filter)
+    private List<Element> GetSelectionFilterObjectsWithDesignOptions(
+      ISpeckleConverter converter,
+      ISelectionFilter filter
+    )
     {
       var selection = GetSelectionFilterObjects(converter, filter);
 
@@ -235,7 +237,6 @@ namespace Speckle.ConnectorRevit.UI
 
       return selection;
     }
-
 
     /// <summary>
     /// Given the filter in use by a stream returns the document elements that match it.
@@ -283,7 +284,10 @@ namespace Speckle.ConnectorRevit.UI
       }
       catch (Exception ex)
       {
-        throw new SpeckleException($"Method {nameof(GetSelectionFilterObjects)} threw an error of type {ex.GetType()}. Reason: {ex.Message}", ex);
+        throw new SpeckleException(
+          $"Method {nameof(GetSelectionFilterObjects)} threw an error of type {ex.GetType()}. Reason: {ex.Message}",
+          ex
+        );
       }
 
       return selection;
@@ -318,10 +322,10 @@ namespace Speckle.ConnectorRevit.UI
       {
         //add for family document
         IList<ElementFilter> filters = new List<ElementFilter>()
-              {
-                new ElementClassFilter(typeof(GenericForm)),
-                new ElementClassFilter(typeof(GeomCombination)),
-              };
+        {
+          new ElementClassFilter(typeof(GenericForm)),
+          new ElementClassFilter(typeof(GeomCombination)),
+        };
         selection.AddRange(
           new FilteredElementCollector(currentDoc).WherePasses(new LogicalOrFilter(filters)).ToElements()
         );
@@ -339,7 +343,11 @@ namespace Speckle.ConnectorRevit.UI
       return selection;
     }
 
-    private static List<Element> GetSelectionByCategory(ISelectionFilter filter, Document currentDoc, List<Document> allDocs)
+    private static List<Element> GetSelectionByCategory(
+      ISelectionFilter filter,
+      Document currentDoc,
+      List<Document> allDocs
+    )
     {
       var selection = new List<Element>();
       var catFilter = filter as ListSelectionFilter;
@@ -414,7 +422,12 @@ namespace Speckle.ConnectorRevit.UI
       return selection;
     }
 
-    private static List<Element> GetSelectionByView(ISpeckleConverter converter, ISelectionFilter filter, Document currentDoc, List<Document> allDocs)
+    private static List<Element> GetSelectionByView(
+      ISpeckleConverter converter,
+      ISelectionFilter filter,
+      Document currentDoc,
+      List<Document> allDocs
+    )
     {
       var selection = new List<Element>();
       var viewFilter = filter as ListSelectionFilter;
@@ -424,8 +437,8 @@ namespace Speckle.ConnectorRevit.UI
         .WhereElementIsNotElementType()
         .OfClass(typeof(View))
         .WherePasses(scheduleExclusionFilter)
-        .Where(x => viewFilter.Selection.Contains(x.Name))
         .Cast<View>()
+        .Where(x => viewFilter.Selection.Contains(x.Title))
         .Where(x => !x.IsTemplate)
         .ToList();
 
@@ -444,12 +457,14 @@ namespace Speckle.ConnectorRevit.UI
         foreach (var doc in allDocs)
         {
           using var docCollector = new FilteredElementCollector(doc, view.Id);
-          selection.AddRange(docCollector
-            .WhereElementIsNotElementType()
-            .WhereElementIsViewIndependent()
-            //.Where(x => x.IsPhysicalElement())
-            .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
-            .ToList());
+          selection.AddRange(
+            docCollector
+              .WhereElementIsNotElementType()
+              .WhereElementIsViewIndependent()
+              //.Where(x => x.IsPhysicalElement())
+              .Where(x => !ids.Contains(x.UniqueId)) //exclude elements already added from other views
+              .ToList()
+          );
         }
       }
       return selection;
@@ -496,7 +511,11 @@ namespace Speckle.ConnectorRevit.UI
       return selection;
     }
 
-    private static List<Element> GetSelectionByWorkset(ISelectionFilter filter, Document currentDoc, List<Document> allDocs)
+    private static List<Element> GetSelectionByWorkset(
+      ISelectionFilter filter,
+      Document currentDoc,
+      List<Document> allDocs
+    )
     {
       var selection = new List<Element>();
       var worksetFilter = filter as ListSelectionFilter;
@@ -520,7 +539,11 @@ namespace Speckle.ConnectorRevit.UI
       return selection;
     }
 
-    private static List<Element> GetSelectionByParameter(ISelectionFilter filter, List<Document> allDocs, List<Element> selection)
+    private static List<Element> GetSelectionByParameter(
+      ISelectionFilter filter,
+      List<Document> allDocs,
+      List<Element> selection
+    )
     {
       try
       {
@@ -546,8 +569,7 @@ namespace Speckle.ConnectorRevit.UI
               break;
             case "contains":
               query = query.Where(
-                fi =>
-                  GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue)
+                fi => GetStringValue(fi.LookupParameter(propFilter.PropertyName)).Contains(propFilter.PropertyValue)
               );
               break;
             case "is greater than":
