@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Structural.Materials;
 using Objects.Structural.Properties.Profiles;
@@ -123,8 +123,13 @@ namespace Objects.BuiltElements.Archicad
     [SchemaInfo("ArchicadBeam", "Creates an Archicad beam by curve.", "Archicad", "Structure")]
     public ArchicadBeam() { }
 
-    // Positioning
+    // Element base
+    public string elementType { get; set; }
+    public List<Classification> classifications { get; set; }
+
     public ArchicadLevel level { get; set; }
+
+    // Positioning
     public Point begC { get; set; }
     public Point endC { get; set; }
     public bool isSlanted { get; set; }

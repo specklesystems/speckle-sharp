@@ -9,6 +9,10 @@ public class ArchicadFenestration : Base, IDisplayValue<List<Mesh>>
 {
   public string parentApplicationId { get; set; }
 
+  // Element base
+  public string elementType { get; set; }
+  public List<Classification> classifications { get; set; }
+
   public double width { get; set; }
   public double height { get; set; }
   public double subFloorThickness { get; set; }

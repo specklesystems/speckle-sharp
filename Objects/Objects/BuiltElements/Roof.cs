@@ -138,8 +138,13 @@ namespace Objects.BuiltElements.Archicad
       public short? showRelBelow { get; set; }
     }
 
+    // Element base
+    public string elementType { get; set; }
+    public List<Classification> classifications { get; set; }
+
+    public ArchicadLevel level { get; set; }
+
     // Geometry and positioning
-    public Level level { get; set; }
     public double? thickness { get; set; }
     public string structure { get; set; }
     public string? compositeName { get; set; }

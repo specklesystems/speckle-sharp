@@ -162,7 +162,9 @@ namespace Archicad.Converters
             applicationId = element.applicationId,
             pos = Utils.ScaleToNative(basePoint),
             transform = new Objects.Other.Transform(transform.ConvertToUnits(Units.Meters), Units.Meters),
-            modelIds = meshIdHashes
+            modelIds = meshIdHashes,
+            level = element["level"] as Objects.BuiltElements.Archicad.ArchicadLevel,
+            classifications = element["classifications"] as List<Objects.BuiltElements.Archicad.Classification>
           };
 
           archicadObjects.Add(newObject);
