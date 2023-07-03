@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 
 using Avalonia;
@@ -13,6 +13,7 @@ using DesktopUI2.Views;
 using Assembly = System.Reflection.Assembly;
 using Speckle.ConnectorTeklaStructures.UI;
 using System.Threading;
+using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorTeklaStructures
 {
@@ -92,6 +93,7 @@ namespace Speckle.ConnectorTeklaStructures
     {
       if (MainWindow == null)
       {
+        Setup.Init(Bindings.GetHostAppNameVersion(), Bindings.GetHostAppName());
         BuildAvaloniaApp().Start(AppMain, null);
         var viewModel = new MainViewModel(Bindings);
         MainWindow = new DesktopUI2.Views.MainWindow
