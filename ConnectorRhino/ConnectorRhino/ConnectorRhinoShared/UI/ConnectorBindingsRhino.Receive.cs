@@ -141,10 +141,17 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             .ToList()
             .OrderBy(path => path.Count(c => c == ':'))
             .ToList();
-          // if on create mode, make sure the parent commit layer is added as well
+          // if on create mode, make sure the parent commit layer is created first
           if (state.ReceiveMode == ReceiveMode.Create)
           {
-            containers.Insert(0, commitLayerName);
+            var commitLayer = Doc.GetLayer(commitLayerName, true);
+            if (commitLayer == null)
+            {
+              progress.Report.OperationErrors.Add(
+                new Exception($"Could not create base commit layer [{commitLayerName}]. Operation aborted.")
+              );
+              return;
+            }
           }
           foreach (var container in containers)
           {
