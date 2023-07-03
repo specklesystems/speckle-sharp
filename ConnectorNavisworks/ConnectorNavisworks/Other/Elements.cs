@@ -5,6 +5,8 @@ using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.ComApi;
 using Autodesk.Navisworks.Api.Interop.ComApi;
+using DesktopUI2.Models;
+using DesktopUI2.Models.Settings;
 using Speckle.Core.Models;
 
 namespace Speckle.ConnectorNavisworks.Other;
@@ -181,10 +183,13 @@ public class Element
   /// <summary>
   /// Builds a nested object hierarchy from a dictionary of flat key-value pairs.
   /// </summary>
+  /// <param name="converted"></param>
+  /// <param name="streamState"></param>
   /// <param name="convertedDictionary">The input dictionary to be converted into a hierarchical structure.</param>
   /// <returns>An IEnumerable of root nodes representing the hierarchical structure.</returns>
   public static IEnumerable<Base> BuildNestedObjectHierarchy(
-    Dictionary<Element, Tuple<Constants.ConversionState, Base>> converted
+    Dictionary<Element, Tuple<Constants.ConversionState, Base>> converted,
+    StreamState streamState
   )
   {
     var convertedDictionary = converted.ToDictionary(x => x.Key.PseudoId, x => (x.Value.Item2, x.Key));
@@ -205,7 +210,11 @@ public class Element
       var type = baseNode.GetType().Name;
 
       // Geometry Nodes can add all the properties to the FirstObject classification - this will help with the selection logic
-      if (type == "GeometryNode")
+
+      if (
+        streamState.Settings.Find(x => x.Slug == "coalesce-data") is CheckBoxSetting { IsChecked: true }
+        && type == "GeometryNode"
+      )
         AddPropertyStackToGeometryNode(converted, modelItem, baseNode);
 
       string[] parts = pseudoId.Split('-');
