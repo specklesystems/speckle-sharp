@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Utils;
 using Speckle.Core.Kits;
@@ -149,8 +149,13 @@ namespace Objects.BuiltElements.Archicad
     [SchemaInfo("ArchicadColumn", "Creates an Archicad Column by curve.", "Archicad", "Structure")]
     public ArchicadColumn() { }
 
-    // Wall geometry
+    // Element base
+    public string elementType { get; set; }
+    public List<Classification> classifications { get; set; }
+
     public ArchicadLevel level { get; set; }
+
+    // Wall geometry
     public Point origoPos { get; set; }
     public double height { get; set; }
 

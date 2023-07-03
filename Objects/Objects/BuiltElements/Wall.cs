@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Objects.Geometry;
@@ -280,27 +280,24 @@ namespace Objects.BuiltElements.Archicad
     [SchemaInfo("ArchicadWall", "Creates an Archicad wall.", "Archicad", "Structure")]
     public ArchicadWall() { }
 
-    // Wall geometry
+    // Element base
+    public string elementType { get; set; }
+    public List<Classification> classifications { get; set; }
+
     public ArchicadLevel level { get; set; }
 
+    // Wall geometry
     public double baseOffset { get; set; }
-
     public Point startPoint { get; set; }
-
     public Point endPoint { get; set; }
 
     public string structure { get; set; }
-
     public string geometryMethod { get; set; }
-
     public string wallComplexity { get; set; }
 
     public string? buildingMaterialName { get; set; }
-
     public string? compositeName { get; set; }
-
     public string? profileName { get; set; }
-
     public double? arcAngle { get; set; }
 
     public ElementShape? shape { get; set; }
@@ -308,83 +305,54 @@ namespace Objects.BuiltElements.Archicad
     public double thickness { get; set; }
 
     public double? outsideSlantAngle { get; set; }
-
     public double? insideSlantAngle { get; set; }
 
     public bool? polyWalllCornersCanChange { get; set; }
 
     // Wall and stories relation
     public double topOffset { get; set; }
-
     public short relativeTopStory { get; set; }
-
     public string referenceLineLocation { get; set; }
-
     public double? referenceLineOffset { get; set; }
-
     public double offsetFromOutside { get; set; }
-
     public int referenceLineStartIndex { get; set; }
-
     public int referenceLineEndIndex { get; set; }
-
     public bool flipped { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
     public string showOnStories { get; set; }
-
     public string displayOptionName { get; set; }
-
     public string showProjectionName { get; set; }
 
     // Floor Plan and Section - Cut Surfaces parameters
     public short? cutLinePen { get; set; }
-
     public string? cutLinetype { get; set; }
-
     public short? overrideCutFillPen { get; set; }
-
     public short? overrideCutFillBackgroundPen { get; set; }
 
     // Floor Plan and Section - Outlines parameters
     public short uncutLinePen { get; set; }
-
     public string uncutLinetype { get; set; }
-
     public short overheadLinePen { get; set; }
-
     public string overheadLinetype { get; set; }
 
     // Model - Override Surfaces
     public string? referenceMaterialName { get; set; }
-
     public int? referenceMaterialStartIndex { get; set; }
-
     public int? referenceMaterialEndIndex { get; set; }
-
     public string? oppositeMaterialName { get; set; }
-
     public int? oppositeMaterialStartIndex { get; set; }
-
     public int? oppositeMaterialEndIndex { get; set; }
-
     public string? sideMaterialName { get; set; }
-
     public bool materialsChained { get; set; }
-
     public bool inheritEndSurface { get; set; }
-
     public bool alignTexture { get; set; }
-
     public int sequence { get; set; }
 
     // Model - Log Details (log height, start with half log, surface of horizontal edges, log shape)
     public double? logHeight { get; set; }
-
     public bool? startWithHalfLog { get; set; }
-
     public string? surfaceOfHorizontalEdges { get; set; }
-
     public string? logShape { get; set; }
 
     // Model - Defines the relation of wall to zones (Zone Boundary, Reduce Zone Area Only, No Effect on Zones)
