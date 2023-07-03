@@ -278,21 +278,74 @@ public class Element
           new { ConcatenatedKey = $"{categoryProperties.Category}--{property.Key}", property.Value }
       )
       .Where(property => property.Value != null && !string.IsNullOrEmpty(property.Value.ToString()))
-      .GroupBy(property => property.ConcatenatedKey) // Grouping properties by concatenated key
-      .Where(group => group.Select(item => item.Value).Distinct().Count() == 1) // Filtering groups with a single distinct value
-      .ToDictionary(group => group.Key, group => group.First().Value) // Creating a dictionary from the grouped values
+      .GroupBy(property => property.ConcatenatedKey)
+      .Where(group => group.Select(item => item.Value).Distinct().Count() == 1)
+      .ToDictionary(group => group.Key, group => group.First().Value)
       .Select(
         kVp =>
           new
           {
-            Category = kVp.Key.Substring(0, kVp.Key.IndexOf("--", StringComparison.Ordinal)), // Extracting the category from the key
-            Property = kVp.Key.Substring(kVp.Key.IndexOf("--", StringComparison.Ordinal) + 2), // Extracting the property from the key
+            Category = kVp.Key.Substring(0, kVp.Key.IndexOf("--", StringComparison.Ordinal)),
+            Property = kVp.Key.Substring(kVp.Key.IndexOf("--", StringComparison.Ordinal) + 2),
             kVp.Value
           }
       )
-      .Where(item => item.Category != "Internal") // Filtering out properties with Category "Internal"
-      .GroupBy(item => item.Category) // Grouping properties by category
-      .ToDictionary(group => group.Key, group => group.ToDictionary(item => item.Property, item => item.Value)); // Creating the nested dictionary
+      .Where(item => item.Category != "Internal")
+      .GroupBy(item => item.Category)
+      .ToDictionary(group => group.Key, group => group.ToDictionary(item => item.Property, item => item.Value));
+
+    var propertiesBase = (Base)baseNode["properties"];
+
+    var baseProperties = propertiesBase.GetMembers().Where(item => item.Value is Base).ToList();
+
+    foreach (var baseProperty in baseProperties)
+    {
+      var baseSubProperties = ((Base)baseProperty.Value).GetMembers().ToList();
+
+      if (!propertyStack.TryGetValue(baseProperty.Key, out var stackProperty))
+      {
+        stackProperty = baseSubProperties.ToDictionary(item => item.Key, item => item.Value);
+        propertyStack.Add(baseProperty.Key, stackProperty);
+      }
+      else
+      {
+        var stackPropertySet = new HashSet<string>(stackProperty.Keys);
+
+        foreach (var subProperty in baseSubProperties)
+        {
+          if (stackPropertySet.Contains(subProperty.Key))
+          {
+            stackProperty[subProperty.Key] = subProperty.Value;
+          }
+          else
+          {
+            stackProperty.Add(subProperty.Key, subProperty.Value);
+          }
+        }
+      }
+    }
+
+    foreach (var stackProperty in propertyStack)
+    {
+      if (propertiesBase[stackProperty.Key] is Base basePropertyCategory)
+      {
+        foreach (var kvp in stackProperty.Value)
+        {
+          basePropertyCategory[kvp.Key] = kvp.Value;
+        }
+      }
+      else
+      {
+        var newPropertyCategory = new Base();
+
+        foreach (var kvp in stackProperty.Value)
+        {
+          newPropertyCategory[kvp.Key] = kvp.Value;
+        }
+
+        propertiesBase[stackProperty.Key] = newPropertyCategory;
+      }
+    }
 
     baseNode["property-stack"] = propertyStack;
   }
