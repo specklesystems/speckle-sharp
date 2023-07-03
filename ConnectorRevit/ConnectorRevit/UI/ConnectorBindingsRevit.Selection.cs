@@ -444,7 +444,7 @@ namespace Speckle.ConnectorRevit.UI
         foreach (var doc in allDocs)
         {
           using var docCollector = new FilteredElementCollector(doc, view.Id);
-          selection.AddRange(collector
+          selection.AddRange(docCollector
             .WhereElementIsNotElementType()
             .WhereElementIsViewIndependent()
             //.Where(x => x.IsPhysicalElement())
