@@ -2,8 +2,10 @@ using StructuralUtilities.PolygonMesher;
 
 namespace ConnectorTeklaStructuresShared
 {
+  [Obsolete("See comment within implementation of UnusedMethod", true)]
   internal class PolygonMesherReferencer
   {
+    [Obsolete("See comment within implementation", true)]
     public PolygonMesher UnusedMethod()
     {
       // This class is only here to throw an error if the polygon mesher dependency is ever removed
