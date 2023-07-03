@@ -141,6 +141,11 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
             .ToList()
             .OrderBy(path => path.Count(c => c == ':'))
             .ToList();
+          // if on create mode, make sure the parent commit layer is added as well
+          if (state.ReceiveMode == ReceiveMode.Create)
+          {
+            containers.Insert(0, commitLayerName);
+          }
           foreach (var container in containers)
           {
             var path =
