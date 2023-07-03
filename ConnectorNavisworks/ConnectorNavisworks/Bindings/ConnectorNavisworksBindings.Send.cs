@@ -300,7 +300,7 @@ public partial class ConnectorBindingsNavisworks
 
     _progressBar.StartNewSubOperation(0.66, "Building a family tree, data-style...");
 
-    commitObject.elements = Element.BuildNestedObjectHierarchy(converted).ToList();
+    commitObject.elements = Element.BuildNestedObjectHierarchy(converted, state).ToList();
 
     if (commitObject.elements.Count == 0)
     {
