@@ -11,7 +11,7 @@ namespace Utility {
 
 API_ElemTypeID GetElementType (const API_Elem_Head& header);
 API_ElemTypeID GetElementType (const API_Guid& guid);
-GS::ErrCode GetTypeNameFromElementType(const API_ElemType& typeId, GS::UniString& typeName);
+GS::ErrCode GetTypeNameFromElementType(const API_Elem_Head& header, GS::UniString& typeName);
 void SetElementType (API_Elem_Head& header, const API_ElemTypeID& elementType);
 
 bool ElementExists (const API_Guid& guid);
