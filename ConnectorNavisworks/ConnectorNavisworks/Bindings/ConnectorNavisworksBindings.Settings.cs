@@ -76,14 +76,24 @@ public partial class ConnectorBindingsNavisworks
         Slug = "internal-properties",
         Name = "Expose Internal Properties",
         IsChecked = false,
-        Description = "Include the internal properties that reflect option types. Can be useful for downstream data analysis."
+        Description =
+          "Include the internal properties that reflect option types. Can be useful for downstream data analysis."
       },
       new CheckBoxSetting
       {
         Slug = "internal-property-names",
         Name = "Internal Property Names",
         IsChecked = false,
-        Description = "Commit properties with the Navisworks internal names. Can be useful for downstream data analysis removing internationalization."
+        Description =
+          "Commit properties with the Navisworks internal names. Can be useful for downstream data analysis removing internationalization."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "coalesce-data",
+        Name = "Coalesce Data from First Object to Geometry",
+        IsChecked = false,
+        Description =
+          "All properties from the Geometry up the tree to the next First Object will be coalesced into the Geometry Node."
       }
     };
   }

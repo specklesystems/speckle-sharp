@@ -19,6 +19,7 @@ public class SelectionHandler
   private int _descendantProgress;
   private HashSet<ModelItem> _visited;
   public ProgressInvoker ProgressBar;
+  private readonly bool _coalesceData;
 
   /// <summary>
   /// Initializes a new instance of the SelectionHandler class with the specified StreamState and ProgressViewModel.
@@ -32,6 +33,8 @@ public class SelectionHandler
     _uniqueModelItems = new HashSet<ModelItem>();
     _fullTreeSetting =
       state.Settings.OfType<CheckBoxSetting>().FirstOrDefault(x => x.Slug == "full-tree")?.IsChecked ?? false;
+    _coalesceData =
+      state.Settings.OfType<CheckBoxSetting>().FirstOrDefault(x => x.Slug == "coalesce-data")?.IsChecked ?? false;
   }
 
   public int Count => _uniqueModelItems.Count;
@@ -281,6 +284,35 @@ public class SelectionHandler
       return;
 
     var startNodes = _uniqueModelItems.ToList();
+
+    // Where data is wanted to be coalesced from First Object Ancestor we need to ensure that the relevant parents are added.
+    // If the full tree is selected then there is no reason to get the first object ancestor
+    if (_coalesceData && !_fullTreeSetting)
+    {
+      var miniAncestorTreeNodes = startNodes
+        .SelectMany(e =>
+        {
+          ModelItem targetFirstObjectChild = e.Children.FirstOrDefault() ?? e;
+
+          var firstObjectAncestor = targetFirstObjectChild.FindFirstObjectAncestor();
+
+          if (
+            firstObjectAncestor == null
+            || Equals(e, firstObjectAncestor)
+            || _uniqueModelItems.Contains(firstObjectAncestor)
+          )
+            return Enumerable.Empty<ModelItem>();
+
+          var trimmedAncestors = targetFirstObjectChild.Ancestors
+            .TakeWhile(ancestor => ancestor != firstObjectAncestor)
+            .Append(firstObjectAncestor);
+
+          return trimmedAncestors;
+        })
+        .Distinct();
+
+      _uniqueModelItems.UnionWith(miniAncestorTreeNodes);
+    }
 
     if (_fullTreeSetting)
     {
