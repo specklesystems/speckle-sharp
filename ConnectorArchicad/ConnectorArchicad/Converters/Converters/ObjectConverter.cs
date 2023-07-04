@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Archicad.Communication;
 using Archicad.Model;
 using Archicad.Operations;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
 using Speckle.Core.Kits;
@@ -58,13 +59,35 @@ namespace Archicad.Converters
 
     public static ArchicadDefinitionTraversal CreateArchicadDefinitionTraverseFunc()
     {
-      static IEnumerable<string> AllAliases(Base _)
+      static IEnumerable<string> AllAliases(Base @base)
       {
-        return DefaultTraversal.elementsPropAliases       // hosted elements traversal #1: via the elements field
-          .Concat (DefaultTraversal.geometryPropAliases)      // hosted elements traversal #2: BlockInstance elements could be stored in geometry field
-                                                          // geometry traversal #2: visiting the elements in geometry field (Meshes)
-          .Concat(DefaultTraversal.definitionPropAliases)     // instance <-> definition traversal
-          .Concat(DefaultTraversal.displayValuePropAliases);  // geometry traversal #1: visiting the elements in displayValue field (Meshes)
+        List<string> membersToTraverse = new List<string>();
+
+        // hosted elements traversals
+        {
+          // #1: via the elements field of definition classes
+          if (@base is BlockDefinition || @base is RevitSymbolElementType)
+            membersToTraverse.AddRange(DefaultTraversal.elementsPropAliases);
+
+          // #2: BlockInstance elements could be also in geometry field
+          membersToTraverse.AddRange(DefaultTraversal.geometryPropAliases);
+        }
+
+        // instance <-> definition traversal
+        {
+          membersToTraverse.AddRange(DefaultTraversal.definitionPropAliases);
+        }
+
+        // geometry traversals
+        {
+          // #1: visiting the elements in displayValue field
+          membersToTraverse.AddRange(DefaultTraversal.displayValuePropAliases);
+
+          // #2: visiting the elements in geometry field
+          membersToTraverse.AddRange(DefaultTraversal.geometryPropAliases);  // already added before
+        }
+
+        return membersToTraverse;
       }
 
       var traversalRule = TraversalRule
