@@ -17,6 +17,8 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
     var streams = GetStreamsInFile();
     if (UpdateSavedStreams != null)
       UpdateSavedStreams(streams);
+
+    ClearStorage();
     //if (streams.Count > 0)
     //  SpeckleCommand.CreateOrFocusSpeckle();
   }
