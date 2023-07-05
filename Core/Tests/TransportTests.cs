@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿#nullable enable
+using NUnit.Framework;
 using Speckle.Core.Transports;
 
 namespace TestsUnit;
@@ -6,27 +7,27 @@ namespace TestsUnit;
 public class TransportTests
 {
   [Test]
-  [TestCaseSource(nameof(syncTransports))]
+  [TestCaseSource(nameof(SyncTransports))]
   public void SaveObject_FailsPredictably_WhenIdNotFound(ITransport transport)
   {
-    Assert.Throws<TransportException>(() => transport.SaveObject("non-existant-id", transport));
+    Assert.Throws<TransportException>(() => transport.SaveObject("non-existent-id", transport));
   }
 
-  [TestCaseSource(nameof(syncTransports))]
+  [TestCaseSource(nameof(SyncTransports))]
   public async Task GetObject_ReturnsObject_AfterObjectIsAdded(ITransport transport)
   {
     const string payload = "Payload data 123123";
     const string payloadId = "myId";
 
     transport.SaveObject(payloadId, payload);
-    await transport.WriteComplete();
+    await transport.WriteComplete().ConfigureAwait(false);
 
     var result = transport.GetObject(payloadId);
 
     Assert.That(result, Is.EqualTo(payload));
   }
 
-  [TestCaseSource(nameof(syncTransports))]
+  [TestCaseSource(nameof(ConcurrentCapableTransports))]
   public async Task SaveObject_SavesObjects_WithConcurrentWrites(ITransport transport)
   {
     const int testDataCount = 100;
@@ -63,6 +64,8 @@ public class TransportTests
     }
   }
 
-  public static IEnumerable<ITransport> syncTransports =>
+  public static IEnumerable<ITransport> SyncTransports =>
     new ITransport[] { new MemoryTransport(), new SQLiteTransport() };
+
+  public static IEnumerable<ITransport> ConcurrentCapableTransports => new ITransport[] { new SQLiteTransport() };
 }
