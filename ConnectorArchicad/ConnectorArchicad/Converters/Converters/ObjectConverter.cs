@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Threading;
 using System.Threading.Tasks;
 using Archicad.Communication;
@@ -20,72 +21,96 @@ namespace Archicad.Converters
 
     public Type Type => null;
 
+    private const string _cumulativeTransformKey = "cumulativeTransformId";
+
     #endregion
 
     #region --- Functions ---
 
-    static List<Mesh> GetDisplayValue(Base element)
+    static List<Mesh> GetMesh (Base element)
     {
-      List<Mesh> meshes = null;
-      var m = element["displayValue"] ?? element["@displayValue"];
-      if (m is List<Mesh> meshList)
-        meshes = meshList;
-      else if (m is List<object> objectList)
-        meshes = objectList.Cast<Mesh>().ToList();
+      List<Mesh> meshes = new List<Mesh>();
+      if (element is Mesh mesh)
+        meshes.Add (mesh);
+
       return meshes;
     }
 
-    static List<string> TraverseDefinitions(Base element, Transform baseTransform, Transform transform, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
+    public sealed class ArchicadDefinitionTraversalContext : TraversalContext<ArchicadDefinitionTraversalContext>
     {
-      // calculate commulative transforms
-      Transform commulativeTansform = baseTransform * transform;
-      commulativeTansform.id = Utilities.hashString(baseTransform.id + transform.id);
-      transformMatrixById.TryAdd(commulativeTansform.id, commulativeTansform);
-      
-      // get the geometry
-      List<Mesh> meshes = null;
-      if (element is Mesh mesh)
-        meshes = new List<Mesh>() { mesh };
-      else
-        meshes = GetDisplayValue(element);
+      public string cumulativeTransformKey { get; set; }
 
-      // in case no instance-level geometry, get it from definition
-      Base definition = null;
-      if (meshes == null)
+      public ArchicadDefinitionTraversalContext(Base current, string? propName = null, ArchicadDefinitionTraversalContext? parent = default)
+        : base(current, propName, parent)
       {
-        definition = (Base)(element["definition"] ?? element["@definition"]);
-        if (definition != null)
-          meshes = GetDisplayValue(definition);
+      }
+    }
+
+    public sealed class ArchicadDefinitionTraversal : GraphTraversal<ArchicadDefinitionTraversalContext>
+    {
+      public ArchicadDefinitionTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
+
+      protected override ArchicadDefinitionTraversalContext NewContext(Base current, string? propName, ArchicadDefinitionTraversalContext? parent)
+      {
+        return new ArchicadDefinitionTraversalContext(current, propName, parent);
+      }
+    }
+
+    public static ArchicadDefinitionTraversal CreateArchicadDefinitionTraverseFunc()
+    {
+      static IEnumerable<string> AllAliases(Base _)
+      {
+        return DefaultTraversal.elementsPropAliases       // hosted elements traversal #1: via the elements field
+          .Concat (DefaultTraversal.geometryPropAliases)      // hosted elements traversal #2: BlockInstance elements could be stored in geometry field
+                                                          // geometry traversal #2: visiting the elements in geometry field (Meshes)
+          .Concat(DefaultTraversal.definitionPropAliases)     // instance <-> definition traversal
+          .Concat(DefaultTraversal.displayValuePropAliases);  // geometry traversal #1: visiting the elements in displayValue field (Meshes)
       }
 
-      // transform meshes
-      var meshesIds = meshes?.ConvertAll(mesh => Utilities.hashString(commulativeTansform.id + mesh.id));
-      meshes = meshes?.Select(mesh => {
-        var transformedMeshId = Utilities.hashString(commulativeTansform.id + mesh.id);
+      var traversalRule = TraversalRule
+        .NewTraversalRule()
+        .When(_ => true)
+        .ContinueTraversing(AllAliases);
+
+      return new ArchicadDefinitionTraversal(traversalRule);
+    }
+
+    private static TraversalContext StoreTransformationMatrix(ArchicadDefinitionTraversalContext tc, Dictionary<string, Transform> transformMatrixById)
+    {
+      if (tc.parent != null)
+      {
+        var currentTransform = (Transform)(tc.current["transform"]) ?? new Transform();
+        string parentCumulativeTransformId = (tc.parent as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
+        string cumulativeTransformId = Utilities.hashString(parentCumulativeTransformId + currentTransform.id);
+        tc.cumulativeTransformKey = cumulativeTransformId;
+        transformMatrixById.TryAdd(cumulativeTransformId, transformMatrixById[parentCumulativeTransformId] * currentTransform);
+      }
+      else
+      {
+        tc.cumulativeTransformKey = "";
+        transformMatrixById.TryAdd("", new Transform());
+      }
+      return tc;
+    }
+
+    private static List<string> Store(TraversalContext tc, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
+    {
+      var meshes = GetMesh(tc.current);
+
+      return meshes.Select(mesh => {
+        string cumulativeTransformId = (tc as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
+        var transformedMeshId = Utilities.hashString(cumulativeTransformId + mesh.id);
         if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
         {
           transformedMesh = (Mesh)mesh.ShallowCopy();
-          transformedMesh.Transform (commulativeTansform);
+          transformedMesh.Transform(transformMatrixById[cumulativeTransformId]);
           transformedMesh.id = transformedMeshId;
           transformedMeshById.Add(transformedMeshId, transformedMesh);
         }
-        return transformedMesh;
+        return transformedMeshId;
       }).ToList();
-
-      // continue traversal via "elements" of definition
-      if (definition != null)
-      { 
-        var subElements = definition["elements"] ?? definition["@elements"];
-        var subElementList = subElements is List<Base> baseList ? baseList : (subElements is List<object> objList ? objList.Cast<Base>().ToList() : null);
-        subElementList?.ForEach(subElement =>
-        {
-          var subElementTransform = (Transform)(subElement["transform"]) ?? new Transform();
-          meshesIds.AddRange(TraverseDefinitions(subElement, commulativeTansform, subElementTransform, transformMatrixById, transformedMeshById));
-        });
-      }
-
-      return meshesIds;
     }
+
 
     public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
     {
@@ -97,6 +122,8 @@ namespace Archicad.Converters
       var context = Archicad.Helpers.Timer.Context.Peek;
       using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
       {
+        ArchicadDefinitionTraversal traversal = CreateArchicadDefinitionTraverseFunc();
+
         foreach (var tc in elements)
         {
           var element = tc.current;
@@ -112,12 +139,10 @@ namespace Archicad.Converters
 
           List<string> meshIdHashes;
           {
-            Transform baseTransform = new Transform();
-            baseTransform.id = "1530eda076784bfaa61728b060ed8d43";
-            Transform newTransform = new Transform();
-            newTransform.id = "0cecc0af9be7465b958d736618817315";
-
-            meshIdHashes = TraverseDefinitions(element, baseTransform, newTransform, transformMatrixById, transformedMeshById);
+            meshIdHashes = traversal.Traverse(element)
+              .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
+              .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))
+              .ToList();
 
             if (meshIdHashes == null)
               continue;
@@ -137,8 +162,11 @@ namespace Archicad.Converters
             applicationId = element.applicationId,
             pos = Utils.ScaleToNative(basePoint),
             transform = new Objects.Other.Transform(transform.ConvertToUnits(Units.Meters), Units.Meters),
-            modelIds = meshIdHashes
+            modelIds = meshIdHashes,
+            level = element["level"] as Objects.BuiltElements.Archicad.ArchicadLevel,
+            classifications = element["classifications"] as List<Objects.BuiltElements.Archicad.Classification>
           };
+
           archicadObjects.Add(newObject);
         }
       }

@@ -212,6 +212,35 @@ public partial class ConverterRhinoGh
     return renderMaterial;
   }
 
+  public Other.RenderMaterial RenderMaterialToSpeckle(Rhino.Render.RenderMaterial material)
+  {
+    var renderMaterial = new Other.RenderMaterial();
+    if (material == null)
+      return renderMaterial;
+
+    renderMaterial.name = material.Name ?? "default"; // default rhino material has no name or id
+#if RHINO6
+    var simulatedMaterial = material.SimulateMaterial(true);
+    renderMaterial.diffuse = simulatedMaterial.DiffuseColor.ToArgb();
+    renderMaterial.emissive = simulatedMaterial.EmissionColor.ToArgb();
+    renderMaterial.opacity = 1 - simulatedMaterial.Transparency;
+
+    // for some reason some default material transparency props are 1 when they shouldn't be - use this hack for now
+    if ((renderMaterial.name.ToLower().Contains("glass") || renderMaterial.name.ToLower().Contains("gem")) && renderMaterial.opacity == 0)
+      renderMaterial.opacity = 0.3;
+#else
+    RH.PhysicallyBasedMaterial pbrMaterial = material.ConvertToPhysicallyBased(RenderTexture.TextureGeneration.Allow);
+    renderMaterial.diffuse = pbrMaterial.BaseColor.AsSystemColor().ToArgb();
+    renderMaterial.emissive = pbrMaterial.Emission.AsSystemColor().ToArgb();
+    renderMaterial.opacity = pbrMaterial.Opacity;
+    renderMaterial.metalness = pbrMaterial.Metallic;
+    renderMaterial.roughness = pbrMaterial.Roughness;
+
+#endif
+
+    return renderMaterial;
+  }
+
   // hatch
   public Hatch[] HatchToNative(Other.Hatch hatch)
   {

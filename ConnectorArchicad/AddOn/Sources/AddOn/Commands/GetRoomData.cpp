@@ -30,6 +30,11 @@ GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
 	const API_ElementMemo& memo,
 	GS::ObjectState& os) const
 {
+	GS::ErrCode err = NoError;
+	err = GetDataCommand::SerializeElementType (element, memo, os);
+	if (NoError != err)
+		return err;
+
 	// quantities
 	API_ElementQuantity	quantity = {};
 	API_Quantities		quantities = {};
@@ -40,12 +45,10 @@ GS::ErrCode GetRoomData::SerializeElementType (const API_Element& element,
 	ACAPI_ELEMENT_QUANTITY_MASK_SET (mask, zone, volume);
 
 	quantities.elements = &quantity;
-	GSErrCode err = ACAPI_Element_GetQuantities (element.header.guid, nullptr, &quantities, &mask);
+	err = ACAPI_Element_GetQuantities (element.header.guid, nullptr, &quantities, &mask);
 	if (err != NoError)
 		return err;
 
-	// The identifier of the room
-	os.Add (ElementBase::ApplicationId, APIGuidToString (element.zone.head.guid));
 	GS::UniString roomName = element.zone.roomName;
 	GS::UniString roomNum = element.zone.roomNoStr;
 	os.Add (Room::Name, roomName);

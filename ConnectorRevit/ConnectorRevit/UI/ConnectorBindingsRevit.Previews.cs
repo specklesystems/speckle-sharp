@@ -1,7 +1,5 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExternalService;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -11,25 +9,11 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
-using Avalonia.Threading;
 using Autodesk.Revit.DB.DirectContext3D;
 using Revit.Async;
-using DynamicData;
-using ConnectorRevit.Storage;
 using RevitSharedResources.Interfaces;
 
 namespace Speckle.ConnectorRevit.UI
@@ -160,7 +144,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var filterObjs = GetSelectionFilterObjects(converter, state.Filter);
+        var filterObjs = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
         foreach (var filterObj in filterObjs)
         {
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);

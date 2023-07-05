@@ -33,6 +33,18 @@ API_ElemTypeID GetElementType (const API_Guid& guid)
 }
 
 
+GS::ErrCode GetTypeNameFromElementType (const API_Elem_Head& header, GS::UniString& typeName)
+{
+#ifdef ServerMainVers_2600
+	return ACAPI_Goodies_GetElemTypeName (header.type, typeName);
+#else
+	UNUSED (header);
+	typeName = "Archicad Element"; // ACAPI_Goodies_GetElemTypeName not implemented in Archicad 25
+	return NoError;
+#endif
+}
+
+
 void SetElementType (API_Elem_Head& header, const API_ElemTypeID& elementType)
 {
 #ifdef ServerMainVers_2600
@@ -251,8 +263,8 @@ GS::Array<API_Guid> GetElementSubelements (API_Element& element)
 {
 	GS::Array<API_Guid> result;
 
-	API_ElemTypeID elementType = GetElementType(element.header);
-				
+	API_ElemTypeID elementType = GetElementType (element.header);
+
 	if (elementType == API_WallID) {
 		if (element.wall.hasDoor) {
 			GS::Array<API_Guid> doors;
@@ -475,15 +487,15 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
 		defaultSegmentScheme = memo->assemblySegmentSchemes[0];
 
 		switch (Utility::GetElementType (element.header)) {
-			case API_BeamID:
-				memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-				break;
-			case API_ColumnID:
-				memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
-				break;
-			default:  // In case if not beam or column
-				return Error;
-				break;
+		case API_BeamID:
+			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.beam.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+			break;
+		case API_ColumnID:
+			memo->assemblySegmentSchemes = (API_AssemblySegmentSchemeData*) BMAllocatePtr ((element.column.nSchemes) * sizeof (API_AssemblySegmentSchemeData), ALLOCATE_CLEAR, 0);
+			break;
+		default:  // In case if not beam or column
+			return Error;
+			break;
 		}
 	} else {
 		return Error;
@@ -505,7 +517,7 @@ GSErrCode CreateAllSchemeData (const GS::ObjectState& os,
 	return err;
 }
 
-	
+
 GSErrCode GetOneCutData (const API_AssemblySegmentCutData& cutData, GS::ObjectState& out)
 {
 	out.Add (AssemblySegmentCutData::cutType, assemblySegmentCutTypeNames.Get (cutData.cutType));
@@ -564,14 +576,14 @@ GSErrCode CreateAllCutData (const GS::ObjectState& os, GS::UInt32& numberOfCuts,
 		defaultSegmentCut = memo->assemblySegmentCuts[0];
 
 		switch (GetElementType (element.header)) {
-			case API_BeamID:
-				memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-				break;
-			case API_ColumnID:
-				memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
-			default: // In case if not beam or column
-				return Error;
-				break;
+		case API_BeamID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.beam.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+			break;
+		case API_ColumnID:
+			memo->assemblySegmentCuts = (API_AssemblySegmentCutData*) BMAllocatePtr ((element.column.nCuts) * sizeof (API_AssemblySegmentCutData), ALLOCATE_CLEAR, 0);
+		default: // In case if not beam or column
+			return Error;
+			break;
 		}
 
 	} else {
@@ -762,7 +774,7 @@ GSErrCode CreateOnePivotPolyEdgeData (GS::ObjectState& currentPivotPolyEdge, API
 }
 
 
-GSErrCode CreateAllPivotPolyEdgeData (GS::ObjectState& allPivotPolyEdges, GS::UInt32& numberOfPivotPolyEdges, API_ElementMemo * memo)
+GSErrCode CreateAllPivotPolyEdgeData (GS::ObjectState& allPivotPolyEdges, GS::UInt32& numberOfPivotPolyEdges, API_ElementMemo* memo)
 {
 	memo->pivotPolyEdges = (API_PivotPolyEdgeData*) BMAllocatePtr ((numberOfPivotPolyEdges + 1) * sizeof (API_PivotPolyEdgeData), ALLOCATE_CLEAR, 0);
 
@@ -944,8 +956,8 @@ GSErrCode GetCoverFillTransformation (bool coverFillOrientationComesFrom3D,
 }
 
 
-GSErrCode CreateCoverFillTransformation (const GS::ObjectState& os, 
-	bool& coverFillOrientationComesFrom3D, 
+GSErrCode CreateCoverFillTransformation (const GS::ObjectState& os,
+	bool& coverFillOrientationComesFrom3D,
 	API_CoverFillTransformationTypeID& coverFillTransformationType)
 {
 	coverFillOrientationComesFrom3D = false;
@@ -1032,7 +1044,7 @@ GSErrCode CreateTransform (const GS::ObjectState& os, API_Tranmat& transform)
 {
 	GS::ObjectState matrixOs;
 	os.Get ("matrix", matrixOs);
-	
+
 	for (GSSize idx1 = 0; idx1 < 3; ++idx1) {
 		for (GSSize idx2 = 0; idx2 < 4; ++idx2) {
 			matrixOs.Get (GS::String::SPrintf ("M%d%d", idx1 + 1, idx2 + 1), transform.tmx[idx1 * 4 + idx2]);

@@ -1,5 +1,4 @@
 using System;
-using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,13 +8,13 @@ using Autodesk.Revit.DB;
 using Avalonia.Threading;
 using ConnectorRevit.Revit;
 using ConnectorRevit.Storage;
+using ConnectorRevit.TypeMapping;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using RevitSharedResources.Interfaces;
-using Serilog;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -30,6 +29,7 @@ namespace Speckle.ConnectorRevit.UI
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
 
+    public CancellationTokenSource CurrentOperationCancellation { get; set; }
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -38,6 +38,7 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      CurrentOperationCancellation = progress.CancellationTokenSource;
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
@@ -69,15 +70,24 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
-        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+        var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
+        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
+          .ConfigureAwait(false);
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
+        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
+        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
       }
+      finally
+      {
+        MainViewModel.CloseDialog();
+      }
+#pragma warning restore CA1031 // Do not catch general exception types
 
       var (success, exception) = await RevitTask.RunAsync(app =>
       {
@@ -118,7 +128,7 @@ namespace Speckle.ConnectorRevit.UI
           g.RollBack();
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
-      });
+      }).ConfigureAwait(false);
 
       if (!success)
       {
@@ -127,6 +137,7 @@ namespace Speckle.ConnectorRevit.UI
         throw new SpeckleException(exception.Message, exception);
       }
 
+      CurrentOperationCancellation = null;
       return state;
     }
 

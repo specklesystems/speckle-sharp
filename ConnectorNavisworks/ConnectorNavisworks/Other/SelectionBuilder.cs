@@ -19,6 +19,7 @@ public class SelectionHandler
   private int _descendantProgress;
   private HashSet<ModelItem> _visited;
   public ProgressInvoker ProgressBar;
+  private readonly bool _coalesceData;
 
   /// <summary>
   /// Initializes a new instance of the SelectionHandler class with the specified StreamState and ProgressViewModel.
@@ -32,6 +33,8 @@ public class SelectionHandler
     _uniqueModelItems = new HashSet<ModelItem>();
     _fullTreeSetting =
       state.Settings.OfType<CheckBoxSetting>().FirstOrDefault(x => x.Slug == "full-tree")?.IsChecked ?? false;
+    _coalesceData =
+      state.Settings.OfType<CheckBoxSetting>().FirstOrDefault(x => x.Slug == "coalesce-data")?.IsChecked ?? false;
   }
 
   public int Count => _uniqueModelItems.Count;
@@ -107,14 +110,26 @@ public class SelectionHandler
       return Enumerable.Empty<ModelItem>();
 
     // Resolve the saved viewpoint based on the selection
-    var savedViewpoint = ResolveSavedViewpoint(selection);
-    if (savedViewpoint == null || !savedViewpoint.ContainsVisibilityOverrides)
-      return Enumerable.Empty<ModelItem>();
-
     // Makes the view active on the main thread.
+
+    var success = false;
+
     new Invoker().Invoke(
-      (Action)(() => Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint)
+      (Action)(
+        () =>
+        {
+          var savedViewpoint = ResolveSavedViewpoint(selection);
+          if (savedViewpoint != null && !savedViewpoint.ContainsVisibilityOverrides)
+            return;
+
+          Application.ActiveDocument.SavedViewpoints.CurrentSavedViewpoint = savedViewpoint;
+          success = true;
+        }
+      )
     );
+
+    if (!success)
+      return Enumerable.Empty<ModelItem>();
 
     var models = Application.ActiveDocument.Models;
     Application.ActiveDocument.CurrentSelection.Clear();
@@ -156,7 +171,7 @@ public class SelectionHandler
     );
 
     if (viewPointMatch != null)
-      return ResolveSavedViewpoint(viewPointMatch, savedViewReference);
+      return ResolveSavedViewpointMatch(savedViewReference);
     {
       foreach (var node in flattenedViewpointList)
       {
@@ -170,7 +185,7 @@ public class SelectionHandler
     }
 
     // If no match is found, return null; otherwise, resolve the SavedViewpoint
-    return viewPointMatch == null ? null : ResolveSavedViewpoint(viewPointMatch, savedViewReference);
+    return viewPointMatch == null ? null : ResolveSavedViewpointMatch(savedViewReference);
   }
 
   /// <summary>
@@ -179,7 +194,7 @@ public class SelectionHandler
   /// <param name="viewpointMatch">The dynamic object representing the viewpoint match.</param>
   /// <param name="savedViewReference">The saved view reference to resolve.</param>
   /// <returns>The resolved SavedViewpoint.</returns>
-  private SavedViewpoint ResolveSavedViewpoint(dynamic viewpointMatch, string savedViewReference)
+  private SavedViewpoint ResolveSavedViewpointMatch(string savedViewReference)
   {
     if (Guid.TryParse(savedViewReference, out var guid))
       // Even though we may have already got a match, that could be to a generic Guid from earlier versions of Navisworks
@@ -216,7 +231,8 @@ public class SelectionHandler
       IndexWith = nameof(TreeNode.Reference),
       // Rather than version check Navisworks host application we feature check
       // to see if Guid is set correctly on viewpoints.
-      Reference = savedItem.Guid.ToString() == Guid.Empty.ToString() ? reference.SavedItemId : savedItem.Guid.ToString()
+      Reference =
+        savedItem.Guid.ToString() == Guid.Empty.ToString() ? reference?.SavedItemId : savedItem.Guid.ToString()
     };
 
     // Handle different cases based on whether the SavedItem is a group or not
@@ -268,6 +284,35 @@ public class SelectionHandler
       return;
 
     var startNodes = _uniqueModelItems.ToList();
+
+    // Where data is wanted to be coalesced from First Object Ancestor we need to ensure that the relevant parents are added.
+    // If the full tree is selected then there is no reason to get the first object ancestor
+    if (_coalesceData && !_fullTreeSetting)
+    {
+      var miniAncestorTreeNodes = startNodes
+        .SelectMany(e =>
+        {
+          ModelItem targetFirstObjectChild = e.Children.FirstOrDefault() ?? e;
+
+          var firstObjectAncestor = targetFirstObjectChild.FindFirstObjectAncestor();
+
+          if (
+            firstObjectAncestor == null
+            || Equals(e, firstObjectAncestor)
+            || _uniqueModelItems.Contains(firstObjectAncestor)
+          )
+            return Enumerable.Empty<ModelItem>();
+
+          var trimmedAncestors = targetFirstObjectChild.Ancestors
+            .TakeWhile(ancestor => ancestor != firstObjectAncestor)
+            .Append(firstObjectAncestor);
+
+          return trimmedAncestors;
+        })
+        .Distinct();
+
+      _uniqueModelItems.UnionWith(miniAncestorTreeNodes);
+    }
 
     if (_fullTreeSetting)
     {

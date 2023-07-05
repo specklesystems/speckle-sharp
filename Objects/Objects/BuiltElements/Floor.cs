@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Objects.Geometry;
 using Objects.Utils;
@@ -87,8 +87,13 @@ namespace Objects.BuiltElements.Archicad
   */
   public sealed class ArchicadFloor : Floor
   {
-    // Geometry and positioning
+    // Element base
+    public string elementType { get; set; }
+    public List<Classification> classifications { get; set; }
+
     public ArchicadLevel level { get; set; }
+
+    // Geometry and positioning
     public double? thickness { get; set; }
     public ElementShape shape { get; set; }
     public string structure { get; set; }

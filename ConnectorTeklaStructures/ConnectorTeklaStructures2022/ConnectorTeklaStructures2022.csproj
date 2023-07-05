@@ -4,6 +4,7 @@
     <AssemblyName>SpeckleConnectorTeklaStructures</AssemblyName>
     <TargetFramework>net471</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <AssemblyTitle>ConnectorTeklaStructures2022</AssemblyTitle>
     <Product>ConnectorTeklaStructures2022</Product>
     <DefineConstants>$(DefineConstants);TeklaStructures2022</DefineConstants>
@@ -31,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Tekla.Structures" Version="2022.0.10715" />
