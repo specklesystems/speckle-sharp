@@ -51,6 +51,8 @@ namespace Archicad.Converters
     {
       public ArchicadDefinitionTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
 
+      public static Base root;
+
       protected override ArchicadDefinitionTraversalContext NewContext(Base current, string? propName, ArchicadDefinitionTraversalContext? parent)
       {
         return new ArchicadDefinitionTraversalContext(current, propName, parent);
@@ -65,8 +67,8 @@ namespace Archicad.Converters
 
         // hosted elements traversals
         {
-          // #1: via the elements field of definition classes
-          if (@base is BlockDefinition || @base is RevitSymbolElementType)
+          // #1: via the elements field of definition classes, but don't travers the elements prop of the root (they are separate elements) 
+          if (ArchicadDefinitionTraversal.root != @base)
             membersToTraverse.AddRange(DefaultTraversal.elementsPropAliases);
 
           // #2: BlockInstance elements could be also in geometry field
@@ -102,7 +104,12 @@ namespace Archicad.Converters
     {
       if (tc.parent != null)
       {
-        var currentTransform = (Transform)(tc.current["transform"]) ?? new Transform();
+        // transform appleid only elements in the "definition" property (not for "elements" property)
+        // root elements transform is skipped, becuase it will be added on GDL level
+        var currentTransform = (tc.parent.current != ArchicadDefinitionTraversal.root && (tc.parent.current["transform"] is Transform) && DefaultTraversal.definitionPropAliases.Contains (tc.propName))
+                                  ? (Transform)(tc.parent.current["transform"])
+                                   : new Transform();
+
         string parentCumulativeTransformId = (tc.parent as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
         string cumulativeTransformId = Utilities.hashString(parentCumulativeTransformId + currentTransform.id);
         tc.cumulativeTransformKey = cumulativeTransformId;
@@ -162,6 +169,7 @@ namespace Archicad.Converters
 
           List<string> meshIdHashes;
           {
+            ArchicadDefinitionTraversal.root = element;
             meshIdHashes = traversal.Traverse(element)
               .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
               .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))
