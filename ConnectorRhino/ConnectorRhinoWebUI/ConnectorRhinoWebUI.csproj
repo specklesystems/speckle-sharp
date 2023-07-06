@@ -16,6 +16,7 @@
   
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf" Version="114.2.100" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1823.32" />
     <PackageReference Include="RhinoCommon" Version="7.30.23163.13001" IncludeAssets="compile;build" />
     <PackageReference Include="RhinoWindows" Version="7.30.23163.13001" />
   </ItemGroup>

@@ -8,11 +8,11 @@ using CefSharp.JavascriptBinding;
 namespace ConnectorRhinoWebUI
 {
   /// <summary>
-  /// Interaction logic for SpeckleWebUIPanel.xaml
+  /// Interaction logic for SpeckleWebUIPanelCef.xaml
   /// </summary>
-  public partial class SpeckleWebUIPanel : UserControl
+  public partial class SpeckleWebUIPanelCef : UserControl
   {
-    public SpeckleWebUIPanel()
+    public SpeckleWebUIPanelCef()
     {
       InitializeComponent();
       Browser.IsBrowserInitializedChanged += Browser_IsBrowserInitializedChanged;
@@ -27,10 +27,13 @@ namespace ConnectorRhinoWebUI
         try
         {
           repo.NameConverter = new CamelCaseJavascriptNameConverter();
-          repo.Register("WebUIBinding", new WebUIBinding(), true, BindingOptions.DefaultBinder);
+          repo.Register("WebUIBinding", new RhinoCefWebUIBinding(Browser), true, BindingOptions.DefaultBinder);
         }
         catch (Exception ex)
         {
+          // NOTE: On page refreshes, this gets re-executed and throws an error saying that stuff's already registered.
+          // A TODO would be to investigate if this the safest/most correct way of dealing with this problem, or simply
+          // having a semaphore saying we did it and just not do it again. For now, letting it throw.
           Debug.Write(ex);
         }
       }
@@ -38,7 +41,8 @@ namespace ConnectorRhinoWebUI
 
     private void Browser_IsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
     {
-      Browser.ShowDevTools();
+      if (Browser.IsBrowserInitialized)
+        Browser.ShowDevTools();
     }
   }
 }

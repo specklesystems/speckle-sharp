@@ -10,39 +10,36 @@ using Rhino.UI;
 
 namespace ConnectorRhinoWebUI
 {
-  [Guid("55B9125D-E8CA-4F65-B016-60DA932AB694")]
-  public class SpeckleWebUIPanelHost : RhinoWindows.Controls.WpfElementHost
+  [Guid("39BC44A4-C9DC-4B0A-9A51-4C31ACBCD76A")]
+  public class SpeckleWebUIWebView2PanelHost : RhinoWindows.Controls.WpfElementHost
   {
-    public SpeckleWebUIPanelHost(uint docSn)
-      : base(new SpeckleWebUIPanel(), null)
+    public SpeckleWebUIWebView2PanelHost(uint docSn)
+      : base(new SpeckleWebUiPanelWebView2(), null)
     {
     }
   }
 
-  public class SpeckleRhinoWebUI : Command
+  public class SpeckleWebUIWebView2Command : Command
   {
-    public SpeckleRhinoWebUI()
+    public SpeckleWebUIWebView2Command()
     {
       Instance = this;
       Panels.RegisterPanel(
         ConnectorRhinoWebUIPlugin.Instance,
-        typeof(SpeckleWebUIPanelHost),
-        "SpeckleWebUI",
+        typeof(SpeckleWebUIWebView2PanelHost),
+        "SpeckleWebUIWebView2",
         System.Drawing.SystemIcons.Information,
         PanelType.System
       );
     }
 
-    public static SpeckleRhinoWebUI Instance { get; private set; }
+    public static SpeckleWebUIWebView2Command Instance { get; private set; }
 
-    public override string EnglishName => "SpeckleRhinoWebUI";
+    public override string EnglishName => "SpeckleWebUIWebView2";
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
-      //RhinoApp.WriteLine("The {0} command is under construction.", EnglishName);
-      //return Result.Success;
-
-      var panel_id = typeof(SpeckleWebUIPanelHost).GUID;
+      var panel_id = typeof(SpeckleWebUICefPanelHost).GUID;
 
       if (mode == RunMode.Interactive)
       {
@@ -53,8 +50,8 @@ namespace ConnectorRhinoWebUI
       var panel_visible = Panels.IsPanelVisible(panel_id);
 
       var prompt = (panel_visible)
-        ? "SpeckleRhinoWebUI panel is visible. New value"
-        : "SpeckleRhinoWebUI panel is hidden. New value";
+        ? "SpeckleWebUIWebView2 panel is visible. New value"
+        : "SpeckleWebUIWebView2 panel is hidden. New value";
 
       using var go = new GetOption();
       go.SetCommandPrompt(prompt);
