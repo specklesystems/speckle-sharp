@@ -65,7 +65,7 @@ namespace Archicad.Converters
 
         // hosted elements traversals
         {
-          // #1: via the elements field of definition classes, but don't travers the elements prop of the root (they are separate elements) 
+          // #1: via the "elements" field of definition classes, but don't traverse the "elements" field of the root (it is traversed by the main element traversal) 
           if (root != @base)
             membersToTraverse.AddRange(DefaultTraversal.elementsPropAliases);
 
@@ -80,10 +80,10 @@ namespace Archicad.Converters
 
         // geometry traversals
         {
-          // #1: visiting the elements in displayValue field
+          // #1: visiting the elements in "displayValue" field
           membersToTraverse.AddRange(DefaultTraversal.displayValuePropAliases);
 
-          // #2: visiting the elements in geometry field
+          // #2: visiting the elements in "geometry" field
           membersToTraverse.AddRange(DefaultTraversal.geometryPropAliases);  // already added before
         }
 
@@ -107,7 +107,7 @@ namespace Archicad.Converters
           root = root.parent;
 
         // transform appleid only elements via the "definition" property (not via "elements" property)
-        // and root elements transform is skipped, becuase it will be added on GDL level
+        // and root elements transform is skipped, because it will be added on GDL level
         var currentTransform = (tc.parent.current != root.current && (tc.parent.current["transform"] is Transform) && DefaultTraversal.definitionPropAliases.Contains (tc.propName))
                                ? (Transform)(tc.parent.current["transform"])
                                : new Transform();
