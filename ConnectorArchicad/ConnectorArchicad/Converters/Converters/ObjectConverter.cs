@@ -106,8 +106,8 @@ namespace Archicad.Converters
         while (root.parent != null)
           root = root.parent;
 
-        // transform appleid only elements in the "definition" property (not for "elements" property)
-        // root elements transform is skipped, becuase it will be added on GDL level
+        // transform appleid only elements via the "definition" property (not via "elements" property)
+        // and root elements transform is skipped, becuase it will be added on GDL level
         var currentTransform = (tc.parent.current != root.current && (tc.parent.current["transform"] is Transform) && DefaultTraversal.definitionPropAliases.Contains (tc.propName))
                                ? (Transform)(tc.parent.current["transform"])
                                : new Transform();
