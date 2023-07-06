@@ -146,6 +146,12 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 		ACAPI_ELEMENT_MASK_SET (beamMask, API_BeamType, nProfiles);
 	}
 
+#pragma region Segment
+	GS::ObjectState allSegments;
+	if (os.Contains (Beam::segments))
+		os.Get (Beam::segments, allSegments);
+
+	if (!allSegments.IsEmpty ()) {
 		API_BeamSegmentType defaultBeamSegment;
 		if (memo.beamSegments != nullptr) {
 			defaultBeamSegment = memo.beamSegments[0];
@@ -158,11 +164,6 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 			APIMemoMask_AssemblySegmentScheme |
 			APIMemoMask_BeamHole |
 			APIMemoMask_AssemblySegmentCut;
-
-#pragma region Segment
-	GS::ObjectState allSegments;
-	if (os.Contains (Beam::segments))
-		os.Get (Beam::segments, allSegments);
 
 		for (UInt32 idx = 0; idx < element.beam.nSegments; ++idx) {
 			GS::ObjectState currentSegment;
@@ -297,6 +298,7 @@ GSErrCode CreateBeam::GetElementFromObjectState (const GS::ObjectState& os,
 				}
 			}
 		}
+	}
 #pragma endregion
 
 	// Scheme
