@@ -18,7 +18,6 @@ namespace Speckle.Core.Transports.ServerUtils;
 
 public sealed class ServerApi : IDisposable, IServerApi
 {
-  private readonly string _baseUri;
   private const int BatchSizeGetObjects = 10000;
   private const int BatchSizeHasObjects = 100000;
 
@@ -32,7 +31,6 @@ public sealed class ServerApi : IDisposable, IServerApi
 
   public ServerApi(string baseUri, string? authorizationToken, string blobStorageFolder, int timeoutSeconds = 60)
   {
-    _baseUri = baseUri;
     CancellationToken = CancellationToken.None;
 
     BlobStorageFolder = blobStorageFolder;
@@ -319,8 +317,7 @@ public sealed class ServerApi : IDisposable, IServerApi
     using (childrenStream)
     using (var reader = new StreamReader(childrenStream, Encoding.UTF8))
     {
-      string line;
-      while ((line = reader.ReadLine()) != null)
+      while (reader.ReadLine() is { } line)
       {
         CancellationToken.ThrowIfCancellationRequested();
 

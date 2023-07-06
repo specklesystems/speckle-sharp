@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using System.Threading;
+using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
@@ -358,7 +359,7 @@ public class BaseObjectSerializer : JsonConverter
         {
           DetachLineage.Add(true);
 
-          var chunkSyntax = new Regex(@"^@\((\d*)\)");
+          var chunkSyntax = Constants.ChunkPropertyNameRegex;
 
           if (chunkSyntax.IsMatch(prop))
           {

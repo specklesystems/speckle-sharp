@@ -121,7 +121,7 @@ public class DiskTransport : ICloneable, ITransport
 
     var partial = JsonConvert.DeserializeObject<Placeholder>(parent);
 
-    if (partial.__closure == null || partial.__closure.Count == 0)
+    if (partial?.__closure is null || partial.__closure.Count == 0)
       return parent;
 
     int i = 0;

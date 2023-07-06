@@ -97,8 +97,8 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   public void Dispose()
   {
     // TODO: Check if it's still writing?
-    Connection?.Close();
-    Connection?.Dispose();
+    Connection.Close();
+    Connection.Dispose();
     _writeTimer.Dispose();
   }
 

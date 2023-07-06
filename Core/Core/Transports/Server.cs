@@ -86,9 +86,9 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public int SavedObjectCount { get; private set; }
 
-  public Action<string, int> OnProgressAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
 
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, Exception>? OnErrorAction { get; set; }
 
   // not implementing this for V1, just a dummy 0 value
   public TimeSpan Elapsed => TimeSpan.Zero;
