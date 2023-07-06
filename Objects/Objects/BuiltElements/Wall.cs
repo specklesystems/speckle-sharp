@@ -281,19 +281,19 @@ namespace Objects.BuiltElements.Archicad
     public ArchicadWall() { }
 
     // Element base
-    public string elementType { get; set; }
-    public List<Classification> classifications { get; set; }
+    public string? /*APINullabe*/ elementType { get; set; }
+    public List<Classification>? /*APINullabe*/ classifications { get; set; }
 
-    public ArchicadLevel level { get; set; }
+    public ArchicadLevel? /*APINullabe*/ level { get; set; }
 
     // Wall geometry
-    public double baseOffset { get; set; }
+    public double? /*APINullabe*/ baseOffset { get; set; }
     public Point startPoint { get; set; }
     public Point endPoint { get; set; }
 
-    public string structure { get; set; }
-    public string geometryMethod { get; set; }
-    public string wallComplexity { get; set; }
+    public string? /*APINullabe*/ structure { get; set; }
+    public string? /*APINullabe*/ geometryMethod { get; set; }
+    public string? /*APINullabe*/ wallComplexity { get; set; }
 
     public string? buildingMaterialName { get; set; }
     public string? compositeName { get; set; }
@@ -302,7 +302,7 @@ namespace Objects.BuiltElements.Archicad
 
     public ElementShape? shape { get; set; }
 
-    public double thickness { get; set; }
+    public double? /*APINullabe*/ thickness { get; set; }
 
     public double? outsideSlantAngle { get; set; }
     public double? insideSlantAngle { get; set; }
@@ -310,19 +310,19 @@ namespace Objects.BuiltElements.Archicad
     public bool? polyWalllCornersCanChange { get; set; }
 
     // Wall and stories relation
-    public double topOffset { get; set; }
-    public short relativeTopStory { get; set; }
-    public string referenceLineLocation { get; set; }
+    public double? /*APINullabe*/ topOffset { get; set; }
+    public short? /*APINullabe*/ relativeTopStory { get; set; }
+    public string? /*APINullabe*/ referenceLineLocation { get; set; }
     public double? referenceLineOffset { get; set; }
-    public double offsetFromOutside { get; set; }
-    public int referenceLineStartIndex { get; set; }
-    public int referenceLineEndIndex { get; set; }
+    public double? /*APINullabe*/ offsetFromOutside { get; set; }
+    public int? /*APINullabe*/ referenceLineStartIndex { get; set; }
+    public int? /*APINullabe*/ referenceLineEndIndex { get; set; }
     public bool flipped { get; set; }
 
     // Floor Plan and Section - Floor Plan Display
-    public string showOnStories { get; set; }
-    public string displayOptionName { get; set; }
-    public string showProjectionName { get; set; }
+    public string? /*APINullabe*/ showOnStories { get; set; }
+    public string? /*APINullabe*/ displayOptionName { get; set; }
+    public string? /*APINullabe*/ showProjectionName { get; set; }
 
     // Floor Plan and Section - Cut Surfaces parameters
     public short? cutLinePen { get; set; }
@@ -331,10 +331,10 @@ namespace Objects.BuiltElements.Archicad
     public short? overrideCutFillBackgroundPen { get; set; }
 
     // Floor Plan and Section - Outlines parameters
-    public short uncutLinePen { get; set; }
-    public string uncutLinetype { get; set; }
-    public short overheadLinePen { get; set; }
-    public string overheadLinetype { get; set; }
+    public short? /*APINullabe*/ uncutLinePen { get; set; }
+    public string? /*APINullabe*/ uncutLinetype { get; set; }
+    public short? /*APINullabe*/ overheadLinePen { get; set; }
+    public string? /*APINullabe*/ overheadLinetype { get; set; }
 
     // Model - Override Surfaces
     public string? referenceMaterialName { get; set; }
@@ -344,10 +344,10 @@ namespace Objects.BuiltElements.Archicad
     public int? oppositeMaterialStartIndex { get; set; }
     public int? oppositeMaterialEndIndex { get; set; }
     public string? sideMaterialName { get; set; }
-    public bool materialsChained { get; set; }
-    public bool inheritEndSurface { get; set; }
-    public bool alignTexture { get; set; }
-    public int sequence { get; set; }
+    public bool? /*APINullabe*/ materialsChained { get; set; }
+    public bool? /*APINullabe*/ inheritEndSurface { get; set; }
+    public bool? /*APINullabe*/ alignTexture { get; set; }
+    public int? /*APINullabe*/ sequence { get; set; }
 
     // Model - Log Details (log height, start with half log, surface of horizontal edges, log shape)
     public double? logHeight { get; set; }
@@ -356,11 +356,11 @@ namespace Objects.BuiltElements.Archicad
     public string? logShape { get; set; }
 
     // Model - Defines the relation of wall to zones (Zone Boundary, Reduce Zone Area Only, No Effect on Zones)
-    public string wallRelationToZoneName { get; set; }
+    public string? /*APINullabe*/ wallRelationToZoneName { get; set; }
 
     // Does it have any embedded object?
-    public bool hasDoor { get; set; }
+    public bool? /*APINullabe*/ hasDoor { get; set; }
 
-    public bool hasWindow { get; set; }
+    public bool? /*APINullabe*/ hasWindow { get; set; }
   }
 }
