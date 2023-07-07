@@ -4,7 +4,7 @@
 #include "ObjectState.hpp"
 #include "FieldNames.hpp"
 #include "TypeNameTables.hpp"
-#include "ResourceIds.hpp"
+#include "ResourceStrings.hpp"
 using namespace FieldNames;
 
 namespace Utility {
@@ -38,9 +38,90 @@ GS::ErrCode GetTypeNameFromElementType (const API_Elem_Head& header, GS::UniStri
 #ifdef ServerMainVers_2600
 	return ACAPI_Goodies_GetElemTypeName (header.type, typeName);
 #else
-	UNUSED (header);
-	typeName = "Archicad Element"; // ACAPI_Goodies_GetElemTypeName not implemented in Archicad 25
-	return NoError;
+	ResourceStrings::ElementTypeStringItems elementTypeStringItems;
+	switch (header.typeID) {
+	case API_WallID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::WallString; break;
+	case API_ColumnID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ColumnString; break;
+	case API_BeamID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::BeamString; break;
+	case API_WindowID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::WindowString; break;
+	case API_DoorID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::DoorString; break;
+	case API_ObjectID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ObjectString; break;
+	case API_LampID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::LampString; break;
+	case API_SlabID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::SlabString; break;
+	case API_RoofID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RoofString; break;
+	case API_MeshID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::MeshString; break;
+	case API_DimensionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::DimensionString; break;
+	case API_RadialDimensionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RadialDimensionString; break;
+	case API_LevelDimensionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::LevelDimensionString; break;
+	case API_AngleDimensionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::AngleDimensionString; break;
+	case API_TextID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::TextString; break;
+	case API_LabelID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::LabelString; break;
+	case API_ZoneID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ZoneString; break;
+	case API_HatchID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::HatchString; break;
+	case API_LineID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::LineString; break;
+	case API_PolyLineID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::PolyLineString; break;
+	case API_ArcID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ArcString; break;
+	case API_CircleID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CircleString; break;
+	case API_SplineID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::SplineString; break;
+	case API_HotspotID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::HotspotString; break;
+	case API_CutPlaneID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CutPlaneString; break;
+	case API_CameraID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CameraString; break;
+	case API_CamSetID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CamSetString; break;
+	case API_GroupID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::GroupString; break;
+	case API_SectElemID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::SectElemString; break;
+	case API_DrawingID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::DrawingString; break;
+	case API_PictureID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::PictureString; break;
+	case API_DetailID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::DetailString; break;
+	case API_ElevationID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ElevationString; break;
+	case API_InteriorElevationID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::InteriorElevationString; break;
+	case API_WorksheetID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::WorksheetString; break;
+	case API_HotlinkID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::HotlinkString; break;
+	case API_CurtainWallID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CurtainWallString; break;
+	case API_CurtainWallSegmentID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CurtainWallSegmentString; break;
+	case API_CurtainWallFrameID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CurtainWallFrameString; break;
+	case API_CurtainWallPanelID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CurtainWallPanelString; break;
+	case API_CurtainWallJunctionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CurtainWallJunctionString; break;
+	case API_CurtainWallAccessoryID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::CurtainWallAccessoryString; break;
+	case API_ShellID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ShellString; break;
+	case API_SkylightID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::SkylightString; break;
+	case API_MorphID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::MorphString; break;
+	case API_ChangeMarkerID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ChangeMarkerString; break;
+	case API_StairID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::StairString; break;
+	case API_RiserID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RiserString; break;
+	case API_TreadID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::TreadString; break;
+	case API_StairStructureID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::StairStructureString; break;
+	case API_RailingID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingString; break;
+	case API_RailingToprailID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingToprailString; break;
+	case API_RailingHandrailID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingHandrailString; break;
+	case API_RailingRailID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingRailString; break;
+	case API_RailingPostID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingPostString; break;
+	case API_RailingInnerPostID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingInnerPostString; break;
+	case API_RailingBalusterID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingBalusterString; break;
+	case API_RailingPanelID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingPanelString; break;
+	case API_RailingSegmentID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingSegmentString; break;
+	case API_RailingNodeID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingNodeString; break;
+	case API_RailingBalusterSetID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingBalusterSetString; break;
+	case API_RailingPatternID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingPatternString; break;
+	case API_RailingToprailEndID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingToprailEndString; break;
+	case API_RailingHandrailEndID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingHandrailEndString; break;
+	case API_RailingRailEndID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingRailEndString; break;
+	case API_RailingToprailConnectionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingToprailConnectionString; break;
+	case API_RailingHandrailConnectionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingHandrailConnectionString; break;
+	case API_RailingRailConnectionID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingRailConnectionString; break;
+	case API_RailingEndFinishID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::RailingEndFinishString; break;
+	case API_AnalyticalSupportID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::AnalyticalSupportString; break;
+	case API_AnalyticalLinkID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::AnalyticalLinkString; break;
+	case API_BeamSegmentID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::BeamSegmentString; break;
+	case API_ColumnSegmentID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::ColumnSegmentString; break;
+	case API_OpeningID: elementTypeStringItems = ResourceStrings::ElementTypeStringItems::OpeningString; break;
+	default:
+	{
+		return Error;
+	}
+	}
+	typeName = GetElementTypeStringFromResource (elementTypeStringItems);
+
+	return typeName.IsEmpty () ? Error : NoError;
 #endif
 }
 

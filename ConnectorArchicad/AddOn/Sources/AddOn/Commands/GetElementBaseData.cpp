@@ -42,7 +42,7 @@ GS::ErrCode GetElementBaseData::SerializeElementType (const API_Element& elem,
 		return err;
 
 	// Positioning
-	API_StoryType story = Utility::GetStory (elem.beam.head.floorInd);
+	API_StoryType story = Utility::GetStory (elem.header.floorInd);
 	os.Add (ElementBase::Level, Objects::Level (story));
 
 	return NoError;
