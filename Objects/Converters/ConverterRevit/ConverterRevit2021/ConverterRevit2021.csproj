@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ConnectorRevit\RevitSharedResources2021\RevitSharedResources2021.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
     <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />

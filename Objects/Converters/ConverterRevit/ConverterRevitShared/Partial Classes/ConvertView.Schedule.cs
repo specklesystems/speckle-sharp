@@ -93,7 +93,7 @@ namespace Objects.Converter.Revit
 
     private void UpdateDataInRow(ScheduleRowIterationInfo info, ICollection<ElementId> originalTableIds, ViewSchedule revitSchedule, DataTable speckleTable, Dictionary<int, RevitParameterData> speckleIndexToRevitParameterDataMap)
     {
-      var elementIds = ElementApplicationIdsInRow(info.rowIndex, info.section, originalTableIds, revitSchedule, info.tableSection);
+      var elementIds = ElementApplicationIdsInRow(info.rowIndex, info.section, originalTableIds, revitSchedule, info.tableSection).ToList();
 
       if (elementIds.Count == 0) { return; }
 
@@ -335,7 +335,7 @@ namespace Objects.Converter.Revit
         return false;
       }
       var metadata = new Base();
-      metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(rowIndex, section, originalTableIds, revitSchedule, tableSection);
+      metadata["RevitApplicationIds"] = ElementApplicationIdsInRow(rowIndex, section, originalTableIds, revitSchedule, tableSection).ToList();
 
       try
       {
@@ -362,31 +362,30 @@ namespace Objects.Converter.Revit
     }
     #endregion
 
-    private List<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, ICollection<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule, SectionType tableSection)
+    public static IEnumerable<string> ElementApplicationIdsInRow(int rowNumber, TableSectionData section, ICollection<ElementId> orginialTableIds, DB.ViewSchedule revitSchedule, SectionType tableSection)
     {
-      var elementApplicationIdsInRow = new List<string>();
       var remainingIdsInRow = RevitScheduleUtils.ExecuteInTemporaryTransaction(() =>
       {
         section.RemoveRow(rowNumber);
-        return new FilteredElementCollector(Doc, revitSchedule.Id)
+        return new FilteredElementCollector(revitSchedule.Document, revitSchedule.Id)
           .ToElementIds()
           .ToList();
-      }, Doc);
+      }, revitSchedule.Document);
 
       // the section must be recomputed here because of our hacky row deleting trick
       var table = revitSchedule.GetTableData();
       section = table.GetSectionData(tableSection);
 
       if (remainingIdsInRow == null || remainingIdsInRow.Count == orginialTableIds.Count)
-        return elementApplicationIdsInRow;
+      {
+        yield break;
+      }
 
       foreach (var id in orginialTableIds)
       {
         if (remainingIdsInRow.Contains(id)) continue;
-        elementApplicationIdsInRow.Add(Doc.GetElement(id).UniqueId);
+        yield return revitSchedule.Document.GetElement(id).UniqueId;
       }
-
-      return elementApplicationIdsInRow;
     }
   }
 

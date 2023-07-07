@@ -66,7 +66,7 @@
   <!-- We are building for win-x64 on mac too, so these deps are not automatically copied/loaded -->
   <ItemGroup Condition="'$(Configuration)'=='Debug Mac' OR '$(Configuration)'=='Release Mac'">
     <None
-      Include="$(HOME)/.nuget/packages/avalonia.native/0.10.18/runtimes/osx/native/libAvaloniaNative.dylib"
+      Include="$(HOME)/.nuget/packages/avalonia.native/0.10.21/runtimes/osx/native/libAvaloniaNative.dylib"
       CopyToOutputDirectory="PreserveNewest" Visible="false"/>
     <None
       Include="$(HOME)/.nuget/packages/sqlitepclraw.lib.e_sqlite3/2.1.4/runtimes/osx-x64/native/libe_sqlite3.dylib"

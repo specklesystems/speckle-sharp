@@ -1,9 +1,12 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
+using RevitSharedResources.Helpers;
+using RevitSharedResources.Helpers.Extensions;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using BE = Objects.BuiltElements;
@@ -17,7 +20,9 @@ namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit : ISpeckleConverter
   {
-#if REVIT2023
+#if REVIT2024
+    public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2024);
+#elif REVIT2023
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2023);
 #elif REVIT2022
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2022);
@@ -25,7 +30,7 @@ namespace Objects.Converter.Revit
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2021);
 #elif REVIT2020
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2020);
-#else
+#elif REVIT2019
     public static string RevitAppName = HostApplications.Revit.GetVersion(HostAppVersion.v2019);
 #endif
 
@@ -42,19 +47,20 @@ namespace Objects.Converter.Revit
 
     private const double TOLERANCE = 0.0164042; // 5mm in ft
 
-    public Document Doc { get; private set; }
+    public static Document Doc { get; private set; }
 
     /// <summary>
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
     /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
     /// </summary>
-    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
+    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } =
+      new Dictionary<string, ApplicationObject>();
 
     /// <summary>
     /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
     /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
     /// </summary>
-    public Dictionary<string, ApplicationObject> PreviousContextObjects { get; set; } = new Dictionary<string, ApplicationObject>();
+    public IReceivedObjectIdMap<Base, Element> PreviouslyReceivedObjectIds { get; set; }
 
     /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
@@ -102,12 +108,32 @@ namespace Objects.Converter.Revit
     public void SetContextDocument(object doc)
     {
       if (doc is Transaction t)
-        T = t;
-      else
       {
-        Doc = (Document)doc;
+        T = t;
+      }
+      else if (doc is IReceivedObjectIdMap<Base, Element> cache)
+      {
+        PreviouslyReceivedObjectIds = cache;
+      }
+      else if (doc is DB.View view)
+      {
+        // setting the view as a 2d view will result in no objects showing up, so only do it if it's a 3D view
+        if (view is View3D view3D)
+        {
+          ViewSpecificOptions = new Options() { View = view, ComputeReferences = true };
+        }
+      }
+      else if (doc is Document document)
+      {
+        Doc = document;
         Report.Log($"Using document: {Doc.PathName}");
         Report.Log($"Using units: {ModelUnits}");
+      }
+      else
+      {
+        throw new ArgumentException(
+          $"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}"
+        );
       }
     }
 
@@ -127,14 +153,14 @@ namespace Objects.Converter.Revit
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects)
     {
-      PreviousContextObjects = new(objects.Count);
-      foreach (var ao in objects)
-      {
-        var key = ao.applicationId ?? ao.OriginalId;
-        if (PreviousContextObjects.ContainsKey(key))
-          continue;
-        PreviousContextObjects.Add(key, ao);
-      }
+      //PreviousContextObjects = new(objects.Count);
+      //foreach (var ao in objects)
+      //{
+      //  var key = ao.applicationId ?? ao.OriginalId;
+      //  if (PreviousContextObjects.ContainsKey(key))
+      //    continue;
+      //  PreviousContextObjects.Add(key, ao);
+      //}
     }
 
     public void SetConverterSettings(object settings)
@@ -323,7 +349,7 @@ namespace Objects.Converter.Revit
         returnObject != null
         && returnObject["renderMaterial"] == null
         && returnObject["displayValue"] == null
-        && !(returnObject is Model)
+        && !(returnObject is Collection)
       )
       {
         try
@@ -496,7 +522,11 @@ namespace Objects.Converter.Revit
           return AlignmentToNative(o);
 
         case BE.Structure o:
-          return TryDirectShapeToNative(new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId }, o.displayValue, ToNativeMeshSetting);
+          return TryDirectShapeToNative(
+            new ApplicationObject(o.id, o.speckle_type) { applicationId = o.applicationId },
+            o.displayValue,
+            ToNativeMeshSetting
+          );
         //built elems
         case BER.AdaptiveComponent o:
           return AdaptiveComponentToNative(o);

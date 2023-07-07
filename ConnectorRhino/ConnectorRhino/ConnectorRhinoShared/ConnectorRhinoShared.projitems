@@ -9,8 +9,6 @@
     <Import_RootNamespace>ConnectorRhinoShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementCommands.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)BIMElements\BIMElementFilter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleMappingsCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleCommandWin.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Plugin.cs" />
@@ -19,6 +17,12 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.3DView.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Events.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Previews.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Receive.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Selection.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\MappingBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)UI\ConnectorBindingsRhino.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Utils.cs" />

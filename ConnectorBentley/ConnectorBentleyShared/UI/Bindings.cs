@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +13,6 @@ using Speckle.Core.Transports;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using DesktopUI2.Models.Filters;
 using DesktopUI2.Models.Settings;
 
@@ -188,12 +187,6 @@ namespace Speckle.ConnectorBentley.UI
     {
       // TODO!
     }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
-    }
     #endregion
 
     #region receiving
@@ -224,10 +217,10 @@ namespace Speckle.ConnectorBentley.UI
       */
 
       //if "latest", always make sure we get the latest commit when the user clicks "receive"
-      Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = commit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, commit, Utils.VersionedAppName);
+      await ConnectorHelpers.TryCommitReceived(state, commit, Utils.VersionedAppName, progress.CancellationToken);
       
       // invoke conversions on the main thread via control
       int count = 0;
@@ -609,7 +602,7 @@ namespace Speckle.ConnectorBentley.UI
 
       if (state.PreviousCommitId != null) { actualCommit.parents = new List<string>() { state.PreviousCommitId }; }
 
-      var commitId = await ConnectorHelpers.CreateCommit(progress.CancellationToken, client, actualCommit);
+      var commitId = await ConnectorHelpers.CreateCommit(client, actualCommit, progress.CancellationToken);
       return commitId;
     }
 

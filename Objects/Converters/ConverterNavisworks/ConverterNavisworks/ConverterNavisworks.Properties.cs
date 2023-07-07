@@ -9,11 +9,13 @@ using Speckle.Core.Models;
 
 namespace Objects.Converter.Navisworks;
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   private static Base GetPropertiesBase(ModelItem element)
   {
-    Base propertiesBase = new();
+    Base propertiesBase = new() { ["name"] = "Properties" };
+
     PropertyCategoryCollection userVisiblePropertyCategories = element.GetUserFilteredPropertyCategories();
 
     foreach (PropertyCategory propertyCategory in userVisiblePropertyCategories)
@@ -22,7 +24,7 @@ public partial class ConverterNavisworks
     return propertiesBase;
   }
 
-  private static void ProcessPropertyCategory(Base propertiesBase, PropertyCategory propertyCategory)
+  private static void ProcessPropertyCategory(DynamicBase propertiesBase, PropertyCategory propertyCategory)
   {
     if (IsCategoryToBeSkipped(propertyCategory))
       return;
@@ -34,8 +36,11 @@ public partial class ConverterNavisworks
 
     if (!propertyCategoryBase.GetMembers().Any() || propertyCategory.DisplayName == null)
       return;
+
     string propertyCategoryDisplayName = SanitizePropertyName(propertyCategory.DisplayName);
-    propertiesBase[propertyCategoryDisplayName] = propertyCategoryBase;
+    string internalName = GetSanitizedPropertyName(propertyCategory.CombinedName.ToString()).Replace("LcOa", "");
+
+    propertiesBase[UseInternalPropertyNames ? internalName : propertyCategoryDisplayName] = propertyCategoryBase;
   }
 
   private static bool IsCategoryToBeSkipped(PropertyCategory propertyCategory)
@@ -59,13 +64,16 @@ public partial class ConverterNavisworks
   )
   {
     string propertyName = GetSanitizedPropertyName(property.DisplayName);
+    string internalName = GetSanitizedPropertyName(property.CombinedName.BaseName).Replace("LcOa", "");
 
     if (propertyName == null)
       return;
 
     dynamic propertyValue = ConvertPropertyValue(property.Value);
 
-    UpdatePropertyCategoryBase(propertyCategoryBase, propertyName, propertyValue);
+    var useInternalNames = UseInternalPropertyNames;
+
+    UpdatePropertyCategoryBase(propertyCategoryBase, useInternalNames ? internalName : propertyName, propertyValue);
 
     propertyCategoryBase.applicationId = propertyCategory.CombinedName.ToString();
   }

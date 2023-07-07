@@ -1,8 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using DesktopUI2;
 using DesktopUI2.Models;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using Speckle.Core.Models;
 using Speckle.ConnectorCSI.Util;
 using System.Timers;
@@ -61,12 +60,6 @@ namespace Speckle.ConnectorCSI.UI
     public override List<string> GetObjectsInView()
     {
       throw new NotImplementedException();
-    }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(Dictionary<string, List<MappingValue>> Mapping)
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
     }
 
     public override void ResetDocument()

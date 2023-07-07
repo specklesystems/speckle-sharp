@@ -74,11 +74,7 @@ public static class ConnectorHelpers
     return commitObject;
   }
 
-  [Obsolete("Use overload that has cancellation token last")]
-  public static async Task<Commit> GetCommitFromState(CancellationToken cancellationToken, StreamState state)
-  {
-    return await GetCommitFromState(state, cancellationToken).ConfigureAwait(false);
-  }
+
 
   /// <param name="cancellationToken">Progress cancellation token</param>
   /// <param name="state">Current Stream card state (does not mutate)</param>
@@ -121,16 +117,6 @@ public static class ConnectorHelpers
     return commit;
   }
 
-  [Obsolete("Use overload that has cancellation token last")]
-  public static async Task TryCommitReceived(
-    CancellationToken cancellationToken,
-    Client client,
-    CommitReceivedInput commitReceivedInput
-  )
-  {
-    await TryCommitReceived(client, commitReceivedInput, cancellationToken).ConfigureAwait(false);
-  }
-
   /// <summary>
   /// Try catch wrapper around <see cref="Client.CommitReceived(CancellationToken, CommitReceivedInput)"/> with logging
   /// </summary>
@@ -152,17 +138,6 @@ public static class ConnectorHelpers
     }
   }
 
-  [Obsolete("Use overload that has cancellation token last")]
-  public static async Task TryCommitReceived(
-    CancellationToken cancellationToken,
-    StreamState state,
-    Commit commit,
-    string sourceApplication
-  )
-  {
-    await TryCommitReceived(state, commit, sourceApplication, cancellationToken).ConfigureAwait(false);
-  }
-
   /// <inheritdoc cref="TryCommitReceived(CancellationToken, Client, CommitReceivedInput, LogEventLevel)"/>
   public static async Task TryCommitReceived(
     StreamState state,
@@ -180,16 +155,6 @@ public static class ConnectorHelpers
       sourceApplication = sourceApplication
     };
     await TryCommitReceived(state.Client, commitReceivedInput, cancellationToken).ConfigureAwait(false);
-  }
-
-  [Obsolete("Use overload that has cancellation token last")]
-  public static async Task<string> CreateCommit(
-    CancellationToken cancellationToken,
-    Client client,
-    CommitCreateInput commitInput
-  )
-  {
-    return await CreateCommit(client, commitInput, cancellationToken).ConfigureAwait(false);
   }
 
   //TODO: should this just be how `CommitCreate` id implemented?
@@ -234,4 +199,44 @@ public static class ConnectorHelpers
     //Treat all operation errors as fatal
     throw new SpeckleException($"Failed to send objects to server - {error}", ex);
   }
+  
+  #region deprecated members
+  
+  [Obsolete("Use overload that has cancellation token last", true)]
+  public static async Task TryCommitReceived(
+    CancellationToken cancellationToken,
+    Client client,
+    CommitReceivedInput commitReceivedInput
+  )
+  {
+    await TryCommitReceived(client, commitReceivedInput, cancellationToken).ConfigureAwait(false);
+  }
+  
+  [Obsolete("Use overload that has cancellation token last", true)]
+  public static async Task<Commit> GetCommitFromState(CancellationToken cancellationToken, StreamState state)
+  {
+    return await GetCommitFromState(state, cancellationToken).ConfigureAwait(false);
+  }
+  
+  [Obsolete("Use overload that has cancellation token last", true)]
+  public static async Task TryCommitReceived(
+    CancellationToken cancellationToken,
+    StreamState state,
+    Commit commit,
+    string sourceApplication
+  )
+  {
+    await TryCommitReceived(state, commit, sourceApplication, cancellationToken).ConfigureAwait(false);
+  }
+  
+  [Obsolete("Use overload that has cancellation token last", true)]
+  public static async Task<string> CreateCommit(
+    CancellationToken cancellationToken,
+    Client client,
+    CommitCreateInput commitInput
+  )
+  {
+    return await CreateCommit(client, commitInput, cancellationToken).ConfigureAwait(false);
+  }
+  #endregion
 }

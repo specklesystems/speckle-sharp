@@ -8,7 +8,6 @@ using DesktopUI2.ViewModels;
 using Sentry.Reflection;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using static DesktopUI2.ViewModels.MappingViewModel;
 
 namespace DesktopUI2;
 
@@ -208,14 +207,6 @@ public abstract class ConnectorBindings
   public abstract List<MenuItem> GetCustomStreamMenuItems();
 
   public abstract List<ISetting> GetSettings();
-
-  /// <summary>
-  /// Imports family symbols in Revit
-  /// </summary>
-  /// <returns></returns>
-  public abstract Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-    Dictionary<string, List<MappingValue>> Mapping
-  );
 
   #endregion
 }

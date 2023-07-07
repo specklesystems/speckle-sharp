@@ -1,7 +1,5 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.ExternalService;
-using Autodesk.Revit.UI;
-using Autodesk.Revit.UI.Selection;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
@@ -11,24 +9,12 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using System.Collections;
-using System.Collections.Concurrent;
-using System.Drawing;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading;
-using DesktopUI2.Models.Filters;
-using DesktopUI2.Models.Settings;
-using Speckle.Core.Transports;
-using Speckle.Newtonsoft.Json;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
-using Avalonia.Threading;
 using Autodesk.Revit.DB.DirectContext3D;
 using Revit.Async;
-using DynamicData;
+using RevitSharedResources.Interfaces;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -43,7 +29,7 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         // first check if commit is the same and preview objects have already been generated
-        Commit commit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+        Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
         progress.Report = new ProgressReport();
 
         if (commit.id != SelectedReceiveCommit)
@@ -69,18 +55,18 @@ namespace Speckle.ConnectorRevit.UI
           foreach (var previewObj in Preview)
             progress.Report.Log(previewObj);
 
-          List<ApplicationObject> applicationObjects = null;
+          IConvertedObjectsCache<Base, Element> convertedObjects = null;
           await RevitTask.RunAsync(
             app =>
             {
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
               {
                 t.Start();
-                applicationObjects = ConvertReceivedObjects(converter, progress);
+                convertedObjects = ConvertReceivedObjects(converter, progress);
                 t.Commit();
               }
 
-              AddMultipleRevitElementServers(applicationObjects);
+              AddMultipleRevitElementServers(convertedObjects);
             });
         }
         else // just generate the log
@@ -106,16 +92,16 @@ namespace Speckle.ConnectorRevit.UI
       UnregisterServers();
     }
 
-    public void AddMultipleRevitElementServers(List<ApplicationObject> applicationObjects)
+    public void AddMultipleRevitElementServers(IConvertedObjectsCache<Base, Element> convertedObjects)
     {
       ExternalService directContext3DService =
         ExternalServiceRegistry.GetService(ExternalServices.BuiltInExternalServices.DirectContext3DService);
       MultiServerService msDirectContext3DService = directContext3DService as MultiServerService;
       IList<Guid> serverIds = msDirectContext3DService.GetActiveServerIds();
 
-      foreach (var appObj in applicationObjects)
+      foreach (var obj in convertedObjects.GetConvertedObjects())
       {
-        if (!(appObj.Converted.FirstOrDefault() is IDirectContext3DServer server))
+        if (obj is not IDirectContext3DServer server)
           continue;
 
         directContext3DService.AddServer(server);
@@ -157,10 +143,10 @@ namespace Speckle.ConnectorRevit.UI
     {
       try
       {
-        var filterObjs = GetSelectionFilterObjects(state.Filter);
+        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+        var filterObjs = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
         foreach (var filterObj in filterObjs)
         {
-          var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
           var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
           if (!converter.CanConvertToSpeckle(filterObj))
