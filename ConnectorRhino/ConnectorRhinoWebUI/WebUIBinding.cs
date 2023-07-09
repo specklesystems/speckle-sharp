@@ -2,78 +2,24 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using CefSharp;
 using CefSharp.Wpf;
 using Microsoft.Web.WebView2.Wpf;
 
 namespace ConnectorRhinoWebUI
 {
-
-  // Quick hack (if we control the class, can wv2 do it properly?)
-  [ClassInterface(ClassInterfaceType.AutoDual)]
-  [ComVisible(true)]
-  [Serializable]
-  public class Account
-  {
-    public string id { get; set; }
-    public Boolean isDefault { get; set; }
-    public string userId { get; set; }
-    public string token { get; set; }
-    public string serverUrl { get;set; }
-  }
-
   // NOTE: this class is going to be abstracted out; for now it lives here for hacking convenience.
   // NOTE: It might also be better as an interface??? (re feedback "we should not need to implement everything everywhere" on bindings)
+  // NOTE: Multiple objects can be registered in a browser window. This means we can have
+  // DefaultBindings, SendBindings, ReceiveBindings, MapperBindings, WhateverBindings
   // To think about the above stuff. 
 
-  [ClassInterface(ClassInterfaceType.AutoDual)]
-  [ComVisible(true)]
   public abstract class WebUIBinding
   {
-    public string GetAccounts()
+    public Speckle.Core.Credentials.Account[] GetAccounts()
     {
-      var accountString = System.Text.Json.JsonSerializer.Serialize(Speckle.Core.Credentials.AccountManager.GetAccounts());
-      return accountString;
-    }
-
-    public Account[] GetAccountsStraight()
-    {
-      return Speckle.Core.Credentials.AccountManager.GetAccounts().Select(acc => new Account
-      {
-        id = acc.id,
-        isDefault = acc.isDefault,
-        userId = acc.userInfo.id,
-        token = acc.token,
-        serverUrl = acc.serverInfo.url
-      }).ToArray();
-    }
-
-    public Account GetAccountSingleStraight()
-    {
-      var acc =  Speckle.Core.Credentials.AccountManager.GetAccounts().Select(acc => new Account
-      {
-        id = acc.id,
-        isDefault = acc.isDefault,
-        userId = acc.userInfo.id,
-        token = acc.token,
-        serverUrl = acc.serverInfo.url
-      }).ToArray()[0];
-      return acc;
-    }
-
-    public Dictionary<string, object> SuperTest()
-    {
-      var x = new Dictionary<string, object>();
-      x["test"] = 1;
-      x["ref"] = false;
-      x["yoloo"] = "hello";
-
-      return x;
-    }
-
-    public string[] SimpleTest()
-    {
-      return new string[] { "hello", "world" };
+      return Speckle.Core.Credentials.AccountManager.GetAccounts().ToArray();
     }
 
     public string SayHi(string name)
@@ -85,7 +31,11 @@ namespace ConnectorRhinoWebUI
 
     public abstract void OpenDevTools();
 
-    public abstract void SendCommand();
+    public abstract void SendToBrowser();
+
+    //public abstract void GetFileState();
+
+    //public abstract void UpdateFileState();
   }
 
   public abstract class RhinoWebUiBinding: WebUIBinding
@@ -110,7 +60,7 @@ namespace ConnectorRhinoWebUI
       Browser.ShowDevTools();
     }
 
-    public override void SendCommand()
+    public override void SendToBrowser()
     {
       // TODO, mocks for now
     }
@@ -132,7 +82,7 @@ namespace ConnectorRhinoWebUI
       Browser.CoreWebView2.OpenDevToolsWindow();
     }
 
-    public override void SendCommand()
+    public override void SendToBrowser()
     {
       // TODO, mocks for now
     }
