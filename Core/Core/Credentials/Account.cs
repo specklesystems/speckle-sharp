@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using GraphQL;
 using GraphQL.Client.Http;
@@ -12,6 +13,8 @@ namespace Speckle.Core.Credentials;
 
 #pragma warning disable CS0659 CA1067 //TODO: Disabled to prevent GetHashCode from being added by the cleanup.
 
+[ClassInterface(ClassInterfaceType.AutoDual)]
+[ComVisible(true)]
 public class Account : IEquatable<Account>
 {
   private string _id { get; set; }

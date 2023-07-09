@@ -564,6 +564,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
             .ToList()
             .OrderBy(path => path.Count(c => c == ':'))
             .ToList();
+          
           foreach (var container in containers)
           {
             var path =
@@ -840,6 +841,7 @@ public class ConnectorBindingsRhino : ConnectorBindings
     // check if this is a view or block - convert instead of bake if so (since these are "baked" during conversion)
     if (IsPreviewIgnore(obj))
       appObj.Converted = ConvertObject(obj, converter);
+    
     foreach (var convertedItem in appObj.Converted)
       switch (convertedItem)
       {
