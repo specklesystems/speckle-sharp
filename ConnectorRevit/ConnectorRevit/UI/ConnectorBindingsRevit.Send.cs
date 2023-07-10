@@ -48,7 +48,7 @@ namespace Speckle.ConnectorRevit.UI
       var streamId = state.StreamId;
       var client = state.Client;
 
-      var selectedObjects = GetSelectionFilterObjects(converter, state.Filter);
+      var selectedObjects = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
       state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!selectedObjects.Any())
@@ -92,7 +92,7 @@ namespace Speckle.ConnectorRevit.UI
 
             //Add context to logger
             using var _d1 = LogContext.PushProperty("elementType", revitElement.GetType());
-            using var _d2 = LogContext.PushProperty("elementCategory", revitElement.Category.Name);
+            using var _d2 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
 
             try
             {

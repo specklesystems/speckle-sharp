@@ -191,7 +191,7 @@ namespace Speckle.ConnectorRevit
         .Cast<View>()
         .Where(x => !x.IsTemplate)
         .ToList();
-      _cachedViews = els.Select(x => x.Name).OrderBy(x => x).ToList();
+      _cachedViews = els.Select(x => x.Title).OrderBy(x => x).ToList();
       return _cachedViews;
     }
 

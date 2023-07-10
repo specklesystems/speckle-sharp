@@ -1,5 +1,7 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using Speckle.Core.Kits;
 
@@ -21,7 +23,7 @@ public static class DefaultTraversal
       .NewTraversalRule()
       .When(converter.CanConvertToNative)
       .When(HasDisplayValue)
-      .ContinueTraversing(ElementsAliases);
+      .ContinueTraversing(_ => elementsPropAliases);
 
     return new GraphTraversal(convertableRule, IgnoreResultsRule, DefaultRule);
   }
@@ -30,7 +32,7 @@ public static class DefaultTraversal
   /// Traverses until finds a convertable object then HALTS deeper traversal
   /// </summary>
   /// <remarks>
-  /// Current <see cref="Objects.Converter.Revit.ConverterRevit"/> does traversal,
+  /// Current <see cref="Converter{TInput,TOutput}.Revit.ConverterRevit"/> does traversal,
   /// so this traversal is a shallow traversal for directly convertable objects,
   /// and a deep traversal for all other types
   /// </remarks>
@@ -40,7 +42,10 @@ public static class DefaultTraversal
   {
     var convertableRule = TraversalRule.NewTraversalRule().When(converter.CanConvertToNative).ContinueTraversing(None);
 
-    var displayValueRule = TraversalRule.NewTraversalRule().When(HasDisplayValue).ContinueTraversing(ElementsAliases);
+    var displayValueRule = TraversalRule
+      .NewTraversalRule()
+      .When(HasDisplayValue)
+      .ContinueTraversing(_ => displayValueAndElementsPropAliases);
 
     return new GraphTraversal(convertableRule, displayValueRule, IgnoreResultsRule, DefaultRule);
   }
@@ -74,13 +79,59 @@ public static class DefaultTraversal
     .When(_ => true)
     .ContinueTraversing(Members());
 
-  internal static readonly string[] elementsPropAliases = { "elements", "@elements" };
+  public static readonly IReadOnlyList<string> elementsPropAliases = new[] { "elements", "@elements" };
 
-  internal static IEnumerable<string> ElementsAliases(Base _)
+  [Pure]
+  public static IEnumerable<string> ElementsAliases(Base _)
   {
     return elementsPropAliases;
   }
 
+  public static bool HasElements(Base x)
+  {
+    return elementsPropAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly IReadOnlyList<string> definitionPropAliases = new[] { "definition", "@definition" };
+
+  [Pure]
+  public static IEnumerable<string> DefinitionAliases(Base _)
+  {
+    return definitionPropAliases;
+  }
+
+  public static bool HasDefinition(Base x)
+  {
+    return definitionPropAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly IReadOnlyList<string> displayValuePropAliases = new[] { "displayValue", "@displayValue" };
+
+  [Pure]
+  public static IEnumerable<string> DisplayValueAliases(Base _)
+  {
+    return displayValuePropAliases;
+  }
+
+  public static bool HasDisplayValue(Base x)
+  {
+    return displayValuePropAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly IReadOnlyList<string> geometryPropAliases = new[] { "geometry", "@geometry" };
+
+  [Pure]
+  public static IEnumerable<string> GeometryAliases(Base _)
+  {
+    return geometryPropAliases;
+  }
+
+  public static bool HasGeometry(Base x)
+  {
+    return geometryPropAliases.Any(m => x[m] != null);
+  }
+
+  [Pure]
   internal static IEnumerable<string> None(Base _)
   {
     return Enumerable.Empty<string>();
@@ -91,11 +142,14 @@ public static class DefaultTraversal
     return x => x.GetMembers(includeMembers).Keys;
   }
 
-  internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
+  public static readonly string[] displayValueAndElementsPropAliases = displayValuePropAliases
+    .Concat(elementsPropAliases)
+    .ToArray();
 
-  internal static bool HasDisplayValue(Base x)
+  [Pure]
+  public static IEnumerable<string> DisplayValueAndElementsAliases(Base _)
   {
-    return displayValueAliases.Any(m => x[m] != null);
+    return displayValueAndElementsPropAliases;
   }
 
   #endregion

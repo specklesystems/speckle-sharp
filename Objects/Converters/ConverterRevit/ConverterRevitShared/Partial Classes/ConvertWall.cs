@@ -63,7 +63,7 @@ namespace Objects.Converter.Revit
       if (revitWall == null)
       {
         isUpdate = false;
-        revitWall = DB.Wall.Create(Doc, baseCurve, level.Id, structural);
+        revitWall = DB.Wall.Create(Doc, baseCurve, wallType.Id, level.Id, 1, 0, false, structural);
         if (joinSettings.Contains(StructuralWalls) && structural)
         {
           WallUtils.DisallowWallJoinAtEnd(revitWall, 0);

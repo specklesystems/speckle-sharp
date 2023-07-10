@@ -183,6 +183,26 @@ public static class Http
 
     return new HttpClient(handler ?? new SpeckleHttpClientHandler());
   }
+
+  public static bool CanAddAuth(string? authToken, out string? bearerHeader)
+  {
+    if (!string.IsNullOrEmpty(authToken))
+    {
+      bearerHeader = authToken.ToLowerInvariant().Contains("bearer") ? authToken : $"Bearer {authToken}";
+      return true;
+    }
+
+    bearerHeader = null;
+    return false;
+  }
+
+  public static void AddAuthHeader(HttpClient client, string? authToken)
+  {
+    if (CanAddAuth(authToken, out string? value))
+    {
+      client.DefaultRequestHeaders.Add("Authorization", value);
+    }
+  }
 }
 
 public class SpeckleHttpClientHandler : HttpClientHandler
