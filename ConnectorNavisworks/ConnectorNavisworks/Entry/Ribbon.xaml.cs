@@ -70,7 +70,6 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
   /// <returns>The state of the command.</returns>
   public override CommandState CanExecuteCommand(string commandId)
   {
-
     return commandId switch
     {
       TurnPersistCacheOn.Command
@@ -179,23 +178,21 @@ internal sealed class RibbonHandler : CommandHandlerPlugin
 
   public override int ExecuteCommand(string commandId, params string[] parameters)
   {
-    // ReSharper disable once RedundantAssignment
-    var buildVersion = string.Empty;
 
 #if NAVMAN17
-    buildVersion = "2020";
+    const string buildVersion = "2020";
 #endif
 #if NAVMAN18
-    buildVersion = "2021";
+    const string buildVersion = "2021";
 #endif
 #if NAVMAN19
-    buildVersion = "2022";
+    const string buildVersion = "2022";
 #endif
 #if NAVMAN20
-    buildVersion = "2023";
+    const string buildVersion = "2023";
 #endif
 #if NAVMAN21
-    buildVersion = "2024";
+    const string buildVersion = "2024";
 #endif
 
     // Version

@@ -8,6 +8,7 @@ using Avalonia;
 using Avalonia.ReactiveUI;
 using DesktopUI2;
 using DesktopUI2.ViewModels;
+using JetBrains.Annotations;
 using Speckle.ConnectorNavisworks.Bindings;
 using Speckle.Core.Logging;
 using Application = Autodesk.Navisworks.Api.Application;
@@ -23,8 +24,7 @@ namespace Speckle.ConnectorNavisworks.Entry;
     Options = PluginOptions.None,
     ToolTip = "Speckle Connector for Navisworks",
     ExtendedToolTip = "Speckle Connector for Navisworks"
-  )
-]
+  ), UsedImplicitly]
 internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
 {
   internal ConnectorBindingsNavisworks Bindings;
@@ -32,15 +32,11 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
   public override Control CreateControlPane()
   {
     AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
+    AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+
     Setup.Init(ConnectorBindingsNavisworks.HostAppNameVersion, ConnectorBindingsNavisworks.HostAppName);
-    try
-    {
-      InitAvalonia();
-    }
-    catch
-    {
-      // ignore
-    }
+    
+    InitAvalonia();
 
     var navisworksActiveDocument = Application.ActiveDocument;
 
@@ -59,6 +55,13 @@ internal sealed class SpeckleNavisworksCommandPlugin : DockPanePlugin
     speckleHost.CreateControl();
 
     return speckleHost;
+  }
+
+  private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+  {
+    var ex = (Exception)e.ExceptionObject;
+
+    SpeckleLog.Logger.Fatal(ex, "Navisworks Error: {error}", ex.Message);
   }
 
   public override void DestroyControlPane(Control pane)
