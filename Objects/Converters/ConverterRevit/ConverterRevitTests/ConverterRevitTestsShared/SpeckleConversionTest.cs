@@ -1,4 +1,6 @@
 using Autodesk.Revit.DB;
+using ConnectorRevit.Storage;
+using DesktopUI2.Models;
 using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit;
 using Revit.Async;
@@ -33,8 +35,9 @@ namespace ConverterRevitTests
         await RevitTask.RunAsync(() =>
         {
           var spkElem = converter.ConvertToSpeckle(elem);
+
           if (spkElem is Base re)
-            AssertValidSpeckleElement(elem, re);
+            AssertUtils.ValidSpeckleElement(elem, re);
         });
       }
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
@@ -122,6 +125,7 @@ namespace ConverterRevitTests
         .Select(obj => new ApplicationObject(obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId })
         .ToList();
       converter.SetContextObjects(contextObjects);
+      converter.SetContextDocument(new StreamStateCache(new StreamState()));
 
       var spkElems = new List<Base>();
       await RevitTask
@@ -137,12 +141,7 @@ namespace ConverterRevitTests
             if (isAlreadyConverted)
               continue;
 
-            Base conversionResult = null;
-            try
-            {
-              conversionResult = converter.ConvertToSpeckle(elem);
-            }
-            catch { }
+            var conversionResult = converter.ConvertToSpeckle(elem);
             if (conversionResult != null)
             {
               spkElems.Add(conversionResult);
@@ -156,12 +155,26 @@ namespace ConverterRevitTests
 
       converter.SetContextDocument(fixture.NewDoc);
       //setting context objects for update routine
-      if (appPlaceholders != null)
-        converter.SetPreviousContextObjects(appPlaceholders);
+      var state = new StreamState()
+      {
+        ReceivedObjects = appPlaceholders ?? new List<ApplicationObject>()
+      };
+      converter.SetContextDocument(new StreamStateCache(state));
 
-      converter.SetContextObjects(
-        spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList()
-      );
+      var contextObjs = spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList();
+      var appObjs = new List<ApplicationObject>();
+      foreach (var contextObj in contextObjs)
+      {
+        if (string.IsNullOrEmpty(contextObj.applicationId) 
+          && string.IsNullOrEmpty(contextObj.OriginalId))
+        {
+          continue;
+        }
+
+        appObjs.Add(contextObj);
+      }
+
+      converter.SetContextObjects(appObjs);
 
       var resEls = new List<ApplicationObject>();
       //used to associate th nested Base objects with eh flat revit ones
@@ -220,6 +233,7 @@ namespace ConverterRevitTests
       {
         var sourceElem = (T)(object)elements.FirstOrDefault(x => x.UniqueId == flatSpkElems[i].applicationId);
         var destElement = (T)((ApplicationObject)resEls[i]).Converted.FirstOrDefault();
+
         assert?.Invoke(sourceElem, destElement);
         if (assertAsync != null)
         {
@@ -269,6 +283,7 @@ namespace ConverterRevitTests
 
       converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
+      converter.SetContextDocument(new StreamStateCache(new StreamState()));
       var revitEls = new List<object>();
 
       await SpeckleUtils.RunInTransaction(
@@ -303,80 +318,6 @@ namespace ConverterRevitTests
         }
       }
       SpeckleUtils.DeleteElement(revitEls);
-    }
-
-    internal void AssertValidSpeckleElement(DB.Element elem, Base spkElem)
-    {
-      Assert.NotNull(elem);
-      Assert.NotNull(spkElem);
-      Assert.NotNull(spkElem["speckle_type"]);
-      Assert.NotNull(spkElem["applicationId"]);
-
-      SpeckleUtils.CustomAssertions(elem, spkElem);
-    }
-
-    internal void AssertElementEqual(DB.Element sourceElem, DB.Element destElem)
-    {
-      Assert.NotNull(sourceElem);
-      Assert.NotNull(destElem);
-      Assert.Equal(sourceElem.Name, destElem.Name);
-      Assert.Equal(sourceElem.GetTypeId(), destElem.GetTypeId());
-      Assert.Equal(sourceElem.Category.Name, destElem.Category.Name);
-    }
-
-    internal void AssertFamilyInstanceEqual(DB.FamilyInstance sourceElem, DB.FamilyInstance destElem)
-    {
-      AssertElementEqual(sourceElem, destElem);
-
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_BASE_LEVEL_OFFSET_PARAM);
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.FAMILY_TOP_LEVEL_OFFSET_PARAM);
-
-      AssertEqualParam(sourceElem, destElem, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
-
-      Assert.Equal(sourceElem.FacingFlipped, destElem.FacingFlipped);
-      Assert.Equal(sourceElem.HandFlipped, destElem.HandFlipped);
-      Assert.Equal(sourceElem.IsSlantedColumn, destElem.IsSlantedColumn);
-      Assert.Equal(sourceElem.StructuralType, destElem.StructuralType);
-
-      //rotation
-      if (sourceElem.Location is LocationPoint)
-        Assert.Equal(((LocationPoint)sourceElem.Location).Rotation, ((LocationPoint)destElem.Location).Rotation);
-    }
-
-    internal void AssertEqualParam(DB.Element expected, DB.Element actual, BuiltInParameter param)
-    {
-      var expecedParam = expected.get_Parameter(param);
-      if (expecedParam == null)
-        return;
-
-      switch (expecedParam.StorageType)
-      {
-        case StorageType.Double:
-          Assert.Equal(expecedParam.AsDouble(), actual.get_Parameter(param).AsDouble(), 4);
-          break;
-        case StorageType.Integer:
-          Assert.Equal(expecedParam.AsInteger(), actual.get_Parameter(param).AsInteger());
-          break;
-        case StorageType.String:
-          Assert.Equal(expecedParam.AsString(), actual.get_Parameter(param).AsString());
-          break;
-        case StorageType.ElementId:
-        {
-          var e1 = fixture.SourceDoc.GetElement(expecedParam.AsElementId());
-          var e2 = fixture.NewDoc.GetElement(actual.get_Parameter(param).AsElementId());
-          if (e1 is Level l1 && e2 is Level l2)
-            Assert.Equal(l1.Elevation, l2.Elevation, 3);
-          else if (e1 != null && e2 != null)
-            Assert.Equal(e1.Name, e2.Name);
-          break;
-        }
-        case StorageType.None:
-          break;
-        default:
-          throw new ArgumentOutOfRangeException();
-      }
     }
   }
 

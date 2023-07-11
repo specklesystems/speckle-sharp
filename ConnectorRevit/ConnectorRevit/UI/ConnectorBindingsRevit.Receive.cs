@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +7,14 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Avalonia.Threading;
 using ConnectorRevit.Revit;
+using ConnectorRevit.Storage;
+using ConnectorRevit.TypeMapping;
 using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
-using Serilog;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -28,6 +29,7 @@ namespace Speckle.ConnectorRevit.UI
     public List<ApplicationObject> Preview { get; set; } = new List<ApplicationObject>();
     public Dictionary<string, Base> StoredObjects = new Dictionary<string, Base>();
 
+    public CancellationTokenSource CurrentOperationCancellation { get; set; }
     /// <summary>
     /// Receives a stream and bakes into the existing revit file.
     /// </summary>
@@ -36,10 +38,10 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      CurrentOperationCancellation = progress.CancellationTokenSource;
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
-      var previouslyReceiveObjects = state.ReceivedObjects;
 
       // set converter settings as tuples (setting slug, setting selection)
       var settings = new Dictionary<string, string>();
@@ -48,10 +50,10 @@ namespace Speckle.ConnectorRevit.UI
         settings.Add(setting.Slug, setting.Selection);
       converter.SetConverterSettings(settings);
 
-      Commit myCommit = await ConnectorHelpers.GetCommitFromState(progress.CancellationToken, state);
+      Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
       state.LastCommit = myCommit;
       Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(progress.CancellationToken, state, myCommit, ConnectorRevitUtils.RevitAppName);
+      await ConnectorHelpers.TryCommitReceived(state, myCommit, ConnectorRevitUtils.RevitAppName, progress.CancellationToken);
 
       Preview.Clear();
       StoredObjects.Clear();
@@ -63,19 +65,29 @@ namespace Speckle.ConnectorRevit.UI
 
       converter.ReceiveMode = state.ReceiveMode;
       // needs to be set for editing to work
-      converter.SetPreviousContextObjects(previouslyReceiveObjects);
+      var previousObjects = new StreamStateCache(state);
+      converter.SetContextDocument(previousObjects);
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
+#pragma warning disable CA1031 // Do not catch general exception types
       try
       {
-        await RevitTask.RunAsync(() => UpdateForCustomMapping(state, progress, myCommit.sourceApplication));
+        var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
+        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
+          .ConfigureAwait(false);
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Warning(ex, "Could not update receive object with user types");
+        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
+        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
         progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
       }
+      finally
+      {
+        MainViewModel.CloseDialog();
+      }
+#pragma warning restore CA1031 // Do not catch general exception types
 
       var (success, exception) = await RevitTask.RunAsync(app =>
       {
@@ -94,12 +106,12 @@ namespace Speckle.ConnectorRevit.UI
         {
           converter.SetContextDocument(t);
 
-          var newPlaceholderObjects = ConvertReceivedObjects(converter, progress);
+          var convertedObjects = ConvertReceivedObjects(converter, progress);
 
           if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previouslyReceiveObjects, newPlaceholderObjects);
+            DeleteObjects(previousObjects, convertedObjects);
 
-          state.ReceivedObjects = newPlaceholderObjects;
+          previousObjects.AddConvertedElements(convertedObjects);
           t.Commit();
           g.Assimilate();
           return (true, null);
@@ -116,7 +128,7 @@ namespace Speckle.ConnectorRevit.UI
           g.RollBack();
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
-      });
+      }).ConfigureAwait(false);
 
       if (!success)
       {
@@ -125,33 +137,52 @@ namespace Speckle.ConnectorRevit.UI
         throw new SpeckleException(exception.Message, exception);
       }
 
+      CurrentOperationCancellation = null;
       return state;
     }
 
     //delete previously sent object that are no more in this stream
-    private void DeleteObjects(List<ApplicationObject> previouslyReceiveObjects, List<ApplicationObject> newPlaceholderObjects)
+    private void DeleteObjects(IReceivedObjectIdMap<Base, Element> previousObjects, IConvertedObjectsCache<Base, Element> convertedObjects)
     {
-      foreach (var obj in previouslyReceiveObjects)
+      var previousAppIds = previousObjects.GetAllConvertedIds().ToList();
+      for (var i = previousAppIds.Count - 1; i >=0; i--)
       {
-        if (obj.CreatedIds.Count == 0 || newPlaceholderObjects.Any(x => x.applicationId == obj.applicationId))
+        var appId = previousAppIds[i];
+        if (string.IsNullOrEmpty(appId) || convertedObjects.HasConvertedObjectWithId(appId))
           continue;
 
-        var element = CurrentDoc.Document.GetElement(obj.CreatedIds.FirstOrDefault());
-        if (element != null)
-          CurrentDoc.Document.Delete(element.Id);
+        var elementIdToDelete = previousObjects.GetCreatedIdsFromConvertedId(appId);
+
+        foreach (var elementId in elementIdToDelete)
+        {
+          var elementToDelete = CurrentDoc.Document.GetElement(elementId);
+
+          if (elementToDelete != null && !elementToDelete.Pinned && elementToDelete.IsValidObject)
+          {
+            try
+            {
+              CurrentDoc.Document.Delete(elementToDelete.Id);
+            }
+            catch
+            {
+              // unable to delete previously recieved object
+            }
+          }
+
+          previousObjects.RemoveConvertedId(appId);
+        }
       }
     }
 
-    private List<ApplicationObject> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
-      var placeholders = new List<ApplicationObject>();
+      var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-
       foreach (var obj in Preview)
       {
         var @base = StoredObjects[obj.OriginalId];
@@ -176,7 +207,10 @@ namespace Speckle.ConnectorRevit.UI
           switch (convRes)
           {
             case ApplicationObject o:
-              placeholders.Add(o);
+              if (o.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+              {
+                convertedObjectsCache.AddConvertedObjects(@base, typedList);
+              }
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);
               break;
@@ -192,7 +226,7 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
 
-      return placeholders;
+      return convertedObjectsCache;
     }
 
     private void RefreshView()

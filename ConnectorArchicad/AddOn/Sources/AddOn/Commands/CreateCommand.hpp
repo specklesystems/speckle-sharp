@@ -41,6 +41,8 @@ protected:
 
 public:
 	virtual GS::ObjectState	Execute (const GS::ObjectState& parameters, GS::ProcessControl& processControl) const override;
+
+	GS::ErrCode				ImportClassificationsAndProperties (const GS::ObjectState& os, API_Guid& elemGuid) const;
 };
 }
 

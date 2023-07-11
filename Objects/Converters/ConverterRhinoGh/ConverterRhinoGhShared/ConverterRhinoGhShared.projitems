@@ -9,6 +9,7 @@
     <Import_RootNamespace>ConverterRhinoGhShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Mappings.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.Organization.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BrepEncoder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRhinoGh.BuiltElements.cs" />

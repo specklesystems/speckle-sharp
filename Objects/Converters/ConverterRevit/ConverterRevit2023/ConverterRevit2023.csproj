@@ -14,6 +14,7 @@
   <Import Project="..\ConverterRevitShared\ConverterRevitShared.projitems" Label="Shared" />
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\..\ConnectorRevit\RevitSharedResources2023\RevitSharedResources2023.csproj" />
     <ProjectReference Include="..\..\..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\..\Objects\Objects.csproj" />
     <ProjectReference Include="..\..\ConverterDxf\ConverterDxf\ConverterDxf.csproj" />

@@ -86,3 +86,17 @@ public class SpeckleGraphQLInternalErrorException<T> : SpeckleGraphQLException<T
   public SpeckleGraphQLInternalErrorException(string message, Exception innerException)
     : base(message, innerException) { }
 }
+
+public class SpeckleGraphQLStreamNotFoundException<StreamData> : SpeckleGraphQLException<StreamData>
+{
+  public SpeckleGraphQLStreamNotFoundException(GraphQLRequest request, GraphQLResponse<StreamData> response)
+    : base("Stream not found", request, response) { }
+
+  public SpeckleGraphQLStreamNotFoundException() { }
+
+  public SpeckleGraphQLStreamNotFoundException(string message)
+    : base(message) { }
+
+  public SpeckleGraphQLStreamNotFoundException(string message, Exception innerException)
+    : base(message, innerException) { }
+}

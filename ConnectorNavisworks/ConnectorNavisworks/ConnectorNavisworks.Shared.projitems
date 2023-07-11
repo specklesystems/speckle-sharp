@@ -10,17 +10,23 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Settings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Objects.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Filters.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Selections.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.File.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Mapping.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Receive.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Send.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.Events.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Bindings\ConnectorNavisworksBindings.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Commands\Commands.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Entry\Commands.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleNavisworksCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Manager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Autosave.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)NavisworksOptions\Properties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\Constants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\Elements.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\FilterTypes.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\Invokers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Other\SelectionBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\SpeckleStreamManager.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Other\Utilities.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\Ribbon.xaml.cs">
@@ -29,13 +35,21 @@
     <Compile Include="$(MSBuildThisFileDirectory)Entry\SpeckleHostPane.xaml.cs">
       <DependentUpon>SpeckleHostPane.xaml</DependentUpon>
     </Compile>
-    <Compile Include="$(MSBuildThisFileDirectory)Other\ViewProxy.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\empty32.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="$(MSBuildThisFileDirectory)Resources\forum16.png">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="$(MSBuildThisFileDirectory)Resources\forum32.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\retry16.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)Resources\retry32.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Include="$(MSBuildThisFileDirectory)Entry\PackageContents.xml">
@@ -65,10 +79,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="$(MSBuildThisFileDirectory)Commands\" />
-    <Folder Include="$(MSBuildThisFileDirectory)Other\" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="$(MSBuildThisFileDirectory)Entry\SpeckleHostPane.xaml">

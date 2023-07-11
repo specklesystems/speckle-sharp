@@ -14,6 +14,14 @@ public class DirectShape : Base
     this.displayValue = displayValue;
   }
 
+  // Element base
+  public string elementType { get; set; }
+  public List<Classification> classifications { get; set; }
+
+  public ArchicadLevel level { get; set; }
+
+  public string units { get; set; }
+
   [DetachProperty]
   public List<Mesh> displayValue { get; set; }
 }

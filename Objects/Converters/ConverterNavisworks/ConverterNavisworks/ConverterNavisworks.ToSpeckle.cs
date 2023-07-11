@@ -1,18 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using Autodesk.Navisworks.Api;
 using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
 using Objects.Core.Models;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks;
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   public Base ConvertToSpeckle(object @object)
@@ -45,26 +46,6 @@ public partial class ConverterNavisworks
 
         @base = ModelItemToSpeckle(element);
 
-        if (@base == null)
-          return null;
-
-        // convertedIds should be populated with all the pseudoIds of nested children already converted in traversal
-        // the DescendantsAndSelf helper method means we don't need to reference recursion
-        // the "__" prefix is skipped in object serialization so we can use Base object to pass data back to the Connector
-        var list = element.DescendantsAndSelf
-          .Select(
-            x =>
-              ((Array)ToInwOaPath(x).ArrayData)
-                .ToArray<int>()
-                .Aggregate(
-                  "",
-                  (current, value) => current + value.ToString(CultureInfo.InvariantCulture).PadLeft(4, '0') + "-"
-                )
-                .TrimEnd('-')
-          )
-          .ToList();
-        @base["__convertedIds"] = list;
-
         return @base;
 
       case "views":
@@ -76,6 +57,9 @@ public partial class ConverterNavisworks
             break;
           case Viewpoint item:
             @base = ViewpointToBase(item);
+            break;
+          case SavedViewpoint savedViewpoint:
+            @base = ViewpointToBase(savedViewpoint);
             break;
           default:
             return null;
@@ -90,7 +74,7 @@ public partial class ConverterNavisworks
 
   public List<Base> ConvertToSpeckle(List<object> objects)
   {
-    return objects.Where(CanConvertToSpeckle).Select(ConvertToSpeckle).ToList();
+    throw new NotImplementedException();
   }
 
   public bool CanConvertToSpeckle(object @object)
@@ -98,16 +82,7 @@ public partial class ConverterNavisworks
     if (@object is ModelItem modelItem)
       return CanConvertToSpeckle(modelItem);
 
-    // is expecting @object to be a pseudoId string
-    if (@object is not string pseudoId)
-      return false;
-
-    if (pseudoId == RootNodePseudoId)
-      return CanConvertToSpeckle(Application.ActiveDocument.Models.RootItems.First);
-
-    var item = PointerToModelItem(pseudoId);
-
-    return CanConvertToSpeckle(item);
+    return false;
   }
 
   private static SavedViewpoint ReferenceOrGuidToSavedViewpoint(string referenceOrGuid)
@@ -148,19 +123,19 @@ public partial class ConverterNavisworks
 
     var camera = viewPoint.Camera;
 
-    var viewDirection = ToVector(camera.GetViewDir());
-    var viewUp = ToVector(camera.GetUpVector());
+    var cameraDirection = camera.GetViewDir();
+    var cameraUp = camera.GetUpVector();
+    var cameraPosition = camera.Position;
 
-    var focalDistance = viewPoint.FocalDistance;
+    var viewDirection = ToVector(cameraDirection);
+    var viewUp = ToVector(cameraUp);
+    var viewPosition = ToPoint(cameraPosition);
 
-    var position = ToPoint(camera.Position);
-
-    var origin = ScalePoint(position, scaleFactor);
-    var target = ScalePoint(GetViewTarget(position, viewDirection, focalDistance), scaleFactor);
+    var focalDistance = 1.0;
 
     string cameraType;
     string zoom;
-    double zoomValue = 1;
+    double zoomValue;
 
     switch (vp.Projection)
     {
@@ -180,18 +155,37 @@ public partial class ConverterNavisworks
 
         try
         {
-          zoomValue = vp.FocalDistance * scaleFactor;
+          focalDistance = vp.FocalDistance;
         }
-        catch (NullReferenceException err)
+        catch (Exception ex)
         {
-          Console.WriteLine($"No Focal Distance, Are you looking at anything?\n{err.Message}");
+          switch (ex)
+          {
+            case NullReferenceException:
+              SpeckleLog.Logger.Information(
+                "A selected view's viewpoint has no focal distance set and the prop is null. The focal distance will be set to 1m"
+              );
+              break;
+            case System.Runtime.InteropServices.COMException:
+            case NotSupportedException:
+              SpeckleLog.Logger.Information(
+                "A selected view's viewpoint has no focal distance set and the getter throws either of two errors, this is rare but possible and frankly terrible from Navisworks. The focal distance will be set to 1m"
+              );
+              break;
+            default:
+              throw;
+          }
         }
 
+        zoomValue = focalDistance * scaleFactor;
         break;
       default:
         Console.WriteLine("No View");
         return null;
     }
+
+    var origin = ScalePoint(viewPosition, scaleFactor);
+    var target = ScalePoint(GetViewTarget(viewPosition, viewDirection, focalDistance), scaleFactor);
 
     var view = new View3D
     {
@@ -238,8 +232,6 @@ public partial class ConverterNavisworks
 
   private static Base CategoryToSpeckle(ModelItem element)
   {
-    var applicationId = PseudoIdFromModelItem(element);
-
     var elementCategory = element.PropertyCategories.FindPropertyByName(
       PropertyCategoryNames.Item,
       DataPropertyNames.ItemIcon
@@ -248,8 +240,8 @@ public partial class ConverterNavisworks
 
     return elementCategoryType switch
     {
-      "Geometry" => new GeometryNode { applicationId = applicationId },
-      _ => new Collection { applicationId = applicationId, collectionType = elementCategoryType }
+      "Geometry" => new GeometryNode(),
+      _ => new Collection { collectionType = elementCategoryType }
     };
   }
 
@@ -259,6 +251,21 @@ public partial class ConverterNavisworks
       return null;
 
     var @base = CategoryToSpeckle(element);
+
+    var firstChild = element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName));
+    var parent = element.Ancestors.FirstOrDefault(p => !string.IsNullOrEmpty(p.DisplayName));
+
+    var resolvedName = string.IsNullOrEmpty(element.DisplayName)
+      ? string.IsNullOrEmpty(firstChild?.DisplayName)
+        ? parent?.DisplayName
+        : firstChild.DisplayName
+      : element.DisplayName;
+
+    @base["name"] = string.IsNullOrEmpty(resolvedName)
+      ? (
+        element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
+      ).ToString()
+      : GetSanitizedPropertyName(resolvedName);
 
     // Geometry items have no children
     if (element.HasGeometry)
@@ -278,16 +285,12 @@ public partial class ConverterNavisworks
     if (element.Descendants.All(x => x.IsHidden))
       return null;
 
-    ((Collection)@base).name = element.DisplayName;
-
-    var elements = element.Children.Select(ModelItemToSpeckle).Where(childBase => childBase != null).ToList();
-
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason
-    if (!elements.Any())
+    if (!element.Children.Any(CanConvertToSpeckle))
       return null;
 
-    ((Collection)@base).elements = elements;
+    // ((Collection)@base).elements = elements;
 
     AddItemProperties(element, @base);
 
@@ -338,7 +341,13 @@ public partial class ConverterNavisworks
 
     var protoPath = (InwOaPath)State.ObjectFactory(nwEObjectType.eObjectType_nwOaPath);
 
-    var oneBasedArray = Array.CreateInstance(typeof(int), new int[1] { pathArray.Length }, new int[1] { 1 });
+    // ReSharper disable once RedundantExplicitArraySize
+    var oneBasedArray = Array.CreateInstance(
+      typeof(int),
+      new int[1] { pathArray.Length },
+      // ReSharper disable once RedundantExplicitArraySize
+      new int[1] { 1 }
+    );
 
     Array.Copy(pathArray, 0, oneBasedArray, 1, pathArray.Length);
 

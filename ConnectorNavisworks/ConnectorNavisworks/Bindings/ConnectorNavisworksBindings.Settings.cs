@@ -63,6 +63,37 @@ public partial class ConnectorBindingsNavisworks
         Name = "Include View",
         IsChecked = true,
         Description = "Include the current display view in the commit."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "full-tree",
+        Name = "Include Full Hierarchy",
+        IsChecked = false,
+        Description = "Include the full root to leaf selection hierarchy of nodes in the commit."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "internal-properties",
+        Name = "Expose Internal Properties",
+        IsChecked = false,
+        Description =
+          "Include the internal properties that reflect option types. Can be useful for downstream data analysis."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "internal-property-names",
+        Name = "Internal Property Names",
+        IsChecked = false,
+        Description =
+          "Commit properties with the Navisworks internal names. Can be useful for downstream data analysis removing internationalization."
+      },
+      new CheckBoxSetting
+      {
+        Slug = "coalesce-data",
+        Name = "Coalesce Data from First Object to Geometry",
+        IsChecked = false,
+        Description =
+          "All properties from the Geometry up the tree to the next First Object will be coalesced into the Geometry Node."
       }
     };
   }

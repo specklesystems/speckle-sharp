@@ -4,6 +4,7 @@
     <AssemblyName>SpeckleConnectorTeklaStructures</AssemblyName>
     <TargetFramework>net471</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <AssemblyTitle>ConnectorTeklaStructures2020</AssemblyTitle>
     <Product>ConnectorTeklaStructures2020</Product>
     <DefineConstants>$(DefineConstants);TeklaStructures2020</DefineConstants>
@@ -31,6 +32,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
     <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
+    <ProjectReference Include="..\..\Objects\Converters\StructuralUtilities\PolygonMesher\PolygonMesher.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="TeklaOpenAPI" Version="2020.0.3" />

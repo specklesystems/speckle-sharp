@@ -131,11 +131,8 @@ public class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
     Client.BaseAddress = new Uri(baseUri);
     Client.Timeout = new TimeSpan(0, 0, timeoutSeconds);
+    Http.AddAuthHeader(Client, authorizationToken);
 
-    if (authorizationToken.ToLowerInvariant().Contains("bearer"))
-      Client.DefaultRequestHeaders.Add("Authorization", authorizationToken);
-    else
-      Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {authorizationToken}");
     WriteTimer = new Timer
     {
       AutoReset = true,

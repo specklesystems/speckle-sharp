@@ -5,6 +5,7 @@ using Autodesk.Navisworks.Api;
 
 namespace Objects.Converter.Navisworks;
 
+// ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
 {
   public enum Transforms
@@ -67,6 +68,19 @@ public partial class ConverterNavisworks
       var value = Settings["units"];
 
       return (Units)Enum.Parse(typeof(Units), value, true);
+    }
+  }
+
+  private static bool UseInternalPropertyNames
+  {
+    get
+    {
+      if (!Settings.ContainsKey("internal-property-names"))
+        return false;
+
+      var value = Settings["internal-property-names"];
+
+      return value == "True";
     }
   }
 }

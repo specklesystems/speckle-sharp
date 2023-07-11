@@ -1,5 +1,7 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using Speckle.Core.Kits;
 
@@ -21,27 +23,16 @@ public static class DefaultTraversal
       .NewTraversalRule()
       .When(converter.CanConvertToNative)
       .When(HasDisplayValue)
-      .ContinueTraversing(b =>
-      {
-        var membersToTraverse = b.GetDynamicMembers().Concat(elementsAliases).Except(ignoreProps);
-        return membersToTraverse;
-      });
+      .ContinueTraversing(_ => elementsPropAliases);
 
-    var ignoreResultsRule = TraversalRule
-      .NewTraversalRule()
-      .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
-      .ContinueTraversing(None);
-
-    var defaultRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
-
-    return new GraphTraversal(convertableRule, ignoreResultsRule, defaultRule);
+    return new GraphTraversal(convertableRule, IgnoreResultsRule, DefaultRule);
   }
 
   /// <summary>
   /// Traverses until finds a convertable object then HALTS deeper traversal
   /// </summary>
   /// <remarks>
-  /// Current <see cref="Objects.Converter.Revit.ConverterRevit"/> does traversal,
+  /// Current <see cref="Converter{TInput,TOutput}.Revit.ConverterRevit"/> does traversal,
   /// so this traversal is a shallow traversal for directly convertable objects,
   /// and a deep traversal for all other types
   /// </remarks>
@@ -54,24 +45,9 @@ public static class DefaultTraversal
     var displayValueRule = TraversalRule
       .NewTraversalRule()
       .When(HasDisplayValue)
-      .ContinueTraversing(b =>
-      {
-        var membersToTraverse = b.GetDynamicMembers()
-          .Concat(elementsAliases)
-          .Except(ignoreProps)
-          .Concat(displayValueAliases);
-        return membersToTraverse;
-      });
+      .ContinueTraversing(_ => displayValueAndElementsPropAliases);
 
-    //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
-    var ignoreResultsRule = TraversalRule
-      .NewTraversalRule()
-      .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
-      .ContinueTraversing(None);
-
-    var defaultRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
-
-    return new GraphTraversal(convertableRule, displayValueRule, ignoreResultsRule, defaultRule);
+    return new GraphTraversal(convertableRule, displayValueRule, IgnoreResultsRule, DefaultRule);
   }
 
   /// <summary>
@@ -86,37 +62,76 @@ public static class DefaultTraversal
       .When(converter.CanConvertToNative)
       .ContinueTraversing(ElementsAliases);
 
-    //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
-    var ignoreResultsRule = TraversalRule
-      .NewTraversalRule()
-      .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
-      .ContinueTraversing(None);
-
-    var defaultRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(Members());
-
-    return new GraphTraversal(bimElementRule, ignoreResultsRule, defaultRule);
+    return new GraphTraversal(bimElementRule, IgnoreResultsRule, DefaultRule);
   }
 
   //These functions are just meant to make the syntax of defining rules less verbose, they are likely to change frequently/be restructured
-
   #region Helper Functions
 
-  internal static readonly string[] elementsAliases = { "elements", "@elements" };
+  //WORKAROUND: ideally, traversal rules would not have Objects specific rules.
+  private static readonly ITraversalRule IgnoreResultsRule = TraversalRule
+    .NewTraversalRule()
+    .When(o => o.speckle_type.Contains("Objects.Structural.Results"))
+    .ContinueTraversing(None);
 
-  internal static IEnumerable<string> ElementsAliases(Base _)
+  private static readonly ITraversalRule DefaultRule = TraversalRule
+    .NewTraversalRule()
+    .When(_ => true)
+    .ContinueTraversing(Members());
+
+  public static readonly IReadOnlyList<string> elementsPropAliases = new[] { "elements", "@elements" };
+
+  [Pure]
+  public static IEnumerable<string> ElementsAliases(Base _)
   {
-    return elementsAliases;
+    return elementsPropAliases;
   }
 
-  internal static readonly string[] displayValueAliases = { "displayValue", "@displayValue" };
-
-  internal static readonly string[] ignoreProps = new[] { "@blockDefinition" }.Concat(displayValueAliases).ToArray();
-
-  internal static IEnumerable<string> DisplayValueAliases(Base _)
+  public static bool HasElements(Base x)
   {
-    return displayValueAliases;
+    return elementsPropAliases.Any(m => x[m] != null);
   }
 
+  public static readonly IReadOnlyList<string> definitionPropAliases = new[] { "definition", "@definition" };
+
+  [Pure]
+  public static IEnumerable<string> DefinitionAliases(Base _)
+  {
+    return definitionPropAliases;
+  }
+
+  public static bool HasDefinition(Base x)
+  {
+    return definitionPropAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly IReadOnlyList<string> displayValuePropAliases = new[] { "displayValue", "@displayValue" };
+
+  [Pure]
+  public static IEnumerable<string> DisplayValueAliases(Base _)
+  {
+    return displayValuePropAliases;
+  }
+
+  public static bool HasDisplayValue(Base x)
+  {
+    return displayValuePropAliases.Any(m => x[m] != null);
+  }
+
+  public static readonly IReadOnlyList<string> geometryPropAliases = new[] { "geometry", "@geometry" };
+
+  [Pure]
+  public static IEnumerable<string> GeometryAliases(Base _)
+  {
+    return geometryPropAliases;
+  }
+
+  public static bool HasGeometry(Base x)
+  {
+    return geometryPropAliases.Any(m => x[m] != null);
+  }
+
+  [Pure]
   internal static IEnumerable<string> None(Base _)
   {
     return Enumerable.Empty<string>();
@@ -127,29 +142,14 @@ public static class DefaultTraversal
     return x => x.GetMembers(includeMembers).Keys;
   }
 
-  internal static SelectMembers DynamicMembers()
-  {
-    return x => x.GetDynamicMembers();
-  }
+  public static readonly string[] displayValueAndElementsPropAliases = displayValuePropAliases
+    .Concat(elementsPropAliases)
+    .ToArray();
 
-  internal static SelectMembers Concat(params SelectMembers[] selectProps)
+  [Pure]
+  public static IEnumerable<string> DisplayValueAndElementsAliases(Base _)
   {
-    return x => selectProps.SelectMany(i => i.Invoke(x));
-  }
-
-  internal static SelectMembers Except(SelectMembers selectProps, IEnumerable<string> excludeProps)
-  {
-    return x => selectProps.Invoke(x).Except(excludeProps);
-  }
-
-  internal static bool HasElements(Base x)
-  {
-    return elementsAliases.Any(m => x[m] != null);
-  }
-
-  internal static bool HasDisplayValue(Base x)
-  {
-    return displayValueAliases.Any(m => x[m] != null);
+    return displayValueAndElementsPropAliases;
   }
 
   #endregion
