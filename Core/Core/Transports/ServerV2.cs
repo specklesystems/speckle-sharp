@@ -235,6 +235,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
     if (objectData is null)
       throw new TransportException(
+        this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
 
@@ -264,7 +265,7 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
           CancellationToken.ThrowIfCancellationRequested();
 
           if (_exception is not null)
-            throw new TransportException($"{TransportName} transport failed", _exception);
+            throw new TransportException(this, $"{TransportName} transport failed", _exception);
 
           return;
         }

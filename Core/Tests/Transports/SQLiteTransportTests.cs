@@ -37,6 +37,42 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
     Assert.That(fileExists, Is.True);
   }
 
+  [Test]
+  public async Task UpdateObject()
+  {
+    const string payloadId = "MyTestObjectId";
+    const string payloadData = "MyTestObjectData";
+
+    _sqlite.SaveObject(payloadId, payloadData);
+    await _sqlite.WriteComplete().ConfigureAwait(false);
+
+    const string newPayload = "MyEvenBetterObjectData";
+    _sqlite.UpdateObject(payloadId, newPayload);
+    await _sqlite.WriteComplete().ConfigureAwait(false);
+
+    var result = _sqlite.GetObject(payloadId);
+    Assert.That(result, Is.EqualTo(newPayload));
+  }
+
+  [Test]
+  public async Task SaveAndRetrieveObject_Sync()
+  {
+    const string payloadId = "MyTestObjectId";
+    const string payloadData = "MyTestObjectData";
+
+    {
+      var preAdd = Sut.GetObject(payloadId);
+      Assert.That(preAdd, Is.Null);
+    }
+
+    _sqlite.SaveObjectSync(payloadId, payloadData);
+
+    {
+      var postAdd = Sut.GetObject(payloadId);
+      Assert.That(postAdd, Is.EqualTo(payloadData));
+    }
+  }
+
   public void Dispose()
   {
     _sqlite?.Dispose();

@@ -78,6 +78,7 @@ public sealed class MemoryTransport : ITransport, ICloneable
 
     if (serializedObject is null)
       throw new TransportException(
+        this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
 

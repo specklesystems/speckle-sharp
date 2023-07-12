@@ -97,6 +97,7 @@ public class DiskTransport : ICloneable, ITransport
 
     if (serializedObject is null)
       throw new TransportException(
+        this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
 

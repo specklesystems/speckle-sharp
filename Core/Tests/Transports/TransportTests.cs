@@ -95,6 +95,7 @@ public abstract class TransportTests
   [Test]
   public void SaveObject_FromTransport_FailsPredictably()
   {
-    Assert.Throws<TransportException>(() => Sut.SaveObject("non-existent-id", Sut));
+    var exception = Assert.Throws<TransportException>(() => Sut.SaveObject("non-existent-id", Sut));
+    Assert.That(exception.Transport, Is.EqualTo(Sut));
   }
 }

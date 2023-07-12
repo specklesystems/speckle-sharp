@@ -41,7 +41,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     }
     catch (Exception ex)
     {
-      throw new TransportException($"Couldn't not create {dir}", ex);
+      throw new TransportException(this, $"Couldn't not create {dir}", ex);
     }
 
     _rootPath = Path.Combine(_basePath, _applicationName, $"{_scope}.db");
@@ -61,7 +61,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     }
     catch (Exception ex)
     {
-      throw new TransportException("Failed to initialize DB connection", ex);
+      throw new TransportException(this, "Failed to initialize DB connection", ex);
     }
   }
 
@@ -376,6 +376,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
     if (serializedObject is null)
       throw new TransportException(
+        this,
         $"Cannot copy {id} from {sourceTransport.TransportName} to {TransportName} as source returned null"
       );
 
