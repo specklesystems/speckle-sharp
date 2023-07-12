@@ -225,6 +225,11 @@ public partial class ConnectorBindingsNavisworks
 
     for (int index = 0; index < modelItemsToConvert.Count; index++)
     {
+      if (_progressBar.IsCanceled)
+        _progressViewModel.CancellationTokenSource.Cancel();
+
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
       ModelItem modelItem = modelItemsToConvert[index];
       var element = new Element();
       element.GetElement(modelItem);
@@ -354,7 +359,7 @@ public partial class ConnectorBindingsNavisworks
   private async Task<string> SendConvertedObjectsToSpeckle(StreamState state, Base commitObject)
   {
     _progressBar.BeginSubOperation(
-      1,
+      0.3,
       $"Pack your bags, data! That's {_convertedCount} objects going on a trip to the Speckle universe..."
     );
 
