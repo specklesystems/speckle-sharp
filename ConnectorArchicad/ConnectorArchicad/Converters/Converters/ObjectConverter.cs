@@ -27,11 +27,11 @@ namespace Archicad.Converters
 
     #region --- Functions ---
 
-    static List<Mesh> GetMesh (Base element)
+    static List<Mesh> GetMesh(Base element)
     {
       List<Mesh> meshes = new List<Mesh>();
       if (element is Mesh mesh)
-        meshes.Add (mesh);
+        meshes.Add(mesh);
 
       return meshes;
     }
@@ -40,17 +40,24 @@ namespace Archicad.Converters
     {
       public string cumulativeTransformKey { get; set; }
 
-      public ArchicadDefinitionTraversalContext(Base current, string? propName = null, ArchicadDefinitionTraversalContext? parent = default)
-        : base(current, propName, parent)
-      {
-      }
+      public ArchicadDefinitionTraversalContext(
+        Base current,
+        string? propName = null,
+        ArchicadDefinitionTraversalContext? parent = default
+      )
+        : base(current, propName, parent) { }
     }
 
     public sealed class ArchicadDefinitionTraversal : GraphTraversal<ArchicadDefinitionTraversalContext>
     {
-      public ArchicadDefinitionTraversal(params ITraversalRule[] traversalRule) : base(traversalRule) { }
+      public ArchicadDefinitionTraversal(params ITraversalRule[] traversalRule)
+        : base(traversalRule) { }
 
-      protected override ArchicadDefinitionTraversalContext NewContext(Base current, string? propName, ArchicadDefinitionTraversalContext? parent)
+      protected override ArchicadDefinitionTraversalContext NewContext(
+        Base current,
+        string? propName,
+        ArchicadDefinitionTraversalContext? parent
+      )
       {
         return new ArchicadDefinitionTraversalContext(current, propName, parent);
       }
@@ -60,30 +67,33 @@ namespace Archicad.Converters
     {
       static IEnumerable<string> AllAliases(Base _)
       {
-        return DefaultTraversal.elementsPropAliases       // hosted elements traversal #1: via the elements field
-          .Concat (DefaultTraversal.geometryPropAliases)      // hosted elements traversal #2: BlockInstance elements could be stored in geometry field
-                                                          // geometry traversal #2: visiting the elements in geometry field (Meshes)
-          .Concat(DefaultTraversal.definitionPropAliases)     // instance <-> definition traversal
-          .Concat(DefaultTraversal.displayValuePropAliases);  // geometry traversal #1: visiting the elements in displayValue field (Meshes)
+        return DefaultTraversal.elementsPropAliases // hosted elements traversal #1: via the elements field
+          .Concat(DefaultTraversal.geometryPropAliases) // hosted elements traversal #2: BlockInstance elements could be stored in geometry field
+          // geometry traversal #2: visiting the elements in geometry field (Meshes)
+          .Concat(DefaultTraversal.definitionPropAliases) // instance <-> definition traversal
+          .Concat(DefaultTraversal.displayValuePropAliases); // geometry traversal #1: visiting the elements in displayValue field (Meshes)
       }
 
-      var traversalRule = TraversalRule
-        .NewTraversalRule()
-        .When(_ => true)
-        .ContinueTraversing(AllAliases);
+      var traversalRule = TraversalRule.NewTraversalRule().When(_ => true).ContinueTraversing(AllAliases);
 
       return new ArchicadDefinitionTraversal(traversalRule);
     }
 
-    private static TraversalContext StoreTransformationMatrix(ArchicadDefinitionTraversalContext tc, Dictionary<string, Transform> transformMatrixById)
+    private static TraversalContext StoreTransformationMatrix(
+      ArchicadDefinitionTraversalContext tc,
+      Dictionary<string, Transform> transformMatrixById
+    )
     {
       if (tc.parent != null)
       {
         var currentTransform = (Transform)(tc.current["transform"]) ?? new Transform();
         string parentCumulativeTransformId = (tc.parent as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
-        string cumulativeTransformId = Utilities.hashString(parentCumulativeTransformId + currentTransform.id);
+        string cumulativeTransformId = Utilities.HashString(parentCumulativeTransformId + currentTransform.id);
         tc.cumulativeTransformKey = cumulativeTransformId;
-        transformMatrixById.TryAdd(cumulativeTransformId, transformMatrixById[parentCumulativeTransformId] * currentTransform);
+        transformMatrixById.TryAdd(
+          cumulativeTransformId,
+          transformMatrixById[parentCumulativeTransformId] * currentTransform
+        );
       }
       else
       {
@@ -93,26 +103,35 @@ namespace Archicad.Converters
       return tc;
     }
 
-    private static List<string> Store(TraversalContext tc, Dictionary<string, Transform> transformMatrixById, Dictionary<string, Mesh> transformedMeshById)
+    private static List<string> Store(
+      TraversalContext tc,
+      Dictionary<string, Transform> transformMatrixById,
+      Dictionary<string, Mesh> transformedMeshById
+    )
     {
       var meshes = GetMesh(tc.current);
 
-      return meshes.Select(mesh => {
-        string cumulativeTransformId = (tc as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
-        var transformedMeshId = Utilities.hashString(cumulativeTransformId + mesh.id);
-        if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
+      return meshes
+        .Select(mesh =>
         {
-          transformedMesh = (Mesh)mesh.ShallowCopy();
-          transformedMesh.Transform(transformMatrixById[cumulativeTransformId]);
-          transformedMesh.id = transformedMeshId;
-          transformedMeshById.Add(transformedMeshId, transformedMesh);
-        }
-        return transformedMeshId;
-      }).ToList();
+          string cumulativeTransformId = (tc as ArchicadDefinitionTraversalContext).cumulativeTransformKey;
+          var transformedMeshId = Utilities.HashString(cumulativeTransformId + mesh.id);
+          if (!transformedMeshById.TryGetValue(transformedMeshId, out Mesh transformedMesh))
+          {
+            transformedMesh = (Mesh)mesh.ShallowCopy();
+            transformedMesh.Transform(transformMatrixById[cumulativeTransformId]);
+            transformedMesh.id = transformedMeshId;
+            transformedMeshById.Add(transformedMeshId, transformedMesh);
+          }
+          return transformedMeshId;
+        })
+        .ToList();
     }
 
-
-    public async Task<List<ApplicationObject>> ConvertToArchicad(IEnumerable<TraversalContext> elements, CancellationToken token)
+    public async Task<List<ApplicationObject>> ConvertToArchicad(
+      IEnumerable<TraversalContext> elements,
+      CancellationToken token
+    )
     {
       var archicadObjects = new List<Archicad.ArchicadObject>();
       var meshModels = new List<MeshModel>();
@@ -120,7 +139,9 @@ namespace Archicad.Converters
       var transformedMeshById = new Dictionary<string, Mesh>();
 
       var context = Archicad.Helpers.Timer.Context.Peek;
-      using (context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object"))
+      using (
+        context?.cumulativeTimer?.Begin(ConnectorArchicad.Properties.OperationNameTemplates.ConvertToNative, "Object")
+      )
       {
         ArchicadDefinitionTraversal traversal = CreateArchicadDefinitionTraverseFunc();
 
@@ -139,7 +160,8 @@ namespace Archicad.Converters
 
           List<string> meshIdHashes;
           {
-            meshIdHashes = traversal.Traverse(element)
+            meshIdHashes = traversal
+              .Traverse(element)
               .Select(tc => StoreTransformationMatrix(tc, transformMatrixById))
               .SelectMany(tc => Store(tc, transformMatrixById, transformedMeshById))
               .ToList();
@@ -172,11 +194,17 @@ namespace Archicad.Converters
       }
 
       IEnumerable<ApplicationObject> result;
-      result = await AsyncCommandProcessor.Execute(new Communication.Commands.CreateObject(archicadObjects, meshModels), token);
+      result = await AsyncCommandProcessor.Execute(
+        new Communication.Commands.CreateObject(archicadObjects, meshModels),
+        token
+      );
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(
+      IEnumerable<Model.ElementModelData> elements,
+      CancellationToken token
+    )
     {
       // Objects not stored on the server
       return new List<Base>();

@@ -302,7 +302,7 @@ public class Blob : Base
   public string GetFileHash()
   {
     if ((hashExpired || _hash == null) && filePath != null)
-      _hash = Utilities.hashFile(filePath);
+      _hash = Utilities.HashFile(filePath);
 
     return _hash;
   }

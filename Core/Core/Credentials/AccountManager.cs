@@ -267,7 +267,7 @@ public static class AccountManager
         account.serverInfo = userServerInfo.serverInfo;
         account.serverInfo.url = url;
       }
-      catch (Exception ex)
+      catch (Exception)
       {
         account.isOnline = false;
       }

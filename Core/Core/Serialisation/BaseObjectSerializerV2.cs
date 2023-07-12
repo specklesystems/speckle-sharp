@@ -301,7 +301,7 @@ public class BaseObjectSerializerV2
   private static string ComputeId(Dictionary<string, object> obj)
   {
     string serialized = JsonConvert.SerializeObject(obj);
-    string hash = Utilities.hashString(serialized);
+    string hash = Utilities.HashString(serialized);
     return hash;
   }
 

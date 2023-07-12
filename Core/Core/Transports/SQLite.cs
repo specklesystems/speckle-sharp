@@ -343,9 +343,8 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
       if (!_queue.IsEmpty)
         ConsumeQueue();
     }
-    catch (OperationCanceledException ex)
+    catch (OperationCanceledException)
     {
-      //TODO: should this be rethrown?
       _queue = new ConcurrentQueue<(string, string, int)>();
     }
     finally

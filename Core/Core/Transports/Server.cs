@@ -1,4 +1,4 @@
-﻿#nullable enable
+﻿#nullable disable
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -86,9 +86,9 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   public int SavedObjectCount { get; private set; }
 
-  public Action<string, int>? OnProgressAction { get; set; }
+  public Action<string, int> OnProgressAction { get; set; }
 
-  public Action<string, Exception>? OnErrorAction { get; set; }
+  public Action<string, Exception> OnErrorAction { get; set; }
 
   // not implementing this for V1, just a dummy 0 value
   public TimeSpan Elapsed => TimeSpan.Zero;
@@ -400,7 +400,7 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
 
   #region Getting objects
 
-  public string? GetObject(string id)
+  public string GetObject(string id)
   {
     if (CancellationToken.IsCancellationRequested)
     {
@@ -423,7 +423,7 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
   public async Task<string> CopyObjectAndChildren(
     string id,
     ITransport targetTransport,
-    Action<int>? onTotalChildrenCountKnown
+    Action<int> onTotalChildrenCountKnown
   )
   {
     if (CancellationToken.IsCancellationRequested)
@@ -559,9 +559,9 @@ public sealed class ServerTransportV1 : IDisposable, ICloneable, ITransport
 [Obsolete("Use " + nameof(ServerUtils.GzipContent))]
 internal sealed class GzipContent : HttpContent
 {
-  private readonly HttpContent? _content;
+  private readonly HttpContent _content;
 
-  public GzipContent(HttpContent? content)
+  public GzipContent(HttpContent content)
   {
     this._content = content;
 

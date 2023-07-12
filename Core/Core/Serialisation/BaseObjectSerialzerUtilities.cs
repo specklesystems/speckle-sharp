@@ -110,20 +110,20 @@ internal static class SerializationUtilities
           if (item is DataChunk chunk)
           {
             foreach (var dataItem in chunk.data)
-              if (!jsonProperty.PropertyType.GetElementType().IsInterface)
-                arr.Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()));
+              if (!jsonProperty.PropertyType.GetElementType()!.IsInterface)
+                arr.Add(Convert.ChangeType(dataItem, jsonProperty.PropertyType.GetElementType()!));
               else
                 arr.Add(dataItem);
           }
           else
           {
-            if (!jsonProperty.PropertyType.GetElementType().IsInterface)
-              arr.Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()));
+            if (!jsonProperty.PropertyType.GetElementType()!.IsInterface)
+              arr.Add(Convert.ChangeType(item, jsonProperty.PropertyType.GetElementType()!));
             else
               arr.Add(item);
           }
         }
-        var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType(), arr.Count);
+        var actualArr = Array.CreateInstance(jsonProperty.PropertyType.GetElementType()!, arr.Count);
         arr.CopyTo(actualArr, 0);
         return actualArr;
       }
@@ -276,7 +276,10 @@ internal static class SerializationUtilities
   /// </summary>
   public static void FlushCachedTypes()
   {
-    _cachedTypes = new Dictionary<string, Type>();
+    lock (_cachedTypes)
+    {
+      _cachedTypes = new Dictionary<string, Type>();
+    }
   }
 
   #endregion
@@ -321,13 +324,13 @@ internal static class CallSiteCache
   // https://github.com/mgravell/fast-member/blob/master/FastMember/CallSiteCache.cs
   // by Marc Gravell, https://github.com/mgravell
 
-  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object, object>>> Setters = new();
+  private static readonly Dictionary<string, CallSite<Func<CallSite, object, object?, object>>> Setters = new();
 
-  public static void SetValue(string propertyName, object target, object value)
+  public static void SetValue(string propertyName, object target, object? value)
   {
     lock (Setters)
     {
-      CallSite<Func<CallSite, object, object, object>> site;
+      CallSite<Func<CallSite, object, object?, object>> site;
 
       lock (Setters)
         if (!Setters.TryGetValue(propertyName, out site))
@@ -342,10 +345,10 @@ internal static class CallSiteCache
               CSharpArgumentInfo.Create(CSharpArgumentInfoFlags.None, null)
             }
           );
-          Setters[propertyName] = site = CallSite<Func<CallSite, object, object, object>>.Create(binder);
+          Setters[propertyName] = site = CallSite<Func<CallSite, object, object?, object>>.Create(binder);
         }
 
-      site.Target(site, target, value);
+      site.Target.Invoke(site, target, value);
     }
   }
 }

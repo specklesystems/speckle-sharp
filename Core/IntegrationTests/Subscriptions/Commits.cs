@@ -4,7 +4,6 @@ using Speckle.Core.Api.SubscriptionModels;
 using Speckle.Core.Credentials;
 using Speckle.Core.Models;
 using Speckle.Core.Transports;
-using Tests;
 using TestsUnit;
 
 namespace TestsIntegration.Subscriptions;

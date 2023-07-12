@@ -241,7 +241,7 @@ public static partial class Operations
       {
         localRes = serializerV2!.Deserialize(objString);
       }
-      catch (OperationCanceledException e)
+      catch (OperationCanceledException)
       {
         throw;
       }

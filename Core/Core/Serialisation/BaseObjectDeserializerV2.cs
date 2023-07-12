@@ -20,7 +20,7 @@ public sealed class BaseObjectDeserializerV2
   private readonly object _callbackLock = new();
 
   // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
-  private Dictionary<string, object>? _deserializedObjects;
+  private Dictionary<string, object?>? _deserializedObjects;
 
   /// <summary>
   /// Property that describes the type of the object.
@@ -36,11 +36,11 @@ public sealed class BaseObjectDeserializerV2
   /// </summary>
   public ITransport ReadTransport { get; set; }
 
-  public Action<string, int> OnProgressAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
 
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, Exception>? OnErrorAction { get; set; }
 
-  public string BlobStorageFolder { get; set; }
+  public string? BlobStorageFolder { get; set; }
   public TimeSpan Elapsed { get; private set; }
 
   /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
@@ -58,7 +58,7 @@ public sealed class BaseObjectDeserializerV2
     {
       _busy = true;
       var stopwatch = Stopwatch.StartNew();
-      _deserializedObjects = new Dictionary<string, object>();
+      _deserializedObjects = new();
       _workerThreads = new DeserializationWorkerThreads(this);
       _workerThreads.Start();
 
@@ -71,7 +71,7 @@ public sealed class BaseObjectDeserializerV2
         stopwatch.Stop();
         string objJson = ReadTransport.GetObject(objId);
         stopwatch.Start();
-        object deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
+        object? deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
         lock (_deserializedObjects)
           _deserializedObjects[objId] = deserializedOrPromise;
       }
@@ -119,7 +119,7 @@ public sealed class BaseObjectDeserializerV2
     }
   }
 
-  private object DeserializeTransportObjectProxy(string objectJson)
+  private object? DeserializeTransportObjectProxy(string objectJson)
   {
     // Try background work
     Task<object?> bgResult = _workerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson); //BUG: Because we don't guarantee this task will ever be awaited, this may lead to unobserved exceptions!
@@ -130,7 +130,7 @@ public sealed class BaseObjectDeserializerV2
     return DeserializeTransportObject(objectJson);
   }
 
-  public object DeserializeTransportObject(string objectJson)
+  public object? DeserializeTransportObject(string objectJson)
   {
     if (objectJson is null)
       throw new ArgumentNullException(nameof(objectJson), $"Cannot deserialize {nameof(objectJson)}, value was null");
@@ -144,8 +144,9 @@ public sealed class BaseObjectDeserializerV2
       reader.DateParseHandling = DateParseHandling.None;
       doc1 = JObject.Load(reader);
     }
-
-    object converted = ConvertJsonElement(doc1);
+    
+    object? converted = ConvertJsonElement(doc1);
+    
     lock (_callbackLock)
       OnProgressAction?.Invoke("DS", 1);
     return converted;
@@ -246,8 +247,9 @@ public sealed class BaseObjectDeserializerV2
 
           // This reference was not already deserialized. Do it now in sync mode
           string objectJson = ReadTransport.GetObject(objId);
-          if(objectJson is null) throw new Exception();
+          if(objectJson is null) throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
           deserialized = DeserializeTransportObject(objectJson);
+          
           lock (_deserializedObjects)
             _deserializedObjects[objId] = deserialized;
           return deserialized;
@@ -259,11 +261,11 @@ public sealed class BaseObjectDeserializerV2
     }
   }
 
-  private Base Dict2Base(Dictionary<string, object> dictObj)
+  private Base Dict2Base(Dictionary<string, object?> dictObj)
   {
-    string typeName = dictObj[TypeDiscriminator] as string;
+    string typeName = (string)dictObj[TypeDiscriminator]!;
     Type type = SerializationUtilities.GetType(typeName);
-    Base baseObj = Activator.CreateInstance(type) as Base;
+    Base baseObj = (Base)Activator.CreateInstance(type);
 
     dictObj.Remove(TypeDiscriminator);
     dictObj.Remove("__closure");
@@ -271,10 +273,10 @@ public sealed class BaseObjectDeserializerV2
     Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
     List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
 
-    foreach (KeyValuePair<string, object> entry in dictObj)
+    foreach (var entry in dictObj)
     {
       string lowerPropertyName = entry.Key.ToLower();
-      if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
+      if (staticProperties.TryGetValue(lowerPropertyName, out PropertyInfo value) && value.CanWrite)
       {
         PropertyInfo property = staticProperties[lowerPropertyName];
         if (entry.Value == null)
@@ -292,7 +294,7 @@ public sealed class BaseObjectDeserializerV2
         else
           // Cannot convert the value in the json to the static property type
           throw new Exception(
-            string.Format("Cannot deserialize {0} to {1}", entry.Value.GetType().FullName, targetValueType.FullName)
+            $"Cannot deserialize {entry.Value.GetType().FullName} to {targetValueType.FullName}"
           );
       }
       else
@@ -302,11 +304,11 @@ public sealed class BaseObjectDeserializerV2
       }
     }
 
-    if (baseObj is Blob b && BlobStorageFolder != null)
-      b.filePath = b.getLocalDestinationPath(BlobStorageFolder);
+    if (baseObj is Blob bb && BlobStorageFolder != null)
+      bb.filePath = bb.getLocalDestinationPath(BlobStorageFolder);
 
     foreach (MethodInfo onDeserialized in onDeserializedCallbacks)
-      onDeserialized.Invoke(baseObj, new object[] { null });
+      onDeserialized.Invoke(baseObj, new object?[] { null });
 
     return baseObj;
   }

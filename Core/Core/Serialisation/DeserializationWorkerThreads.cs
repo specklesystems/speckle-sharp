@@ -54,7 +54,7 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
     }
   }
 
-  private static object RunOperation(
+  private static object? RunOperation(
     WorkerThreadTaskType taskType,
     object inputValue,
     BaseObjectDeserializerV2 serializer
@@ -63,7 +63,7 @@ internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<W
     switch (taskType)
     {
       case WorkerThreadTaskType.Deserialize:
-        var converted = serializer.DeserializeTransportObject(inputValue as string);
+        var converted = serializer.DeserializeTransportObject((string)inputValue);
         return converted;
       default:
         throw new ArgumentException(
