@@ -75,56 +75,83 @@ namespace Objects.Converter.Revit
       // retrieves all meshes and solids from a geometry element
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
-      SortGeometry(geom);
-      void SortGeometry(GeometryElement geom, Transform inverseTransform = null)
-      {
-        foreach (GeometryObject geomObj in geom)
-        {
-          switch (geomObj)
-          {
-            case Solid solid:
-              // skip invalid solid
-              if (solid.Faces.Size == 0 || Math.Abs(solid.SurfaceArea) == 0)
-                break;
 
-              if (!IsSkippableGraphicStyle(solid.GraphicsStyleId, element.Document))
-              {
-                if (inverseTransform != null)
-                  solid = SolidUtils.CreateTransformed(solid, inverseTransform);
-
-                solids.Add(solid);
-              }
-              break;
-            case DB.Mesh mesh:
-              if (!IsSkippableGraphicStyle(mesh.GraphicsStyleId, element.Document))
-              {
-                if (inverseTransform != null)
-                  mesh = mesh.get_Transformed(inverseTransform);
-
-                meshes.Add(mesh);
-              }
-              break;
-            case GeometryInstance instance:
-              var instanceGeo =
-                isConvertedAsInstance && !hasModifiedInstanceGeometry
-                  ? instance.GetSymbolGeometry()
-                  : instance.GetInstanceGeometry();
-              inverseTransform =
-                isConvertedAsInstance && hasModifiedInstanceGeometry ? instance.Transform.Inverse : null;
-              SortGeometry(instanceGeo, inverseTransform);
-              break;
-            case GeometryElement element:
-              SortGeometry(element);
-              break;
-          }
-        }
-      }
+      if (isConvertedAsInstance) SortInstanceGeometry(element.Document, solids, meshes, geom);
+      else SortInstanceGeometry(element.Document, solids, meshes, geom);
 
       // convert meshes and solids
       displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, isConvertedAsInstance));
       displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, isConvertedAsInstance));
 
       return displayMeshes;
+    }
+
+    void SortInstanceGeometry(
+      Document doc,
+      List<Solid> solids,
+      List<DB.Mesh> meshes,
+      GeometryElement geom
+    )
+    {
+      foreach (GeometryObject geomObj in geom)
+      {
+        switch (geomObj)
+        {
+          case GeometryInstance instance:
+            var symbolGeo = instance.GetSymbolGeometry();
+
+            if (!symbolGeo.Any())
+            {
+              SortGeometry(doc, solids, meshes, geom, instance.Transform.Inverse);
+            }
+            else
+            {
+              SortGeometry(doc, solids, meshes, symbolGeo);
+            }
+            break;
+        }
+      }
+    }
+
+    void SortGeometry(
+      Document doc,
+      List<Solid> solids,
+      List<DB.Mesh> meshes,
+      GeometryElement geom,
+      Transform inverseTransform = null
+    )
+    {
+      foreach (GeometryObject geomObj in geom)
+      {
+        switch (geomObj)
+        {
+          case Solid solid:
+            // skip invalid solid
+            if (solid.Faces.Size == 0 || Math.Abs(solid.SurfaceArea) == 0) continue;
+            if (IsSkippableGraphicStyle(solid.GraphicsStyleId, doc)) continue;
+
+            if (inverseTransform != null)
+              solid = SolidUtils.CreateTransformed(solid, inverseTransform);
+
+            solids.Add(solid);
+            break;
+          case DB.Mesh mesh:
+            if (IsSkippableGraphicStyle(mesh.GraphicsStyleId, doc)) continue;
+
+            if (inverseTransform != null)
+              mesh = mesh.get_Transformed(inverseTransform);
+
+            meshes.Add(mesh);
+            break;
+          case GeometryInstance instance:
+            var instanceGeo = instance.GetInstanceGeometry();
+            SortGeometry(doc, solids, meshes, instanceGeo, inverseTransform);
+            break;
+          case GeometryElement element:
+            SortGeometry(doc, solids, meshes, element, inverseTransform);
+            break;
+        }
+      }
     }
 
     /// <summary>
