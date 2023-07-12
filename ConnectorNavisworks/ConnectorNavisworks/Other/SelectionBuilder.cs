@@ -75,7 +75,7 @@ public class SelectionHandler
     var progressIncrement = 1.0 / count != 0 ? count : 1.0;
 
     // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.1, "Rolling up the sleeves... Time to handpick your favorite data items!");
+    ProgressBar.BeginSubOperation(0.05, "Rolling up the sleeves... Time to handpick your favorite data items!");
 
     // Iterate over the selection and retrieve the corresponding model items
     for (var i = 0; i < count; i++)
@@ -102,7 +102,7 @@ public class SelectionHandler
     _uniqueModelItems.Clear();
 
     // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.1, "Checking the Canvas... Looking Closely!");
+    ProgressBar.BeginSubOperation(0.05, "Checking the Canvas... Looking Closely!");
 
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
@@ -325,7 +325,8 @@ public class SelectionHandler
         {
           _uniqueModelItems.Add(allAncestors.ElementAt(i));
           return true;
-        }
+        },
+        0.05
       );
     }
 
@@ -333,6 +334,7 @@ public class SelectionHandler
     _descendantProgress = 0;
     var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
+    ProgressBar.BeginSubOperation(0.1, "Validating descendants...");
     foreach (var node in startNodes)
       TraverseDescendants(node, allDescendants);
   }
