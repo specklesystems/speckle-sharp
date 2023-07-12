@@ -5,6 +5,8 @@ using Speckle.Core.Models;
 namespace TestsUnit;
 
 [TestFixture]
+[TestOf(typeof(Base))]
+[TestOf(typeof(DynamicBase))]
 public class BaseTests
 {
   [Test]

@@ -4,6 +4,7 @@ using Speckle.Core.Models.Extensions;
 namespace TestsUnit;
 
 [TestFixture]
+[TestOf(typeof(BaseExtensions))]
 public class ExceptionTests
 {
   [Test]

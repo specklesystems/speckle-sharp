@@ -10,26 +10,26 @@ namespace Speckle.Core.Transports;
 /// <summary>
 /// An in memory storage of speckle objects.
 /// </summary>
-public class MemoryTransport : ITransport, ICloneable
+public sealed class MemoryTransport : ITransport, ICloneable
 {
-  public Dictionary<string, string> Objects;
+  public IDictionary<string, string> Objects { get; }
 
-  public MemoryTransport()
+  public MemoryTransport() : this(new Dictionary<string, string>()) { }
+
+  public MemoryTransport(IDictionary<string, string> objects)
   {
+    Objects = objects;
     SpeckleLog.Logger.Debug("Creating a new Memory Transport");
-
-    Objects = new Dictionary<string, string>();
   }
 
   public object Clone()
   {
-    return new MemoryTransport
+    return new MemoryTransport(Objects)
     {
       TransportName = TransportName,
       OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
       CancellationToken = CancellationToken,
-      Objects = Objects,
       SavedObjectCount = SavedObjectCount
     };
   }

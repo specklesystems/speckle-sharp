@@ -4,7 +4,8 @@ using Speckle.Core.Serialisation.Deprecated;
 
 namespace Speckle.Core.Serialisation
 {
-  [TestFixture, TestOf(typeof(BaseObjectSerializer))]
+  [TestFixture]
+  [TestOf(typeof(SerializationUtilities))]
   public class ObjectModelDeprecationTests
   {
     [Test]

@@ -3,7 +3,8 @@ using NUnit.Framework;
 namespace TestsUnit;
 
 [TestFixture]
-public class Helpers
+[TestOf(typeof(Speckle.Core.Api.Helpers))]
+public class HelpersTests
 {
   [
     Test,

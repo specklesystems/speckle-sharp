@@ -6,7 +6,8 @@ using Speckle.Core.Helpers;
 namespace TestsUnit;
 
 [TestFixture]
-public class SpecklePaths
+[TestOf(nameof(SpecklePathProvider))]
+public class SpecklePathTests
 {
   [Test]
   public void TestUserApplicationDataPath()

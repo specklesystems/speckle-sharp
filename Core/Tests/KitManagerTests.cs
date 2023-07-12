@@ -4,7 +4,8 @@ using Speckle.Core.Kits;
 namespace TestsUnit;
 
 [TestFixture]
-public class Kits
+[TestOf(typeof(KitManager))]
+public class KitManagerTests
 {
   [Test]
   public void KitsExist()

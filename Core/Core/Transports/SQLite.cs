@@ -245,7 +245,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   public void UpdateObject(string hash, string serializedObject)
   {
     if (CancellationToken.IsCancellationRequested)
-      return;
+      return; //TODO: Consider throwing
 
     using var c = new SqliteConnection(_connectionString);
     c.Open();
