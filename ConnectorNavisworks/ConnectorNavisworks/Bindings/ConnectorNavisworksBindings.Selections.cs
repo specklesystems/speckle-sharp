@@ -11,6 +11,15 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 
 public partial class ConnectorBindingsNavisworks
 {
+  private static void IsFileAndModelsPresent()
+  {
+    if (_doc == null)
+      throw (new FileNotFoundException("No active document found."));
+
+    if (_doc.Models.Count == 0)
+      throw (new FileNotFoundException("No models found in active document."));
+  }
+
   /// <summary>
   ///   Parses list all selected Elements and their descendants that match criteria:
   ///   1. Is Selected
@@ -24,11 +33,7 @@ public partial class ConnectorBindingsNavisworks
     // Current document, models and selected elements.
     _doc = Application.ActiveDocument;
 
-    if (_doc == null)
-      throw (new FileNotFoundException("No active document found."));
-
-    if (_doc.Models.Count == 0)
-      throw (new FileNotFoundException("No models found in active document."));
+    IsFileAndModelsPresent();
 
     var appSelectedItems = _doc.CurrentSelection.SelectedItems;
 

@@ -1,9 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using DesktopUI2.Models;
-using Sentry.Protocol;
 using Speckle.ConnectorNavisworks.Storage;
-using Application = Autodesk.Navisworks.Api.Application;
 
 namespace Speckle.ConnectorNavisworks.Bindings;
 
@@ -24,14 +21,8 @@ public partial class ConnectorBindingsNavisworks
 
   public override string GetFileName()
   {
-    var activeDoc = Application.ActiveDocument;
+    IsFileAndModelsPresent();
 
-    if (activeDoc == null)
-      throw (new FileNotFoundException("No active document found."));
-
-    if (activeDoc.Models.Count == 0)
-      throw (new FileNotFoundException("No models found in active document."));
-
-    return Application.ActiveDocument.CurrentFileName ?? string.Empty;
+    return _doc?.CurrentFileName ?? string.Empty;
   }
 }
