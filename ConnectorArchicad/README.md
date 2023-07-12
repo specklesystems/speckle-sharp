@@ -44,7 +44,7 @@ You can start ArchiCAD in demo mode with the following commands:
 
 ### Adding the Connector to ArchiCAD
 
-You will now need to manually add the add-on from Add-On Manager (Option menu) in Archicad. Under "Edit List of Available Add-Ons" press th "Add.." button and browse for the .apx file at `./AddOn/Build/Debug`.
+You will now need to manually add the add-on from Add-On Manager (Option menu) in Archicad. Under "Edit List of Available Add-Ons" press the "Add.." button and browse for the .apx file at `./AddOn/Build/Debug`.
 
 ### Launching the Connector
 
