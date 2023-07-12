@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Speckle.Core.Credentials;
 
 namespace DUI3
 {
@@ -24,14 +25,27 @@ namespace DUI3
     /// </summary>
     public IBridge Parent { get; set; }
 
-    public void test()
-    {
-      Parent.SendToBrowser("wow");
-    }
   }
 
+  /// <summary>
+  /// Describes a bridge - a wrapper class around a specific browser host.
+  /// </summary>
   public interface IBridge
   {
+    /// <summary>
+    /// This method is called by the Frontend bridge to understand what it can actually call. It should return the method names of the bindings that this bridge wraps around.
+    /// </summary>
+    /// <returns></returns>
+    public string[] GetBindingsMethodNames();
+
+    /// <summary>
+    /// This method is called by the Frontend bridge when invoking any of the wrapped binding's methods.
+    /// </summary>
+    /// <param name="methodName"></param>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    public Task<string> RunMethod(string methodName, string args);
+
     /// <summary>
     /// Sends to the Frontend a IHostAppEvent. If you want to send an empty event (no data), try the SendToBrowser(string eventName).
     /// </summary>
@@ -55,11 +69,24 @@ namespace DUI3
     public object Data { get; set; }
   }
 
-  public interface IBasicAppBinding : IBinding
+  public interface IBasicConnectorBinding : IBinding
   {
-    public string GetSourceApplicationName() => "Mock App";
+    public string GetSourceApplicationName();
 
-    public string GetSourceApplicationVersion() => "42";
+    public string GetSourceApplicationVersion();
 
+    public Account[] GetAccounts();
+
+    // ETC. 
+  }
+
+  /// <summary>
+  /// Just a sketch for now.
+  /// </summary>
+  public interface ReceiveBindings : IBinding
+  {
+    public void Receive(string modelId, string projectId);
+
+    // ETC
   }
 }

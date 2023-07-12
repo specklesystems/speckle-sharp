@@ -1,5 +1,10 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Speckle.Core.Logging;
 
 namespace DUI3
@@ -10,7 +15,9 @@ namespace DUI3
   /// <para>See also: https://github.com/johot/WebView2-better-bridge</para>
   /// </summary>
   /// <typeparam name="TBrowser">The browser type (CefSharp or WebView2 currently supported.)</typeparam>
-  public class BrowserBridge<TBrowser> : IBridge
+  [ClassInterface(ClassInterfaceType.AutoDual)]
+  [ComVisible(true)]
+  public class BrowserBridge : IBridge
   {
     /// <summary>
     /// The name under which we expect the frontend to hoist this bindings class to the global scope.
@@ -18,16 +25,16 @@ namespace DUI3
     /// </summary>
     public string FrontendBoundName { get; }
 
-    public TBrowser Browser { get; }
+    public object Browser { get; }
 
     public IBinding Binding { get; }
 
-    private MethodInfo ExecuteScriptAsyncMethod { get; set; }
+    public Action<string> ExecuteScriptAsync { get; set; }
 
     private Type BindingType { get; set; }
     private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
 
-    public BrowserBridge(TBrowser browser, IBinding binding)
+    public BrowserBridge(object browser, IBinding binding, Action<string> executeScriptAsync)
     {
       FrontendBoundName = binding.Name;
       Browser = browser;
@@ -42,21 +49,23 @@ namespace DUI3
 
       Binding.Parent = this;
 
-      // NOTE: For later, for older browsers, this can be replaced by something that does url hacks. 
-      ExecuteScriptAsyncMethod = Browser.GetType().GetMethod("ExecuteScriptAsync");
-
-      if (ExecuteScriptAsyncMethod == null)
-      {
-        throw new SpeckleException($"Unsupported browser type {Browser.GetType().AssemblyQualifiedName}.");
-      }
+      ExecuteScriptAsync = executeScriptAsync;
     }
 
     /// <summary>
     /// Used by the Frontend bridge logic to understand which methods are available.
     /// </summary>
     /// <returns></returns>
-    public string[] GetMethodNames() => BindingMethodCache.Keys.ToArray();
+    public string[] GetBindingsMethodNames() => BindingMethodCache.Keys.ToArray();
 
+    /// <summary>
+    /// Used by the Frontend brdige to call into .NET.
+    /// TODO: Check and test
+    /// </summary>
+    /// <param name="methodName"></param>
+    /// <param name="args"></param>
+    /// <returns></returns>
+    /// <exception cref="SpeckleException"></exception>
     public async Task<string> RunMethod(string methodName, string args)
     {
       if (!BindingMethodCache.ContainsKey(methodName))
@@ -110,7 +119,7 @@ namespace DUI3
     {
       var payload = JsonSerializer.Serialize(eventData);
       var script = $"{FrontendBoundName}.emit('{eventData.EventName}', '{payload}')";
-      ExecuteScriptAsyncMethod.Invoke(Browser, new object[] { script });
+      ExecuteScriptAsync(script);
     }
 
     /// <summary>
@@ -120,7 +129,7 @@ namespace DUI3
     public void SendToBrowser(string eventName)
     {
       var script = $"bindings.emit('{eventName}')";
-      ExecuteScriptAsyncMethod.Invoke(Browser, new object[] { script });
+      ExecuteScriptAsync(script);
     }
 
   }
