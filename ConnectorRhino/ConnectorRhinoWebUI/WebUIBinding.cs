@@ -14,6 +14,18 @@ namespace ConnectorRhinoWebUI
   // NOTE: Multiple objects can be registered in a browser window. This means we can have
   // DefaultBindings, SendBindings, ReceiveBindings, MapperBindings, WhateverBindings
   // To think about the above stuff. 
+  
+  public interface IBinding
+  {
+    //
+    public void SendToBrowser();
+  }
+
+  public interface IHostAppEvent
+  {
+    public string eventName { get; set; }
+    public object data { get; set; }
+  }
 
   public abstract class WebUIBinding
   {

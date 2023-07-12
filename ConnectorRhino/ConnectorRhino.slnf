@@ -16,6 +16,7 @@
       "Core\\Transports\\MongoDBTransport\\MongoDBTransport.csproj",
       "DesktopUI2\\AvaloniaHwndHost\\AvaloniaHwndHost.csproj",
       "DesktopUI2\\DesktopUI2\\DesktopUI2.csproj",
+      "DesktopUI3\\DUI3\\DUI3.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterGrasshopper6\\ConverterGrasshopper6.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterGrasshopper7\\ConverterGrasshopper7.csproj",
       "Objects\\Converters\\ConverterRhinoGh\\ConverterRhino6\\ConverterRhino6.csproj",

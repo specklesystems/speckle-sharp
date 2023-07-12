@@ -17,6 +17,7 @@ namespace ConnectorRhinoWebUI
       InitializeComponent();
       Browser.IsBrowserInitializedChanged += Browser_IsBrowserInitializedChanged;
       Browser.JavascriptObjectRepository.ResolveObject += JavascriptObjectRepository_ResolveObject;
+      //Browser.JavascriptObjectRepository.Register()
     }
 
     private void JavascriptObjectRepository_ResolveObject(object sender, CefSharp.Event.JavascriptBindingEventArgs e)

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Microsoft.Web.WebView2.Wpf;
-using Sentry.Protocol;
 
 namespace ConnectorRhinoWebUI
 {
