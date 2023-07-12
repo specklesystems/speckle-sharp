@@ -44,11 +44,7 @@ namespace Objects.Converter.Revit
       {
         foreach (var id in g.GetMemberIds())
         {
-          var groupMeshes = GetElementDisplayValue(
-            element.Document.GetElement(id),
-            options,
-            isConvertedAsInstance
-          );
+          var groupMeshes = GetElementDisplayValue(element.Document.GetElement(id), options, isConvertedAsInstance);
           displayMeshes.AddRange(groupMeshes);
         }
         return displayMeshes;
@@ -103,12 +99,10 @@ namespace Objects.Converter.Revit
               }
               break;
             case GeometryInstance instance:
-              var instanceGeo =
-                !isConvertedAsInstance // this seems counter-intuitive, but in order to retrieve the fully modified instance geo, we need to get the instance geo and then untransform it
-                  ? instance.GetSymbolGeometry() // this is not reliable for retrieving definition meshes
-                  : instance.GetInstanceGeometry(); 
-              inverseTransform =
-                isConvertedAsInstance ? instance.Transform.Inverse : null;
+              var instanceGeo = !isConvertedAsInstance // this seems counter-intuitive, but in order to retrieve the fully modified instance geo, we need to get the instance geo and then untransform it
+                ? instance.GetSymbolGeometry() // this is not reliable for retrieving definition meshes
+                : instance.GetInstanceGeometry();
+              inverseTransform = isConvertedAsInstance ? instance.Transform.Inverse : null;
               SortGeometry(instanceGeo, inverseTransform);
               break;
             case GeometryElement element:

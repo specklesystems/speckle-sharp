@@ -41,9 +41,13 @@ namespace Objects.Converter.Revit
       //if they are contained in 'subelements' then they have already been accounted for from a wall
       //else if they are mullions then convert them as a generic family instance but add a isUGridLine prop
       bool? isUGridLine = null;
-      if (@base == null && 
-        (revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
-        || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels))
+      if (
+        @base == null
+        && (
+          revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallMullions
+          || revitFi.Category.Id.IntegerValue == (int)BuiltInCategory.OST_CurtainWallPanels
+        )
+      )
       {
         if (SubelementIds.Contains(revitFi.Id))
           return null;
@@ -790,11 +794,7 @@ namespace Objects.Converter.Revit
       // get the displayvalue of the family symbol
       try
       {
-        var meshes = GetElementDisplayValue(
-          instance,
-          new Options() { DetailLevel = ViewDetailLevel.Fine },
-          true
-        );
+        var meshes = GetElementDisplayValue(instance, new Options() { DetailLevel = ViewDetailLevel.Fine }, true);
         symbol.displayValue = meshes;
       }
       catch (Exception e)
