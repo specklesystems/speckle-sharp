@@ -34,8 +34,7 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetElementDisplayValue(
       DB.Element element,
       Options options = null,
-      bool isConvertedAsInstance = false,
-      bool hasModifiedInstanceGeometry = false
+      bool isConvertedAsInstance = false
     )
     {
       var displayMeshes = new List<Mesh>();
@@ -48,8 +47,7 @@ namespace Objects.Converter.Revit
           var groupMeshes = GetElementDisplayValue(
             element.Document.GetElement(id),
             options,
-            isConvertedAsInstance,
-            hasModifiedInstanceGeometry
+            isConvertedAsInstance
           );
           displayMeshes.AddRange(groupMeshes);
         }
@@ -106,11 +104,11 @@ namespace Objects.Converter.Revit
               break;
             case GeometryInstance instance:
               var instanceGeo =
-                isConvertedAsInstance && !hasModifiedInstanceGeometry
-                  ? instance.GetSymbolGeometry()
-                  : instance.GetInstanceGeometry();
+                !isConvertedAsInstance // this seems counter-intuitive, but in order to retrieve the fully modified instance geo, we need to get the instance geo and then untransform it
+                  ? instance.GetSymbolGeometry() // this is not reliable for retrieving definition meshes
+                  : instance.GetInstanceGeometry(); 
               inverseTransform =
-                isConvertedAsInstance && hasModifiedInstanceGeometry ? instance.Transform.Inverse : null;
+                isConvertedAsInstance ? instance.Transform.Inverse : null;
               SortGeometry(instanceGeo, inverseTransform);
               break;
             case GeometryElement element:
@@ -121,8 +119,8 @@ namespace Objects.Converter.Revit
       }
 
       // convert meshes and solids
-      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document, isConvertedAsInstance));
-      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document, isConvertedAsInstance));
+      displayMeshes.AddRange(ConvertMeshesByRenderMaterial(meshes, element.Document));
+      displayMeshes.AddRange(ConvertSolidsByRenderMaterial(solids, element.Document));
 
       return displayMeshes;
     }
