@@ -63,7 +63,7 @@ public partial class ConnectorBindingsNavisworks
 
     // Perform the validation checks - will throw if something is wrong
     ValidateBeforeSending(state);
-    
+
     string commitId;
     var applicationProgress = Application.BeginProgress("Send to Speckle.");
     _progressBar = new ProgressInvoker(applicationProgress);
@@ -83,8 +83,6 @@ public partial class ConnectorBindingsNavisworks
         CachedConvertedElements = null;
         _cachedState = state;
         _cachedCommit = commitObject;
-
-
 
         Cursor.Current = Cursors.WaitCursor;
 
@@ -181,7 +179,7 @@ public partial class ConnectorBindingsNavisworks
     if (state.Filter == null)
       throw new InvalidOperationException("No filter provided. Nothing to Send.");
 
-    if (state.Filter.Slug == "all")
+    if (state.Filter.Slug == "all" || state.CommitMessage == "Sent everything")
       throw new InvalidOperationException("Everything Mode is not yet implemented. Send stopped.");
   }
 
