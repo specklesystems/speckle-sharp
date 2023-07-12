@@ -335,8 +335,10 @@ public class SelectionHandler
     var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
     ProgressBar.BeginSubOperation(0.1, "Validating descendants...");
+
     foreach (var node in startNodes)
       TraverseDescendants(node, allDescendants);
+    ProgressBar.EndSubOperation();
   }
 
   /// <summary>
@@ -348,12 +350,17 @@ public class SelectionHandler
   {
     var descendantInterval = Math.Max(totalDescendants / 100.0, 1);
     var validDescendants = new HashSet<ModelItem>();
+    int lastPercentile = 0;
 
     Stack<ModelItem> stack = new();
     stack.Push(startNode);
 
     while (stack.Count > 0)
     {
+      if (ProgressBar.IsCanceled)
+        _progressViewModel.CancellationTokenSource.Cancel();
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
       ModelItem currentNode = stack.Pop();
 
       if (_visited.Contains(currentNode))
@@ -377,11 +384,12 @@ public class SelectionHandler
 
       _uniqueModelItems.AddRange(validDescendants);
 
-      if (_descendantProgress % descendantInterval != 0)
+      int currentPercentile = (int)(_descendantProgress / descendantInterval);
+      if (currentPercentile <= lastPercentile)
         continue;
-
       double progress = _descendantProgress / (double)totalDescendants;
       ProgressBar.Update(progress);
+      lastPercentile = currentPercentile;
     }
   }
 
@@ -406,6 +414,8 @@ public class SelectionHandler
 
     for (int i = 0; i < totalCount; i++)
     {
+      if (ProgressBar.IsCanceled)
+        _progressViewModel.CancellationTokenSource.Cancel();
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
       bool shouldContinue = fn(i);
