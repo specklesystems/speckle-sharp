@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
@@ -22,6 +23,13 @@ public partial class ConnectorBindingsNavisworks
 
     // Current document, models and selected elements.
     _doc = Application.ActiveDocument;
+
+    if (_doc == null)
+      throw (new FileNotFoundException("No active document found."));
+
+    if (_doc.Models.Count == 0)
+      throw (new FileNotFoundException("No models found in active document."));
+
     var appSelectedItems = _doc.CurrentSelection.SelectedItems;
 
     // Storing as a Set for consistency with the converter's handling of fragments and paths.

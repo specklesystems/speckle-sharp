@@ -61,6 +61,9 @@ public partial class ConnectorBindingsNavisworks
   {
     _progressViewModel = progress;
 
+    // Perform the validation checks - will throw if something is wrong
+    ValidateBeforeSending(state);
+    
     string commitId;
     var applicationProgress = Application.BeginProgress("Send to Speckle.");
     _progressBar = new ProgressInvoker(applicationProgress);
@@ -81,8 +84,7 @@ public partial class ConnectorBindingsNavisworks
         _cachedState = state;
         _cachedCommit = commitObject;
 
-        // Perform the validation checks - will throw if something is wrong
-        ValidateBeforeSending(state);
+
 
         Cursor.Current = Cursors.WaitCursor;
 
