@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Speckle.Core.Logging;
 using DB = Autodesk.Revit.DB;
 using Mesh = Objects.Geometry.Mesh;
 
@@ -34,8 +35,7 @@ namespace Objects.Converter.Revit
     public List<Mesh> GetElementDisplayValue(
       DB.Element element,
       Options options = null,
-      bool isConvertedAsInstance = false,
-      bool hasModifiedInstanceGeometry = false
+      bool isConvertedAsInstance = false
     )
     {
       var displayMeshes = new List<Mesh>();
@@ -48,8 +48,7 @@ namespace Objects.Converter.Revit
           var groupMeshes = GetElementDisplayValue(
             element.Document.GetElement(id),
             options,
-            isConvertedAsInstance,
-            hasModifiedInstanceGeometry
+            isConvertedAsInstance
           );
           displayMeshes.AddRange(groupMeshes);
         }
@@ -76,7 +75,7 @@ namespace Objects.Converter.Revit
       var solids = new List<Solid>();
       var meshes = new List<DB.Mesh>();
 
-      if (isConvertedAsInstance) SortInstanceGeometry(element.Document, solids, meshes, geom);
+      if (isConvertedAsInstance) SortInstanceGeometry(element, solids, meshes, geom);
       else SortGeometry(element.Document, solids, meshes, geom);
 
       // convert meshes and solids
@@ -86,29 +85,124 @@ namespace Objects.Converter.Revit
       return displayMeshes;
     }
 
+    /// <summary>
+    /// According to the remarks on the GeometryInstance class in the RevitAPIDocs, 
+    /// https://www.revitapidocs.com/2024/fe25b14f-5866-ca0f-a660-c157484c3a56.htm,
+    /// a family instance geometryElement should have a top-level geometry instance when the symbol 
+    /// does not have modified geometry (the docs say that modified geometry will not have a geom instance,
+    /// however in my experience, all family instances have a top-level geom instance, but if the family instance
+    /// is modified, then the geom instance won't contain any geometry.)
+    /// 
+    /// This remark also leads me to think that a family instance will not have top-level solids and geom instances.
+    /// We are logging cases where this is not true.
+    /// </summary>
+    /// <param name="element"></param>
+    /// <param name="solids"></param>
+    /// <param name="meshes"></param>
+    /// <param name="geom"></param>
     void SortInstanceGeometry(
-      Document doc,
+      Element element,
       List<Solid> solids,
       List<DB.Mesh> meshes,
       GeometryElement geom
     )
     {
+      var topLevelSolidsCount = 0;
+      var topLevelMeshesCount = 0;
+      var topLevelGeomElementCount = 0;
+      var topLevelGeomInstanceCount = 0;
+      var hasSymbolGeom = false;
       foreach (GeometryObject geomObj in geom)
       {
         switch (geomObj)
         {
+          case Solid:
+            topLevelSolidsCount++;
+            break;
+          case DB.Mesh:
+            topLevelMeshesCount++;
+            break;
+          case GeometryElement:
+            topLevelGeomElementCount++;
+            break;
           case GeometryInstance instance:
+            topLevelGeomInstanceCount++;
             var symbolGeo = instance.GetSymbolGeometry();
 
-            if (!symbolGeo.Any())
+            if (!SymbolGeometryContainsGeometryData(symbolGeo))
             {
-              SortGeometry(doc, solids, meshes, geom, instance.Transform.Inverse);
+              SortGeometry(element.Document, solids, meshes, geom, instance.Transform.Inverse);
             }
             else
             {
-              SortGeometry(doc, solids, meshes, symbolGeo);
+              hasSymbolGeom = true;
+              SortGeometry(element.Document, solids, meshes, symbolGeo);
             }
             break;
+        }
+      }
+
+      LogInstanceMeshRetrievalWarnings(
+        element, 
+        topLevelSolidsCount, 
+        topLevelMeshesCount, 
+        topLevelGeomElementCount, 
+        topLevelGeomInstanceCount, 
+        hasSymbolGeom);
+    }
+
+    private bool SymbolGeometryContainsGeometryData(GeometryElement geometryElement)
+    {
+      foreach (var geomObj in geometryElement)
+      {
+        switch (geomObj)
+        {
+          case Solid:
+            return true;
+          case DB.Mesh:
+            return true;
+          case GeometryElement el:
+            return SymbolGeometryContainsGeometryData(el);
+          case GeometryInstance instance:
+            return SymbolGeometryContainsGeometryData(instance.GetSymbolGeometry());
+        }
+      }
+      return false;
+    }
+
+    private static void LogInstanceMeshRetrievalWarnings(
+      Element element, 
+      int topLevelSolidsCount, 
+      int topLevelMeshesCount, 
+      int topLevelGeomElementCount, 
+      int topLevelGeomInstanceCount, 
+      bool hasSymbolGeom
+    )
+    {
+      if (topLevelGeomInstanceCount == 0)
+      {
+        SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} did not have any top level geometry instances. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId);
+      }
+      else if (hasSymbolGeom)
+      {
+        if (topLevelSolidsCount > 0)
+        {
+          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numSolids} top level solids. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelSolidsCount);
+        }
+        if (topLevelMeshesCount > 0)
+        {
+          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numSolids} top level meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelMeshesCount);
+        }
+        if (topLevelGeomElementCount > 0)
+        {
+          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} has valid symbol geometry and {numSolids} top level geometry elements. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId, topLevelGeomElementCount);
+        }
+      }
+      else
+      {
+        if (topLevelSolidsCount == 0 && topLevelMeshesCount == 0)
+        {
+          SpeckleLog.Logger.Warning("Element of type {elementType} with uniqueId {uniqueId} does not have valid symbol geometry and does not have any top-level solids or meshes. See comment on method SortInstanceGeometry for link to RevitAPI docs that leads us to believe this shouldn't happen", element.GetType(), element.UniqueId);
         }
       }
     }
