@@ -70,12 +70,12 @@ namespace Objects.BuiltElements.Archicad
   public class ArchicadRoom : Room
   {
     // Element base
-    public string elementType { get; set; }
-    public List<Classification> classifications { get; set; }
+    public string? /*APINullabe*/ elementType { get; set; }
+    public List<Classification>? /*APINullabe*/ classifications { get; set; }
 
-    public ArchicadLevel level { get; set; }
+    public ArchicadLevel? /*APINullabe*/ level { get; set; }
 
-    public double height { get; set; }
+    public double? /*APINullabe*/ height { get; set; }
 
     public ElementShape shape { get; set; }
   }

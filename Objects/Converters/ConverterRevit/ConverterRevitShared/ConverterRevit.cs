@@ -131,7 +131,9 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        throw new ArgumentException($"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}");
+        throw new ArgumentException(
+          $"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}"
+        );
       }
     }
 
@@ -347,7 +349,7 @@ namespace Objects.Converter.Revit
         returnObject != null
         && returnObject["renderMaterial"] == null
         && returnObject["displayValue"] == null
-        && !(returnObject is Model)
+        && !(returnObject is Collection)
       )
       {
         try
