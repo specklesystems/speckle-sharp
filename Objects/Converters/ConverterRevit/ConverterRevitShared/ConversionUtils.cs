@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
-using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Other;
@@ -14,9 +13,6 @@ using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 using Speckle.Core.Models.GraphTraversal;
 using DB = Autodesk.Revit.DB;
-using Duct = Objects.BuiltElements.Duct;
-using ElementType = Autodesk.Revit.DB.ElementType;
-using Floor = Objects.BuiltElements.Floor;
 using Level = Objects.BuiltElements.Level;
 using Line = Objects.Geometry.Line;
 using OSG = Objects.Structural.Geometry;
@@ -395,7 +391,8 @@ namespace Objects.Converter.Revit
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
-        applicationUnitType = rp.GetUnityTypeString() //eg UT_Length
+        applicationUnitType = rp.GetUnityTypeString(), //eg UT_Length
+        units = GetParameterUnits(rp),
       };
 
       switch (rp.StorageType)
@@ -452,7 +449,32 @@ namespace Objects.Converter.Revit
       return sp;
     }
 
-    #endregion
+    #endregion 
+    
+    private static string GetParameterUnits(DB.Parameter param)
+    {
+#if REVIT2020
+      return string.Empty;
+#else
+      
+      try
+      {
+        ForgeTypeId unitType = param.GetUnitTypeId();
+        IList<ForgeTypeId> forgeTypeIds = FormatOptions.GetValidSymbols(unitType);
+        if (!forgeTypeIds.Any()) return string.Empty;
+        ForgeTypeId forgeTypeId = forgeTypeIds.FirstOrDefault(x => UnitUtils.IsSymbol(x));
+        if(forgeTypeId != null)
+        {
+          return LabelUtils.GetLabelForSymbol(forgeTypeId);
+        }
+      }
+      catch (Exception)
+      {
+        return string.Empty;
+      }
+      return string.Empty;
+#endif
+    }
 
     /// <summary>
     /// </summary>
