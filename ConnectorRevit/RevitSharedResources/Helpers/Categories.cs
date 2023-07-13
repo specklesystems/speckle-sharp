@@ -176,7 +176,7 @@ public static class Categories
   public static RevitCategoryInfo Duct { get; } = new(
     nameof(Duct),
     typeof(DB.Mechanical.Duct),
-    typeof(DB.Mechanical.FlexDuctType),
+    typeof(DB.MEPCurveType),
     new List<BuiltInCategory>
     {
         BuiltInCategory.OST_DuctCurves,
@@ -217,7 +217,7 @@ public static class Categories
   public static RevitCategoryInfo Pipe { get; } = new(
     nameof(Pipe),
     typeof(DB.Plumbing.Pipe),
-    typeof(DB.Plumbing.FlexPipeType),
+    typeof(DB.MEPCurveType),
     new List<BuiltInCategory>
     {
         BuiltInCategory.OST_PipeCurves,
