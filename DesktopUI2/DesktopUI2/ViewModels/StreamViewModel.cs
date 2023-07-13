@@ -1512,6 +1512,17 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           Type = NotificationType.Error
         };
         break;
+      case AggregateException _:
+        logLevel = LogEventLevel.Error;
+        notificationViewModel = new PopUpNotificationViewModel
+        {
+          Title = $"😖 {commandPrettyName} Failed!",
+          Message = "Click to open the log file for a detailed list of error messages",
+          OnClick = SpeckleLog.OpenCurrentLogFolder,
+          Type = NotificationType.Error,
+          Expiration = TimeSpan.FromSeconds(10)
+        };
+        break;
       case SpeckleException _:
         logLevel = LogEventLevel.Error;
         notificationViewModel = new PopUpNotificationViewModel
