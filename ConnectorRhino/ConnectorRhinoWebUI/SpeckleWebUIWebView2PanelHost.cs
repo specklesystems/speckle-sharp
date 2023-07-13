@@ -39,7 +39,7 @@ namespace ConnectorRhinoWebUI
 
     protected override Result RunCommand(RhinoDoc doc, RunMode mode)
     {
-      var panel_id = typeof(SpeckleWebUICefPanelHost).GUID;
+      var panel_id = typeof(SpeckleWebUIWebView2PanelHost).GUID;
 
       if (mode == RunMode.Interactive)
       {
