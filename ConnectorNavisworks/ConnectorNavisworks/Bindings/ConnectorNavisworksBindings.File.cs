@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.IO;
 using DesktopUI2.Models;
 using Speckle.ConnectorNavisworks.Storage;
 
@@ -36,5 +37,14 @@ public partial class ConnectorBindingsNavisworks
     IsFileAndModelsPresent();
 
     return _doc?.CurrentFileName ?? string.Empty;
+  }
+
+  private static void IsFileAndModelsPresent()
+  {
+    if (_doc == null)
+      throw (new FileNotFoundException("No active document found. Cannot Send."));
+
+    if (_doc.Models.Count == 0)
+      throw (new FileNotFoundException("No models are appended. Nothing to Send."));
   }
 }

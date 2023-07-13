@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using Autodesk.Navisworks.Api;
@@ -11,15 +10,6 @@ namespace Speckle.ConnectorNavisworks.Bindings;
 
 public partial class ConnectorBindingsNavisworks
 {
-  private static void IsFileAndModelsPresent()
-  {
-    if (_doc == null)
-      throw (new FileNotFoundException("No active document found."));
-
-    if (_doc.Models.Count == 0)
-      throw (new FileNotFoundException("No models found in active document."));
-  }
-
   /// <summary>
   ///   Parses list all selected Elements and their descendants that match criteria:
   ///   1. Is Selected
