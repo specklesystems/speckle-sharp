@@ -30,11 +30,18 @@ namespace DUI3
     public IBinding Binding { get; }
 
     public Action<string> ExecuteScriptAsync { get; set; }
+    public Action ShowDevToolsAction { get; set; }
 
     private Type BindingType { get; set; }
     private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
 
-    public BrowserBridge(object browser, IBinding binding, Action<string> executeScriptAsync)
+    /// <summary>
+    /// Creates a new bridge.
+    /// </summary>
+    /// <param name="browser">The host browser instance.</param>
+    /// <param name="binding">The actual binding class.</param>
+    /// <param name="executeScriptAsync">A simple action that does the browser's version of executeScriptAsync(string).</param>
+    public BrowserBridge(object browser, IBinding binding, Action<string> executeScriptAsync, Action showDevToolsAction)
     {
       FrontendBoundName = binding.Name;
       Browser = browser;
@@ -42,7 +49,9 @@ namespace DUI3
       
       BindingType = Binding.GetType(); 
       BindingMethodCache = new Dictionary<string, MethodInfo>();
-      foreach(var m in BindingType.GetMethods())
+      // Note: we need to filter out getter and setter methods here because they are not really nicely
+      // supported across browsers, hence the !method.IsSpecialName. 
+      foreach(var m in BindingType.GetMethods().Where(method => !method.IsSpecialName))
       {
         BindingMethodCache[m.Name] = m;
       }
@@ -50,6 +59,7 @@ namespace DUI3
       Binding.Parent = this;
 
       ExecuteScriptAsync = executeScriptAsync;
+      ShowDevToolsAction = showDevToolsAction;
     }
 
     /// <summary>
@@ -65,7 +75,6 @@ namespace DUI3
     /// <param name="methodName"></param>
     /// <param name="args"></param>
     /// <returns></returns>
-    /// <exception cref="SpeckleException"></exception>
     public async Task<string> RunMethod(string methodName, string args)
     {
       if (!BindingMethodCache.ContainsKey(methodName))
@@ -132,6 +141,13 @@ namespace DUI3
       ExecuteScriptAsync(script);
     }
 
+    /// <summary>
+    /// Shows the dev tools
+    /// </summary>
+    public void ShowDevTools()
+    {
+      ShowDevToolsAction();
+    }
   }
 
 }

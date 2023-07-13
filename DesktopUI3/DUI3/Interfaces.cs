@@ -81,12 +81,12 @@ namespace DUI3
   }
 
   /// <summary>
-  /// Just a sketch for now.
+  /// Just a sketch for now of what receive bindings could look like.
   /// </summary>
   public interface ReceiveBindings : IBinding
   {
     public void Receive(string modelId, string projectId);
 
-    // ETC
+    // ETC. TO BE SCOPED OUT
   }
 }

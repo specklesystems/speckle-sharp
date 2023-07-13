@@ -15,30 +15,11 @@ namespace ConnectorRhinoWebUI
   {
     public SpeckleWebUIPanelCef()
     {
+      
+      CefSharpSettings.ConcurrentTaskExecution = true;
+
       InitializeComponent();
       Browser.IsBrowserInitializedChanged += Browser_IsBrowserInitializedChanged;
-      Browser.JavascriptObjectRepository.ResolveObject += JavascriptObjectRepository_ResolveObject;
-      //Browser.JavascriptObjectRepository.Register()
-    }
-
-    private void JavascriptObjectRepository_ResolveObject(object sender, CefSharp.Event.JavascriptBindingEventArgs e)
-    {
-      //var repo = e.ObjectRepository;
-      //if (e.ObjectName == "WebUIBinding")
-      //{
-      //  try
-      //  {
-      //    repo.NameConverter = new CamelCaseJavascriptNameConverter();
-      //    repo.Register("WebUIBinding", new RhinoCefWebUIBinding(Browser), true, BindingOptions.DefaultBinder);
-      //  }
-      //  catch (Exception ex)
-      //  {
-      //    // NOTE: On page refreshes, this gets re-executed and throws an error saying that stuff's already registered.
-      //    // A TODO would be to investigate if this the safest/most correct way of dealing with this problem, or simply
-      //    // having a semaphore saying we did it and just not do it again. For now, letting it throw.
-      //    Debug.Write(ex);
-      //  }
-      //}
     }
 
     private void Browser_IsBrowserInitializedChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -46,12 +27,22 @@ namespace ConnectorRhinoWebUI
       if (Browser.IsBrowserInitialized)
         Browser.ShowDevTools();
       
+      // All this sounds like a factory function of sorts, somewhere.
+
       var executeScriptAsyncMethod = (string script) => { Browser.ExecuteScriptAsync(script); };
+      var showDevToolsMethod = () => Browser.ShowDevTools();
 
       var baseBindings = new RhinoBaseBindings(); // They don't need to be created here, but wherever it makes sense in the app
-      var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod);
+      var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
 
-      Browser.JavascriptObjectRepository.Register(baseBindings.Name, baseBindingsBridge, true);
+      var randomBinding = new RhinoRandomBinding();
+      var randomBindingBridge = new DUI3.BrowserBridge(Browser, randomBinding, executeScriptAsyncMethod, showDevToolsMethod);
+
+      // NOTE: could be moved - later - in the bridge class itself. Alternatively, we might need an abstraction that does all the work here
+      // ie, takes a binding and lobs it into the browser.
+      Browser.JavascriptObjectRepository.NameConverter = null;
+      Browser.JavascriptObjectRepository.Register(baseBindingsBridge.FrontendBoundName, baseBindingsBridge, true);
+      Browser.JavascriptObjectRepository.Register(randomBindingBridge.FrontendBoundName, randomBindingBridge, true);
     }
   }
 }

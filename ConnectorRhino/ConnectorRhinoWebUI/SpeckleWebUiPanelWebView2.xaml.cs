@@ -20,12 +20,20 @@ namespace ConnectorRhinoWebUI
     private void Browser_Initialized_Completed(object sender, EventArgs e)
     {
       Browser.CoreWebView2.OpenDevToolsWindow();
+
       var executeScriptAsyncMethod = (string script) => { Browser.ExecuteScriptAsync(script); };
+      var showDevToolsMethod = () => Browser.CoreWebView2.OpenDevToolsWindow();
 
-      var baseBindings = new RhinoBaseBindings(); // They don't need to be created here, but wherever it makes sense in the app
-      var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod);
+      // Test bindings 1
+      var baseBindings = new RhinoBaseBindings();
+      var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
 
-      Browser.CoreWebView2.AddHostObjectToScript("WebUIBinding", baseBindingsBridge);
+      // Test bindings 2
+      var randomBinding = new RhinoRandomBinding();
+      var randomBindingBridge = new DUI3.BrowserBridge(Browser, randomBinding, executeScriptAsyncMethod, showDevToolsMethod);
+
+      Browser.CoreWebView2.AddHostObjectToScript(baseBindingsBridge.FrontendBoundName, baseBindingsBridge);
+      Browser.CoreWebView2.AddHostObjectToScript(randomBindingBridge.FrontendBoundName, randomBindingBridge);
     }
   }
 }
