@@ -305,14 +305,7 @@ namespace Objects.Converter.Revit
       var category = revitElement.Category;
       if (category != null)
       {
-        if (speckleElement["category"] is RevitCategory)
-        {
-          speckleElement["category"] = Categories.GetSchemaBuilderCategoryFromBuiltIn(category.Name);
-        }
-        else
-        {
-          speckleElement["category"] = category.Name;
-        }
+        speckleElement["category"] ??= category.Name;
       }
 
       //NOTE: adds the quantities of all materials to an element

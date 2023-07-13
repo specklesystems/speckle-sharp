@@ -8,6 +8,7 @@ using RevitSharedResources.Interfaces;
 using Speckle.Core.Models;
 using OSG = Objects.Structural.Geometry;
 using DB = Autodesk.Revit.DB;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -140,15 +141,17 @@ namespace Objects.Converter.Revit
     private T? GetElementType<T>(Base element, ApplicationObject appObj, out bool isExactMatch)
       where T : ElementType
     {
+      isExactMatch = false;
+
       var type = GetElementType(element);
       if (type == null)
       {
-        throw new ArgumentException($"Could not find valid type of element of type \"{element.speckle_type}\"");
+        SpeckleLog.Logger.Warning("Could not find valid incoming type for element of type {speckleType}", element.speckle_type);
+        appObj.Update(logItem: $"Could not find valid incoming type for element of type \"{element.speckle_type}\"");
       }
       var typeInfo = Revit.AllRevitCategories.GetRevitCategoryInfoStatic<T>(element);
       var types = GetOrAddAvailibleTypes(typeInfo);
 
-      isExactMatch = false;
       if (!types.Any())
       {
         var name = typeof(T).Name;
@@ -160,7 +163,17 @@ namespace Objects.Converter.Revit
         return default;
       }
 
-      var exactType = ConversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(typeInfo.CategoryName, type));
+      var family = GetElementFamily(element);
+
+      ElementType exactType = null;
+      if (!string.IsNullOrWhiteSpace(family))
+      {
+        exactType = types
+          .Where(t => string.Equals(t.FamilyName, family, StringComparison.CurrentCultureIgnoreCase))
+          .Where(t => string.Equals(t.Name, type, StringComparison.CurrentCultureIgnoreCase))
+          .FirstOrDefault();
+      }
+      exactType ??= ConversionOperationCache.TryGet<ElementType>(GetUniqueTypeName(typeInfo.CategoryName, type));
 
       if (exactType != null)
       {
@@ -170,12 +183,10 @@ namespace Objects.Converter.Revit
         return (T)exactType;
       }
 
-      var family = (element["family"] as string)?.ToLower();
-
       return GetElementType<T>(element, family, type, types, appObj, out isExactMatch);
     }
 
-    private T GetElementType<T>(Base element, string? family, string type, IEnumerable<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
+    private T GetElementType<T>(Base element, string? family, string? type, IEnumerable<ElementType> types, ApplicationObject appObj, out bool isExactMatch)
     {
       isExactMatch = false;
       ElementType match = null;
@@ -193,7 +204,7 @@ namespace Objects.Converter.Revit
       }
 
       if (!isExactMatch)
-        appObj.Update(logItem: $"Missing type. Family: {family} Type: {type}\nType was replaced with: {match.FamilyName}, {match.Name}");
+        appObj.Update(logItem: $"Missing type. Family: {family ?? "Unknown"} Type: {type ?? "Unknown"}\nType was replaced with: {match.FamilyName}, {match.Name}");
 
       if (match is FamilySymbol fs && !fs.IsActive)
         fs.Activate();
