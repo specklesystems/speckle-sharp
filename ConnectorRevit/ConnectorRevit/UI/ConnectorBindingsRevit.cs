@@ -1,11 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Timers;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
+using Autofac;
+using ConnectorRevit.Operations;
+using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
+using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -31,9 +34,37 @@ namespace Speckle.ConnectorRevit.UI
     /// Keeps track of errors in the operations of send/receive.
     /// </summary>
     public List<Exception> OperationErrors { get; set; } = new List<Exception>();
+    public IContainer Container { get; }
 
+    //public delegate IReceivedObjectIdMap<Base, Element> ReceivedObjectIdMapFactory(StreamState streamState);
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
+      var builder = new ContainerBuilder();
+      builder.Register<ISpeckleConverter>((c, p) =>
+      {
+        return (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      }).As<ISpeckleConverter>();
+
+      builder.RegisterType<StreamStateCache>().InstancePerLifetimeScope();
+      builder.RegisterType<ConvertedObjectsCache>().As<IConvertedObjectsCache<Base, Element>>();
+      builder.RegisterType<StreamStateCache>().As<IReceivedObjectIdMap<Base, Element>>();
+      builder.RegisterType<ReceiveOperation>();
+      Container = builder.Build();
+      //services.AddScoped<IConvertedObjectsCache<Base, Element>, ConvertedObjectsCache>();
+      //services.AddSingleton<Func<ISpeckleConverter>>(sp => () => 
+      //{ 
+      //  return (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      //});
+      //services.AddTransient<ISpeckleConverter>(sp => sp.GetRequiredService<Func<ISpeckleConverter>>()());
+      //services.AddScoped<IReceivedObjectIdMap<Base, Element>, StreamStateCache>();
+      //services.AddTransient<ReceivedObjectIdMapFactory>(sp => streamState =>
+      //{
+      //  return sp.GetRequiredService<IReceivedObjectIdMap<Base, Element>>();
+      //});
+      //services.AddTransient<ReceiveOperation>();
+
+      //services.AddTransient<ReceiveOperation.Factory>();
+      //Container = services.BuildServiceProvider();
       RevitApp = revitApp;
     }
 

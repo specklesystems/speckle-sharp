@@ -5,7 +5,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
+using Autofac;
 using Avalonia.Threading;
+using ConnectorRevit.Operations;
 using ConnectorRevit.Revit;
 using ConnectorRevit.Storage;
 using ConnectorRevit.TypeMapping;
@@ -38,7 +40,19 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
+      using var scope = Container.BeginLifetimeScope();
+      var receiveOperationFactory = scope.Resolve<ReceiveOperation.Factory>();
+      var receiveOperation = receiveOperationFactory(state);
+
       CurrentOperationCancellation = progress.CancellationTokenSource;
+
+      var x = scope.Resolve<StreamStateCache>();
+
+      if (x == receiveOperation.receivedObjectIdMap)
+      {
+        Console.WriteLine("yeet");
+      }
+
       //make sure to instance a new copy so all values are reset correctly
       var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);

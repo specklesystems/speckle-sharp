@@ -33,6 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Autofac" Version="7.0.1" />
     <PackageReference Include="Revit.Async" Version="2.0.1" />
     <PackageReference Include="Speckle.Revit.API" Version="2023.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
   </ItemGroup>
