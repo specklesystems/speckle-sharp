@@ -27,7 +27,7 @@ namespace Objects.Converter.Revit
         return appObj;
 
       // get system info
-      var pipeType = GetElementType<DB.Plumbing.PipeType>(specklePipe, appObj, out bool _);
+      var pipeType = GetElementType<DB.MEPCurveType>(specklePipe, appObj, out bool _);
       if (pipeType == null)
       {
         appObj.Update(status: ApplicationObject.State.Failed);
