@@ -1,17 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Text;
 using Autodesk.Revit.DB;
-using Autodesk.Revit.DB.Visual;
-using DesktopUI2.Models;
-using DesktopUI2.ViewModels;
-using Speckle.ConnectorRevit.Entry;
-using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
-using Speckle.Core.Models;
 
 namespace ConnectorRevit.Revit
 {
@@ -19,9 +11,7 @@ namespace ConnectorRevit.Revit
   {
     private ISpeckleConverter _converter;
     private List<Exception> _exceptions = new();
-
     public Dictionary<string, int> CommitErrorsDict = new();
-    public AggregateException? AggregateException { get; private set; }
     public ErrorEater(ISpeckleConverter converter)
     {
       _converter = converter;
@@ -81,7 +71,6 @@ namespace ConnectorRevit.Revit
         }
       }
 
-      failuresAccessor.DeleteAllWarnings();
       if (resolvedFailures > 0) return FailureProcessingResult.ProceedWithCommit;
       else return FailureProcessingResult.Continue;
     }
