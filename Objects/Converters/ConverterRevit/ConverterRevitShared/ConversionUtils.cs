@@ -453,16 +453,17 @@ namespace Objects.Converter.Revit
     
     private static string GetParameterUnits(DB.Parameter param)
     {
+      string symbolUnit = string.Empty;
 #if REVIT2020
-      return string.Empty;
+      return symbolUnit;
 #else
       
       try
       {
         ForgeTypeId unitType = param.GetUnitTypeId();
         IList<ForgeTypeId> forgeTypeIds = FormatOptions.GetValidSymbols(unitType);
-        if (!forgeTypeIds.Any()) return string.Empty;
-        ForgeTypeId forgeTypeId = forgeTypeIds.FirstOrDefault(x => UnitUtils.IsSymbol(x));
+        if (!forgeTypeIds.Any()) return symbolUnit;
+        ForgeTypeId forgeTypeId = forgeTypeIds.FirstOrDefault(x => !x.Empty());
         if(forgeTypeId != null)
         {
           return LabelUtils.GetLabelForSymbol(forgeTypeId);
@@ -470,9 +471,10 @@ namespace Objects.Converter.Revit
       }
       catch (Exception)
       {
-        return string.Empty;
+        // ignored case when the parameter doesn't have a unit types
+        return symbolUnit;
       }
-      return string.Empty;
+      return symbolUnit;
 #endif
     }
 
