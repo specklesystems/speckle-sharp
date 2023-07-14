@@ -12,6 +12,7 @@ namespace ConnectorRevit.Revit
     private ISpeckleConverter _converter;
     private List<Exception> _exceptions = new();
     public Dictionary<string, int> CommitErrorsDict = new();
+
     public ErrorEater(ISpeckleConverter converter)
     {
       _converter = converter;
@@ -25,7 +26,7 @@ namespace ConnectorRevit.Revit
       var failList = failuresAccessor.GetFailureMessages();
       foreach (FailureMessageAccessor failure in failList)
       {
-        // check FailureDefinitionIds against ones that you want to dismiss, 
+        // check FailureDefinitionIds against ones that you want to dismiss,
         //FailureDefinitionId failID = failure.GetFailureDefinitionId();
         // prevent Revit from showing Unenclosed room warnings
         //if (failID == BuiltInFailures.RoomFailures.RoomNotEnclosed)
@@ -57,8 +58,10 @@ namespace ConnectorRevit.Revit
           }
           else
           {
-            if (CommitErrorsDict.ContainsKey(t)) CommitErrorsDict[t]++;
-            else CommitErrorsDict.Add(t, 1);
+            if (CommitErrorsDict.ContainsKey(t))
+              CommitErrorsDict[t]++;
+            else
+              CommitErrorsDict.Add(t, 1);
             // currently, the whole commit is rolled back. this should be investigated further at a later date
             // to properly proceed with commit
             failedElements.AddRange(failure.GetFailingElementIds());
@@ -71,21 +74,18 @@ namespace ConnectorRevit.Revit
         }
       }
 
-      if (resolvedFailures > 0) return FailureProcessingResult.ProceedWithCommit;
-      else return FailureProcessingResult.Continue;
+      if (resolvedFailures > 0)
+        return FailureProcessingResult.ProceedWithCommit;
+      else
+        return FailureProcessingResult.Continue;
     }
 
-    public Exception? GetException()
+    public SpeckleNonUserFacingException? GetException()
     {
-      if (CommitErrorsDict.Count > 1 && _exceptions.Count > 1)
+      if (CommitErrorsDict.Count > 0 && _exceptions.Count > 0)
       {
-        return new AggregateException(_exceptions);
+        return new SpeckleNonUserFacingException("Error eater was unable to resolve exceptions", new AggregateException(_exceptions));
       }
-      else if (CommitErrorsDict.Count == 1 && _exceptions.Count > 0)
-      {
-        return _exceptions[0];
-      }
-
       return null;
     }
   }

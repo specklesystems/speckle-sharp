@@ -1516,7 +1516,7 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
           Type = NotificationType.Error
         };
         break;
-      case SpeckleException when ex.Message is null:
+      case SpeckleNonUserFacingException:
         logLevel = LogEventLevel.Error;
         notificationViewModel = new PopUpNotificationViewModel
         {

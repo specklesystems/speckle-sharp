@@ -151,9 +151,8 @@ namespace Speckle.ConnectorRevit.UI
         switch (exception)
         {
           case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
+          case SpeckleNonUserFacingException:
             throw exception;
-          case AggregateException:
-            throw new SpeckleException(null, exception);
           default:
             throw new SpeckleException(exception.Message, exception);
         }
