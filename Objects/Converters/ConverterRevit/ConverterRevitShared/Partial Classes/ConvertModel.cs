@@ -1,4 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
@@ -27,8 +30,9 @@ namespace Objects.Converter.Revit
         info.siteName = doc.SiteLocation.PlaceName;
         info.locations = ProjectLocationsToSpeckle(doc);
         model["info"] = info;
+       
       }
-
+      model["units"] = GetUnits();
       Report.Log($"Created Model Object");
 
       return model;
@@ -68,5 +72,43 @@ namespace Objects.Converter.Revit
 
       return spcklLocations;
     }
+    public List<Units> GetUnits()
+    {
+      IList<DB.ForgeTypeId> forgeTypeIds = DB.UnitUtils.GetAllUnits();
+      var units = new List<Units>();
+      try
+      {
+        foreach (DB.ForgeTypeId forgeTypeId in forgeTypeIds)
+        {
+          var unit = new Units();
+          unit.applicationId = forgeTypeId.TypeId;
+          unit.display = DB.LabelUtils.GetLabelForUnit(forgeTypeId);
+          IList<DB.ForgeTypeId> validSymbols = DB.FormatOptions.GetValidSymbols(forgeTypeId);
+          if (validSymbols.Count > 0)
+          {
+            var typeId = validSymbols.Where(x=>!x.Empty()).ToArray();
+            if (typeId.Any())
+            {
+              unit.symbol = new List<Base>();
+              foreach (DB.ForgeTypeId symbol in typeId)
+              {
+                var baseUnit = new Base();
+                baseUnit.applicationId = symbol.TypeId;
+                baseUnit["display"] = DB.LabelUtils.GetLabelForSymbol(symbol);
+                unit.symbol.Add(baseUnit);
+              }
+            }
+          }
+          units.Add(unit);
+        }
+      }
+      catch (Exception)
+      {
+        return units;
+        // ignore with catch symbol
+      }
+      return units;
+    }
+    
   }
 }

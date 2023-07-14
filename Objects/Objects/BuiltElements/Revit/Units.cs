@@ -1,4 +1,5 @@
-﻿using Speckle.Core.Kits;
+﻿using System.Collections.Generic;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 
 namespace Objects.BuiltElements.Revit;
@@ -12,11 +13,13 @@ public class Units : Base
   /// <summary>
   ///  Display name of the unit : eg: Meter, Millimeter, Centimeter, etc
   /// </summary>
-  public string Display { get; set; }
+  public string display { get; set; }
   
   /// <summary>
   /// Symbol of the unit : eg: m, mm, cm, etc
   /// </summary>
-  public string Symbol { get; set; } 
+  [DetachProperty]
+  public List<Base> symbol { get; set; } 
+  
   
 }

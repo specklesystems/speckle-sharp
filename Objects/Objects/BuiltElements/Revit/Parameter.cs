@@ -11,11 +11,16 @@ public class Parameter : Base
   [SchemaInfo("Parameter", "A Revit instance parameter to set on an element", "Revit", "Families")]
   public Parameter(
     [SchemaParamInfo("The Revit display name, BuiltInParameter name or GUID (for shared parameters)")] string name,
-    object value
+    object value,
+    [SchemaParamInfo(
+      "(Optional) Speckle units. If not set it's retrieved from the current document. For non lenght based parameters (eg. Air Flow) it should be set to 'none' so that the Revit display unit will be used instead."
+    )]
+    string units = ""
   )
   {
     this.name = name;
     this.value = value;
+    this.units = units;
     applicationInternalName = name;
   }
 
@@ -37,7 +42,6 @@ public class Parameter : Base
   /// True = Type Parameter, False = Instance Parameter
   /// </summary>
   public bool isTypeParameter { get; set; } = false;
-
-  [DetachProperty]
-  public Units units { get; set; }
+  
+  public string units { get; set; }
 }
