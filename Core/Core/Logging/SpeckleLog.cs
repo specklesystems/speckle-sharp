@@ -236,9 +236,9 @@ public static class SpeckleLog
     {
       Process.Start(_logFolderPath);
     }
-    catch
+    catch (Exception ex)
     {
-      Logger.Error("Unable to open log file folder at the following path, {path}", _logFolderPath);
+      Logger.Error(ex, "Unable to open log file folder at the following path, {path}", _logFolderPath);
     }
   }
 

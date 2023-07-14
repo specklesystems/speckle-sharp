@@ -121,8 +121,11 @@ namespace Speckle.ConnectorRevit.UI
             var numUniqueErrors = errorEater.CommitErrorsDict.Keys.Count;
 
             var exception = errorEater.GetException();
-            if (exception == null) SpeckleLog.Logger.Warning("Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions", numUniqueErrors, numTotalErrors);
-            else SpeckleLog.Logger.Fatal("The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.", numUniqueErrors, numTotalErrors);
+            if (exception == null) 
+              SpeckleLog.Logger.Warning("Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions", numUniqueErrors, numTotalErrors);
+            else 
+              SpeckleLog.Logger.Fatal(exception, "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.", numUniqueErrors, numTotalErrors);
+            
             return (false, exception ?? new SpeckleException($"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."));
           }
 
@@ -148,8 +151,9 @@ namespace Speckle.ConnectorRevit.UI
         switch (exception)
         {
           case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
-          case AggregateException:
             throw exception;
+          case AggregateException:
+            throw new SpeckleException(null, exception);
           default:
             throw new SpeckleException(exception.Message, exception);
         }
