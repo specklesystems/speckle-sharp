@@ -12,11 +12,11 @@ public class Units : Base
   /// <summary>
   ///  Display name of the unit : eg: Meter, Millimeter, Centimeter, etc
   /// </summary>
-  public string Display { get; set; } = string.Empty;
+  public string Display { get; set; }
   
   /// <summary>
   /// Symbol of the unit : eg: m, mm, cm, etc
   /// </summary>
-  public string Symbol { get; set; } = string.Empty;
+  public string Symbol { get; set; } 
   
 }
