@@ -450,19 +450,18 @@ namespace Objects.Converter.Revit
       return sp;
     }
 
-    #endregion 
-    
+    #endregion
+
     private static Units GetParameterUnits(DB.Parameter param)
     {
       Units Units = new Units();
-#if REVIT2020
-      DisplayUnitType unitType = param.DisplayUnitType;
-      Units.Display = LabelUtils.GetLabelFor(unitType);
-      return Units;
-#else
-      
       try
       {
+
+#if REVIT2020
+        DisplayUnitType unitType = param.DisplayUnitType;
+        Units.Display = LabelUtils.GetLabelFor(unitType);
+#else
         ForgeTypeId unitType = param.GetUnitTypeId();
         Units.Display = LabelUtils.GetLabelForUnit(unitType);
         IList<ForgeTypeId> forgeTypeIds = FormatOptions.GetValidSymbols(unitType);
@@ -472,6 +471,8 @@ namespace Objects.Converter.Revit
         {
           Units.Symbol = LabelUtils.GetLabelForSymbol(forgeTypeId);
         }
+#endif
+        
       }
       catch (Exception)
       {
@@ -479,10 +480,10 @@ namespace Objects.Converter.Revit
         return Units;
       }
       return Units;
-#endif
     }
 
-    /// <summary>
+
+        /// <summary>
     /// </summary>
     /// <param name="revitElement"></param>
     /// <param name="speckleElement"></param>
