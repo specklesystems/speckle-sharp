@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Windows.Controls;
 using DUI3;
 using Microsoft.Web.WebView2.Core;
@@ -21,7 +22,11 @@ namespace ConnectorRhinoWebUI
     {
       Browser.CoreWebView2.OpenDevToolsWindow();
 
-      var executeScriptAsyncMethod = (string script) => { Browser.ExecuteScriptAsync(script); };
+      var executeScriptAsyncMethod = (string script) => {
+        Debug.WriteLine(script);
+        Browser.ExecuteScriptAsync(script); 
+      };
+
       var showDevToolsMethod = () => Browser.CoreWebView2.OpenDevToolsWindow();
 
       // Test bindings 1

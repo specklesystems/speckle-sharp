@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using CefSharp;
@@ -29,7 +30,10 @@ namespace ConnectorRhinoWebUI
       
       // All this sounds like a factory function of sorts, somewhere.
 
-      var executeScriptAsyncMethod = (string script) => { Browser.ExecuteScriptAsync(script); };
+      var executeScriptAsyncMethod = (string script) => {
+        Debug.WriteLine(script);
+        Browser.EvaluateScriptAsync(script);
+      };
       var showDevToolsMethod = () => Browser.ShowDevTools();
 
       var baseBindings = new RhinoBaseBindings(); // They don't need to be created here, but wherever it makes sense in the app

@@ -47,16 +47,10 @@ namespace DUI3
     public Task<string> RunMethod(string methodName, string args);
 
     /// <summary>
-    /// Sends to the Frontend a IHostAppEvent. If you want to send an empty event (no data), try the SendToBrowser(string eventName).
+    /// Sends to the Frontend an event with an optional payload.
     /// </summary>
     /// <param name="eventData"></param>
-    public void SendToBrowser(IHostAppEvent eventData);
-
-    /// <summary>
-    /// Sends to the Frontend a simple notification to do something. 
-    /// </summary>
-    /// <param name="eventName"></param>
-    public void SendToBrowser(string eventName);
+    public void SendToBrowser(string eventName, object data = null);
   }
 
   public interface IHostAppEvent
@@ -69,6 +63,7 @@ namespace DUI3
     public object Data { get; set; }
   }
 
+
   public interface IBasicConnectorBinding : IBinding
   {
     public string GetSourceApplicationName();
@@ -77,13 +72,15 @@ namespace DUI3
 
     public Account[] GetAccounts();
 
+    public DocumentInfo GetDocumentInfo();
+
     // ETC. 
   }
 
   /// <summary>
   /// Just a sketch for now of what receive bindings could look like.
   /// </summary>
-  public interface ReceiveBindings : IBinding
+  public interface IReceiveBindings : IBinding
   {
     public void Receive(string modelId, string projectId);
 

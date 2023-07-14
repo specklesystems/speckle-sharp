@@ -1,9 +1,6 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using DUI3;
+using Rhino;
 using Speckle.Core.Credentials;
 
 namespace ConnectorRhinoWebUI
@@ -13,21 +10,35 @@ namespace ConnectorRhinoWebUI
   /// </summary>
   public class RhinoBaseBindings : IBasicConnectorBinding
   {
-    public string Name { get; set;  } = "baseBinding";
+    public string Name { get; set; } = "baseBinding";
 
     public IBridge Parent { get; set; }
-    
+
+    public RhinoBaseBindings()
+    {
+      RhinoDoc.EndOpenDocumentInitialViewUpdate += (sender, e) =>
+      {
+        if (e.Merge) return;
+        if (e.Document == null) return;
+        Parent.SendToBrowser("documentChanged");
+      };
+    }
+
     public string GetSourceApplicationName() => "Rhino";
 
     public string GetSourceApplicationVersion() => "42";
 
-    public Account[] GetAccounts()
-    {
-      return AccountManager.GetAccounts().ToArray();
-    }
+    public Account[] GetAccounts() => AccountManager.GetAccounts().ToArray();
 
-    // etc.
+    public DocumentInfo GetDocumentInfo() => new DocumentInfo
+    {
+      Location = RhinoDoc.ActiveDoc.Path,
+      Name = RhinoDoc.ActiveDoc.Name,
+      Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString()
+    };
+
   }
+
 
   /// <summary>
   /// Really just for testing purposes.

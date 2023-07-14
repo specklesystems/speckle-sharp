@@ -124,20 +124,18 @@ namespace DUI3
     /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`. 
     /// </summary>
     /// <param name="eventData"></param>
-    public void SendToBrowser(IHostAppEvent eventData)
+    public void SendToBrowser(string eventName, object data = null)
     {
-      var payload = JsonSerializer.Serialize(eventData);
-      var script = $"{FrontendBoundName}.emit('{eventData.EventName}', '{payload}')";
-      ExecuteScriptAsync(script);
-    }
-
-    /// <summary>
-    /// Notifies the Frontend about something by doing the browser specific way for `browser.ExecuteScriptAsync("window.FrontendBoundName.on(eventName, etc.)")`. 
-    /// </summary>
-    /// <param name="eventData"></param>
-    public void SendToBrowser(string eventName)
-    {
-      var script = $"bindings.emit('{eventName}')";
+      string script;
+      if (data != null)
+      {
+        var payload = JsonSerializer.Serialize(data);
+        script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
+      } 
+      else
+      {
+        script = $"{FrontendBoundName}.emit('{eventName}')";
+      }
       ExecuteScriptAsync(script);
     }
 
