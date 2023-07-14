@@ -38,7 +38,8 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
   }
 
   [Test]
-  public async Task UpdateObject()
+  [Description("Tests that an object can be updated")]
+  public async Task UpdateObject_AfterAdd()
   {
     const string payloadId = "MyTestObjectId";
     const string payloadData = "MyTestObjectData";
@@ -52,6 +53,23 @@ public sealed class SQLiteTransportTests : TransportTests, IDisposable
 
     var result = _sqlite.GetObject(payloadId);
     Assert.That(result, Is.EqualTo(newPayload));
+  }
+
+  [Test]
+  [Description("Tests that updating an object that hasn't been saved previously adds the object to the DB")]
+  public async Task UpdateObject_WhenMissing()
+  {
+    const string payloadId = "MyTestObjectId";
+    const string payloadData = "MyTestObjectData";
+
+    var preUpdate = _sqlite.GetObject(payloadId);
+    Assert.That(preUpdate, Is.Null);
+
+    _sqlite.UpdateObject(payloadId, payloadData);
+    await _sqlite.WriteComplete().ConfigureAwait(false);
+
+    var postUpdate = _sqlite.GetObject(payloadId);
+    Assert.That(postUpdate, Is.EqualTo(payloadData));
   }
 
   [Test]

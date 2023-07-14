@@ -269,10 +269,8 @@ public static partial class Operations
   {
     public SpeckleDeserializeException() { }
 
-    public SpeckleDeserializeException(string message, Exception? inner = null)
-      : base(message, inner) { }
+    public SpeckleDeserializeException(string message, Exception? inner = null) : base(message, inner) { }
 
-    public SpeckleDeserializeException(string message)
-      : base(message) { }
+    public SpeckleDeserializeException(string message) : base(message) { }
   }
 }

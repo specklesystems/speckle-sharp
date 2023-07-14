@@ -105,7 +105,7 @@ internal class ParallelServerApi : ParallelOperationExecutor<ServerApiOperation>
   {
     EnsureStarted();
     List<Task<object?>> tasks = new();
-    List<List<string>> splitObjectsIds = SplitList(objectIds, NumThreads);
+    IReadOnlyList<IReadOnlyList<string>> splitObjectsIds = SplitList(objectIds, NumThreads);
     object callbackLock = new();
 
     CbObjectDownloaded callbackWrapper = (id, json) =>

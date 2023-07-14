@@ -135,7 +135,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
 
   public async Task<Dictionary<string, bool>> HasObjects(IReadOnlyList<string> objectIds)
   {
-    Dictionary<string, bool> ret = new();
+    Dictionary<string, bool> ret = new(objectIds.Count);
     // Initialize with false so that canceled queries still return a dictionary item for every object id
     foreach (string objectId in objectIds)
       ret[objectId] = false;
@@ -244,8 +244,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
   /// <param name="serializedObject"></param>
   public void UpdateObject(string hash, string serializedObject)
   {
-    if (CancellationToken.IsCancellationRequested)
-      return; //TODO: Consider throwing
+    CancellationToken.ThrowIfCancellationRequested();
 
     using var c = new SqliteConnection(_connectionString);
     c.Open();
