@@ -74,18 +74,21 @@ namespace ConnectorRevit.TypeMapping
         return;
       }
 
-      var currentMapping = DeserializeMapping(mappingSetting, out var previousMappingExists) ?? new TypeMap();
-      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentMapping, out var numNewTypes);
+      var masterTypeMap = DeserializeMapping(mappingSetting, out var previousMappingExists) ?? new TypeMap();
+      var currentOperationTypeMap = new TypeMap();
+
+      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentOperationTypeMap, masterTypeMap, out var numNewTypes);
 
       if (await ShouldShowCustomMappingDialog(mappingSetting.Selection, numNewTypes).ConfigureAwait(false))
       {
         // show custom mapping dialog if the settings correspond to what is being received
-        await ShowCustomMappingDialog(currentMapping, hostTypesContainer, numNewTypes).ConfigureAwait(false);
+        await ShowCustomMappingDialog(currentOperationTypeMap, hostTypesContainer, numNewTypes).ConfigureAwait(false);
 
         // close the dialog
         MainViewModel.CloseDialog();
 
-        mappingSetting.MappingJson = JsonConvert.SerializeObject(currentMapping);
+        masterTypeMap.AddTypeMap(currentOperationTypeMap);
+        mappingSetting.MappingJson = JsonConvert.SerializeObject(masterTypeMap);
       }
       else if (!previousMappingExists)
       {
@@ -95,7 +98,7 @@ namespace ConnectorRevit.TypeMapping
       }
 
       // update the mapping object for the user mapped types
-      SetMappedValues(typeRetriever, currentMapping);
+      SetMappedValues(typeRetriever, currentOperationTypeMap);
 
       Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
     }
@@ -192,12 +195,11 @@ namespace ConnectorRevit.TypeMapping
     /// Since an <see cref="DB.ElementType"/> is a Revit concept, this method just hands the <see cref="Base"/> object to the Converter to figure out the <see cref="DB.ElementType"/>. It also retrieves all possible <see cref="DB.ElementType"/>s for a given category of element and then saves it in a <see cref="HostTypeContainer"/>. This container will be passed to DUI for user mapping.
     /// </summary>
     /// <param name="typeRetriever"></param>
-    /// <param name="typeMap"></param>
+    /// <param name="currentTypeMap"></param>
     /// <param name="numNewTypes"></param>
     /// <returns></returns>
-    public HostTypeContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever typeRetriever, TypeMap typeMap, out int numNewTypes)
+    public HostTypeContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever typeRetriever, TypeMap currentTypeMap, TypeMap masterTypeMap, out int numNewTypes)
     {
-      var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
       var hostTypes = new HostTypeContainer();
 
       numNewTypes = 0;
@@ -221,10 +223,18 @@ namespace ConnectorRevit.TypeMapping
         //if (exactTypeMatch) continue;
 
         hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => new RevitHostType(type.FamilyName, type.Name)));
-        var initialGuess = DefineInitialGuess(typeMap, incomingFamily, incomingType, typeInfo.CategoryName, elementTypes);
 
-        typeMap.AddIncomingType(@base, incomingType, incomingFamily, typeInfo.CategoryName, initialGuess, out var isNewType);
-        if (isNewType && !exactTypeMatch) numNewTypes++;
+        var mappedValue = GetExistingMappedValue(masterTypeMap, incomingFamily, incomingType, typeInfo.CategoryName);
+
+        if (mappedValue == null)
+        {
+          mappedValue = GetMappedValueGuess(elementTypes, typeInfo.CategoryName, incomingType);
+
+          // if the neither the document nor the masterTypeMap contain a matching type, then it is new
+          if (!exactTypeMatch) numNewTypes++;
+        }
+
+        currentTypeMap.AddIncomingType(@base, incomingType, incomingFamily, typeInfo.CategoryName, mappedValue);
       }
 
       hostTypes.SetAllTypes(
@@ -236,23 +246,13 @@ namespace ConnectorRevit.TypeMapping
       return hostTypes;
     }
 
-    private static ISingleHostType DefineInitialGuess(TypeMap typeMap, string? incomingFamily, string incomingType, string category, IEnumerable<ElementType> elementTypes)
+    private static ISingleHostType? GetExistingMappedValue(TypeMap typeMap, string? incomingFamily, string incomingType, string category)
     {
       var existingMappingValue = typeMap.TryGetMappingValueInCategory(category, incomingFamily, incomingType);
 
       if (existingMappingValue != null && existingMappingValue.InitialGuess != null)
       {
         return existingMappingValue.MappedHostType ?? existingMappingValue.InitialGuess;
-      }
-
-      return GetMappedValue(elementTypes, category, incomingType);
-    }
-
-    public Dictionary<string, List<MappingValue>>? DeserializeMappingAsDict(MappingSetting mappingSetting)
-    {
-      if (mappingSetting.MappingJson != null)
-      {
-        return JsonConvert.DeserializeObject<Dictionary<string, List<MappingValue>>>(mappingSetting.MappingJson);
       }
       return null;
     }
@@ -287,9 +287,9 @@ namespace ConnectorRevit.TypeMapping
     /// </summary>
     /// <param name="elementTypes"></param>
     /// <param name="category"></param>
-    /// <param name="speckleType"></param>
+    /// <param name="incomingType"></param>
     /// <returns></returns>
-    private static ISingleHostType GetMappedValue(IEnumerable<ElementType> elementTypes, string category, string speckleType)
+    private static ISingleHostType GetMappedValueGuess(IEnumerable<ElementType> elementTypes, string category, string incomingType)
     {
       var shortestDistance = int.MaxValue;
       var closestFamily = string.Empty;
@@ -297,7 +297,7 @@ namespace ConnectorRevit.TypeMapping
 
       foreach (var elementType in elementTypes)
       {
-        var distance = LevenshteinDistance(speckleType, elementType.Name);
+        var distance = LevenshteinDistance(incomingType, elementType.Name);
         if (distance < shortestDistance)
         {
           shortestDistance = distance;
