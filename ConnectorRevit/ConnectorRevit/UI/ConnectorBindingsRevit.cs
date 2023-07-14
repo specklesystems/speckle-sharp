@@ -40,14 +40,19 @@ namespace Speckle.ConnectorRevit.UI
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       var builder = new ContainerBuilder();
-      builder.Register<ISpeckleConverter>((c, p) =>
-      {
-        return (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-      }).As<ISpeckleConverter>();
+      //builder.Register<ISpeckleConverter>((c, p) =>
+      //{
+      //  return (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      //}).As<ISpeckleConverter>();
+
+      builder.RegisterType(Converter.GetType()).As<ISpeckleConverter>();
 
       builder.RegisterType<StreamStateCache>().InstancePerLifetimeScope();
-      builder.RegisterType<ConvertedObjectsCache>().As<IConvertedObjectsCache<Base, Element>>();
-      builder.RegisterType<StreamStateCache>().As<IReceivedObjectIdMap<Base, Element>>();
+      builder.Register(c => c.Resolve<StreamStateCache>()).As<IReceivedObjectIdMap<Base, Element>>();
+
+      builder.RegisterType<ConvertedObjectsCache>()
+        .As<IConvertedObjectsCache<Base, Element>>()
+        .InstancePerLifetimeScope();
       builder.RegisterType<ReceiveOperation>();
       Container = builder.Build();
       //services.AddScoped<IConvertedObjectsCache<Base, Element>, ConvertedObjectsCache>();

@@ -46,15 +46,17 @@ namespace Speckle.ConnectorRevit.UI
 
       CurrentOperationCancellation = progress.CancellationTokenSource;
 
-      var x = scope.Resolve<StreamStateCache>();
+      var x = scope.Resolve<IReceivedObjectIdMap<Base, Element>>();
 
       if (x == receiveOperation.receivedObjectIdMap)
       {
         Console.WriteLine("yeet");
       }
 
+      var converter = scope.Resolve<ISpeckleConverter>();
+
       //make sure to instance a new copy so all values are reset correctly
-      var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
+      //var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
       converter.SetContextDocument(CurrentDoc.Document);
 
       // set converter settings as tuples (setting slug, setting selection)

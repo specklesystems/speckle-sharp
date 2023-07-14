@@ -105,8 +105,24 @@ namespace Objects.Converter.Revit
       Report.Log($"Using converter: {Name} v{ver}");
     }
 
+    private IConvertedObjectsCache<Base, Element> convertedObjectsCache;
+    private Lazy<IReceivedObjectIdMap<Base, Element>> lazyReceivedObjectIdMap;
+
+    public ConverterRevit(
+      IConvertedObjectsCache<Base, Element> convertedObjectsCache,
+      // delay instantiation because this requires some setup in the connector (for now)
+      Lazy<IReceivedObjectIdMap<Base, Element>> lazyReceivedObjectIdMap
+    )
+    {
+      this.convertedObjectsCache = convertedObjectsCache;
+      this.lazyReceivedObjectIdMap = lazyReceivedObjectIdMap;
+      var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;
+      Report.Log($"Using converter: {Name} v{ver}");
+    }
+
     public void SetContextDocument(object doc)
     {
+      PreviouslyReceivedObjectIds = lazyReceivedObjectIdMap.Value;
       if (doc is Transaction t)
       {
         T = t;
