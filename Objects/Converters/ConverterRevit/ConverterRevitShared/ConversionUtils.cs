@@ -19,6 +19,7 @@ using OSG = Objects.Structural.Geometry;
 using Parameter = Objects.BuiltElements.Revit.Parameter;
 using Point = Objects.Geometry.Point;
 using SHC = RevitSharedResources.Helpers.Categories;
+using Units = Objects.BuiltElements.Revit.Units;
 
 namespace Objects.Converter.Revit
 {
@@ -451,30 +452,33 @@ namespace Objects.Converter.Revit
 
     #endregion 
     
-    private static string GetParameterUnits(DB.Parameter param)
+    private static Units GetParameterUnits(DB.Parameter param)
     {
-      string symbolUnit = string.Empty;
+      Units Units = new Units();
 #if REVIT2020
-      return symbolUnit;
+      DisplayUnitType unitType = param.DisplayUnitType;
+      Units.Display = LabelUtils.GetLabelFor(unitType);
+      return Units;
 #else
       
       try
       {
         ForgeTypeId unitType = param.GetUnitTypeId();
+        Units.Display = LabelUtils.GetLabelForUnit(unitType);
         IList<ForgeTypeId> forgeTypeIds = FormatOptions.GetValidSymbols(unitType);
-        if (!forgeTypeIds.Any()) return symbolUnit;
+        if (!forgeTypeIds.Any()) return Units;
         ForgeTypeId forgeTypeId = forgeTypeIds.FirstOrDefault(x => !x.Empty());
         if(forgeTypeId != null)
         {
-          return LabelUtils.GetLabelForSymbol(forgeTypeId);
+          Units.Symbol = LabelUtils.GetLabelForSymbol(forgeTypeId);
         }
       }
       catch (Exception)
       {
         // ignored case when the parameter doesn't have a unit types
-        return symbolUnit;
+        return Units;
       }
-      return symbolUnit;
+      return Units;
 #endif
     }
 
@@ -538,8 +542,79 @@ namespace Objects.Converter.Revit
         TrySetParam(rp, sp.value, sp.units, sp.applicationUnit);
       }
     }
+  private void TrySetParam(DB.Parameter rp, object value, Units units, string applicationUnit = "")
+    {
+      try
+      {
+        switch (rp.StorageType)
+        {
+          case StorageType.Double:
+            // This is meant for parameters that come from Revit
+            // as they might use a lot more unit types that Speckle doesn't currently support
+            if (!string.IsNullOrEmpty(applicationUnit))
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(value, applicationUnit);
+              rp.Set(val);
+            }
+            // the following two cases are for parameters comimg form schema builder
+            // they do not have applicationUnit but just units
+            // units are automatically set but the user can override them
+            // users might set them to "none" so that we convert them by using the Revit destination parameter display units
+            // this is needed to correctly receive non lenght based parameters (eg air flow)
+            else if (units.Symbol == Speckle.Core.Kits.Units.None)
+            {
+              var val = RevitVersionHelper.ConvertToInternalUnits(Convert.ToDouble(value), rp);
+              rp.Set(val);
+            }
+            else if (Speckle.Core.Kits.Units.IsUnitSupported(units.Display))
+            {
+              var val = ScaleToNative(Convert.ToDouble(value), units.Display);
+              rp.Set(val);
+            }
+            else
+            {
+              rp.Set(Convert.ToDouble(value));
+            }
+            break;
 
-    private void TrySetParam(DB.Parameter rp, object value, string units = "", string applicationUnit = "")
+          case StorageType.Integer:
+            if (value is string s)
+            {
+              if (s.ToLower() == "no")
+              {
+                value = 0;
+              }
+              else if (s.ToLower() == "yes")
+              {
+                value = 1;
+              }
+            }
+            rp.Set(Convert.ToInt32(value));
+            break;
+
+          case StorageType.String:
+            if (rp.Definition.Name.ToLower().Contains("name"))
+            {
+              var temp = Regex.Replace(Convert.ToString(value), "[^0-9a-zA-Z ]+", "");
+              Report.Log($@"Invalid characters in param name '{rp.Definition.Name}': Renamed to '{temp}'");
+              rp.Set(temp);
+            }
+            else
+            {
+              rp.Set(Convert.ToString(value));
+            }
+            break;
+          default:
+            break;
+        }
+      }
+      catch
+      {
+        // do nothing for now...
+      }
+    }
+    [Obsolete("This method will be remove in feature")]
+    private void TrySetParam(DB.Parameter rp, object value, string units ="", string applicationUnit = "")
     {
       try
       {
@@ -670,6 +745,17 @@ namespace Objects.Converter.Revit
     //  }
     //}
 
+    private void TrySetParam(DB.Element elem, BuiltInParameter bip, object value, Units units = null)
+    {
+      var param = elem.get_Parameter(bip);
+      if (param == null || param.IsReadOnly)
+      {
+        return;
+      }
+
+      TrySetParam(param, value, units);
+    }
+    [Obsolete("This method will be remove in feature")]
     private void TrySetParam(DB.Element elem, BuiltInParameter bip, object value, string units = "")
     {
       var param = elem.get_Parameter(bip);
@@ -680,7 +766,6 @@ namespace Objects.Converter.Revit
 
       TrySetParam(param, value, units);
     }
-
     /// <summary>
     /// Queries a Revit Document for phases by the given name.
     /// </summary>
