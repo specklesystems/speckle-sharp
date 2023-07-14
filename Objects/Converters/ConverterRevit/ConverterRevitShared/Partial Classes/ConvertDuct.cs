@@ -36,7 +36,7 @@ namespace Objects.Converter.Revit
       Element duct = null;
       if (speckleDuct.baseCurve == null || speckleDuct.baseCurve is Line)
       {
-        var ductType = GetElementType<FlexDuctType>(speckleDuct, appObj, out bool _);
+        var ductType = GetElementType<DuctType>(speckleDuct, appObj, out bool _);
         if (ductType == null)
         {
           appObj.Update(status: ApplicationObject.State.Failed);
