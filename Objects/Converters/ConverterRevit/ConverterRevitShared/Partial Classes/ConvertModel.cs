@@ -32,7 +32,11 @@ namespace Objects.Converter.Revit
         model["info"] = info;
        
       }
+#if REVIT2020
+// Don't Support, will be remove in future
+#else
       model["units"] = GetUnits();
+#endif 
       Report.Log($"Created Model Object");
 
       return model;
@@ -72,7 +76,11 @@ namespace Objects.Converter.Revit
 
       return spcklLocations;
     }
-    public List<Units> GetUnits()
+    
+#if REVIT2020
+    // Don't Support , will be remove in future
+#else
+public List<Units> GetUnits()
     {
       IList<DB.ForgeTypeId> forgeTypeIds = DB.UnitUtils.GetAllUnits();
       var units = new List<Units>();
@@ -109,6 +117,8 @@ namespace Objects.Converter.Revit
       }
       return units;
     }
+#endif
+    
     
   }
 }

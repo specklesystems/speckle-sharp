@@ -460,12 +460,16 @@ namespace Objects.Converter.Revit
     public static string GetSymBolUnit(DB.Parameter parameter)
     {
       string symbol = string.Empty;
+#if REVIT2020
+      // Don't support, will remove in future
+      return symbol;
+#else
       try
       {
         ForgeTypeId forgeTypeId = parameter.GetUnitTypeId();
-        if (DB.FormatOptions.CanHaveSymbol(forgeTypeId))
+        if (FormatOptions.CanHaveSymbol(forgeTypeId))
         {
-          IList<DB.ForgeTypeId> validSymbols = DB.FormatOptions.GetValidSymbols(forgeTypeId);
+          IList<DB.ForgeTypeId> validSymbols = FormatOptions.GetValidSymbols(forgeTypeId);
           if (validSymbols.Count > 0)
           {
             IEnumerable<DB.ForgeTypeId> typeId = validSymbols.Where(x => !x.Empty());
@@ -473,7 +477,7 @@ namespace Objects.Converter.Revit
             {
               foreach (DB.ForgeTypeId symbolId in typeId)
               {
-                symbol = DB.LabelUtils.GetLabelForSymbol(symbolId);
+                symbol = LabelUtils.GetLabelForSymbol(symbolId);
               }
             }
           }
@@ -483,6 +487,7 @@ namespace Objects.Converter.Revit
       {
         // ignore with catch symbol
       }
+#endif
       return symbol;
     }
     
