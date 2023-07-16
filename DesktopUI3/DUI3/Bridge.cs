@@ -35,6 +35,8 @@ namespace DUI3
     private Type BindingType { get; set; }
     private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
 
+    private JsonSerializerOptions serializerOptions;
+
     /// <summary>
     /// Creates a new bridge.
     /// </summary>
@@ -60,6 +62,11 @@ namespace DUI3
 
       ExecuteScriptAsync = executeScriptAsync;
       ShowDevToolsAction = showDevToolsAction;
+
+      serializerOptions = new JsonSerializerOptions
+      {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+      };
     }
 
     /// <summary>
@@ -77,47 +84,60 @@ namespace DUI3
     /// <returns></returns>
     public async Task<string> RunMethod(string methodName, string args)
     {
-      if (!BindingMethodCache.ContainsKey(methodName))
-        throw new SpeckleException($"Cannot find method {methodName} in bindings class {BindingType.AssemblyQualifiedName}.");
-
-      var method = BindingMethodCache[methodName];
-      var parameters = method.GetParameters();
-      var jsonArgsArray = JsonSerializer.Deserialize<string[]>(args);
-
-      if (parameters.Length != jsonArgsArray.Length)
-        throw new SpeckleException($"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray.Length}.");
-
-      var typedArgs = new object[jsonArgsArray.Length];
-
-      for (int i = 0; i < typedArgs.Length; i++)
+      // Note: we have this pokemon catch 'em all here because throwing errors in .NET is 
+      // very risky, and we might crash the host application. Behaiour seems also to differ
+      // between various browser controls (e.g.: cefsharp handles things nicely - basically 
+      // passing back the exception to the browser, but webview throws an access violation
+      // error that kills Rhino.). 
+      try
       {
-        var typedObj = JsonSerializer.Deserialize(jsonArgsArray[i], parameters[i].ParameterType);
-        typedArgs[i] = typedObj;
+        if (!BindingMethodCache.ContainsKey(methodName))
+          throw new SpeckleException($"Cannot find method {methodName} in bindings class {BindingType.AssemblyQualifiedName}.");
+
+        var method = BindingMethodCache[methodName];
+        var parameters = method.GetParameters();
+        var jsonArgsArray = JsonSerializer.Deserialize<string[]>(args);
+
+        if (parameters.Length != jsonArgsArray.Length)
+          throw new SpeckleException($"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray.Length}.");
+
+        var typedArgs = new object[jsonArgsArray.Length];
+
+        for (int i = 0; i < typedArgs.Length; i++)
+        {
+          var typedObj = JsonSerializer.Deserialize(jsonArgsArray[i], parameters[i].ParameterType);
+          typedArgs[i] = typedObj;
+        }
+        var resultTyped = method.Invoke(Binding, typedArgs);
+
+        // Was it an async method (in bridgeClass?)
+        var resultTypedTask = resultTyped as Task;
+
+        string resultJson;
+
+        // Was the method called async?
+        if (resultTypedTask == null)
+        {
+          // Regular method: no need to await things
+          resultJson = JsonSerializer.Serialize(resultTyped, serializerOptions);
+        }
+        else // It's an async call
+        {
+          await resultTypedTask;
+
+          // If has a "Result" property return the value otherwise null (Task<void> etc)
+          var resultProperty = resultTypedTask.GetType().GetProperty("Result");
+          var taskResult = resultProperty != null ? resultProperty.GetValue(resultTypedTask) : null;
+          resultJson = JsonSerializer.Serialize(taskResult, serializerOptions);
+        }
+
+        return resultJson;
       }
-      var resultTyped = method.Invoke(Binding, typedArgs);
-
-      // Was it an async method (in bridgeClass?)
-      var resultTypedTask = resultTyped as Task;
-
-      string resultJson;
-
-      // Was the method called async?
-      if (resultTypedTask == null)
+      catch (Exception e)
       {
-        // Regular method: no need to await things
-        resultJson = JsonSerializer.Serialize(resultTyped);
+        // TODO properly log the exeception.
+        return JsonSerializer.Serialize(new { Error = e.Message, InnerError = e.InnerException?.Message }, serializerOptions);
       }
-      else // It's an async call
-      {
-        await resultTypedTask;
-
-        // If has a "Result" property return the value otherwise null (Task<void> etc)
-        var resultProperty = resultTypedTask.GetType().GetProperty("Result");
-        var taskResult = resultProperty != null ? resultProperty.GetValue(resultTypedTask) : null;
-        resultJson = JsonSerializer.Serialize(taskResult);
-      }
-
-      return resultJson;
     }
 
     /// <summary>
@@ -129,7 +149,7 @@ namespace DUI3
       string script;
       if (data != null)
       {
-        var payload = JsonSerializer.Serialize(data);
+        var payload = JsonSerializer.Serialize(data, serializerOptions);
         script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
       } 
       else
@@ -140,7 +160,8 @@ namespace DUI3
     }
 
     /// <summary>
-    /// Shows the dev tools
+    /// Shows the dev tools. This is currently only needed for CefSharp - other browser
+    /// controls allow for right click + inspect. 
     /// </summary>
     public void ShowDevTools()
     {

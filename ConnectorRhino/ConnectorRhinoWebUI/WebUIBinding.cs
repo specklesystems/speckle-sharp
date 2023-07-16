@@ -38,22 +38,5 @@ namespace ConnectorRhinoWebUI
     };
 
   }
-
-
-  /// <summary>
-  /// Really just for testing purposes.
-  /// </summary>
-  public class RhinoRandomBinding : IBinding
-  {
-    public string Name { get; set; } = "rhinoRandomBinding";
-
-    public IBridge Parent { get; set; }
-
-    public string MakeGreeting(string name)
-    {
-      return $"Hello {name}! Hope you're  having a good day.";
-    }
-
-  }
 }
 

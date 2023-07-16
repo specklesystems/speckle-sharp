@@ -34,11 +34,11 @@ namespace ConnectorRhinoWebUI
       var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
 
       // Test bindings 2
-      var randomBinding = new RhinoRandomBinding();
-      var randomBindingBridge = new DUI3.BrowserBridge(Browser, randomBinding, executeScriptAsyncMethod, showDevToolsMethod);
+      var testBinding = new TestBinding();
+      var testBindingBridge = new DUI3.BrowserBridge(Browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
 
       Browser.CoreWebView2.AddHostObjectToScript(baseBindingsBridge.FrontendBoundName, baseBindingsBridge);
-      Browser.CoreWebView2.AddHostObjectToScript(randomBindingBridge.FrontendBoundName, randomBindingBridge);
+      Browser.CoreWebView2.AddHostObjectToScript(testBindingBridge.FrontendBoundName, testBindingBridge);
     }
   }
 }

@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using CefSharp;
 using CefSharp.JavascriptBinding;
 using CefSharp.Wpf;
+using DUI3;
 
 namespace ConnectorRhinoWebUI
 {
@@ -34,19 +35,20 @@ namespace ConnectorRhinoWebUI
         Debug.WriteLine(script);
         Browser.EvaluateScriptAsync(script);
       };
+
       var showDevToolsMethod = () => Browser.ShowDevTools();
 
       var baseBindings = new RhinoBaseBindings(); // They don't need to be created here, but wherever it makes sense in the app
       var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
 
-      var randomBinding = new RhinoRandomBinding();
-      var randomBindingBridge = new DUI3.BrowserBridge(Browser, randomBinding, executeScriptAsyncMethod, showDevToolsMethod);
+      var testBinding = new TestBinding();
+      var testBindingBridge = new DUI3.BrowserBridge(Browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
 
       // NOTE: could be moved - later - in the bridge class itself. Alternatively, we might need an abstraction that does all the work here
       // ie, takes a binding and lobs it into the browser.
       Browser.JavascriptObjectRepository.NameConverter = null;
       Browser.JavascriptObjectRepository.Register(baseBindingsBridge.FrontendBoundName, baseBindingsBridge, true);
-      Browser.JavascriptObjectRepository.Register(randomBindingBridge.FrontendBoundName, randomBindingBridge, true);
+      Browser.JavascriptObjectRepository.Register(testBindingBridge.FrontendBoundName, testBindingBridge, true);
     }
   }
 }
