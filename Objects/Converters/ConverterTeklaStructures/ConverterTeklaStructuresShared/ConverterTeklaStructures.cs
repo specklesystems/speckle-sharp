@@ -1,15 +1,12 @@
-﻿using Speckle.Core.Kits;
+using Objects.Geometry;
+using Objects.Other;
 using Speckle.Core.Kits;
-using Speckle.Core.Logging;
-using Speckle.Core.Models;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
-using System;
+using Speckle.Core.Models.GraphTraversal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using Tekla.Structures;
 using Tekla.Structures.Model;
 using BE = Objects.BuiltElements;
 using GE = Objects.Geometry;
@@ -67,9 +64,13 @@ namespace Objects.Converter.TeklaStructures
     public bool CanConvertToNative(Base @object)
     {
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh) == true)
+      if (bool.TryParse(recieveModelMesh, out var receiveAsMesh) && receiveAsMesh)
       {
-        return true;
+        if (DefaultTraversal.HasDefinition(@object) || DefaultTraversal.HasDisplayValue(@object))
+        {
+          return true;
+        }
+        return false;
       }
 
       switch (@object)
@@ -128,33 +129,25 @@ namespace Objects.Converter.TeklaStructures
 
     public object ConvertToNative(Base @object)
     {
-
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh) == true)
+      if (bool.TryParse(recieveModelMesh, out var receiveAsMesh) && receiveAsMesh)
       {
-        try
+        if (@object is Instance instance)
+        {
+          MeshToNative(instance, instance.GetTransformedGeometry().Where(t => t is Mesh).Cast<Mesh>().ToList());
+        }
+        else
         {
           var bases = BaseExtensions.Flatten(@object);
           foreach (var @base in bases)
           {
-            try
+            foreach (var displayAlias in DefaultTraversal.displayValuePropAliases)
             {
-              List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-              var meshes = @base.GetType().GetProperty("displayValue").GetValue(@base) as List<GE.Mesh>;
-              //dynamic property = propInfo;
-              //List<GE.Mesh> meshes = (List<GE.Mesh>)property;       
+              if (@base[displayAlias] is not List<GE.Mesh> meshes) continue;
+
               MeshToNative(@base, meshes);
             }
-            catch
-            {
-
-            }
           }
-          return true;
-        }
-        catch
-        {
-
         }
       }
 

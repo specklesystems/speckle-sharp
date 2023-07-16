@@ -113,7 +113,8 @@ namespace Speckle.ConnectorRevit.UI
 
         g.Start();
         var failOpts = t.GetFailureHandlingOptions();
-        failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
+        var errorEater = new ErrorEater(converter);
+        failOpts.SetFailuresPreprocessor(errorEater);
         failOpts.SetClearAfterRollback(true);
         t.SetFailureHandlingOptions(failOpts);
         t.Start();
@@ -129,6 +130,21 @@ namespace Speckle.ConnectorRevit.UI
 
           previousObjects.AddConvertedElements(convertedObjects);
           t.Commit();
+
+          if (t.GetStatus() == TransactionStatus.RolledBack)
+          {
+            var numTotalErrors = errorEater.CommitErrorsDict.Sum(kvp => kvp.Value);
+            var numUniqueErrors = errorEater.CommitErrorsDict.Keys.Count;
+
+            var exception = errorEater.GetException();
+            if (exception == null) 
+              SpeckleLog.Logger.Warning("Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions", numUniqueErrors, numTotalErrors);
+            else 
+              SpeckleLog.Logger.Fatal(exception, "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.", numUniqueErrors, numTotalErrors);
+            
+            return (false, exception ?? new SpeckleException($"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."));
+          }
+
           g.Assimilate();
           return (true, null);
         }
@@ -148,9 +164,14 @@ namespace Speckle.ConnectorRevit.UI
 
       if (!success)
       {
-        //Don't wrap cancellation token (if it's ours!)
-        if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
-        throw new SpeckleException(exception.Message, exception);
+        switch (exception)
+        {
+          case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
+          case SpeckleNonUserFacingException:
+            throw exception;
+          default:
+            throw new SpeckleException(exception.Message, exception);
+        }
       }
 
       CurrentOperationCancellation = null;
