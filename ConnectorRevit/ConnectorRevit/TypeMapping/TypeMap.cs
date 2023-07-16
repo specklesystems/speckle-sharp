@@ -18,7 +18,7 @@ namespace ConnectorRevit.TypeMapping
     [JsonIgnore]
     private HashSet<string> baseIds = new();
 
-    public void AddIncomingType(Base @base, string incomingType, string? incomingFamily, string category, ISingleHostType initialGuess, bool overwriteExisting = false)
+    public void AddIncomingType(Base @base, string incomingType, string? incomingFamily, string category, ISingleHostType initialGuess)
     {
       if (baseIds.Contains(@base.id)) return;
       baseIds.Add(@base.id);
@@ -30,7 +30,7 @@ namespace ConnectorRevit.TypeMapping
         categoryToCategoryMap[category] = categoryMappingValues;
       }
 
-      if (!categoryMappingValues.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap) || overwriteExisting)
+      if (!categoryMappingValues.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap))
       {
         singleValueToMap = new RevitMappingValue(incomingType, initialGuess, incomingFamily, true);
         categoryMappingValues.AddMappingValue(singleValueToMap);

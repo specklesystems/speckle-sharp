@@ -77,7 +77,7 @@ namespace ConnectorRevit.TypeMapping
       var masterTypeMap = DeserializeMapping(mappingSetting, out var previousMappingExists) ?? new TypeMap();
       var currentOperationTypeMap = new TypeMap();
 
-      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(typeRetriever, currentOperationTypeMap, masterTypeMap, out var numNewTypes);
+      var hostTypesContainer = GetHostTypesAndAddIncomingTypes(currentOperationTypeMap, masterTypeMap, out var numNewTypes);
 
       if (await ShouldShowCustomMappingDialog(mappingSetting.Selection, numNewTypes).ConfigureAwait(false))
       {
@@ -198,7 +198,7 @@ namespace ConnectorRevit.TypeMapping
     /// <param name="currentTypeMap"></param>
     /// <param name="numNewTypes"></param>
     /// <returns></returns>
-    public HostTypeContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever typeRetriever, TypeMap currentTypeMap, TypeMap masterTypeMap, out int numNewTypes)
+    public HostTypeContainer GetHostTypesAndAddIncomingTypes(TypeMap currentTypeMap, TypeMap masterTypeMap, out int numNewTypes)
     {
       var hostTypes = new HostTypeContainer();
 
