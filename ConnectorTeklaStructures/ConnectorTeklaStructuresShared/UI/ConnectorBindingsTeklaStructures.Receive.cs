@@ -1,4 +1,4 @@
-﻿using DesktopUI2;
+using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Serilog;
+using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorTeklaStructures.UI
 {
@@ -59,9 +60,7 @@ namespace Speckle.ConnectorTeklaStructures.UI
         progress.Update(conversionProgressDict);
       };
 
-
-      var commitObjs = FlattenCommitObject(commitObject, converter);
-      foreach (var commitObj in commitObjs)
+      foreach (var commitObj in FlattenCommitObject(commitObject, converter))
       {
         BakeObject(commitObj, state, converter);
         updateProgressAction?.Invoke();
@@ -94,53 +93,20 @@ namespace Speckle.ConnectorTeklaStructures.UI
     }
 
     /// <summary>
-    /// Recurses through the commit object and flattens it. 
+    /// Traverses the object graph, returning objects to be converted.
     /// </summary>
-    /// <param name="obj"></param>
-    /// <param name="converter"></param>
-    /// <returns></returns>
-    private List<Base> FlattenCommitObject(object obj, ISpeckleConverter converter)
+    /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
+    /// <param name="converter">The converter instance, used to define what objects are convertable</param>
+    /// <returns>A flattened list of objects to be converted ToNative</returns>
+    private IEnumerable<Base> FlattenCommitObject(Base obj, ISpeckleConverter converter)
     {
-      List<Base> objects = new List<Base>();
-
-
-      if (obj is Base @base)
-      {
-        if (converter.CanConvertToNative(@base))
-        {
-          objects.Add(@base);
-
-          return objects;
-        }
-        else
-        {
-          foreach (var prop in @base.GetDynamicMembers())
-          {
-            objects.AddRange(FlattenCommitObject(@base[prop], converter));
-          }
-          return objects;
-        }
-      }
-
-      if (obj is List<object> list)
-      {
-        foreach (var listObj in list)
-        {
-          objects.AddRange(FlattenCommitObject(listObj, converter));
-        }
-        return objects;
-      }
-
-      if (obj is IDictionary dict)
-      {
-        foreach (DictionaryEntry kvp in dict)
-        {
-          objects.AddRange(FlattenCommitObject(kvp.Value, converter));
-        }
-        return objects;
-      }
-
-      return objects;
+      var traverseFunction = DefaultTraversal.CreateTraverseFunc(converter);
+      
+      return traverseFunction.Traverse(obj)
+        .Select(tc => tc.current)
+        .Where(b => b != null)
+        .Where(converter.CanConvertToNative)
+        .Reverse();
     }
 
     #endregion
