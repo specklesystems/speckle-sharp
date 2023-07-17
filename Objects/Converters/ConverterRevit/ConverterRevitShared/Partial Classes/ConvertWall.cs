@@ -47,8 +47,9 @@ namespace Objects.Converter.Revit
 
       List<string> joinSettings = new List<string>();
 
-      if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
-        joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+      if (conversionSettings.TryGetSettingBySlug("disallow-join", out var disallowJoinSetting)
+          && !string.IsNullOrEmpty(disallowJoinSetting))
+        joinSettings = new List<string>(Regex.Split(disallowJoinSetting, @"\,\ "));
 
       if (speckleWall is RevitWall speckleRevitWall)
       {
@@ -313,10 +314,10 @@ namespace Objects.Converter.Revit
       Doc.Regenerate();
       var sketch = (Sketch)Doc.GetElement(wall.SketchId);
 
-      T.Commit();
+      transactionManager.Commit();
       var sketchEditScope = new SketchEditScope(Doc, "Add profile to the sketch");
       sketchEditScope.Start(sketch.Id);
-      T.Start();
+      transactionManager.Resume();
 
       foreach (var obj in voidCurves)
       {
@@ -327,7 +328,7 @@ namespace Objects.Converter.Revit
         var curveArray = CurveToNative(@void, true);
         Doc.Create.NewModelCurveArray(curveArray, sketch.SketchPlane);
       }
-      if (T.Commit() != TransactionStatus.Committed)
+      if (transactionManager.Commit() != TransactionStatus.Committed)
         sketchEditScope.Cancel();
 
       try
@@ -338,7 +339,7 @@ namespace Objects.Converter.Revit
       {
         sketchEditScope.Cancel();
       }
-      T.Start();
+      transactionManager.Resume();
 #endif
     }
 

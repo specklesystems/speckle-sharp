@@ -13,10 +13,10 @@ namespace ConnectorRevit.Storage
     private StreamState streamState;
     private Dictionary<string, ApplicationObject> previousContextObjects;
     public delegate StreamStateCache Factory(StreamState state);
-    public StreamStateCache(StreamState state)
+    public StreamStateCache(IEntityProvider<StreamState> streamStateProvider)
     {
-      streamState = state;
-      var previousObjects = state.ReceivedObjects;
+      streamState = streamStateProvider.Entity;
+      var previousObjects = streamState.ReceivedObjects;
       previousContextObjects = new(previousObjects.Count);
       foreach (var ao in previousObjects)
       {

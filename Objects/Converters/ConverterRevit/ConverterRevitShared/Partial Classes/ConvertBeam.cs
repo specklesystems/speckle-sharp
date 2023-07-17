@@ -93,9 +93,10 @@ namespace Objects.Converter.Revit
         // check for disallow join for beams in user settings
         // currently, this setting only applies to beams being created
 
-        if (Settings.ContainsKey("disallow-join") && !string.IsNullOrEmpty(Settings["disallow-join"]))
+        if (conversionSettings.TryGetSettingBySlug("disallow-join", out var disallowJoinSetting)
+          && !string.IsNullOrEmpty(disallowJoinSetting))
         {
-          List<string> joinSettings = new List<string>(Regex.Split(Settings["disallow-join"], @"\,\ "));
+          List<string> joinSettings = new List<string>(Regex.Split(disallowJoinSetting, @"\,\ "));
           if (joinSettings.Contains(StructuralFraming))
           {
             StructuralFramingUtils.DisallowJoinAtEnd(revitBeam, 0);

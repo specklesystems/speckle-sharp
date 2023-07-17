@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
@@ -57,12 +58,6 @@ namespace Objects.Converter.Revit
       new Dictionary<string, ApplicationObject>();
 
     /// <summary>
-    /// <para>To keep track of previously received objects from a given stream in here. If possible, conversions routines
-    /// will edit an existing object, otherwise they will delete the old one and create the new one.</para>
-    /// </summary>
-    public IReceivedObjectIdMap<Base, Element> PreviouslyReceivedObjectIds { get; set; }
-
-    /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
     public Element CurrentHostElement { get; set; }
@@ -73,10 +68,6 @@ namespace Objects.Converter.Revit
     public ISet<string> ConvertedObjects { get; private set; } = new HashSet<string>();
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
-
-    public Transaction T { get; private set; }
-
-    public Dictionary<string, string> Settings { get; private set; } = new Dictionary<string, string>();
 
     public Dictionary<string, BE.Level> Levels { get; private set; } = new Dictionary<string, BE.Level>();
 
@@ -106,44 +97,45 @@ namespace Objects.Converter.Revit
     }
 
     private IConvertedObjectsCache<Base, Element> convertedObjectsCache;
-    private Lazy<IReceivedObjectIdMap<Base, Element>> lazyReceivedObjectIdMap;
+    /// <summary>
+    /// To keep track of previously received objects from a given stream in here. 
+    /// If possible, conversions routines will edit an existing object, 
+    /// otherwise they will delete the old one and create the new one.
+    /// </summary>
+    private IReceivedObjectIdMap<Base, Element> receivedObjectIdMap;
+    private IRevitTransactionManager transactionManager;
+    private IConversionSettings conversionSettings;
 
     public ConverterRevit(
       IConvertedObjectsCache<Base, Element> convertedObjectsCache,
-      // delay instantiation because this requires some setup in the connector (for now)
-      Lazy<IReceivedObjectIdMap<Base, Element>> lazyReceivedObjectIdMap
+      IReceivedObjectIdMap<Base, Element> receivedObjectIdMap,
+      IRevitTransactionManager transactionManager,
+      IEntityProvider<UIDocument> uiDocumentProvider,
+      IConversionSettings conversionSettings,
+      ReceiveMode receiveMode
     )
     {
       this.convertedObjectsCache = convertedObjectsCache;
-      this.lazyReceivedObjectIdMap = lazyReceivedObjectIdMap;
+      this.receivedObjectIdMap = receivedObjectIdMap;
+      this.transactionManager = transactionManager;
+      Doc = uiDocumentProvider.Entity.Document;
+
+      ReceiveMode = receiveMode;
+      this.conversionSettings = conversionSettings;
+
       var ver = System.Reflection.Assembly.GetAssembly(typeof(ConverterRevit)).GetName().Version;
       Report.Log($"Using converter: {Name} v{ver}");
     }
 
     public void SetContextDocument(object doc)
     {
-      PreviouslyReceivedObjectIds = lazyReceivedObjectIdMap.Value;
-      if (doc is Transaction t)
-      {
-        T = t;
-      }
-      else if (doc is IReceivedObjectIdMap<Base, Element> cache)
-      {
-        PreviouslyReceivedObjectIds = cache;
-      }
-      else if (doc is DB.View view)
+      if (doc is DB.View view)
       {
         // setting the view as a 2d view will result in no objects showing up, so only do it if it's a 3D view
         if (view is View3D view3D)
         {
           ViewSpecificOptions = new Options() { View = view, ComputeReferences = true };
         }
-      }
-      else if (doc is Document document)
-      {
-        Doc = document;
-        Report.Log($"Using document: {Doc.PathName}");
-        Report.Log($"Using units: {ModelUnits}");
       }
       else
       {
@@ -181,7 +173,7 @@ namespace Objects.Converter.Revit
 
     public void SetConverterSettings(object settings)
     {
-      Settings = settings as Dictionary<string, string>;
+      //Settings = settings as Dictionary<string, string>;
     }
 
     public Base ConvertToSpeckle(object @object)
@@ -466,12 +458,12 @@ namespace Objects.Converter.Revit
     public object ConvertToNative(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
-      Settings.TryGetValue("preview", out string isPreview);
+      conversionSettings.TryGetSettingBySlug("preview", out string isPreview);
       if (bool.Parse(isPreview ?? "false") == true)
         return PreviewGeometry(@object);
 
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures
-      Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
+      conversionSettings.TryGetSettingBySlug("recieve-objects-mesh", out string recieveModelMesh);
       if (bool.Parse(recieveModelMesh ?? "false") == true)
       {
         try

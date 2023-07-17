@@ -40,139 +40,19 @@ namespace Speckle.ConnectorRevit.UI
     ///
     public override async Task<StreamState> ReceiveStream(StreamState state, ProgressViewModel progress)
     {
-      using var scope = Container.BeginLifetimeScope();
-      var receiveOperationFactory = scope.Resolve<ReceiveOperation.Factory>();
-      var receiveOperation = receiveOperationFactory(state);
-
       CurrentOperationCancellation = progress.CancellationTokenSource;
+      using var scope = Container.BeginLifetimeScope();
 
-      var x = scope.Resolve<IReceivedObjectIdMap<Base, Element>>();
+      // using objects such as the following DUI entity providers is a bad practice that we have to employ
+      // to make up for not having proper DI configured in DUI
+      var streamStateProvider = scope.Resolve<IEntityProvider<StreamState>>();
+      streamStateProvider.Entity = state;
+      var progressProvider = scope.Resolve<IEntityProvider<ProgressViewModel>>();
+      progressProvider.Entity = progress;
 
-      if (x == receiveOperation.receivedObjectIdMap)
-      {
-        Console.WriteLine("yeet");
-      }
+      var receiveOperation = scope.Resolve<ReceiveOperation>();
 
-      var converter = scope.Resolve<ISpeckleConverter>();
-
-      //make sure to instance a new copy so all values are reset correctly
-      //var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-      converter.SetContextDocument(CurrentDoc.Document);
-
-      // set converter settings as tuples (setting slug, setting selection)
-      var settings = new Dictionary<string, string>();
-      CurrentSettings = state.Settings;
-      foreach (var setting in state.Settings)
-        settings.Add(setting.Slug, setting.Selection);
-      converter.SetConverterSettings(settings);
-
-      Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
-      state.LastCommit = myCommit;
-      Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(state, myCommit, ConnectorRevitUtils.RevitAppName, progress.CancellationToken);
-
-      Preview.Clear();
-      StoredObjects.Clear();
-
-      Preview = FlattenCommitObject(commitObject, converter);
-      foreach (var previewObj in Preview)
-        progress.Report.Log(previewObj);
-
-
-      converter.ReceiveMode = state.ReceiveMode;
-      // needs to be set for editing to work
-      var previousObjects = new StreamStateCache(state);
-      converter.SetContextDocument(previousObjects);
-      // needs to be set for openings in floors and roofs to work
-      converter.SetContextObjects(Preview);
-
-#pragma warning disable CA1031 // Do not catch general exception types
-      try
-      {
-        var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
-        await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
-          .ConfigureAwait(false);
-      }
-      catch (Exception ex)
-      {
-        var speckleEx = new SpeckleException($"Failed to map incoming types to Revit types. Reason: {ex.Message}", ex);
-        StreamViewModel.HandleCommandException(speckleEx, false, "MapIncomingTypesCommand");
-        progress.Report.LogOperationError(new Exception("Could not update receive object with user types. Using default mapping.", ex));
-      }
-      finally
-      {
-        MainViewModel.CloseDialog();
-      }
-#pragma warning restore CA1031 // Do not catch general exception types
-
-      var (success, exception) = await RevitTask.RunAsync(app =>
-      {
-        string transactionName = $"Baking stream {state.StreamId}";
-        using var g = new TransactionGroup(CurrentDoc.Document, transactionName);
-        using var t = new Transaction(CurrentDoc.Document, transactionName);
-
-        g.Start();
-        var failOpts = t.GetFailureHandlingOptions();
-        var errorEater = new ErrorEater(converter);
-        failOpts.SetFailuresPreprocessor(errorEater);
-        failOpts.SetClearAfterRollback(true);
-        t.SetFailureHandlingOptions(failOpts);
-        t.Start();
-
-        try
-        {
-          converter.SetContextDocument(t);
-
-          var convertedObjects = ConvertReceivedObjects(converter, progress);
-
-          if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previousObjects, convertedObjects);
-
-          previousObjects.AddConvertedElements(convertedObjects);
-          t.Commit();
-
-          if (t.GetStatus() == TransactionStatus.RolledBack)
-          {
-            var numTotalErrors = errorEater.CommitErrorsDict.Sum(kvp => kvp.Value);
-            var numUniqueErrors = errorEater.CommitErrorsDict.Keys.Count;
-
-            var exception = errorEater.GetException();
-            if (exception == null) 
-              SpeckleLog.Logger.Warning("Revit commit failed with {numUniqueErrors} unique errors and {numTotalErrors} total errors, but the ErrorEater did not capture any exceptions", numUniqueErrors, numTotalErrors);
-            else 
-              SpeckleLog.Logger.Fatal(exception, "The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back.", numUniqueErrors, numTotalErrors);
-            
-            return (false, exception ?? new SpeckleException($"The Revit API could not resolve {numUniqueErrors} unique errors and {numTotalErrors} total errors when trying to commit the Speckle model. The whole transaction is being rolled back."));
-          }
-
-          g.Assimilate();
-          return (true, null);
-        }
-        catch (Exception ex)
-        {
-          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction {transactionName} {transactionType}", transactionName, t.GetType());
-
-          string message = $"Fatal Error: {ex.Message}";
-          if (ex is OperationCanceledException) message = "Receive cancelled";
-          progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
-
-          t.RollBack();
-          g.RollBack();
-          return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
-        }
-      }).ConfigureAwait(false);
-
-      if (!success)
-      {
-        switch (exception)
-        {
-          case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
-          case SpeckleNonUserFacingException:
-            throw exception;
-          default:
-            throw new SpeckleException(exception.Message, exception);
-        }
-      }
+      await receiveOperation.Receive().ConfigureAwait(false);
 
       CurrentOperationCancellation = null;
       return state;

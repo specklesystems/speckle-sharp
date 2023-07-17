@@ -30,7 +30,13 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)Assets\tutorials32.png" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Services\DUIEntityProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\ISpeckleObjectReceiver.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Operations\ReceiveOperation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\SpeckleObjectServerReceiver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\StreamStateConversionSettings.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\TransactionManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\UIDocumentProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\ElementTypeMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\FamilyImporter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />

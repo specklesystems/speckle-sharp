@@ -695,7 +695,7 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         return null;
 
-      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = receivedObjectIdMap.GetCreatedIdsFromConvertedId(applicationId);
       // TODO: we may not want just the first one
       return Doc.GetElement(cachedIds.First());
     }
@@ -705,7 +705,7 @@ namespace Objects.Converter.Revit
       if (applicationId == null || ReceiveMode == Speckle.Core.Kits.ReceiveMode.Create)
         yield break;
 
-      var cachedIds = PreviouslyReceivedObjectIds.GetCreatedIdsFromConvertedId(applicationId);
+      var cachedIds = receivedObjectIdMap.GetCreatedIdsFromConvertedId(applicationId);
       foreach (var id in cachedIds)
       {
         yield return Doc.GetElement(id);
@@ -783,9 +783,10 @@ namespace Objects.Converter.Revit
       if (!_docTransforms.ContainsKey(id))
       {
         // get from settings
-        var referencePointSetting = Settings.ContainsKey("reference-point")
-          ? Settings["reference-point"]
-          : string.Empty;
+        if (!conversionSettings.TryGetSettingBySlug("reference-point", out var referencePointSetting))
+        {
+          referencePointSetting = string.Empty;
+        }
         _docTransforms[id] = GetReferencePointTransform(referencePointSetting, doc);
       }
 

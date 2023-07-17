@@ -9,14 +9,8 @@ namespace ConnectorRevit.Revit
 {
   public class ErrorEater : IFailuresPreprocessor
   {
-    private ISpeckleConverter _converter;
     private List<Exception> _exceptions = new();
     public Dictionary<string, int> CommitErrorsDict = new();
-
-    public ErrorEater(ISpeckleConverter converter)
-    {
-      _converter = converter;
-    }
 
     public FailureProcessingResult PreprocessFailures(FailuresAccessor failuresAccessor)
     {

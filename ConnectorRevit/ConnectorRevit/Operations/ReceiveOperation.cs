@@ -3,12 +3,9 @@ using Speckle.Core.Models;
 using Autodesk.Revit.DB;
 using DesktopUI2.Models;
 using Speckle.Core.Kits;
-using ConnectorRevit.Storage;
 using ConnectorRevit.TypeMapping;
 using DesktopUI2.ViewModels;
-using DesktopUI2;
 using Revit.Async;
-using Speckle.Core.Api;
 using Speckle.Core.Logging;
 using System.Collections.Generic;
 using System;
@@ -20,65 +17,56 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Speckle.ConnectorRevit;
-using ConnectorRevit.Revit;
+using Avalonia.Threading;
+using ConnectorRevit.Services;
 
 namespace ConnectorRevit.Operations
 {
   public class ReceiveOperation
   {
     private ISpeckleConverter converter;
+    private ISpeckleObjectReceiver commitReceiver;
     private IConvertedObjectsCache<Base, Element> convertedObjectsCache;
     private IReceivedObjectIdMap<Base, Element> receivedObjectIdMap;
+    private IRevitTransactionManager transactionManager;
     private StreamState state;
+    private ProgressViewModel progress;
+    private UIDocument uiDocument;
 
-    public delegate ReceiveOperation Factory(
-      StreamState streamState
-    );
     public ReceiveOperation(
       ISpeckleConverter speckleConverter,
+      ISpeckleObjectReceiver speckleObjectReceiver,
       IConvertedObjectsCache<Base, Element> convertedObjectsCache,
-      StreamStateCache.Factory receivedObjectIdMapFactory,
-      StreamState streamState
+      IReceivedObjectIdMap<Base, Element> receivedObjectIdMap,
+      IRevitTransactionManager transactionManager,
+      IEntityProvider<StreamState> streamStateProvider,
+      IEntityProvider<ProgressViewModel> progressProvider,
+      IEntityProvider<UIDocument> uiDocumentProvider
     )
     {
       this.converter = speckleConverter;
+      this.commitReceiver = speckleObjectReceiver;
       this.convertedObjectsCache = convertedObjectsCache;
-      this.receivedObjectIdMap = receivedObjectIdMapFactory(streamState);
-      this.state = streamState;
+      this.receivedObjectIdMap = receivedObjectIdMap;
+      this.transactionManager = transactionManager;
+      this.state = streamStateProvider.Entity;
+      this.progress = progressProvider.Entity;
+      this.uiDocument = uiDocumentProvider.Entity;
     }
 
-    public async Task Receive(UIDocument uiDocument)
+    public async Task Receive()
     {
-      converter.SetContextDocument(uiDocument.Document);
+      var commitObject = await commitReceiver.ReceiveCommitObject(state, progress).ConfigureAwait(false);
 
-      // set converter settings as tuples (setting slug, setting selection)
-      var settings = new Dictionary<string, string>();
-      foreach (var setting in state.Settings)
-        settings.Add(setting.Slug, setting.Selection);
-      converter.SetConverterSettings(settings);
-
-      Commit myCommit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
-      state.LastCommit = myCommit;
-      Base commitObject = await ConnectorHelpers.ReceiveCommit(myCommit, state, progress);
-      await ConnectorHelpers.TryCommitReceived(state, myCommit, ConnectorRevitUtils.RevitAppName, progress.CancellationToken);
-
-
-      Preview = FlattenCommitObject(commitObject, converter);
-      foreach (var previewObj in Preview)
+      Dictionary<string, Base> storedObjects = new();
+      var preview = FlattenCommitObject(commitObject, storedObjects);
+      foreach (var previewObj in preview)
         progress.Report.Log(previewObj);
-
-
-      converter.ReceiveMode = state.ReceiveMode;
-      // needs to be set for editing to work
-      var previousObjects = new StreamStateCache(state);
-      converter.SetContextDocument(previousObjects);
-      // needs to be set for openings in floors and roofs to work
-      converter.SetContextObjects(Preview);
 
 #pragma warning disable CA1031 // Do not catch general exception types
       try
       {
-        var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, uiDocument.Document);
+        var elementTypeMapper = new ElementTypeMapper(converter, preview, storedObjects, uiDocument.Document);
         await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
           .ConfigureAwait(false);
       }
@@ -96,54 +84,44 @@ namespace ConnectorRevit.Operations
 
       var (success, exception) = await RevitTask.RunAsync(app =>
       {
-        string transactionName = $"Baking stream {state.StreamId}";
-        using var g = new TransactionGroup(uiDocument.Document, transactionName);
-        using var t = new Transaction(uiDocument.Document, transactionName);
-
-        g.Start();
-        var failOpts = t.GetFailureHandlingOptions();
-        failOpts.SetFailuresPreprocessor(new ErrorEater(converter));
-        failOpts.SetClearAfterRollback(true);
-        t.SetFailureHandlingOptions(failOpts);
-        t.Start();
+        transactionManager.Start(state.StreamId, uiDocument.Document);
 
         try
         {
-          converter.SetContextDocument(t);
-
-          ConvertReceivedObjects(converter, progress);
+          ConvertReceivedObjects(preview, storedObjects);
 
           if (state.ReceiveMode == ReceiveMode.Update)
-            DeleteObjects(previousObjects, convertedObjectsCache);
+            DeleteObjects(receivedObjectIdMap, convertedObjectsCache);
 
-          previousObjects.AddConvertedElements(convertedObjectsCache);
-          t.Commit();
-          g.Assimilate();
+          receivedObjectIdMap.AddConvertedElements(convertedObjectsCache);
+
+          transactionManager.Finish();
           return (true, null);
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction {transactionName} {transactionType}", transactionName, t.GetType());
+          SpeckleLog.Logger.Error(ex, "Rolling back connector transaction {streamId} {commidId}", state.StreamId, state.CommitId);
 
           string message = $"Fatal Error: {ex.Message}";
           if (ex is OperationCanceledException) message = "Receive cancelled";
           progress.Report.LogOperationError(new Exception($"{message} - Changes have been rolled back", ex));
 
-          t.RollBack();
-          g.RollBack();
+          transactionManager.Rollback();
           return (false, ex); //We can't throw exceptions in from RevitTask, but we can return it along with a success status
         }
       }).ConfigureAwait(false);
 
       if (!success)
       {
-        //Don't wrap cancellation token (if it's ours!)
-        if (exception is OperationCanceledException && progress.CancellationToken.IsCancellationRequested) throw exception;
-        throw new SpeckleException(exception.Message, exception);
+        switch (exception)
+        {
+          case OperationCanceledException when progress.CancellationToken.IsCancellationRequested:
+          case SpeckleNonUserFacingException:
+            throw exception;
+          default:
+            throw new SpeckleException(exception.Message, exception);
+        }
       }
-
-      CurrentOperationCancellation = null;
-      return state;
     }
 
     //delete previously sent object that are no more in this stream
@@ -160,13 +138,13 @@ namespace ConnectorRevit.Operations
 
         foreach (var elementId in elementIdToDelete)
         {
-          var elementToDelete = CurrentDoc.Document.GetElement(elementId);
+          var elementToDelete = uiDocument.Document.GetElement(elementId);
 
           if (elementToDelete != null && !elementToDelete.Pinned && elementToDelete.IsValidObject)
           {
             try
             {
-              CurrentDoc.Document.Delete(elementToDelete.Id);
+              uiDocument.Document.Delete(elementToDelete.Id);
             }
             catch
             {
@@ -179,17 +157,17 @@ namespace ConnectorRevit.Operations
       }
     }
 
-    private void ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
+    private void ConvertReceivedObjects(List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
     {
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
       // Get setting to skip linked model elements if necessary
-      var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
+      var receiveLinkedModelsSetting = state.Settings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-      foreach (var obj in Preview)
+      foreach (var obj in preview)
       {
-        var @base = StoredObjects[obj.OriginalId];
+        var @base = storedObjects[obj.OriginalId];
         progress.CancellationToken.ThrowIfCancellationRequested();
 
         try
@@ -234,19 +212,19 @@ namespace ConnectorRevit.Operations
     private void RefreshView()
     {
       //regenerate the document and then implement a hack to "refresh" the view
-      CurrentDoc.Document.Regenerate();
+      uiDocument.Document.Regenerate();
 
       // get the active ui view
-      var view = CurrentDoc.ActiveGraphicalView ?? CurrentDoc.Document.ActiveView;
+      var view = uiDocument.ActiveGraphicalView ?? uiDocument.Document.ActiveView;
       if (view is TableView)
       {
         return;
       }
 
-      var uiView = CurrentDoc.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
+      var uiView = uiDocument.GetOpenUIViews().FirstOrDefault(uv => uv.ViewId.Equals(view.Id));
 
       // "refresh" the active view
-      uiView.Zoom(1);
+      uiView?.Zoom(1);
     }
 
     /// <summary>
@@ -255,7 +233,7 @@ namespace ConnectorRevit.Operations
     /// <param name="obj">The root <see cref="Base"/> object to traverse</param>
     /// <param name="converter">The converter instance, used to define what objects are convertable</param>
     /// <returns>A flattened list of objects to be converted ToNative</returns>
-    private List<ApplicationObject> FlattenCommitObject(Base obj, ISpeckleConverter converter)
+    private List<ApplicationObject> FlattenCommitObject(Base obj, Dictionary<string, Base> storedObjects)
     {
 
       ApplicationObject CreateApplicationObject(Base current)
@@ -267,10 +245,10 @@ namespace ConnectorRevit.Operations
           applicationId = current.applicationId,
           Convertible = true
         };
-        if (StoredObjects.ContainsKey(current.id))
+        if (storedObjects.ContainsKey(current.id))
           return null;
 
-        StoredObjects.Add(current.id, current);
+        storedObjects.Add(current.id, current);
         return appObj;
       }
 

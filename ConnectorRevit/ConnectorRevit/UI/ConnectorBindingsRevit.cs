@@ -4,10 +4,14 @@ using System.Timers;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autofac;
+using ConnectorRevit;
 using ConnectorRevit.Operations;
+using ConnectorRevit.Revit;
+using ConnectorRevit.Services;
 using ConnectorRevit.Storage;
 using DesktopUI2;
 using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
 using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.Storage;
 using Speckle.Core.Kits;
@@ -47,12 +51,36 @@ namespace Speckle.ConnectorRevit.UI
 
       builder.RegisterType(Converter.GetType()).As<ISpeckleConverter>();
 
-      builder.RegisterType<StreamStateCache>().InstancePerLifetimeScope();
-      builder.Register(c => c.Resolve<StreamStateCache>()).As<IReceivedObjectIdMap<Base, Element>>();
+      builder.RegisterType<SpeckleObjectServerReceiver>().As<ISpeckleObjectReceiver>();
 
-      builder.RegisterType<ConvertedObjectsCache>()
-        .As<IConvertedObjectsCache<Base, Element>>()
+      builder.RegisterType<StreamStateCache>().As<IReceivedObjectIdMap<Base, Element>>()
         .InstancePerLifetimeScope();
+
+      builder.RegisterType<ConvertedObjectsCache>().As<IConvertedObjectsCache<Base, Element>>()
+        .InstancePerLifetimeScope();
+
+      builder.RegisterType<TransactionManager>().As<IRevitTransactionManager>()
+        .InstancePerLifetimeScope();
+      builder.RegisterType<ErrorEater>();
+
+      builder.RegisterType<StreamStateConversionSettings>().As<IConversionSettings>();
+
+      builder.RegisterType<DUIEntityProvider<StreamState>>().As<IEntityProvider<StreamState>>()
+        .InstancePerLifetimeScope();
+      builder.RegisterType<DUIEntityProvider<ProgressViewModel>>().As<IEntityProvider<ProgressViewModel>>()
+        .InstancePerLifetimeScope();
+      builder.Register(c =>
+      {
+        var state = c.Resolve<IEntityProvider<StreamState>>();
+        return state.Entity.ReceiveMode;
+      });
+      
+      builder.RegisterType<UIDocumentProvider>().As<IEntityProvider<UIDocument>>()
+        .InstancePerLifetimeScope();
+
+      builder.RegisterInstance<UIApplication>(revitApp)
+        .SingleInstance();
+
       builder.RegisterType<ReceiveOperation>();
       Container = builder.Build();
       //services.AddScoped<IConvertedObjectsCache<Base, Element>, ConvertedObjectsCache>();
