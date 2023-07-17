@@ -27,6 +27,7 @@ using Line = Objects.Geometry.Line;
 using Point = Objects.Geometry.Point;
 using Text = Objects.Other.Text;
 using Objects.BuiltElements.Revit;
+using Units = Speckle.Core.Kits.Units;
 
 namespace Objects.Converter.AutocadCivil
 {
