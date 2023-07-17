@@ -32,11 +32,7 @@ namespace Objects.Converter.Revit
         model["info"] = info;
        
       }
-#if REVIT2020
-// Don't Support, will be remove in future
-#else
       model["units"] = GetUnits();
-#endif 
       Report.Log($"Created Model Object");
 
       return model;
@@ -78,7 +74,47 @@ namespace Objects.Converter.Revit
     }
     
 #if REVIT2020
-    // Don't Support , will be remove in future
+    public List<Units> GetUnits()
+    {
+      IList<DB.DisplayUnitType> displayUnitTypes = DB.UnitUtils.GetValidDisplayUnits();
+      var units = new List<Units>();
+      try
+      {
+        foreach (DB.DisplayUnitType displayUnitType in displayUnitTypes)
+        {
+          var unit = new Units();
+          unit.applicationId = displayUnitType.ToString();
+          unit.display = DB.LabelUtils.GetLabelFor(displayUnitType);
+          IList<DB.UnitSymbolType> validSymbols = DB.FormatOptions.GetValidUnitSymbols(displayUnitType);
+          if (validSymbols.Count > 0)
+          {
+            unit.symbol = new List<Base>();
+            foreach (DB.UnitSymbolType symbol in validSymbols)
+            {
+              var baseUnit = new Base();
+              baseUnit.applicationId = symbol.ToString();
+              // check if this is a valid symbol
+              try
+              {
+                baseUnit["display"] = DB.LabelUtils.GetLabelFor(symbol);
+                unit.symbol.Add(baseUnit);
+              }
+              catch (Exception e)
+              {
+                 // Still don't know why this happens, but it does.
+              }
+            }
+          }
+          units.Add(unit);
+        }
+      }
+      catch (Exception)
+      {
+        return units;
+        // ignore with catch symbol
+      }
+      return units;
+    }
 #else
 public List<Units> GetUnits()
     {

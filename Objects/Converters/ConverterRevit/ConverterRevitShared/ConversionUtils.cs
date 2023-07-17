@@ -461,8 +461,27 @@ namespace Objects.Converter.Revit
     {
       string symbol = string.Empty;
 #if REVIT2020
-      // Don't support, will remove in future
-      return symbol;
+      try
+      {
+        DisplayUnitType forgeTypeId = parameter.DisplayUnitType;
+        IList<UnitSymbolType> validSymbols = FormatOptions.GetValidUnitSymbols(forgeTypeId);
+        if (validSymbols.Count > 0)
+        {
+          var unitSymbolTypes = validSymbols.Where(x => x != UnitSymbolType.UST_NONE).ToArray();
+          if (unitSymbolTypes.Any())
+          {
+            foreach (DB.UnitSymbolType symbolId in unitSymbolTypes)
+            {
+              symbol = LabelUtils.GetLabelFor(symbolId);
+              return symbol;
+            }
+          }
+        }
+      }
+      catch (Exception e)
+      {
+        // ignore with catch symbol
+      }
 #else
       try
       {
