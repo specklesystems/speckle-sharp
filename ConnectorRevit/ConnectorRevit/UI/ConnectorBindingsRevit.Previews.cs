@@ -20,7 +20,7 @@ namespace Speckle.ConnectorRevit.UI
 {
   public partial class ConnectorBindingsRevit
   {
-    public override bool CanPreviewReceive => true;
+    public override bool CanPreviewReceive => false;
     private string SelectedReceiveCommit { get; set; }
     List<IDirectContext3DServer> m_servers = new List<IDirectContext3DServer>();
 
