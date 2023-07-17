@@ -31,7 +31,6 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="CefSharp.Wpf" Version="65.0.1" />
     <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" IncludeAssets="compile;build" PrivateAssets="all" />
     <PackageReference Include="Revit.Async" Version="2.0.1" />
   </ItemGroup>

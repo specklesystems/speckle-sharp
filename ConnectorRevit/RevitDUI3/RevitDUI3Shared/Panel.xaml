@@ -12,7 +12,7 @@
     <cefSharp:ChromiumWebBrowser
       Name="Browser"
       Grid.Row="0"
-      Address="http://speckle.systems" />
+      Address="http://0.0.0.0:8082/" />
   </Grid>
 </Page>
 
