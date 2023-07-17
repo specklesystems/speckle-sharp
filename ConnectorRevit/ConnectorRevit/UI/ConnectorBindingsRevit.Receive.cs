@@ -1,27 +1,12 @@
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Autodesk.Revit.DB;
 using Autofac;
-using Avalonia.Threading;
 using ConnectorRevit.Operations;
-using ConnectorRevit.Revit;
-using ConnectorRevit.Storage;
-using ConnectorRevit.TypeMapping;
-using DesktopUI2;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
-using Speckle.Core.Api;
-using Speckle.Core.Kits;
-using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Models.GraphTraversal;
 
 namespace Speckle.ConnectorRevit.UI
 {
