@@ -33,8 +33,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Revit.Async" Version="2.0.1"/>
-    <PackageReference Include="Speckle.Revit.API" Version="2022.0.2.1" IncludeAssets="compile;build" PrivateAssets="all"/>
+    <PackageReference Include="Autofac" Version="7.0.1" />
+    <PackageReference Include="Revit.Async" Version="2.0.1" />
+    <PackageReference Include="Speckle.Revit.API" Version="2022.0.2.1" IncludeAssets="compile;build" PrivateAssets="all" />
   </ItemGroup>
 
   <Target Name="Clean">

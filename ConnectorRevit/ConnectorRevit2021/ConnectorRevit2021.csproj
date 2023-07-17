@@ -26,7 +26,8 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0" IncludeAssets="compile;build" PrivateAssets="all"/>
+    <PackageReference Include="Autofac" Version="7.0.1" />
+    <PackageReference Include="ModPlus.Revit.API.2021" Version="1.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
     <PackageReference Include="Revit.Async" Version="2.0.1" />
   </ItemGroup>
   
