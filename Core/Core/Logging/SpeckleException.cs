@@ -34,3 +34,4 @@ public class SpeckleException : Exception
   public List<KeyValuePair<string, object>> GraphQLErrors { get; set; }
   #endregion
 }
+

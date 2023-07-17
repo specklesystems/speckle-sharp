@@ -604,12 +604,12 @@ namespace Objects.Converter.Revit
             IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
             if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
               InstanceVoidCutUtils.AddInstanceVoidCut(Doc, CurrentHostElement, familyInstance);
-            try
+
+            if (lvlParams.ElementAtOrDefault(0) != null && level != null)
             {
-              if (lvlParams.ElementAtOrDefault(0) != null)
-                lvlParams[0].Set(level.Id); // this can be null
+              lvlParams[0].Set(level.Id);
             }
-            catch { }
+
             break;
 
           case FamilyPlacementType.OneLevelBased when CurrentHostElement is FootPrintRoof roof: // handle receiving mullions on a curtain roof
@@ -793,8 +793,7 @@ namespace Objects.Converter.Revit
         var meshes = GetElementDisplayValue(
           instance,
           new Options() { DetailLevel = ViewDetailLevel.Fine },
-          true,
-          instance.HasModifiedGeometry()
+          true
         );
         symbol.displayValue = meshes;
       }
