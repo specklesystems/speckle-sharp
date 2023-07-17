@@ -156,6 +156,8 @@ namespace Archicad.Converters
       {
         foreach (var tc in elements)
         {
+          token.ThrowIfCancellationRequested();
+
           var element = tc.current;
 
           // base point
