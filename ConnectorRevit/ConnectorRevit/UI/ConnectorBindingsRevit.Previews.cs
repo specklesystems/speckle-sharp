@@ -26,63 +26,63 @@ namespace Speckle.ConnectorRevit.UI
 
     public override async Task<StreamState> PreviewReceive(StreamState state, ProgressViewModel progress)
     {
-      try
-      {
-        // first check if commit is the same and preview objects have already been generated
-        Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
-        progress.Report = new ProgressReport();
+      //try
+      //{
+      //  // first check if commit is the same and preview objects have already been generated
+      //  Commit commit = await ConnectorHelpers.GetCommitFromState(state, progress.CancellationToken);
+      //  progress.Report = new ProgressReport();
 
-        if (commit.id != SelectedReceiveCommit)
-        {
-          // check for converter 
-          var converter = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
-          converter.SetContextDocument(CurrentDoc.Document);
+      //  if (commit.id != SelectedReceiveCommit)
+      //  {
+      //    // check for converter 
+      //    var converter = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
+      //    converter.SetContextDocument(CurrentDoc.Document);
 
-          var settings = new Dictionary<string, string>();
-          CurrentSettings = state.Settings;
-          foreach (var setting in state.Settings)
-            settings.Add(setting.Slug, setting.Selection);
+      //    var settings = new Dictionary<string, string>();
+      //    CurrentSettings = state.Settings;
+      //    foreach (var setting in state.Settings)
+      //      settings.Add(setting.Slug, setting.Selection);
 
-          settings["preview"] = "true";
-          converter.SetConverterSettings(settings);
+      //    settings["preview"] = "true";
+      //    converter.SetConverterSettings(settings);
 
-          var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
+      //    var commitObject = await ConnectorHelpers.ReceiveCommit(commit, state, progress);
 
-          Preview.Clear();
-          StoredObjects.Clear();
+      //    Preview.Clear();
+      //    StoredObjects.Clear();
 
-          Preview = FlattenCommitObject(commitObject, converter);
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
+      //    Preview = FlattenCommitObject(commitObject, converter);
+      //    foreach (var previewObj in Preview)
+      //      progress.Report.Log(previewObj);
 
-          IConvertedObjectsCache<Base, Element> convertedObjects = null;
-          await RevitTask.RunAsync(
-            app =>
-            {
-              using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
-              {
-                t.Start();
-                convertedObjects = ConvertReceivedObjects(converter, progress);
-                t.Commit();
-              }
+      //    IConvertedObjectsCache<Base, Element> convertedObjects = null;
+      //    await RevitTask.RunAsync(
+      //      app =>
+      //      {
+      //        using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))
+      //        {
+      //          t.Start();
+      //          convertedObjects = ConvertReceivedObjects(converter, progress);
+      //          t.Commit();
+      //        }
 
-              AddMultipleRevitElementServers(convertedObjects);
-            });
-        }
-        else // just generate the log
-        {
-          foreach (var previewObj in Preview)
-            progress.Report.Log(previewObj);
-        }
-      }
-      catch (Exception ex)
-      {
-        SpeckleLog.Logger.Error(
-          ex,
-          "Failed to preview receive: {exceptionMessage}",
-          ex.Message
-        );
-      }
+      //        AddMultipleRevitElementServers(convertedObjects);
+      //      });
+      //  }
+      //  else // just generate the log
+      //  {
+      //    foreach (var previewObj in Preview)
+      //      progress.Report.Log(previewObj);
+      //  }
+      //}
+      //catch (Exception ex)
+      //{
+      //  SpeckleLog.Logger.Error(
+      //    ex,
+      //    "Failed to preview receive: {exceptionMessage}",
+      //    ex.Message
+      //  );
+      //}
 
       return null;
     }

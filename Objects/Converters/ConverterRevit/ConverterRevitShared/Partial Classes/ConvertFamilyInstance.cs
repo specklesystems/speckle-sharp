@@ -825,7 +825,6 @@ namespace Objects.Converter.Revit
         if (converted != null)
         {
           convertedSubElements.Add(converted);
-          ConvertedObjects.Add(converted.applicationId);
         }
       }
 

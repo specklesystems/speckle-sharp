@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
@@ -29,13 +29,16 @@ namespace Objects.Converter.Revit
         var element = Doc.GetElement(elIdsToConvert[i]);
         // if it's already part of the selection, remove this element from the list of element
         // we can't prevent the other element (with same id) to be converted, like we do for hosted elements
-        if (ContextObjects.ContainsKey(element.UniqueId))
+        if (sendSelection.ContainsElementWithId(element.UniqueId))
           elIdsToConvert.RemoveAt(i);
         // otherwise, add the elements to the ContextObjects before converting them because a group 
         // may contain a wall that has a window, so we still want the window to search through the contextObjects
         // and recognize that it's host, the wall, is listed in there and not to convert itself
         else
-          ContextObjects.Add(element.UniqueId, new ApplicationObject(null, null) { applicationId = element.UniqueId });
+        {
+          // TODO : make sure the group selection contains all desired elements to convert.
+          // no more or less
+        }
       }
 
       GetHostedElementsFromIds(@base, revitGroup, elIdsToConvert, out List<string> notes);

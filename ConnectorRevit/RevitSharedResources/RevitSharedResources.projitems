@@ -21,5 +21,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitElementTypeRetriever.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IEntityProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Interfaces\IRevitTransactionManager.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Interfaces\ISendSelection.cs" />
   </ItemGroup>
 </Project>

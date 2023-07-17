@@ -30,53 +30,6 @@ namespace Objects.Converter.Revit
   {
     #region hosted elements
 
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host)
-    {
-      //doesn't have a host, go ahead and convert
-      if (host == null)
-        return true;
-
-      // has been converted before (from a parent host), skip it
-      if (ConvertedObjects.Contains(element.UniqueId))
-      {
-        return false;
-      }
-
-      // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.ContainsKey(host.UniqueId))
-      {
-        return false;
-      }
-      return true;
-    }
-
-    private bool ShouldConvertHostedElement(DB.Element element, DB.Element host, Base extraProps)
-    {
-      // doesn't have a host that will convert the element, go ahead and do it now
-      if (host == null || host is DB.Level)
-        return true;
-
-      // has been converted before (from a parent host), skip it
-      if (ConvertedObjects.Contains(element.UniqueId))
-        return false;
-
-      // the parent is in our selection list,skip it, as this element will be converted by the host element
-      if (ContextObjects.ContainsKey(host.UniqueId))
-      {
-        // there are certain elements in Revit that can be a host to another element
-        // yet not know it.
-        var hostedElementIds = GetHostedElementIds(host);
-        var elementId = element.Id;
-        if (!hostedElementIds.Contains(elementId))
-        {
-          extraProps["speckleHost"] = new Base() { applicationId = host.UniqueId, ["category"] = host.Category.Name, };
-        }
-        else
-          return false;
-      }
-      return true;
-    }
-
     /// <summary>
     /// Gets the hosted element of a host and adds the to a Base object
     /// </summary>
@@ -90,10 +43,6 @@ namespace Objects.Converter.Revit
       if (!hostedElementIds.Any())
         return;
 
-      if (ContextObjects.ContainsKey(host.UniqueId))
-      {
-        ContextObjects.Remove(host.UniqueId);
-      }
       GetHostedElementsFromIds(@base, host, hostedElementIds, out notes);
     }
 
@@ -109,11 +58,10 @@ namespace Objects.Converter.Revit
 
       foreach (var elemId in hostedElementIds)
       {
+        if (elemId == host.Id) continue;
+
         var element = host.Document.GetElement(elemId);
-        if (!ContextObjects.ContainsKey(element.UniqueId))
-        {
-          continue;
-        }
+        if (!ElementNeedsToBeConverted(element)) continue;
 
         var reportObj = Report.ReportObjects.TryGetValue(element.UniqueId, out ApplicationObject value)
           ? value
@@ -126,13 +74,11 @@ namespace Objects.Converter.Revit
             var obj = ConvertToSpeckle(element);
             if (obj != null)
             {
-              ContextObjects.Remove(element.UniqueId);
               reportObj.Update(
                 status: ApplicationObject.State.Created,
                 logItem: $"Attached as hosted element to {host.UniqueId}"
               );
               convertedHostedElements.Add(obj);
-              ConvertedObjects.Add(obj.applicationId);
             }
             else
             {
@@ -683,6 +629,12 @@ namespace Objects.Converter.Revit
     #endregion
 
     #region conversion "edit existing if possible" utilities
+    
+    private bool ElementNeedsToBeConverted(Element element)
+    {
+      return sendSelection.ContainsElementWithId(element.UniqueId) 
+        && !sendOperationConvertedObjects.HasConvertedObjectWithId(element.UniqueId);
+    }
 
     /// <summary>
     /// Returns, if found, the corresponding doc element.
@@ -882,8 +834,10 @@ namespace Objects.Converter.Revit
         openings.AddRange(elements.Where(x => x is RevitVerticalOpening).Cast<RevitVerticalOpening>());
 
       //list of shafts part of this conversion set
-      var shafts = ContextObjects.Values
-        .SelectMany(x => x.Converted.Where(y => y is RevitShaft).Cast<RevitShaft>())
+      var shafts = sendOperationConvertedObjects
+        .GetCreatedObjects()
+        .Where(x => x is RevitShaft)
+        .Cast<RevitShaft>()
         .ToList();
 
       openings.AddRange(shafts);

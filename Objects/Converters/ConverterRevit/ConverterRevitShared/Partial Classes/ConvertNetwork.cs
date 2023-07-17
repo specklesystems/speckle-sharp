@@ -180,7 +180,6 @@ namespace Objects.Converter.Revit
     /// <param name="mepElement"></param>
     private void GetNetworkElements(Network @network, Element initialElement, out List<string> notes)
     {
-      CachedContextObjects = ContextObjects;
       notes = new List<string>();
       var networkConnections = new List<ConnectionPair>();
       GetNetworkConnections(initialElement, ref networkConnections);
@@ -190,10 +189,7 @@ namespace Objects.Converter.Revit
       {
         var element = Doc.GetElement(group.Key);
 
-        if (ContextObjects.ContainsKey(element.UniqueId))
-          ContextObjects.Remove(element.UniqueId);
-        else
-          continue;
+        if (!ElementNeedsToBeConverted(element)) continue;
 
         ApplicationObject reportObj = Report.ReportObjects.ContainsKey(element.UniqueId) ? Report.ReportObjects[element.UniqueId] : new ApplicationObject(element.UniqueId, element.GetType().ToString());
 
@@ -253,7 +249,6 @@ namespace Objects.Converter.Revit
           isConnectorBased = connectorBasedCreation,
           isCurveBased = element is MEPCurve
         });
-        ConvertedObjects.Add(obj.applicationId);
 
         Report.Log(reportObj);
       }
@@ -331,11 +326,9 @@ namespace Objects.Converter.Revit
       (c1.Domain == Domain.DomainCableTrayConduit)));
     }
 
-    private static Dictionary<string, ApplicationObject> CachedContextObjects = null;
-
     private bool IsWithinContext(Element element)
     {
-      return CachedContextObjects.ContainsKey(element?.UniqueId);
+      return sendOperationConvertedObjects.HasConvertedObjectWithId(element?.UniqueId);
     }
 
     private void GetConnectionPairs(Element element, ref List<Tuple<Connector, Connector, Element>> connectionPairs, ref List<Element> elements)
@@ -349,14 +342,14 @@ namespace Objects.Converter.Revit
       }
       var refs = GetRefConnectionPairs(element);
       var refConnectionPairs = GetRefConnectionPairs(element).
-        Where(e => e.Item2 == null || ContextObjects.ContainsKey(e.Item2.Owner.UniqueId)).ToList();
+        Where(e => e.Item2 == null || sendSelection.ContainsElementWithId(e.Item2.Owner.UniqueId)).ToList();
       elements.Add(element);
       foreach (var refConnectionPair in refs)
       {
         var connectedElement = refConnectionPair.Item2?.Owner;
         if (connectedElement != null
           && !elements.Any(e => e.UniqueId.Equals(connectedElement.UniqueId))
-          && ContextObjects.ContainsKey(connectedElement.UniqueId))
+          && sendSelection.ContainsElementWithId(connectedElement.UniqueId))
         {
           connectionPairs.Add(Tuple.Create(refConnectionPair.Item1, refConnectionPair.Item2, element));
           GetConnectionPairs(connectedElement, ref connectionPairs, ref elements);

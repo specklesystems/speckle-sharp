@@ -43,7 +43,8 @@ namespace Speckle.ConnectorRevit.UI
     {
       var builder = new ContainerBuilder();
 
-      builder.RegisterType(Converter.GetType()).As<ISpeckleConverter>();
+      builder.RegisterType(Converter.GetType()).As<ISpeckleConverter>()
+        .InstancePerLifetimeScope();
 
       builder.RegisterType<SpeckleObjectServerReceiver>().As<ISpeckleObjectReceiver>();
 
@@ -57,7 +58,8 @@ namespace Speckle.ConnectorRevit.UI
         .InstancePerLifetimeScope();
       builder.RegisterType<ErrorEater>();
 
-      builder.RegisterType<StreamStateConversionSettings>().As<IConversionSettings>();
+      builder.RegisterType<StreamStateConversionSettings>().As<IConversionSettings>()
+        .InstancePerLifetimeScope();
 
       builder.RegisterType<DUIEntityProvider<StreamState>>().As<IEntityProvider<StreamState>>()
         .InstancePerLifetimeScope();
@@ -67,6 +69,11 @@ namespace Speckle.ConnectorRevit.UI
       {
         var state = c.Resolve<IEntityProvider<StreamState>>();
         return state.Entity.ReceiveMode;
+      });
+      builder.Register(c =>
+      {
+        var state = c.Resolve<IEntityProvider<StreamState>>();
+        return state.Entity.Filter;
       });
       
       builder.RegisterType<UIDocumentProvider>().As<IEntityProvider<UIDocument>>()

@@ -51,21 +51,9 @@ namespace Objects.Converter.Revit
     public static Document Doc { get; private set; }
 
     /// <summary>
-    /// <para>To know which other objects are being converted, in order to sort relationships between them.
-    /// For example, elements that have children use this to determine whether they should send their children out or not.</para>
-    /// </summary>
-    public Dictionary<string, ApplicationObject> ContextObjects { get; set; } =
-      new Dictionary<string, ApplicationObject>();
-
-    /// <summary>
     /// Keeps track of the current host element that is creating any sub-objects it may have.
     /// </summary>
     public Element CurrentHostElement { get; set; }
-
-    /// <summary>
-    /// Used when sending; keeps track of all the converted objects so far. Child elements first check in here if they should convert themselves again (they may have been converted as part of a parent's hosted elements).
-    /// </summary>
-    public ISet<string> ConvertedObjects { get; private set; } = new HashSet<string>();
 
     public ProgressReport Report { get; private set; } = new ProgressReport();
 
@@ -96,7 +84,8 @@ namespace Objects.Converter.Revit
       Report.Log($"Using converter: {Name} v{ver}");
     }
 
-    private IConvertedObjectsCache<Base, Element> convertedObjectsCache;
+    private IConvertedObjectsCache<Base, Element> receiveOperationConvertedObjects;
+    private IConvertedObjectsCache<Element, Base> sendOperationConvertedObjects;
     /// <summary>
     /// To keep track of previously received objects from a given stream in here. 
     /// If possible, conversions routines will edit an existing object, 
@@ -105,20 +94,25 @@ namespace Objects.Converter.Revit
     private IReceivedObjectIdMap<Base, Element> receivedObjectIdMap;
     private IRevitTransactionManager transactionManager;
     private IConversionSettings conversionSettings;
+    private ISendSelection sendSelection;
 
     public ConverterRevit(
-      IConvertedObjectsCache<Base, Element> convertedObjectsCache,
+      IConvertedObjectsCache<Base, Element> receiveOperationConvertedObjects,
+      IConvertedObjectsCache<Element, Base> sendOperationConvertedObjects,
       IReceivedObjectIdMap<Base, Element> receivedObjectIdMap,
       IRevitTransactionManager transactionManager,
       IEntityProvider<UIDocument> uiDocumentProvider,
       IConversionSettings conversionSettings,
-      ReceiveMode receiveMode
+      ReceiveMode receiveMode,
+      ISendSelection sendSelection
     )
     {
-      this.convertedObjectsCache = convertedObjectsCache;
+      this.receiveOperationConvertedObjects = receiveOperationConvertedObjects;
+      this.sendOperationConvertedObjects = sendOperationConvertedObjects;
       this.receivedObjectIdMap = receivedObjectIdMap;
       this.transactionManager = transactionManager;
       Doc = uiDocumentProvider.Entity.Document;
+      this.sendSelection = sendSelection;
 
       ReceiveMode = receiveMode;
       this.conversionSettings = conversionSettings;
@@ -149,14 +143,14 @@ namespace Objects.Converter.Revit
     //this fallback is only needed for a couple of ToNative conversions such as Floor, Ceiling, and Roof
     public void SetContextObjects(List<ApplicationObject> objects)
     {
-      ContextObjects = new(objects.Count);
-      foreach (var ao in objects)
-      {
-        var key = ao.applicationId ?? ao.OriginalId;
-        if (ContextObjects.ContainsKey(key))
-          continue;
-        ContextObjects.Add(key, ao);
-      }
+      //ContextObjects = new(objects.Count);
+      //foreach (var ao in objects)
+      //{
+      //  var key = ao.applicationId ?? ao.OriginalId;
+      //  if (ContextObjects.ContainsKey(key))
+      //    continue;
+      //  ContextObjects.Add(key, ao);
+      //}
     }
 
     public void SetPreviousContextObjects(List<ApplicationObject> objects)
@@ -180,7 +174,12 @@ namespace Objects.Converter.Revit
     {
       Base returnObject = null;
       List<string> notes = new List<string>();
-      string id = @object is Element element ? element.UniqueId : string.Empty;
+
+      if (@object is not Element element)
+      {
+        throw new ArgumentException($"The ConvertToSpeckle Method expects an object of type DB.Element, but instead received a type of {@object.GetType()}");
+      }
+      string id = element.UniqueId;
       switch (@object)
       {
         case DB.Document o:
@@ -375,6 +374,8 @@ namespace Objects.Converter.Revit
       if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
+      sendOperationConvertedObjects.AddConvertedObjects(element, new List<Base>() { returnObject });
+
       return returnObject;
     }
 
@@ -455,7 +456,25 @@ namespace Objects.Converter.Revit
       return speckleSchema;
     }
 
-    public object ConvertToNative(Base @object)
+    public object ConvertToNative(Base @base)
+    {
+      var appObject = ConvertToNativeApplicationObject(@base);
+      if (appObject == null)
+      {
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
+        var boo = @base["isHackySpeckleCamera"] as bool?;
+        if (boo == true)
+          return ViewOrientation3DToNative(@base);
+      }
+      else if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+      {
+        receiveOperationConvertedObjects.AddConvertedObjects(@base, typedList);
+      }
+      return appObject;
+    }
+
+    public ApplicationObject ConvertToNativeApplicationObject(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
       conversionSettings.TryGetSettingBySlug("preview", out string isPreview);
@@ -679,14 +698,6 @@ namespace Objects.Converter.Revit
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
-
-        //hacky but the current comments camera is not a Base object
-        //used only from DUI and not for normal geometry conversion
-        case Base b:
-          var boo = b["isHackySpeckleCamera"] as bool?;
-          if (boo == true)
-            return ViewOrientation3DToNative(b);
-          return null;
 
         default:
           return null;

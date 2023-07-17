@@ -1,4 +1,3 @@
-using Autodesk.AdvanceSteel.CADAccess;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Autofac;

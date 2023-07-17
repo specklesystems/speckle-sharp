@@ -118,18 +118,7 @@ namespace Objects.Converter.Revit
 
       if (revitRailing.TopRail != ElementId.InvalidElementId)
       {
-
-        if (ContextObjects.ContainsKey(revitRailing.UniqueId))
-        {
-          ContextObjects.Remove(revitRailing.UniqueId);
-        }
-
         var revitTopRail = revitRailing.Document.GetElement(revitRailing.TopRail) as TopRail;
-
-        if (ContextObjects.ContainsKey(revitTopRail.UniqueId))
-        {
-          ContextObjects.Remove(revitTopRail.UniqueId);
-        }
 
         if (CanConvertToSpeckle(revitTopRail))
         {
@@ -139,7 +128,6 @@ namespace Objects.Converter.Revit
           //currently only the top level displayValue is visualized (or anything under 'elements')
           //if this leads to duplicated meshes in some cases, we might need to remove the display mesh form the TopRail element
           speckleRailing.displayValue.AddRange(speckleRailing.topRail.displayValue);
-          ConvertedObjects.Add(speckleRailing.topRail.applicationId);
         }
       }
       return speckleRailing;
