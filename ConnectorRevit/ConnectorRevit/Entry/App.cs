@@ -23,7 +23,7 @@ namespace Speckle.ConnectorRevit.Entry
     {
       //Always initialize RevitTask ahead of time within Revit API context
       RevitTask.Initialize(application);
-
+    
       UICtrlApp = application;
       UICtrlApp.ControlledApplication.ApplicationInitialized += ControlledApplication_ApplicationInitialized;
       string tabName = "Speckle";

@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
   <PropertyGroup>
-    <RootNamespace>Speckle.ConnectorRevit</RootNamespace>
-    <AssemblyName>SpeckleConnectorRevit</AssemblyName>
+    <RootNamespace>Speckle.ConnectorRevitDUI3</RootNamespace>
+    <AssemblyName>SpeckleConnectorRevitDUI3</AssemblyName>
     <TargetFramework>net48</TargetFramework>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-    <RevitFolderName>SpeckleRevit2</RevitFolderName>
+    <RevitFolderName>SpeckleRevit2DUI3</RevitFolderName>
     <RevitVersion>2020</RevitVersion>
-    <AssemblyTitle>ConnectorRevit</AssemblyTitle>
-    <Product>ConnectorRevit</Product>
+    <AssemblyTitle>ConnectorRevitDUI3</AssemblyTitle>
+    <Product>ConnectorRevitDUI3</Product>
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <UseWPF>true</UseWPF>
     <DefineConstants>$(DefineConstants);REVIT2020</DefineConstants>
@@ -20,31 +20,19 @@
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
   
-  <Import Project="..\ConnectorRevit\ConnectorRevit.projitems" Label="Shared" />
-  
-  <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System.Web.Extensions" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="System.Web" />
-    <Reference Include="WindowsBase" />
-  </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CefSharp.Wpf" Version="65.0.1" />
     <PackageReference Include="ModPlus.Revit.API.2020" Version="1.0.0" ExcludeAssets="runtime" IncludeAssets="compile;build" PrivateAssets="all" />
-    <PackageReference Include="Revit.Async" Version="2.0.1" />
   </ItemGroup>
+  
   <ItemGroup>
-    <ProjectReference Include="..\..\Core\Core\Core.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\AvaloniaHwndHost\AvaloniaHwndHost.csproj" />
-    <ProjectReference Include="..\..\DesktopUI2\DesktopUI2\DesktopUI2.csproj" />
-    <ProjectReference Include="..\RevitSharedResources2020\RevitSharedResources2020.csproj" />
+    <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
   </ItemGroup>
+
 
 
   <Target Name="Clean">
-    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2020;$(AppData)\Autodesk\Revit\Addins\2020\SpeckleRevit2" />
+    <RemoveDir Directories="$(TargetDir);$(ProjectDir)\..\Release\Release2020;$(AppData)\Autodesk\Revit\Addins\2020\SpeckleRevit2DUI3" />
   </Target>
   <Target Name="AfterBuildMigrated" AfterTargets="Build" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
     <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
@@ -67,4 +55,5 @@
     <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\$(RevitFolderName)\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
     <Copy DestinationFolder="$(SolutionDir)\Release\Release$(RevitVersion)\" SourceFiles="@(SourceManifest)" />
   </Target>
+  <Import Project="..\RevitDUI3Shared\RevitDUI3Shared.projitems" Label="Shared" />
 </Project>

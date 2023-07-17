@@ -202,10 +202,6 @@ namespace Speckle.ConnectorRevit.Entry
       AvaloniaApp = app;
     }
 
-
-
-
-
   }
 
 }

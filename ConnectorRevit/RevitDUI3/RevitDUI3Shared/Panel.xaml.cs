@@ -1,12 +1,27 @@
-﻿$HEADER$using System.Windows.Controls;
+﻿using System.Windows;
+using System.Windows.Controls;
+using Autodesk.Revit.UI;
 
-namespace $NAMESPACE$
+namespace Speckle.ConnectorRevitDUI3;
+
+public partial class Panel : Page, Autodesk.Revit.UI.IDockablePaneProvider
 {
-    public partial class $CLASS$ : Page
-    {
-        public $CLASS$()
-        {
-            InitializeComponent();
-        }
-    }
+  public Panel()
+  {
+    InitializeComponent();
+  }
+
+  public void Init()
+  {
+    // TODO
+  }
+  
+  public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)
+  {
+    data.FrameworkElement = this as FrameworkElement;
+    data.InitialState = new Autodesk.Revit.UI.DockablePaneState();
+    data.InitialState.DockPosition = DockPosition.Tabbed;
+    data.InitialState.TabBehind = Autodesk.Revit.UI.DockablePanes.BuiltInDockablePanes.ProjectBrowser;
+  }
 }
+
