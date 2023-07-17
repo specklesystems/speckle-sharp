@@ -39,15 +39,9 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     public List<Exception> OperationErrors { get; set; } = new List<Exception>();
     public IContainer Container { get; }
-
-    //public delegate IReceivedObjectIdMap<Base, Element> ReceivedObjectIdMapFactory(StreamState streamState);
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       var builder = new ContainerBuilder();
-      //builder.Register<ISpeckleConverter>((c, p) =>
-      //{
-      //  return (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-      //}).As<ISpeckleConverter>();
 
       builder.RegisterType(Converter.GetType()).As<ISpeckleConverter>();
 
@@ -83,21 +77,6 @@ namespace Speckle.ConnectorRevit.UI
 
       builder.RegisterType<ReceiveOperation>();
       Container = builder.Build();
-      //services.AddScoped<IConvertedObjectsCache<Base, Element>, ConvertedObjectsCache>();
-      //services.AddSingleton<Func<ISpeckleConverter>>(sp => () => 
-      //{ 
-      //  return (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-      //});
-      //services.AddTransient<ISpeckleConverter>(sp => sp.GetRequiredService<Func<ISpeckleConverter>>()());
-      //services.AddScoped<IReceivedObjectIdMap<Base, Element>, StreamStateCache>();
-      //services.AddTransient<ReceivedObjectIdMapFactory>(sp => streamState =>
-      //{
-      //  return sp.GetRequiredService<IReceivedObjectIdMap<Base, Element>>();
-      //});
-      //services.AddTransient<ReceiveOperation>();
-
-      //services.AddTransient<ReceiveOperation.Factory>();
-      //Container = services.BuildServiceProvider();
       RevitApp = revitApp;
     }
 
