@@ -4,7 +4,7 @@ using RevitSharedResources.Interfaces;
 
 namespace ConnectorRevit.Services
 {
-  internal class StreamStateConversionSettings : IConversionSettings
+  public class StreamStateConversionSettings : IConversionSettings
   {
     public StreamStateConversionSettings(IEntityProvider<StreamState> streamStateProvider)
     {

@@ -1,28 +1,78 @@
+using Autodesk.AdvanceSteel.CADAccess;
 using Autodesk.Revit.DB;
+using Autodesk.Revit.UI;
+using Autofac;
+using ConnectorRevit.Operations;
+using ConnectorRevit.Revit;
+using ConnectorRevit.Services;
 using ConnectorRevit.Storage;
+using ConverterRevitTestsShared.Services;
 using DesktopUI2.Models;
+using DesktopUI2.ViewModels;
+using DesktopUI2.Views.Mappings.Controls;
 using Objects.BuiltElements.Revit;
 using Objects.Converter.Revit;
 using Revit.Async;
+using RevitSharedResources.Interfaces;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
 {
   public class SpeckleConversionTest
   {
+    private IContainer container;
     internal SpeckleConversionFixture fixture;
 
     public SpeckleConversionTest(SpeckleConversionFixture fixture)
     {
       this.fixture = fixture;
       this.fixture.TestClassName = GetType().Name;
+
+      var builder = new ContainerBuilder();
+
+      builder.RegisterType<ConverterRevit>().As<ISpeckleConverter>();
+
+      builder.RegisterType<SpeckleObjectLocalReceiver>().As<ISpeckleObjectReceiver>();
+
+      builder.RegisterType<StreamStateCache>().As<IReceivedObjectIdMap<Base, Element>>()
+        .InstancePerLifetimeScope();
+
+      builder.RegisterType<ConvertedObjectsCache>().As<IConvertedObjectsCache<Base, Element>>()
+        .InstancePerLifetimeScope();
+
+      builder.RegisterType<TransactionManager>().As<IRevitTransactionManager>()
+        .InstancePerLifetimeScope();
+      builder.RegisterType<ErrorEater>();
+
+      builder.RegisterType<StreamStateConversionSettings>().As<IConversionSettings>();
+
+      builder.RegisterType<DUIEntityProvider<StreamState>>().As<IEntityProvider<StreamState>>()
+        .InstancePerLifetimeScope();
+      builder.RegisterType<DUIEntityProvider<ProgressViewModel>>().As<IEntityProvider<ProgressViewModel>>()
+        .InstancePerLifetimeScope();
+      builder.Register(c =>
+      {
+        var state = c.Resolve<IEntityProvider<StreamState>>();
+        return state.Entity.ReceiveMode;
+      });
+
+      builder.RegisterType<UIDocumentProvider>().As<IEntityProvider<UIDocument>>()
+        .InstancePerLifetimeScope();
+
+      builder.RegisterInstance<UIApplication>(xru.Uiapp)
+        .SingleInstance();
+
+      builder.RegisterType<ReceiveOperation>();
+      container = builder.Build();
     }
 
     internal async Task NativeToSpeckle()

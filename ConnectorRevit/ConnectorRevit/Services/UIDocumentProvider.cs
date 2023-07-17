@@ -3,7 +3,7 @@ using RevitSharedResources.Interfaces;
 
 namespace ConnectorRevit.Services
 {
-  internal class UIDocumentProvider : IEntityProvider<UIDocument>
+  public class UIDocumentProvider : IEntityProvider<UIDocument>
   {
     private UIApplication revitApplication;
 
