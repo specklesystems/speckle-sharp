@@ -12,10 +12,10 @@ public class RevitBaseBinding : IBasicConnectorBinding
   
   public static UIApplication RevitApp;
   
-  public RevitBaseBinding(UIApplication revitApp)
+  public RevitBaseBinding(UIApplication revitApp=null)
   {
     // TODO: set up doc events, etc.
-    RevitApp = revitApp;
+    // RevitApp = revitApp;
   }
   
   public string GetSourceApplicationName()
