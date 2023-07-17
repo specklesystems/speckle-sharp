@@ -46,6 +46,7 @@ namespace Speckle.ConnectorRevit.UI
       builder.RegisterType(Converter.GetType()).As<ISpeckleConverter>()
         .InstancePerLifetimeScope();
 
+      // receive operation dependencies
       builder.RegisterType<SpeckleObjectServerReceiver>().As<ISpeckleObjectReceiver>();
 
       builder.RegisterType<StreamStateCache>().As<IReceivedObjectIdMap<Base, Element>>()
@@ -61,6 +62,14 @@ namespace Speckle.ConnectorRevit.UI
       builder.RegisterType<StreamStateConversionSettings>().As<IConversionSettings>()
         .InstancePerLifetimeScope();
 
+      // send operation dependencies
+      builder.RegisterType<SendSelection>().As<ISendSelection>()
+        .InstancePerLifetimeScope();
+      builder.RegisterType<ConvertedObjectsCacheSend>().As<IConvertedObjectsCache<Element, Base>>()
+        .InstancePerLifetimeScope();
+      builder.RegisterType<SpeckleObjectServerSender>().As<ISpeckleObjectSender>();
+
+      // questionable DUI object registration
       builder.RegisterType<DUIEntityProvider<StreamState>>().As<IEntityProvider<StreamState>>()
         .InstancePerLifetimeScope();
       builder.RegisterType<DUIEntityProvider<ProgressViewModel>>().As<IEntityProvider<ProgressViewModel>>()
@@ -75,6 +84,11 @@ namespace Speckle.ConnectorRevit.UI
         var state = c.Resolve<IEntityProvider<StreamState>>();
         return state.Entity.Filter;
       });
+      builder.Register(c =>
+      {
+        var state = c.Resolve<IEntityProvider<StreamState>>();
+        return state.Entity.Client;
+      });
       
       builder.RegisterType<UIDocumentProvider>().As<IEntityProvider<UIDocument>>()
         .InstancePerLifetimeScope();
@@ -83,6 +97,7 @@ namespace Speckle.ConnectorRevit.UI
         .SingleInstance();
 
       builder.RegisterType<ReceiveOperation>();
+      builder.RegisterType<SendOperation>();
       Container = builder.Build();
       RevitApp = revitApp;
     }

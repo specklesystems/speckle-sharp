@@ -342,14 +342,14 @@ namespace Objects.Converter.Revit
       }
       var refs = GetRefConnectionPairs(element);
       var refConnectionPairs = GetRefConnectionPairs(element).
-        Where(e => e.Item2 == null || sendSelection.ContainsElementWithId(e.Item2.Owner.UniqueId)).ToList();
+        Where(e => e.Item2 == null || sendSelection.Value.ContainsElementWithId(e.Item2.Owner.UniqueId)).ToList();
       elements.Add(element);
       foreach (var refConnectionPair in refs)
       {
         var connectedElement = refConnectionPair.Item2?.Owner;
         if (connectedElement != null
           && !elements.Any(e => e.UniqueId.Equals(connectedElement.UniqueId))
-          && sendSelection.ContainsElementWithId(connectedElement.UniqueId))
+          && sendSelection.Value.ContainsElementWithId(connectedElement.UniqueId))
         {
           connectionPairs.Add(Tuple.Create(refConnectionPair.Item1, refConnectionPair.Item2, element));
           GetConnectionPairs(connectedElement, ref connectionPairs, ref elements);

@@ -94,7 +94,7 @@ namespace Objects.Converter.Revit
     private IReceivedObjectIdMap<Base, Element> receivedObjectIdMap;
     private IRevitTransactionManager transactionManager;
     private IConversionSettings conversionSettings;
-    private ISendSelection sendSelection;
+    private Lazy<ISendSelection> sendSelection;
 
     public ConverterRevit(
       IConvertedObjectsCache<Base, Element> receiveOperationConvertedObjects,
@@ -104,7 +104,7 @@ namespace Objects.Converter.Revit
       IEntityProvider<UIDocument> uiDocumentProvider,
       IConversionSettings conversionSettings,
       ReceiveMode receiveMode,
-      ISendSelection sendSelection
+      Lazy<ISendSelection> sendSelection
     )
     {
       this.receiveOperationConvertedObjects = receiveOperationConvertedObjects;
@@ -177,9 +177,9 @@ namespace Objects.Converter.Revit
 
       if (@object is not Element element)
       {
-        throw new ArgumentException($"The ConvertToSpeckle Method expects an object of type DB.Element, but instead received a type of {@object.GetType()}");
+        element = null;
       }
-      string id = element.UniqueId;
+      string id = element?.UniqueId ?? string.Empty;
       switch (@object)
       {
         case DB.Document o:
@@ -374,7 +374,10 @@ namespace Objects.Converter.Revit
       if (Report.ReportObjects.TryGetValue(id, out var reportObj) && notes.Count > 0)
         reportObj.Update(log: notes);
 
-      sendOperationConvertedObjects.AddConvertedObjects(element, new List<Base>() { returnObject });
+      if (element != null)
+      {
+        sendOperationConvertedObjects.AddConvertedObjects(element, new List<Base>() { returnObject });
+      }
 
       return returnObject;
     }

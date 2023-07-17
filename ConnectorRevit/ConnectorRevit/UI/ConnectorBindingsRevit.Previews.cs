@@ -15,6 +15,7 @@ using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Autodesk.Revit.DB.DirectContext3D;
 using Revit.Async;
 using RevitSharedResources.Interfaces;
+using Autofac;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -143,9 +144,19 @@ namespace Speckle.ConnectorRevit.UI
     {
       try
       {
-        var converter = (ISpeckleConverter)Activator.CreateInstance(Converter.GetType());
-        var filterObjs = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
-        foreach (var filterObj in filterObjs)
+        using var scope = Container.BeginLifetimeScope();
+
+        // using objects such as the following DUI entity providers is a bad practice that we have to employ
+        // to make up for not having proper DI configured in DUI
+        var streamStateProvider = scope.Resolve<IEntityProvider<StreamState>>();
+        streamStateProvider.Entity = state;
+        var progressProvider = scope.Resolve<IEntityProvider<ProgressViewModel>>();
+        progressProvider.Entity = progress;
+
+        var converter = scope.Resolve<ISpeckleConverter>();
+        var sendSelection = scope.Resolve<ISendSelection>();
+
+        foreach (var filterObj in sendSelection.Elements)
         {
           var descriptor = ConnectorRevitUtils.ObjectDescriptor(filterObj);
           var reportObj = new ApplicationObject(filterObj.UniqueId, descriptor);
@@ -158,7 +169,7 @@ namespace Speckle.ConnectorRevit.UI
           progress.Report.Log(reportObj);
         }
 
-        SelectClientObjects(filterObjs.Select(o => o.UniqueId).ToList(), true);
+        SelectClientObjects(sendSelection.Elements.Select(o => o.UniqueId).ToList(), true);
       }
       catch (Exception ex)
       {

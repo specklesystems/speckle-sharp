@@ -1,65 +1,61 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.UI;
 using Avalonia.Threading;
-using DesktopUI2;
+using ConnectorRevit.Services;
 using DesktopUI2.Models;
-using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using RevitSharedResources.Interfaces;
 using Serilog.Context;
 using Speckle.ConnectorRevit;
-using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
-using Speckle.Core.Transports;
 
 namespace ConnectorRevit.Operations
 {
   public class SendOperation
   {
-    private ISpeckleConverter converter;
-    private IConvertedObjectsCache<Base, Element> convertedObjectsCache;
-    private IReceivedObjectIdMap<Base, Element> receivedObjectIdMap;
-    private ISendSelection sendSelection;
-    private StreamState state;
-    private ProgressViewModel progress;
-    private UIDocument uiDocument;
+    private readonly ISpeckleConverter converter;
+    private readonly ISendSelection sendSelection;
+    private readonly ISpeckleObjectSender speckleObjectSender;
+    private readonly StreamState state;
+    private readonly ProgressViewModel progress;
+    private readonly UIDocument uiDocument;
+
+    public SendOperation(
+      ISpeckleConverter converter, 
+      ISendSelection sendSelection, 
+      ISpeckleObjectSender speckleObjectSender,
+      IEntityProvider<UIDocument> uiDocumentProvider,
+      IEntityProvider<StreamState> streamStateProvider,
+      IEntityProvider<ProgressViewModel> progressProvider
+    )
+    {
+      this.converter = converter;
+      this.sendSelection = sendSelection;
+      this.speckleObjectSender = speckleObjectSender;
+      this.uiDocument = uiDocumentProvider.Entity;
+
+      this.state = streamStateProvider.Entity;
+      this.progress = progressProvider.Entity;
+    }
+
     public async Task<string> Send()
     {
-      //converter.SetContextDocument(uiDocument.Document);
-      //converter.Report.ReportObjects.Clear();
-      //
-      //// set converter settings as tuples (setting slug, setting selection)
-      //var settings = new Dictionary<string, string>();
-      //CurrentSettings = state.Settings;
-      //foreach (var setting in state.Settings)
-      //  settings.Add(setting.Slug, setting.Selection);
-      //converter.SetConverterSettings(settings);
-
       var streamId = state.StreamId;
       var client = state.Client;
-
-      //var selectedObjects = GetSelectionFilterObjectsWithDesignOptions(converter, state.Filter);
-      //state.SelectedObjectIds = selectedObjects.Select(x => x.UniqueId).ToList();
 
       if (!sendSelection.Elements.Any())
         throw new InvalidOperationException(
           "There are zero objects to send. Please use a filter, or set some via selection."
         );
 
-      //converter.SetContextObjects(
-      //  selectedObjects
-      //    .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })
-      //    .ToList()
-      //);
       var commitObject = converter.ConvertToSpeckle(uiDocument.Document) ?? new Collection();
       RevitCommitObjectBuilder commitObjectBuilder = new(CommitCollectionStrategy.ByCollection);
 
@@ -144,40 +140,10 @@ namespace ConnectorRevit.Operations
 
       commitObjectBuilder.BuildCommitObject(commitObject);
 
-      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
-
-      var objectId = await Speckle.Core.Api.Operations
-        .Send(
-          @object: commitObject,
-          cancellationToken: progress.CancellationToken,
-      transports: transports,
-          onProgressAction: dict => progress.Update(dict),
-          onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
-          disposeTransports: true
-        )
-        .ConfigureAwait(true);
-
-      progress.CancellationToken.ThrowIfCancellationRequested();
-
-      var actualCommit = new CommitCreateInput()
-      {
-        streamId = streamId,
-        objectId = objectId,
-        branchName = state.BranchName,
-        message = state.CommitMessage ?? $"Sent {convertedCount} objects from {ConnectorRevitUtils.RevitAppName}.",
-        sourceApplication = ConnectorRevitUtils.RevitAppName,
-      };
-
-      if (state.PreviousCommitId != null)
-      {
-        actualCommit.parents = new List<string>() { state.PreviousCommitId };
-      }
-
-      var commitId = await ConnectorHelpers
-        .CreateCommit(client, actualCommit, progress.CancellationToken)
+      await speckleObjectSender.Send(streamId, state.BranchName, state.CommitMessage, commitObject, convertedCount)
         .ConfigureAwait(false);
 
-      return commitId;
+      return speckleObjectSender.CommitId;
     }
 
     public static bool GetOrCreateApplicationObject(

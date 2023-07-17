@@ -12,7 +12,6 @@ namespace ConnectorRevit.Storage
   {
     private StreamState streamState;
     private Dictionary<string, ApplicationObject> previousContextObjects;
-    public delegate StreamStateCache Factory(StreamState state);
     public StreamStateCache(IEntityProvider<StreamState> streamStateProvider)
     {
       streamState = streamStateProvider.Entity;

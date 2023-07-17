@@ -40,8 +40,8 @@ namespace ConnectorRevit.Services
 
     public void Dispose()
     {
-      transaction.Dispose();
-      transactionGroup.Dispose();
+      transaction?.Dispose();
+      transactionGroup?.Dispose();
     }
 
     public TransactionStatus Commit()

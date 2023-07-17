@@ -29,7 +29,7 @@ namespace Objects.Converter.Revit
         var element = Doc.GetElement(elIdsToConvert[i]);
         // if it's already part of the selection, remove this element from the list of element
         // we can't prevent the other element (with same id) to be converted, like we do for hosted elements
-        if (sendSelection.ContainsElementWithId(element.UniqueId))
+        if (sendSelection.Value.ContainsElementWithId(element.UniqueId))
           elIdsToConvert.RemoveAt(i);
         // otherwise, add the elements to the ContextObjects before converting them because a group 
         // may contain a wall that has a window, so we still want the window to search through the contextObjects

@@ -632,7 +632,7 @@ namespace Objects.Converter.Revit
     
     private bool ElementNeedsToBeConverted(Element element)
     {
-      return sendSelection.ContainsElementWithId(element.UniqueId) 
+      return sendSelection.Value.ContainsElementWithId(element.UniqueId) 
         && !sendOperationConvertedObjects.HasConvertedObjectWithId(element.UniqueId);
     }
 
