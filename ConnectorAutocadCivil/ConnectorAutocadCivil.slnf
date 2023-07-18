@@ -2,6 +2,8 @@
   "solution": {
     "path": "..\\All.sln",
     "projects": [
+      "ConnectorAutocadCivil\\AutocadCivilDUI3\\Autocad2023\\ConnectorAutocad2023DUI3.csproj",
+      "ConnectorAutocadCivil\\AutocadCivilDUI3\\AutocadCivilDUI3Shared\\AutocadCivilDUI3Shared.shproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2021\\ConnectorAutocad2021.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2022\\ConnectorAutocad2022.csproj",
       "ConnectorAutocadCivil\\ConnectorAutocad2023\\ConnectorAutocad2023.csproj",

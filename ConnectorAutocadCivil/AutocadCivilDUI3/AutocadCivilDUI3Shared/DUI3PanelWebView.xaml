@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="Speckle.ConnectorAutocadDUI3.DUI3PanelWebView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:Speckle.ConnectorAutocadDUI3"
+             xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+  <UserControl.Resources>
+    <wv2:CoreWebView2CreationProperties x:Key="EvergreenWebView2CreationProperties" UserDataFolder="C:\temp" />
+  </UserControl.Resources>
+  <Grid>
+    <wv2:WebView2 
+      CreationProperties="{StaticResource EvergreenWebView2CreationProperties}" 
+      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" 
+      Name="Browser" Grid.Row="0" Source="http://localhost:8082" />
+  </Grid>
+</UserControl>
+

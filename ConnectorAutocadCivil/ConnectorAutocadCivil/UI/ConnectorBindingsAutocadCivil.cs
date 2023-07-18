@@ -1237,7 +1237,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
       //// GLOBAL EVENT HANDLERS
       Application.DocumentWindowCollection.DocumentWindowActivated += Application_WindowActivated;
       Application.DocumentManager.DocumentActivated += Application_DocumentActivated;
-
       var layers = Application.UIBindings.Collections.Layers;
       layers.CollectionChanged += Application_LayerChanged;
     }

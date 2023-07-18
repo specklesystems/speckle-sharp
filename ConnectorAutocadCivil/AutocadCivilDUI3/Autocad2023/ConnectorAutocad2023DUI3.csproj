@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>Speckle.ConnectorAutocadDUI3</RootNamespace>
+        <AssemblyName>ConnectorAutocadDUI3</AssemblyName>
+        <TargetFramework>net48</TargetFramework>
+        <StartAction>Program</StartAction>
+        <StartProgram>$(ProgramW6432)\Autodesk\AutoCAD 2023\acad.exe</StartProgram>
+        <PlatformTarget>x64</PlatformTarget>
+        <AssemblyTitle>ConnectorAutocad2023DUI3</AssemblyTitle>
+        <Product>ConnectorAutocad2023DUI3</Product>
+        <DefineConstants>$(DefineConstants);AUTOCAD2023DUI3</DefineConstants>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    </PropertyGroup>
+    
+    <Target Name="Clean">
+        <RemoveDir Directories="$(TargetDir);$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2023DUI3" />
+    </Target>
+    <Target Name="AfterBuildMigrated" AfterTargets="PostBuildEvent" Condition="$([MSBuild]::IsOsPlatform('Windows'))">
+        <Message Text="Calling 2023 post build" Importance="high" />
+        <CallTarget Condition="'$(Configuration)' == 'Debug' AND '$(IsDesktopBuild)' == true" Targets="AfterBuildDebug" />
+    </Target>
+    <Target Name="AfterBuildDebug">
+        <ItemGroup>
+            <SourceDLLs Include="$(TargetDir)\**\*.*" />
+        </ItemGroup>
+        <Copy DestinationFolder="$(AppData)\Autodesk\ApplicationPlugins\Speckle2AutoCAD2023DUI3\%(RecursiveDir)" SourceFiles="@(SourceDLLs)" />
+    </Target>
+
+    <ItemGroup>
+        <PackageReference Include="CefSharp.Wpf" Version="92.0.260" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1823.32" />
+        <PackageReference Include="Speckle.AutoCAD.API" Version="2023.0.0" IncludeAssets="compile;build" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Core\Core\Core.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="PresentationCore" />
+      <Reference Include="PresentationFramework" />
+      <Reference Include="System.Xaml" />
+      <Reference Include="WindowsFormsIntegration">
+        <HintPath>..\..\..\..\..\..\..\..\Windows\Microsoft.NET\assembly\GAC_MSIL\WindowsFormsIntegration\v4.0_4.0.0.0__31bf3856ad364e35\WindowsFormsIntegration.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+    <Import Project="..\AutocadCivilDUI3Shared\AutocadCivilDUI3Shared.projitems" Label="Shared" />
+</Project>

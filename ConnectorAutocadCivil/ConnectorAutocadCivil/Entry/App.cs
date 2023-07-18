@@ -45,7 +45,7 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         else
         {
           // load the custom ribbon on startup, but wait for ribbon control to be created
-          ComponentManager.ItemInitialized += new System.EventHandler<RibbonItemEventArgs>(ComponentManager_ItemInitialized);
+          ComponentManager.ItemInitialized += ComponentManager_ItemInitialized;
           Application.SystemVariableChanged += TrapWSCurrentChange;
         }
 
