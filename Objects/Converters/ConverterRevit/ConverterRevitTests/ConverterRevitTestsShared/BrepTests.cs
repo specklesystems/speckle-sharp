@@ -1,92 +1,83 @@
 using Autodesk.Revit.DB;
+using Autofac;
+using ConnectorRevit.Operations;
+using ConnectorRevit.Services;
+using ConverterRevitTestsShared.Services;
 using Objects.Converter.Revit;
 using Objects.Geometry;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Api;
+using Speckle.Core.Models;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace ConverterRevitTests
 {
-  //public class BrepFixture : SpeckleConversionFixture
-  //{
-  //  public override string TestName => "Brep";
-  //  public override string Category => TestCategories.Brep;
-  //}
+  public class BrepFixture : SpeckleConversionFixture
+  {
+    public override string TestName => "Brep";
+    public override string Category => TestCategories.Brep;
+  }
 
-  //public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>
-  //{
-  //  private readonly ITestOutputHelper _testOutputHelper;
+  public class BrepTests : SpeckleConversionTest, IClassFixture<BrepFixture>
+  {
+    public BrepTests(BrepFixture fixture) : base(fixture)
+    {
+    }
 
-  //  public BrepTests(BrepFixture fixture, ITestOutputHelper testOutputHelper) : base(fixture)
-  //  {
-  //    _testOutputHelper = testOutputHelper;
-  //  }
+    [Theory]
+    [Trait("Brep", "ToNative")]
+    [InlineData(@"Brep-Cube.json")]
+    [InlineData(@"Brep-CubeWithHole.json")]
+    [InlineData(@"Brep-TwoFaces.json")]
+    [InlineData(@"Brep-TrimmedFace.json")]
+    [InlineData(@"Brep-TrimmedFaceSingleLoop.json")]
+    [InlineData(@"Brep-FaceWithHole.json")]
+    [InlineData(@"Brep-NurbsWithHole.json")]
+    [InlineData(@"Brep-TwoFacesWithHole.json")]
+    [InlineData(@"Brep-Complex.json")]
+    [InlineData(@"Brep-QuadDome.json")]
+    [InlineData(@"Brep-SimpleHyparHole.json")]
+    [InlineData(@"Brep-FaceWithTrimmedEdge.json")]
+    public async Task BrepToNative(string fileName)
+    {
+      // Read and obtain `base` object.
+      var contents = System.IO.File.ReadAllText(Globals.GetTestModelOfCategory(fixture.Category, fileName));
+      var converter = new ConverterRevit();
+      var @base = Operations.Deserialize(contents);
 
-  //  [Theory]
-  //  [Trait("Brep", "ToNative")]
-  //  [InlineData(@"Brep-Cube.json")]
-  //  [InlineData(@"Brep-CubeWithHole.json")]
-  //  [InlineData(@"Brep-TwoFaces.json")]
-  //  [InlineData(@"Brep-TrimmedFace.json")]
-  //  [InlineData(@"Brep-TrimmedFaceSingleLoop.json")]
-  //  [InlineData(@"Brep-FaceWithHole.json")]
-  //  [InlineData(@"Brep-NurbsWithHole.json")]
-  //  [InlineData(@"Brep-TwoFacesWithHole.json")]
-  //  [InlineData(@"Brep-Complex.json")]
-  //  [InlineData(@"Brep-QuadDome.json")]
-  //  [InlineData(@"Brep-SimpleHyparHole.json")]
-  //  [InlineData(@"Brep-FaceWithTrimmedEdge.json")]
-  //  public async Task BrepToNative(string fileName)
-  //  {
+      // You read the wrong file, OOOPS!!
+      if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
+      brep.applicationId ??= "dummyAppId";
 
-  //    // Read and obtain `base` object.
-  //    var contents = System.IO.File.ReadAllText(Globals.GetTestModelOfCategory(fixture.Category, fileName));
-  //    var converter = new ConverterRevit();
-  //    var @base = Operations.Deserialize(contents);
+      var scope = CreateScope(fixture.NewDoc);
+      var setReceiveObjectFunc = scope.Resolve<Func<Base, ISpeckleObjectReceiver>>();
+      setReceiveObjectFunc(brep);
 
-  //    // You read the wrong file, OOOPS!!
-  //    if (!(@base is Brep brep)) throw new Exception("Object was not a brep, did you choose the right file?");
-  //    DirectShape native = null;
+      var receiveOp = scope.Resolve<ReceiveOperation>();
 
-  //    await SpeckleUtils.RunInTransaction(() =>
-  //    {
-  //      converter.SetContextDocument(fixture.NewDoc);
-  //      native = converter.BrepToDirectShape(brep, out List<string> notes);
-  //    }, fixture.NewDoc, converter);
+      await receiveOp.Receive().ConfigureAwait(false);
+      var convertedObjects = scope.Resolve<IConvertedObjectsCache<Base, Element>>();
 
-  //    Assert.True(native.get_Geometry(new Options()).First() is Solid);
-  //  }
+      Assert.Single(convertedObjects.GetCreatedObjects());
+      var native = convertedObjects.GetCreatedObjects().First() as DirectShape;
+      Assert.True(native.get_Geometry(new Options()).First() is Solid);
+    }
 
-  //  [Fact]
-  //  [Trait("Brep", "ToSpeckle")]
-  //  public async Task BrepToSpeckle()
-  //  {
-  //    await NativeToSpeckle();
-  //  }
+    [Fact]
+    [Trait("Brep", "ToSpeckle")]
+    public async Task BrepToSpeckle()
+    {
+      await NativeToSpeckle();
+    }
 
-  //  [Fact]
-  //  [Trait("Brep", "Selection")]
-  //  public void BrepSelectionToNative()
-  //  {
-  //    var converter = new ConverterRevit();
-  //    converter.SetContextDocument(fixture.NewDoc);
-
-  //    if (fixture.Selection.Count == 0) return;
-  //    if (!(fixture.Selection[0] is DirectShape ds))
-  //      throw new Exception("Selected object was not a direct shape.");
-  //    var geo = ds.get_Geometry(new Options());
-  //    if (!(geo.First() is Solid solid))
-  //      throw new Exception("DS was not composed of a solid.");
-  //    var converted = converter.BrepToSpeckle(solid, fixture.NewDoc);
-  //    var nativeconverted = converter.BrepToNative(converted, out List<string> notes);
-  //    Assert.NotNull(nativeconverted);
-  //  }
-
-  //}
-
+    public override void OverrideDependencies(ContainerBuilder builder)
+    {
+      builder.RegisterType<SpecificObjectReciever>().As<ISpeckleObjectReceiver>()
+        .InstancePerLifetimeScope();
+    }
+  }
 }
 
