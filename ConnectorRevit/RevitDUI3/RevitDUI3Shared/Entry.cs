@@ -66,7 +66,13 @@ public class App : IExternalApplication
       var showDevToolsMethod = () => browser.ShowDevTools();
 
       // browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
+      #if REVIT2020
       var bindingOptions = new BindingOptions() { CamelCaseJavascriptNames = false };
+      #endif
+      #if REVIT2023
+      browser.JavascriptObjectRepository.NameConverter = null;
+      BindingOptions bindingOptions = null;
+      #endif
       
       var testBinding = new TestBinding();
       var testBindingBridge = new BrowserBridge(browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
@@ -82,6 +88,9 @@ public class App : IExternalApplication
       // Guru  meditation: Je sais, pas ideal. Mais q'est que nous pouvons faire? Rien. C'est l'autodesk vie.
       browser.Load("http://localhost:3000");
 #endif
+      #if REVIT2023
+      // TODO: let it load 
+      #endif
     };
 
   }

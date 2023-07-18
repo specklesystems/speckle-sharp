@@ -1,0 +1,8 @@
+﻿{
+  "profiles": {
+    "ConnectorRevit2023DUI3": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Program Files\\Autodesk\\Revit 2023\\Revit.exe"
+    }
+  }
+}
