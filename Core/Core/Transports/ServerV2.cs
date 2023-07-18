@@ -75,11 +75,11 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   public object Clone()
   {
-    return new ServerTransportV2(Account, StreamId)
+    return new ServerTransportV2(Account, StreamId, TimeoutSeconds, BlobStorageFolder)
     {
       OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
-      CancellationToken = CancellationToken
+      CancellationToken = CancellationToken,
     };
   }
 
