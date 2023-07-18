@@ -44,7 +44,7 @@ namespace DUI3
     /// <param name="methodName"></param>
     /// <param name="args"></param>
     /// <returns></returns>
-    public Task<string> RunMethod(string methodName, string args);
+    public string RunMethod(string methodName, string args);
 
     /// <summary>
     /// Sends to the Frontend an event with an optional payload.

@@ -11,11 +11,6 @@ public partial class Panel : Page, Autodesk.Revit.UI.IDockablePaneProvider
     InitializeComponent();
   }
 
-  public void Init()
-  {
-    // TODO
-  }
-  
   public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)
   {
     data.FrameworkElement = this as FrameworkElement;

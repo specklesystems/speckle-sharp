@@ -14,7 +14,6 @@ namespace DUI3
   /// Wraps a binding class, and manages its calls from the Frontend to .NET, and sending events from .NET to the the Frontend. 
   /// <para>See also: https://github.com/johot/WebView2-better-bridge</para>
   /// </summary>
-  /// <typeparam name="TBrowser">The browser type (CefSharp or WebView2 currently supported.)</typeparam>
   [ClassInterface(ClassInterfaceType.AutoDual)]
   [ComVisible(true)]
   public class BrowserBridge : IBridge
@@ -76,16 +75,18 @@ namespace DUI3
     public string[] GetBindingsMethodNames() => BindingMethodCache.Keys.ToArray();
 
     /// <summary>
-    /// Used by the Frontend brdige to call into .NET.
+    /// Used by the Frontend bridge to call into .NET.
     /// TODO: Check and test
     /// </summary>
     /// <param name="methodName"></param>
     /// <param name="args"></param>
     /// <returns></returns>
-    public async Task<string> RunMethod(string methodName, string args)
+    public string RunMethod(string methodName, string args)
     {
+      // Note: You might be tempted to make this method async Task<string> to prevent the task.Wait() below. 
+      // Do not do that! Cef65 doesn't like waiting for async .NET methods.
       // Note: we have this pokemon catch 'em all here because throwing errors in .NET is 
-      // very risky, and we might crash the host application. Behaiour seems also to differ
+      // very risky, and we might crash the host application. Behaviour seems also to differ
       // between various browser controls (e.g.: cefsharp handles things nicely - basically 
       // passing back the exception to the browser, but webview throws an access violation
       // error that kills Rhino.). 
@@ -123,7 +124,8 @@ namespace DUI3
         }
         else // It's an async call
         {
-          await resultTypedTask;
+          // See note at start of function. Do not asyncify!
+          resultTypedTask.Wait();
 
           // If has a "Result" property return the value otherwise null (Task<void> etc)
           var resultProperty = resultTypedTask.GetType().GetProperty("Result");
@@ -135,7 +137,7 @@ namespace DUI3
       }
       catch (Exception e)
       {
-        // TODO properly log the exeception.
+        // TODO: properly log the exeception.
         return JsonSerializer.Serialize(new { Error = e.Message, InnerError = e.InnerException?.Message }, serializerOptions);
       }
     }

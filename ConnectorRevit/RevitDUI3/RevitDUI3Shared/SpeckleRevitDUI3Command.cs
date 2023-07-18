@@ -15,7 +15,6 @@ public class SpeckleRevitDUI3Command: IExternalCommand
     panel.Show();
     
     App.Panel.Browser.ShowDevTools();
-    App.Panel.Browser.Load("http://localhost:3000/");
     return Result.Succeeded;
   }
 }
