@@ -100,11 +100,11 @@ public static class SpeckleLog
     {
       if (_logger == null)
         Initialize("Core", "unknown");
-      return _logger;
+      return _logger!;
     }
   }
 
-  private static bool _initialized = false;
+  private static bool _initialized;
 
   /// <summary>
   /// Initialize logger configuration for a global Serilog.Log logger.
