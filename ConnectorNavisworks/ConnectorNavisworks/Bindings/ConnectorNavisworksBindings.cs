@@ -78,10 +78,7 @@ public partial class ConnectorBindingsNavisworks : ConnectorBindings
     return HostAppNameVersion;
   }
 
-  public override string GetFileName()
-  {
-    return Application.ActiveDocument != null ? Application.ActiveDocument.CurrentFileName : string.Empty;
-  }
+
 
   private static string GetDocPath()
   {
