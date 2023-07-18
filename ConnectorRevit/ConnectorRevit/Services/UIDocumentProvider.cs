@@ -1,20 +1,23 @@
-using Autodesk.Revit.UI;
+using UI = Autodesk.Revit.UI;
 using RevitSharedResources.Interfaces;
 
 namespace ConnectorRevit.Services
 {
-  public class UIDocumentProvider : IEntityProvider<UIDocument>
+  /// <summary>
+  /// Provides the current <see cref="UI.UIDocument"/> to any dependencies which may need it
+  /// </summary>
+  public class UIDocumentProvider : IEntityProvider<UI.UIDocument>
   {
-    private UIApplication revitApplication;
+    private UI.UIApplication revitApplication;
 
-    public UIDocumentProvider(UIApplication revitApplication)
+    public UIDocumentProvider(UI.UIApplication revitApplication)
     {
       this.revitApplication = revitApplication;
     }
 
-    private UIDocument uiDocument;
+    private UI.UIDocument uiDocument;
 
-    public UIDocument Entity 
+    public UI.UIDocument Entity 
     { 
       get => uiDocument ?? revitApplication.ActiveUIDocument; 
       set => uiDocument = value; 

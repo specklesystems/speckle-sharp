@@ -1,9 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace RevitSharedResources.Interfaces
 {
+  /// <summary>
+  /// Responsible for exposing and overwritting conversion settings
+  /// </summary>
   public interface IConversionSettings
   {
     bool TryGetSettingBySlug(string slug, out string value);

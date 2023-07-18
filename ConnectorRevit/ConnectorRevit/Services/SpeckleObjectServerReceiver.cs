@@ -7,6 +7,9 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Services
 {
+  /// <summary>
+  /// implements <see cref="ISpeckleObjectReceiver"/> to receive from a server
+  /// </summary>
   internal sealed class SpeckleObjectServerReceiver : ISpeckleObjectReceiver
   {
     public async Task<Base> ReceiveCommitObject(StreamState state, ProgressViewModel progress)

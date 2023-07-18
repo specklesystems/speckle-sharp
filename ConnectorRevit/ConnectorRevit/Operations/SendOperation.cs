@@ -19,6 +19,11 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Operations
 {
+  /// <summary>
+  /// Creates and executes the roadmap for sending a selection of Revit objects as a Speckle commit.
+  /// This is meant to be a transient service meaning that each send operation that the users does
+  /// should instantiate a new instance of the <see cref="SendOperation"/>
+  /// </summary>
   public class SendOperation
   {
     private readonly ISpeckleConverter converter;

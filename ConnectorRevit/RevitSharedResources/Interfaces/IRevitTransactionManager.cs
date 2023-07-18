@@ -5,6 +5,9 @@ using Autodesk.Revit.DB;
 
 namespace RevitSharedResources.Interfaces
 {
+  /// <summary>
+  /// Is responsible for starting, pausing, committing, and rolling back a Revit transaction
+  /// </summary>
   public interface IRevitTransactionManager : IDisposable
   {
     void Start(string streamId, Document document);

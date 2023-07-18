@@ -4,6 +4,9 @@ using RevitSharedResources.Interfaces;
 
 namespace ConnectorRevit.Services
 {
+  /// <summary>
+  /// implements <see cref="IConversionSettings"/>
+  /// </summary>
   public class StreamStateConversionSettings : IConversionSettings
   {
     public StreamStateConversionSettings(IEntityProvider<StreamState> streamStateProvider)

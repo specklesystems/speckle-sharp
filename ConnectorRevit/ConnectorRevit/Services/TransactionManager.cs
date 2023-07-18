@@ -7,6 +7,9 @@ using Speckle.Core.Logging;
 
 namespace ConnectorRevit.Services
 {
+  /// <summary>
+  /// implements <see cref="IRevitTransactionManager"/>
+  /// </summary>
   public class TransactionManager : IRevitTransactionManager
   {
     private ErrorEater errorEater;

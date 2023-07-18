@@ -22,6 +22,11 @@ using ConnectorRevit.Services;
 
 namespace ConnectorRevit.Operations
 {
+  /// <summary>
+  /// Creates and executes the roadmap for receiving a Speckle commit into a Revit document.
+  /// This is meant to be a transient service meaning that each receive operation that the users does
+  /// should instantiate a new instance of the <see cref="ReceiveOperation"/>
+  /// </summary>
   public class ReceiveOperation
   {
     private ISpeckleConverter converter;

@@ -12,6 +12,9 @@ using Speckle.Core.Logging;
 
 namespace ConnectorRevit.Services
 {
+  /// <summary>
+  /// Implements <see cref="ISendSelection"/>
+  /// </summary>
   public class SendSelection : ISendSelection
   {
     private ISpeckleConverter converter;

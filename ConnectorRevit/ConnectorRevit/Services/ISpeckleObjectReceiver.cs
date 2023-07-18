@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace ConnectorRevit.Services
 {
+  /// <summary>
+  /// Responsible for receiving the desired commit's referenced object
+  /// </summary>
   public interface ISpeckleObjectReceiver
   {
     Task<Base> ReceiveCommitObject(StreamState state, ProgressViewModel progress);

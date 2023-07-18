@@ -14,6 +14,9 @@ using Speckle.Core.Transports;
 
 namespace ConnectorRevit.Services
 {
+  /// <summary>
+  /// implements <see cref="ISpeckleObjectSender"/> to send a Base object to a server
+  /// </summary>
   internal class SpeckleObjectServerSender : ISpeckleObjectSender
   {
     private Client client;

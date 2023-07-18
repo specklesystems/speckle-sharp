@@ -6,6 +6,10 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
+  /// <summary>
+  /// Cache of objects that gets built up during the send operation. Every converted and created object
+  /// will be stored in this cache
+  /// </summary>
   public class ConvertedObjectsCacheSend : IConvertedObjectsCache<Element, Base>
   {
     private Dictionary<string, (Element, List<Base>)> convertedObjects = new();
