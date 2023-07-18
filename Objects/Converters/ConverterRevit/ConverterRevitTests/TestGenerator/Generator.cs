@@ -15,25 +15,19 @@ namespace TestGenerator
     public const string Updated = "Updated";
     public void Execute(GeneratorExecutionContext context)
     {
-      // Debugger.Launch();
+      //Debugger.Launch();
       var sb = new StringBuilder();
       sb.Append(TestTemplate.StartNamespace);
 
-      var assemblyLocationList = context.Compilation.Assembly.Locations.First().ToString().Split('\\').ToList();
-      assemblyLocationList[0] = assemblyLocationList[0].Replace("SourceFile(", "");
+      // get any directory in the speckle sharp repo
+      var directoryInSharp = context.Compilation.Assembly.Locations.First().ToString();
+      directoryInSharp = directoryInSharp.Replace("SourceFile(", "");
 
-      for (var i = assemblyLocationList.Count - 1; i >= 0; i--)
-      {
-        if (assemblyLocationList[i] == "ConverterRevit") break;
-
-        assemblyLocationList.RemoveAt(i);
-      }
-      assemblyLocationList.Add("TestModels");
-
+      // get the year for the test project as a string
       var assemblyName = context.Compilation.AssemblyName;
       var year = assemblyName.Substring(assemblyName.Length - 4);
-      assemblyLocationList.Add(year);
-      var testFolderLocation = string.Join("\\", assemblyLocationList);
+
+      string testFolderLocation = Globals.GetTestModelFolderLocation(directoryInSharp, year);
       var subdirectories = Directory.GetDirectories(testFolderLocation);
 
       foreach (var subdir in subdirectories)
