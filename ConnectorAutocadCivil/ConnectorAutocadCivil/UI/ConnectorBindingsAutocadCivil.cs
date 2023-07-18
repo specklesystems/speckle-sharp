@@ -111,7 +111,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       catch { }
       var docString = $"{(path != null ? path : "")}{(Doc != null ? Doc.Name : "")}";
       var hash = !string.IsNullOrEmpty(docString)
-        ? Core.Models.Utilities.hashString(docString, Core.Models.Utilities.HashingFuctions.MD5)
+        ? Core.Models.Utilities.HashString(docString, Core.Models.Utilities.HashingFunctions.MD5)
         : null;
       return hash;
     }

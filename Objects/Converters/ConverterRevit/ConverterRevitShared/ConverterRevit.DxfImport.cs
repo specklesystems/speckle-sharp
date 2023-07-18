@@ -27,11 +27,16 @@ namespace Objects.Converter.Revit
       if (existing != null)
         return existing;
 
-      var el = CreateDxfImport(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
+      var el = CreateDxfImport(
+        new List<Base>(ds.baseGeometries),
+        $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf",
+        1,
+        doc
+      );
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
-    
+
     public ApplicationObject DirectShapeToDxfImportFamily(DirectShape ds, DB.Document doc = null)
     {
       var appObj = new ApplicationObject(ds.id, ds.speckle_type) { applicationId = ds.applicationId };
@@ -39,11 +44,16 @@ namespace Objects.Converter.Revit
       if (existing != null)
         return existing;
 
-      var el = CreateDxfImportFamily(new List<Base>(ds.baseGeometries), $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf", 1, doc);
+      var el = CreateDxfImportFamily(
+        new List<Base>(ds.baseGeometries),
+        $"Speckle-Mesh-{ds.id}-{ds.applicationId}.dxf",
+        1,
+        doc
+      );
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
-    
+
     public ApplicationObject MeshToDxfImport(Mesh mesh, DB.Document doc = null)
     {
       var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
@@ -55,7 +65,7 @@ namespace Objects.Converter.Revit
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
-    
+
     public ApplicationObject MeshToDxfImportFamily(Mesh mesh, DB.Document doc = null)
     {
       var appObj = new ApplicationObject(mesh.id, mesh.speckle_type) { applicationId = mesh.applicationId };
@@ -75,11 +85,7 @@ namespace Objects.Converter.Revit
       if (existing != null)
         return existing;
 
-      var el = CreateDxfImport(
-        new List<Base>{brep}, 
-        $"Speckle-Brep-{brep.id}-{brep.applicationId}",
-        1, 
-        doc);
+      var el = CreateDxfImport(new List<Base> { brep }, $"Speckle-Brep-{brep.id}-{brep.applicationId}", 1, doc);
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
@@ -92,16 +98,12 @@ namespace Objects.Converter.Revit
       if (existing != null)
         return existing;
 
-      var el = CreateDxfImportFamily(
-        new List<Base>{brep}, 
-        $"Speckle-Brep-{brep.id}-{brep.applicationId}",
-        1,
-        doc);
+      var el = CreateDxfImportFamily(new List<Base> { brep }, $"Speckle-Brep-{brep.id}-{brep.applicationId}", 1, doc);
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: el.UniqueId, convertedItem: el);
       return appObj;
     }
-    
+
     /// <summary>
     /// Creates a new Revit Element from a list of Base objects by exporting them to DXF and importing that file back.
     /// </summary>
@@ -111,40 +113,40 @@ namespace Objects.Converter.Revit
     /// <param name="doc">The document to import the DXF into.</param>
     /// <returns>The Element containing the imported DXF geometry.</returns>
     /// <exception cref="SpeckleException">Will throw an error if no objects where successfully converted.</exception>
-    public DB.Element CreateDxfImport(List<Base> objects, string fileName, double scaleFactor = 1, DB.Document doc = null)
+    public DB.Element CreateDxfImport(
+      List<Base> objects,
+      string fileName,
+      double scaleFactor = 1,
+      DB.Document doc = null
+    )
     {
       doc ??= Doc; // Use the global doc if no doc is passed in.
-      var dxfConverter = new SpeckleDxfConverter
-      {
-        Settings =
-        {
-          PrettyMeshes = true,
-          DocUnits = ModelUnits
-        }
-      };
-      
+      var dxfConverter = new SpeckleDxfConverter { Settings = { PrettyMeshes = true, DocUnits = ModelUnits } };
+
       dxfConverter.SetContextDocument(null); // Resets the internal Doc.
 
-      var collection = dxfConverter.ConvertToNative(objects).SelectMany(o =>
-      {
-        if (o is IEnumerable<EntityObject> e) return e;
-        return new List<EntityObject> { (EntityObject)o };
-      }).Where(e => e != null).ToList();
-        
-      
-      if (collection.Count == 0) throw new SpeckleException("No objects could be converted to DXF.", false);
-      
+      var collection = dxfConverter
+        .ConvertToNative(objects)
+        .SelectMany(o =>
+        {
+          if (o is IEnumerable<EntityObject> e)
+            return e;
+          return new List<EntityObject> { (EntityObject)o };
+        })
+        .Where(e => e != null)
+        .ToList();
+
+      if (collection.Count == 0)
+        throw new SpeckleException("No objects could be converted to DXF.");
+
       dxfConverter.Doc.Entities.Add(collection.Where(x => x != null));
 
-      var folderPath = Path.Combine(
-        SpecklePathProvider.UserSpeckleFolderPath,
-        "Temp",
-        "Dxf");
+      var folderPath = Path.Combine(SpecklePathProvider.UserSpeckleFolderPath, "Temp", "Dxf");
 
       // Ensure directory exists
       if (!Directory.Exists(folderPath))
         Directory.CreateDirectory(folderPath);
-      
+
       // Save the DXF file
       var path = Path.Combine(folderPath, fileName + ".dxf");
       dxfConverter.Doc.Save(path);
@@ -161,19 +163,21 @@ namespace Objects.Converter.Revit
           Unit = DB.ImportUnit.Meter,
           CustomScale = Units.GetConversionFactor("meter", ModelUnits) * scaleFactor
         },
-        view, out var elementId);
-      
+        view,
+        out var elementId
+      );
+
       doc.Delete(view.Id);
       File.Delete(path);
 
       if (!success)
-        throw new SpeckleException($"Failed to import DXF file: {path}", false);
-      
+        throw new SpeckleException($"Failed to import DXF file: {path}");
+
       var el = doc.GetElement(elementId);
       el.Pinned = false;
       return el;
     }
-    
+
     /// <summary>
     /// Creates a new Revit Family from a list of Base objects by exporting them to DXF; importing that DXF into a new Generic Model family, and returning
     /// </summary>
@@ -183,7 +187,12 @@ namespace Objects.Converter.Revit
     /// <param name="doc">The document to import the DXF into.</param>
     /// <returns>The Family instance containing the imported DXF geometry.</returns>
     /// <exception cref="SpeckleException">Will throw an error if no objects where successfully converted.</exception>
-    public DB.FamilyInstance CreateDxfImportFamily(List<Base> objects, string fileName, double scaleFactor = 1, DB.Document doc = null)
+    public DB.FamilyInstance CreateDxfImportFamily(
+      List<Base> objects,
+      string fileName,
+      double scaleFactor = 1,
+      DB.Document doc = null
+    )
     {
       doc ??= Doc; // Use the global doc if no doc is passed in.
       var templatePath = GetTemplatePath("Generic Model");
@@ -208,28 +217,24 @@ namespace Objects.Converter.Revit
       }
 
       var tempFamilyPath = Path.Combine(Path.GetTempPath(), fileName + ".rfa");
-      var so = new DB.SaveAsOptions
-      {
-        OverwriteExistingFile = true
-      };
-      
+      var so = new DB.SaveAsOptions { OverwriteExistingFile = true };
+
       famDoc.SaveAs(tempFamilyPath, so);
       famDoc.Close();
-      
+
       Report.Log($"Created Dxf Import Family at: {tempFamilyPath}");
 
       Doc.LoadFamily(tempFamilyPath, new FamilyLoadOption(), out var fam);
       var symbol = Doc.GetElement(fam.GetFamilySymbolIds().First()) as DB.FamilySymbol;
       symbol.Activate();
-      
+
       try
       {
         File.Delete(tempFamilyPath);
       }
-      catch {}
+      catch { }
 
       return Doc.Create.NewFamilyInstance(DB.XYZ.Zero, symbol, DB.Structure.StructuralType.NonStructural);
     }
-
   }
 }

@@ -25,6 +25,7 @@ public static class Categories
     BuiltInCategory.OST_DuctCurves,
     BuiltInCategory.OST_DuctFitting,
     BuiltInCategory.OST_DuctInsulations,
+    BuiltInCategory.OST_DuctTerminal,
     BuiltInCategory.OST_ElectricalCircuit,
     BuiltInCategory.OST_ElectricalEquipment,
     BuiltInCategory.OST_ElectricalFixtures,

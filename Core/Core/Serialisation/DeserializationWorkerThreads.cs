@@ -1,48 +1,50 @@
 #nullable enable
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
 namespace Speckle.Core.Serialisation;
 
 internal enum WorkerThreadTaskType
 {
-  _NoOp = default,
+  NoOp = default,
   Deserialize,
 }
 
-internal class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerThreadTaskType>
+internal sealed class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerThreadTaskType>
 {
-  private int FreeThreadCount;
+  private int _freeThreadCount;
 
-  private object LockFreeThreads = new();
-  private BaseObjectDeserializerV2 Serializer;
+  private readonly object _lockFreeThreads = new();
+  private readonly BaseObjectDeserializerV2 _serializer;
 
   public DeserializationWorkerThreads(BaseObjectDeserializerV2 serializer)
   {
-    Serializer = serializer;
+    _serializer = serializer;
     this.NumThreads = Environment.ProcessorCount;
   }
 
   public override void Dispose()
   {
-    lock (LockFreeThreads)
-      FreeThreadCount -= NumThreads;
+    lock (_lockFreeThreads)
+      _freeThreadCount -= NumThreads;
     base.Dispose();
   }
 
+  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   protected override void ThreadMain()
   {
     while (true)
     {
-      lock (LockFreeThreads)
-        FreeThreadCount++;
+      lock (_lockFreeThreads)
+        _freeThreadCount++;
       var (taskType, inputValue, tcs) = Tasks.Take();
-      if (taskType == WorkerThreadTaskType._NoOp || tcs == null)
+      if (taskType == WorkerThreadTaskType.NoOp || tcs == null)
         return;
 
       try
       {
-        var result = RunOperation(taskType, inputValue!, Serializer);
+        var result = RunOperation(taskType, inputValue!, _serializer);
         tcs.SetResult(result);
       }
       catch (Exception ex)
@@ -52,7 +54,7 @@ internal class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerTh
     }
   }
 
-  private static object RunOperation(
+  private static object? RunOperation(
     WorkerThreadTaskType taskType,
     object inputValue,
     BaseObjectDeserializerV2 serializer
@@ -61,7 +63,7 @@ internal class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerTh
     switch (taskType)
     {
       case WorkerThreadTaskType.Deserialize:
-        var converted = serializer.DeserializeTransportObject(inputValue as string);
+        var converted = serializer.DeserializeTransportObject((string)inputValue);
         return converted;
       default:
         throw new ArgumentException(
@@ -74,12 +76,12 @@ internal class DeserializationWorkerThreads : ParallelOperationExecutor<WorkerTh
   internal Task<object?>? TryStartTask(WorkerThreadTaskType taskType, object inputValue)
   {
     bool canStartTask = false;
-    lock (LockFreeThreads)
+    lock (_lockFreeThreads)
     {
-      if (FreeThreadCount > 0)
+      if (_freeThreadCount > 0)
       {
         canStartTask = true;
-        FreeThreadCount--;
+        _freeThreadCount--;
       }
     }
 
