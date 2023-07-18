@@ -36,7 +36,7 @@ namespace ConverterRevitTests
       },
       { Brep, new List<BuiltInCategory>()
         {
-          BuiltInCategory.OST_Mass
+          BuiltInCategory.OST_GenericModel
         }
       },
       { Column, new List<BuiltInCategory>()
@@ -74,7 +74,10 @@ namespace ConverterRevitTests
           BuiltInCategory.OST_ArcWallRectOpening,
           BuiltInCategory.OST_FloorOpening,
           BuiltInCategory.OST_SWallRectOpening,
-          BuiltInCategory.OST_Floors
+          BuiltInCategory.OST_Floors,
+          BuiltInCategory.OST_LightingFixtures,
+          //BuiltInCategory.OST_GenericModel, // this one is breaking conversion of familyInstance file because of window subelement conversions.
+          BuiltInCategory.OST_Ceilings
         }
       },
       { Floor, new List<BuiltInCategory>()

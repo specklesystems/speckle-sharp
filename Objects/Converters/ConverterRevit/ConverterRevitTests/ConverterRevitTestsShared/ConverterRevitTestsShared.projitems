@@ -13,6 +13,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)BrepTests.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Globals.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Services\SpeckleObjectLocalReceiver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Services\SpeckleObjectLocalSender.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionFixture.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleConversionTest.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)SpeckleUtils.cs" />

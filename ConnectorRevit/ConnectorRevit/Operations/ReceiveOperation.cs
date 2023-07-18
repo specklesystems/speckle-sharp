@@ -216,7 +216,7 @@ namespace ConnectorRevit.Operations
 
       // get the active ui view
       var view = uiDocument.ActiveGraphicalView ?? uiDocument.Document.ActiveView;
-      if (view is TableView)
+      if (view is TableView || view is null)
       {
         return;
       }

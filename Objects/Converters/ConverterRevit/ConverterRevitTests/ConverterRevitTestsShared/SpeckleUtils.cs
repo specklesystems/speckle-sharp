@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
+using Autodesk.Revit.UI;
 using Objects.Converter.Revit;
 using Revit.Async;
 using Speckle.Core.Models;
@@ -72,12 +72,24 @@ namespace ConverterRevitTests
       }
     }
 
+    public static UIDocument OpenUIDoc(string filePath)
+    {
+      Assert.NotNull(xru.Uiapp);
+      UIDocument doc = null;
+      xru.UiContext.Send(delegate
+      {
+        doc = xru.Uiapp.OpenAndActivateDocument(filePath);
+      }, null);
+      Assert.NotNull(doc);
+      return doc;
+    }
+
     internal static void DeleteElement(object obj)
     {
       switch (obj)
       {
-        case IList list:
-          foreach (var item in list)
+        case IEnumerable enumerable:
+          foreach (var item in enumerable)
             DeleteElement(item);
           break;
         case ApplicationObject o:

@@ -15,17 +15,26 @@ namespace TestGenerator
     public const string Updated = "Updated";
     public void Execute(GeneratorExecutionContext context)
     {
-      //Debugger.Launch();
+      // Debugger.Launch();
       var sb = new StringBuilder();
       sb.Append(TestTemplate.StartNamespace);
 
-      var assemblyLocationArrray = context.Compilation.Assembly.Locations.First().ToString().Split('\\');
-      assemblyLocationArrray[0] = assemblyLocationArrray[0].Replace("SourceFile(", "");
-      var assemblyLocation = string.Join("\\", assemblyLocationArrray.Take(assemblyLocationArrray.Length - 1));
+      var assemblyLocationList = context.Compilation.Assembly.Locations.First().ToString().Split('\\').ToList();
+      assemblyLocationList[0] = assemblyLocationList[0].Replace("SourceFile(", "");
+
+      for (var i = assemblyLocationList.Count - 1; i >= 0; i--)
+      {
+        if (assemblyLocationList[i] == "ConverterRevit") break;
+
+        assemblyLocationList.RemoveAt(i);
+      }
+      assemblyLocationList.Add("TestModels");
 
       var assemblyName = context.Compilation.AssemblyName;
       var year = assemblyName.Substring(assemblyName.Length - 4);
-      var subdirectories = Directory.GetDirectories(Globals.TestModelsFolderForRevitVersion(assemblyLocation, year));
+      assemblyLocationList.Add(year);
+      var testFolderLocation = string.Join("\\", assemblyLocationList);
+      var subdirectories = Directory.GetDirectories(testFolderLocation);
 
       foreach (var subdir in subdirectories)
       {
@@ -72,33 +81,27 @@ namespace TestGenerator
         var runUpdateTest = updatedFiles.Contains(file + Updated);
 
         sb.Append(TestTemplate.InitTest(category, file));
-        sb.Append(TestTemplate.CreateToSpeckleTest(category, file));
 
-        if (runToNativeTest)
-        {
-          sb.Append(TestTemplate.CreateToNativeTest(
-            category,
-            file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
-          ));
-          sb.Append(TestTemplate.CreateSelectionTest(category,
-            file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
-          ));
-        }
         if (runUpdateTest)
         {
           sb.Append(TestTemplate.CreateUpdateTest(category,
             file,
-            categoryProps.RevitType,
-            categoryProps.SyncAssertFunc ?? "null",
-            categoryProps.AsyncAssertFunc ?? "null"
+            categoryProps.RevitType
           ));
         }
+        else if (runToNativeTest)
+        {
+          sb.Append(TestTemplate.CreateToNativeTest(
+            category,
+            file,
+            categoryProps.RevitType
+          ));
+        }
+        else
+        {
+          sb.Append(TestTemplate.CreateToSpeckleTest(category, file));
+        }
+
         sb.Append(TestTemplate.EndClass);
       }
     }

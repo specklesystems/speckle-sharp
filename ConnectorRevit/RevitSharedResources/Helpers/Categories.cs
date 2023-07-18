@@ -61,6 +61,8 @@ public static class Categories
     BuiltInCategory.OST_RoofSoffit,
     BuiltInCategory.OST_Roofs,
     BuiltInCategory.OST_Rooms,
+    BuiltInCategory.OST_RoomSeparationLines,
+    BuiltInCategory.OST_Schedules,
     BuiltInCategory.OST_SecurityDevices,
     BuiltInCategory.OST_ShaftOpening,
     BuiltInCategory.OST_Site,
