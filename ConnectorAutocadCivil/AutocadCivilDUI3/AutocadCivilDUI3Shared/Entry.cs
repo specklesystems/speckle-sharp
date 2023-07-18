@@ -28,14 +28,14 @@ public class SpeckleAutocadDUI3Command
     PaletteSet.Size = new Size(400, 500);
     PaletteSet.DockEnabled = (DockSides)((int)DockSides.Left + (int)DockSides.Right);
 
-#if AUTOCAD2023DUI3
+// #if AUTOCAD2023DUI3
     // Just because we shouldn't, doesn't mean we can't.
-    var panelCefSharp = new DUI3PanelCefSharp();
-    PaletteSet.AddVisual("Speckle DUI3 CefSharp", panelCefSharp);
+    // var panelCefSharp = new DUI3PanelCefSharp();
+    // PaletteSet.AddVisual("Speckle DUI3 CefSharp", panelCefSharp);
     
     var panelWebView = new DUI3PanelWebView();
     PaletteSet.AddVisual("Speckle DUI3 WebView", panelWebView);
-#endif
+// #endif
 
     FocusPalette();
   }
