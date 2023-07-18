@@ -3,7 +3,7 @@ using NUnit.Framework;
 using Speckle.Core.Api;
 using Speckle.Core.Models;
 
-namespace Tests.Models;
+namespace TestsUnit.Models;
 
 /// <summary>
 /// Test fixture that documents what property typing changes maintain backwards/cross/forwards compatibility, and are "non-breaking" changes.

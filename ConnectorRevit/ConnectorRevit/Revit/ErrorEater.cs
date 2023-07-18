@@ -7,6 +7,7 @@ using Autodesk.Revit.DB;
 using Speckle.ConnectorRevit.Entry;
 using Speckle.ConnectorRevit.UI;
 using Speckle.Core.Kits;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 
 namespace ConnectorRevit.Revit
@@ -29,7 +30,7 @@ namespace ConnectorRevit.Revit
       failList = failuresAccessor.GetFailureMessages();
       foreach (FailureMessageAccessor failure in failList)
       {
-        // check FailureDefinitionIds against ones that you want to dismiss, 
+        // check FailureDefinitionIds against ones that you want to dismiss,
         //FailureDefinitionId failID = failure.GetFailureDefinitionId();
         // prevent Revit from showing Unenclosed room warnings
         //if (failID == BuiltInFailures.RoomFailures.RoomNotEnclosed)
@@ -38,25 +39,27 @@ namespace ConnectorRevit.Revit
         _converter.Report.LogConversionError(new Exception(t));
 
         var s = failure.GetSeverity();
-        if (s == FailureSeverity.Warning) continue;
+        if (s == FailureSeverity.Warning)
+          continue;
         try
         {
           failuresAccessor.ResolveFailure(failure);
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
           // currently, the whole commit is rolled back. this should be investigated further at a later date
           // to properly proceed with commit
           failedElements.AddRange(failure.GetFailingElementIds());
           //_converter.ConversionErrors.Clear();
-          _converter.Report.LogConversionError(new Exception(
-            "Objects failed to bake due to a fatal error!\n" +
-            "This is likely due to scaling issues - please ensure you've set the correct units on your objects or remove any invalid objects.\n\n" +
-            "Revit error: " + t));
-          // logging the error
-          var exception =
-            new Speckle.Core.Logging.SpeckleException("Revit commit failed: " + t, e,
-              level: Sentry.SentryLevel.Warning);
+          var wrapped = new Exception(
+            "Objects failed to bake due to a fatal error!\n"
+              + "This is likely due to scaling issues - please ensure you've set the correct units on your objects or remove any invalid objects.\n\n"
+              + "Revit error: "
+              + t,
+            ex
+          );
+          _converter.Report.LogConversionError(wrapped);
+          SpeckleLog.Logger.Error(wrapped, "Revit commit failed {text}", t);
           return FailureProcessingResult.ProceedWithCommit;
         }
       }

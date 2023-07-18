@@ -2,7 +2,7 @@ using NUnit.Framework;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
 
-namespace Tests.Models;
+namespace TestsUnit.Models;
 
 [TestFixture, TestOf(typeof(BaseExtensions))]
 public class TraversalTests
@@ -53,8 +53,8 @@ public class TraversalTests
 
     //Flatten
     int counter = 0;
-    var ret = rootObject.Flatten(b => ++counter >= flattenDepth).ToList();
-    ;
+    var ret = rootObject.Flatten(_ => ++counter >= flattenDepth).ToList();
+    
 
     //Test
     Assert.That(ret, Has.Count.EqualTo(Math.Min(flattenDepth, nestDepth)));
@@ -94,7 +94,7 @@ public class TraversalTests
 
     //Flatten
     var ret = objectA.Flatten().ToList();
-    ;
+    
 
     //Test
     Assert.That(ret, Is.Unique);

@@ -1,10 +1,12 @@
 ﻿using NUnit.Framework;
 using Speckle.Core.Models;
+using Speckle.Core.Serialisation;
 using Speckle.Core.Serialisation.Deprecated;
 
-namespace Speckle.Core.Serialisation
+namespace TestsUnit.Models
 {
-  [TestFixture, TestOf(typeof(BaseObjectSerializer))]
+  [TestFixture]
+  [TestOf(typeof(SerializationUtilities))]
   public class ObjectModelDeprecationTests
   {
     [Test]

@@ -1,11 +1,9 @@
 #nullable enable
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
-using GraphQL;
 using Speckle.Core.Api;
 using Speckle.Core.Helpers;
 using Speckle.Core.Logging;
@@ -14,7 +12,7 @@ namespace Speckle.Core.Credentials;
 
 public class StreamWrapper
 {
-  private Account _Account;
+  private Account? _account;
 
   public StreamWrapper() { }
 
@@ -39,7 +37,7 @@ public class StreamWrapper
   /// <param name="streamId"></param>
   /// <param name="userId"></param>
   /// <param name="serverUrl"></param>
-  public StreamWrapper(string streamId, string userId, string serverUrl)
+  public StreamWrapper(string streamId, string? userId, string serverUrl)
   {
     UserId = userId;
     ServerUrl = serverUrl;
@@ -49,14 +47,14 @@ public class StreamWrapper
   }
 
   //this needs to be public so it's serialized and stored in Dynamo
-  public string OriginalInput { get; set; }
+  public string? OriginalInput { get; set; }
 
-  public string UserId { get; set; }
+  public string? UserId { get; set; }
   public string ServerUrl { get; set; }
   public string StreamId { get; set; }
-  public string CommitId { get; set; }
-  public string BranchName { get; set; }
-  public string ObjectId { get; set; }
+  public string? CommitId { get; set; }
+  public string? BranchName { get; set; }
+  public string? ObjectId { get; set; }
 
   /// <summary>
   /// Determines if the current stream wrapper contains a valid stream.
@@ -247,8 +245,8 @@ public class StreamWrapper
   {
     Exception err = null;
 
-    if (_Account != null)
-      return _Account;
+    if (_account != null)
+      return _account;
 
     // Step 1: check if direct account id (?u=)
     if (OriginalInput != null && OriginalInput.Contains("?u="))
@@ -258,7 +256,7 @@ public class StreamWrapper
       if (acc != null)
       {
         await ValidateWithAccount(acc).ConfigureAwait(false);
-        _Account = acc;
+        _account = acc;
         return acc;
       }
     }
@@ -268,7 +266,7 @@ public class StreamWrapper
     try
     {
       await ValidateWithAccount(defAcc).ConfigureAwait(false);
-      _Account = defAcc;
+      _account = defAcc;
       return defAcc;
     }
     catch (Exception e)
@@ -277,15 +275,15 @@ public class StreamWrapper
     }
 
     // Step 3: all the rest
-    var accs = AccountManager.GetAccounts(ServerUrl);
-    if (accs.Count() == 0)
+    var accs = AccountManager.GetAccounts(ServerUrl).ToList();
+    if (accs.Count == 0)
       throw new SpeckleException($"You don't have any accounts for {ServerUrl}.");
 
     foreach (var acc in accs)
       try
       {
         await ValidateWithAccount(acc).ConfigureAwait(false);
-        _Account = acc;
+        _account = acc;
         return acc;
       }
       catch (Exception e)
@@ -298,11 +296,11 @@ public class StreamWrapper
 
   public void SetAccount(Account acc)
   {
-    _Account = acc;
-    UserId = _Account.userInfo.id;
+    _account = acc;
+    UserId = _account.userInfo.id;
   }
 
-  public bool Equals(StreamWrapper wrapper)
+  public bool Equals(StreamWrapper? wrapper)
   {
     if (wrapper == null)
       return false;
@@ -321,7 +319,7 @@ public class StreamWrapper
   public async Task ValidateWithAccount(Account acc)
   {
     if (ServerUrl != acc.serverInfo.url)
-      throw new SpeckleException($"Account is not from server {ServerUrl}", false);
+      throw new SpeckleException($"Account is not from server {ServerUrl}");
 
     var hasInternet = await Http.UserHasInternet().ConfigureAwait(false);
     if (!hasInternet)
@@ -336,19 +334,17 @@ public class StreamWrapper
     catch
     {
       throw new SpeckleException(
-        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist.",
-        false
+        $"You don't have access to stream {StreamId} on server {ServerUrl}, or the stream does not exist."
       );
     }
 
     // Check if the branch exists
     if (Type == StreamWrapperType.Branch)
     {
-      var branch = await client.BranchGet(StreamId, BranchName, 1).ConfigureAwait(false);
+      var branch = await client.BranchGet(StreamId, BranchName!, 1).ConfigureAwait(false);
       if (branch == null)
         throw new SpeckleException(
-          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}",
-          false
+          $"The branch with name '{BranchName}' doesn't exist in stream {StreamId} on server {ServerUrl}"
         );
     }
   }

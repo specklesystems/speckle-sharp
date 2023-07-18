@@ -1,10 +1,11 @@
 using NUnit.Framework;
 using Speckle.Core.Kits;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
-public class Kits
+[TestOf(typeof(KitManager))]
+public class KitManagerTests
 {
   [Test]
   public void KitsExist()
