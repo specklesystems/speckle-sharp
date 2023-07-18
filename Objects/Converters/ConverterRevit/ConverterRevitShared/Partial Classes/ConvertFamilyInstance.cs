@@ -482,6 +482,8 @@ namespace Objects.Converter.Revit
     }
 
     // revit instances
+    public const string faceFlipFailErrorMsg = "This element should be facing flipped, but a Revit API limitation prevented this from happening programmatically";
+    public const string handFlipFailErrorMsg = "This element should be hand flipped, but a Revit API limitation prevented this from happening programmatically";
     public ApplicationObject RevitInstanceToNative(RevitInstance instance)
     {
       DB.FamilyInstance familyInstance = null;
@@ -506,6 +508,9 @@ namespace Objects.Converter.Revit
       var transform = TransformToNative(instance.transform);
       DB.Level level = ConvertLevelToRevit(instance.level, out ApplicationObject.State levelState);
       var insertionPoint = transform.OfPoint(XYZ.Zero);
+
+      transform = GetEditedTransformForHandAndFaceFlipping(transform, instance.handFlipped, instance.facingFlipped);
+
       FamilyPlacementType placement = Enum.TryParse<FamilyPlacementType>(
         definition.placementType,
         true,
@@ -603,13 +608,13 @@ namespace Objects.Converter.Revit
             IList<DB.Parameter> cutVoidsParams = familySymbol.Family.GetParameters("Cut with Voids When Loaded");
             IList<DB.Parameter> lvlParams = familyInstance.GetParameters("Schedule Level");
             if (cutVoidsParams.ElementAtOrDefault(0) != null && cutVoidsParams[0].AsInteger() == 1)
+            {
               InstanceVoidCutUtils.AddInstanceVoidCut(Doc, CurrentHostElement, familyInstance);
-
+            }
             if (lvlParams.ElementAtOrDefault(0) != null && level != null)
             {
               lvlParams[0].Set(level.Id);
             }
-
             break;
 
           case FamilyPlacementType.OneLevelBased when CurrentHostElement is FootPrintRoof roof: // handle receiving mullions on a curtain roof
@@ -644,58 +649,64 @@ namespace Objects.Converter.Revit
         return appObj;
       }
 
-      Doc.Regenerate(); //required for mirroring and face flipping to work!
+      //Doc.Regenerate();
 
-      if (instance.mirrored != familyInstance.Mirrored)
+      if (instance.handFlipped != familyInstance.HandFlipped)
       {
-        // mirroring
-        // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
-        Group group = null;
-        try
+        if (familyInstance.CanFlipHand)
         {
-          group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+          familyInstance.flipHand();
         }
-        catch (Autodesk.Revit.Exceptions.InvalidOperationException)
+        else
         {
-          // sometimes the group can't be made. Just try to mirror the element on its own
+          Doc.Regenerate();
+          // sometimes you can flip the hand of facing via mirroring the element around an axis, so try that
+          using var subt = new SubTransaction(Doc);
+          subt.Start();
+          MirrorAroundAxis(familyInstance, transform.BasisX, insertionPoint);
+          if (instance.handFlipped == familyInstance.HandFlipped)
+          {
+            subt.Commit();
+          }
+          else
+          {
+            subt.RollBack();
+            appObj.Update(logItem: handFlipFailErrorMsg);
+          }
         }
-        var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
-
-        try
-        {
-          ElementTransformUtils.MirrorElements(
-            Doc,
-            elementToMirror,
-            DB.Plane.CreateByNormalAndOrigin(transform.BasisY, insertionPoint),
-            false
-          );
-        }
-        catch (Exception e)
-        {
-          appObj.Update(logItem: $"Instance could not be mirrored: {e.Message}");
-        }
-        group?.UngroupMembers();
       }
 
-      // face flipping must happen after mirroring
-      if (familyInstance.CanFlipHand && instance.handFlipped != familyInstance.HandFlipped)
-        familyInstance.flipHand();
 
-      if (familyInstance.CanFlipFacing && instance.facingFlipped != familyInstance.FacingFlipped)
-        familyInstance.flipFacing();
+      if (instance.facingFlipped != familyInstance.FacingFlipped)
+      {
+        if (familyInstance.CanFlipFacing)
+        {
+          familyInstance.flipFacing();
+        }
+        else
+        {
+          Doc.Regenerate();
+          // sometimes you can flip the hand of facing via mirroring the element around an axis, so try that
+          using var subt = new SubTransaction(Doc);
+          subt.Start();
+          MirrorAroundAxis(familyInstance, transform.BasisY, insertionPoint);
+          if (instance.facingFlipped == familyInstance.FacingFlipped)
+          {
+            subt.Commit();
+          }
+          else
+          {
+            subt.RollBack();
+            appObj.Update(logItem: faceFlipFailErrorMsg);
+          }
+        }
+      }
 
-      var currentTransform = familyInstance.GetTotalTransform();
-      var desiredBasisX = new Vector(transform.BasisX.X, transform.BasisX.Y, transform.BasisX.Z);
-      var currentBasisX = new Vector(currentTransform.BasisX.X, currentTransform.BasisX.Y, currentTransform.BasisX.Z);
+      // required to get correct transform after flipping and mirroring
+      Doc.Regenerate();
 
-      // rotation about the z axis (signed)
-      var rotation = Math.Atan2(
-        Vector.DotProduct(
-          Vector.CrossProduct(desiredBasisX, currentBasisX),
-          new Vector(currentTransform.BasisZ.X, currentTransform.BasisZ.Y, currentTransform.BasisZ.Z)
-        ),
-        Vector.DotProduct(desiredBasisX, currentBasisX)
-      );
+      var currentTransform = GetTransformThatConsidersHandAndFaceFlipping(familyInstance);
+      double rotation = GetSignedRotation(transform, currentTransform);
 
       if (Math.Abs(rotation) > TOLERANCE && familyInstance.Location is LocationPoint location)
       {
@@ -710,11 +721,85 @@ namespace Objects.Converter.Revit
         }
       }
 
+      currentTransform = familyInstance.GetTotalTransform();
+
+      ElementTransformUtils.MoveElement(familyInstance.Document,
+        familyInstance.Id,
+        new XYZ(
+          insertionPoint.X - currentTransform.Origin.X,
+          insertionPoint.Y - currentTransform.Origin.Y,
+          insertionPoint.Z - currentTransform.Origin.Z)
+        );
+
       SetInstanceParameters(familyInstance, instance);
       var state = isUpdate ? ApplicationObject.State.Updated : ApplicationObject.State.Created;
       appObj.Update(status: state, createdId: familyInstance.UniqueId, convertedItem: familyInstance);
       appObj = SetHostedElements(instance, familyInstance, appObj);
       return appObj;
+    }
+
+    private void MirrorAroundAxis(DB.FamilyInstance familyInstance, XYZ planeNormal, XYZ insertionPoint)
+    {
+      // mirroring
+      // note: mirroring a hosted instance via api will fail, thanks revit: there is workaround hack to group the element -> mirror -> ungroup
+      Group group = CurrentHostElement != null ? Doc.Create.NewGroup(new[] { familyInstance.Id }) : null;
+      var elementToMirror = group != null ? new[] { group.Id } : new[] { familyInstance.Id };
+
+      try
+      {
+        ElementTransformUtils.MirrorElements(
+          Doc,
+          elementToMirror,
+          DB.Plane.CreateByNormalAndOrigin(planeNormal, insertionPoint),
+          false
+        );
+      }
+      catch (Exception e)
+      {
+      }
+      group?.UngroupMembers();
+    }
+
+    public static double GetSignedRotation(Transform desiredTransform, Transform actualTransform)
+    {
+      var desiredBasisX = new Vector(desiredTransform.BasisX.X, desiredTransform.BasisX.Y, desiredTransform.BasisX.Z);
+      var currentBasisX = new Vector(actualTransform.BasisX.X, actualTransform.BasisX.Y, actualTransform.BasisX.Z);
+
+      var rotation = Math.Atan2(
+        Vector.DotProduct(Vector.CrossProduct(desiredBasisX, currentBasisX),
+        new Vector(actualTransform.BasisZ.X, actualTransform.BasisZ.Y, actualTransform.BasisZ.Z)),
+        Vector.DotProduct(desiredBasisX, currentBasisX)
+      );
+      return rotation;
+    }
+
+    public static Transform GetTransformThatConsidersHandAndFaceFlipping(DB.FamilyInstance fi)
+    {
+      var transform = fi.GetTotalTransform();
+      return GetEditedTransformForHandAndFaceFlipping(transform, fi.HandFlipped, fi.FacingFlipped);
+    }
+
+    /// <summary>
+    /// For some reason I'll never understand, the reflection of Revit elements DOES NOT show up in the element's transform
+    /// <para>https://forums.autodesk.com/t5/revit-api-forum/gettransform-does-not-include-reflection-into-the-transformation/m-p/10334547</para>
+    /// therefore we need to adjust the desired transform to reflect the flipping of the element.
+    /// if the instance is either hand or facing flipped (but not both) then the transform is left handed
+    /// and we need to multiply the corrosponding basis by -1
+    /// </summary>
+    /// <param name=""></param>
+    /// <param name="fi"></param>
+    public static Transform GetEditedTransformForHandAndFaceFlipping(DB.Transform transform, bool handFlipped, bool facingFlipped)
+    {
+      var newTransform = transform;
+      if (handFlipped && !facingFlipped)
+      {
+        newTransform.BasisX *= -1;
+      }
+      if (facingFlipped && !handFlipped)
+      {
+        newTransform.BasisY *= -1;
+      }
+      return newTransform;
     }
 
     public RevitInstance RevitInstanceToSpeckle(
@@ -746,7 +831,7 @@ namespace Objects.Converter.Revit
       var _instance = new RevitInstance();
       _instance.transform = transform;
       _instance.typedDefinition = definition;
-      _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);
+      _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM) ?? ConvertAndCacheLevel(instance, BuiltInParameter.SCHEDULE_LEVEL_PARAM);
       _instance.facingFlipped = instance.FacingFlipped;
       _instance.handFlipped = instance.HandFlipped;
       _instance.mirrored = instance.Mirrored;
