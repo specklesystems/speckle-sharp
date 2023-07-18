@@ -37,7 +37,7 @@ namespace ConnectorRevit.Services
     }
 
     private Dictionary<string, Element> _selection;
-    public ICollection<Element> Elements => _selection.Values;
+    public IReadOnlyCollection<Element> Elements => _selection.Values;
 
     public bool ContainsElementWithId(string uniqueId)
     {
@@ -239,7 +239,7 @@ namespace ConnectorRevit.Services
         selection.AddRange(
           new FilteredElementCollector(doc)
             .WhereElementIsNotElementType()
-            .WhereElementIsViewIndependent()
+            //.WhereElementIsViewIndependent()
             .WherePasses(categoryFilter)
             .ToList()
         );

@@ -76,7 +76,7 @@ namespace ConverterRevitTests
     {
       var objectsToReceive = await NativeToSpeckle(uiDocument).ConfigureAwait(false);
 
-      var scope = CreateScope(uiDocument);
+      var scope = CreateScope(fixture.NewDoc);
       var receiveOp = scope.Resolve<ReceiveOperation>();
       await receiveOp.Receive().ConfigureAwait(false);
 

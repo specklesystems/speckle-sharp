@@ -1,4 +1,4 @@
-﻿
+
 using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
@@ -18,6 +18,7 @@ namespace Objects.Converter.Revit
       var speckleInfo = new ProjectInfo
       {
         address = revitInfo.Address,
+        applicationId = revitInfo.UniqueId,
         author = revitInfo.Author,
         buildingName = revitInfo.BuildingName,
         clientName = revitInfo.ClientName,

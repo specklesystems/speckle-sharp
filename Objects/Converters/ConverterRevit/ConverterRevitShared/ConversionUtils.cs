@@ -523,6 +523,9 @@ namespace Objects.Converter.Revit
               rp.Set(Convert.ToString(value));
             }
             break;
+          case StorageType.ElementId:
+            rp.Set((ElementId)value);
+            break;
           default:
             break;
         }
