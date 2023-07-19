@@ -181,6 +181,7 @@ public static class Analytics
     {
       try
       {
+        var executingAssembly = Assembly.GetExecutingAssembly();
         var properties = new Dictionary<string, object>
         {
           { "distinct_id", hashedEmail },
@@ -188,7 +189,7 @@ public static class Analytics
           { "token", MixpanelToken },
           { "hostApp", Setup.HostApplication },
           { "hostAppVersion", Setup.VersionedHostApplication },
-          { "core_version", FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion},
+          { "core_version", FileVersionInfo.GetVersionInfo(executingAssembly.Location).ProductVersion ?? executingAssembly.GetName().Version.ToString()},
           { "$os", GetOs() }
         };
 
