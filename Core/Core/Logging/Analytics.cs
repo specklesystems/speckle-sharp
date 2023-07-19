@@ -174,7 +174,7 @@ public static class Analytics
 
 #if DEBUG
     //only track in prod
-    //return;
+    return;
 #endif
 
     Task.Run(() =>
