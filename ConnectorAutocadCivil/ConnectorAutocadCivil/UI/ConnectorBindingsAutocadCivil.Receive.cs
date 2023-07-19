@@ -103,7 +103,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
           conversionProgressDict["Conversion"] = 0;
 
           // create a commit prefix: used for layers and block definition names
-          var commitPrefix = DesktopUI2.Formatting.CommitInfo(stream.name, state.BranchName, id);
+          var commitPrefix = Formatting.CommitInfo(stream.name, state.BranchName, id);
 
           // give converter a way to access the commit info
           if (Doc.UserData.ContainsKey("commit"))
@@ -115,7 +115,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
           try
           {
             DeleteBlocksWithPrefix(commitPrefix, tr);
-            DeleteLayersWithPrefix(commitPrefix, tr);
           }
           catch
           {
@@ -143,6 +142,59 @@ namespace Speckle.ConnectorAutocadCivil.UI
             var linetype = (LinetypeTableRecord)tr.GetObject(lineTypeId, OpenMode.ForRead);
             LineTypeDictionary.Add(linetype.Name, lineTypeId);
           }
+
+          #region layer creation
+
+          Application.UIBindings.Collections.Layers.CollectionChanged -= Application_LayerChanged; // temporarily unsubscribe from layer handler since layer creation will trigger it.
+
+          // sort by depth and create all the containers as layers first
+          var layers = new Dictionary<string, string>();
+          var containers = commitObjs.Select(o => o.Container).Distinct().ToList();
+
+          // create the layers
+          var layerTable = (LayerTable)tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead); // get the layer table
+          foreach (var container in containers)
+          {
+            var path = state.ReceiveMode == ReceiveMode.Create ? $"{commitPrefix}${container}" : container;
+            string layer = null;
+
+            // try to see if there's a collection object first
+            var collection = commitObjs
+              .Where(o => o.Container == container && o.Descriptor.Contains("Collection"))
+              .FirstOrDefault();
+            if (collection != null)
+            {
+              var storedCollection = StoredObjects[collection.OriginalId];
+              storedCollection["path"] = path; // needed by converter
+              converter.Report.Log(collection); // Log object so converter can access
+              var convertedCollection = converter.ConvertToNative(storedCollection) as List<object>;
+              if (convertedCollection != null && convertedCollection.Count > 0)
+              {
+                layer = (convertedCollection.First() as LayerTableRecord)?.Name;
+                commitObjs[commitObjs.IndexOf(collection)] = converter.Report.ReportObjects[collection.OriginalId];
+              }
+            }
+            // otherwise create the layer here (old commits before collections implementations, or from apps not supporting collections)
+            else
+            {
+              if (GetOrMakeLayer(path, tr, out string cleanName))
+              {
+                layer = cleanName;
+              }
+            }
+
+            if (layer == null)
+            {
+              progress.Report.OperationErrors.Add(
+                new Exception($"Could not create layer [{path}]. Objects will be placed on default layer.")
+              );
+              continue;
+            }
+
+            layers.Add(path, layer);
+          }
+          #endregion
+
 
           // conversion
           foreach (var commitObj in commitObjs)
@@ -217,20 +269,15 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             // find existing doc objects if they exist
             var existingObjs = new List<ObjectId>();
-            var layer = commitObj.Container;
-            switch (state.ReceiveMode)
+            var layer = layers.ContainsKey(commitObj.Container) ? layers[commitObj.Container] : "0";
+            if (state.ReceiveMode == ReceiveMode.Update) // existing objs will be removed if it exists in the received commit
             {
-              case ReceiveMode.Update: // existing objs will be removed if it exists in the received commit
-                existingObjs = ApplicationIdManager.GetObjectsByApplicationId(
-                  Doc,
-                  tr,
-                  commitObj.applicationId,
-                  fileNameHash
-                );
-                break;
-              default:
-                layer = $"{commitPrefix}${commitObj.Container}";
-                break;
+              existingObjs = ApplicationIdManager.GetObjectsByApplicationId(
+                Doc,
+                tr,
+                commitObj.applicationId,
+                fileNameHash
+              );
             }
 
             // bake
@@ -297,7 +344,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
         }
 
         // skip if it is the base commit collection
-        if (current.speckle_type.Contains("Collection") && string.IsNullOrEmpty(containerId))
+        if (current is Collection && string.IsNullOrEmpty(containerId))
           return null;
 
         //Handle convertable objects
@@ -333,19 +380,13 @@ namespace Speckle.ConnectorAutocadCivil.UI
           return stringBuilder;
 
         string objectLayerName = string.Empty;
-        if (context.propName.ToLower() == "elements" && context.current.speckle_type.Contains("Collection"))
-        {
-          objectLayerName = context.current["name"] as string;
-        }
+        if (context.propName.ToLower() == "elements" && context.current is Collection coll)
+          objectLayerName = coll.name;
         else if (context.propName.ToLower() != "elements") // this is for any other property on the collection. skip elements props in layer structure.
-        {
           objectLayerName = context.propName[0] == '@' ? context.propName.Substring(1) : context.propName;
-        }
         LayerIdRecurse(context.parent, stringBuilder);
         if (stringBuilder.Length != 0 && !string.IsNullOrEmpty(objectLayerName))
-        {
           stringBuilder.Append('$');
-        }
         stringBuilder.Append(objectLayerName);
 
         return stringBuilder;
@@ -413,19 +454,17 @@ namespace Speckle.ConnectorAutocadCivil.UI
             if (o == null)
               continue;
 
-            if (GetOrMakeLayer(layer, tr, out string cleanName))
+            var res = o.Append(layer);
+            if (res.IsValid)
             {
-              var res = o.Append(cleanName);
-              if (res.IsValid)
-              {
-                // handle display - fallback to rendermaterial if no displaystyle exists
-                Base display = obj[@"displayStyle"] as Base;
-                if (display == null)
-                  display = obj[@"renderMaterial"] as Base;
-                if (display != null)
-                  Utils.SetStyle(display, o, LineTypeDictionary);
+              // handle display - fallback to rendermaterial if no displaystyle exists
+              Base display = obj[@"displayStyle"] as Base;
+              if (display == null)
+                display = obj[@"renderMaterial"] as Base;
+              if (display != null)
+                Utils.SetStyle(display, o, LineTypeDictionary);
 
-                // add property sets if this is Civil3D
+              // add property sets if this is Civil3D
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
                 try
                 {
@@ -443,40 +482,30 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 }
 #endif
 
-                // set application id
-                var appId = parent != null ? parent.applicationId : obj.applicationId;
-                var newObj = tr.GetObject(res, OpenMode.ForWrite);
-                if (!ApplicationIdManager.SetObjectCustomApplicationId(newObj, appId, out appId))
-                {
-                  appObj.Log.Add($"Could not attach applicationId xdata");
-                }
-
-                tr.TransactionManager.QueueForGraphicsFlush();
-
-                if (parent != null)
-                  parent.Update(createdId: res.Handle.ToString());
-                else
-                  appObj.Update(createdId: res.Handle.ToString());
-
-                bakedCount++;
-              }
-              else
+              // set application id
+              var appId = parent != null ? parent.applicationId : obj.applicationId;
+              var newObj = tr.GetObject(res, OpenMode.ForWrite);
+              if (!ApplicationIdManager.SetObjectCustomApplicationId(newObj, appId, out appId))
               {
-                var bakeMessage = $"Could not bake to document.";
-                if (parent != null)
-                  parent.Update(logItem: $"fallback {appObj.applicationId}: {bakeMessage}");
-                else
-                  appObj.Update(logItem: bakeMessage);
-                continue;
+                appObj.Log.Add($"Could not attach applicationId xdata");
               }
+
+              tr.TransactionManager.QueueForGraphicsFlush();
+
+              if (parent != null)
+                parent.Update(createdId: res.Handle.ToString());
+              else
+                appObj.Update(createdId: res.Handle.ToString());
+
+              bakedCount++;
             }
             else
             {
-              var layerMessage = $"Could not create layer {layer}.";
+              var bakeMessage = $"Could not bake to document.";
               if (parent != null)
-                parent.Update(logItem: $"fallback {appObj.applicationId}: {layerMessage}");
+                parent.Update(logItem: $"fallback {appObj.applicationId}: {bakeMessage}");
               else
-                appObj.Update(logItem: layerMessage);
+                appObj.Update(logItem: bakeMessage);
               continue;
             }
             break;
@@ -530,48 +559,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
         {
           block.UpgradeOpen();
           block.Erase();
-        }
-      }
-    }
-
-    private void DeleteLayersWithPrefix(string prefix, Transaction tr)
-    {
-      // Open the Layer table for read
-      var lyrTbl = (LayerTable)tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead);
-      foreach (ObjectId layerId in lyrTbl)
-      {
-        LayerTableRecord layer = (LayerTableRecord)tr.GetObject(layerId, OpenMode.ForRead);
-        string layerName = layer.Name;
-        if (layerName.StartsWith(prefix))
-        {
-          layer.UpgradeOpen();
-
-          // cannot delete current layer: swap current layer to default layer "0" if current layer is to be deleted
-          if (Doc.Database.Clayer == layerId)
-          {
-            var defaultLayerID = lyrTbl["0"];
-            Doc.Database.Clayer = defaultLayerID;
-          }
-          layer.IsLocked = false;
-
-          // delete all objects on this layer
-          // TODO: this is ugly! is there a better way to delete layer objs instead of looping through each one?
-          var bt = (BlockTable)tr.GetObject(Doc.Database.BlockTableId, OpenMode.ForRead);
-          foreach (var btId in bt)
-          {
-            var block = (BlockTableRecord)tr.GetObject(btId, OpenMode.ForRead);
-            foreach (var entId in block)
-            {
-              var ent = (Entity)tr.GetObject(entId, OpenMode.ForRead);
-              if (ent.Layer == layerName)
-              {
-                ent.UpgradeOpen();
-                ent.Erase();
-              }
-            }
-          }
-
-          layer.Erase();
         }
       }
     }

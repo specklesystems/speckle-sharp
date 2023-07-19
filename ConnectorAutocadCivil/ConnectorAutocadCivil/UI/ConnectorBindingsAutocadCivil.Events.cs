@@ -22,7 +22,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       layers.CollectionChanged += Application_LayerChanged;
     }
 
-    private void Application_LayerChanged(object sender, EventArgs e)
+    public void Application_LayerChanged(object sender, EventArgs e)
     {
       if (UpdateSelectedStream != null)
         UpdateSelectedStream();
