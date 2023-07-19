@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -173,7 +174,7 @@ public static class Analytics
 
 #if DEBUG
     //only track in prod
-    return;
+    //return;
 #endif
 
     Task.Run(() =>
@@ -187,7 +188,7 @@ public static class Analytics
           { "token", MixpanelToken },
           { "hostApp", Setup.HostApplication },
           { "hostAppVersion", Setup.VersionedHostApplication },
-          { "core_version", Assembly.GetExecutingAssembly().GetName().Version.ToString() },
+          { "core_version", FileVersionInfo.GetVersionInfo(Assembly.GetExecutingAssembly().Location).ProductVersion},
           { "$os", GetOs() }
         };
 
