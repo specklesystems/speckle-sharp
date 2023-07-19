@@ -51,7 +51,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
         );
       }
 
-      var commitObject = new Base();
+      var modelName = $"{Utils.AppName} Model";
+      var commitObject = new Collection(modelName, modelName.ToLower());
       commitObject["units"] = Utils.GetUnits(Doc); // TODO: check whether commits base needs units attached
 
       int convertedCount = 0;
@@ -112,7 +113,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     }
 
     delegate void SendingDelegate(
-      Base commitObject,
+      Collection commitObject,
       ISpeckleConverter converter,
       StreamState state,
       ProgressViewModel progress,
@@ -120,7 +121,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
     );
 
     private void ConvertSendCommit(
-      Base commitObject,
+      Collection commitObject,
       ISpeckleConverter converter,
       StreamState state,
       ProgressViewModel progress,
@@ -155,6 +156,10 @@ namespace Speckle.ConnectorAutocadCivil.UI
           var fileNameHash = GetDocumentId();
 
           string servicedApplication = converter.GetServicedApplications().First();
+
+          // store converted commit objects and layers by layer paths
+          var commitLayerObjects = new Dictionary<string, List<Base>>();
+          var commitCollections = new Dictionary<string, Collection>();
 
           foreach (var autocadObjectHandle in state.SelectedObjectIds)
           {
@@ -222,12 +227,11 @@ namespace Speckle.ConnectorAutocadCivil.UI
               if (propertySets.Count > 0)
                 converted["propertySets"] = propertySets;
 #endif
-
-              string containerName = obj is BlockReference ? "Blocks" : Utils.RemoveInvalidDynamicPropChars(layer); // remove invalid chars from layer name
-
-              if (commitObject[$"@{containerName}"] == null)
-                commitObject[$"@{containerName}"] = new List<Base>();
-              ((List<Base>)commitObject[$"@{containerName}"]).Add(converted);
+              // handle converted object layer
+              if (commitLayerObjects.ContainsKey(layer))
+                commitLayerObjects[layer].Add(converted);
+              else
+                commitLayerObjects.Add(layer, new List<Base> { converted });
 
               // set application id
               #region backwards compatibility
@@ -283,6 +287,31 @@ namespace Speckle.ConnectorAutocadCivil.UI
               continue;
             }
           }
+
+          #region layer handling
+          // convert layers as collections and attach all layer objects
+          foreach (var layerPath in commitLayerObjects.Keys)
+            if (commitCollections.ContainsKey(layerPath))
+            {
+              commitCollections[layerPath].elements = commitLayerObjects[layerPath];
+            }
+            else
+            {
+              var collection = converter.ConvertToSpeckle(commitLayers[layerPath]) as Collection;
+              if (collection != null)
+              {
+                collection.elements = commitLayerObjects[layerPath];
+                commitCollections.Add(layerPath, collection);
+              }
+            }
+
+          // attach collections to the base commit
+          foreach (var collection in commitCollections)
+          {
+            commitObject.elements.Add(collection.Value);
+          }
+
+          #endregion
 
           tr.Commit();
         }
