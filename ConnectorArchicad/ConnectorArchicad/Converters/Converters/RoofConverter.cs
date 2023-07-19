@@ -25,6 +25,8 @@ namespace Archicad.Converters
       {
         foreach (var tc in elements)
         {
+          token.ThrowIfCancellationRequested();
+
           switch (tc.current)
           {
             case Objects.BuiltElements.Archicad.ArchicadRoof archiRoof:
