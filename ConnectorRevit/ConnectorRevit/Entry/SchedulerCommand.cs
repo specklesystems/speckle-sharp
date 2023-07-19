@@ -14,12 +14,12 @@ namespace Speckle.ConnectorRevit.Entry
   {
     [DllImport("user32.dll", SetLastError = true)]
     static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr value);
+
     const int GWL_HWNDPARENT = -8;
 
     internal static UIApplication uiapp;
 
     public static ConnectorBindingsRevit Bindings { get; set; }
-
 
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
@@ -31,11 +31,7 @@ namespace Speckle.ConnectorRevit.Entry
 
     public static void CreateOrFocusSpeckle()
     {
-
-      var scheduler = new Scheduler
-      {
-        DataContext = new SchedulerViewModel(Bindings)
-      };
+      var scheduler = new Scheduler { DataContext = new SchedulerViewModel(Bindings) };
 
       scheduler.Show();
 
@@ -45,8 +41,6 @@ namespace Speckle.ConnectorRevit.Entry
         var hwnd = scheduler.PlatformImpl.Handle.Handle;
         SetWindowLongPtr(hwnd, GWL_HWNDPARENT, parentHwnd);
       }
-
     }
   }
-
 }

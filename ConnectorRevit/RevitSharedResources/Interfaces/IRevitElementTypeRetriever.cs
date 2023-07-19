@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 namespace RevitSharedResources.Interfaces
 {
   /// <summary>
-  /// <para>This interface defines the functionality related to getting, setting, and caching Revit ElementTypes. This functionality lives in the converter, because getting and setting the type of a specific Base object requires knowledge of the Objects kit.</para> 
+  /// <para>This interface defines the functionality related to getting, setting, and caching Revit ElementTypes. This functionality lives in the converter, because getting and setting the type of a specific Base object requires knowledge of the Objects kit.</para>
   /// The rest of the interface deals with query and caching element types so that both the connector and converter can access the same cache.
   /// <para> TElementType is always the Revit Element type and TBuiltInCategory is always the Revit BuiltInCategory type. These are passed as generic types because the interfaces that are shared between the converter and connector does not have a dependency on the Revit Types (at the moment)</para>
   /// </summary>

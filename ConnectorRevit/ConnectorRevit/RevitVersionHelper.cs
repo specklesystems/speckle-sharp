@@ -4,7 +4,6 @@ namespace ConnectorRevit
 {
   public static class RevitVersionHelper
   {
-
     public static double ConvertFromInternalUnits(double val, Parameter parameter)
     {
 #if REVIT2020

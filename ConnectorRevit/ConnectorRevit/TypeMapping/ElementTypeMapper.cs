@@ -38,7 +38,12 @@ namespace ConnectorRevit.TypeMapping
     /// <param name="storedObjects"></param>
     /// <param name="doc"></param>
     /// <exception cref="ArgumentException"></exception>
-    public ElementTypeMapper(ISpeckleConverter converter, List<ApplicationObject> flattenedCommit, Dictionary<string, Base> storedObjects, Document doc)
+    public ElementTypeMapper(
+      ISpeckleConverter converter,
+      List<ApplicationObject> flattenedCommit,
+      Dictionary<string, Base> storedObjects,
+      Document doc
+    )
     {
       document = doc;
 
@@ -46,30 +51,37 @@ namespace ConnectorRevit.TypeMapping
       {
         throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
       }
-      else this.typeRetriever = typeRetriever;
+      else
+        this.typeRetriever = typeRetriever;
 
       if (converter is not IAllRevitCategoriesExposer typeInfoExposer)
       {
         throw new ArgumentException($"Converter does not implement interface {nameof(IRevitElementTypeRetriever)}");
       }
-      else revitCategoriesExposer = typeInfoExposer;
+      else
+        revitCategoriesExposer = typeInfoExposer;
 
       var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
       foreach (var appObj in flattenedCommit)
       {
         // add base and traverse nested elements
-        speckleElements.AddRange(traversalFunc.Traverse(storedObjects[appObj.OriginalId])
-          .Select(c => c.current)
-          .Where(converter.CanConvertToNative)
-          .OfType<Base>()
+        speckleElements.AddRange(
+          traversalFunc
+            .Traverse(storedObjects[appObj.OriginalId])
+            .Select(c => c.current)
+            .Where(converter.CanConvertToNative)
+            .OfType<Base>()
         );
       }
     }
+
     public async Task Map(ISetting mapOnReceiveSetting)
     {
-      // Get Settings for recieve on mapping 
-      if (mapOnReceiveSetting is not MappingSetting mappingSetting
-        || mappingSetting.Selection == ConnectorBindingsRevit.noMapping)
+      // Get Settings for recieve on mapping
+      if (
+        mapOnReceiveSetting is not MappingSetting mappingSetting
+        || mappingSetting.Selection == ConnectorBindingsRevit.noMapping
+      )
       {
         return;
       }
@@ -97,7 +109,10 @@ namespace ConnectorRevit.TypeMapping
       // update the mapping object for the user mapped types
       SetMappedValues(typeRetriever, currentMapping);
 
-      Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } });
+      Analytics.TrackEvent(
+        Analytics.Events.DUIAction,
+        new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Mappings Set" } }
+      );
     }
 
     private async Task<bool> ShouldShowCustomMappingDialog(string listBoxSelection, int numNewTypes)
@@ -106,13 +121,12 @@ namespace ConnectorRevit.TypeMapping
       {
         return true;
       }
-      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0) 
+      else if (listBoxSelection == ConnectorBindingsRevit.forNewTypes && numNewTypes > 0)
       {
         return true;
       }
-      else if (listBoxSelection == null
-        && numNewTypes > 0
-        && await ShowMissingIncomingTypesDialog().ConfigureAwait(false)
+      else if (
+        listBoxSelection == null && numNewTypes > 0 && await ShowMissingIncomingTypesDialog().ConfigureAwait(false)
       )
       {
         return true;
@@ -122,27 +136,35 @@ namespace ConnectorRevit.TypeMapping
 
     private static async Task<bool> ShowMissingIncomingTypesDialog()
     {
-      return await Dispatcher.UIThread.InvokeAsync<bool>(() =>
-      {
-        Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Missing Types Dialog" } });
-        var mappingView = new MissingIncomingTypesDialog();
-        return mappingView.ShowDialog<bool>();
-      }).ConfigureAwait(false);
+      return await Dispatcher.UIThread
+        .InvokeAsync<bool>(() =>
+        {
+          Analytics.TrackEvent(
+            Analytics.Events.DUIAction,
+            new Dictionary<string, object> { { "name", "Type Map" }, { "method", "Missing Types Dialog" } }
+          );
+          var mappingView = new MissingIncomingTypesDialog();
+          return mappingView.ShowDialog<bool>();
+        })
+        .ConfigureAwait(false);
     }
 
-    private async Task ShowCustomMappingDialog(TypeMap? currentMapping, HostTypeContainer hostTypesContainer, int numNewTypes)
+    private async Task ShowCustomMappingDialog(
+      TypeMap? currentMapping,
+      HostTypeContainer hostTypesContainer,
+      int numNewTypes
+    )
     {
       var vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
       FamilyImporter familyImporter = null;
 
-      await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
-      {
-        var mappingView = new MappingViewDialog
+      await Dispatcher.UIThread
+        .InvokeAsync<ITypeMap>(() =>
         {
-          DataContext = vm
-        };
-        return mappingView.ShowDialog<ITypeMap>();
-      }).ConfigureAwait(false);
+          var mappingView = new MappingViewDialog { DataContext = vm };
+          return mappingView.ShowDialog<ITypeMap>();
+        })
+        .ConfigureAwait(false);
 
       while (vm.DoneMapping == false)
       {
@@ -162,14 +184,13 @@ namespace ConnectorRevit.TypeMapping
         }
 
         vm = new TypeMappingOnReceiveViewModel(currentMapping, hostTypesContainer, numNewTypes == 0);
-        await Dispatcher.UIThread.InvokeAsync<ITypeMap>(() =>
-        {
-          var mappingView = new MappingViewDialog
+        await Dispatcher.UIThread
+          .InvokeAsync<ITypeMap>(() =>
           {
-            DataContext = vm
-          };
-          return mappingView.ShowDialog<ITypeMap>();
-        }).ConfigureAwait(false);
+            var mappingView = new MappingViewDialog { DataContext = vm };
+            return mappingView.ShowDialog<ITypeMap>();
+          })
+          .ConfigureAwait(false);
       }
     }
 
@@ -178,7 +199,8 @@ namespace ConnectorRevit.TypeMapping
       foreach (var (@base, mappingValue) in currentMapping.GetAllBasesWithMappings())
       {
         var mappedHostType = mappingValue.MappedHostType ?? mappingValue.InitialGuess;
-        if (mappedHostType == null) continue;
+        if (mappedHostType == null)
+          continue;
 
         if (mappedHostType is RevitHostType revitHostType)
         {
@@ -195,7 +217,11 @@ namespace ConnectorRevit.TypeMapping
     /// <param name="typeMap"></param>
     /// <param name="numNewTypes"></param>
     /// <returns></returns>
-    public HostTypeContainer GetHostTypesAndAddIncomingTypes(IRevitElementTypeRetriever typeRetriever, TypeMap typeMap, out int numNewTypes)
+    public HostTypeContainer GetHostTypesAndAddIncomingTypes(
+      IRevitElementTypeRetriever typeRetriever,
+      TypeMap typeMap,
+      out int numNewTypes
+    )
     {
       var incomingTypes = new Dictionary<string, List<ISingleValueToMap>>();
       var hostTypes = new HostTypeContainer();
@@ -206,37 +232,63 @@ namespace ConnectorRevit.TypeMapping
         var incomingType = typeRetriever.GetElementType(@base);
         if (incomingType == null)
         {
-          SpeckleLog.Logger.Warning("Could not find incoming type on Base of type {baseType} with speckle_type {speckleType}", @base.GetType(), @base.speckle_type);
+          SpeckleLog.Logger.Warning(
+            "Could not find incoming type on Base of type {baseType} with speckle_type {speckleType}",
+            @base.GetType(),
+            @base.speckle_type
+          );
           continue;
         }
 
         var incomingFamily = typeRetriever.GetElementFamily(@base);
 
         var typeInfo = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(@base);
-        if (typeInfo.ElementTypeType == null) continue;
+        if (typeInfo.ElementTypeType == null)
+          continue;
 
         var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
         var exactTypeMatch = typeRetriever.CacheContainsTypeWithName(typeInfo.CategoryName, incomingType);
 
         //if (exactTypeMatch) continue;
 
-        hostTypes.AddCategoryWithTypesIfCategoryIsNew(typeInfo.CategoryName, elementTypes.Select(type => new RevitHostType(type.FamilyName, type.Name)));
-        var initialGuess = DefineInitialGuess(typeMap, incomingFamily, incomingType, typeInfo.CategoryName, elementTypes);
+        hostTypes.AddCategoryWithTypesIfCategoryIsNew(
+          typeInfo.CategoryName,
+          elementTypes.Select(type => new RevitHostType(type.FamilyName, type.Name))
+        );
+        var initialGuess = DefineInitialGuess(
+          typeMap,
+          incomingFamily,
+          incomingType,
+          typeInfo.CategoryName,
+          elementTypes
+        );
 
-        typeMap.AddIncomingType(@base, incomingType, incomingFamily, typeInfo.CategoryName, initialGuess, out var isNewType);
-        if (isNewType && !exactTypeMatch) numNewTypes++;
+        typeMap.AddIncomingType(
+          @base,
+          incomingType,
+          incomingFamily,
+          typeInfo.CategoryName,
+          initialGuess,
+          out var isNewType
+        );
+        if (isNewType && !exactTypeMatch)
+          numNewTypes++;
       }
 
       hostTypes.SetAllTypes(
-        typeRetriever
-          .GetAllCachedElementTypes()
-          .Select(type => new RevitHostType(type.FamilyName, type.Name))
+        typeRetriever.GetAllCachedElementTypes().Select(type => new RevitHostType(type.FamilyName, type.Name))
       );
 
       return hostTypes;
     }
 
-    private static ISingleHostType DefineInitialGuess(TypeMap typeMap, string? incomingFamily, string incomingType, string category, IEnumerable<ElementType> elementTypes)
+    private static ISingleHostType DefineInitialGuess(
+      TypeMap typeMap,
+      string? incomingFamily,
+      string incomingType,
+      string category,
+      IEnumerable<ElementType> elementTypes
+    )
     {
       var existingMappingValue = typeMap.TryGetMappingValueInCategory(category, incomingFamily, incomingType);
 
@@ -263,7 +315,8 @@ namespace ConnectorRevit.TypeMapping
       {
         var settings = new JsonSerializerSettings
         {
-          Converters = { 
+          Converters =
+          {
             new AbstractConverter<RevitMappingValue, ISingleValueToMap>(),
             new AbstractConverter<RevitHostType, ISingleHostType>(),
           },
@@ -289,7 +342,11 @@ namespace ConnectorRevit.TypeMapping
     /// <param name="category"></param>
     /// <param name="speckleType"></param>
     /// <returns></returns>
-    private static ISingleHostType GetMappedValue(IEnumerable<ElementType> elementTypes, string category, string speckleType)
+    private static ISingleHostType GetMappedValue(
+      IEnumerable<ElementType> elementTypes,
+      string category,
+      string speckleType
+    )
     {
       var shortestDistance = int.MaxValue;
       var closestFamily = string.Empty;
@@ -338,24 +395,22 @@ namespace ConnectorRevit.TypeMapping
         for (int j = 1; j <= m; j++)
         {
           int cost = (t[j - 1] == s[i - 1]) ? 0 : 1;
-          d[i, j] = Math.Min(
-              Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1),
-              d[i - 1, j - 1] + cost);
+          d[i, j] = Math.Min(Math.Min(d[i - 1, j] + 1, d[i, j - 1] + 1), d[i - 1, j - 1] + cost);
         }
       }
       return d[n, m];
     }
   }
 
-  public class AbstractConverter<TReal, TAbstract> : JsonConverter where TReal : TAbstract
+  public class AbstractConverter<TReal, TAbstract> : JsonConverter
+    where TReal : TAbstract
   {
-    public override bool CanConvert(Type objectType)
-        => objectType == typeof(TAbstract);
+    public override bool CanConvert(Type objectType) => objectType == typeof(TAbstract);
 
-    public override object ReadJson(JsonReader reader, Type type, Object value, JsonSerializer jser)
-        => jser.Deserialize<TReal>(reader);
+    public override object ReadJson(JsonReader reader, Type type, Object value, JsonSerializer jser) =>
+      jser.Deserialize<TReal>(reader);
 
-    public override void WriteJson(JsonWriter writer, Object value, JsonSerializer jser)
-        => jser.Serialize(writer, value);
+    public override void WriteJson(JsonWriter writer, Object value, JsonSerializer jser) =>
+      jser.Serialize(writer, value);
   }
 }

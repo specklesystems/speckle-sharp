@@ -126,7 +126,6 @@ namespace Speckle.ConnectorRevit.Storage
     }
   }
 
-
   /// <summary>
   /// Unique schema for... something ¯\_(ツ)_/¯
   /// </summary>

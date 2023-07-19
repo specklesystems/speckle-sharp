@@ -9,7 +9,8 @@ namespace ConnectorRevit.TypeMapping
 {
   public class HostTypeContainer : IHostTypeContainer
   {
-    private readonly Dictionary<string, HashSet<ISingleHostType>> categoryToTypes = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, HashSet<ISingleHostType>> categoryToTypes =
+      new(StringComparer.OrdinalIgnoreCase);
 
     public void AddTypesToCategory(string category, IEnumerable<ISingleHostType> newTypes)
     {
@@ -23,9 +24,11 @@ namespace ConnectorRevit.TypeMapping
         existingTypes.Add(type);
       }
     }
+
     public void AddCategoryWithTypesIfCategoryIsNew(string category, IEnumerable<ISingleHostType> types)
     {
-      if (categoryToTypes.ContainsKey(category)) return;
+      if (categoryToTypes.ContainsKey(category))
+        return;
 
       categoryToTypes[category] = types.ToHashSet();
     }
@@ -39,6 +42,7 @@ namespace ConnectorRevit.TypeMapping
     {
       return categoryToTypes[TypeMappingOnReceiveViewModel.TypeCatMisc];
     }
+
     public void SetAllTypes(IEnumerable<ISingleHostType> types)
     {
       categoryToTypes[TypeMappingOnReceiveViewModel.TypeCatMisc] = types.ToHashSet();

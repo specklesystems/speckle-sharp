@@ -9,6 +9,7 @@ namespace ConnectorRevit.TypeMapping
   internal class SingleCategoryMap
   {
     private readonly string _category;
+
     [JsonProperty]
     private Dictionary<string, ISingleValueToMap> mappingValues = new(StringComparer.OrdinalIgnoreCase);
 
@@ -21,9 +22,12 @@ namespace ConnectorRevit.TypeMapping
     {
       if (mappingValue is not RevitMappingValue revitMappingValue)
       {
-        throw new ArgumentException($"the {nameof(AddMappingValue)} function is expecting to be passed a {nameof(RevitMappingValue)}, but was passed a value of type {mappingValue.GetType()}");
+        throw new ArgumentException(
+          $"the {nameof(AddMappingValue)} function is expecting to be passed a {nameof(RevitMappingValue)}, but was passed a value of type {mappingValue.GetType()}"
+        );
       }
-      this.mappingValues[UniqueTypeName(revitMappingValue.IncomingFamily, revitMappingValue.IncomingType)] = mappingValue;
+      this.mappingValues[UniqueTypeName(revitMappingValue.IncomingFamily, revitMappingValue.IncomingType)] =
+        mappingValue;
     }
 
     public bool TryGetMappingValue(string? incomingFamily, string incomingType, out ISingleValueToMap singleValueToMap)

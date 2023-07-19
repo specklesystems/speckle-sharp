@@ -13,8 +13,12 @@ namespace ConnectorRevit.Revit
       return true;
     }
 
-
-    public bool OnSharedFamilyFound(Family sharedFamily, bool familyInUse, out FamilySource source, out bool overwriteParameterValues)
+    public bool OnSharedFamilyFound(
+      Family sharedFamily,
+      bool familyInUse,
+      out FamilySource source,
+      out bool overwriteParameterValues
+    )
     {
       source = FamilySource.Family;
       overwriteParameterValues = true;

@@ -28,11 +28,11 @@ namespace Speckle.ConnectorRevit
     /// </summary>
     private IntPtr AvaloniaHost_MessageHook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
-      if (msg != WM_GETDLGCODE) return IntPtr.Zero;
+      if (msg != WM_GETDLGCODE)
+        return IntPtr.Zero;
       handled = true;
       return new IntPtr(DLGC_WANTCHARS | DLGC_WANTARROWS | DLGC_HASSETSEL);
     }
-
 
     /// <summary>
     /// Switching documents in Revit causes the Panel content to "reset", so we need to re-nitialize the avalonia host each time
@@ -42,7 +42,6 @@ namespace Speckle.ConnectorRevit
       AvaloniaHost.Content = new MainUserControl();
     }
 
-
     public void SetupDockablePane(Autodesk.Revit.UI.DockablePaneProviderData data)
     {
       data.FrameworkElement = this as FrameworkElement;
@@ -50,8 +49,5 @@ namespace Speckle.ConnectorRevit
       data.InitialState.DockPosition = DockPosition.Tabbed;
       data.InitialState.TabBehind = Autodesk.Revit.UI.DockablePanes.BuiltInDockablePanes.ProjectBrowser;
     }
-
   }
-
-
 }

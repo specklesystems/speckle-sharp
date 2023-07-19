@@ -8,7 +8,13 @@ namespace RevitSharedResources.Helpers
 {
   public class RevitCategoryInfo : IRevitCategoryInfo
   {
-    public RevitCategoryInfo(string name, Type instanceType, Type familyType, List<BuiltInCategory> categories, List<string> categoryAliases = null)
+    public RevitCategoryInfo(
+      string name,
+      Type instanceType,
+      Type familyType,
+      List<BuiltInCategory> categories,
+      List<string> categoryAliases = null
+    )
     {
       CategoryName = name;
       ElementInstanceType = instanceType;
@@ -16,6 +22,7 @@ namespace RevitSharedResources.Helpers
       BuiltInCategories = categories;
       CategoryAliases = categoryAliases ?? new List<string>();
     }
+
     public string CategoryName { get; }
     public Type ElementInstanceType { get; }
     public Type ElementTypeType { get; }

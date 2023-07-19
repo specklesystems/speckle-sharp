@@ -12,6 +12,7 @@ namespace ConnectorRevit.Storage
   {
     private StreamState streamState;
     private Dictionary<string, ApplicationObject> previousContextObjects;
+
     public StreamStateCache(StreamState state)
     {
       streamState = state;
@@ -34,14 +35,14 @@ namespace ConnectorRevit.Storage
         var elements = convertedObjects.GetCreatedObjectsFromConvertedId(@base.applicationId).ToList();
         var appObj = new ApplicationObject(@base.id, @base.speckle_type);
 
-        newContextObjects.Add(new ApplicationObject(@base.id, @base.speckle_type)
-        {
-          applicationId = @base.applicationId,
-          CreatedIds = elements
-            .Select(element => element.UniqueId)
-            .ToList(),
-          Converted = elements.Cast<object>().ToList()
-        });
+        newContextObjects.Add(
+          new ApplicationObject(@base.id, @base.speckle_type)
+          {
+            applicationId = @base.applicationId,
+            CreatedIds = elements.Select(element => element.UniqueId).ToList(),
+            Converted = elements.Cast<object>().ToList()
+          }
+        );
       }
       streamState.ReceivedObjects = newContextObjects;
     }

@@ -16,6 +16,7 @@ namespace Speckle.ConnectorRevit.Entry
       return Result.Succeeded;
     }
   }
+
   [Transaction(TransactionMode.Manual)]
   public class DocsCommand : IExternalCommand
   {
@@ -25,6 +26,7 @@ namespace Speckle.ConnectorRevit.Entry
       return Result.Succeeded;
     }
   }
+
   [Transaction(TransactionMode.Manual)]
   public class TutorialsCommand : IExternalCommand
   {
@@ -40,10 +42,14 @@ namespace Speckle.ConnectorRevit.Entry
   {
     public Result Execute(ExternalCommandData commandData, ref string message, ElementSet elements)
     {
-      var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Speckle", "Manager", "Manager.exe");
+      var path = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+        "Speckle",
+        "Manager",
+        "Manager.exe"
+      );
       if (File.Exists(path))
         Process.Start(path);
-
       else
         TaskDialog.Show("No Manager found", "Seems like Manager is not installed on this pc.");
       return Result.Succeeded;
@@ -57,15 +63,11 @@ namespace Speckle.ConnectorRevit.Entry
     {
       TaskDialog mainDialog = new TaskDialog("Speckle has moved!");
       mainDialog.MainInstruction = "Speckle has moved!";
-      mainDialog.MainContent =
-          "The Speckle Connector for Revit has moved to its own Tab named 'Speckle' 👉";
-      mainDialog.FooterText =
-          "<a href=\"https://speckle.community/\">"
-          + "Feedback?</a>";
+      mainDialog.MainContent = "The Speckle Connector for Revit has moved to its own Tab named 'Speckle' 👉";
+      mainDialog.FooterText = "<a href=\"https://speckle.community/\">" + "Feedback?</a>";
 
       mainDialog.Show();
       return Result.Succeeded;
     }
   }
-
 }

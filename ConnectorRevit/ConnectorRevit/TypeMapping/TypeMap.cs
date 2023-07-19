@@ -10,18 +10,30 @@ namespace ConnectorRevit.TypeMapping
   public class TypeMap : ITypeMap
   {
     public IEnumerable<string> Categories => categoryToCategoryMap.Keys;
+
     [JsonProperty]
     private Dictionary<string, SingleCategoryMap> categoryToCategoryMap = new();
+
     [JsonIgnore]
     private Dictionary<Base, ISingleValueToMap> baseToMappingValue = new();
+
     [JsonIgnore]
     private HashSet<string> baseIds = new();
 
-    public void AddIncomingType(Base @base, string incomingType, string? incomingFamily, string category, ISingleHostType initialGuess, out bool isNewType, bool overwriteExisting = false)
+    public void AddIncomingType(
+      Base @base,
+      string incomingType,
+      string? incomingFamily,
+      string category,
+      ISingleHostType initialGuess,
+      out bool isNewType,
+      bool overwriteExisting = false
+    )
     {
       isNewType = false;
 
-      if (baseIds.Contains(@base.id)) return;
+      if (baseIds.Contains(@base.id))
+        return;
       baseIds.Add(@base.id);
 
       // add empty category if it isn't already present
@@ -31,7 +43,10 @@ namespace ConnectorRevit.TypeMapping
         categoryToCategoryMap[category] = categoryMappingValues;
       }
 
-      if (!categoryMappingValues.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap) || overwriteExisting)
+      if (
+        !categoryMappingValues.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap)
+        || overwriteExisting
+      )
       {
         isNewType = true;
         singleValueToMap = new RevitMappingValue(incomingType, initialGuess, incomingFamily, true);
@@ -56,7 +71,7 @@ namespace ConnectorRevit.TypeMapping
       return singleCategoryMap.GetMappingValues();
     }
 
-    public IEnumerable<(Base,ISingleValueToMap)> GetAllBasesWithMappings()
+    public IEnumerable<(Base, ISingleValueToMap)> GetAllBasesWithMappings()
     {
       foreach (var kvp in baseToMappingValue)
       {
@@ -71,7 +86,7 @@ namespace ConnectorRevit.TypeMapping
         return null;
       }
 
-      if (!singleCategoryMap.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap)) 
+      if (!singleCategoryMap.TryGetMappingValue(incomingFamily, incomingType, out var singleValueToMap))
       {
         return null;
       }

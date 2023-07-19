@@ -5,7 +5,6 @@ namespace Speckle.ConnectorRevit
 {
   internal class CmdAvailabilityViews : IExternalCommandAvailability
   {
-
     /// <summary>
     /// Command Availability - Views
     /// </summary>

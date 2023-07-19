@@ -21,12 +21,13 @@ namespace Speckle.ConnectorRevit.UI
   public partial class ConnectorBindingsRevit
   {
     private string _lastSyncComment { get; set; }
+
     public override async void WriteStreamsToFile(List<StreamState> streams)
     {
       try
       {
-        await RevitTask.RunAsync(
-          app =>
+        await RevitTask
+          .RunAsync(app =>
           {
             using (Transaction t = new Transaction(CurrentDoc.Document, "Speckle Write State"))
             {
@@ -34,8 +35,8 @@ namespace Speckle.ConnectorRevit.UI
               StreamStateManager.WriteStreamStateList(CurrentDoc.Document, streams);
               t.Commit();
             }
-
-          }).ConfigureAwait(false);
+          })
+          .ConfigureAwait(false);
       }
       catch (Exception ex)
       {
@@ -54,14 +55,14 @@ namespace Speckle.ConnectorRevit.UI
     /// <param name="eventHandler"></param>
     public void RegisterAppEvents()
     {
-
       //// GLOBAL EVENT HANDLERS
       RevitApp.ViewActivated += RevitApp_ViewActivated;
       //RevitApp.Application.DocumentChanged += Application_DocumentChanged;
       RevitApp.Application.DocumentCreated += Application_DocumentCreated;
       RevitApp.Application.DocumentCreating += Application_DocumentCreating;
       RevitApp.Application.DocumentOpened += Application_DocumentOpened;
-      RevitApp.Application.DocumentOpening += Application_DocumentOpening; ;
+      RevitApp.Application.DocumentOpening += Application_DocumentOpening;
+      ;
       RevitApp.Application.DocumentClosed += Application_DocumentClosed;
       RevitApp.Application.DocumentSaved += Application_DocumentSaved;
       RevitApp.Application.DocumentSynchronizingWithCentral += Application_DocumentSynchronizingWithCentral;
@@ -80,7 +81,6 @@ namespace Speckle.ConnectorRevit.UI
     {
       if (HomeViewModel.Instance == null)
         return;
-
 
       ///ensure WS connections etc are disposed, otherwise it might throw
       HomeViewModel.Instance.SavedStreams.ForEach(s => s.Dispose());
@@ -103,7 +103,10 @@ namespace Speckle.ConnectorRevit.UI
       var config = ConfigManager.Load();
       if (config.ShowImportExportAlert)
       {
-        Analytics.TrackEvent(Analytics.Events.ImportExportAlert, new Dictionary<string, object>() { { "name", "Show" } });
+        Analytics.TrackEvent(
+          Analytics.Events.ImportExportAlert,
+          new Dictionary<string, object>() { { "name", "Show" } }
+        );
         var dialog = new ImportExportAlert();
         dialog.LaunchAction = () =>
         {
@@ -129,26 +132,27 @@ namespace Speckle.ConnectorRevit.UI
       }
     }
 
-    private void Application_DocumentOpening(object sender, Autodesk.Revit.DB.Events.DocumentOpeningEventArgs e)
-    {
+    private void Application_DocumentOpening(object sender, Autodesk.Revit.DB.Events.DocumentOpeningEventArgs e) { }
 
-    }
-
-    private void Application_DocumentCreating(object sender, Autodesk.Revit.DB.Events.DocumentCreatingEventArgs e)
-    {
-    }
+    private void Application_DocumentCreating(object sender, Autodesk.Revit.DB.Events.DocumentCreatingEventArgs e) { }
 
     private void Application_FileExported(object sender, Autodesk.Revit.DB.Events.FileExportedEventArgs e)
     {
       SendScheduledStream("export");
     }
 
-    private void Application_DocumentSynchronizingWithCentral(object sender, Autodesk.Revit.DB.Events.DocumentSynchronizingWithCentralEventArgs e)
+    private void Application_DocumentSynchronizingWithCentral(
+      object sender,
+      Autodesk.Revit.DB.Events.DocumentSynchronizingWithCentralEventArgs e
+    )
     {
       _lastSyncComment = e.Comments;
     }
 
-    private void Application_DocumentSynchronizedWithCentral(object sender, Autodesk.Revit.DB.Events.DocumentSynchronizedWithCentralEventArgs e)
+    private void Application_DocumentSynchronizedWithCentral(
+      object sender,
+      Autodesk.Revit.DB.Events.DocumentSynchronizedWithCentralEventArgs e
+    )
     {
       SendScheduledStream("sync", _lastSyncComment);
     }
@@ -163,7 +167,8 @@ namespace Speckle.ConnectorRevit.UI
       try
       {
         var stream = GetStreamsInFile().FirstOrDefault(x => x.SchedulerEnabled && x.SchedulerTrigger == slug);
-        if (stream == null) return;
+        if (stream == null)
+          return;
 
         var progress = new ProgressViewModel();
         progress.ProgressTitle = "Sending to Speckle 🚀";
@@ -183,27 +188,30 @@ namespace Speckle.ConnectorRevit.UI
         dialog.Close();
         if (!progress.CancellationToken.IsCancellationRequested)
         {
-          Analytics.TrackEvent(stream.Client.Account, Analytics.Events.Send, new Dictionary<string, object>() { { "method", "Schedule" }, { "filter", stream.Filter.Name } });
+          Analytics.TrackEvent(
+            stream.Client.Account,
+            Analytics.Events.Send,
+            new Dictionary<string, object>() { { "method", "Schedule" }, { "filter", stream.Filter.Name } }
+          );
         }
-
       }
-      catch (Exception ex)
-      {
-
-      }
+      catch (Exception ex) { }
     }
-
 
     //checks whether to refresh the stream list in case the user changes active view and selects a different document
     private void RevitApp_ViewActivated(object sender, Autodesk.Revit.UI.Events.ViewActivatedEventArgs e)
     {
       try
       {
-        if (e.Document == null || e.PreviousActiveView == null || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode())
+        if (
+          e.Document == null
+          || e.PreviousActiveView == null
+          || e.Document.GetHashCode() == e.PreviousActiveView.Document.GetHashCode()
+        )
           return;
 
         // if the dialog body is open, then avalonia will freak out and crash Revit when trying to re-initialize
-        // so we need to close the dialog and cancel any ongoing send / receive operation. (Maybe we can somehow 
+        // so we need to close the dialog and cancel any ongoing send / receive operation. (Maybe we can somehow
         // save the operation state and let the user come back to it later)
         if (MainViewModel.Instance.DialogBody != null)
         {
@@ -218,11 +226,7 @@ namespace Speckle.ConnectorRevit.UI
 
         MainViewModel.Instance.NavigateToDefaultScreen();
       }
-      catch (Exception ex)
-      {
-
-      }
-
+      catch (Exception ex) { }
     }
 
     private void Application_DocumentClosed(object sender, Autodesk.Revit.DB.Events.DocumentClosedEventArgs e)
@@ -244,15 +248,12 @@ namespace Speckle.ConnectorRevit.UI
 
         MainViewModel.Instance.NavigateToDefaultScreen();
       }
-      catch (Exception ex)
-      {
-
-      }
+      catch (Exception ex) { }
     }
 
     // this method is triggered when there are changes in the active document
-    private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e)
-    { }
+    private void Application_DocumentChanged(object sender, Autodesk.Revit.DB.Events.DocumentChangedEventArgs e) { }
+
     private void Application_DocumentCreated(object sender, Autodesk.Revit.DB.Events.DocumentCreatedEventArgs e)
     {
       SpeckleRevitCommand.RegisterPane();
@@ -264,7 +265,6 @@ namespace Speckle.ConnectorRevit.UI
 
     private void Application_DocumentOpened(object sender, Autodesk.Revit.DB.Events.DocumentOpenedEventArgs e)
     {
-
       var streams = GetStreamsInFile();
       if (streams != null && streams.Count != 0)
       {
@@ -284,15 +284,18 @@ namespace Speckle.ConnectorRevit.UI
       MainViewModel.Instance.NavigateToDefaultScreen();
     }
 
-
     public override bool CanOpen3DView => true;
 
     public override async Task Open3DView(List<double> viewCoordinates, string viewName = "")
     {
       try
       {
-        var views = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(View3D)).ToElements().Cast<View3D>();
-        var viewtypes = new FilteredElementCollector(CurrentDoc.Document).OfClass(typeof(ViewFamilyType))
+        var views = new FilteredElementCollector(CurrentDoc.Document)
+          .OfClass(typeof(View3D))
+          .ToElements()
+          .Cast<View3D>();
+        var viewtypes = new FilteredElementCollector(CurrentDoc.Document)
+          .OfClass(typeof(ViewFamilyType))
           .ToElements()
           .Cast<ViewFamilyType>()
           .Where(x => x.ViewFamily == ViewFamily.ThreeDimensional);
@@ -303,7 +306,6 @@ namespace Speckle.ConnectorRevit.UI
         var speckleCamera = new Base();
         speckleCamera["isHackySpeckleCamera"] = true;
         speckleCamera["coordinates"] = viewCoordinates;
-
 
         //when in a perspective view, it's not possible to open any transaction (txs adsk)
         //so we're switching to any other non perspective view here
@@ -316,14 +318,12 @@ namespace Speckle.ConnectorRevit.UI
             if (nonPerspectiveView != null)
               CurrentDoc.ActiveView = nonPerspectiveView;
           }
-
         }
 
         var perspView = views.FirstOrDefault(o => o.Name == "SpeckleCommentView");
 
         await RevitTask.RunAsync(app =>
         {
-
           using (var t = new Transaction(CurrentDoc.Document, $"Open Comment View"))
           {
             t.Start();
@@ -363,18 +363,18 @@ namespace Speckle.ConnectorRevit.UI
         });
 
         //needed to force refresh the active view
-
-
       }
       catch (Exception ex)
       {
         SpeckleLog.Logger.Error(ex, "Failed to open view");
-        MainUserControl.NotificationManager.Show(new PopUpNotificationViewModel()
-        {
-          Title = "📷 Open View Error",
-          Message = $"Could not open the view: {ex.Message}",
-          Type = Avalonia.Controls.Notifications.NotificationType.Error
-        });
+        MainUserControl.NotificationManager.Show(
+          new PopUpNotificationViewModel()
+          {
+            Title = "📷 Open View Error",
+            Message = $"Could not open the view: {ex.Message}",
+            Type = Avalonia.Controls.Notifications.NotificationType.Error
+          }
+        );
       }
     }
   }

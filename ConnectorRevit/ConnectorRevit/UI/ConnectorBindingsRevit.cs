@@ -23,7 +23,8 @@ namespace Speckle.ConnectorRevit.UI
 
     //Only use an instance of the converter as a local variable to avoid conflicts if multiple sending/receiving
     //operations are happening at the same time
-    public ISpeckleConverter Converter { get; set; } = KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
+    public ISpeckleConverter Converter { get; set; } =
+      KitManager.GetDefaultKit().LoadConverter(ConnectorRevitUtils.RevitAppName);
 
     public List<Exception> ConversionErrors { get; set; } = new List<Exception>();
 
@@ -32,7 +33,8 @@ namespace Speckle.ConnectorRevit.UI
     /// </summary>
     public List<Exception> OperationErrors { get; set; } = new List<Exception>();
 
-    public ConnectorBindingsRevit(UIApplication revitApp) : base()
+    public ConnectorBindingsRevit(UIApplication revitApp)
+      : base()
     {
       RevitApp = revitApp;
     }
@@ -51,8 +53,9 @@ namespace Speckle.ConnectorRevit.UI
     public static string HostAppName => HostApplications.Revit.Slug;
 
     public override string GetHostAppName() => HostAppName;
+
     public override string GetHostAppNameVersion() => HostAppNameVersion;
-    
+
     public override string GetDocumentId() => CurrentDoc?.Document?.GetHashCode().ToString();
 
     public override string GetDocumentLocation() => CurrentDoc.Document.PathName;
