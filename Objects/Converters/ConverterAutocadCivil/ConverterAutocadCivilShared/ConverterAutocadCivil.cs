@@ -379,6 +379,10 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           break;
 
+        case Collection o:
+          acadObj = CollectionToNative(o);
+          break;
+
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
         case Alignment o:
           acadObj = AlignmentToNative(o);
@@ -520,6 +524,7 @@ namespace Objects.Converter.AutocadCivil
         case BlockDefinition _:
         case Instance _:
         case Text _:
+        case Collection _:
 
         case Alignment _:
         case ModelCurve _:

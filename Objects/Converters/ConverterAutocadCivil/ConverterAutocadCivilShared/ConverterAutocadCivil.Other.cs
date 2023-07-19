@@ -54,6 +54,98 @@ namespace Objects.Converter.AutocadCivil
       return collection;
     }
 
+    public ApplicationObject CollectionToNative(Collection collection)
+    {
+      #region local functions
+      LayerTableRecord GetLayer(string path)
+      {
+        var index = Doc.Layers.FindByFullPath(path, RhinoMath.UnsetIntIndex);
+        if (index != RhinoMath.UnsetIntIndex)
+          return Doc.Layers[index];
+        return null;
+      }
+      LayerTableRecord MakeLayer(string name, LayerTableRecord parentLayer = null)
+      {
+        try
+        {
+          Layer newLayer = new() { Name = name };
+          if (parentLayer != null)
+            newLayer.ParentLayerId = parentLayer.Id;
+          int newIndex = Doc.Layers.Add(newLayer);
+          if (newIndex < 0)
+            return null;
+          return Doc.Layers.FindIndex(newIndex);
+        }
+        catch (Exception e)
+        {
+          return null;
+        }
+      }
+      #endregion
+
+      var appObj = new ApplicationObject(collection.id, collection.speckle_type)
+      {
+        applicationId = collection.applicationId
+      };
+      LayerTableRecord layer = null;
+      var status = ApplicationObject.State.Unknown;
+
+      // see if this layer already exists in the doc
+      var layerPath = RemoveInvalidRhinoChars(collection["path"] as string);
+      LayerTableRecord existingLayer = GetLayer(layerPath);
+
+      // update this layer if it exists & receive mode is on update
+      if (existingLayer != null && ReceiveMode == ReceiveMode.Update)
+      {
+        layer = existingLayer;
+        status = ApplicationObject.State.Updated;
+      }
+      else // create this layer
+      {
+        Layer parent = null;
+        var parentIndex = layerPath.LastIndexOf(Layer.PathSeparator);
+        if (parentIndex != -1)
+        {
+          var parentPath = layerPath.Substring(0, parentIndex);
+          parent = GetLayer(parentPath);
+          if (parent == null)
+          {
+            appObj.Update(
+              status: ApplicationObject.State.Failed,
+              logItem: $"Could not find layer parent: {parentPath}"
+            );
+            return appObj;
+          }
+        }
+        layer = MakeLayer(collection.name, parent);
+        status = ApplicationObject.State.Created;
+      }
+
+      if (layer == null)
+      {
+        appObj.Update(status: ApplicationObject.State.Failed, logItem: "Could not create layer");
+        return appObj;
+      }
+
+      // get attributes and rendermaterial
+      var displayStyle =
+        collection["displayStyle"] as DisplayStyle != null
+          ? DisplayStyleToNative(collection["displayStyle"] as DisplayStyle)
+          : new ObjectAttributes { ObjectColor = Color.AliceBlue };
+      var renderMaterial =
+        collection["renderMaterial"] as RenderMaterial != null
+          ? RenderMaterialToNative(collection["renderMaterial"] as RenderMaterial)
+          : null;
+      layer.Color = displayStyle.ObjectColor;
+      if (renderMaterial != null)
+        layer.RenderMaterial = renderMaterial;
+      layer.PlotWeight = displayStyle.PlotWeight;
+      layer.LinetypeIndex = displayStyle.LinetypeIndex;
+
+      appObj.Update(status: status, convertedItem: layer, createdId: layer.Id.ToString());
+      return appObj;
+    }
+
     // Display Style
     private static LineWeight GetLineWeight(double weight)
     {
