@@ -72,7 +72,9 @@ namespace ConnectorRevit.Operations
 
       await RevitTask.RunAsync(_ =>
       {
-        using var _d0 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
+        using var _d0 = LogContext.PushProperty("converterName", converter.Name);
+        using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+        using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToSpeckle));
 
         foreach (var revitElement in sendSelection.Elements)
         {
@@ -90,8 +92,8 @@ namespace ConnectorRevit.Operations
           progress.Report.Log(reportObj);
 
           //Add context to logger
-          using var _d1 = LogContext.PushProperty("elementType", revitElement.GetType());
-          using var _d2 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
+          using var _d3 = LogContext.PushProperty("elementType", revitElement.GetType());
+          using var _d4 = LogContext.PushProperty("elementCategory", revitElement.Category?.Name);
 
           try
           {
@@ -129,7 +131,7 @@ namespace ConnectorRevit.Operations
           conversionProgressDict["Conversion"]++;
           progress.Update(conversionProgressDict);
 
-          YeildToUIThread(TimeSpan.FromMilliseconds(1));
+          YieldToUIThread(TimeSpan.FromMilliseconds(1));
         }
       })
       .ConfigureAwait(false);
@@ -168,7 +170,7 @@ namespace ConnectorRevit.Operations
       return false;
     }
 
-    private static void YeildToUIThread(TimeSpan delay)
+    private static void YieldToUIThread(TimeSpan delay)
     {
       using CancellationTokenSource s = new(delay);
       Dispatcher.UIThread.MainLoop(s.Token);

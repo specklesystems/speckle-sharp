@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 using Speckle.ConnectorRevit;
 using Avalonia.Threading;
 using ConnectorRevit.Services;
+using Serilog.Context;
 
 namespace ConnectorRevit.Operations
 {
@@ -164,6 +165,10 @@ namespace ConnectorRevit.Operations
 
     private void ConvertReceivedObjects(List<ApplicationObject> preview, Dictionary<string, Base> storedObjects)
     {
+      using var _d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
+
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
 
@@ -172,9 +177,10 @@ namespace ConnectorRevit.Operations
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
       foreach (var obj in preview)
       {
-        var @base = storedObjects[obj.OriginalId];
         progress.CancellationToken.ThrowIfCancellationRequested();
+        var @base = storedObjects[obj.OriginalId];
 
+        using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
         try
         {
           conversionProgressDict["Conversion"]++;
@@ -205,10 +211,10 @@ namespace ConnectorRevit.Operations
               break;
           }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          SpeckleLog.Logger.Warning("Failed to convert ");
-          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          SpeckleLog.Logger.Warning(ex, "Failed to convert");
+          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
           progress.Report.UpdateReportObject(obj);
         }
       }
