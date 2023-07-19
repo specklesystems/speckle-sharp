@@ -15,6 +15,7 @@ using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
 using RevitSharedResources.Interfaces;
+using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
@@ -197,6 +198,11 @@ namespace Speckle.ConnectorRevit.UI
 
     private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(ISpeckleConverter converter, ProgressViewModel progress)
     {
+      using var _d0 = LogContext.PushProperty("converterName", converter.Name);
+      using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
+      using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
+
+
       var convertedObjectsCache = new ConvertedObjectsCache();
       var conversionProgressDict = new ConcurrentDictionary<string, int>();
       conversionProgressDict["Conversion"] = 1;
@@ -206,9 +212,11 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
       foreach (var obj in Preview)
       {
-        var @base = StoredObjects[obj.OriginalId];
         progress.CancellationToken.ThrowIfCancellationRequested();
 
+        var @base = StoredObjects[obj.OriginalId];
+
+        using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
         try
         {
           conversionProgressDict["Conversion"]++;
@@ -241,7 +249,7 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception ex)
         {
-          SpeckleLog.Logger.Warning(ex, "Failed to convert ");
+          SpeckleLog.Logger.Warning(ex, "Failed to convert");
           obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
           progress.Report.UpdateReportObject(obj);
         }
