@@ -75,7 +75,7 @@ public class SelectionHandler
     var progressIncrement = 1.0 / count != 0 ? count : 1.0;
 
     // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.1, "Rolling up the sleeves... Time to handpick your favorite data items!");
+    ProgressBar.BeginSubOperation(0.05, "Rolling up the sleeves... Time to handpick your favorite data items!");
 
     // Iterate over the selection and retrieve the corresponding model items
     for (var i = 0; i < count; i++)
@@ -102,7 +102,7 @@ public class SelectionHandler
     _uniqueModelItems.Clear();
 
     // Begin the progress sub-operation for getting objects from selection
-    ProgressBar.BeginSubOperation(0.1, "Checking the Canvas... Looking Closely!");
+    ProgressBar.BeginSubOperation(0.05, "Checking the Canvas... Looking Closely!");
 
     // Get the selection from the filter
     var selection = _filter.Selection.FirstOrDefault();
@@ -325,7 +325,8 @@ public class SelectionHandler
         {
           _uniqueModelItems.Add(allAncestors.ElementAt(i));
           return true;
-        }
+        },
+        0.05
       );
     }
 
@@ -333,8 +334,11 @@ public class SelectionHandler
     _descendantProgress = 0;
     var allDescendants = startNodes.SelectMany(e => e.Descendants).Distinct().Count();
 
+    ProgressBar.BeginSubOperation(0.1, "Validating descendants...");
+
     foreach (var node in startNodes)
       TraverseDescendants(node, allDescendants);
+    ProgressBar.EndSubOperation();
   }
 
   /// <summary>
@@ -346,12 +350,17 @@ public class SelectionHandler
   {
     var descendantInterval = Math.Max(totalDescendants / 100.0, 1);
     var validDescendants = new HashSet<ModelItem>();
+    int lastPercentile = 0;
 
     Stack<ModelItem> stack = new();
     stack.Push(startNode);
 
     while (stack.Count > 0)
     {
+      if (ProgressBar.IsCanceled)
+        _progressViewModel.CancellationTokenSource.Cancel();
+      _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
+
       ModelItem currentNode = stack.Pop();
 
       if (_visited.Contains(currentNode))
@@ -375,11 +384,12 @@ public class SelectionHandler
 
       _uniqueModelItems.AddRange(validDescendants);
 
-      if (_descendantProgress % descendantInterval != 0)
+      int currentPercentile = (int)(_descendantProgress / descendantInterval);
+      if (currentPercentile <= lastPercentile)
         continue;
-
       double progress = _descendantProgress / (double)totalDescendants;
       ProgressBar.Update(progress);
+      lastPercentile = currentPercentile;
     }
   }
 
@@ -404,6 +414,8 @@ public class SelectionHandler
 
     for (int i = 0; i < totalCount; i++)
     {
+      if (ProgressBar.IsCanceled)
+        _progressViewModel.CancellationTokenSource.Cancel();
       _progressViewModel.CancellationToken.ThrowIfCancellationRequested();
 
       bool shouldContinue = fn(i);

@@ -106,6 +106,8 @@ public static class SpeckleLog
 
   private static bool _initialized;
 
+  private static string _logFolderPath;
+
   /// <summary>
   /// Initialize logger configuration for a global Serilog.Log logger.
   /// </summary>
@@ -162,8 +164,9 @@ public static class SpeckleLog
     // if not, disable file sink, even if its enabled in the config
     // show a warning about that...
     var canLogToFile = true;
+    _logFolderPath = SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion);
     var logFilePath = Path.Combine(
-      SpecklePathProvider.LogFolderPath(hostApplicationName, hostApplicationVersion),
+      _logFolderPath,
       "SpeckleCoreLog.txt"
     );
     var serilogLogConfiguration = new LoggerConfiguration().MinimumLevel
@@ -225,6 +228,18 @@ public static class SpeckleLog
     if (logConfiguration.logToFile && !canLogToFile)
       logger.Warning("Log to file is enabled, but cannot write to {LogFilePath}", logFilePath);
     return logger;
+  }
+
+  public static void OpenCurrentLogFolder()
+  {
+    try
+    {
+      Process.Start(_logFolderPath);
+    }
+    catch (Exception ex)
+    {
+      Logger.Error(ex, "Unable to open log file folder at the following path, {path}", _logFolderPath);
+    }
   }
 
   private static void _addUserIdToGlobalContextFromDefaultAccount()
