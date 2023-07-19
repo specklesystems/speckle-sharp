@@ -38,6 +38,17 @@ namespace Objects.Converter.AutocadCivil
       var collection = new Collection(layer.Name, "layer") { applicationId = layer.Id.ToString() };
 
       // add dynamic autocad props
+      var style = new DisplayStyle() { units = Units.Millimeters };
+      style.color = layer.Color.ColorValue.ToArgb();
+      var linetype = (LinetypeTableRecord)Trans.GetObject(layer.LinetypeObjectId, OpenMode.ForRead);
+      style.linetype = linetype.Name;
+      var lineWeight =
+        (layer.LineWeight == LineWeight.ByLineWeightDefault || layer.LineWeight == LineWeight.ByBlock)
+          ? (int)LineWeight.LineWeight025
+          : (int)layer.LineWeight;
+      style.lineweight = lineWeight / 100; // convert to mm
+      collection["displayStyle"] = style;
+
       collection["visible"] = !layer.IsHidden;
 
       return collection;
@@ -76,9 +87,10 @@ namespace Objects.Converter.AutocadCivil
 
     public DisplayStyle DisplayStyleToSpeckle(Entity entity)
     {
-      var style = new DisplayStyle();
       if (entity is null)
-        return style;
+        return null;
+
+      var style = new DisplayStyle();
 
       // get color
       int color = System.Drawing.Color.Black.ToArgb();
