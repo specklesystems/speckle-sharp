@@ -13,8 +13,6 @@ namespace Objects.Converter.AutocadCivil
 
       SetDisplayValue(asteelGrating, slab);
 
-      SetUnits(asteelGrating);
-
       return asteelGrating;
     }
   }

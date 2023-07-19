@@ -15,7 +15,7 @@ using Autodesk.AutoCAD.EditorInput;
 
 #if ADVANCESTEEL2023
 using Autodesk.AdvanceSteel.DocumentManagement;
-using Autodesk.AdvanceSteel.DotNetRoots.Units;
+using static Autodesk.AdvanceSteel.DotNetRoots.Units.Unit;
 #endif
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
@@ -325,19 +325,33 @@ namespace Objects.Converter.AutocadCivil
 
 #if ADVANCESTEEL2023
 
-    private double _factor;
-    public double Factor
+    private double _factorFromNative;
+    private double FactorFromNative
     {
       get
       {
-        if (_factor.Equals(0.0))
+        if (_factorFromNative.Equals(0.0))
         {
-          _factor = DocumentManager.GetCurrentDocument().CurrentDatabase.Units.UnitOfDistance.Factor;
+          _factorFromNative = 1 / DocumentManager.GetCurrentDocument().CurrentDatabase.Units.UnitOfDistance.Factor;
         }
 
-        return _factor;
+        return _factorFromNative;
       }
     }
+
+    private string unitWeight;
+    private string UnitWeight
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitWeight))
+        {
+          unitWeight = UnitsSet.GetUnit(eUnitType.kWeight).Symbol;
+        }
+        return unitWeight;
+      }
+    }
+
 #endif
 
     private string _modelUnits;
