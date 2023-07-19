@@ -200,10 +200,11 @@ namespace ConnectorRevit.Operations
           switch (convRes)
           {
             case ApplicationObject o:
-              if (o.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
-              {
-                convertedObjectsCache.AddConvertedObjects(@base, typedList);
-              }
+              // no need to add to the cache here because we're doing it in the converter
+              //if (o.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+              //{
+              //  convertedObjectsCache.AddConvertedObjects(@base, typedList);
+              //}
               obj.Update(status: o.Status, createdIds: o.CreatedIds, converted: o.Converted, log: o.Log);
               progress.Report.UpdateReportObject(obj);
               break;
