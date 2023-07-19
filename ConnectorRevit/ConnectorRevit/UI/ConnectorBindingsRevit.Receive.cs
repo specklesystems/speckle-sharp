@@ -239,10 +239,10 @@ namespace Speckle.ConnectorRevit.UI
               break;
           }
         }
-        catch (Exception e)
+        catch (Exception ex)
         {
-          SpeckleLog.Logger.Warning("Failed to convert ");
-          obj.Update(status: ApplicationObject.State.Failed, logItem: e.Message);
+          SpeckleLog.Logger.Warning(ex, "Failed to convert ");
+          obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
           progress.Report.UpdateReportObject(obj);
         }
       }
