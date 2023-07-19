@@ -19,8 +19,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
   {
     public static Document Doc => Application.DocumentManager.MdiActiveDocument;
 
-    private static string ApplicationIdKey = "applicationId";
-
     /// <summary>
     /// Stored Base objects from commit flattening on receive: key is the Base id
     /// </summary>

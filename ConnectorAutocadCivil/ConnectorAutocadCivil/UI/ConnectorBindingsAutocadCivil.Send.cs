@@ -289,6 +289,9 @@ namespace Speckle.ConnectorAutocadCivil.UI
           }
 
           #region layer handling
+          // get the layer table
+          var layerTable = (LayerTable)tr.GetObject(Doc.Database.LayerTableId, OpenMode.ForRead);
+
           // convert layers as collections and attach all layer objects
           foreach (var layerPath in commitLayerObjects.Keys)
             if (commitCollections.ContainsKey(layerPath))
@@ -297,7 +300,8 @@ namespace Speckle.ConnectorAutocadCivil.UI
             }
             else
             {
-              var collection = converter.ConvertToSpeckle(commitLayers[layerPath]) as Collection;
+              var layerRecord = (LayerTableRecord)tr.GetObject(layerTable[layerPath], OpenMode.ForRead);
+              var collection = converter.ConvertToSpeckle(layerRecord) as Collection;
               if (collection != null)
               {
                 collection.elements = commitLayerObjects[layerPath];

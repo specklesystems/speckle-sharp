@@ -106,12 +106,7 @@ namespace Objects.Converter.AutocadCivil
       switch (@object)
       {
         case DBObject obj:
-          /*
-          // check for speckle schema xdata
-          string schema = GetSpeckleSchema(o.XData);
-          if (schema != null)
-            return ObjectToSpeckleBuiltElement(o);
-          */
+
           var appId = obj.ObjectId.ToString(); // TODO: UPDATE THIS WITH STORED APP ID IF IT EXISTS
 
           //Use the Handle object to update progressReport object.
@@ -190,6 +185,9 @@ namespace Objects.Converter.AutocadCivil
               break;
             case MText o:
               @base = TextToSpeckle(o);
+              break;
+            case LayerTableRecord o:
+              @base = LayerToSpeckle(o);
               break;
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             case CivilDB.Alignment o:
@@ -461,6 +459,7 @@ namespace Objects.Converter.AutocadCivil
             case BlockTableRecord _:
             case AcadDB.DBText _:
             case AcadDB.MText _:
+            case LayerTableRecord _:
               return true;
 
 #if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024

@@ -32,6 +32,17 @@ namespace Objects.Converter.AutocadCivil
 {
   public partial class ConverterAutocadCivil
   {
+    // Layers
+    public Collection LayerToSpeckle(LayerTableRecord layer)
+    {
+      var collection = new Collection(layer.Name, "layer") { applicationId = layer.Id.ToString() };
+
+      // add dynamic autocad props
+      collection["visible"] = !layer.IsHidden;
+
+      return collection;
+    }
+
     // Display Style
     private static LineWeight GetLineWeight(double weight)
     {
