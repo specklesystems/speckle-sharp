@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
@@ -17,8 +18,8 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
         MethodInfo cacheFactoryMethod = null;
         foreach (var method in typeof(IRevitDocumentAggregateCacheExtensions).GetMethods())
         {
-          var firstParam = method.GetParameters()[0];
-          if (firstParam.ParameterType != typeof(IRevitObjectCache<T>)) continue;
+          var firstParam = method.GetParameters().FirstOrDefault();
+          if (firstParam == null || firstParam.ParameterType != typeof(IRevitObjectCache<T>)) continue;
 
           cacheFactoryMethod = method;
           break;
