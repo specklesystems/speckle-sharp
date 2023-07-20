@@ -57,40 +57,50 @@ public class App : IExternalApplication
     
     var browser = Panel.Browser; 
     
+#if REVIT2020
+      // browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
+      var bindingOptions = new BindingOptions() { CamelCaseJavascriptNames = false };
+#endif
+#if REVIT2023
+    browser.JavascriptObjectRepository.NameConverter = null;
+    BindingOptions bindingOptions = null;
+#endif
+    
+    // TODO: these methods should probably be moved to browser specific helper projects
+    void ExecuteScriptAsyncMethod(string script)
+    {
+      Debug.WriteLine(script);
+      if(browser.CanExecuteJavascriptInMainFrame) {
+        browser.EvaluateScriptAsync(script);
+      }
+      else
+      {
+        // TODO: Log 
+      }
+    }
+
+    void ShowDevToolsMethod() => browser.ShowDevTools();
+    
+    var testBinding = new TestBinding();
+    var testBindingBridge = new BrowserBridge(browser, testBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
+    
+    var baseBinding = new RevitBaseBinding(application);
+    var baseBindingBridge = new BrowserBridge(browser, baseBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
+    
     browser.IsBrowserInitializedChanged += (sender, e) =>
     {
-      var executeScriptAsyncMethod = (string script) => {
-        Debug.WriteLine(script);
-        browser.EvaluateScriptAsync(script);
-      };
-      var showDevToolsMethod = () => browser.ShowDevTools();
-
-      // browser.JavascriptObjectRepository.NameConverter = null; // not available in cef65, we need the below
-      #if REVIT2020
-      var bindingOptions = new BindingOptions() { CamelCaseJavascriptNames = false };
-      #endif
-      #if REVIT2023
-      browser.JavascriptObjectRepository.NameConverter = null;
-      BindingOptions bindingOptions = null;
-      #endif
-      
-      var testBinding = new TestBinding();
-      var testBindingBridge = new BrowserBridge(browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
       browser.JavascriptObjectRepository.Register(testBindingBridge.FrontendBoundName, testBindingBridge, true, bindingOptions);
-      
-      var baseBinding = new RevitBaseBinding(application);
-      var baseBindingBridge = new BrowserBridge(browser, baseBinding, executeScriptAsyncMethod, showDevToolsMethod);
       browser.JavascriptObjectRepository.Register(baseBindingBridge.FrontendBoundName,baseBindingBridge, true, bindingOptions);
-
+      
 #if  REVIT2020
       // NOTE: Cef65 does not work with DUI3 in yarn dev. To test things you need to do `yarn build` and serve the build
       // folder at port 3000 (or change it to something else if you want to).
       // Guru  meditation: Je sais, pas ideal. Mais q'est que nous pouvons faire? Rien. C'est l'autodesk vie.
       browser.Load("http://localhost:3000");
 #endif
-      #if REVIT2023
-      // TODO: let it load 
-      #endif
+#if REVIT2023
+      browser.Load("http://localhost:8082");
+#endif
     };
 
   }

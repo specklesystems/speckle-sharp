@@ -53,17 +53,6 @@ namespace DUI3
     public void SendToBrowser(string eventName, object data = null);
   }
 
-  public interface IHostAppEvent
-  {
-    public string EventName { get; set; }
-
-    /// <summary>
-    /// Note: Data needs to be serializable.
-    /// </summary>
-    public object Data { get; set; }
-  }
-
-
   public interface IBasicConnectorBinding : IBinding
   {
     public string GetSourceApplicationName();
@@ -73,17 +62,11 @@ namespace DUI3
     public Account[] GetAccounts();
 
     public DocumentInfo GetDocumentInfo();
-
-    // ETC. 
   }
 
-  /// <summary>
-  /// Just a sketch for now of what receive bindings could look like.
-  /// </summary>
-  public interface IReceiveBindings : IBinding
+  public static class BasicConnectorBindingEvents
   {
-    public void Receive(string modelId, string projectId);
-
-    // ETC. TO BE SCOPED OUT
+    public static readonly string DisplayToastNotification = "DisplayToastNotification";
+    public static readonly string DocumentChanged = "documentChanged";
   }
 }
