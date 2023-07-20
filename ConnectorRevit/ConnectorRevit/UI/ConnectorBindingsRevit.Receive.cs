@@ -71,10 +71,13 @@ namespace Speckle.ConnectorRevit.UI
       // needs to be set for openings in floors and roofs to work
       converter.SetContextObjects(Preview);
 
+      // share the same revit element cache between the connector and converter
+      converter.SetContextDocument(revitDocumentAggregateCache);
+
 #pragma warning disable CA1031 // Do not catch general exception types
       try
       {
-        var elementTypeMapper = new ElementTypeMapper(converter, Preview, StoredObjects, CurrentDoc.Document);
+        var elementTypeMapper = new ElementTypeMapper(converter, revitDocumentAggregateCache, Preview, StoredObjects, CurrentDoc.Document);
         await elementTypeMapper.Map(state.Settings.FirstOrDefault(x => x.Slug == "receive-mappings"))
           .ConfigureAwait(false);
       }

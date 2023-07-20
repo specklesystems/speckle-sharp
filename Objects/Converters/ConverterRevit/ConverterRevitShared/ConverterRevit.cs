@@ -105,11 +105,17 @@ namespace Objects.Converter.Revit
       Report.Log($"Using converter: {Name} v{ver}");
     }
 
+    private IRevitDocumentAggregateCache revitDocumentAggregateCache;
+
     public void SetContextDocument(object doc)
     {
       if (doc is Transaction t)
       {
         T = t;
+      }
+      else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
+      {
+        this.revitDocumentAggregateCache = revitDocumentAggregateCache;
       }
       else if (doc is IReceivedObjectIdMap<Base, Element> cache)
       {
