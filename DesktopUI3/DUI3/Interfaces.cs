@@ -22,13 +22,15 @@ namespace DUI3
     /// <summary>
     /// Bindings will be wrapped by a browser specific bridge, and they will need 
     /// to use that bridge to send events to the Frontend, via <see cref="IBridge.SendToBrowser(IHostAppEvent)">SendToBrowser(IHostAppEvent)</see> or <see cref="IBridge.SendToBrowser(string)">SendToBrowser(string)</see>.
+    /// TODO: we'll probably need a factory class of sorts to handle the proper wrapping. Currently, on bridge instantiation the parent is set in the bindings class that has been wrapped around. Not vvv elegant.
     /// </summary>
     public IBridge Parent { get; set; }
-
   }
 
   /// <summary>
-  /// Describes a bridge - a wrapper class around a specific browser host.
+  /// Describes a bridge - a wrapper class around a specific browser host. Not needed right now,
+  /// but if in the future we will have other bridge classes (e.g, ones that wrap around other browsers),
+  /// it just might be useful.
   /// </summary>
   public interface IBridge
   {
@@ -51,22 +53,5 @@ namespace DUI3
     /// </summary>
     /// <param name="eventData"></param>
     public void SendToBrowser(string eventName, object data = null);
-  }
-
-  public interface IBasicConnectorBinding : IBinding
-  {
-    public string GetSourceApplicationName();
-
-    public string GetSourceApplicationVersion();
-
-    public Account[] GetAccounts();
-
-    public DocumentInfo GetDocumentInfo();
-  }
-
-  public static class BasicConnectorBindingEvents
-  {
-    public static readonly string DisplayToastNotification = "DisplayToastNotification";
-    public static readonly string DocumentChanged = "documentChanged";
   }
 }

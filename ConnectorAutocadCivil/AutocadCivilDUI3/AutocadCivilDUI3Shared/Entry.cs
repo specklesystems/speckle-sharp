@@ -28,14 +28,11 @@ public class SpeckleAutocadDUI3Command
     PaletteSet.Size = new Size(400, 500);
     PaletteSet.DockEnabled = (DockSides)((int)DockSides.Left + (int)DockSides.Right);
 
-// #if AUTOCAD2023DUI3
-    // Just because we shouldn't, doesn't mean we can't.
-    // var panelCefSharp = new DUI3PanelCefSharp();
-    // PaletteSet.AddVisual("Speckle DUI3 CefSharp", panelCefSharp);
-    
+    // NOTE: Autocad 2022 seems to support Webview2 rather well, hence I (Dim) have removed
+    // all references to Cef. CefSharp also worked rather fine, and we would need to match
+    // the correct versions, etc.. But it seems it's not needed!
     var panelWebView = new DUI3PanelWebView();
     PaletteSet.AddVisual("Speckle DUI3 WebView", panelWebView);
-// #endif
 
     FocusPalette();
   }

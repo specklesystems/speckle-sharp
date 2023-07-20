@@ -84,7 +84,7 @@ public class App : IExternalApplication
     var testBinding = new TestBinding();
     var testBindingBridge = new BrowserBridge(browser, testBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
     
-    var baseBinding = new RevitBaseBinding(application);
+    var baseBinding = new BasicConnectorBindingRevit(application);
     var baseBindingBridge = new BrowserBridge(browser, baseBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
     
     browser.IsBrowserInitializedChanged += (sender, e) =>

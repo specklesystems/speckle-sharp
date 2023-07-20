@@ -9,7 +9,7 @@
     <Import_RootNamespace>RevitDUI3Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Bindings\RevitBaseBinding.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Panel.xaml.cs">
       <DependentUpon>Panel.xaml</DependentUpon>

@@ -9,16 +9,13 @@
     <Import_RootNamespace>AutocadCivilDUI3Shared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)Bindings\BasicConnectorBindingAutocad.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DUI3PanelWebView.xaml.cs">
       <DependentUpon>DUI3PanelWebView.xaml</DependentUpon>
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Entry.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)DUI3PanelCefSharp.xaml.cs">
-      <DependentUpon>Panel.xaml</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
-    <Page Include="$(MSBuildThisFileDirectory)DUI3PanelCefSharp.xaml" />
     <Page Include="$(MSBuildThisFileDirectory)DUI3PanelWebView.xaml" />
   </ItemGroup>
 </Project>

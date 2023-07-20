@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using CefSharp;
 using CefSharp.JavascriptBinding;
 using CefSharp.Wpf;
+using ConnectorRhinoWebUI.Bindings;
 using DUI3;
 
 namespace ConnectorRhinoWebUI
@@ -38,7 +39,7 @@ namespace ConnectorRhinoWebUI
 
       var showDevToolsMethod = () => Browser.ShowDevTools();
 
-      var baseBindings = new RhinoBaseBindings(); // They don't need to be created here, but wherever it makes sense in the app
+      var baseBindings = new BasicConnectorBindingRhino(); // They don't need to be created here, but wherever it makes sense in the app
       var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
 
       var testBinding = new TestBinding();

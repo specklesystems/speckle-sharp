@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Windows.Controls;
+using ConnectorRhinoWebUI.Bindings;
 using DUI3;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
@@ -30,7 +31,7 @@ namespace ConnectorRhinoWebUI
       var showDevToolsMethod = () => Browser.CoreWebView2.OpenDevToolsWindow();
 
       // Test bindings 1
-      var baseBindings = new RhinoBaseBindings();
+      var baseBindings = new BasicConnectorBindingRhino();
       var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
 
       // Test bindings 2

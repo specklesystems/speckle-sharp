@@ -1,18 +1,19 @@
 ﻿using System.Linq;
 using Autodesk.Revit.UI;
 using DUI3;
+using DUI3.Bindings;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 
 namespace Speckle.ConnectorRevitDUI3.Bindings;
 
-public class RevitBaseBinding : IBasicConnectorBinding
+public class BasicConnectorBindingRevit : IBasicConnectorBinding
 {
   public string Name { get; set; } = "baseBinding";
   public IBridge Parent { get; set; }
   private static UIApplication RevitApp { get; set; }
   private static UIDocument CurrentDoc => RevitApp.ActiveUIDocument;
-  public RevitBaseBinding(UIApplication revitApp)
+  public BasicConnectorBindingRevit(UIApplication revitApp)
   {
     RevitApp = revitApp;
 
