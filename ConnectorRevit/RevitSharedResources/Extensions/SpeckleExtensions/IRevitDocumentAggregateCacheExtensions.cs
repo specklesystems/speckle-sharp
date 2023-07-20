@@ -12,23 +12,23 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
   {
     public static IRevitObjectCache<T> GetOrInitializeWithDefaultFactory<T>(this IRevitDocumentAggregateCache cache)
     {
-      MethodInfo cacheFactoryMethod = null;
-      foreach (var method in typeof(IRevitDocumentAggregateCacheExtensions).GetMethods())
-      {
-        var firstParam = method.GetParameters()[0];
-        if (firstParam.GetType() != typeof(IRevitObjectCache<T>)) continue;
-
-        cacheFactoryMethod = method;
-        break;
-      }
-
-      if (cacheFactoryMethod == null)
-      {
-        throw new ArgumentException($"Cannot use {nameof(GetOrInitializeWithDefaultFactory)} with the generic parameter {typeof(T).Name} because there is no default factory defined for that object");
-      }
-
       return cache.GetOrInitializeCacheOfType<T>(singleCache =>
       {
+        MethodInfo cacheFactoryMethod = null;
+        foreach (var method in typeof(IRevitDocumentAggregateCacheExtensions).GetMethods())
+        {
+          var firstParam = method.GetParameters()[0];
+          if (firstParam.ParameterType != typeof(IRevitObjectCache<T>)) continue;
+
+          cacheFactoryMethod = method;
+          break;
+        }
+
+        if (cacheFactoryMethod == null)
+        {
+          throw new ArgumentException($"Cannot use {nameof(GetOrInitializeWithDefaultFactory)} with the generic parameter {typeof(T).Name} because there is no default factory defined for that object");
+        }
+
         cacheFactoryMethod.Invoke(null, new object[] { singleCache, cache.Document });
       }, out _);
     }
@@ -66,7 +66,7 @@ namespace RevitSharedResources.Extensions.SpeckleExtensions
           predefinedCategories.Add(categoryInfo);
         }
       }
-      cache.AddMany(predefinedCategories, categoryInfo => nameof(categoryInfo));
+      cache.AddMany(predefinedCategories, categoryInfo => categoryInfo.CategoryName);
     }
     
     public static void CacheInitializer(IRevitObjectCache<ElementType> cache, Document doc)

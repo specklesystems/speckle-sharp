@@ -32,6 +32,7 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitDocumentAggregateCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Storage\RevitObjectCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Storage\UIDocumentProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\ElementTypeMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\FamilyImporter.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />

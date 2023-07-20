@@ -1,7 +1,6 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 
@@ -10,14 +9,15 @@ namespace ConnectorRevit.Storage
   /// <summary>
   /// Simple conversion cache to store elements that are retrieved and may be needed again throughout the conversion operation
   /// </summary>
-  internal class RevitDocumentAggregateCache : IRevitDocumentAggregateCache 
+  public sealed class RevitDocumentAggregateCache : IRevitDocumentAggregateCache 
   {
     private readonly Dictionary<Type, IRevitObjectCache> objectCaches;
-    public Document Document { get; }
+    private readonly UIDocumentProvider uiDocumentProvider;
+    public Document Document => uiDocumentProvider.Entity.Document;
 
-    public RevitDocumentAggregateCache(Document document)
+    public RevitDocumentAggregateCache(UIDocumentProvider uiDocumentProvider)
     {
-      this.Document = document;
+      this.uiDocumentProvider = uiDocumentProvider;
       this.objectCaches = new();
     }
 

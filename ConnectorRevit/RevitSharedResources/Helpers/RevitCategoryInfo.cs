@@ -29,7 +29,7 @@ namespace RevitSharedResources.Helpers
 
     public List<ElementType> GetElementTypes(Document document)
     {
-      return GetElementTypes(document);
+      return GetElementTypes<ElementType>(document);
     }
     public List<T> GetElementTypes<T>(Document document)
       where T : ElementType

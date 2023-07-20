@@ -212,8 +212,8 @@ namespace Speckle.ConnectorRevit.UI
           MainViewModel.CloseDialog();
         }
 
-        // create a fresh new cache
-        revitDocumentAggregateCache = new RevitDocumentAggregateCache(e.Document);
+        // invalidate all revit elements in the cache
+        revitDocumentAggregateCache.InvalidateAll();
 
         SpeckleRevitCommand.RegisterPane();
 

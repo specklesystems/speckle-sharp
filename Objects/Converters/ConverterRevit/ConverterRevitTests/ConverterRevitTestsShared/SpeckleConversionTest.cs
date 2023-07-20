@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using xUnitRevitUtils;
 using DB = Autodesk.Revit.DB;
 
 namespace ConverterRevitTests
@@ -120,6 +121,7 @@ namespace ConverterRevitTests
 
       ConverterRevit converter = new ConverterRevit();
       converter.SetContextDocument(doc);
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
       //setting context objects for nested routine
       var contextObjects = elements
         .Select(obj => new ApplicationObject(obj.UniqueId, obj.GetType().ToString()) { applicationId = obj.UniqueId })
@@ -154,6 +156,7 @@ namespace ConverterRevitTests
       converter.ReceiveMode = Speckle.Core.Kits.ReceiveMode.Update;
 
       converter.SetContextDocument(fixture.NewDoc);
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
       //setting context objects for update routine
       var state = new StreamState()
       {
@@ -284,6 +287,7 @@ namespace ConverterRevitTests
       converter = new ConverterRevit();
       converter.SetContextDocument(fixture.NewDoc);
       converter.SetContextDocument(new StreamStateCache(new StreamState()));
+      converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
       var revitEls = new List<object>();
 
       await SpeckleUtils.RunInTransaction(

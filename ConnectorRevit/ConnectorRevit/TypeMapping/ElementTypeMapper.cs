@@ -57,7 +57,7 @@ namespace ConnectorRevit.TypeMapping
       }
       else revitCategoriesExposer = typeInfoExposer;
 
-      this.revitDocumentAggregateCache = revitDocumentAggregateCache;
+      this.revitDocumentAggregateCache = revitDocumentAggregateCache ?? throw new ArgumentException($"RevitDocumentAggregateCache cannot be null");
 
       var traversalFunc = DefaultTraversal.CreateTraverseFunc(converter);
       foreach (var appObj in flattenedCommit)
@@ -225,7 +225,7 @@ namespace ConnectorRevit.TypeMapping
         var incomingFamily = typeRetriever.GetElementFamily(@base);
 
         var typeInfo = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(@base);
-        if (typeInfo.ElementTypeType == null) continue;
+        //if (typeInfo.ElementTypeType == null) continue;
 
         var elementTypes = groupedElementTypeCache.GetOrAddGroupOfTypes(typeInfo);
         var exactTypeMatch = elementTypeCache.ContainsKey(typeInfo.GetCategorySpecificTypeName(incomingType));

@@ -35,7 +35,7 @@ namespace Speckle.ConnectorRevit.UI
     public ConnectorBindingsRevit(UIApplication revitApp) : base()
     {
       RevitApp = revitApp;
-      revitDocumentAggregateCache = new RevitDocumentAggregateCache(CurrentDoc.Document);
+      revitDocumentAggregateCache = new RevitDocumentAggregateCache(new UIDocumentProvider(revitApp));
     }
 
     private void SelectionTimer_Elapsed(object sender, ElapsedEventArgs e)
