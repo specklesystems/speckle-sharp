@@ -1,14 +1,39 @@
 ﻿using System;
 using System.Drawing;
-using System.Linq;
-using Autodesk.AutoCAD.ApplicationServices;
+using System.IO;
+using System.Reflection;
 using Autodesk.AutoCAD.Windows;
 using Autodesk.AutoCAD.Runtime;
-
 using Speckle.ConnectorAutocadDUI3;
 
 namespace AutocadCivilDUI3Shared;
 
+public class App : IExtensionApplication
+{
+  public void Initialize()
+  {
+    AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
+  }
+
+  public void Terminate()
+  {
+    // Shh.
+  }
+  
+  Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+  {
+    Assembly a = null;
+    var name = args.Name.Split(',')[0];
+    string path = Path.GetDirectoryName(typeof(App).Assembly.Location);
+
+    string assemblyFile = Path.Combine(path, name + ".dll");
+
+    if (File.Exists(assemblyFile))
+      a = Assembly.LoadFrom(assemblyFile);
+
+    return a;
+  }
+}
 
 public class SpeckleAutocadDUI3Command
 {
@@ -32,6 +57,7 @@ public class SpeckleAutocadDUI3Command
     // all references to Cef. CefSharp also worked rather fine, and we would need to match
     // the correct versions, etc.. But it seems it's not needed!
     var panelWebView = new DUI3PanelWebView();
+    
     PaletteSet.AddVisual("Speckle DUI3 WebView", panelWebView);
 
     FocusPalette();
