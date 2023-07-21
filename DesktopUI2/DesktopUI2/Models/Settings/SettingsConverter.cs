@@ -36,8 +36,8 @@ public class SettingsConverter : JsonConverter
         setting = new CheckBoxSetting();
       else if (type == typeof(ListBoxSetting).ToString())
         setting = new ListBoxSetting();
-      else if (type == typeof(MappingSeting).ToString())
-        setting = new MappingSeting();
+      else if (type == typeof(MappingSetting).ToString())
+        setting = new MappingSetting();
       else if (type == typeof(MultiSelectBoxSetting).ToString())
         setting = new MultiSelectBoxSetting();
       else if (type == typeof(NumericSetting).ToString())

@@ -1,8 +1,5 @@
-﻿using System.Collections.Generic;
-using Autodesk.Revit.Creation;
+using System.Collections.Generic;
 using Objects.Geometry;
-using Objects.Organization;
-using Objects.Other;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Transform = Objects.Other.Transform;
@@ -12,7 +9,7 @@ namespace Objects.Converter.Revit
   public partial class ConverterRevit
   {
     /// <summary>
-    /// Returns a <see cref="Model"/> object containing <see cref="Objects.BuiltElements.Revit.ProjectInfo"/> and location
+    /// Returns a <see cref="Collection"/> object containing <see cref="Objects.BuiltElements.Revit.ProjectInfo"/> and location
     /// information. This is intended to be used as the root commit object when sending to Speckle.
     /// </summary>
     /// <param name="doc">the currently active document</param>
@@ -20,7 +17,7 @@ namespace Objects.Converter.Revit
     /// <returns></returns>
     public Base ModelToSpeckle(DB.Document doc, bool sendProjectInfo = true)
     {
-      var model = new Model();
+      var model = new Collection("Revit model", "model");
       // TODO: setting for whether or not to include project info
       if (sendProjectInfo)
       {
@@ -29,7 +26,7 @@ namespace Objects.Converter.Revit
         info.longitude = doc.SiteLocation.Longitude;
         info.siteName = doc.SiteLocation.PlaceName;
         info.locations = ProjectLocationsToSpeckle(doc);
-        model.info = info;
+        model["info"] = info;
       }
 
       Report.Log($"Created Model Object");
@@ -57,7 +54,12 @@ namespace Objects.Converter.Revit
         var basisX = VectorToSpeckle(revitTransform.BasisX, doc);
         var basisY = VectorToSpeckle(revitTransform.BasisY, doc);
         var basisZ = VectorToSpeckle(revitTransform.BasisZ, doc);
-        var translation = new Vector(ScaleToSpeckle(position.EastWest), ScaleToSpeckle(position.NorthSouth), ScaleToSpeckle(position.Elevation), ModelUnits);
+        var translation = new Vector(
+          ScaleToSpeckle(position.EastWest),
+          ScaleToSpeckle(position.NorthSouth),
+          ScaleToSpeckle(position.Elevation),
+          ModelUnits
+        );
         spcklLoc["transform"] = new Transform(basisX, basisY, basisZ, translation);
         spcklLoc["name"] = location.Name;
         spcklLoc["trueNorth"] = position.Angle;

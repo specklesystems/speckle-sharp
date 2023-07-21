@@ -12,7 +12,6 @@ using Speckle.Core.Api;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using Commits = Speckle.Core.Api.Commits;
 
 namespace DesktopUI2;
@@ -200,7 +199,7 @@ public class DummyBindings : ConnectorBindings
         Selection = "Default",
         Description = "Determines the display style of imported meshes"
       },
-      new MappingSeting
+      new MappingSetting
       {
         Slug = "recieve-mappings",
         Name = "Custom Type Mapping",
@@ -544,14 +543,6 @@ public class DummyBindings : ConnectorBindings
   public override List<ReceiveMode> GetReceiveModes()
   {
     return new List<ReceiveMode> { ReceiveMode.Update, ReceiveMode.Ignore };
-  }
-
-  public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-    Dictionary<string, List<MappingValue>> Mapping
-  )
-  {
-    await Task.Delay(TimeSpan.FromMilliseconds(rnd.Next(200, 1000))).ConfigureAwait(true);
-    return new Dictionary<string, List<MappingValue>>();
   }
 
   public override Task Open3DView(List<double> viewCoordinates, string viewName = "")

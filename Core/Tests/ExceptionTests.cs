@@ -1,9 +1,10 @@
 using NUnit.Framework;
 using Speckle.Core.Models.Extensions;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
+[TestOf(typeof(BaseExtensions))]
 public class ExceptionTests
 {
   [Test]

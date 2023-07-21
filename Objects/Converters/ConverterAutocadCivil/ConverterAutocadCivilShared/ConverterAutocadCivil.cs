@@ -26,7 +26,7 @@ using Point = Objects.Geometry.Point;
 using Polycurve = Objects.Geometry.Polycurve;
 using Polyline = Objects.Geometry.Polyline;
 using Spiral = Objects.Geometry.Spiral;
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
 using Civil = Autodesk.Civil;
 using CivilDB = Autodesk.Civil.DatabaseServices;
 #endif
@@ -41,12 +41,16 @@ namespace Objects.Converter.AutocadCivil
     public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2022);
 #elif AUTOCAD2023
     public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2023);
+#elif AUTOCAD2024
+    public static string AutocadAppName = HostApplications.AutoCAD.GetVersion(HostAppVersion.v2024);
 #elif CIVIL2021
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2021);
 #elif CIVIL2022
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2022);
 #elif CIVIL2023
     public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2023);
+#elif CIVIL2024
+    public static string AutocadAppName = HostApplications.Civil.GetVersion(HostAppVersion.v2024);
 #elif ADVANCESTEEL2023
     public static string AutocadAppName = HostApplications.AdvanceSteel.GetVersion(HostAppVersion.v2023);
 #endif
@@ -187,7 +191,7 @@ namespace Objects.Converter.AutocadCivil
             case MText o:
               @base = TextToSpeckle(o);
               break;
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             case CivilDB.Alignment o:
               @base = AlignmentToSpeckle(o);
               break;
@@ -354,7 +358,7 @@ namespace Objects.Converter.AutocadCivil
         */
 
         case Mesh o:
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
           acadObj = isFromCivil ? CivilSurfaceToNative(o) : MeshToNativeDB(o);
 #else
           acadObj = MeshToNativeDB(o);
@@ -377,7 +381,7 @@ namespace Objects.Converter.AutocadCivil
           acadObj = isFromAutoCAD ? AcadTextToNative(o) : TextToNative(o);
           break;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
         case Alignment o:
           acadObj = AlignmentToNative(o);
           break;
@@ -459,7 +463,7 @@ namespace Objects.Converter.AutocadCivil
             case AcadDB.MText _:
               return true;
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
             // NOTE: C3D pressure pipes and pressure fittings API under development
             case CivilDB.FeatureLine _:
             case CivilDB.Corridor _:

@@ -22,7 +22,6 @@ using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Core.Models.GraphTraversal;
 using Speckle.Core.Transports;
-using static DesktopUI2.ViewModels.MappingViewModel;
 using static Speckle.ConnectorAutocadCivil.Utils;
 
 #if ADVANCESTEEL2023
@@ -112,7 +111,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
       catch { }
       var docString = $"{(path != null ? path : "")}{(Doc != null ? Doc.Name : "")}";
       var hash = !string.IsNullOrEmpty(docString)
-        ? Core.Models.Utilities.hashString(docString, Core.Models.Utilities.HashingFuctions.MD5)
+        ? Core.Models.Utilities.HashString(docString, Core.Models.Utilities.HashingFunctions.MD5)
         : null;
       return hash;
     }
@@ -260,14 +259,6 @@ namespace Speckle.ConnectorAutocadCivil.UI
     {
       Doc.Editor.SetImpliedSelection(new ObjectId[0]);
       Autodesk.AutoCAD.Internal.Utils.FlushGraphics();
-    }
-
-    public override async Task<Dictionary<string, List<MappingValue>>> ImportFamilyCommand(
-      Dictionary<string, List<MappingValue>> Mapping
-    )
-    {
-      await Task.Delay(TimeSpan.FromMilliseconds(500));
-      return new Dictionary<string, List<MappingValue>>();
     }
 
     #endregion
@@ -681,7 +672,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                   Utils.SetStyle(display, o, LineTypeDictionary);
 
                 // add property sets if this is Civil3D
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
                 try
                 {
                   if (obj["propertySets"] is IReadOnlyList<object> list)
@@ -1129,7 +1120,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
                 converted[key] = obj.ExtensionDictionary.GetUserString(key);
               */
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
               // add property sets if this is Civil3D
               var propertySets = obj.GetPropertySets(tr);
               if (propertySets.Count > 0)

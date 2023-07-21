@@ -264,7 +264,7 @@ public static class Helpers
     }
     catch (Exception ex)
     {
-      //new SpeckleException($"Could not check for connector updates: {slug}", ex, true, SentryLevel.Warning);
+      SpeckleLog.Logger.ForContext("slug", slug).Warning(ex, "Failed to check for connector updates");
     }
 
     return false;

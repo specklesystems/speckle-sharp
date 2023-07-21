@@ -248,9 +248,9 @@ public static class Analytics
         query.Headers.ContentType = new MediaTypeHeaderValue("application/json");
         client.PostAsync(MixpanelServer + "/engage#profile-union", query);
       }
-      catch (Exception e)
+      catch (Exception ex)
       {
-        // POKEMON: Gotta catch 'em all!
+        SpeckleLog.Logger.ForContext("connector", connector).Warning(ex, "Failed add connector to profile");
       }
     });
   }

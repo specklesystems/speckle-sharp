@@ -356,7 +356,7 @@ public class MappingsViewModel : ViewModelBase, IScreen, IDialogHost
               break;
 
             case RevitFaceWallViewModel o:
-              var faceWallFamilies = AvailableRevitTypes.Where(x => x.category == "Walls").ToList();
+              var faceWallFamilies = AvailableRevitTypes.Where(x => x.family == "Basic Wall").ToList();
               if (!faceWallFamilies.Any() || !AvailableRevitLevels.Any())
                 break;
               var faceWallFamiliesViewModels = faceWallFamilies

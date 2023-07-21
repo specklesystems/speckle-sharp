@@ -47,7 +47,7 @@ namespace Objects.Converter.Revit
 
     private const double TOLERANCE = 0.0164042; // 5mm in ft
 
-    public Document Doc { get; private set; }
+    public static Document Doc { get; private set; }
 
     /// <summary>
     /// <para>To know which other objects are being converted, in order to sort relationships between them.
@@ -131,7 +131,9 @@ namespace Objects.Converter.Revit
       }
       else
       {
-        throw new ArgumentException($"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}");
+        throw new ArgumentException(
+          $"Converter.{nameof(SetContextDocument)}() was passed an object of unexpected type, {doc.GetType()}"
+        );
       }
     }
 
@@ -347,7 +349,7 @@ namespace Objects.Converter.Revit
         returnObject != null
         && returnObject["renderMaterial"] == null
         && returnObject["displayValue"] == null
-        && !(returnObject is Model)
+        && !(returnObject is Collection)
       )
       {
         try

@@ -36,6 +36,8 @@ namespace Archicad.Converters
       {
         foreach (var tc in elements)
         {
+          token.ThrowIfCancellationRequested();
+
           switch (tc.current)
           {
             case Objects.BuiltElements.Archicad.DirectShape directShape:
@@ -71,16 +73,30 @@ namespace Archicad.Converters
       return result is null ? new List<ApplicationObject>() : result.ToList();
     }
 
-    public Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
+    public async Task<List<Base>> ConvertToSpeckle(IEnumerable<Model.ElementModelData> elements, CancellationToken token)
     {
-      return Task.FromResult(
-        new List<Base>(
-          elements.Select(
-            e =>
-              new Objects.BuiltElements.Archicad.DirectShape(e.applicationId, ModelConverter.MeshesToSpeckle(e.model))
-          )
-        )
-      );
+      var elementModels = elements as ElementModelData[] ?? elements.ToArray();
+      IEnumerable<Objects.BuiltElements.Archicad.DirectShape> data =
+        await AsyncCommandProcessor.Execute(
+          new Communication.Commands.GetElementBaseData(elementModels.Select(e => e.applicationId)),
+          token);
+      if (data is null)
+      {
+        return new List<Base>();
+      }
+
+      var directShapes = new List<Base>();
+      foreach (Objects.BuiltElements.Archicad.DirectShape directShape in data)
+      {
+        {
+          directShape.displayValue =
+            Operations.ModelConverter.MeshesToSpeckle(elementModels.First(e => e.applicationId == directShape.applicationId)
+              .model);
+          directShapes.Add(directShape);
+        }
+      }
+
+      return directShapes;
     }
 
     #endregion

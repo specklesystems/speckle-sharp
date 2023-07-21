@@ -6,12 +6,12 @@ using Autodesk.Navisworks.Api.Interop.ComApi;
 using Objects.BuiltElements;
 using Objects.Core.Models;
 using Objects.Geometry;
+using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using static Autodesk.Navisworks.Api.ComApi.ComApiBridge;
 
 namespace Objects.Converter.Navisworks;
-
 
 // ReSharper disable once UnusedType.Global
 public partial class ConverterNavisworks
@@ -123,19 +123,19 @@ public partial class ConverterNavisworks
 
     var camera = viewPoint.Camera;
 
-    var viewDirection = ToVector(camera.GetViewDir());
-    var viewUp = ToVector(camera.GetUpVector());
+    var cameraDirection = camera.GetViewDir();
+    var cameraUp = camera.GetUpVector();
+    var cameraPosition = camera.Position;
 
-    var focalDistance = viewPoint.FocalDistance;
+    var viewDirection = ToVector(cameraDirection);
+    var viewUp = ToVector(cameraUp);
+    var viewPosition = ToPoint(cameraPosition);
 
-    var position = ToPoint(camera.Position);
-
-    var origin = ScalePoint(position, scaleFactor);
-    var target = ScalePoint(GetViewTarget(position, viewDirection, focalDistance), scaleFactor);
+    var focalDistance = 1.0;
 
     string cameraType;
     string zoom;
-    double zoomValue = 1;
+    double zoomValue;
 
     switch (vp.Projection)
     {
@@ -155,18 +155,37 @@ public partial class ConverterNavisworks
 
         try
         {
-          zoomValue = vp.FocalDistance * scaleFactor;
+          focalDistance = vp.FocalDistance;
         }
-        catch (NullReferenceException err)
+        catch (Exception ex)
         {
-          Console.WriteLine($"No Focal Distance, Are you looking at anything?\n{err.Message}");
+          switch (ex)
+          {
+            case NullReferenceException:
+              SpeckleLog.Logger.Information(
+                "A selected view's viewpoint has no focal distance set and the prop is null. The focal distance will be set to 1m"
+              );
+              break;
+            case System.Runtime.InteropServices.COMException:
+            case NotSupportedException:
+              SpeckleLog.Logger.Information(
+                "A selected view's viewpoint has no focal distance set and the getter throws either of two errors, this is rare but possible and frankly terrible from Navisworks. The focal distance will be set to 1m"
+              );
+              break;
+            default:
+              throw;
+          }
         }
 
+        zoomValue = focalDistance * scaleFactor;
         break;
       default:
         Console.WriteLine("No View");
         return null;
     }
+
+    var origin = ScalePoint(viewPosition, scaleFactor);
+    var target = ScalePoint(GetViewTarget(viewPosition, viewDirection, focalDistance), scaleFactor);
 
     var view = new View3D
     {
@@ -233,14 +252,26 @@ public partial class ConverterNavisworks
 
     var @base = CategoryToSpeckle(element);
 
+    var firstChild = element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName));
+    var parent = element.Ancestors.FirstOrDefault(p => !string.IsNullOrEmpty(p.DisplayName));
+
+    var resolvedName = string.IsNullOrEmpty(element.DisplayName)
+      ? string.IsNullOrEmpty(firstChild?.DisplayName)
+        ? parent?.DisplayName
+        : firstChild.DisplayName
+      : element.DisplayName;
+
+    @base["name"] = string.IsNullOrEmpty(resolvedName)
+      ? (
+        element.PropertyCategories.FindPropertyByName(PropertyCategoryNames.Item, DataPropertyNames.ItemIcon)
+      ).ToString()
+      : GetSanitizedPropertyName(resolvedName);
+
     // Geometry items have no children
     if (element.HasGeometry)
     {
       GeometryToSpeckle(element, @base);
       AddItemProperties(element, @base);
-      @base["name"] = string.IsNullOrEmpty(element.DisplayName)
-        ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
-        : element.DisplayName;
 
       return @base;
     }
@@ -253,10 +284,6 @@ public partial class ConverterNavisworks
     // invalid if it has no children, or no children through hiding
     if (element.Descendants.All(x => x.IsHidden))
       return null;
-
-    ((Collection)@base).name = string.IsNullOrEmpty(element.DisplayName)
-      ? element.Children.FirstOrDefault(c => !string.IsNullOrEmpty(c.DisplayName))?.DisplayName
-      : element.DisplayName;
 
     // After the fact empty Collection post traversal is also invalid
     // Emptiness by virtue of failure to convert for whatever reason

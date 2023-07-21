@@ -20,13 +20,17 @@ namespace Archicad
       ConversionOptions conversionOptions,
       CancellationToken token
     )
-      {
+    {
       try
       {
         var elementConverter = GetConverterForElement(elementType, conversionOptions, true);
         return await elementConverter.ConvertToArchicad(elements, token);
       }
-      catch (Exception e)
+      catch (OperationCanceledException)
+      {
+        throw;
+      }
+      catch (Exception)
       {
         SpeckleLog.Logger.Warning("Failed to convert element type {elementType}", elementType.ToString());
         return null;
@@ -103,7 +107,13 @@ namespace Archicad
       }
       catch (Exception ex)
       {
-        SpeckleLog.Logger.Error(ex, "Conversion to native failed.");
+        SpeckleLog.Logger.Error("Conversion to native failed.");
+
+        string message = $"Fatal Error: {ex.Message}";
+        if (ex is OperationCanceledException)
+          message = "Receive cancelled";
+        progress.Report.LogOperationError(new Exception($"{message} - Partial model could be received.", ex));
+
         return false;
       }
     }

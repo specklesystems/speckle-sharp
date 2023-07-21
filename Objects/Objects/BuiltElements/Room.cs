@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
 using Objects.Utils;
@@ -69,9 +69,13 @@ namespace Objects.BuiltElements.Archicad
   */
   public class ArchicadRoom : Room
   {
-    public ArchicadLevel level { get; set; }
+    // Element base
+    public string? /*APINullabe*/ elementType { get; set; }
+    public List<Classification>? /*APINullabe*/ classifications { get; set; }
 
-    public double height { get; set; }
+    public ArchicadLevel? /*APINullabe*/ level { get; set; }
+
+    public double? /*APINullabe*/ height { get; set; }
 
     public ElementShape shape { get; set; }
   }
