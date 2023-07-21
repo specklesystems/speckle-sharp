@@ -333,6 +333,7 @@ namespace Objects.Converter.AutocadCivil
         {
           _unitsSet = DocumentManager.GetCurrentDocument().CurrentDatabase.Units;
 
+          //Workaround to fix strange beahaviour when we are using the modeler of some beams(lost some faces)
           var unitOriginal = _unitsSet.UnitOfArea;
           _unitsSet.UnitOfArea = new Unit();
           _unitsSet.UnitOfArea = unitOriginal;
