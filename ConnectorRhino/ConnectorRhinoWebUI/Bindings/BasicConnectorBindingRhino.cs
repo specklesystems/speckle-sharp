@@ -27,7 +27,7 @@ namespace ConnectorRhinoWebUI.Bindings
 
     public string GetSourceApplicationVersion()
     {
-      return "42";
+      return "7";
     }
 
     public Account[] GetAccounts()

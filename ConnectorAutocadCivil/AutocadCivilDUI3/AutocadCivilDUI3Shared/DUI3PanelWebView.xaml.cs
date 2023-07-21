@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Windows.Controls;
 using DUI3;
+using DUI3.Bindings;
 using Microsoft.Web.WebView2.Core;
 using Speckle.ConnectorAutocadDUI3.Bindings;
 

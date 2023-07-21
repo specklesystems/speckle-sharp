@@ -8,6 +8,7 @@ using CefSharp.JavascriptBinding;
 using CefSharp.Wpf;
 using ConnectorRhinoWebUI.Bindings;
 using DUI3;
+using DUI3.Bindings;
 
 namespace ConnectorRhinoWebUI
 {

@@ -1,12 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 
-namespace DUI3
+namespace DUI3.Bindings
 {
   /// <summary>
-  /// Meant as a testing ground for various scenarios.
+  /// Meant as a testing ground for various scenarios. Note this binding is directly scaffolded from here - no need for
+  /// implementations in host applications.
   /// </summary>
   public class TestBinding : IBinding
   {

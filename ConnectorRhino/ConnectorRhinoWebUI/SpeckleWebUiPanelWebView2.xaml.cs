@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Windows.Controls;
 using ConnectorRhinoWebUI.Bindings;
 using DUI3;
+using DUI3.Bindings;
 using Microsoft.Web.WebView2.Core;
 using Microsoft.Web.WebView2.Wpf;
 
