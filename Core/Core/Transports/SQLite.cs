@@ -48,7 +48,7 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
     }
     catch (Exception ex)
     {
-      throw new Exception($"Cound not create {dir}", ex);
+      throw new TransportException(this, $"Cound not create {dir}", ex);
     }
 
     RootPath = Path.Combine(basePath, applicationName, $"{scope}.db");
@@ -66,9 +66,9 @@ public class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlobCapable
       };
       WriteTimer.Elapsed += WriteTimerElapsed;
     }
-    catch (Exception e)
+    catch (Exception ex)
     {
-      OnErrorAction?.Invoke(TransportName, e);
+      throw new TransportException(this, "Failed to initialize DB connection", ex);
     }
   }
 
