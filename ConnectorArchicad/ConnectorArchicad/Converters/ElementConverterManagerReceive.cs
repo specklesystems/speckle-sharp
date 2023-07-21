@@ -87,35 +87,21 @@ namespace Archicad
 
     public async Task<bool> ConvertToNative(StreamState state, Base commitObject, ProgressViewModel progress)
     {
-      try
-      {
-        ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
+      ConversionOptions conversionOptions = new ConversionOptions(state.Settings);
 
-        Objects.Converter.Archicad.ConverterArchicad converter = new Objects.Converter.Archicad.ConverterArchicad(
-          conversionOptions
-        );
-        List<TraversalContext> flattenObjects = FlattenCommitObject(commitObject, converter);
+      Objects.Converter.Archicad.ConverterArchicad converter = new Objects.Converter.Archicad.ConverterArchicad(
+        conversionOptions
+      );
+      List<TraversalContext> flattenObjects = FlattenCommitObject(commitObject, converter);
 
-        converter.SetContextObjects(flattenObjects);
+      converter.SetContextObjects(flattenObjects);
 
-        foreach (var applicationObject in converter.ContextObjects)
-          progress.Report.Log(applicationObject);
+      foreach (var applicationObject in converter.ContextObjects)
+        progress.Report.Log(applicationObject);
 
-        converter.ReceiveMode = state.ReceiveMode;
+      converter.ReceiveMode = state.ReceiveMode;
 
-        return await ConvertReceivedObjects(flattenObjects, converter, progress);
-      }
-      catch (Exception ex)
-      {
-        SpeckleLog.Logger.Error("Conversion to native failed.");
-
-        string message = $"Fatal Error: {ex.Message}";
-        if (ex is OperationCanceledException)
-          message = "Receive cancelled";
-        progress.Report.LogOperationError(new Exception($"{message} - Partial model could be received.", ex));
-
-        return false;
-      }
+      return await ConvertReceivedObjects(flattenObjects, converter, progress);
     }
 
     private List<TraversalContext> FlattenCommitObject(
