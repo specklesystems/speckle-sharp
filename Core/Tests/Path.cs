@@ -3,10 +3,11 @@ using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Speckle.Core.Helpers;
 
-namespace Tests;
+namespace TestsUnit;
 
 [TestFixture]
-public class SpecklePaths
+[TestOf(nameof(SpecklePathProvider))]
+public class SpecklePathTests
 {
   [Test]
   public void TestUserApplicationDataPath()

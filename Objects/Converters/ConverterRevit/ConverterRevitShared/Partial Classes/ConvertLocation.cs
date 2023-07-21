@@ -19,7 +19,7 @@ namespace Objects.Converter.Revit
         revitElement is DB.FamilyInstance familyInstance
         && familyInstance.Location is LocationPoint lp
         && (
-          SHC.columnCategories.HasCategory(familyInstance.Category)
+          SHC.Column.BuiltInCategories.HasCategory(familyInstance.Category)
           || familyInstance.StructuralType == StructuralType.Column
         )
       )

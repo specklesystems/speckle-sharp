@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,22 +14,20 @@ using Speckle.Newtonsoft.Json.Linq;
 
 namespace Speckle.Core.Serialisation;
 
-public class BaseObjectDeserializerV2
+public sealed class BaseObjectDeserializerV2
 {
-  private bool Busy;
-  private object CallbackLock = new();
+  private bool _busy;
+  private readonly object _callbackLock = new();
 
   // id -> Base if already deserialized or id -> Task<object> if was handled by a bg thread
-  private Dictionary<string, object> DeserializedObjects;
-
-  public int TotalProcessedCount = 0;
+  private Dictionary<string, object?>? _deserializedObjects;
 
   /// <summary>
   /// Property that describes the type of the object.
   /// </summary>
-  public string TypeDiscriminator = "speckle_type";
+  public const string TypeDiscriminator = nameof(Base.speckle_type);
 
-  private DeserializationWorkerThreads WorkerThreads;
+  private DeserializationWorkerThreads? _workerThreads;
 
   public CancellationToken CancellationToken { get; set; }
 
@@ -37,31 +36,31 @@ public class BaseObjectDeserializerV2
   /// </summary>
   public ITransport ReadTransport { get; set; }
 
-  public Action<string, int> OnProgressAction { get; set; }
+  public Action<string, int>? OnProgressAction { get; set; }
 
-  public Action<string, Exception> OnErrorAction { get; set; }
+  public Action<string, Exception>? OnErrorAction { get; set; }
 
-  public string BlobStorageFolder { get; set; }
+  public string? BlobStorageFolder { get; set; }
   public TimeSpan Elapsed { get; private set; }
 
   /// <param name="rootObjectJson">The JSON string of the object to be deserialized <see cref="Base"/></param>
   /// <returns>A <see cref="Base"/> typed object deserialized from the <paramref name="rootObjectJson"/></returns>
-  /// <exception cref="InvalidOperationException">Thrown when <see cref="Busy"/></exception>
+  /// <exception cref="InvalidOperationException">Thrown when <see cref="_busy"/></exception>
   /// <exception cref="ArgumentException">Thrown when <paramref name="rootObjectJson"/> deserializes to a type other than <see cref="Base"/></exception>
   public Base Deserialize(string rootObjectJson)
   {
-    if (Busy)
+    if (_busy)
       throw new InvalidOperationException(
         "A deserializer instance can deserialize only 1 object at a time. Consider creating multiple deserializer instances"
       );
 
     try
     {
-      Busy = true;
+      _busy = true;
       var stopwatch = Stopwatch.StartNew();
-      DeserializedObjects = new Dictionary<string, object>();
-      WorkerThreads = new DeserializationWorkerThreads(this);
-      WorkerThreads.Start();
+      _deserializedObjects = new();
+      _workerThreads = new DeserializationWorkerThreads(this);
+      _workerThreads.Start();
 
       List<(string, int)> closures = GetClosures(rootObjectJson);
       closures.Sort((a, b) => b.Item2.CompareTo(a.Item2));
@@ -72,9 +71,9 @@ public class BaseObjectDeserializerV2
         stopwatch.Stop();
         string objJson = ReadTransport.GetObject(objId);
         stopwatch.Start();
-        object deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
-        lock (DeserializedObjects)
-          DeserializedObjects[objId] = deserializedOrPromise;
+        object? deserializedOrPromise = DeserializeTransportObjectProxy(objJson);
+        lock (_deserializedObjects)
+          _deserializedObjects[objId] = deserializedOrPromise;
       }
 
       object ret = DeserializeTransportObject(rootObjectJson);
@@ -90,10 +89,10 @@ public class BaseObjectDeserializerV2
     }
     finally
     {
-      DeserializedObjects = null;
-      WorkerThreads.Dispose();
-      WorkerThreads = null;
-      Busy = false;
+      _deserializedObjects = null;
+      _workerThreads.Dispose();
+      _workerThreads = null;
+      _busy = false;
     }
   }
 
@@ -120,18 +119,18 @@ public class BaseObjectDeserializerV2
     }
   }
 
-  private object DeserializeTransportObjectProxy(string objectJson)
+  private object? DeserializeTransportObjectProxy(string objectJson)
   {
     // Try background work
-    Task<object> bgResult = WorkerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson); //BUG: Because we don't guarantee this task will ever be awaited, this may lead to unobserved exceptions!
+    Task<object?> bgResult = _workerThreads.TryStartTask(WorkerThreadTaskType.Deserialize, objectJson); //BUG: Because we don't guarantee this task will ever be awaited, this may lead to unobserved exceptions!
     if (bgResult != null)
       return bgResult;
 
-    // Sync
+    // SyncS
     return DeserializeTransportObject(objectJson);
   }
 
-  public object DeserializeTransportObject(string objectJson)
+  public object? DeserializeTransportObject(string objectJson)
   {
     if (objectJson is null)
       throw new ArgumentNullException(nameof(objectJson), $"Cannot deserialize {nameof(objectJson)}, value was null");
@@ -145,14 +144,15 @@ public class BaseObjectDeserializerV2
       reader.DateParseHandling = DateParseHandling.None;
       doc1 = JObject.Load(reader);
     }
-
-    object converted = ConvertJsonElement(doc1);
-    lock (CallbackLock)
+    
+    object? converted = ConvertJsonElement(doc1);
+    
+    lock (_callbackLock)
       OnProgressAction?.Invoke("DS", 1);
     return converted;
   }
 
-  public object ConvertJsonElement(JToken doc)
+  public object? ConvertJsonElement(JToken doc)
   {
     CancellationToken.ThrowIfCancellationRequested();
 
@@ -190,25 +190,25 @@ public class BaseObjectDeserializerV2
         return (DateTime)doc;
       case JTokenType.Array:
         JArray docAsArray = (JArray)doc;
-        List<object> jsonList = new(docAsArray.Count);
+        List<object?> jsonList = new(docAsArray.Count);
         int retListCount = 0;
         foreach (JToken value in docAsArray)
         {
           object convertedValue = ConvertJsonElement(value);
-          retListCount += convertedValue is DataChunk ? ((DataChunk)convertedValue).data.Count : 1;
+          retListCount += convertedValue is DataChunk chunk ? chunk.data.Count : 1;
           jsonList.Add(convertedValue);
         }
 
-        List<object> retList = new(retListCount);
+        List<object?> retList = new(retListCount);
         foreach (object jsonObj in jsonList)
-          if (jsonObj is DataChunk)
-            retList.AddRange(((DataChunk)jsonObj).data);
+          if (jsonObj is DataChunk chunk)
+            retList.AddRange(chunk.data);
           else
             retList.Add(jsonObj);
 
         return retList;
       case JTokenType.Object:
-        Dictionary<string, object> dict = new();
+        Dictionary<string, object?> dict = new();
 
         foreach (JToken propJToken in doc)
         {
@@ -223,10 +223,10 @@ public class BaseObjectDeserializerV2
 
         if (dict[TypeDiscriminator] as string == "reference" && dict.ContainsKey("referencedId"))
         {
-          string objId = (string)dict["referencedId"];
+          var objId = (string)dict["referencedId"]!;
           object deserialized = null;
-          lock (DeserializedObjects)
-            if (DeserializedObjects.TryGetValue(objId, out object o))
+          lock (_deserializedObjects)
+            if (_deserializedObjects.TryGetValue(objId, out object? o))
               deserialized = o;
           if (deserialized is Task<object> task)
           {
@@ -238,8 +238,8 @@ public class BaseObjectDeserializerV2
             {
               throw new Exception("Failed to deserialize reference object", ex);
             }
-            lock (DeserializedObjects)
-              DeserializedObjects[objId] = deserialized;
+            lock (_deserializedObjects)
+              _deserializedObjects[objId] = deserialized;
           }
 
           if (deserialized != null)
@@ -247,9 +247,11 @@ public class BaseObjectDeserializerV2
 
           // This reference was not already deserialized. Do it now in sync mode
           string objectJson = ReadTransport.GetObject(objId);
+          if(objectJson is null) throw new Exception($"Failed to fetch object id {objId} from {ReadTransport} ");
           deserialized = DeserializeTransportObject(objectJson);
-          lock (DeserializedObjects)
-            DeserializedObjects[objId] = deserialized;
+          
+          lock (_deserializedObjects)
+            _deserializedObjects[objId] = deserialized;
           return deserialized;
         }
 
@@ -259,11 +261,11 @@ public class BaseObjectDeserializerV2
     }
   }
 
-  private Base Dict2Base(Dictionary<string, object> dictObj)
+  private Base Dict2Base(Dictionary<string, object?> dictObj)
   {
-    string typeName = dictObj[TypeDiscriminator] as string;
+    string typeName = (string)dictObj[TypeDiscriminator]!;
     Type type = SerializationUtilities.GetType(typeName);
-    Base baseObj = Activator.CreateInstance(type) as Base;
+    Base baseObj = (Base)Activator.CreateInstance(type);
 
     dictObj.Remove(TypeDiscriminator);
     dictObj.Remove("__closure");
@@ -271,10 +273,10 @@ public class BaseObjectDeserializerV2
     Dictionary<string, PropertyInfo> staticProperties = SerializationUtilities.GetTypePropeties(typeName);
     List<MethodInfo> onDeserializedCallbacks = SerializationUtilities.GetOnDeserializedCallbacks(typeName);
 
-    foreach (KeyValuePair<string, object> entry in dictObj)
+    foreach (var entry in dictObj)
     {
       string lowerPropertyName = entry.Key.ToLower();
-      if (staticProperties.ContainsKey(lowerPropertyName) && staticProperties[lowerPropertyName].CanWrite)
+      if (staticProperties.TryGetValue(lowerPropertyName, out PropertyInfo value) && value.CanWrite)
       {
         PropertyInfo property = staticProperties[lowerPropertyName];
         if (entry.Value == null)
@@ -286,14 +288,13 @@ public class BaseObjectDeserializerV2
         }
 
         Type targetValueType = property.PropertyType;
-        object convertedValue;
-        bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out convertedValue);
+        bool conversionOk = ValueConverter.ConvertValue(targetValueType, entry.Value, out object convertedValue);
         if (conversionOk)
           property.SetValue(baseObj, convertedValue);
         else
           // Cannot convert the value in the json to the static property type
           throw new Exception(
-            string.Format("Cannot deserialize {0} to {1}", entry.Value.GetType().FullName, targetValueType.FullName)
+            $"Cannot deserialize {entry.Value.GetType().FullName} to {targetValueType.FullName}"
           );
       }
       else
@@ -303,11 +304,11 @@ public class BaseObjectDeserializerV2
       }
     }
 
-    if (baseObj is Blob b && BlobStorageFolder != null)
-      b.filePath = b.getLocalDestinationPath(BlobStorageFolder);
+    if (baseObj is Blob bb && BlobStorageFolder != null)
+      bb.filePath = bb.getLocalDestinationPath(BlobStorageFolder);
 
     foreach (MethodInfo onDeserialized in onDeserializedCallbacks)
-      onDeserialized.Invoke(baseObj, new object[] { null });
+      onDeserialized.Invoke(baseObj, new object?[] { null });
 
     return baseObj;
   }

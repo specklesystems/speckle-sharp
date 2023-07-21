@@ -327,7 +327,7 @@ namespace Objects.Converter.AutocadCivil
         {
           _modelUnits = UnitToSpeckle(Doc.Database.Insunits);
 
-#if CIVIL2021 || CIVIL2022 || CIVIL2023
+#if CIVIL2021 || CIVIL2022 || CIVIL2023 || CIVIL2024
           if (_modelUnits == Units.None)
           {
             // try to get the drawing unit instead

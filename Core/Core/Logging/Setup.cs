@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using Speckle.Core.Credentials;
 using Speckle.Core.Kits;
@@ -13,8 +14,9 @@ public static class Setup
 {
   public static Mutex mutex;
 
-  private static bool initialized;
+  private static bool _initialized;
 
+  [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
   static Setup()
   {
     //Set fallback values
@@ -40,7 +42,7 @@ public static class Setup
 
   public static void Init(string versionedHostApplication, string hostApplication)
   {
-    if (initialized)
+    if (_initialized)
     {
       SpeckleLog.Logger
         .ForContext("newVersionedHostApplication", versionedHostApplication)
@@ -53,7 +55,7 @@ public static class Setup
       return;
     }
 
-    initialized = true;
+    _initialized = true;
 
     HostApplication = hostApplication;
     VersionedHostApplication = versionedHostApplication;

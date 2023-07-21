@@ -14,6 +14,7 @@ using Avalonia.Media;
 using Avalonia.Metadata;
 using Avalonia.Threading;
 using DesktopUI2.Models;
+using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.Views;
 using DesktopUI2.Views.Windows.Dialogs;
 using Material.Dialog.Icons;

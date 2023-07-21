@@ -4,6 +4,11 @@ using Speckle.Core.Models;
 
 namespace Objects.Organization;
 
+#region Removed Classes (2.15)
+/*
+// The Model class was only being used by the Revit conenctor as the base commit object
+// With the new Collection class implementation, this class should be removed
+// The only property in use `ModelInfo` will be dynamically attached to the `Collection` base commit object
 /// <summary>
 /// Represents a model from an authoring application and can be used as the root commit object when sending.
 /// It contains <see cref="ModelInfo"/> and <see cref="Setting"/> objects
@@ -27,6 +32,24 @@ public class Model : Collection
   [System.Obsolete("These are not being used")]
   public List<Setting>? settings { get; set; }
 }
+
+// This class had 0 references
+public class Setting : Base
+{
+  /// <summary>
+  /// The name of the setting
+  /// </summary>
+  public string name { get; set; }
+
+  /// <summary>
+  /// The objects selected in the setting
+  /// </summary>
+  public List<Base> selection { get; set; }
+}
+
+*/
+
+#endregion
 
 /// <summary>
 /// Basic model info class to be attached to the <see cref="Model.info"/> field on a <see cref="Model"/> object.
@@ -94,17 +117,4 @@ public class BIMModelInfo : ModelInfo
   /// A list of origin locations within this model as a list of <see cref="Transform"/>s
   /// </summary>
   public List<Base> locations { get; set; }
-}
-
-public class Setting : Base
-{
-  /// <summary>
-  /// The name of the setting
-  /// </summary>
-  public string name { get; set; }
-
-  /// <summary>
-  /// The objects selected in the setting
-  /// </summary>
-  public List<Base> selection { get; set; }
 }
