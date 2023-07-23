@@ -106,7 +106,7 @@ namespace DUI3
 
         for (int i = 0; i < typedArgs.Length; i++)
         {
-          var typedObj = JsonSerializer.Deserialize(jsonArgsArray[i], parameters[i].ParameterType);
+          var typedObj = JsonSerializer.Deserialize(jsonArgsArray[i], parameters[i].ParameterType, serializerOptions);
           typedArgs[i] = typedObj;
         }
         var resultTyped = method.Invoke(Binding, typedArgs);
