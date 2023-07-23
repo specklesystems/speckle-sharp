@@ -169,6 +169,19 @@ namespace DUI3
     {
       ShowDevToolsAction();
     }
+
+    public void OpenUrl(string url)
+    {
+      try
+      {
+        System.Diagnostics.Process.Start(url);
+      }
+      catch (Exception e)
+      {
+        // TODO: Log. If it ever happens.
+      }
+      
+    }
   }
 
 }
