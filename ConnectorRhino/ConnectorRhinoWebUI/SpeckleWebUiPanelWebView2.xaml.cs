@@ -31,16 +31,25 @@ namespace ConnectorRhinoWebUI
 
       var showDevToolsMethod = () => Browser.CoreWebView2.OpenDevToolsWindow();
 
-      // Test bindings 1
+      // Base bindings
       var baseBindings = new BasicConnectorBindingRhino();
       var baseBindingsBridge = new DUI3.BrowserBridge(Browser, baseBindings, executeScriptAsyncMethod, showDevToolsMethod);
+      Browser.CoreWebView2.AddHostObjectToScript(baseBindingsBridge.FrontendBoundName, baseBindingsBridge);
 
-      // Test bindings 2
+      // Test bindings
       var testBinding = new TestBinding();
       var testBindingBridge = new DUI3.BrowserBridge(Browser, testBinding, executeScriptAsyncMethod, showDevToolsMethod);
-
-      Browser.CoreWebView2.AddHostObjectToScript(baseBindingsBridge.FrontendBoundName, baseBindingsBridge);
       Browser.CoreWebView2.AddHostObjectToScript(testBindingBridge.FrontendBoundName, testBindingBridge);
+      
+      // Config bindings
+      var configBindings = new ConfigBinding();
+      var configBindingsBridge = new BrowserBridge(
+        Browser,
+        configBindings,
+        executeScriptAsyncMethod,
+        showDevToolsMethod);
+      Browser.CoreWebView2.AddHostObjectToScript(configBindingsBridge.FrontendBoundName, configBindingsBridge);
+      
     }
   }
 }

@@ -44,6 +44,18 @@ namespace ConnectorRhinoWebUI.Bindings
         Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString()
       };
     }
+
+    public void Receive()
+    {
+      // 
+    }
+
+    public void Send()
+    {
+      // 
+    }
+    
+    // sent object change management 
   }
 }
 

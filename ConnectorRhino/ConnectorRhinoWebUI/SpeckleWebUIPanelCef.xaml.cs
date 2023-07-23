@@ -51,6 +51,15 @@ namespace ConnectorRhinoWebUI
       Browser.JavascriptObjectRepository.NameConverter = null;
       Browser.JavascriptObjectRepository.Register(baseBindingsBridge.FrontendBoundName, baseBindingsBridge, true);
       Browser.JavascriptObjectRepository.Register(testBindingBridge.FrontendBoundName, testBindingBridge, true);
+      
+      // Config bindings
+      var configBindings = new ConfigBinding();
+      var configBindingsBridge = new BrowserBridge(
+        Browser,
+        configBindings,
+        executeScriptAsyncMethod,
+        showDevToolsMethod);
+      Browser.JavascriptObjectRepository.Register(configBindingsBridge.FrontendBoundName, configBindingsBridge, true);
     }
   }
 }
