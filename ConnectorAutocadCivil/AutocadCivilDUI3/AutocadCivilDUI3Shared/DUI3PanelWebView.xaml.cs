@@ -34,6 +34,16 @@ public partial class DUI3PanelWebView : UserControl
 
     Browser.CoreWebView2.AddHostObjectToScript(baseBindingsBridge.FrontendBoundName, baseBindingsBridge);
     Browser.CoreWebView2.AddHostObjectToScript(testBindingBridge.FrontendBoundName, testBindingBridge);
+    
+    // Config bindings
+    var configBindings = new ConfigBinding();
+    var configBindingsBridge = new BrowserBridge(
+      Browser,
+      configBindings,
+      executeScriptAsyncMethod,
+      showDevToolsMethod);
+    Browser.CoreWebView2.AddHostObjectToScript(configBindingsBridge.FrontendBoundName, configBindingsBridge);
+
   }
 }
 
