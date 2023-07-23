@@ -12,7 +12,7 @@
     <cefSharp:ChromiumWebBrowser
       Name="Browser"
       Grid.Row="0"
-      Address="http://localhost:8082/" />
+      Address="http://localhost:3003/" />
   </Grid>
 </Page>
 

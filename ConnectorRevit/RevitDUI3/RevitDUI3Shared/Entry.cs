@@ -7,6 +7,8 @@ using Autodesk.Revit.DB.Events;
 using Autodesk.Revit.UI;
 using CefSharp;
 using DUI3;
+using DUI3.Bindings;
+using Sentry.Protocol;
 using Speckle.ConnectorRevitDUI3.Bindings;
 
 namespace Speckle.ConnectorRevitDUI3;
@@ -86,17 +88,25 @@ public class App : IExternalApplication
     
     var baseBinding = new BasicConnectorBindingRevit(application);
     var baseBindingBridge = new BrowserBridge(browser, baseBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
+
+    var configBinding = new ConfigBinding();
+    var configBindingBridge = new BrowserBridge(browser, configBinding, ExecuteScriptAsyncMethod, ShowDevToolsMethod);
     
     browser.IsBrowserInitializedChanged += (sender, e) =>
     {
       browser.JavascriptObjectRepository.Register(testBindingBridge.FrontendBoundName, testBindingBridge, true, bindingOptions);
-      browser.JavascriptObjectRepository.Register(baseBindingBridge.FrontendBoundName,baseBindingBridge, true, bindingOptions);
+      browser.JavascriptObjectRepository.Register(baseBindingBridge.FrontendBoundName, baseBindingBridge, true, bindingOptions);
+      browser.JavascriptObjectRepository.Register(configBindingBridge.FrontendBoundName, configBindingBridge, true, bindingOptions);
       
 #if  REVIT2020
       // NOTE: Cef65 does not work with DUI3 in yarn dev. To test things you need to do `yarn build` and serve the build
       // folder at port 3000 (or change it to something else if you want to).
       // Guru  meditation: Je sais, pas ideal. Mais q'est que nous pouvons faire? Rien. C'est l'autodesk vie.
-      browser.Load("http://localhost:3000");
+      // NOTE: To run the ui from a build, follow these steps: 
+      // - run `yarn build` in the DUI3 folder
+      // - run ` PORT=3003  node .output/server/index.mjs` after the build
+      browser.Load("http://localhost:3003");
+      ShowDevToolsMethod();
 #endif
 #if REVIT2023
       browser.Load("http://localhost:8082");

@@ -20,7 +20,7 @@ public class BasicConnectorBindingRevit : IBasicConnectorBinding
     RevitApp.ViewActivated += (sender, e) =>
     {
       if (e.Document == null) return;
-      if (e.PreviousActiveView.Document.PathName == e.CurrentActiveView.Document.PathName) return;
+      if (e.PreviousActiveView?.Document.PathName == e.CurrentActiveView.Document.PathName) return;
       Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
   }
