@@ -248,19 +248,19 @@ namespace Objects.Converter.Revit
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = CableTrayToSpeckle(o);
           break;
         case DB.Electrical.Conduit o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = ConduitToSpeckle(o);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
