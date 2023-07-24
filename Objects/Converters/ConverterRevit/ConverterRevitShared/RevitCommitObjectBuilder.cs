@@ -65,18 +65,23 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     {
       // Special case for ElementTyped objects, add them to "Types"
       case ElementType:
-        {
-          var category = GetCategoryId(conversionResult, nativeElement);
-          SetRelationship(conversionResult, (Types, category));
-          return;
-        }
+        var category = GetCategoryId(conversionResult, nativeElement);
+        SetRelationship(
+          conversionResult,
+          new NestingInstructions(Types, (p, c) => NestUnderProperty(p, c, category))
+        );
+        return;
+
       // Special cases for non-geometry, we want to nest under the root object, not in a collection
       case View:
       case Level:
       case ProjectInfo:
       case Autodesk.Revit.DB.Material:
         var propName = GetCategoryId(conversionResult, nativeElement);
-        SetRelationship(conversionResult, (Root, propName));
+        SetRelationship(
+          conversionResult,
+          new NestingInstructions(Root, (p, c) => NestUnderProperty(p, c, propName))
+        );
         return;
     }
 
@@ -105,31 +110,27 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     }
 
     var nestingInstructions = new List<NestingInstructions>();
+    AddNestingInstructionsForMEPElement(nativeElement, nestingInstructions);
+    AddNestingInstructionsForHosted(conversionResult, nativeElement, nestingInstructions);
+    AddNestingInstructionsForCollection(collectionId, collectionName, collectionType, nestingInstructions);
 
-    var mepSystemName = GetMEPSystemName(nativeElement);
-    if (mepSystemName != null)
+    SetRelationship(conversionResult, nestingInstructions);
+  }
+
+  private void AddNestingInstructionsForCollection(string collectionId, string collectionName, string collectionType, List<NestingInstructions> nestingInstructions)
+  {
+    // Create collection if not already
+    if (!_collections.ContainsKey(collectionId) && collectionId != Root)
     {
-      // Create overall network collection
-      if (!_collections.ContainsKey(MEPNetworks))
-      {
-        Collection collection = new(MEPNetworks, MEPNetworks) { applicationId = MEPNetworks };
-        _collections.Add(MEPNetworks, collection);
-      }
-
-      // Create specific network collection
-      if (!converted.ContainsKey(mepSystemName))
-      {
-        var network = new Graph(mepSystemName) { applicationId = mepSystemName };
-        //_collections.Add(mepSystemName, collection);
-        SetRelationship(
-          network, 
-          new List<NestingInstructions> { new NestingInstructions(MEPNetworks, NestUnderElementsProp)}
-        );
-      }
-
-      nestingInstructions.Add(new NestingInstructions(mepSystemName, NestUnderMEPSystem));
+      Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
+      _collections.Add(collectionId, collection);
     }
 
+    nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProperty));
+  }
+
+  private static void AddNestingInstructionsForHosted(Base conversionResult, Element nativeElement, List<NestingInstructions> nestingInstructions)
+  {
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
     Element? host = GetHost(nativeElement);
 
@@ -139,22 +140,33 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       host = null;
     }
 
-    if (host != null)
+    nestingInstructions.Add(new NestingInstructions(host?.UniqueId, NestUnderElementsProperty));
+  }
+
+  private void AddNestingInstructionsForMEPElement(Element nativeElement, List<NestingInstructions> instructions)
+  {
+    var mepSystemName = GetMEPSystemName(nativeElement);
+
+    if (mepSystemName == null) return;
+
+    // Create overall network collection if it doesn't exist
+    if (!_collections.ContainsKey(MEPNetworks))
     {
-      nestingInstructions.Add(new NestingInstructions(host.UniqueId, NestUnderElementsProp));
+      Collection collection = new(MEPNetworks, MEPNetworks) { applicationId = MEPNetworks };
+      _collections.Add(MEPNetworks, collection);
     }
 
-    // Create collection if not already
-    if (!_collections.ContainsKey(collectionId) && collectionId != Root)
+    // Create specific network object and add it to the commitBuilder if it doesn't exist
+    if (!converted.ContainsKey(mepSystemName))
     {
-      Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
-      _collections.Add(collectionId, collection);
+      var network = new Graph(mepSystemName) { applicationId = mepSystemName };
+      SetRelationship(
+        network,
+        new List<NestingInstructions> { new NestingInstructions(MEPNetworks, NestUnderElementsProperty) }
+      );
     }
 
-    nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProp));
-
-    SetRelationship(conversionResult, nestingInstructions);
-    //SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
+    instructions.Add(new NestingInstructions(mepSystemName, NestUnderMEPSystem));
   }
 
   public void IncludeObjectWithoutNative(Base conversionResult, string collectionId, string collectionName)
@@ -183,10 +195,9 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       _collections.Add(collectionId, collection);
     }
 
-    nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProp));
+    nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProperty));
 
     SetRelationship(conversionResult, nestingInstructions);
-    //SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
   }
 
   private static string GetMEPSystemName(Element element)

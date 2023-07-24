@@ -1,4 +1,4 @@
-﻿#nullable enable
+#nullable enable
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -25,16 +25,13 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// <summary>app id -> base</summary>
   protected readonly IDictionary<string, Base> converted;
 
-  /// <summary>Base -> Tuple{Parent App Id, propName} ordered by priority</summary>
-  private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> _parentInfos;
-  private readonly IDictionary<Base, IList<NestingInstructions>> _nestingInstructions;
+  /// <summary>Base -> NestingInstructions ordered by priority</summary>
+  private readonly Dictionary<Base, IList<NestingInstructions>> _nestingInstructions = new();
   private const string Elements = nameof(Collection.elements);
 
   protected CommitObjectBuilder()
   {
     converted = new Dictionary<string, Base>();
-    _parentInfos = new Dictionary<Base, IList<(string?, string)>>();
-    _nestingInstructions = new Dictionary<Base, IList<NestingInstructions>>();
   }
 
   /// <summary>
@@ -58,38 +55,11 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     ApplyRelationships(converted.Values, rootCommitObject);
   }
 
-  /// <summary>
-  /// Sets information on how a given object should be nested in the commit tree.
-  /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
-  /// when <see cref="CommitObjectBuilder"/> is called
-  /// </summary>
-  /// <param name="conversionResult">The object to be nested</param>
-  /// <param name="parentInfo">Information about how the object ideally should be nested, in order of priority</param>
-  protected void SetRelationship(Base conversionResult, params (string? parentAppId, string propName)[] parentInfo)
+  protected void SetRelationship(Base conversionResult, NestingInstructions nestingInstructions)
   {
-    string appId = conversionResult.applicationId;
-    if (appId != null)
-    {
-      if (!converted.ContainsKey(appId))
-      {
-        converted[appId] = conversionResult;
-      }
-      else
-      {
-        converted.Add(appId, conversionResult);
-      }
-    }
-
-    if (!_parentInfos.ContainsKey(conversionResult))
-    {
-      _parentInfos[conversionResult] = parentInfo;
-    }
-    else
-    {
-      _parentInfos.Add(conversionResult, parentInfo);
-    }
+    SetRelationship(conversionResult, new List<NestingInstructions> { nestingInstructions });
   }
-  
+
   /// <summary>
   /// Sets information on how a given object should be nested in the commit tree.
   /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
@@ -192,12 +162,16 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     );
   }
 
-  protected static void NestUnderElementsProp(Base parent, Base child)
+  protected static void NestUnderElementsProperty(Base parent, Base child)
   {
-    if (parent.GetDetachedProp(Elements) is not IList elements)
+    NestUnderProperty(parent, child, Elements);
+  }
+  protected static void NestUnderProperty(Base parent, Base child, string property)
+  {
+    if (parent.GetDetachedProp(property) is not IList elements)
     {
       elements = new List<Base>();
-      parent.SetDetachedProp(Elements, elements);
+      parent.SetDetachedProp(property, elements);
     }
 
     elements.Add(child);

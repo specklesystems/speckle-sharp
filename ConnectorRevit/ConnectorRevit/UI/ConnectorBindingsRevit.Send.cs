@@ -65,13 +65,13 @@ namespace Speckle.ConnectorRevit.UI
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Collection();
       IRevitCommitObjectBuilder commitObjectBuilder;
 
-      if (converter is IRevitCommitObjectBuilderExposer builderExposer)
+      if (converter is not IRevitCommitObjectBuilderExposer builderExposer)
       {
-        commitObjectBuilder = builderExposer.commitObjectBuilder;
+        throw new Exception($"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object.");
       }
       else
       {
-        commitObjectBuilder = new RevitCommitObjectBuilder(CommitCollectionStrategy.ByCollection);
+        commitObjectBuilder = builderExposer.commitObjectBuilder;
       }
 
       progress.Report = new ProgressReport();
