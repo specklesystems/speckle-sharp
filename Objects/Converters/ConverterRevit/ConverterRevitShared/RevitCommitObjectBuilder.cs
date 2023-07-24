@@ -27,7 +27,6 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
   private readonly CommitCollectionStrategy _commitCollectionStrategy;
 
   private readonly IDictionary<string, Collection> _collections = new Dictionary<string, Collection>();
-  private readonly Dictionary<string, Graph> _networks = new();
 
   public RevitCommitObjectBuilder(CommitCollectionStrategy commitCollectionStrategy)
   {
@@ -167,37 +166,6 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     }
 
     instructions.Add(new NestingInstructions(mepSystemName, NestUnderMEPSystem));
-  }
-
-  public void IncludeObjectWithoutNative(Base conversionResult, string collectionId, string collectionName)
-  {
-    // Define which collection this element should be nested under
-    string collectionType;
-
-    switch (_commitCollectionStrategy)
-    {
-      case CommitCollectionStrategy.ByLevel:
-        collectionType = "Revit Level";
-        break;
-      case CommitCollectionStrategy.ByCollection:
-        collectionType = "Revit Category";
-        break;
-      default:
-        throw new InvalidOperationException($"No case for {_commitCollectionStrategy}");
-    }
-
-    var nestingInstructions = new List<NestingInstructions>();
-
-    // Create collection if not already
-    if (!_collections.ContainsKey(collectionId) && collectionId != Root)
-    {
-      Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
-      _collections.Add(collectionId, collection);
-    }
-
-    nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProperty));
-
-    SetRelationship(conversionResult, nestingInstructions);
   }
 
   private static string GetMEPSystemName(Element element)
