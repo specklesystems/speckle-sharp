@@ -4,9 +4,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Speckle.Core.Models;
 using Autodesk.Revit.DB;
+using System.Text.RegularExpressions;
+using Autodesk.Revit.DB.Plumbing;
+using Objects.Converter.Revit;
+using Autodesk.Revit.DB.Mechanical;
+using Objects.Organization;
 using RevitSharedResources.Interfaces;
 
-namespace Speckle.ConnectorRevit;
+namespace ConverterRevitShared;
 
 public enum CommitCollectionStrategy
 {
@@ -17,11 +22,12 @@ public enum CommitCollectionStrategy
 public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRevitCommitObjectBuilder
 {
   private const string Types = "Types";
-  private const string Elements = nameof(Collection.elements);
+  private const string MEPNetworks = "MEPNetworks";
 
   private readonly CommitCollectionStrategy _commitCollectionStrategy;
 
   private readonly IDictionary<string, Collection> _collections = new Dictionary<string, Collection>();
+  private readonly Dictionary<string, Graph> _networks = new();
 
   public RevitCommitObjectBuilder(CommitCollectionStrategy commitCollectionStrategy)
   {
@@ -59,11 +65,11 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     {
       // Special case for ElementTyped objects, add them to "Types"
       case ElementType:
-      {
-        var category = GetCategoryId(conversionResult, nativeElement);
-        SetRelationship(conversionResult, (Types, category));
-        return;
-      }
+        {
+          var category = GetCategoryId(conversionResult, nativeElement);
+          SetRelationship(conversionResult, (Types, category));
+          return;
+        }
       // Special cases for non-geometry, we want to nest under the root object, not in a collection
       case View:
       case Level:
@@ -82,13 +88,13 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     switch (_commitCollectionStrategy)
     {
       case CommitCollectionStrategy.ByLevel:
-      {
-        Level? level = GetLevel(nativeElement);
-        collectionId = level?.UniqueId ?? Root;
-        collectionName = level?.Name;
-        collectionType = "Revit Level";
-        break;
-      }
+        {
+          Level? level = GetLevel(nativeElement);
+          collectionId = level?.UniqueId ?? Root;
+          collectionName = level?.Name;
+          collectionType = "Revit Level";
+          break;
+        }
       case CommitCollectionStrategy.ByCollection:
         collectionId = GetCategoryId(conversionResult, nativeElement);
         collectionName = collectionId;
@@ -96,6 +102,32 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
         break;
       default:
         throw new InvalidOperationException($"No case for {_commitCollectionStrategy}");
+    }
+
+    var nestingInstructions = new List<NestingInstructions>();
+
+    var mepSystemName = GetMEPSystemName(nativeElement);
+    if (mepSystemName != null)
+    {
+      // Create overall network collection
+      if (!_collections.ContainsKey(MEPNetworks))
+      {
+        Collection collection = new(MEPNetworks, MEPNetworks) { applicationId = MEPNetworks };
+        _collections.Add(MEPNetworks, collection);
+      }
+
+      // Create specific network collection
+      if (!converted.ContainsKey(mepSystemName))
+      {
+        var network = new Graph(mepSystemName) { applicationId = mepSystemName };
+        //_collections.Add(mepSystemName, collection);
+        SetRelationship(
+          network, 
+          new List<NestingInstructions> { new NestingInstructions(MEPNetworks, NestUnderElementsProp)}
+        );
+      }
+
+      nestingInstructions.Add(new NestingInstructions(mepSystemName, NestUnderMEPSystem));
     }
 
     // In order of priority, we want to try and nest under the host (if it exists, and was converted) otherwise, fallback to category.
@@ -107,6 +139,11 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       host = null;
     }
 
+    if (host != null)
+    {
+      nestingInstructions.Add(new NestingInstructions(host.UniqueId, NestUnderElementsProp));
+    }
+
     // Create collection if not already
     if (!_collections.ContainsKey(collectionId) && collectionId != Root)
     {
@@ -114,7 +151,62 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       _collections.Add(collectionId, collection);
     }
 
-    SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
+    nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProp));
+
+    SetRelationship(conversionResult, nestingInstructions);
+    //SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
+  }
+
+  public void IncludeObjectWithoutNative(Base conversionResult, string collectionId, string collectionName)
+  {
+    // Define which collection this element should be nested under
+    string collectionType;
+
+    switch (_commitCollectionStrategy)
+    {
+      case CommitCollectionStrategy.ByLevel:
+        collectionType = "Revit Level";
+        break;
+      case CommitCollectionStrategy.ByCollection:
+        collectionType = "Revit Category";
+        break;
+      default:
+        throw new InvalidOperationException($"No case for {_commitCollectionStrategy}");
+    }
+
+    var nestingInstructions = new List<NestingInstructions>();
+
+    // Create collection if not already
+    if (!_collections.ContainsKey(collectionId) && collectionId != Root)
+    {
+      Collection collection = new(collectionName, collectionType) { applicationId = collectionId };
+      _collections.Add(collectionId, collection);
+    }
+
+    nestingInstructions.Add(new NestingInstructions(collectionId, NestUnderElementsProp));
+
+    SetRelationship(conversionResult, nestingInstructions);
+    //SetRelationship(conversionResult, (host?.UniqueId, Elements), (collectionId, Elements));
+  }
+
+  private static string GetMEPSystemName(Element element)
+  {
+    return element switch
+    {
+      Pipe p => p.MEPSystem?.Name ?? "",
+      Duct d => d.MEPSystem?.Name ?? "",
+      _ => ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM)
+    };
+  }
+
+  private void NestUnderMEPSystem(Base parent, Base child)
+  {
+    var network = (Graph)parent;
+    network.AddElement(child, appId =>
+    {
+      converted.TryGetValue(appId, out var convertedValue);
+      return convertedValue;
+    });
   }
 
   private static string GetCategoryId(Base conversionResult, Element revitElement)
@@ -123,7 +215,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     {
       "Network" => "Networks",
       "FreeformElement" => "FreeformElement",
-      _ => ConnectorRevitUtils.GetEnglishCategoryName(revitElement.Category)
+      _ => GetEnglishCategoryName(revitElement.Category)
     };
   }
 
@@ -154,5 +246,26 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
 
       _ => null
     };
+  }
+
+  /// <summary>
+  /// We want to display a user-friendly category names when grouping objects
+  /// For this we are simplifying the BuiltIn one as otherwise, by using the display value, we'd be getting localized category names
+  /// which would make querying etc more difficult
+  /// TODO: deprecate this in favour of model collections
+  /// </summary>
+  /// <param name="category"></param>
+  /// <returns></returns>
+  public static string GetEnglishCategoryName(Category category)
+  {
+    var builtInCategory = (BuiltInCategory)category.Id.IntegerValue;
+    var builtInCategoryName = builtInCategory
+      .ToString()
+      .Replace("OST_IOS", "") //for OST_IOSModelGroups
+      .Replace("OST_MEP", "") //for OST_MEPSpaces
+      .Replace("OST_", "") //for any other OST_blablabla
+      .Replace("_", " ");
+    builtInCategoryName = Regex.Replace(builtInCategoryName, "([a-z])([A-Z])", "$1 $2", RegexOptions.Compiled).Trim();
+    return builtInCategoryName;
   }
 }

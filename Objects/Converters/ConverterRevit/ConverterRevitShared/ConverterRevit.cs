@@ -191,10 +191,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject =
-            o.MEPModel?.ConnectorManager?.Connectors?.Size > 0
-              ? NetworkToSpeckle(o, out notes)
-              : FamilyInstanceToSpeckle(o, out notes);
+          returnObject = FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -242,10 +239,10 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o);
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);

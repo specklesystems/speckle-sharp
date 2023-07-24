@@ -73,6 +73,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFaceWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Units.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilderExposer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitElementTypeUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ConnectionPair.cs" />

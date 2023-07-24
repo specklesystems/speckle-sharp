@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Xml.Linq;
 using Speckle.Core.Logging;
 using Speckle.Core.Models.Extensions;
 
@@ -26,11 +27,14 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
 
   /// <summary>Base -> Tuple{Parent App Id, propName} ordered by priority</summary>
   private readonly IDictionary<Base, IList<(string? parentAppId, string propName)>> _parentInfos;
+  private readonly IDictionary<Base, IList<NestingInstructions>> _nestingInstructions;
+  private const string Elements = nameof(Collection.elements);
 
   protected CommitObjectBuilder()
   {
     converted = new Dictionary<string, Base>();
     _parentInfos = new Dictionary<Base, IList<(string?, string)>>();
+    _nestingInstructions = new Dictionary<Base, IList<NestingInstructions>>();
   }
 
   /// <summary>
@@ -85,6 +89,38 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       _parentInfos.Add(conversionResult, parentInfo);
     }
   }
+  
+  /// <summary>
+  /// Sets information on how a given object should be nested in the commit tree.
+  /// <paramref name="parentInfo"/> encodes the order in which we should try and nest the given <paramref name="conversionResult"/>
+  /// when <see cref="CommitObjectBuilder"/> is called
+  /// </summary>
+  /// <param name="conversionResult">The object to be nested</param>
+  /// <param name="parentInfo">Information about how the object ideally should be nested, in order of priority</param>
+  protected void SetRelationship(Base conversionResult, IList<NestingInstructions> nestingInstructionsList)
+  {
+    string appId = conversionResult.applicationId;
+    if (appId != null)
+    {
+      if (!converted.ContainsKey(appId))
+      {
+        converted[appId] = conversionResult;
+      }
+      else
+      {
+        converted.Add(appId, conversionResult);
+      }
+    }
+
+    if (!_nestingInstructions.ContainsKey(conversionResult))
+    {
+      _nestingInstructions[conversionResult] = nestingInstructionsList;
+    }
+    else
+    {
+      _nestingInstructions.Add(conversionResult, nestingInstructionsList);
+    }
+  }
 
   /// <summary>
   /// For each object in <paramref name="ToAdd"/>
@@ -124,30 +160,24 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   /// <exception cref="InvalidOperationException">Thrown when no valid parent was found for <see cref="current"/> given <see cref="_parentInfos"/></exception>
   protected void ApplyRelationship(Base current, Base rootCommitObject)
   {
-    var parents = _parentInfos[current];
-    foreach ((string? parentAppId, string propName) in parents)
+    var instructions = _nestingInstructions[current];
+    foreach (var instruction in instructions)
     {
-      if (parentAppId is null)
+      if (instruction.ParentApplicationId is null)
         continue;
 
       Base? parent;
-      if (parentAppId == Root)
+      if (instruction.ParentApplicationId == Root)
         parent = rootCommitObject;
       else
-        converted.TryGetValue(parentAppId, out parent);
+        converted.TryGetValue(instruction.ParentApplicationId, out parent);
 
       if (parent is null)
         continue;
 
       try
       {
-        if (parent.GetDetachedProp(propName) is not IList elements)
-        {
-          elements = new List<Base>();
-          parent.SetDetachedProp(propName, elements);
-        }
-
-        elements.Add(current);
+        instruction.Nest(parent, current);
         return;
       }
       catch (Exception ex)
@@ -158,7 +188,31 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     }
 
     throw new InvalidOperationException(
-      $"Could not find a valid parent for object of type {current?.GetType()}. Checked {parents.Count} potential parent, and non were converted!"
+      $"Could not find a valid parent for object of type {current?.GetType()}. Checked {instructions.Count} potential parent, and non were converted!"
     );
   }
+
+  protected static void NestUnderElementsProp(Base parent, Base child)
+  {
+    if (parent.GetDetachedProp(Elements) is not IList elements)
+    {
+      elements = new List<Base>();
+      parent.SetDetachedProp(Elements, elements);
+    }
+
+    elements.Add(child);
+  }
+}
+
+public class NestingInstructions
+{
+  public delegate void NestAction(Base parent, Base child);
+  public NestingInstructions(string? parentApplicationId, NestAction nestAction)
+  {
+    ParentApplicationId = parentApplicationId;
+    Nest = nestAction;
+  }
+
+  public string? ParentApplicationId { get; }
+  public NestAction Nest { get; }
 }

@@ -4,6 +4,7 @@ using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
 using Objects.BuiltElements.Revit;
+using Objects.Organization;
 using Speckle.Core.Models;
 using DB = Autodesk.Revit.DB;
 using Line = Objects.Geometry.Line;
@@ -173,6 +174,12 @@ namespace Objects.Converter.Revit
 
         var typeElem = revitDuct.Document.GetElement(revitDuct.MEPSystem.GetTypeId());
         speckleDuct.systemName = typeElem.Name;
+      }
+
+      var numConnector = 0;
+      foreach (var connector in revitDuct.ConnectorManager.Connectors.Cast<Connector>())
+      {
+        speckleDuct[$"connector{++numConnector}"] = new ApplicationIdReference(connector.Owner.UniqueId);
       }
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,
