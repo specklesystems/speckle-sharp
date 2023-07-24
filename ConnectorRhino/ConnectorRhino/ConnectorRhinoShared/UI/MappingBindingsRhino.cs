@@ -117,9 +117,9 @@ public class MappingBindingsRhino : MappingsBindings
               result.Add(new RevitDefaultPipeViewModel());
               result.Add(new RevitDefaultDuctViewModel());
             }
-            else if (c.IsPlanar())
+            else if (c.IsPlanar() && !c.IsPolyline())
             {
-              // If the curve is non-linear, but is planar, it can still be a beam.
+              // If the curve is non-linear, but is planar and is not a polyline, it can still be a beam.
               result.Add(new RevitDefaultBeamViewModel());
               result.Add(new RevitBeamViewModel());
             }

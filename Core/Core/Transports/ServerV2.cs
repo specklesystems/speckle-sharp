@@ -41,9 +41,8 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
   {
     Account = account;
     Initialize(account.serverInfo.url, streamId, account.token, timeoutSeconds);
+    BlobStorageFolder = blobStorageFolder ?? SpecklePathProvider.BlobStoragePath();
 
-    if (blobStorageFolder == null) //BUG: blobStorageFolder is unused except for this null check, is this by design?
-      BlobStorageFolder = SpecklePathProvider.BlobStoragePath();
     Directory.CreateDirectory(BlobStorageFolder);
   }
 
@@ -76,11 +75,11 @@ public class ServerTransportV2 : IDisposable, ICloneable, ITransport, IBlobCapab
 
   public object Clone()
   {
-    return new ServerTransportV2(Account, StreamId)
+    return new ServerTransportV2(Account, StreamId, TimeoutSeconds, BlobStorageFolder)
     {
       OnErrorAction = OnErrorAction,
       OnProgressAction = OnProgressAction,
-      CancellationToken = CancellationToken
+      CancellationToken = CancellationToken,
     };
   }
 

@@ -8,6 +8,7 @@ using Autodesk.Revit.ApplicationServices;
 using Autodesk.Revit.UI;
 using Revit.Async;
 using Speckle.ConnectorRevit.UI;
+using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 
 namespace Speckle.ConnectorRevit.Entry
@@ -96,7 +97,7 @@ namespace Speckle.ConnectorRevit.Entry
     private void ControlledApplication_ApplicationInitialized(object sender, Autodesk.Revit.DB.Events.ApplicationInitializedEventArgs e)
     {
       try
-      {        
+      {
         // We need to hook into the AssemblyResolve event before doing anything else
         // or we'll run into unresolved issues loading dependencies
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
@@ -121,9 +122,17 @@ namespace Speckle.ConnectorRevit.Entry
       catch (Exception ex)
       {
         SpeckleLog.Logger.Fatal(ex, "Failed to load Speckle app");
-        var td = new TaskDialog("Could not load Speckle");
-        td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n{ex.Message}";
-        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Report issue on our Community Forum");
+        var td = new TaskDialog("Error loading Speckle");
+        if (ex is KitException)
+        {
+          td.MainContent = ex.Message;
+        }
+        else
+        {
+          td.MainContent = $"Oh no! Something went wrong while loading Speckle, please report it on the forum:\n\n{ex.Message}";
+        }
+
+        td.AddCommandLink(TaskDialogCommandLinkId.CommandLink1, "Ask for help on our Community Forum");
 
         TaskDialogResult tResult = td.Show();
 

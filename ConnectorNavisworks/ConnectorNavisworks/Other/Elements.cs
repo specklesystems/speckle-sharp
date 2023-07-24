@@ -207,10 +207,12 @@ public class Element
       var pseudoId = element.PseudoId;
       var baseNode = pair.Value.Item1;
       var modelItem = element.ModelItem;
-      var type = baseNode.GetType().Name;
+      var type = baseNode?.GetType().Name;
+
+      if (baseNode == null)
+        continue;
 
       // Geometry Nodes can add all the properties to the FirstObject classification - this will help with the selection logic
-
       if (
         streamState.Settings.Find(x => x.Slug == "coalesce-data") is CheckBoxSetting { IsChecked: true }
         && type == "GeometryNode"
@@ -240,7 +242,8 @@ public class Element
       if (value1 is Collection parent)
       {
         parent.elements ??= new List<Base>();
-        parent.elements.Add(value);
+        if (value != null)
+          parent.elements.Add(value);
       }
 
       // This node has a parent, so it's not a root node
