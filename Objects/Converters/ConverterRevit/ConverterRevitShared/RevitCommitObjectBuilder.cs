@@ -22,7 +22,6 @@ public enum CommitCollectionStrategy
 public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRevitCommitObjectBuilder
 {
   private const string Types = "Types";
-  private const string MEPNetworks = "MEPNetworks";
 
   private readonly CommitCollectionStrategy _commitCollectionStrategy;
 
