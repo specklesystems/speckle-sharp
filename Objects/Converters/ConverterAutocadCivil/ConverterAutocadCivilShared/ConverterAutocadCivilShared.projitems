@@ -23,6 +23,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\ASTypeData.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\IASProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\BeamProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\FilerObjectProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\ConstructionElementProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\ScrewBoltPatternProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\BoltPatternProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\MainAliasProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\PolybeamProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\AtomicElementProperties.cs" />
