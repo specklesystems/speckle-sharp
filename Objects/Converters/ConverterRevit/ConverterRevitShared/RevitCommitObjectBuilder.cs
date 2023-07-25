@@ -10,6 +10,7 @@ using Objects.Converter.Revit;
 using Autodesk.Revit.DB.Mechanical;
 using Objects.Organization;
 using RevitSharedResources.Interfaces;
+using Autodesk.Revit.DB.Electrical;
 
 namespace ConverterRevitShared;
 
@@ -22,6 +23,7 @@ public enum CommitCollectionStrategy
 public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRevitCommitObjectBuilder
 {
   private const string Types = "Types";
+  private const string MEPNetworks = "MEPNetworks";
 
   private readonly CommitCollectionStrategy _commitCollectionStrategy;
 
@@ -108,6 +110,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     }
 
     var nestingInstructions = new List<NestingInstructions>();
+    AddNestingInstructionsForMEPElement(nativeElement, nestingInstructions);
     AddNestingInstructionsForHosted(conversionResult, nativeElement, nestingInstructions);
     AddNestingInstructionsForCollection(collectionId, collectionName, collectionType, nestingInstructions);
 
@@ -138,6 +141,51 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     }
 
     nestingInstructions.Add(new NestingInstructions(host?.UniqueId, NestUnderElementsProperty));
+  }
+
+  private void AddNestingInstructionsForMEPElement(Element nativeElement, List<NestingInstructions> instructions)
+  {
+    var mepSystemName = GetMEPSystemName(nativeElement);
+
+    if (mepSystemName == null) return;
+
+    // Create overall network collection if it doesn't exist
+    if (!_collections.ContainsKey(MEPNetworks))
+    {
+      Collection collection = new(MEPNetworks, MEPNetworks) { applicationId = MEPNetworks };
+      _collections.Add(MEPNetworks, collection);
+    }
+
+    // Create specific network object and add it to the commitBuilder if it doesn't exist
+    if (!converted.ContainsKey(mepSystemName))
+    {
+      var network = new Graph(mepSystemName) { applicationId = mepSystemName };
+      SetRelationship(network, new NestingInstructions(MEPNetworks, NestUnderElementsProperty));
+    }
+
+    instructions.Add(new NestingInstructions(mepSystemName, NestUnderMEPSystem));
+  }
+
+  private static string GetMEPSystemName(Element element)
+  {
+    return element switch
+    {
+      Pipe p => p.MEPSystem?.Name ?? "",
+      Duct d => d.MEPSystem?.Name ?? "",
+      Wire w => w.MEPSystem?.Name ?? "",
+      Conduit c => c.MEPSystem?.Name ?? "",
+      _ => ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM)
+    };
+  }
+
+  private void NestUnderMEPSystem(Base parent, Base child)
+  {
+    var network = (Graph)parent;
+    network.AddElement(child, appId =>
+    {
+      converted.TryGetValue(appId, out var convertedValue);
+      return convertedValue;
+    });
   }
 
   private static string GetCategoryId(Base conversionResult, Element revitElement)
