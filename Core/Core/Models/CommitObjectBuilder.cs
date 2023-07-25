@@ -177,16 +177,3 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
     elements.Add(child);
   }
 }
-
-public struct NestingInstructions
-{
-  public delegate void NestAction(Base parent, Base child);
-  public NestingInstructions(string? parentApplicationId, NestAction nestAction)
-  {
-    ParentApplicationId = parentApplicationId;
-    Nest = nestAction;
-  }
-
-  public string? ParentApplicationId { get; }
-  public NestAction Nest { get; }
-}

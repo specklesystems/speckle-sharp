@@ -75,6 +75,12 @@ namespace Objects.Converter.Revit
       )
         @base = ColumnToSpeckle(revitFi, out notes);
 
+      // MEP elements
+      if (revitFi.MEPModel?.ConnectorManager?.Connectors?.Size > 0)
+      {
+        @base = MEPFamilyInstanceToSpeckle(revitFi);
+      }
+
       // elements
       var baseGeometry = LocationToSpeckle(revitFi);
       var basePoint = baseGeometry as Point;
@@ -728,7 +734,8 @@ namespace Objects.Converter.Revit
       DB.FamilyInstance instance,
       out List<string> notes,
       Transform parentTransform,
-      bool useParentTransform = false
+      bool useParentTransform = false,
+      RevitInstance existingInstance = null
     )
     {
       notes = new List<string>();
@@ -750,7 +757,7 @@ namespace Objects.Converter.Revit
       );
       notes.AddRange(definitionNotes);
 
-      var _instance = new RevitInstance();
+      var _instance = existingInstance ?? new RevitInstance();
       _instance.transform = transform;
       _instance.typedDefinition = definition;
       _instance.level = ConvertAndCacheLevel(instance, BuiltInParameter.FAMILY_LEVEL_PARAM);

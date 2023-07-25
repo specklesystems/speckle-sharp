@@ -56,7 +56,8 @@ namespace ConnectorRevit.Storage
 
     public IEnumerable<Element> GetCreatedObjectsFromConvertedId(string id)
     {
-      return convertedObjects[id].Item2;
+      if (convertedObjects.TryGetValue(id, out var value)) return value.Item2;
+      return Enumerable.Empty<Element>();
     }
 
     public bool HasCreatedObjectWithId(string id)

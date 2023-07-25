@@ -21,7 +21,17 @@ namespace ConnectorRevit.Storage
       this.objectCaches = new();
     }
 
+    public IRevitObjectCache<T> GetOrInitializeEmptyCacheOfType<T>(out bool isExistingCache)
+    {
+      return GetOrInitializeCacheOfTypeNullable<T>(null, out isExistingCache);
+    }
+
     public IRevitObjectCache<T> GetOrInitializeCacheOfType<T>(Action<IRevitObjectCache<T>> initializer, out bool isExistingCache)
+    {
+      return GetOrInitializeCacheOfTypeNullable<T>(initializer, out isExistingCache);
+    }
+
+    private IRevitObjectCache<T> GetOrInitializeCacheOfTypeNullable<T>(Action<IRevitObjectCache<T>>? initializer, out bool isExistingCache)
     {
       if (!objectCaches.TryGetValue(typeof(T), out var singleCache))
       {

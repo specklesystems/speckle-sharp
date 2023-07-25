@@ -149,7 +149,7 @@ namespace Objects.Converter.Revit
       }
     }
 
-    public double ScaleToNative(double value, string units)
+    public static double ScaleToNative(double value, string units)
     {
       if (string.IsNullOrEmpty(units))
         return value;

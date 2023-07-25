@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Mechanical;
+using Autodesk.Revit.DB.Visual;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Objects.Organization;
 using Speckle.Core.Models;
@@ -90,6 +92,14 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
+      Doc.Regenerate();
+
+      // hack with magic string... not great
+      if (speckleRevitDuct != null && speckleDuct["graph"] is Graph graph)
+      {
+        CreateSystemConnections(speckleRevitDuct.Connectors, duct, graph, receivedObjectsCache);
+      }
+
       appObj.Update(status: ApplicationObject.State.Created, createdId: duct.UniqueId, convertedItem: duct);
       return appObj;
     }
@@ -137,6 +147,11 @@ namespace Objects.Converter.Revit
           "RBS_START_LEVEL_PARAM", "RBS_VELOCITY"
         });
 
+      foreach (var connector in revitDuct.GetConnectorSet())
+      {
+        speckleDuct.Connectors.Add(ConnectorToSpeckle(connector));
+      }
+
       return speckleDuct;
     }
 
@@ -176,10 +191,9 @@ namespace Objects.Converter.Revit
         speckleDuct.systemName = typeElem.Name;
       }
 
-      var numConnector = 0;
-      foreach (var connector in revitDuct.ConnectorManager.Connectors.Cast<Connector>())
+      foreach (var connector in revitDuct.GetConnectorSet())
       {
-        speckleDuct[$"connector{++numConnector}"] = new ApplicationIdReference(connector.Owner.UniqueId);
+        speckleDuct.Connectors.Add(ConnectorToSpeckle(connector));
       }
 
       GetAllRevitParamsAndIds(speckleDuct, revitDuct,

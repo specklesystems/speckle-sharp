@@ -37,19 +37,19 @@ namespace Objects.Organization
       }
     }
 
-    //public GraphNode? GetNodeByAppId(string applicationId)
-    //{
-    //  if (elements.TryGetValue(applicationId, out var node)) return node;
-    //  return null;
-    //}
+    public Base? GetNodeByAppId(string applicationId)
+    {
+      if (elements.TryGetValue(applicationId, out var node)) return node;
+      return null;
+    }
 
-    //[OnDeserialized]
-    //internal void OnDeserialized(StreamingContext context)
-    //{
-    //  foreach (var kvp in elements)
-    //  {
-    //    kvp.Value.Graph = this;
-    //  }
-    //}
+    [OnDeserialized]
+    internal void OnDeserialized(StreamingContext context)
+    {
+      foreach (var kvp in elements)
+      {
+        kvp.Value["graph"] = this;
+      }
+    }
   }
 }

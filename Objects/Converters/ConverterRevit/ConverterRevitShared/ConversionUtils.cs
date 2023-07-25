@@ -4,10 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Autodesk.Revit.DB;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements;
 using Objects.BuiltElements.Revit;
 using Objects.Geometry;
+using Objects.Organization;
 using Objects.Other;
+using RevitSharedResources.Interfaces;
 using Speckle.Core.Helpers;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
@@ -961,6 +964,43 @@ namespace Objects.Converter.Revit
       }
 
       return templatePath;
+    }
+
+    public void CreateSystemConnections(
+      IEnumerable<RevitMEPConnector> revitMEPConnectors,
+      Element revitEl,
+      Graph graph,
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+    {
+      foreach (var speckleConnector in revitMEPConnectors)
+      {
+        var newRevitConnector = revitEl
+          .GetConnectorSet()
+          .Where(c => c.Origin.DistanceTo(PointToNative(speckleConnector.Origin)) < .01)
+          .FirstOrDefault();
+        if (newRevitConnector == null) continue;
+
+        foreach (var connectedId in speckleConnector.ConnectedConnectorIds)
+        {
+          //var connectedMepElement = graph.GetNodeByAppId(connectedId.Split('.').First());
+          //if (connectedMepElement == null) continue;
+
+          var convertedElement = receivedObjectsCache
+            .GetCreatedObjectsFromConvertedId(connectedId.Split('.').First())
+            .FirstOrDefault();
+
+          if (convertedElement == null) continue;
+
+          var olderRevitConnector = convertedElement
+            .GetConnectorSet()
+            .Where(c => c.Origin.DistanceTo(newRevitConnector.Origin) < .01)
+            .FirstOrDefault();
+
+          if (olderRevitConnector == null) continue;
+
+          olderRevitConnector.ConnectTo(newRevitConnector);
+        }
+      }
     }
     #endregion
 

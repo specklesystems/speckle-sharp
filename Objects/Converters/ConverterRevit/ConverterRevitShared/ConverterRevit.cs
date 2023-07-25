@@ -106,6 +106,7 @@ namespace Objects.Converter.Revit
     }
 
     private IRevitDocumentAggregateCache revitDocumentAggregateCache;
+    private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
 
     public void SetContextDocument(object doc)
     {
@@ -116,6 +117,10 @@ namespace Objects.Converter.Revit
       else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
       {
         this.revitDocumentAggregateCache = revitDocumentAggregateCache;
+      }
+      else if (doc is IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+      {
+        this.receivedObjectsCache = receivedObjectsCache;
       }
       else if (doc is IReceivedObjectIdMap<Base, Element> cache)
       {
@@ -450,7 +455,25 @@ namespace Objects.Converter.Revit
       return speckleSchema;
     }
 
-    public object ConvertToNative(Base @object)
+    public object ConvertToNative(Base @base)
+    {
+      var appObject = ConvertToNativeApplicationObject(@base);
+      if (appObject == null)
+      {
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
+        var boo = @base["isHackySpeckleCamera"] as bool?;
+        if (boo == true)
+          return ViewOrientation3DToNative(@base);
+      }
+      else if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+      {
+        receivedObjectsCache.AddConvertedObjects(@base, typedList);
+      }
+      return appObject;
+    }
+
+    public ApplicationObject ConvertToNativeApplicationObject(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
       Settings.TryGetValue("preview", out string isPreview);
@@ -674,14 +697,6 @@ namespace Objects.Converter.Revit
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
-
-        //hacky but the current comments camera is not a Base object
-        //used only from DUI and not for normal geometry conversion
-        case Base b:
-          var boo = b["isHackySpeckleCamera"] as bool?;
-          if (boo == true)
-            return ViewOrientation3DToNative(b);
-          return null;
 
         default:
           return null;
