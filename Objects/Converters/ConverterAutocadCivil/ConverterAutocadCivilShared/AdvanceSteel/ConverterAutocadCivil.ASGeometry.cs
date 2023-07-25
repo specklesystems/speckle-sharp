@@ -48,14 +48,12 @@ namespace Objects.Converter.AutocadCivil
 
     private Point3d PointASToAcad(ASPoint3d point)
     {
-      var pointScaled = point * FactorFromNative;
-      return new Point3d(pointScaled.x, pointScaled.y, pointScaled.z);
+      return new Point3d(point.x * FactorFromNative, point.y * FactorFromNative, point.z * FactorFromNative);
     }
 
     private Point3D PointToMath(ASPoint3d point)
     {
-      var pointScaled = point * FactorFromNative;
-      return new Point3D(pointScaled.x, pointScaled.y, pointScaled.z);
+      return new Point3D(point.x * FactorFromNative, point.y * FactorFromNative, point.z * FactorFromNative);
     }
 
     public Vector VectorToSpeckle(ASVector3d vector, string units = null)
@@ -66,8 +64,7 @@ namespace Objects.Converter.AutocadCivil
     }
     private Vector3d VectorASToAcad(ASVector3d vector)
     {
-      var vectorScaled = vector * FactorFromNative;
-      return new Vector3d(vectorScaled.x, vectorScaled.y, vectorScaled.z);
+      return new Vector3d(vector.x * FactorFromNative, vector.y * FactorFromNative, vector.z * FactorFromNative);
     }
 
     private Box BoxToSpeckle(ASBoundBlock3d bound)
@@ -290,15 +287,41 @@ namespace Objects.Converter.AutocadCivil
       double valueScaled = value * GetUnitScaleFromNative(unitType);
 
       if (unitType == eUnitType.kWeight)
-        valueScaled = RoundWeight(valueScaled);
+      {
+        valueScaled = RoundBigDecimalNumbers(valueScaled, 5);
+      }
+      else if (unitType == eUnitType.kVolume)
+      {
+        if (valueScaled > 999)
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 3);
+        }
+        else
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 9);
+        }
+      }
+      else if (unitType == eUnitType.kArea)
+      {
+        if (valueScaled > 999)
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 2);
+        }
+        else
+        {
+          valueScaled = RoundBigDecimalNumbers(valueScaled, 6);
+        }
+      }
 
       return valueScaled;
     }
 
-    private static double RoundWeight(double value)
+    private static double RoundBigDecimalNumbers(double value, int digits)
     {
-      return Math.Round(value, 5, MidpointRounding.AwayFromZero);
+      return Math.Round(value, digits, MidpointRounding.AwayFromZero);
     }
+
+    #region Units
 
     private UnitsSet _unitsSet;
 
@@ -309,6 +332,11 @@ namespace Objects.Converter.AutocadCivil
         if (_unitsSet == null)
         {
           _unitsSet = DocumentManager.GetCurrentDocument().CurrentDatabase.Units;
+
+          //Workaround to fix strange beahaviour when we are using the modeler of some beams(lost some faces)
+          var unitOriginal = _unitsSet.UnitOfArea;
+          _unitsSet.UnitOfArea = new Unit();
+          _unitsSet.UnitOfArea = unitOriginal;
         }
 
         return _unitsSet;
@@ -319,6 +347,61 @@ namespace Objects.Converter.AutocadCivil
     {
       return 1 / UnitsSet.GetUnit(unitType).Factor;
     }
+
+    private double _factorFromNative;
+    private double FactorFromNative
+    {
+      get
+      {
+        if (_factorFromNative.Equals(0.0))
+        {
+          _factorFromNative = 1 / DocumentManager.GetCurrentDocument().CurrentDatabase.Units.UnitOfDistance.Factor;
+        }
+
+        return _factorFromNative;
+      }
+    }
+
+    private string unitWeight;
+    private string UnitWeight
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitWeight))
+        {
+          unitWeight = UnitsSet.GetUnit(eUnitType.kWeight).Symbol;
+        }
+        return unitWeight;
+      }
+    }
+
+    private string unitVolume;
+    private string UnitVolume
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitVolume))
+        {
+          unitVolume = UnitsSet.GetUnit(eUnitType.kVolume).Symbol;
+        }
+        return unitVolume;
+      }
+    }
+
+    private string unitArea;
+    private string UnitArea
+    {
+      get
+      {
+        if (string.IsNullOrEmpty(unitArea))
+        {
+          unitArea = UnitsSet.GetUnit(eUnitType.kArea).Symbol;
+        }
+        return unitArea;
+      }
+    }
+
+    #endregion
   }
 }
 #endif

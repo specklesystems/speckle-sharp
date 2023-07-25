@@ -6,7 +6,6 @@ using System.Text;
 using Autodesk.AdvanceSteel.ConstructionTypes;
 using Autodesk.AdvanceSteel.Geometry;
 using Autodesk.AdvanceSteel.Modelling;
-using ASPolyBeam = Autodesk.AdvanceSteel.Modelling.PolyBeam;
 using ASPoint3d = Autodesk.AdvanceSteel.Geometry.Point3d;
 using System.Linq;
 
