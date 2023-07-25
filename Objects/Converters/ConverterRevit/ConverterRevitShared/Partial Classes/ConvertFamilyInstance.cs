@@ -18,6 +18,7 @@ using RevitSharedResources.Helpers;
 using RevitSharedResources.Helpers.Extensions;
 using Speckle.Core.Logging;
 using SHC = RevitSharedResources.Helpers.Categories;
+using Objects.Organization;
 
 namespace Objects.Converter.Revit
 {
@@ -89,6 +90,12 @@ namespace Objects.Converter.Revit
       // add additional props to base object
       if (isUGridLine.HasValue)
         @base["isUGridLine"] = isUGridLine.Value;
+
+      var numConnector = 0;
+      foreach (var connector in revitFi.MEPModel?.ConnectorManager?.Connectors?.Cast<Connector>())
+      {
+        @base[$"connector{++numConnector}"] = new ApplicationIdReference(connector.Owner.UniqueId);
+      }
 
       return @base;
     }
