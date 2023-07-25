@@ -153,12 +153,12 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
       catch (Exception ex)
       {
         // A parent was found, but it was invalid (Likely because of a type mismatch on a `elements` property)
-        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent", current?.GetType());
+        SpeckleLog.Logger.Warning(ex, "Failed to add object {speckleType} to a converted parent", current.GetType());
       }
     }
 
     throw new InvalidOperationException(
-      $"Could not find a valid parent for object of type {current?.GetType()}. Checked {instructions.Count} potential parent, and non were converted!"
+      $"Could not find a valid parent for object of type {current.GetType()}. Checked {instructions.Count} potential parent, and non were converted!"
     );
   }
 
@@ -178,7 +178,7 @@ public abstract class CommitObjectBuilder<TNativeObjectData>
   }
 }
 
-public class NestingInstructions
+public struct NestingInstructions
 {
   public delegate void NestAction(Base parent, Base child);
   public NestingInstructions(string? parentApplicationId, NestAction nestAction)
