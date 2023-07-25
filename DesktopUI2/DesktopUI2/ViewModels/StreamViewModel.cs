@@ -1331,6 +1331,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
@@ -1373,6 +1375,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsPreviewProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
@@ -1461,6 +1465,8 @@ public class StreamViewModel : ReactiveObject, IRoutableViewModel, IDisposable
     {
       Progress.CancellationTokenSource.Cancel();
       Progress.IsProgressing = false;
+      Progress.Value = 0;
+      Progress.Max = 1;
     }
   }
 
