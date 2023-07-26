@@ -92,13 +92,7 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(duct, speckleRevitDuct);
       }
 
-      Doc.Regenerate();
-
-      // hack with magic string... not great
-      if (speckleRevitDuct != null && speckleDuct["graph"] is Graph graph)
-      {
-        CreateSystemConnections(speckleRevitDuct.Connectors, duct, graph, receivedObjectsCache);
-      }
+      CreateSystemConnections(speckleRevitDuct.Connectors, duct, receivedObjectsCache);
 
       appObj.Update(status: ApplicationObject.State.Created, createdId: duct.UniqueId, convertedItem: duct);
       return appObj;

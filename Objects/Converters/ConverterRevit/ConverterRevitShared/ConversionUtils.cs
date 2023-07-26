@@ -492,6 +492,15 @@ namespace Objects.Converter.Revit
           .Cast<DB.Parameter>()
           .Where(x => x != null && !x.IsReadOnly && !exclusions.Contains(GetParamInternalName(x)));
 
+      foreach (var p in revitElement.ParametersMap.Cast<DB.Parameter>())
+      {
+        System.Diagnostics.Trace.WriteLine($"{p.Definition.Name}");
+        if (p.Definition.Name == "H0")
+        {
+
+        }
+      }
+
       // Here we are creating two  dictionaries for faster lookup
       // one uses the BuiltInName / GUID the other the name as Key
       // we need both to support parameter set by Schema Builder, that might be generated with one or the other
@@ -966,7 +975,7 @@ namespace Objects.Converter.Revit
       return templatePath;
     }
 
-    public IEnumerable<Connector> GetRevitConnectorsThatConnectToSpeckleConnector(
+    public IEnumerable<(string, Element, Connector)> GetRevitConnectorsThatConnectToSpeckleConnector(
       RevitMEPConnector revitMEPConnector,
       IConvertedObjectsCache<Base, Element> receivedObjectsCache)
     {
@@ -988,14 +997,13 @@ namespace Objects.Converter.Revit
           .Where(c => c.Origin.DistanceTo(origin) < .01)
           .FirstOrDefault();
 
-        yield return existingRevitConnector;
+        yield return (connectorAppId, convertedElement, existingRevitConnector);
       }
     }
     
     public void CreateSystemConnections(
       IEnumerable<RevitMEPConnector> revitMEPConnectors,
       Element revitEl,
-      Graph graph,
       IConvertedObjectsCache<Base, Element> receivedObjectsCache)
     {
       foreach (var speckleConnector in revitMEPConnectors)
@@ -1008,11 +1016,11 @@ namespace Objects.Converter.Revit
 
         if (newRevitConnector == null) continue;
 
-        foreach (var existingConnector in GetRevitConnectorsThatConnectToSpeckleConnector(
+        foreach (var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
           speckleConnector,
           receivedObjectsCache))
         {
-          if (existingConnector != null) existingConnector.ConnectTo(newRevitConnector);
+          existingConnector?.ConnectTo(newRevitConnector);
         } 
       }
     }

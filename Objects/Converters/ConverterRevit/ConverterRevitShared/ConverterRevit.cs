@@ -671,7 +671,7 @@ namespace Objects.Converter.Revit
           return ViewToNative(o);
 
         case RevitMEPFamilyInstance o:
-          return MEPFamilyInstanceToNative(o);
+          return FittingOrMEPInstanceToNative(o);
 
         case Other.Revit.RevitInstance o:
           return RevitInstanceToNative(o);

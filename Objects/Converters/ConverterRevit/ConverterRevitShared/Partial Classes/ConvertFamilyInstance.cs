@@ -489,11 +489,11 @@ namespace Objects.Converter.Revit
     }
 
     // revit instances
-    public ApplicationObject RevitInstanceToNative(RevitInstance instance)
+    public ApplicationObject RevitInstanceToNative(RevitInstance instance, ApplicationObject appObj = null)
     {
       DB.FamilyInstance familyInstance = null;
       var docObj = GetExistingElementByApplicationId(instance.applicationId);
-      var appObj = new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
+      appObj ??= new ApplicationObject(instance.id, instance.speckle_type) { applicationId = instance.applicationId };
       var isUpdate = false;
 
       // skip if element already exists in doc & receive mode is set to ignore

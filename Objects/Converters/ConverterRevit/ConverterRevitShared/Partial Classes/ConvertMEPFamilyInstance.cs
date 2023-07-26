@@ -5,6 +5,7 @@ using System.Linq;
 using Objects.Organization;
 using System;
 using System.Collections.Generic;
+using Speckle.Core.Models;
 
 namespace Objects.Converter.Revit
 {
@@ -13,8 +14,8 @@ namespace Objects.Converter.Revit
     public List<PartType> FittingPartTypes { get; } = new List<PartType>()
     { 
       PartType.Elbow, 
-      PartType.Tee, 
-      PartType.Cross, 
+      //PartType.Tee, 
+      //PartType.Cross, 
       PartType.Transition, 
       PartType.Union 
     };
@@ -35,25 +36,41 @@ namespace Objects.Converter.Revit
       return speckleFi;
     }
 
-    public DB.FamilyInstance MEPFamilyInstanceToNative(RevitMEPFamilyInstance speckleFi)
+    public DB.FamilyInstance MEPFamilyInstanceToNative(RevitMEPFamilyInstance speckleFi, ApplicationObject appObj)
     {
-      if (Enum.TryParse<PartType>(speckleFi.RevitPartType, out var partType))
-      {
-        if (FittingPartTypes.Contains(partType))
-        {
-          return FittingToNative(speckleFi, partType);
-        }
-      }
-      var appObj = RevitInstanceToNative(speckleFi);
+      _ = RevitInstanceToNative(speckleFi, appObj);
       var revitFi = (DB.FamilyInstance)appObj.Converted.First();
 
-      // hack with magic string... not great
-      if (speckleFi["graph"] is Graph graph)
-      {
-        CreateSystemConnections(speckleFi.Connectors, revitFi, graph, receivedObjectsCache);
-      }
+
+      CreateSystemConnections(speckleFi.Connectors, revitFi, receivedObjectsCache);
 
       return revitFi;
+    }
+
+    public ApplicationObject FittingOrMEPInstanceToNative(RevitMEPFamilyInstance speckleFi)
+    {
+      var appObj = new ApplicationObject(speckleFi.id, speckleFi.speckle_type) { applicationId = speckleFi.applicationId };
+
+      if (Enum.TryParse<PartType>(speckleFi.RevitPartType, out var partType)
+        && FittingPartTypes.Contains(partType))
+      {
+        try
+        {
+          _ = FittingToNative(speckleFi, partType, appObj);
+          return appObj;
+        }
+        catch (Exception ex)
+        {
+          appObj.Update(logItem: $"Could not create fitting as part of the system. Reason: {ex.Message}. Converting as independent instance instead");
+          _ = MEPFamilyInstanceToNative(speckleFi, appObj);
+          return appObj;
+        }
+      }
+      else
+      {
+        _ = MEPFamilyInstanceToNative(speckleFi, appObj);
+        return appObj;
+      }
     }
   }
 }
