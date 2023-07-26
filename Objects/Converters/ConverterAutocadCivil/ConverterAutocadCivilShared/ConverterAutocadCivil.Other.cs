@@ -107,7 +107,7 @@ namespace Objects.Converter.AutocadCivil
       }
       else // create this layer
       {
-        layer = MakeLayer(collection.name);
+        layer = MakeLayer(layerPath);
         status = ApplicationObject.State.Created;
       }
 
@@ -155,7 +155,7 @@ namespace Objects.Converter.AutocadCivil
     )
     {
       var systemColor = new System.Drawing.Color();
-      byte alpha = 1;
+      byte alpha = 255;
       lineWeight = LineWeight.ByLineWeightDefault;
       lineType = LineTypeDictionary.First().Value;
       if (styleBase is DisplayStyle style)

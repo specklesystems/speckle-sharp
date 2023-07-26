@@ -185,7 +185,7 @@ namespace Speckle.ConnectorAutocadCivil.UI
 
             if (layer == null)
             {
-              progress.Report.OperationErrors.Add(
+              progress.Report.ConversionErrors.Add(
                 new Exception($"Could not create layer [{path}]. Objects will be placed on default layer.")
               );
               continue;
