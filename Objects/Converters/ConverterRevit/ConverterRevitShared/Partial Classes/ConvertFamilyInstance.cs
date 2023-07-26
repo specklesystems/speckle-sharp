@@ -97,12 +97,6 @@ namespace Objects.Converter.Revit
       if (isUGridLine.HasValue)
         @base["isUGridLine"] = isUGridLine.Value;
 
-      var numConnector = 0;
-      foreach (var connector in revitFi.MEPModel?.ConnectorManager?.Connectors?.Cast<Connector>())
-      {
-        @base[$"connector{++numConnector}"] = new ApplicationIdReference(connector.Owner.UniqueId);
-      }
-
       return @base;
     }
 

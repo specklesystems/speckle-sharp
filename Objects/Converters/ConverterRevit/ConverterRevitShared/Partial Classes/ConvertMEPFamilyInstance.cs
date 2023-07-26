@@ -3,16 +3,28 @@ using Objects.BuiltElements.Revit;
 using Autodesk.Revit.DB;
 using System.Linq;
 using Objects.Organization;
-using Autodesk.Revit.DB.Mechanical;
-using ConverterRevitShared.Extensions;
+using System;
+using System.Collections.Generic;
 
 namespace Objects.Converter.Revit
 {
   public partial class ConverterRevit
   {
-    public RevitMEPFamilyInstance MEPFamilyInstanceToSpeckle(DB.FamilyInstance familyInstance)
+    public List<PartType> FittingPartTypes { get; } = new List<PartType>()
+    { 
+      PartType.Elbow, 
+      PartType.Tee, 
+      PartType.Cross, 
+      PartType.Transition, 
+      PartType.Union 
+    };
+
+    public RevitMEPFamilyInstance MEPFamilyInstanceToSpeckle(DB.FamilyInstance familyInstance, RevitMEPFamilyInstance existingSpeckleObject = null)
     {
-      var speckleFi = new RevitMEPFamilyInstance();
+      var speckleFi = existingSpeckleObject ?? new RevitMEPFamilyInstance();
+
+      var partType = GetParamValue<PartType>(familyInstance.Symbol.Family, BuiltInParameter.FAMILY_CONTENT_PART_TYPE);
+      speckleFi.RevitPartType = partType.ToString();
 
       foreach (var connector in familyInstance.MEPModel?.ConnectorManager?.Connectors?.Cast<Connector>())
       {
@@ -25,6 +37,13 @@ namespace Objects.Converter.Revit
 
     public DB.FamilyInstance MEPFamilyInstanceToNative(RevitMEPFamilyInstance speckleFi)
     {
+      if (Enum.TryParse<PartType>(speckleFi.RevitPartType, out var partType))
+      {
+        if (FittingPartTypes.Contains(partType))
+        {
+          return FittingToNative(speckleFi, partType);
+        }
+      }
       var appObj = RevitInstanceToNative(speckleFi);
       var revitFi = (DB.FamilyInstance)appObj.Converted.First();
 

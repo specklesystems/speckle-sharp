@@ -9,6 +9,8 @@ namespace Objects.BuiltElements.Revit
 {
   public class RevitMEPFamilyInstance : RevitInstance, IHasMEPConnectors
   {
+    public string RevitPartType { get; set; }
+
     [DetachProperty]
     public List<RevitMEPConnector> Connectors { get; set; } = new();
 

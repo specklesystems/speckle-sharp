@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
@@ -457,23 +458,25 @@ namespace Objects.Converter.Revit
 
     public object ConvertToNative(Base @base)
     {
-      var appObject = ConvertToNativeApplicationObject(@base);
-      if (appObject == null)
+      var nativeObject = ConvertToNativeObject(@base);
+
+      switch (nativeObject)
       {
-        //hacky but the current comments camera is not a Base object
-        //used only from DUI and not for normal geometry conversion
-        var boo = @base["isHackySpeckleCamera"] as bool?;
-        if (boo == true)
-          return ViewOrientation3DToNative(@base);
+        case ApplicationObject appObject:
+          if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+          {
+            receivedObjectsCache.AddConvertedObjects(@base, typedList);
+          }
+          break;
+        case Element element:
+          receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
+          break;
       }
-      else if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
-      {
-        receivedObjectsCache.AddConvertedObjects(@base, typedList);
-      }
-      return appObject;
+      
+      return nativeObject;
     }
 
-    public ApplicationObject ConvertToNativeApplicationObject(Base @object)
+    public object ConvertToNativeObject(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
       Settings.TryGetValue("preview", out string isPreview);
@@ -667,6 +670,9 @@ namespace Objects.Converter.Revit
         case BE.View3D o:
           return ViewToNative(o);
 
+        case RevitMEPFamilyInstance o:
+          return MEPFamilyInstanceToNative(o);
+
         case Other.Revit.RevitInstance o:
           return RevitInstanceToNative(o);
 
@@ -697,6 +703,14 @@ namespace Objects.Converter.Revit
         // other
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
+
+        //hacky but the current comments camera is not a Base object
+        //used only from DUI and not for normal geometry conversion
+        case Base b:
+          var boo = b["isHackySpeckleCamera"] as bool?;
+          if (boo == true)
+            return ViewOrientation3DToNative(b);
+          return null;
 
         default:
           return null;

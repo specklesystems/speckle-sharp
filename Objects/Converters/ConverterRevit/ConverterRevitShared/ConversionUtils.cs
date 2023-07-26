@@ -966,6 +966,32 @@ namespace Objects.Converter.Revit
       return templatePath;
     }
 
+    public IEnumerable<Connector> GetRevitConnectorsThatConnectToSpeckleConnector(
+      RevitMEPConnector revitMEPConnector,
+      IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+    {
+      var origin = PointToNative(revitMEPConnector.Origin);
+
+      foreach (var connectedId in revitMEPConnector.ConnectedConnectorIds)
+      {
+        //var connectedMepElement = graph.GetNodeByAppId(connectedId.Split('.').First());
+        //if (connectedMepElement == null) continue;
+        var connectorAppId = connectedId.Split('.').First();
+        var convertedElement = receivedObjectsCache
+          .GetCreatedObjectsFromConvertedId(connectorAppId)
+          .FirstOrDefault();
+
+        convertedElement ??= Doc.GetElement(connectorAppId);
+
+        var existingRevitConnector = convertedElement?
+          .GetConnectorSet()
+          .Where(c => c.Origin.DistanceTo(origin) < .01)
+          .FirstOrDefault();
+
+        yield return existingRevitConnector;
+      }
+    }
+    
     public void CreateSystemConnections(
       IEnumerable<RevitMEPConnector> revitMEPConnectors,
       Element revitEl,
@@ -974,32 +1000,20 @@ namespace Objects.Converter.Revit
     {
       foreach (var speckleConnector in revitMEPConnectors)
       {
+        var origin = PointToNative(speckleConnector.Origin);
         var newRevitConnector = revitEl
           .GetConnectorSet()
-          .Where(c => c.Origin.DistanceTo(PointToNative(speckleConnector.Origin)) < .01)
+          .Where(c => c.Origin.DistanceTo(origin) < .01)
           .FirstOrDefault();
+
         if (newRevitConnector == null) continue;
 
-        foreach (var connectedId in speckleConnector.ConnectedConnectorIds)
+        foreach (var existingConnector in GetRevitConnectorsThatConnectToSpeckleConnector(
+          speckleConnector,
+          receivedObjectsCache))
         {
-          //var connectedMepElement = graph.GetNodeByAppId(connectedId.Split('.').First());
-          //if (connectedMepElement == null) continue;
-
-          var convertedElement = receivedObjectsCache
-            .GetCreatedObjectsFromConvertedId(connectedId.Split('.').First())
-            .FirstOrDefault();
-
-          if (convertedElement == null) continue;
-
-          var olderRevitConnector = convertedElement
-            .GetConnectorSet()
-            .Where(c => c.Origin.DistanceTo(newRevitConnector.Origin) < .01)
-            .FirstOrDefault();
-
-          if (olderRevitConnector == null) continue;
-
-          olderRevitConnector.ConnectTo(newRevitConnector);
-        }
+          if (existingConnector != null) existingConnector.ConnectTo(newRevitConnector);
+        } 
       }
     }
     #endregion

@@ -215,8 +215,12 @@ namespace Speckle.ConnectorRevit.UI
       // Get setting to skip linked model elements if necessary
       var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
-      foreach (var obj in Preview)
+
+      Dictionary<string, int> conversionNotReadyCount = new();
+      var index = -1;
+      while (++index < Preview.Count)
       {
+        var obj = Preview[index];
         progress.CancellationToken.ThrowIfCancellationRequested();
 
         var @base = StoredObjects[obj.OriginalId];
@@ -246,6 +250,24 @@ namespace Speckle.ConnectorRevit.UI
               break;
             default:
               break;
+          }
+        }
+        catch (ConversionNotReadyException ex) 
+        {
+          if (!conversionNotReadyCount.ContainsKey(obj.OriginalId))
+          {
+            conversionNotReadyCount[obj.OriginalId] = 0;
+          }
+
+          if (++conversionNotReadyCount[obj.OriginalId] > 2)
+          {
+            SpeckleLog.Logger.Warning(ex, $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did");
+            obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
+            progress.Report.UpdateReportObject(obj);
+          }
+          else
+          {
+            Preview.Add(obj);
           }
         }
         catch (Exception ex)
