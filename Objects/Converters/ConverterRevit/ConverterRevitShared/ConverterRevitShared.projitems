@@ -20,8 +20,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)AllRevitCategories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ConnectorExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Extensions\ElementExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\PointExtensions.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Extensions\RevitMEPConnector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />

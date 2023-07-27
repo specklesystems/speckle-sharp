@@ -16,8 +16,8 @@ namespace Objects.Converter.Revit
     public List<PartType> FittingPartTypes { get; } = new List<PartType>()
     { 
       PartType.Elbow, 
-      //PartType.Tee, 
-      //PartType.Cross, 
+      PartType.Tee, 
+      PartType.Cross, 
       PartType.Transition, 
       PartType.Union 
     };

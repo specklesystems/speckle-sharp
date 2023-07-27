@@ -146,7 +146,7 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
   {
     var mepSystemName = GetMEPSystemName(nativeElement);
 
-    if (mepSystemName == null) return;
+    if (string.IsNullOrEmpty(mepSystemName)) return;
 
     // Create overall network collection if it doesn't exist
     if (!_collections.ContainsKey(MEPNetworks))
@@ -165,14 +165,15 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
     instructions.Add(new NestingInstructions(mepSystemName, NestUnderElementsProperty));
   }
 
-  private static string GetMEPSystemName(Element element)
+  private static string? GetMEPSystemName(Element element)
   {
     return element switch
     {
-      Pipe p => p.MEPSystem?.Name ?? "",
-      Duct d => d.MEPSystem?.Name ?? "",
-      Wire w => w.MEPSystem?.Name ?? "",
-      Conduit c => c.MEPSystem?.Name ?? "",
+      CableTray o => o.MEPSystem?.Name,
+      Conduit c => c.MEPSystem?.Name,
+      Duct d => d.MEPSystem?.Name,
+      Pipe p => p.MEPSystem?.Name,
+      Wire w => w.MEPSystem?.Name,
       _ => ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM)
     };
   }

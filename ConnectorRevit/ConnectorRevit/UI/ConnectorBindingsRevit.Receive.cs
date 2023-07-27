@@ -151,6 +151,9 @@ namespace Speckle.ConnectorRevit.UI
         }
       }).ConfigureAwait(false);
 
+      revitDocumentAggregateCache.InvalidateAll();
+      CurrentOperationCancellation = null;
+
       if (!success)
       {
         switch (exception)
@@ -163,7 +166,6 @@ namespace Speckle.ConnectorRevit.UI
         }
       }
 
-      CurrentOperationCancellation = null;
       return state;
     }
 
@@ -217,7 +219,6 @@ namespace Speckle.ConnectorRevit.UI
       var receiveLinkedModelsSetting = CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
-      Dictionary<string, int> conversionNotReadyCount = new();
       var index = -1;
       while (++index < Preview.Count)
       {
