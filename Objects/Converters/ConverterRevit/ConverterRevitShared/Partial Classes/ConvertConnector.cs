@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Autodesk.Revit.DB;
 using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
@@ -14,12 +11,18 @@ namespace Objects.Converter.Revit
     {
       var speckleMEPConnector = new RevitMEPConnector
       {
-        angle = connector.Angle,
         applicationId = connector.GetUniqueApplicationId(),
         origin = PointToSpeckle(connector.Origin, Doc),
         shape = connector.Shape.ToString(),
         systemName = connector.MEPSystem?.Name ?? connector.Owner.Category?.Name,
       };
+
+      // some genius at Autodesk thought it would be a good idea for property getters to throw...
+      try
+      {
+        speckleMEPConnector.angle = connector.Angle;
+      }
+      catch { }
       try
       {
         speckleMEPConnector.height = ScaleToSpeckle(connector.Height);

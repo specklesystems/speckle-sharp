@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Speckle.Core.Models;
 using Speckle.Core.Kits;
 using RevitSharedResources.Models;
+using Speckle.Core.Logging;
 
 namespace Objects.Converter.Revit
 {
@@ -75,6 +76,7 @@ namespace Objects.Converter.Revit
           }
           else
           {
+            SpeckleLog.Logger.Error("Could not create fitting as part of the system. Reason: Speckle object of type RevitMEPFamilyInstance was waiting for an object to convert that never did. Converting as independent instance instead");
             appObj.Update(logItem: $"Could not create fitting as part of the system. Reason: Speckle object of type {speckleFi.GetType()} was waiting for an object to convert that never did. Converting as independent instance instead");
             _ = MEPFamilyInstanceToNative(speckleFi, appObj);
             return appObj;

@@ -6,7 +6,7 @@ using Speckle.Core.Models;
 
 namespace ConnectorRevit.Storage
 {
-  internal sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
+  public sealed class ConvertedObjectsCache : IConvertedObjectsCache<Base, Element>
   {
     private Dictionary<string, (Base, List<Element>)> convertedObjects = new();
 
