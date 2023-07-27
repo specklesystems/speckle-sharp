@@ -12,14 +12,30 @@ namespace Objects.Converter.Revit
   {
     public RevitMEPConnector ConnectorToSpeckle(Connector connector)
     {
-      var speckleMEPConnector = new RevitMEPConnector();
-      speckleMEPConnector.applicationId = connector.GetUniqueApplicationId();
-      speckleMEPConnector.Origin = PointToSpeckle(connector.Origin, Doc);
+      var speckleMEPConnector = new RevitMEPConnector
+      {
+        angle = connector.Angle,
+        applicationId = connector.GetUniqueApplicationId(),
+        origin = PointToSpeckle(connector.Origin, Doc),
+        shape = connector.Shape.ToString(),
+        systemName = connector.MEPSystem?.Name ?? connector.Owner.Category?.Name,
+      };
+      try
+      {
+        speckleMEPConnector.height = ScaleToSpeckle(connector.Height);
+        speckleMEPConnector.width = ScaleToSpeckle(connector.Width);
+      }
+      catch { }
+      try
+      {
+        speckleMEPConnector.radius = ScaleToSpeckle(connector.Radius);
+      }
+      catch { }
       foreach (var reference in connector.AllRefs.Cast<Connector>())
       {
         if (connector.IsConnectedTo(reference))
         {
-          speckleMEPConnector.ConnectedConnectorIds.Add(reference.GetUniqueApplicationId());
+          speckleMEPConnector.connectedConnectorIds.Add(reference.GetUniqueApplicationId());
         }
       }
       return speckleMEPConnector;

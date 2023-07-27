@@ -970,9 +970,9 @@ namespace Objects.Converter.Revit
       RevitMEPConnector revitMEPConnector,
       IConvertedObjectsCache<Base, Element> receivedObjectsCache)
     {
-      var origin = PointToNative(revitMEPConnector.Origin);
+      var origin = PointToNative(revitMEPConnector.origin);
 
-      foreach (var connectedId in revitMEPConnector.ConnectedConnectorIds)
+      foreach (var connectedId in revitMEPConnector.connectedConnectorIds)
       {
         var connectorAppId = connectedId.Split('.').First();
         var convertedElement = receivedObjectsCache
@@ -995,7 +995,7 @@ namespace Objects.Converter.Revit
     {
       foreach (var speckleConnector in revitMEPConnectors)
       {
-        var origin = PointToNative(speckleConnector.Origin);
+        var origin = PointToNative(speckleConnector.origin);
         var newRevitConnector = revitEl
           .GetConnectorSet()
           .Where(c => c.Origin.DistanceTo(origin) < .01)
