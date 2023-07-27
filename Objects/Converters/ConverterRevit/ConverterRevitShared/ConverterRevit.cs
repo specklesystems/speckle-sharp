@@ -609,6 +609,9 @@ namespace Objects.Converter.Revit
         case BER.FamilyInstance o:
           return FamilyInstanceToNative(o);
 
+        case BE.Network o:
+          return NetworkToNative(o);
+
         case BE.Floor o:
           return FloorToNative(o);
 
@@ -836,6 +839,7 @@ namespace Objects.Converter.Revit
         BE.Room _ => true,
         BE.GridLine _ => true,
         BE.Space _ => true,
+        BE.Network _ => true,
         //Structural
         STR.Geometry.Element1D _ => true,
         STR.Geometry.Element2D _ => true,
