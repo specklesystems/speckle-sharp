@@ -42,6 +42,7 @@
     <PackageReference Include="SerilogTimings" Version="3.0.1" />
     <PackageReference Include="Speckle.Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.5" />
+    <PackageReference Include="Silk.NET.Maths" Version="2.17.1" />
   </ItemGroup>
 
   <Target Name="husky" BeforeTargets="Restore" Condition="'$(IsDesktopBuild)' == true">

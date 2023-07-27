@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Numerics;
 using Objects.Geometry;
 using Speckle.Core.Kits;
 using Speckle.Core.Logging;
 using Speckle.Core.Models;
 using Speckle.Newtonsoft.Json;
 using Vector = Objects.Geometry.Vector;
+using Silk.NET.Maths;
 
 namespace Objects.Other;
 
@@ -55,7 +55,7 @@ public class Transform : Base
   /// </summary>
   /// <param name="matrix"></param>
   /// <param name="units"></param>
-  public Transform(Matrix4x4 matrix, string units = null)
+  public Transform(Matrix4X4<double> matrix, string units = null)
   {
     this.matrix = matrix;
     this.units = units;
@@ -70,19 +70,19 @@ public class Transform : Base
   /// <param name="translation"></param>
   public Transform(Vector x, Vector y, Vector z, Vector translation)
   {
-    matrix = new Matrix4x4(
-      Convert.ToSingle(x.x),
-      Convert.ToSingle(y.x),
-      Convert.ToSingle(z.x),
-      Convert.ToSingle(translation.x),
-      Convert.ToSingle(x.y),
-      Convert.ToSingle(y.y),
-      Convert.ToSingle(z.y),
-      Convert.ToSingle(translation.y),
-      Convert.ToSingle(x.z),
-      Convert.ToSingle(y.z),
-      Convert.ToSingle(z.z),
-      Convert.ToSingle(translation.z),
+    matrix = new Matrix4X4<double>(
+      x.x,
+      y.x,
+      z.x,
+      translation.x,
+      x.y,
+      y.y,
+      z.y,
+      translation.y,
+      x.z,
+      y.z,
+      z.z,
+      translation.z,
       0f,
       0f,
       0f,
@@ -98,7 +98,7 @@ public class Transform : Base
   /// Graphics based apps typically use column-based matrices, where the last column defines translation.
   /// Modelling apps may use row-based matrices, where the last row defines translation. Transpose if so.
   /// </remarks>
-  public Matrix4x4 matrix { get; set; } = Matrix4x4.Identity;
+  public Matrix4X4<double> matrix { get; set; } = Matrix4X4<double>.Identity;
 
   /// <summary>
   /// Units for translation
@@ -112,30 +112,30 @@ public class Transform : Base
   /// <param name="rotation"></param>
   /// <param name="translation"></param>
   /// <returns>True if successful, false otherwise</returns>
-  public void Decompose(out Vector3 scale, out Quaternion rotation, out Vector4 translation)
+  public void Decompose(out Vector3D<double> scale, out Quaternion<double> rotation, out Vector4D<double> translation)
   {
     // translation
-    translation = new Vector4(matrix.M14, matrix.M24, matrix.M34, matrix.M44);
+    translation = new Vector4D<double>(matrix.M14, matrix.M24, matrix.M34, matrix.M44);
 
     // scale
     // this should account for non-uniform scaling
-    var scaleX = new Vector4(matrix.M11, matrix.M21, matrix.M31, matrix.M41).Length();
-    var scaleY = new Vector4(matrix.M12, matrix.M22, matrix.M32, matrix.M42).Length();
-    var scaleZ = new Vector4(matrix.M13, matrix.M23, matrix.M33, matrix.M43).Length();
-    scale = new Vector3(scaleX, scaleY, scaleZ);
+    var scaleX = new Vector4D<double>(matrix.M11, matrix.M21, matrix.M31, matrix.M41).Length;
+    var scaleY = new Vector4D<double>(matrix.M12, matrix.M22, matrix.M32, matrix.M42).Length;
+    var scaleZ = new Vector4D<double>(matrix.M13, matrix.M23, matrix.M33, matrix.M43).Length;
+    scale = new Vector3D<double>(scaleX, scaleY, scaleZ);
 
     // rotation
     // this is using a z-up convention for basis vectors
-    var up = new Vector3(matrix.M13, matrix.M23, matrix.M33);
-    var forward = new Vector3(matrix.M12, matrix.M22, matrix.M32);
+    var up = new Vector3D<double>(matrix.M13, matrix.M23, matrix.M33);
+    var forward = new Vector3D<double>(matrix.M12, matrix.M22, matrix.M32);
     rotation = LookRotation(forward, up);
   }
 
-  private static Quaternion LookRotation(Vector3 forward, Vector3 up)
+  private static Quaternion<double> LookRotation(Vector3D<double> forward, Vector3D<double> up)
   {
-    Vector3 vector = new(forward.X / forward.Length(), forward.Y / forward.Length(), forward.Z / forward.Length());
-    Vector3 vector2 = Vector3.Cross(up, forward);
-    Vector3 vector3 = Vector3.Cross(vector, vector2);
+    Vector3D<double> vector = new(forward.X / forward.Length, forward.Y / forward.Length, forward.Z / forward.Length);
+    Vector3D<double> vector2 = Vector3D.Cross(up, forward);
+    Vector3D<double> vector3 = Vector3D.Cross(vector, vector2);
     var m00 = vector2.X;
     var m01 = vector2.Y;
     var m02 = vector2.Z;
@@ -151,42 +151,42 @@ public class Transform : Base
     {
       var num = Math.Sqrt(num8 + 1d);
       num = 0.5d / num;
-      return new Quaternion(
-        (float)((m12 - m21) * num),
-        (float)((m20 - m02) * num),
-        (float)((m01 - m10) * num),
-        (float)(num * 0.5d)
+      return new Quaternion<double>(
+        (m12 - m21) * num,
+        (m20 - m02) * num,
+        (m01 - m10) * num,
+        num * 0.5d
       );
     }
     if (m00 >= m11 && m00 >= m22)
     {
       var num7 = Math.Sqrt(1d + m00 - m11 - m22);
       var num4 = 0.5d / num7;
-      return new Quaternion(
-        (float)(0.5d * num7),
-        (float)((m01 + m10) * num4),
-        (float)((m02 + m20) * num4),
-        (float)((m12 - m21) * num4)
+      return new Quaternion<double>(
+        0.5d * num7,
+        (m01 + m10) * num4,
+        (m02 + m20) * num4,
+        (m12 - m21) * num4
       );
     }
     if (m11 > m22)
     {
       var num6 = Math.Sqrt(1d + m11 - m00 - m22);
       var num3 = 0.5d / num6;
-      return new Quaternion(
-        (float)((m10 + m01) * num3),
-        (float)(0.5d * num6),
-        (float)((m21 + m12) * num3),
-        (float)((m20 - m02) * num3)
+      return new Quaternion<double>(
+        (m10 + m01) * num3,
+        0.5d * num6,
+        (m21 + m12) * num3,
+        (m20 - m02) * num3
       );
     }
     var num5 = Math.Sqrt(1d + m22 - m00 - m11);
     var num2 = 0.5d / num5;
-    return new Quaternion(
-      (float)((m20 + m02) * num2),
-      (float)((m21 + m12) * num2),
-      (float)(0.5d * num5),
-      (float)((m01 - m10) * num2)
+    return new Quaternion<double>(
+      (m20 + m02) * num2,
+      (m21 + m12) * num2,
+      0.5d * num5,
+      (m01 - m10) * num2
     );
   }
 
@@ -265,32 +265,9 @@ public class Transform : Base
   }
 
   // Creates a matrix4x4 from a double array
-  internal static Matrix4x4 CreateMatrix(double[] value)
+  internal static Matrix4X4<double> CreateMatrix(double[] value)
   {
-    return new Matrix4x4(
-      Convert.ToSingle(value[0]),
-      Convert.ToSingle(value[1]),
-      Convert.ToSingle(value[2]),
-      Convert.ToSingle(value[3]),
-      Convert.ToSingle(value[4]),
-      Convert.ToSingle(value[5]),
-      Convert.ToSingle(value[6]),
-      Convert.ToSingle(value[7]),
-      Convert.ToSingle(value[8]),
-      Convert.ToSingle(value[9]),
-      Convert.ToSingle(value[10]),
-      Convert.ToSingle(value[11]),
-      Convert.ToSingle(value[12]),
-      Convert.ToSingle(value[13]),
-      Convert.ToSingle(value[14]),
-      Convert.ToSingle(value[15])
-    );
-  }
-
-  // Creates a matrix from a float array
-  internal static Matrix4x4 CreateMatrix(float[] value)
-  {
-    return new Matrix4x4(
+    return new Matrix4X4<double>(
       value[0],
       value[1],
       value[2],
@@ -310,6 +287,29 @@ public class Transform : Base
     );
   }
 
+  // Creates a matrix from a float array
+  internal static Matrix4X4<double> CreateMatrix(float[] value)
+  {
+    return new Matrix4X4<double>(
+      Convert.ToDouble(value[0]),
+      Convert.ToDouble(value[1]),
+      Convert.ToDouble(value[2]),
+      Convert.ToDouble(value[3]),
+      Convert.ToDouble(value[4]),
+      Convert.ToDouble(value[5]),
+      Convert.ToDouble(value[6]),
+      Convert.ToDouble(value[7]),
+      Convert.ToDouble(value[8]),
+      Convert.ToDouble(value[9]),
+      Convert.ToDouble(value[10]),
+      Convert.ToDouble(value[11]),
+      Convert.ToDouble(value[12]),
+      Convert.ToDouble(value[13]),
+      Convert.ToDouble(value[14]),
+      Convert.ToDouble(value[15])
+    );
+  }
+
   #region obsolete
 
   [JsonIgnore, Obsolete("Use the matrix property")]
@@ -324,7 +324,7 @@ public class Transform : Base
   {
     get
     {
-      Decompose(out _, out Quaternion rotation, out _);
+      Decompose(out _, out Quaternion<double> rotation, out _);
       return Math.Acos(rotation.W) * 2;
     }
   }
