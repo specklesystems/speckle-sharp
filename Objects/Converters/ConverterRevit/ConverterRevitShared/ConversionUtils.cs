@@ -492,15 +492,6 @@ namespace Objects.Converter.Revit
           .Cast<DB.Parameter>()
           .Where(x => x != null && !x.IsReadOnly && !exclusions.Contains(GetParamInternalName(x)));
 
-      foreach (var p in revitElement.ParametersMap.Cast<DB.Parameter>())
-      {
-        System.Diagnostics.Trace.WriteLine($"{p.Definition.Name}");
-        if (p.Definition.Name == "H0")
-        {
-
-        }
-      }
-
       // Here we are creating two  dictionaries for faster lookup
       // one uses the BuiltInName / GUID the other the name as Key
       // we need both to support parameter set by Schema Builder, that might be generated with one or the other
@@ -990,7 +981,7 @@ namespace Objects.Converter.Revit
           .GetCreatedObjectsFromConvertedId(connectorAppId)
           .FirstOrDefault();
 
-        convertedElement ??= Doc.GetElement(connectorAppId);
+        // convertedElement ??= Doc.GetElement(connectorAppId);
 
         var existingRevitConnector = convertedElement?
           .GetConnectorSet()
@@ -1023,6 +1014,25 @@ namespace Objects.Converter.Revit
           existingConnector?.ConnectTo(newRevitConnector);
         } 
       }
+    }
+
+    public T TryInSubtransaction<T>(Func<T> func, Action<Exception> catchFunc)
+    {
+      using var subtransaction = new SubTransaction(Doc);
+      subtransaction.Start();
+
+      T returnValue = default;
+      try
+      {
+        returnValue = func();
+        subtransaction.Commit();
+      }
+      catch (Exception ex)
+      {
+        subtransaction.RollBack();
+        catchFunc(ex);
+      }
+      return returnValue;
     }
     #endregion
 

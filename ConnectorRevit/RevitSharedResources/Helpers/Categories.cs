@@ -21,6 +21,7 @@ public static class Categories
     BuiltInCategory.OST_CurtaSystem,
     BuiltInCategory.OST_DataDevices,
     BuiltInCategory.OST_Doors,
+    BuiltInCategory.OST_DuctAccessory,
     BuiltInCategory.OST_DuctSystem,
     BuiltInCategory.OST_DuctCurves,
     BuiltInCategory.OST_DuctFitting,

@@ -6,6 +6,8 @@ using Objects.Organization;
 using System;
 using System.Collections.Generic;
 using Speckle.Core.Models;
+using Speckle.Core.Kits;
+using RevitSharedResources.Models;
 
 namespace Objects.Converter.Revit
 {
@@ -58,6 +60,25 @@ namespace Objects.Converter.Revit
         {
           _ = FittingToNative(speckleFi, partType, appObj);
           return appObj;
+        }
+        catch (ConversionNotReadyException)
+        {
+          var notReadyData = revitDocumentAggregateCache
+            .TryGetCacheOfType<ConversionNotReadyCacheData>()?
+            .TryGet(speckleFi.id);
+
+          if (notReadyData == null
+            || !notReadyData.HasValue
+            || notReadyData.Value.NumberOfTimesCaught < 2)
+          {
+            throw;
+          }
+          else
+          {
+            appObj.Update(logItem: $"Could not create fitting as part of the system. Reason: Speckle object of type {speckleFi.GetType()} was waiting for an object to convert that never did. Converting as independent instance instead");
+            _ = MEPFamilyInstanceToNative(speckleFi, appObj);
+            return appObj;
+          }
         }
         catch (Exception ex)
         {

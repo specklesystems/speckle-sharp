@@ -37,7 +37,10 @@ namespace ConnectorRevit.Storage
       {
         isExistingCache = false;
         singleCache = new RevitObjectCache<T>(this);
-        initializer((IRevitObjectCache<T>)singleCache);
+        if (initializer != null)
+        {
+          initializer((IRevitObjectCache<T>)singleCache);
+        }
         objectCaches.Add(typeof(T), singleCache);
       }
       else

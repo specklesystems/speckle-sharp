@@ -5,6 +5,7 @@ using Autodesk.Revit.DB;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Logging;
+using System;
 
 namespace Objects.Converter.Revit
 {
@@ -17,8 +18,7 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj))
         return null;
 
-      List<Connector> connectors = new();
-      ValidateConnectorsAndPopulateList(speckleRevitFitting, connectors);
+      var connectors = ValidateConnectorsAndPopulateList(speckleRevitFitting);
 
       var familyInstance = TryCreateFitting(partType, docObj, connectors)
         ?? throw new SpeckleException($"{nameof(FittingToNative)} yeilded a null familyInstance");
@@ -58,7 +58,15 @@ namespace Objects.Converter.Revit
           {
             Doc.Delete(docObj.Id);
           }
-          return Doc.Create.NewTransitionFitting(connectors[0], connectors[1]);
+          var revitFitting = TryInSubtransaction(
+            () => Doc.Create.NewTransitionFitting(connectors[0], connectors[1]),
+            ex => { }
+          );
+          revitFitting ??= TryInSubtransaction(
+            () => Doc.Create.NewTransitionFitting(connectors[1], connectors[0]),
+            ex => throw ex
+          );
+          return revitFitting;
         case PartType.Union:
           if (connectors.Count != 2)
           {
@@ -94,43 +102,53 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private void ValidateConnectorsAndPopulateList(
-      RevitMEPFamilyInstance speckleRevitFitting, 
-      List<Connector> connectors
-    )
+    private List<Connector> ValidateConnectorsAndPopulateList(RevitMEPFamilyInstance speckleRevitFitting)
     {
+      List<Connector> connectors = new();
       foreach (var speckleRevitConnector in speckleRevitFitting.Connectors)
       {
-        foreach (var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
+        var con = FindNativeConnectorForSpeckleRevitConnector(speckleRevitConnector);
+        System.Diagnostics.Trace.WriteLine(con.Origin);
+        connectors.Add(con);
+      }
+      return connectors;
+    }
+
+    private Connector FindNativeConnectorForSpeckleRevitConnector(RevitMEPConnector speckleRevitConnector)
+    {
+      List<Exception> exceptions = new();
+      foreach (var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
           speckleRevitConnector,
           receivedObjectsCache))
+      {
+        if (existingConnector != null)
         {
-          if (existingConnector != null)
-          {
-            connectors.Add(existingConnector);
-          }
-          else if (element != null)
-          {
-            // if the element is not null but the connector is, then the correct connector on the element could not 
-            // be found by trying to compare locations of all the connectors on the element
-            throw new SpeckleException("Fitting found native element to connect to but could not find \"connector\" subelement which is needed for connection in Revit");
-          }
-          else if (string.IsNullOrEmpty(elementAppId))
-          {
-            throw new SpeckleException("A connector has a reference to a null applicationId");
-          }
-          else if (ContextObjects.ContainsKey(elementAppId))
-          {
-            // here a native element could not be found. Hopefully it is yet to be converted and we can 
-            // try to convert the fitting later
-            throw new ConversionNotReadyException("All connectors must be converted before fitting");
-          }
-          else
-          {
-            throw new SpeckleException("Something went wrong when trying to convert fitting.");
-          }
+          // we only want one native connector per speckleRevitConnector so return if we find a match
+          return existingConnector;
+        }
+        else if (element != null)
+        {
+          // if the element is not null but the connector is, then the correct connector on the element could not 
+          // be found by trying to compare locations of all the connectors on the element
+          exceptions.Add(new SpeckleException("Fitting found native element to connect to but could not find \"connector\" subelement which is needed for connection in Revit"));
+        }
+        else if (string.IsNullOrEmpty(elementAppId))
+        {
+          exceptions.Add(new SpeckleException("A connector has a reference to a null applicationId"));
+        }
+        else if (ContextObjects.ContainsKey(elementAppId))
+        {
+          // here a native element could not be found. Hopefully it is yet to be converted and we can 
+          // try to convert the fitting later
+          throw new ConversionNotReadyException("All connectors must be converted before fitting");
+        }
+        else
+        {
+          // TODO: the fitting doesn't exist in the incoming commit. Maybe we can add a placeholder?
+          exceptions.Add(new SpeckleException("The element that the fitting connects to is not in the incoming Commit object"));
         }
       }
+      throw new AggregateException(exceptions);
     }
   }
 }
