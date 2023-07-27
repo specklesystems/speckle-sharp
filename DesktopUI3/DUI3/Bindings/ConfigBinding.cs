@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Speckle.Core.Transports;
 
@@ -43,4 +44,9 @@ public class ConfigBinding : IBinding
 public class Config
 {
   public bool DarkTheme { set; get; }
+  /**
+   * Meant to keep track of whether the v0 onboarding has been completed or not, separated by host app. E.g.:
+   * { "Rhino" : true, "Revit": false }
+   */
+  public Dictionary<string, bool> OnboardingV0 { get; set; } = new Dictionary<string, bool>();
 }

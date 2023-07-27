@@ -1,6 +1,7 @@
 using System.Linq;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Filters;
 using Rhino;
 using Speckle.Core.Credentials;
 
@@ -45,17 +46,30 @@ namespace ConnectorRhinoWebUI.Bindings
       };
     }
 
-    public void Receive()
+    public string[] GetSelectedObjects()
     {
-      // 
+      var objectIds = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).Select(obj => obj.Id.ToString()).ToArray();
+      return objectIds;
     }
 
-    public void Send()
+    public ISendFilter[] GetAvailableFilters()
     {
-      // 
+      
+      return null;
     }
     
-    // sent object change management 
+    // public void Send(string projectId, string modelId, object filter)
+    // {
+    //   const objectIdsToSend = filter.GetObjects();
+    // }
+    
+    // OR 
+    // basically we assume we do filter.getObjects() in the ui
+
+    // public void Send(string projectId, string modelId, string[] objectIds)
+    // {
+    //   
+    // }
   }
 }
 

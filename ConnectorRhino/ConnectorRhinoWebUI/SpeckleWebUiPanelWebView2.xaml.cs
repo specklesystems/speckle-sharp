@@ -50,6 +50,16 @@ namespace ConnectorRhinoWebUI
         showDevToolsMethod);
       Browser.CoreWebView2.AddHostObjectToScript(configBindingsBridge.FrontendBoundName, configBindingsBridge);
       
+            
+      // Selection bindings
+      var selectionBinding = new SelectionBinding();
+      var selectionBindingBridge = new BrowserBridge(
+        Browser,
+        selectionBinding,
+        executeScriptAsyncMethod,
+        showDevToolsMethod);
+      Browser.CoreWebView2.AddHostObjectToScript(selectionBindingBridge.FrontendBoundName, selectionBindingBridge);
+      
     }
   }
 }

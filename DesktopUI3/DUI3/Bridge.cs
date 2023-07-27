@@ -34,7 +34,7 @@ namespace DUI3
     private Type BindingType { get; set; }
     private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
 
-    private JsonSerializerOptions serializerOptions;
+    private JsonSerializerOptions _serializerOptions;
 
     /// <summary>
     /// Creates a new bridge.
@@ -62,7 +62,7 @@ namespace DUI3
       ExecuteScriptAsync = executeScriptAsync;
       ShowDevToolsAction = showDevToolsAction;
 
-      serializerOptions = new JsonSerializerOptions
+      _serializerOptions = new JsonSerializerOptions
       {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
       };
@@ -72,7 +72,10 @@ namespace DUI3
     /// Used by the Frontend bridge logic to understand which methods are available.
     /// </summary>
     /// <returns></returns>
-    public string[] GetBindingsMethodNames() => BindingMethodCache.Keys.ToArray();
+    public string[] GetBindingsMethodNames()
+    {
+      return BindingMethodCache.Keys.ToArray();
+    }
 
     /// <summary>
     /// Used by the Frontend bridge to call into .NET.
@@ -106,7 +109,7 @@ namespace DUI3
 
         for (int i = 0; i < typedArgs.Length; i++)
         {
-          var typedObj = JsonSerializer.Deserialize(jsonArgsArray[i], parameters[i].ParameterType, serializerOptions);
+          var typedObj = JsonSerializer.Deserialize(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
           typedArgs[i] = typedObj;
         }
         var resultTyped = method.Invoke(Binding, typedArgs);
@@ -120,7 +123,7 @@ namespace DUI3
         if (resultTypedTask == null)
         {
           // Regular method: no need to await things
-          resultJson = JsonSerializer.Serialize(resultTyped, serializerOptions);
+          resultJson = JsonSerializer.Serialize(resultTyped, _serializerOptions);
         }
         else // It's an async call
         {
@@ -130,7 +133,7 @@ namespace DUI3
           // If has a "Result" property return the value otherwise null (Task<void> etc)
           var resultProperty = resultTypedTask.GetType().GetProperty("Result");
           var taskResult = resultProperty != null ? resultProperty.GetValue(resultTypedTask) : null;
-          resultJson = JsonSerializer.Serialize(taskResult, serializerOptions);
+          resultJson = JsonSerializer.Serialize(taskResult, _serializerOptions);
         }
 
         return resultJson;
@@ -138,7 +141,7 @@ namespace DUI3
       catch (Exception e)
       {
         // TODO: properly log the exeception.
-        return JsonSerializer.Serialize(new { Error = e.Message, InnerError = e.InnerException?.Message }, serializerOptions);
+        return JsonSerializer.Serialize(new { Error = e.Message, InnerError = e.InnerException?.Message }, _serializerOptions);
       }
     }
 
@@ -151,7 +154,7 @@ namespace DUI3
       string script;
       if (data != null)
       {
-        var payload = JsonSerializer.Serialize(data, serializerOptions);
+        var payload = JsonSerializer.Serialize(data, _serializerOptions);
         script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
       } 
       else
