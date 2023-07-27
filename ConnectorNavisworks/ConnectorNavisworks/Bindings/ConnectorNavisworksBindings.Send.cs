@@ -310,7 +310,7 @@ public partial class ConnectorBindingsNavisworks
     if (commitObject.elements.Count == 0)
     {
       _settingsHandler.RestoreAutoSave();
-      throw new SpeckleException("All Geometry objects in the selection are hidden. Send stopped.");
+      throw new SpeckleException("All Geometry objects in the selection are hidden or cannot be converted. Send stopped.");
     }
 
     _progressViewModel.Report.Merge(_navisworksConverter.Report);
