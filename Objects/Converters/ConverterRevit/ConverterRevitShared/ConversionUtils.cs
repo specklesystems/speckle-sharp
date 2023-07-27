@@ -974,14 +974,10 @@ namespace Objects.Converter.Revit
 
       foreach (var connectedId in revitMEPConnector.ConnectedConnectorIds)
       {
-        //var connectedMepElement = graph.GetNodeByAppId(connectedId.Split('.').First());
-        //if (connectedMepElement == null) continue;
         var connectorAppId = connectedId.Split('.').First();
         var convertedElement = receivedObjectsCache
           .GetCreatedObjectsFromConvertedId(connectorAppId)
           .FirstOrDefault();
-
-        // convertedElement ??= Doc.GetElement(connectorAppId);
 
         var existingRevitConnector = convertedElement?
           .GetConnectorSet()

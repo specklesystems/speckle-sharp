@@ -20,9 +20,9 @@ namespace Objects.Converter.Revit
       if (IsIgnore(docObj, appObj))
         return null;
 
-      var connectors = ValidateConnectorsAndPopulateList(speckleRevitFitting);
+      var connectorInfo = ValidateConnectorsAndPopulateList(speckleRevitFitting);
 
-      var familyInstance = TryCreateFitting(partType, docObj, connectors)
+      var familyInstance = TryCreateFitting(partType, docObj, connectorInfo)
         ?? throw new SpeckleException($"{nameof(FittingToNative)} yeilded a null familyInstance");
 
       var familySymbol = GetElementType<FamilySymbol>(speckleRevitFitting, new ApplicationObject(null, null), out bool isExactMatch);
@@ -37,87 +37,97 @@ namespace Objects.Converter.Revit
       return familyInstance;
     }
 
-    private DB.FamilyInstance TryCreateFitting(PartType partType, Element docObj, Dictionary<string, Connector> connectorsDict)
+    private DB.FamilyInstance TryCreateFitting(PartType partType, Element docObj, List<(Element, int)> connectorInfo)
     {
-      var connectors = RenewConnectorList(connectorsDict);
       switch (partType)
       {
         case PartType.Elbow:
-          if (connectors.Count != 2)
+          if (connectorInfo.Count != 2)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Elbow)} must have 2 connectors, not {connectors.Count}");
+            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Elbow)} must have 2 connectors, not {connectorInfo.Count}");
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
             Doc.Delete(docObj.Id);
           }
-          return Doc.Create.NewElbowFitting(connectors[0], connectors[1]);
+          return Doc.Create.NewElbowFitting(GetConnector(connectorInfo[0]), GetConnector(connectorInfo[1]));
         case PartType.Transition:
-          if (connectors.Count != 2)
+          if (connectorInfo.Count != 2)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Transition)} must have 2 connectors, not {connectors.Count}");
+            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Transition)} must have 2 connectors, not {connectorInfo.Count}");
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
             Doc.Delete(docObj.Id);
           }
           var revitFitting = TryInSubtransaction(
-            () => Doc.Create.NewTransitionFitting(connectors[0], connectors[1]),
-            ex => connectors = RenewConnectorList(connectorsDict)
+            () => Doc.Create.NewTransitionFitting(GetConnector(connectorInfo[0]), GetConnector(connectorInfo[1])),
+            ex => { }
           );
           revitFitting ??= TryInSubtransaction(
-            () => Doc.Create.NewTransitionFitting(connectors[1], connectors[0]),
+            () => Doc.Create.NewTransitionFitting(GetConnector(connectorInfo[1]), GetConnector(connectorInfo[0])),
             ex => throw ex
           );
           return revitFitting;
         case PartType.Union:
-          if (connectors.Count != 2)
+          if (connectorInfo.Count != 2)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Union)} must have 2 connectors, not {connectors.Count}");
+            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Union)} must have 2 connectors, not {connectorInfo.Count}");
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
             Doc.Delete(docObj.Id);
           }
-          return Doc.Create.NewUnionFitting(connectors[0], connectors[1]);
+          return Doc.Create.NewUnionFitting(GetConnector(connectorInfo[0]), GetConnector(connectorInfo[1]));
         case PartType.Tee:
-          if (connectors.Count != 3)
+          if (connectorInfo.Count != 3)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Tee)} must have 3 connectors, not {connectors.Count}");
+            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Tee)} must have 3 connectors, not {connectorInfo.Count}");
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
             Doc.Delete(docObj.Id);
           }
-          return Doc.Create.NewTeeFitting(connectors[0], connectors[1], connectors[2]);
+          return Doc.Create.NewTeeFitting(GetConnector(connectorInfo[0]), GetConnector(connectorInfo[1]), GetConnector(connectorInfo[2]));
         case PartType.Cross:
-          if (connectors.Count != 4)
+          if (connectorInfo.Count != 4)
           {
-            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Cross)} must have 4 connectors, not {connectors.Count}");
+            throw new SpeckleException($"A fitting with a partType of {nameof(PartType.Cross)} must have 4 connectors, not {connectorInfo.Count}");
           }
           if (ReceiveMode == ReceiveMode.Update && docObj != null)
           {
             Doc.Delete(docObj.Id);
           }
-          return Doc.Create.NewCrossFitting(connectors[0], connectors[1], connectors[2], connectors[3]);
+          return Doc.Create.NewCrossFitting(GetConnector(connectorInfo[0]), GetConnector(connectorInfo[1]), GetConnector(connectorInfo[2]), GetConnector(connectorInfo[3]));
         default:
           throw new SpeckleException($"Method named {nameof(FittingToNative)} was not expecting an element with a partType of {partType}");
       }
     }
 
-    private Dictionary<string, Connector> ValidateConnectorsAndPopulateList(RevitMEPFamilyInstance speckleRevitFitting)
+    /// <summary>
+    /// Attempting to add a fitting between two connectors and rolling back a subtransaction will result in the
+    /// connector element references becomeing invalid. Therefore, instead of passing around the connector objects,
+    /// we're keeping track of the owner element and the connector id so we can retrieve the connector
+    /// connector id
+    /// </summary>
+    /// <param name="connectorInfo"></param>
+    /// <returns></returns>
+    private Connector GetConnector((Element, int) connectorInfo) => connectorInfo.Item1
+      .GetConnectorSet()
+      .First(c => c.Id == connectorInfo.Item2);
+
+    private List<(Element, int)> ValidateConnectorsAndPopulateList(RevitMEPFamilyInstance speckleRevitFitting)
     {
-      Dictionary<string, Connector> connectors = new();
+      List<(Element, int)> connectors = new();
       foreach (var speckleRevitConnector in speckleRevitFitting.Connectors)
       {
         var con = FindNativeConnectorForSpeckleRevitConnector(speckleRevitConnector);
-        System.Diagnostics.Trace.WriteLine(con.Origin);
-        connectors.Add(con.GetUniqueApplicationId(), con);
+        connectors.Add(con);
       }
       return connectors;
     }
-
-    private Connector FindNativeConnectorForSpeckleRevitConnector(RevitMEPConnector speckleRevitConnector)
+    
+    private (Element, int) FindNativeConnectorForSpeckleRevitConnector(RevitMEPConnector speckleRevitConnector)
     {
       List<Exception> exceptions = new();
       foreach (var (elementAppId, element, existingConnector) in GetRevitConnectorsThatConnectToSpeckleConnector(
@@ -127,7 +137,7 @@ namespace Objects.Converter.Revit
         if (existingConnector != null)
         {
           // we only want one native connector per speckleRevitConnector so return if we find a match
-          return existingConnector;
+          return (element, existingConnector.Id);
         }
         else if (element != null)
         {
@@ -152,23 +162,6 @@ namespace Objects.Converter.Revit
         }
       }
       throw new AggregateException(exceptions);
-    }
-
-    private List<Connector> RenewConnectorList(Dictionary<string, Connector> connectors)
-    {
-      var dictCopy = connectors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-      foreach (var kvp in dictCopy)
-      {
-        if (kvp.Value.IsValidObject) continue;
-
-        var splitId = kvp.Key.Split('.');
-        var elId = splitId.First();
-        var connectorId = int.Parse(splitId.Last());
-
-        var element = Doc.GetElement(elId);
-        connectors[kvp.Key] = element.GetConnectorSet().First(c => c.Id == connectorId);
-      }
-      return connectors.Values.ToList();
     }
   }
 }

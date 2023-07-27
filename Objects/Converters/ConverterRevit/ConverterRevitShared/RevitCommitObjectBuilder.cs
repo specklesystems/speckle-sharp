@@ -156,14 +156,14 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       _collections.Add(MEPNetworks, collection);
     }
 
-    // Create specific network object and add it to the commitBuilder if it doesn't exist
+    // Create specific collection for this MEPSystem object and add it to the commitBuilder if it doesn't exist
     if (!converted.ContainsKey(mepSystemName))
     {
-      var network = new Graph(mepSystemName) { applicationId = mepSystemName };
-      SetRelationship(network, new NestingInstructions(MEPNetworks, NestUnderElementsProperty));
+      Collection mepSystemCollection = new(mepSystemName, mepSystemName) { applicationId = mepSystemName };
+      SetRelationship(mepSystemCollection, new NestingInstructions(MEPNetworks, NestUnderElementsProperty));
     }
 
-    instructions.Add(new NestingInstructions(mepSystemName, NestUnderMEPSystem));
+    instructions.Add(new NestingInstructions(mepSystemName, NestUnderElementsProperty));
   }
 
   private static string GetMEPSystemName(Element element)
@@ -176,16 +176,6 @@ public sealed class RevitCommitObjectBuilder : CommitObjectBuilder<Element>, IRe
       Conduit c => c.MEPSystem?.Name ?? "",
       _ => ConverterRevit.GetParamValue<string>(element, BuiltInParameter.RBS_SYSTEM_NAME_PARAM)
     };
-  }
-
-  private void NestUnderMEPSystem(Base parent, Base child)
-  {
-    var network = (Graph)parent;
-    network.AddElement(child, appId =>
-    {
-      converted.TryGetValue(appId, out var convertedValue);
-      return convertedValue;
-    });
   }
 
   private static string GetCategoryId(Base conversionResult, Element revitElement)

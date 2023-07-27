@@ -257,24 +257,6 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (ConversionNotReadyException ex) 
         {
-          //var exceptionTupleCache = revitDocumentAggregateCache
-          //  .GetOrInitializeEmptyCacheOfType<(ConversionNotReadyException, int)>(out _);
-
-          //var exceptionTupe = exceptionTupleCache
-          //  .GetOrAdd(@base.id, () => (null, 0), out _);
-
-          //if (++exceptionTupe.Item2 > 2)
-          //{
-          //  SpeckleLog.Logger.Warning(ex, $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did");
-          //  obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-          //  progress.Report.UpdateReportObject(obj);
-          //}
-          //else
-          //{
-          //  Preview.Add(obj);
-          //}
-          //exceptionTupleCache.Set(@base.id, exceptionTupe);
-
           var notReadyDataCache = revitDocumentAggregateCache
             .GetOrInitializeEmptyCacheOfType<ConversionNotReadyCacheData>(out _);
           var notReadyData = notReadyDataCache
@@ -292,22 +274,6 @@ namespace Speckle.ConnectorRevit.UI
           }
           // the struct must be saved to the cache again or the "numberOfTimesCaught" increment will not persist
           notReadyDataCache.Set(@base.id, notReadyData);
-
-          //if (!conversionNotReadyCount.ContainsKey(obj.OriginalId))
-          //{
-          //  conversionNotReadyCount[obj.OriginalId] = 0;
-          //}
-
-          //if (++conversionNotReadyCount[obj.OriginalId] > 2)
-          //{
-          //  SpeckleLog.Logger.Warning(ex, $"Speckle object of type {@base.GetType()} was waiting for an object to convert that never did");
-          //  obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-          //  progress.Report.UpdateReportObject(obj);
-          //}
-          //else
-          //{
-          //  Preview.Add(obj);
-          //}
         }
         catch (Exception ex)
         {

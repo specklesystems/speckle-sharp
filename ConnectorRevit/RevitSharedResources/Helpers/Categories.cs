@@ -13,11 +13,13 @@ public static class Categories
   public static IReadOnlyList<BuiltInCategory> SupportedBuiltInCategories = new List<BuiltInCategory>
   {
     BuiltInCategory.OST_Areas,
+    BuiltInCategory.OST_CableTrayFitting,
     BuiltInCategory.OST_CableTray,
     BuiltInCategory.OST_Ceilings,
     BuiltInCategory.OST_Columns,
     BuiltInCategory.OST_CommunicationDevices,
     BuiltInCategory.OST_Conduit,
+    BuiltInCategory.OST_ConduitFitting,
     BuiltInCategory.OST_CurtaSystem,
     BuiltInCategory.OST_DataDevices,
     BuiltInCategory.OST_Doors,
@@ -49,7 +51,9 @@ public static class Categories
     BuiltInCategory.OST_MechanicalEquipment,
     BuiltInCategory.OST_MEPSpaces,
     BuiltInCategory.OST_Parking,
+    BuiltInCategory.OST_PipeAccessory,
     BuiltInCategory.OST_PipeCurves,
+    BuiltInCategory.OST_PipeFitting,
     BuiltInCategory.OST_PipingSystem,
     BuiltInCategory.OST_PipeInsulations,
     BuiltInCategory.OST_PointClouds,
