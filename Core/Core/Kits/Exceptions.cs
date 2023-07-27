@@ -75,11 +75,6 @@ public class ConversionSkippedException : ConversionException
 /// </summary>
 public class ConversionNotReadyException : ConversionException
 {
-  /// <summary>
-  /// This ID is an incoming Base object's id or an outgoing native object's applicationId
-  /// </summary>
-  public string OriginalObjectId { get; set; }
-  public int NumberOfTimesThrown { get; set; }
   public ConversionNotReadyException(string? message, object? objectToConvert, Exception? innerException = null)
     : base(message, objectToConvert, innerException) { }
 
