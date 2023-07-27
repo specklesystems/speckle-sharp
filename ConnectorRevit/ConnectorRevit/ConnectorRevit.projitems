@@ -35,7 +35,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)Storage\UIDocumentProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\ElementTypeMapper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)TypeMapping\FamilyImporter.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConnectorRevitUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\App.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Entry\CmdAvailabilityViews.cs" />
