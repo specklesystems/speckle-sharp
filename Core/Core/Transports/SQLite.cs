@@ -41,7 +41,7 @@ public sealed class SQLiteTransport : IDisposable, ICloneable, ITransport, IBlob
     }
     catch (Exception ex)
     {
-      throw new TransportException(this, $"Couldn't not create {dir}", ex);
+      throw new TransportException(this, $"Cound not create {dir}", ex);
     }
 
     _rootPath = Path.Combine(_basePath, _applicationName, $"{_scope}.db");
