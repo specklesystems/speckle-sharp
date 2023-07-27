@@ -1030,6 +1030,7 @@ namespace Objects.Converter.Revit
       catch (Exception ex)
       {
         subtransaction.RollBack();
+        Doc.Regenerate();
         catchFunc(ex);
       }
       return returnValue;

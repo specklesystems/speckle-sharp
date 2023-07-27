@@ -6,6 +6,8 @@ using Speckle.Core.Kits;
 using Speckle.Core.Models;
 using Speckle.Core.Logging;
 using System;
+using ConverterRevitShared.Extensions;
+using System.Linq;
 
 namespace Objects.Converter.Revit
 {
@@ -35,8 +37,9 @@ namespace Objects.Converter.Revit
       return familyInstance;
     }
 
-    private DB.FamilyInstance TryCreateFitting(PartType partType, Element docObj, List<Connector> connectors)
+    private DB.FamilyInstance TryCreateFitting(PartType partType, Element docObj, Dictionary<string, Connector> connectorsDict)
     {
+      var connectors = RenewConnectorList(connectorsDict);
       switch (partType)
       {
         case PartType.Elbow:
@@ -60,7 +63,7 @@ namespace Objects.Converter.Revit
           }
           var revitFitting = TryInSubtransaction(
             () => Doc.Create.NewTransitionFitting(connectors[0], connectors[1]),
-            ex => { }
+            ex => connectors = RenewConnectorList(connectorsDict)
           );
           revitFitting ??= TryInSubtransaction(
             () => Doc.Create.NewTransitionFitting(connectors[1], connectors[0]),
@@ -102,14 +105,14 @@ namespace Objects.Converter.Revit
       }
     }
 
-    private List<Connector> ValidateConnectorsAndPopulateList(RevitMEPFamilyInstance speckleRevitFitting)
+    private Dictionary<string, Connector> ValidateConnectorsAndPopulateList(RevitMEPFamilyInstance speckleRevitFitting)
     {
-      List<Connector> connectors = new();
+      Dictionary<string, Connector> connectors = new();
       foreach (var speckleRevitConnector in speckleRevitFitting.Connectors)
       {
         var con = FindNativeConnectorForSpeckleRevitConnector(speckleRevitConnector);
         System.Diagnostics.Trace.WriteLine(con.Origin);
-        connectors.Add(con);
+        connectors.Add(con.GetUniqueApplicationId(), con);
       }
       return connectors;
     }
@@ -149,6 +152,23 @@ namespace Objects.Converter.Revit
         }
       }
       throw new AggregateException(exceptions);
+    }
+
+    private List<Connector> RenewConnectorList(Dictionary<string, Connector> connectors)
+    {
+      var dictCopy = connectors.ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+      foreach (var kvp in dictCopy)
+      {
+        if (kvp.Value.IsValidObject) continue;
+
+        var splitId = kvp.Key.Split('.');
+        var elId = splitId.First();
+        var connectorId = int.Parse(splitId.Last());
+
+        var element = Doc.GetElement(elId);
+        connectors[kvp.Key] = element.GetConnectorSet().First(c => c.Id == connectorId);
+      }
+      return connectors.Values.ToList();
     }
   }
 }
