@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Speckle.Core.Logging;
 using Forms = System.Windows.Forms;
 
 #if ADVANCESTEEL2023
@@ -52,10 +53,11 @@ namespace Speckle.ConnectorAutocadCivil.Entry
         //Some dlls fail to load due to versions matching (0.10.7 vs 0.10.0)
         //the below should fix it! This affects Avalonia and Material 
         AppDomain.CurrentDomain.AssemblyResolve += new ResolveEventHandler(OnAssemblyResolve);
-
+        
         // DUI2
-        SpeckleAutocadCommand.InitAvalonia();
         var bindings = new ConnectorBindingsAutocad();
+        Setup.Init(bindings.GetHostAppNameVersion(), bindings.GetHostAppName());
+        SpeckleAutocadCommand.InitAvalonia();
         bindings.RegisterAppEvents();
         SpeckleAutocadCommand.Bindings = bindings;
       }
