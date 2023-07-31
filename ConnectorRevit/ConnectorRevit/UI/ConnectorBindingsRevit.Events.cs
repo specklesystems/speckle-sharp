@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Events;
 using Avalonia.Controls;
+using ConnectorRevit.Storage;
 using DesktopUI2.Models;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views;
@@ -210,6 +211,9 @@ namespace Speckle.ConnectorRevit.UI
           CurrentOperationCancellation?.Cancel();
           MainViewModel.CloseDialog();
         }
+
+        // invalidate all revit elements in the cache
+        revitDocumentAggregateCache.InvalidateAll();
 
         SpeckleRevitCommand.RegisterPane();
 

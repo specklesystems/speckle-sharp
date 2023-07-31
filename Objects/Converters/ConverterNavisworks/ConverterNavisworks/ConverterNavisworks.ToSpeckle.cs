@@ -314,7 +314,8 @@ public partial class ConverterNavisworks
     if (!item.HasGeometry || item.Children.Any())
       return true;
 
-    const PrimitiveTypes allowedTypes = PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints;
+    const PrimitiveTypes allowedTypes =
+      PrimitiveTypes.Lines | PrimitiveTypes.Triangles | PrimitiveTypes.SnapPoints | PrimitiveTypes.Text;
 
     var primitives = item.Geometry.PrimitiveTypes;
     var primitiveTypeSupported = (primitives & allowedTypes) == primitives;

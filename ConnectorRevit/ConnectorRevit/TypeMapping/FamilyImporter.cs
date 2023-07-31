@@ -10,9 +10,11 @@ using DesktopUI2.Models.TypeMappingOnReceive;
 using DesktopUI2.ViewModels;
 using DesktopUI2.Views.Windows.Dialogs;
 using Revit.Async;
+using RevitSharedResources.Extensions.SpeckleExtensions;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Logging;
 using static DesktopUI2.ViewModels.ImportFamiliesDialogViewModel;
+using SHC = RevitSharedResources.Helpers.Categories;
 
 namespace ConnectorRevit.TypeMapping
 {
@@ -21,6 +23,7 @@ namespace ConnectorRevit.TypeMapping
     private readonly Document document;
     private readonly IAllRevitCategoriesExposer revitCategoriesExposer;
     private readonly IRevitElementTypeRetriever typeRetriever;
+    private readonly IRevitDocumentAggregateCache revitDocumentAggregateCache;
 
     public FamilyImporter(Document document, IAllRevitCategoriesExposer revitCategoriesExposer, IRevitElementTypeRetriever typeRetriever)
     {
@@ -120,7 +123,9 @@ namespace ConnectorRevit.TypeMapping
           foreach (var kvp in symbolsToLoad)
           {
             hostTypesContainer.AddTypesToCategory(kvp.Key, kvp.Value);
-            typeRetriever.InvalidateElementTypeCache(kvp.Key);
+            revitDocumentAggregateCache
+              .TryGetCacheOfType<List<ElementType>>()?
+              .Remove(kvp.Key);
           }
           t.Commit();
           Analytics.TrackEvent(Analytics.Events.DUIAction, new Dictionary<string, object>() {
@@ -161,7 +166,9 @@ namespace ConnectorRevit.TypeMapping
         var typeInfo = GetTypeInfo(xmlDoc, nsman);
         familyInfo.Add(familyName, new FamilyInfo(path));
 
-        var elementTypes = typeRetriever.GetOrAddAvailibleTypes(typeInfo);
+        var elementTypes = revitDocumentAggregateCache
+          .GetOrInitializeWithDefaultFactory<List<ElementType>>()
+          .GetOrAddGroupOfTypes(typeInfo);
         AddSymbolToAllSymbols(allSymbols, xmlDoc, nsman, familyName, elementTypes);
 
         // delete the newly created xml file
@@ -221,7 +228,7 @@ namespace ConnectorRevit.TypeMapping
     private IRevitCategoryInfo GetTypeInfo(XmlDocument xmlDoc, XmlNamespaceManager nsman)
     {
       var catRoot = xmlDoc.GetElementsByTagName("category");
-      var category = revitCategoriesExposer.AllCategories.UndefinedCategory;
+      IRevitCategoryInfo category = SHC.Undefined;
       foreach (var node in catRoot)
       {
         if (node is not XmlElement xmlNode) continue;
@@ -231,7 +238,7 @@ namespace ConnectorRevit.TypeMapping
 
         category = revitCategoriesExposer.AllCategories.GetRevitCategoryInfo(term.InnerText);
 
-        if (category != revitCategoriesExposer.AllCategories.UndefinedCategory)
+        if (category != SHC.Undefined)
           break;
       }
 
@@ -240,7 +247,7 @@ namespace ConnectorRevit.TypeMapping
 
     public IEnumerable<IRevitCategoryInfo> GetRevitCategoryInfoOfFamilySymbol(FamilySymbol familySymbol)
     {
-      var allPotentialMatches = revitCategoriesExposer.AllCategories.All
+      var allPotentialMatches = SHC.All.Values
         .Where(info => info.ElementTypeType == typeof(FamilySymbol))
         .ToList();
 

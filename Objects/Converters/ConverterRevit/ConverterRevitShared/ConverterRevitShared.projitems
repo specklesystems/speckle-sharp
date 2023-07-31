@@ -9,9 +9,7 @@
     <Import_RootNamespace>ConverterRevitShared</Import_RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)Cache\SingleObjectCacheImplementation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Categories.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)Cache\ConversionOperationCache.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConversionUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.DxfImport.cs" />
@@ -19,7 +17,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.Previews.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.SettingsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectContext3DServer.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)RevitCategoryInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AllRevitCategories.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />
@@ -75,6 +73,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFaceWall.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\Units.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertWall.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RevitCommitObjectBuilderExposer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitElementTypeUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RevitVersionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Revit\ConnectionPair.cs" />

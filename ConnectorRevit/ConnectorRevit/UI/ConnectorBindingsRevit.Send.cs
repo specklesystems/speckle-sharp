@@ -12,6 +12,7 @@ using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
 using Revit.Async;
+using RevitSharedResources.Interfaces;
 using Serilog.Context;
 using Speckle.Core.Api;
 using Speckle.Core.Kits;
@@ -62,7 +63,16 @@ namespace Speckle.ConnectorRevit.UI
           .ToList()
       );
       var commitObject = converter.ConvertToSpeckle(CurrentDoc.Document) ?? new Collection();
-      RevitCommitObjectBuilder commitObjectBuilder = new(CommitCollectionStrategy.ByCollection);
+      IRevitCommitObjectBuilder commitObjectBuilder;
+
+      if (converter is not IRevitCommitObjectBuilderExposer builderExposer)
+      {
+        throw new Exception($"Converter {converter.Name} by {converter.Author} does not provide the necessary object, {nameof(IRevitCommitObjectBuilder)}, needed to build the Speckle commit object.");
+      }
+      else
+      {
+        commitObjectBuilder = builderExposer.commitObjectBuilder;
+      }
 
       progress.Report = new ProgressReport();
       progress.Max = selectedObjects.Count;
