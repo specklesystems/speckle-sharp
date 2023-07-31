@@ -161,9 +161,36 @@ public static class BaseExtensions
   /// <returns>True if the object is displayable, false otherwise.</returns>
   public static bool IsDisplayableObject(this Base speckleObject)
   {
-    var displayValue = speckleObject["displayValue"] ?? speckleObject["@displayValue"];
-    var list = displayValue as List<object>;
-    var baseList = list?.Cast<Base>().ToList();
-    return baseList != null;
+    return speckleObject.TryGetDisplayValue() != null;
+  }
+
+  public static IEnumerable<T>? TryGetDisplayValue<T>(this Base obj) where T: Base
+  {
+    var rawDisplayValue = obj["displayValue"] ?? obj["@displayValue"];
+    return (rawDisplayValue as IEnumerable)?.OfType<T>();
+  }
+
+  public static IEnumerable<Base>? TryGetDisplayValue(this Base obj)
+  {
+    return TryGetDisplayValue<Base>(obj);
+  }
+
+  public static string? TryGetName(this Base obj)
+  {
+    return obj["name"] as string;
+  }
+
+  public static IEnumerable<T>? TryGetParameters<T>(this Base obj) where T: Base
+  {
+    var parameters = (obj["parameters"] ?? obj["@parameters"]) as Base;
+    return parameters?
+      .GetMembers(DynamicBaseMemberType.Dynamic)
+      .Values
+      .OfType<T>();
+  }
+
+  public static IEnumerable<Base>? TryGetParameters(this Base obj)
+  {
+    return TryGetParameters<Base>(obj);
   }
 }

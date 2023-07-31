@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Autodesk.Revit.DB;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using Speckle.Core.Models.Extensions;
+using BE = Objects.BuiltElements;
+using DirectShape = Objects.BuiltElements.Revit.DirectShape;
+using Parameter = Objects.BuiltElements.Revit.Parameter;
 
 namespace Objects.Converter.Revit;
 
@@ -20,18 +24,50 @@ public partial class ConverterRevit
       throw new Exception("The provided object is not displayable (has no 'displayValue' property).");
 
     // Extract info from the object dynamically.
-    var name = obj["name"] as string ?? "speckleDisplayableObject" + obj.id;
-    var displayValue = (obj["displayValue"] ?? obj["@displayValue"]) as List<object>;
-    var casted = displayValue?.Cast<Base>().ToList();
-
-    // TODO: Compute RevitCategory based on object type.
-    var category = RevitCategory.GenericModel;
-
-    // TODO: Figure out the logic needed for parameter transferring to a DS.
-    List<Parameter> parameters = null;
-
+    var name = obj.TryGetName() ?? "speckleDisplayableObject" + obj.id;
+    var displayValue = obj.TryGetDisplayValue() ?? throw new Exception("Display value was empty or null");
+    var parameters = obj.TryGetParameters<Parameter>();
+    var category = GetSpeckleObjectCategory(obj);
+    
     // Create a temp DirectShape and use the DirectShape conversion routine
-    var ds = new DirectShape(name, category, casted, parameters);
+    var ds = new DirectShape(name, category, displayValue.ToList(), parameters?.ToList());
     return DirectShapeToNative(ds, ToNativeMeshSettingEnum.Default);
+  }
+
+  public RevitCategory GetSpeckleObjectCategory(Base @object)
+  {
+    switch (@object)
+    {
+      case BE.Beam _:
+      case BE.Brace _:
+      case BE.TeklaStructures.TeklaContourPlate _:
+        return RevitCategory.StructuralFraming;
+      case BE.TeklaStructures.Bolts _:
+        return RevitCategory.StructConnectionBolts;
+      case BE.TeklaStructures.Welds _:
+        return RevitCategory.StructConnectionWelds;
+      case BE.Floor _:
+        return RevitCategory.Floors;
+      case BE.Ceiling _:
+        return RevitCategory.Ceilings;
+      case BE.Column _:
+        return RevitCategory.Columns;
+      case BE.Pipe _:
+        return RevitCategory.PipeSegments;
+      case BE.Rebar _:
+        return RevitCategory.Rebar;
+      case BE.Topography _:
+        return RevitCategory.Topography;
+      case BE.Wall _:
+        return RevitCategory.Walls;
+      case BE.Roof _:
+        return RevitCategory.Roofs;
+      case BE.Duct _:
+        return RevitCategory.DuctSystem;
+      case BE.CableTray _:
+        return RevitCategory.CableTray;
+      default:
+        return RevitCategory.GenericModel;
+    }
   }
 }
