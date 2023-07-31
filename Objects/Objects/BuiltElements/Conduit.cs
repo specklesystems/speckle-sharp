@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Objects.BuiltElements.Revit.Interfaces;
 using Objects.Geometry;
 using Speckle.Core.Models;
 
@@ -19,7 +20,7 @@ namespace Objects.BuiltElements
 
 namespace Objects.BuiltElements.Revit
 {
-  public class RevitConduit : Conduit
+  public class RevitConduit : Conduit, IHasMEPConnectors
   {
     public string family { get; set; }
 
@@ -30,5 +31,6 @@ namespace Objects.BuiltElements.Revit
     public Base parameters { get; set; }
 
     public string elementId { get; set; }
+    public List<RevitMEPConnector> Connectors { get; set; } = new();
   }
 }

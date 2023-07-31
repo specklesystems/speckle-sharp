@@ -1,6 +1,7 @@
 #nullable enable
 using System;
 using System.Collections.Generic;
+using Autodesk.Revit.DB;
 using RevitSharedResources.Interfaces;
 
 namespace ConnectorRevit.Storage
@@ -59,6 +60,11 @@ namespace ConnectorRevit.Storage
     public ICollection<T> GetAllObjects()
     {
       return dataStorage.Values;
+    }
+
+    public void Set(string key, T value)
+    {
+      dataStorage[key] = value;
     }
 
     public void AddMany(IEnumerable<T> elements, Func<T, string> keyFactory)

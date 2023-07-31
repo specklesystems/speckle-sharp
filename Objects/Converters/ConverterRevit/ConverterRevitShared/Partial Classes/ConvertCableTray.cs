@@ -1,5 +1,6 @@
 using Autodesk.Revit.DB;
 using Autodesk.Revit.DB.Electrical;
+using ConverterRevitShared.Extensions;
 using Objects.BuiltElements.Revit;
 using Speckle.Core.Models;
 using System;
@@ -57,6 +58,8 @@ namespace Objects.Converter.Revit
         SetInstanceParameters(cableTray, speckleRevitCableTray);
       }
 
+      CreateSystemConnections(speckleRevitCableTray.Connectors, cableTray, receivedObjectsCache);
+
       appObj.Update(status: ApplicationObject.State.Created, createdId: cableTray.UniqueId, convertedItem: cableTray);
       return appObj;
     }
@@ -87,6 +90,11 @@ namespace Objects.Converter.Revit
         {
           "RBS_CABLETRAY_HEIGHT_PARAM", "RBS_CABLETRAY_WIDTH_PARAM", "CURVE_ELEM_LENGTH", "RBS_START_LEVEL_PARAM"
         });
+
+      foreach (var connector in revitCableTray.GetConnectorSet())
+      {
+        speckleCableTray.Connectors.Add(ConnectorToSpeckle(connector));
+      }
 
       return speckleCableTray;
     }
