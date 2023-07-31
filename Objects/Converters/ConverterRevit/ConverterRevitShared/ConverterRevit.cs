@@ -9,6 +9,7 @@ using RevitSharedResources.Helpers.Extensions;
 using RevitSharedResources.Interfaces;
 using Speckle.Core.Kits;
 using Speckle.Core.Models;
+using Speckle.Core.Models.Extensions;
 using BE = Objects.BuiltElements;
 using BER = Objects.BuiltElements.Revit;
 using BERC = Objects.BuiltElements.Revit.Curve;
@@ -678,9 +679,12 @@ namespace Objects.Converter.Revit
         case Other.BlockInstance o:
           return BlockInstanceToNative(o);
 
-        //hacky but the current comments camera is not a Base object
-        //used only from DUI and not for normal geometry conversion
         case Base b:
+          if (b.IsDisplayableObject())
+            return DisplayableObjectToNative(b);
+
+          //hacky but the current comments camera is not a Base object
+          //used only from DUI and not for normal geometry conversion
           var boo = b["isHackySpeckleCamera"] as bool?;
           if (boo == true)
             return ViewOrientation3DToNative(b);
@@ -769,7 +773,7 @@ namespace Objects.Converter.Revit
       if (schema != null)
         return CanConvertToNative(schema);
 
-      return @object switch
+      var objRes = @object switch
       {
         //geometry
         ICurve _ => true,
@@ -821,6 +825,10 @@ namespace Objects.Converter.Revit
         Organization.DataTable _ => true,
         _ => false,
       };
+      if (objRes)
+        return true;
+
+      return @object.IsDisplayableObject();
     }
   }
 }

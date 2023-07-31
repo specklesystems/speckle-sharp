@@ -151,4 +151,19 @@ public static class BaseExtensions
   {
     return speckleObject.GetMembers(DynamicBaseMemberType.Instance).ContainsKey(propName) ? propName : $"@{propName}";
   }
+
+  /// <summary>
+  /// Checks if an object "is displayable" i.e. has a displayValue property that is a list of base.
+  /// This is to mirror the selection logic of our viewer package, where any "displayable object" will become
+  /// a single selectable entity.
+  /// </summary>
+  /// <param name="speckleObject">The Base object to check.</param>
+  /// <returns>True if the object is displayable, false otherwise.</returns>
+  public static bool IsDisplayableObject(this Base speckleObject)
+  {
+    var displayValue = speckleObject["displayValue"] ?? speckleObject["@displayValue"];
+    var list = displayValue as List<object>;
+    var baseList = list?.Cast<Base>().ToList();
+    return baseList != null;
+  }
 }
