@@ -135,13 +135,7 @@ namespace Objects.Converter.Revit
       speckleBeam.baseLine = baseLine;
       speckleBeam.level = ConvertAndCacheLevel(revitBeam, BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM);
 
-      // structural connection modifiers alter family instance geometry, but the modifiers are view specific
-      // so we need to pass in the view we want in order to get the correct geometry
-      // TODO: we need to make sure we are passing in the correct view
-      var connectionHandlerFilter = new ElementClassFilter(typeof(DB.Structure.StructuralConnectionHandler));
-      var options = revitBeam.GetSubelements().Where(o => (BuiltInCategory)o.Category.Id.IntegerValue == DB.BuiltInCategory.OST_StructConnectionModifiers).Any() || revitBeam.GetDependentElements(connectionHandlerFilter).Any() ?
-        new Options() { View = Doc.ActiveView, ComputeReferences = true } : SolidDisplayValueOptions;
-      speckleBeam.displayValue = GetElementDisplayValue(revitBeam, options);
+      speckleBeam.displayValue = GetElementDisplayValue(revitBeam, SolidDisplayValueOptions);
 
       GetAllRevitParamsAndIds(speckleBeam, revitBeam);
 
