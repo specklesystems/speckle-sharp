@@ -463,25 +463,10 @@ namespace Objects.Converter.Revit
 
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
-      if (bool.Parse(recieveModelMesh ?? "false") == true)
-      {
-        try
-        {
-          List<GE.Mesh> displayValues = new List<GE.Mesh> { };
-          var meshes = @object.GetType().GetProperty("displayValue").GetValue(@object) as List<GE.Mesh>;
-          //dynamic property = propInfo;
-          //List<GE.Mesh> meshes = (List<GE.Mesh>)property;
-          var cat = GetObjectCategory(@object);
-          var speckleCat = Categories.GetSchemaBuilderCategoryFromBuiltIn(cat.ToString());
-          return TryDirectShapeToNative(
-            new ApplicationObject(@object.id, @object.speckle_type),
-            meshes,
-            ToNativeMeshSetting,
-            speckleCat
-          );
-        }
-        catch { }
-      }
+      if (bool.Parse(recieveModelMesh ?? "false"))
+        if (@object.IsDisplayableObject() && @object is not BE.Room)
+          return DisplayableObjectToNative(@object);
+
       //Family Document
       if (Doc.IsFamilyDocument)
       {
