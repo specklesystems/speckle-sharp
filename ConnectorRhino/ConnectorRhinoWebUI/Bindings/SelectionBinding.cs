@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DUI3;
 using DUI3.Bindings;
@@ -18,11 +19,16 @@ public class SelectionBinding : ISelectionBinding
     RhinoDoc.SelectObjects += (sender, args) => { _selectionExpired = true; };
     RhinoDoc.DeselectObjects += (sender, args) => { _selectionExpired = true; };
     RhinoDoc.DeselectAllObjects += (sender, args) => { _selectionExpired = true; };
+
+    RhinoDoc.EndOpenDocumentInitialViewUpdate += (sender, args) =>
+    {
+      // Resets selection doc change
+      Parent.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, new SelectionInfo());
+    };
     
-    Rhino.RhinoApp.Idle += (sender, args) =>
+    RhinoApp.Idle += (sender, args) =>
     {
       if (!_selectionExpired) return;
-      // TODO: SEND SELECTION
       var selInfo = GetSelection();
       Parent.SendToBrowser(DUI3.Bindings.SelectionBindingEvents.SetSelection, selInfo);
       _selectionExpired = false;
@@ -34,10 +40,11 @@ public class SelectionBinding : ISelectionBinding
     var objects = RhinoDoc.ActiveDoc.Objects.GetSelectedObjects(false, false).ToList();
     var objectIds = objects.Select(o => o.Id.ToString()).ToList();
     var layerCount = objects.Select(o => o.Attributes.LayerIndex).Distinct().Count();
+    var objectTypes = objects.Select(o => o.ObjectType.ToString()).Distinct().ToList();
     return new SelectionInfo
     {
       ObjectIds = objectIds,
-      Summary = $"Selected {objectIds.Count} objects from {layerCount} layer{(layerCount != 1 ? "s" : "")}."
+      Summary = $"Selected {objectIds.Count} objects ({String.Join(", ", objectTypes)}) from {layerCount} layer{(layerCount != 1 ? "s" : "")}."
     };
   }
 

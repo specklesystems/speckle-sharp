@@ -66,6 +66,8 @@ namespace DUI3
       {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
       };
+      
+      // _serializerOptions.Converters.Add(new FilterConverter());
     }
 
     /// <summary>

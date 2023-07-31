@@ -14,7 +14,6 @@ public class ListSelectionFilter : ISelectionFilter
   public string Description { get; set; }
   public List<string> Selection { get; set; } = new();
   public Type ViewType { get; } = typeof(ListFilterView);
-
   public string Summary
   {
     get
