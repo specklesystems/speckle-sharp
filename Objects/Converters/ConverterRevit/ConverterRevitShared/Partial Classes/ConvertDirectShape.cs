@@ -157,7 +157,8 @@ namespace Objects.Converter.Revit
       var cat = Doc.Settings.Categories.get_Item(bic);
 
       var revitDs = DB.DirectShape.CreateElement(Doc, cat.Id);
-      revitDs.ApplicationId = speckleDs.applicationId;
+      if(speckleDs.applicationId != null)
+        revitDs.ApplicationId = speckleDs.applicationId ;
       revitDs.ApplicationDataId = Guid.NewGuid().ToString();
       revitDs.SetShape(converted);
       revitDs.Name = speckleDs.name;
