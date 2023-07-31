@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Text.Json;
+using Speckle.Newtonsoft.Json;
 using System.Threading.Tasks;
 using Speckle.Core.Logging;
 
@@ -30,11 +30,10 @@ namespace DUI3
 
     public Action<string> ExecuteScriptAsync { get; set; }
     public Action ShowDevToolsAction { get; set; }
-
     private Type BindingType { get; set; }
     private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
 
-    private JsonSerializerOptions _serializerOptions;
+    private JsonSerializerSettings _serializerOptions = DUI3.Utils.Serialization.GetSerializerSettings();
 
     /// <summary>
     /// Creates a new bridge.
@@ -61,13 +60,6 @@ namespace DUI3
 
       ExecuteScriptAsync = executeScriptAsync;
       ShowDevToolsAction = showDevToolsAction;
-
-      _serializerOptions = new JsonSerializerOptions
-      {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-      };
-      
-      // _serializerOptions.Converters.Add(new FilterConverter());
     }
 
     /// <summary>
@@ -102,7 +94,7 @@ namespace DUI3
 
         var method = BindingMethodCache[methodName];
         var parameters = method.GetParameters();
-        var jsonArgsArray = JsonSerializer.Deserialize<string[]>(args);
+        var jsonArgsArray = JsonConvert.DeserializeObject<string[]>(args);
 
         if (parameters.Length != jsonArgsArray.Length)
           throw new SpeckleException($"Wrong number of arguments when invoking binding function {methodName}, expected {parameters.Length}, but got {jsonArgsArray.Length}.");
@@ -111,8 +103,8 @@ namespace DUI3
 
         for (int i = 0; i < typedArgs.Length; i++)
         {
-          var typedObj = JsonSerializer.Deserialize(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
-          typedArgs[i] = typedObj;
+          var ccc = JsonConvert.DeserializeObject(jsonArgsArray[i], parameters[i].ParameterType, _serializerOptions);
+          typedArgs[i] = ccc;
         }
         var resultTyped = method.Invoke(Binding, typedArgs);
 
@@ -125,7 +117,7 @@ namespace DUI3
         if (resultTypedTask == null)
         {
           // Regular method: no need to await things
-          resultJson = JsonSerializer.Serialize(resultTyped, _serializerOptions);
+          resultJson = JsonConvert.SerializeObject(resultTyped, _serializerOptions);
         }
         else // It's an async call
         {
@@ -135,7 +127,7 @@ namespace DUI3
           // If has a "Result" property return the value otherwise null (Task<void> etc)
           var resultProperty = resultTypedTask.GetType().GetProperty("Result");
           var taskResult = resultProperty != null ? resultProperty.GetValue(resultTypedTask) : null;
-          resultJson = JsonSerializer.Serialize(taskResult, _serializerOptions);
+          resultJson =JsonConvert.SerializeObject(taskResult, _serializerOptions);
         }
 
         return resultJson;
@@ -143,7 +135,7 @@ namespace DUI3
       catch (Exception e)
       {
         // TODO: properly log the exeception.
-        return JsonSerializer.Serialize(new { Error = e.Message, InnerError = e.InnerException?.Message }, _serializerOptions);
+        return JsonConvert.SerializeObject(new { Error = e.Message, InnerError = e.InnerException?.Message }, _serializerOptions);
       }
     }
 
@@ -156,7 +148,7 @@ namespace DUI3
       string script;
       if (data != null)
       {
-        var payload = JsonSerializer.Serialize(data, _serializerOptions);
+        var payload = JsonConvert.SerializeObject(data, _serializerOptions);
         script = $"{FrontendBoundName}.emit('{eventName}', '{payload}')";
       } 
       else

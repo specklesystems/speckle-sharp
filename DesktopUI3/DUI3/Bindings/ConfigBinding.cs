@@ -14,7 +14,6 @@ public class ConfigBinding : IBinding
   
   public Config GetConfig()
   {
-    // TODO
     try
     {
       var config = ConfigStorage.GetObject("configDUI3");
