@@ -30,6 +30,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\MainAliasProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\PolybeamProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\PropertySets\AtomicElementProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\Properties\StructureUtils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Converter.AutocadCivil.Utils.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.AdvanceSteel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdvanceSteel\ConverterAutocadCivil.DxfNames.cs" />

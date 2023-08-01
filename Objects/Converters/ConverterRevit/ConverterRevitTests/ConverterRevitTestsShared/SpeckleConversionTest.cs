@@ -44,20 +44,6 @@ namespace ConverterRevitTests
       Assert.Equal(0, converter.Report.ConversionErrorsCount);
     }
 
-    internal void NativeToSpeckleBase()
-    {
-      ConverterRevit kit = new ConverterRevit();
-      kit.SetContextDocument(fixture.SourceDoc);
-
-      foreach (var elem in fixture.RevitElements)
-      {
-        var spkElem = kit.ConvertToSpeckle(elem);
-        Assert.NotNull(spkElem);
-      }
-
-      Assert.Equal(0, kit.Report.ConversionErrorsCount);
-    }
-
     /// <summary>
     /// Gets elements from the fixture SourceDoc
     /// Converts them to Speckle
@@ -163,6 +149,7 @@ namespace ConverterRevitTests
         ReceivedObjects = appPlaceholders ?? new List<ApplicationObject>()
       };
       converter.SetContextDocument(new StreamStateCache(state));
+      converter.SetContextDocument(new ConvertedObjectsCache());
 
       var contextObjs = spkElems.Select(x => new ApplicationObject(x.id, x.speckle_type) { applicationId = x.applicationId }).ToList();
       var appObjs = new List<ApplicationObject>();
@@ -288,6 +275,7 @@ namespace ConverterRevitTests
       converter.SetContextDocument(fixture.NewDoc);
       converter.SetContextDocument(new StreamStateCache(new StreamState()));
       converter.SetContextDocument(new RevitDocumentAggregateCache(new UIDocumentProvider(xru.Uiapp)));
+      converter.SetContextDocument(new ConvertedObjectsCache());
       var revitEls = new List<object>();
 
       await SpeckleUtils.RunInTransaction(
