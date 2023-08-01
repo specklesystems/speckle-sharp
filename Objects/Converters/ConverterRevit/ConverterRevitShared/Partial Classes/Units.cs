@@ -158,7 +158,9 @@ namespace Objects.Converter.Revit
 
     public double ScaleToSpeckle(double value)
     {
-      return ScaleToSpeckle(value, RevitLengthTypeId);
+      return value * revitDocumentAggregateCache
+        .GetOrInitializeEmptyCacheOfType<double>(out _)
+        .GetOrAdd(RevitLengthTypeId.ToString(), () => ScaleToSpeckle(1, RevitLengthTypeId), out _);
     }
     
     public static double ScaleToSpeckle(double value, string units)

@@ -56,7 +56,7 @@ namespace Speckle.ConnectorRevit.UI
         throw new InvalidOperationException(
           "There are zero objects to send. Please use a filter, or set some via selection."
         );
-
+      converter.SetContextDocument(revitDocumentAggregateCache);
       converter.SetContextObjects(
         selectedObjects
           .Select(x => new ApplicationObject(x.UniqueId, x.GetType().ToString()) { applicationId = x.UniqueId })

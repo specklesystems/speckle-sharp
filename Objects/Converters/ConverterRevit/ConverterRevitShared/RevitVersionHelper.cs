@@ -1,4 +1,4 @@
-﻿using Autodesk.Revit.DB;
+using Autodesk.Revit.DB;
 using System;
 
 namespace Objects.Converter.Revit
@@ -77,6 +77,15 @@ namespace Objects.Converter.Revit
       return parameter.Definition.UnitType.ToString();
 #else
       return parameter.Definition.GetDataType().TypeId;
+#endif
+    }
+    
+    public static string GetUnityTypeString(this Definition definition)
+    {
+#if REVIT2020 || REVIT2021
+      return definition.UnitType.ToString();
+#else
+      return definition.GetDataType().TypeId;
 #endif
     }
 

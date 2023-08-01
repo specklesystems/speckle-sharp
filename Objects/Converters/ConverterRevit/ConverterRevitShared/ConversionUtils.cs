@@ -336,23 +336,27 @@ namespace Objects.Converter.Revit
       List<string> exclusions = null
     )
     {
-      exclusions = (exclusions != null) ? exclusions : new List<string>();
+      exclusions ??= new();
+      Dictionary<string, Parameter> paramDict = new();
+      // exclude parameters that don't have a value and those pointing to other elements as we don't support them
+      foreach (DB.Parameter param in element.Parameters)
+      {
 
-      //exclude parameters that don't have a value and those pointing to other elements as we don't support them
-      var revitParameters = element.Parameters
-        .Cast<DB.Parameter>()
-        .Where(
-          x => x.HasValue && x.StorageType != StorageType.ElementId && !exclusions.Contains(GetParamInternalName(x))
-        )
-        .ToList();
+        if (param.StorageType == StorageType.ElementId || !param.HasValue)
+        {
+          continue;
+        }
 
-      //exclude parameters that failed to convert
-      var speckleParameters = revitParameters.Select(x => ParameterToSpeckle(x, isTypeParameter)).Where(x => x != null);
+        var internalName = GetParamInternalName(param);
+        if (paramDict.ContainsKey(internalName) || exclusions.Contains(internalName))
+        {
+          continue;
+        }
 
-      return speckleParameters
-        .GroupBy(x => x.applicationInternalName)
-        .Select(x => x.First())
-        .ToDictionary(x => x.applicationInternalName, x => x);
+        var speckleParam = ParameterToSpeckle(param, isTypeParameter, paramInternalName: internalName);
+        paramDict[internalName] = speckleParam;
+      }
+      return paramDict;
     }
 
     /// <summary>
@@ -384,21 +388,22 @@ namespace Objects.Converter.Revit
     /// <param name="isTypeParameter">Defaults to false. True if this is a type parameter</param>
     /// <param name="unitsOverride">The units in which to return the value in the case where you want to override the Built-In <see cref="DB.Parameter"/>'s units</param>
     /// <returns></returns>
-    /// <remarks>The <see cref="rp"/> must have a value (<see cref="DB.Parameter.HasValue"/></remarks>
     private static Parameter ParameterToSpeckle(
       DB.Parameter rp,
       bool isTypeParameter = false,
-      string unitsOverride = null
+      string unitsOverride = null,
+      string paramInternalName = null
     )
     {
+      var definition = rp.Definition;
       var sp = new Parameter
       {
-        name = rp.Definition.Name,
-        applicationInternalName = GetParamInternalName(rp),
+        name = definition.Name,
+        applicationInternalName = paramInternalName ?? GetParamInternalName(rp),
         isShared = rp.IsShared,
         isReadOnly = rp.IsReadOnly,
         isTypeParameter = isTypeParameter,
-        applicationUnitType = rp.GetUnityTypeString() //eg UT_Length
+        applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
       };
 
       switch (rp.StorageType)
@@ -420,27 +425,26 @@ namespace Objects.Converter.Revit
           }
           break;
         case StorageType.Integer:
+          var intVal = rp.AsInteger();
 #if REVIT2020 || REVIT2021 || REVIT2022
-          switch (rp.Definition.ParameterType)
+          switch (definition.ParameterType)
           {
             case ParameterType.YesNo:
-              sp.value = Convert.ToBoolean(rp.AsInteger());
+              sp.value = Convert.ToBoolean(intVal);
               break;
             default:
-              sp.value = rp.AsInteger();
+              sp.value = intVal;
               break;
           }
 #else
-          if (rp.Definition.GetDataType() == SpecTypeId.Boolean.YesNo)
-            sp.value = Convert.ToBoolean(rp.AsInteger());
+          if (definition.GetDataType() == SpecTypeId.Boolean.YesNo)
+            sp.value = Convert.ToBoolean(intVal);
           else
-            sp.value = rp.AsInteger();
+            sp.value = intVal;
 #endif
           break;
         case StorageType.String:
           sp.value = rp.AsString();
-          if (sp.value == null)
-            sp.value = rp.AsValueString();
           break;
         // case StorageType.ElementId:
         //   // NOTE: if this collects too much garbage, maybe we can ignore it
