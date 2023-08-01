@@ -338,10 +338,11 @@ namespace Objects.Converter.Revit
     {
       exclusions ??= new();
       Dictionary<string, Parameter> paramDict = new();
-      // exclude parameters that don't have a value and those pointing to other elements as we don't support them
-      foreach (DB.Parameter param in element.Parameters)
+      using var parameters = element.Parameters;
+      foreach (DB.Parameter param in parameters)
       {
 
+        // exclude parameters that don't have a value and those pointing to other elements as we don't support them
         if (param.StorageType == StorageType.ElementId || !param.HasValue)
         {
           continue;
