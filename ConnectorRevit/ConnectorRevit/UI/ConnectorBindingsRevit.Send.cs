@@ -211,10 +211,19 @@ namespace Speckle.ConnectorRevit.UI
       return false;
     }
 
-    private static void YieldToUIThread(TimeSpan delay)
+    private DateTime timerStarted = DateTime.MinValue;
+    private void YieldToUIThread(TimeSpan delay)
     {
+      var currentTime = DateTime.UtcNow;
+
+      if (currentTime.Subtract(timerStarted) < TimeSpan.FromSeconds(.15))
+      {
+        return;
+      }
+
       using CancellationTokenSource s = new(delay);
       Dispatcher.UIThread.MainLoop(s.Token);
+      timerStarted = currentTime;
     }
 
     private static Base ConvertToSpeckle(Element revitElement, ISpeckleConverter converter)
