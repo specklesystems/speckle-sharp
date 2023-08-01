@@ -246,6 +246,16 @@ namespace Speckle.ConnectorRevit.UI
       ProgressViewModel progress
     )
     {
+      // Retries a conversion using the direct mesh setting.
+      // Used in the case of failed conversions
+      ApplicationObject RetryConversionAsDisplayable(Base @base)
+      {
+        converter.receiveDirectMesh = true;
+        var convRes = converter.ConvertToNative(@base) as ApplicationObject;
+        converter.receiveDirectMesh = false;
+        return convRes;
+      }
+
       using var _d0 = LogContext.PushProperty("converterName", converter.Name);
       using var _d1 = LogContext.PushProperty("converterAuthor", converter.Author);
       using var _d2 = LogContext.PushProperty("conversionDirection", nameof(ISpeckleConverter.ConvertToNative));
@@ -298,10 +308,10 @@ namespace Speckle.ConnectorRevit.UI
           // if the conversion status failed, reconvert as directShape if possible
           if (convRes.Status == ApplicationObject.State.Failed && !receiveDirectMesh)
           {
-            converter.receiveDirectMesh = true;
-            convRes = converter.ConvertToNative(@base) as ApplicationObject;
-            converter.receiveDirectMesh = false;
+            obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
+            convRes = RetryConversionAsDisplayable(@base);
           }
+
           obj.Update(
             status: convRes.Status,
             createdIds: convRes.CreatedIds,
@@ -334,26 +344,19 @@ namespace Speckle.ConnectorRevit.UI
         }
         catch (Exception ex)
         {
+          SpeckleLog.Logger.Warning(ex, "Failed to convert");
+          obj.Log.Add($"First conversion attempt failed: {ex.Message}");
+
           // reconvert as directShape if possible
           if (!receiveDirectMesh)
           {
-            converter.receiveDirectMesh = true;
-            try
-            {
-              var convRes = converter.ConvertToNative(@base) as ApplicationObject;
-              obj.Update(
-                status: convRes.Status,
-                createdIds: convRes.CreatedIds,
-                converted: convRes.Converted,
-                log: convRes.Log
-              );
-            }
-            catch (Exception e)
-            {
-              SpeckleLog.Logger.Warning(ex, "Failed to convert");
-              obj.Update(status: ApplicationObject.State.Failed, logItem: ex.Message);
-            }
-            converter.receiveDirectMesh = false;
+            var convRes = RetryConversionAsDisplayable(@base);
+            obj.Update(
+              status: convRes.Status,
+              createdIds: convRes.CreatedIds,
+              converted: convRes.Converted,
+              log: convRes.Log
+            );
           }
           progress.Report.UpdateReportObject(obj);
         }
