@@ -7,6 +7,7 @@ namespace RevitSharedResources.Models
 {
   public static class APIContext
   {
+    private static SemaphoreSlim semaphore = new(1,1);
     private static UIControlledApplication uiApplication;
     private static ExternalEventHandler<IExternalEventHandler, ExternalEvent> factoryExternalEventHandler;
     private static ExternalEvent factoryExternalEvent;
@@ -19,11 +20,19 @@ namespace RevitSharedResources.Models
 
     public static async Task<TResult> Run<TResult>(Func<UIControlledApplication, TResult> func)
     {
-      var handler = new ExternalEventHandler<UIControlledApplication, TResult>(func);
-      using var externalEvent = await Run(factoryExternalEventHandler, handler, factoryExternalEvent)
-        .ConfigureAwait(false);
+      await semaphore.WaitAsync().ConfigureAwait(false);
+      try
+      {
+        var handler = new ExternalEventHandler<UIControlledApplication, TResult>(func);
+        using var externalEvent = await Run(factoryExternalEventHandler, handler, factoryExternalEvent)
+          .ConfigureAwait(false);
 
-      return await Run(handler, uiApplication, externalEvent).ConfigureAwait(false);
+        return await Run(handler, uiApplication, externalEvent).ConfigureAwait(false);
+      }
+      finally
+      {
+        semaphore.Release();
+      }
     }
     
     public static async Task Run(Action<UIControlledApplication> action)
