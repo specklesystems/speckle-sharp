@@ -164,10 +164,16 @@ public static class BaseExtensions
     return speckleObject.TryGetDisplayValue() != null;
   }
 
-  public static IEnumerable<T>? TryGetDisplayValue<T>(this Base obj) where T: Base
+  public static IEnumerable<T>? TryGetDisplayValue<T>(this Base obj)
+    where T : Base
   {
     var rawDisplayValue = obj["displayValue"] ?? obj["@displayValue"];
-    return (rawDisplayValue as IEnumerable)?.OfType<T>();
+    return rawDisplayValue switch
+    {
+      T b => new List<T> { b },
+      IEnumerable enumerable => enumerable.OfType<T>(),
+      _ => null
+    };
   }
 
   public static IEnumerable<Base>? TryGetDisplayValue(this Base obj)
@@ -180,13 +186,11 @@ public static class BaseExtensions
     return obj["name"] as string;
   }
 
-  public static IEnumerable<T>? TryGetParameters<T>(this Base obj) where T: Base
+  public static IEnumerable<T>? TryGetParameters<T>(this Base obj)
+    where T : Base
   {
     var parameters = (obj["parameters"] ?? obj["@parameters"]) as Base;
-    return parameters?
-      .GetMembers(DynamicBaseMemberType.Dynamic)
-      .Values
-      .OfType<T>();
+    return parameters?.GetMembers(DynamicBaseMemberType.Dynamic).Values.OfType<T>();
   }
 
   public static IEnumerable<Base>? TryGetParameters(this Base obj)
