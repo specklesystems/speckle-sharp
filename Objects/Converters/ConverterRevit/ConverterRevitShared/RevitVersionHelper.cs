@@ -61,24 +61,6 @@ namespace Objects.Converter.Revit
       return UnitUtils.ConvertToInternalUnits(value, parameter.GetUnitTypeId());
 #endif
     }
-
-    public static double ConvertFromInternalUnits(double val, Parameter parameter)
-    {
-#if REVIT2020
-      return UnitUtils.ConvertFromInternalUnits(val, parameter.DisplayUnitType);
-#else
-      return UnitUtils.ConvertFromInternalUnits(val, parameter.GetUnitTypeId());
-#endif
-    }
-
-    public static string GetUnityTypeString(this Parameter parameter)
-    {
-#if REVIT2020 || REVIT2021
-      return parameter.Definition.UnitType.ToString();
-#else
-      return parameter.Definition.GetDataType().TypeId;
-#endif
-    }
     
     public static string GetUnityTypeString(this Definition definition)
     {
@@ -86,15 +68,6 @@ namespace Objects.Converter.Revit
       return definition.UnitType.ToString();
 #else
       return definition.GetDataType().TypeId;
-#endif
-    }
-
-    public static string GetDisplayUnityTypeString(this Parameter parameter)
-    {
-#if REVIT2020
-      return parameter.DisplayUnitType.ToString();
-#else
-      return parameter.GetUnitTypeId().TypeId;
 #endif
     }
 
