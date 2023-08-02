@@ -11,7 +11,6 @@ using DesktopUI2;
 using DesktopUI2.Models;
 using DesktopUI2.Models.Settings;
 using DesktopUI2.ViewModels;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
 using RevitSharedResources.Models;
 using Serilog.Context;
@@ -147,6 +146,8 @@ namespace Speckle.ConnectorRevit.UI
       })
       .ConfigureAwait(false);
 
+      revitDocumentAggregateCache.InvalidateAll();
+
       progress.Report.Merge(converter.Report);
 
       progress.CancellationToken.ThrowIfCancellationRequested();
@@ -156,43 +157,42 @@ namespace Speckle.ConnectorRevit.UI
         throw new SpeckleException("Zero objects converted successfully. Send stopped.");
       }
 
-      //commitObjectBuilder.BuildCommitObject(commitObject);
+      commitObjectBuilder.BuildCommitObject(commitObject);
 
-      //var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
+      var transports = new List<ITransport>() { new ServerTransport(client.Account, streamId) };
 
-      //var objectId = await Operations
-      //  .Send(
-      //    @object: commitObject,
-      //    cancellationToken: progress.CancellationToken,
-      //    transports: transports,
-      //    onProgressAction: dict => progress.Update(dict),
-      //    onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
-      //    disposeTransports: true
-      //  )
-      //  .ConfigureAwait(true);
+      var objectId = await Operations
+        .Send(
+          @object: commitObject,
+          cancellationToken: progress.CancellationToken,
+          transports: transports,
+          onProgressAction: dict => progress.Update(dict),
+          onErrorAction: ConnectorHelpers.DefaultSendErrorHandler,
+          disposeTransports: true
+        )
+        .ConfigureAwait(true);
 
-      //progress.CancellationToken.ThrowIfCancellationRequested();
+      progress.CancellationToken.ThrowIfCancellationRequested();
 
-      //var actualCommit = new CommitCreateInput()
-      //{
-      //  streamId = streamId,
-      //  objectId = objectId,
-      //  branchName = state.BranchName,
-      //  message = state.CommitMessage ?? $"Sent {convertedCount} objects from {ConnectorRevitUtils.RevitAppName}.",
-      //  sourceApplication = ConnectorRevitUtils.RevitAppName,
-      //};
+      var actualCommit = new CommitCreateInput()
+      {
+        streamId = streamId,
+        objectId = objectId,
+        branchName = state.BranchName,
+        message = state.CommitMessage ?? $"Sent {convertedCount} objects from {ConnectorRevitUtils.RevitAppName}.",
+        sourceApplication = ConnectorRevitUtils.RevitAppName,
+      };
 
-      //if (state.PreviousCommitId != null)
-      //{
-      //  actualCommit.parents = new List<string>() { state.PreviousCommitId };
-      //}
+      if (state.PreviousCommitId != null)
+      {
+        actualCommit.parents = new List<string>() { state.PreviousCommitId };
+      }
 
-      //var commitId = await ConnectorHelpers
-      //  .CreateCommit(client, actualCommit, progress.CancellationToken)
-      //  .ConfigureAwait(false);
+      var commitId = await ConnectorHelpers
+        .CreateCommit(client, actualCommit, progress.CancellationToken)
+        .ConfigureAwait(false);
 
-      //return commitId;
-      return "";
+      return commitId;
     }
 
     public static bool GetOrCreateApplicationObject(

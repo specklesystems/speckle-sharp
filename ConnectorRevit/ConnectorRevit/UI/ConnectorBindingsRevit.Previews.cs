@@ -13,8 +13,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using ApplicationObject = Speckle.Core.Models.ApplicationObject;
 using Autodesk.Revit.DB.DirectContext3D;
-using Revit.Async;
 using RevitSharedResources.Interfaces;
+using RevitSharedResources.Models;
 
 namespace Speckle.ConnectorRevit.UI
 {
@@ -56,7 +56,7 @@ namespace Speckle.ConnectorRevit.UI
             progress.Report.Log(previewObj);
 
           IConvertedObjectsCache<Base, Element> convertedObjects = null;
-          await RevitTask.RunAsync(
+          await APIContext.Run(
             app =>
             {
               using (var t = new Transaction(CurrentDoc.Document, $"Baking stream {state.StreamId}"))

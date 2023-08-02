@@ -7,24 +7,26 @@ namespace RevitSharedResources.Models
 {
   public static class APIContext
   {
+    private static UIControlledApplication uiApplication;
     private static ExternalEventHandler<IExternalEventHandler, ExternalEvent> factoryExternalEventHandler;
     private static ExternalEvent factoryExternalEvent;
     public static void Initialize(UIControlledApplication application)
     {
+      uiApplication = application; 
       factoryExternalEventHandler = new(ExternalEvent.Create);
       factoryExternalEvent = ExternalEvent.Create(factoryExternalEventHandler);
     }
 
-    public static async Task<TResult> Run<TResult>(Func<UIApplication, TResult> func)
+    public static async Task<TResult> Run<TResult>(Func<UIControlledApplication, TResult> func)
     {
-      var handler = new ExternalEventHandler<UIApplication, TResult>(func);
+      var handler = new ExternalEventHandler<UIControlledApplication, TResult>(func);
       using var externalEvent = await Run(factoryExternalEventHandler, handler, factoryExternalEvent)
         .ConfigureAwait(false);
 
-      return await Run(handler, null, externalEvent).ConfigureAwait(false);
+      return await Run(handler, uiApplication, externalEvent).ConfigureAwait(false);
     }
     
-    public static async Task Run(Action<UIApplication> action)
+    public static async Task Run(Action<UIControlledApplication> action)
     {
       await Run<object>(app =>
       {
