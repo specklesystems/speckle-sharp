@@ -253,6 +253,7 @@ namespace Speckle.ConnectorRevit.UI
       {
         converter.SetConverterSettings(fallbackSettings);
         var convRes = converter.ConvertToNative(@base) as ApplicationObject;
+        RefreshView();
         converter.SetConverterSettings(settings);
         return convRes;
       }
@@ -310,15 +311,39 @@ namespace Speckle.ConnectorRevit.UI
           )
             continue;
 
-          var convRes = converter.ConvertToNative(@base) as ApplicationObject;
-          RefreshView();
+          var shouldConvertAsDisplayable = !obj.Convertible;
+          var convRes = shouldConvertAsDisplayable
+            ? RetryConversionAsDisplayable(@base, fallbackSettings)
+            : converter.ConvertToNative(@base) as ApplicationObject;
+
+          if (convRes != null)
+          {
+            obj.Update(
+              status: convRes.Status,
+              createdIds: convRes.CreatedIds,
+              converted: convRes.Converted,
+              log: convRes.Log
+            );
+            if (
+              convRes.Status == ApplicationObject.State.Failed
+              && !receiveDirectMesh
+              && DefaultTraversal.HasDisplayValue(@base)
+            )
+            {
+              shouldConvertAsDisplayable = true;
+            }
+            else
+            {
+              RefreshView();
+            }
+          }
+          else if (!receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
+          {
+            shouldConvertAsDisplayable = true;
+          }
 
           // if the conversion status failed, reconvert as directShape if possible
-          if (
-            (convRes == null || convRes.Status == ApplicationObject.State.Failed)
-            && !receiveDirectMesh
-            && DefaultTraversal.HasDisplayValue(@base)
-          )
+          if (shouldConvertAsDisplayable)
           {
             obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
             convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
