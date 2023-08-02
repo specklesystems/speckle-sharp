@@ -253,7 +253,8 @@ namespace Speckle.ConnectorRevit.UI
       {
         converter.SetConverterSettings(fallbackSettings);
         var convRes = converter.ConvertToNative(@base) as ApplicationObject;
-        RefreshView();
+        if (convRes != null)
+          RefreshView();
         converter.SetConverterSettings(settings);
         return convRes;
       }
