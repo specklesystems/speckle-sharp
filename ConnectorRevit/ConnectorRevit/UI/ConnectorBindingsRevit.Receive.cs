@@ -340,7 +340,7 @@ namespace Speckle.ConnectorRevit.UI
               RefreshView();
             }
           }
-          else if (!shouldConvertAsDisplayable && DefaultTraversal.HasDisplayValue(@base))
+          else if (!shouldConvertAsDisplayable && obj.Convertible && DefaultTraversal.HasDisplayValue(@base))
           {
             shouldConvertAsDisplayable = true;
           }
