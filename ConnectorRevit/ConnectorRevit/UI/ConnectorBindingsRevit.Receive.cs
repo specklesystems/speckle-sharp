@@ -315,7 +315,7 @@ namespace Speckle.ConnectorRevit.UI
 
           // if the conversion status failed, reconvert as directShape if possible
           if (
-            convRes.Status == ApplicationObject.State.Failed
+            (convRes == null || convRes.Status == ApplicationObject.State.Failed)
             && !receiveDirectMesh
             && DefaultTraversal.HasDisplayValue(@base)
           )
@@ -324,12 +324,20 @@ namespace Speckle.ConnectorRevit.UI
             convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
           }
 
-          obj.Update(
-            status: convRes.Status,
-            createdIds: convRes.CreatedIds,
-            converted: convRes.Converted,
-            log: convRes.Log
-          );
+          if (convRes != null) // TODO: should this really be returning null ever?
+          {
+            obj.Update(
+              status: convRes.Status,
+              createdIds: convRes.CreatedIds,
+              converted: convRes.Converted,
+              log: convRes.Log
+            );
+          }
+          else
+          {
+            obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null");
+          }
+
           progress.Report.UpdateReportObject(obj);
         }
         catch (ConversionNotReadyException ex)
@@ -363,12 +371,19 @@ namespace Speckle.ConnectorRevit.UI
           if (!receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
           {
             var convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
-            obj.Update(
-              status: convRes.Status,
-              createdIds: convRes.CreatedIds,
-              converted: convRes.Converted,
-              log: convRes.Log
-            );
+            if (convRes != null)
+            {
+              obj.Update(
+                status: convRes.Status,
+                createdIds: convRes.CreatedIds,
+                converted: convRes.Converted,
+                log: convRes.Log
+              );
+            }
+            else
+            {
+              obj.Update(status: ApplicationObject.State.Failed, logItem: "Reconversion returned null");
+            }
           }
           progress.Report.UpdateReportObject(obj);
         }
