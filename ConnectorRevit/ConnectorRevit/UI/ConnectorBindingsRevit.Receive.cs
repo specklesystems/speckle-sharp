@@ -249,15 +249,9 @@ namespace Speckle.ConnectorRevit.UI
     {
       // Retries a conversion using the direct mesh setting.
       // Used in the case of failed conversions
-      ApplicationObject RetryConversionAsDisplayable(Base @base)
+      ApplicationObject RetryConversionAsDisplayable(Base @base, Dictionary<string, string> fallbackSettings)
       {
-        var modifiedSettings = new Dictionary<string, string>();
-        foreach (var setting in settings)
-        {
-          var value = setting.Key == "recieve-objects-mesh" ? true.ToString() : setting.Value;
-          modifiedSettings.Add(setting.Key, setting.Value);
-        }
-        converter.SetConverterSettings(modifiedSettings);
+        converter.SetConverterSettings(fallbackSettings);
         var convRes = converter.ConvertToNative(@base) as ApplicationObject;
         converter.SetConverterSettings(settings);
         return convRes;
@@ -278,11 +272,18 @@ namespace Speckle.ConnectorRevit.UI
         CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
-      // Get direct mesh setting
+      // Get direct mesh setting and create modified settings in case this is used for retried conversions
       var receiveDirectMeshSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
       var receiveDirectMesh = receiveDirectMeshSetting != null ? receiveDirectMeshSetting.IsChecked : false;
+      var fallbackSettings = new Dictionary<string, string>();
+      foreach (var setting in settings)
+      {
+        var value = setting.Key == "recieve-objects-mesh" ? true.ToString() : setting.Value;
+        fallbackSettings.Add(setting.Key, setting.Value);
+      }
 
+      // convert
       var index = -1;
       while (++index < Preview.Count)
       {
@@ -316,7 +317,7 @@ namespace Speckle.ConnectorRevit.UI
           if (convRes.Status == ApplicationObject.State.Failed && !receiveDirectMesh)
           {
             obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
-            convRes = RetryConversionAsDisplayable(@base);
+            convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
           }
 
           obj.Update(
@@ -357,7 +358,7 @@ namespace Speckle.ConnectorRevit.UI
           // reconvert as directShape if possible
           if (!receiveDirectMesh)
           {
-            var convRes = RetryConversionAsDisplayable(@base);
+            var convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
             obj.Update(
               status: convRes.Status,
               createdIds: convRes.CreatedIds,
