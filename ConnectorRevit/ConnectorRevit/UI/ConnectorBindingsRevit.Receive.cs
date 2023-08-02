@@ -126,7 +126,7 @@ namespace Speckle.ConnectorRevit.UI
           {
             converter.SetContextDocument(t);
 
-            var convertedObjects = ConvertReceivedObjects(converter, progress);
+            var convertedObjects = ConvertReceivedObjects(converter, progress, settings);
 
             if (state.ReceiveMode == ReceiveMode.Update)
               DeleteObjects(previousObjects, convertedObjects);
@@ -243,27 +243,18 @@ namespace Speckle.ConnectorRevit.UI
 
     private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(
       ISpeckleConverter converter,
-      ProgressViewModel progress
+      ProgressViewModel progress,
+      Dictionary<string, string> settings
     )
     {
       // Retries a conversion using the direct mesh setting.
       // Used in the case of failed conversions
-      ApplicationObject RetryConversionAsDisplayable(Base @base)
+      ApplicationObject RetryConversionAsDisplayable(Base @base, Dictionary<string, string> fallbackSettings)
       {
-        var settings = new Dictionary<string, string>();
-        var modifiedSettings = new Dictionary<string, string>();
-
-        var converterSettings = CurrentSettings;
-        foreach (var setting in CurrentSettings)
-        {
-          settings.Add(setting.Slug, setting.Selection);
-          modifiedSettings.Add(setting.Slug, setting.Selection);
-        }
-
-        modifiedSettings["recieve-objects-mesh"] = true.ToString();
-        converter.SetConverterSettings(modifiedSettings);
-
+        converter.SetConverterSettings(fallbackSettings);
         var convRes = converter.ConvertToNative(@base) as ApplicationObject;
+        if (convRes != null)
+          RefreshView();
         converter.SetConverterSettings(settings);
         return convRes;
       }
@@ -283,11 +274,18 @@ namespace Speckle.ConnectorRevit.UI
         CurrentSettings.FirstOrDefault(x => x.Slug == "linkedmodels-receive") as CheckBoxSetting;
       var receiveLinkedModels = receiveLinkedModelsSetting != null ? receiveLinkedModelsSetting.IsChecked : false;
 
-      // Get direct mesh setting
+      // Get direct mesh setting and create modified settings in case this is used for retried conversions
       var receiveDirectMeshSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
       var receiveDirectMesh = receiveDirectMeshSetting != null ? receiveDirectMeshSetting.IsChecked : false;
+      var fallbackSettings = new Dictionary<string, string>();
+      foreach (var setting in settings)
+      {
+        var value = setting.Key == "recieve-objects-mesh" ? true.ToString() : setting.Value;
+        fallbackSettings.Add(setting.Key, setting.Value);
+      }
 
+      // convert
       var index = -1;
       while (++index < Preview.Count)
       {
@@ -314,22 +312,58 @@ namespace Speckle.ConnectorRevit.UI
           )
             continue;
 
-          var convRes = converter.ConvertToNative(@base) as ApplicationObject;
-          RefreshView();
+          var shouldConvertAsDisplayable = !obj.Convertible;
+          var convRes = shouldConvertAsDisplayable
+            ? RetryConversionAsDisplayable(@base, fallbackSettings)
+            : converter.ConvertToNative(@base) as ApplicationObject;
 
-          // if the conversion status failed, reconvert as directShape if possible
-          if (convRes.Status == ApplicationObject.State.Failed && !receiveDirectMesh)
+          if (convRes != null)
           {
-            obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
-            convRes = RetryConversionAsDisplayable(@base);
+            obj.Update(
+              status: convRes.Status,
+              createdIds: convRes.CreatedIds,
+              converted: convRes.Converted,
+              log: convRes.Log
+            );
+            if (
+              convRes.Status == ApplicationObject.State.Failed
+              && !receiveDirectMesh
+              && DefaultTraversal.HasDisplayValue(@base)
+            )
+            {
+              shouldConvertAsDisplayable = true;
+            }
+            else
+            {
+              RefreshView();
+            }
+          }
+          else if (!shouldConvertAsDisplayable && !receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
+          {
+            shouldConvertAsDisplayable = true;
           }
 
-          obj.Update(
-            status: convRes.Status,
-            createdIds: convRes.CreatedIds,
-            converted: convRes.Converted,
-            log: convRes.Log
-          );
+          // if the conversion status failed, reconvert as directShape if possible
+          if (shouldConvertAsDisplayable)
+          {
+            obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
+            convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
+          }
+
+          if (convRes != null) // TODO: should this really be returning null ever?
+          {
+            obj.Update(
+              status: convRes.Status,
+              createdIds: convRes.CreatedIds,
+              converted: convRes.Converted,
+              log: convRes.Log
+            );
+          }
+          else
+          {
+            obj.Update(status: ApplicationObject.State.Failed, logItem: "Conversion returned null");
+          }
+
           progress.Report.UpdateReportObject(obj);
         }
         catch (ConversionNotReadyException ex)
@@ -360,15 +394,22 @@ namespace Speckle.ConnectorRevit.UI
           obj.Log.Add($"First conversion attempt failed: {ex.Message}");
 
           // reconvert as directShape if possible
-          if (!receiveDirectMesh)
+          if (!receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
           {
-            var convRes = RetryConversionAsDisplayable(@base);
-            obj.Update(
-              status: convRes.Status,
-              createdIds: convRes.CreatedIds,
-              converted: convRes.Converted,
-              log: convRes.Log
-            );
+            var convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
+            if (convRes != null)
+            {
+              obj.Update(
+                status: convRes.Status,
+                createdIds: convRes.CreatedIds,
+                converted: convRes.Converted,
+                log: convRes.Log
+              );
+            }
+            else
+            {
+              obj.Update(status: ApplicationObject.State.Failed, logItem: "Reconversion returned null");
+            }
           }
           progress.Report.UpdateReportObject(obj);
         }
