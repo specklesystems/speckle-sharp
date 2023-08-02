@@ -75,14 +75,6 @@ public abstract class GraphTraversal<T>
       T head = stack[headIndex];
       stack.RemoveAt(headIndex);
 
-      // add parent object id to the current object
-      // this is currently used for determining parent child hosting relationships in the revit converter
-      // should be removed and refactored once object traversal context is successfully passed to the connector
-      if (head.parent != null)
-      {
-        head.current[GraphTraversal.traversalContextId] = head.parent.current.id;
-      }
-
       yield return head;
 
       Base current = head.current;

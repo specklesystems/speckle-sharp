@@ -250,9 +250,21 @@ namespace Speckle.ConnectorRevit.UI
       // Used in the case of failed conversions
       ApplicationObject RetryConversionAsDisplayable(Base @base)
       {
-        converter.receiveDirectMesh = true;
+        var settings = new Dictionary<string, string>();
+        var modifiedSettings = new Dictionary<string, string>();
+
+        var converterSettings = CurrentSettings;
+        foreach (var setting in CurrentSettings)
+        {
+          settings.Add(setting.Slug, setting.Selection);
+          modifiedSettings.Add(setting.Slug, setting.Selection);
+        }
+
+        modifiedSettings["recieve-objects-mesh"] = true.ToString();
+        converter.SetConverterSettings(modifiedSettings);
+
         var convRes = converter.ConvertToNative(@base) as ApplicationObject;
-        converter.receiveDirectMesh = false;
+        converter.SetConverterSettings(settings);
         return convRes;
       }
 
