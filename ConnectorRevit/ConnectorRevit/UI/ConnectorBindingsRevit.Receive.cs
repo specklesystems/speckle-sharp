@@ -312,12 +312,11 @@ namespace Speckle.ConnectorRevit.UI
           )
             continue;
 
+          var isConvertibleAndDisplayable = obj.Convertible && DefaultTraversal.HasDisplayValue(@base);
           var shouldConvertAsDisplayable = !obj.Convertible || receiveDirectMesh;
           var convRes = shouldConvertAsDisplayable
             ? ConvertAsDisplayable(@base, displayableSettings)
             : converter.ConvertToNative(@base) as ApplicationObject;
-          if (shouldConvertAsDisplayable)
-            shouldConvertAsDisplayable = false;
 
           if (convRes != null)
           {
@@ -327,26 +326,17 @@ namespace Speckle.ConnectorRevit.UI
               converted: convRes.Converted,
               log: convRes.Log
             );
-            if (
-              !shouldConvertAsDisplayable
-              && convRes.Status == ApplicationObject.State.Failed
-              && DefaultTraversal.HasDisplayValue(@base)
-            )
+            if (convRes.Status == ApplicationObject.State.Failed && isConvertibleAndDisplayable)
             {
-              shouldConvertAsDisplayable = true;
+              obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
+              convRes = ConvertAsDisplayable(@base, displayableSettings);
             }
             else
             {
               RefreshView();
             }
           }
-          else if (!shouldConvertAsDisplayable && DefaultTraversal.HasDisplayValue(@base))
-          {
-            shouldConvertAsDisplayable = true;
-          }
-
-          // if the conversion status failed, reconvert as directShape if possible
-          if (shouldConvertAsDisplayable)
+          else if (isConvertibleAndDisplayable)
           {
             obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
             convRes = ConvertAsDisplayable(@base, displayableSettings);
