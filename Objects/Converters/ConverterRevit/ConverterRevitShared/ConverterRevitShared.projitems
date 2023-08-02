@@ -18,6 +18,8 @@
     <Compile Include="$(MSBuildThisFileDirectory)ConverterRevit.SettingsHelpers.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DirectContext3DServer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AllRevitCategories.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ConnectorExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Extensions\ElementExtensions.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAdaptiveComponent.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalSurface.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertAnalyticalStick.cs" />
@@ -25,11 +27,14 @@
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertBeam.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertConduit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertCableTray.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertConnector.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDirectTeklaMeshElements.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertDisplayableObject.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFabricationPart.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertFitting.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterial.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMaterialQuantities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertMEPFamilyInstance.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertModel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertNetwork.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Partial Classes\ConvertRebar.cs" />

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Autodesk.Revit.DB;
+using Objects.BuiltElements.Revit;
 using Objects.Organization;
 using Objects.Structural.Properties.Profiles;
 using RevitSharedResources.Helpers;
@@ -107,6 +108,7 @@ namespace Objects.Converter.Revit
     }
 
     private IRevitDocumentAggregateCache revitDocumentAggregateCache;
+    private IConvertedObjectsCache<Base, Element> receivedObjectsCache;
 
     public void SetContextDocument(object doc)
     {
@@ -117,6 +119,10 @@ namespace Objects.Converter.Revit
       else if (doc is IRevitDocumentAggregateCache revitDocumentAggregateCache)
       {
         this.revitDocumentAggregateCache = revitDocumentAggregateCache;
+      }
+      else if (doc is IConvertedObjectsCache<Base, Element> receivedObjectsCache)
+      {
+        this.receivedObjectsCache = receivedObjectsCache;
       }
       else if (doc is IReceivedObjectIdMap<Base, Element> cache)
       {
@@ -192,10 +198,7 @@ namespace Objects.Converter.Revit
           returnObject = DirectShapeToSpeckle(o);
           break;
         case DB.FamilyInstance o:
-          returnObject =
-            o.MEPModel?.ConnectorManager?.Connectors?.Size > 0
-              ? NetworkToSpeckle(o, out notes)
-              : FamilyInstanceToSpeckle(o, out notes);
+          returnObject = FamilyInstanceToSpeckle(o, out notes);
           break;
         case DB.Floor o:
           returnObject = FloorToSpeckle(o, out notes);
@@ -243,28 +246,28 @@ namespace Objects.Converter.Revit
           returnObject = WallToSpeckle(o, out notes);
           break;
         case DB.Mechanical.Duct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o, out notes);
           break;
         case DB.Mechanical.FlexDuct o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = DuctToSpeckle(o);
           break;
         case DB.Mechanical.Space o:
           returnObject = SpaceToSpeckle(o);
           break;
         case DB.Plumbing.Pipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Plumbing.FlexPipe o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = PipeToSpeckle(o);
           break;
         case DB.Electrical.Wire o:
           returnObject = WireToSpeckle(o);
           break;
         case DB.Electrical.CableTray o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = CableTrayToSpeckle(o);
           break;
         case DB.Electrical.Conduit o:
-          returnObject = NetworkToSpeckle(o, out notes);
+          returnObject = ConduitToSpeckle(o);
           break;
         //these should be handled by curtain walls
         case DB.CurtainGridLine _:
@@ -454,7 +457,27 @@ namespace Objects.Converter.Revit
       return speckleSchema;
     }
 
-    public object ConvertToNative(Base @object)
+    public object ConvertToNative(Base @base)
+    {
+      var nativeObject = ConvertToNativeObject(@base);
+
+      switch (nativeObject)
+      {
+        case ApplicationObject appObject:
+          if (appObject.Converted.Cast<Element>().ToList() is List<Element> typedList && typedList.Count >= 1)
+          {
+            receivedObjectsCache.AddConvertedObjects(@base, typedList);
+          }
+          break;
+        case Element element:
+          receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
+          break;
+      }
+      
+      return nativeObject;
+    }
+
+    public object ConvertToNativeObject(Base @object)
     {
       // Get setting for if the user is only trying to preview the geometry
       Settings.TryGetValue("preview", out string isPreview);
@@ -632,6 +655,9 @@ namespace Objects.Converter.Revit
 
         case BE.View3D o:
           return ViewToNative(o);
+
+        case RevitMEPFamilyInstance o:
+          return FittingOrMEPInstanceToNative(o);
 
         case Other.Revit.RevitInstance o:
           return RevitInstanceToNative(o);

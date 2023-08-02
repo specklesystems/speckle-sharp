@@ -346,7 +346,7 @@ public partial class ConnectorBindingsRhino : ConnectorBindings
       }
 
       //Handle objects convertable using displayValues
-      var fallbackMember = current["displayValue"] ?? current["@displayValue"];
+      var fallbackMember = DefaultTraversal.displayValuePropAliases.Where(o => current[o] != null)?.First();
       var parameters = current["parameters"] as Base;
       if (fallbackMember != null)
       {
