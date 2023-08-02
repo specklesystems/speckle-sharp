@@ -9,4 +9,8 @@
     <ProjectReference Include="..\..\Core\Core\Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="JetBrains.Annotations" Version="10.3.0" />
+  </ItemGroup>
+
 </Project>

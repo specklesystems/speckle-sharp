@@ -1,4 +1,6 @@
-﻿using Speckle.Core.Credentials;
+﻿using System.Collections.Generic;
+using DUI3.Models;
+using Speckle.Core.Credentials;
 
 namespace DUI3.Bindings;
 
@@ -8,10 +10,16 @@ public interface IBasicConnectorBinding : IBinding
   public string GetSourceApplicationVersion();
   public Account[] GetAccounts();
   public DocumentInfo GetDocumentInfo();
+  public DocumentState GetDocumentState();
+  public List<SendFilter> GetSendFilters();
+  public void AddModelToDocumentState(ModelCard model);
+  public void UpdateModelInDocumentState(ModelCard model);
+  public void RemoveModelFromDocumentState(ModelCard model);
 }
 
 public static class BasicConnectorBindingEvents
 {
   public static readonly string DisplayToastNotification = "DisplayToastNotification";
   public static readonly string DocumentChanged = "documentChanged";
+  public static readonly string FiltersNeedRefresh = "filtersNeedRefresh";
 }

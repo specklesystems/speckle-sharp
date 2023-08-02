@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Text.Json;
 using Speckle.Core.Transports;
 
@@ -13,14 +14,13 @@ public class ConfigBinding : IBinding
   
   public Config GetConfig()
   {
-    // TODO
     try
     {
       var config = ConfigStorage.GetObject("configDUI3");
       if (string.IsNullOrEmpty(config)) return new Config();
       return JsonSerializer.Deserialize<Config>(config);
     }
-    catch (Exception e)
+    catch (Exception _)
     {
       // TODO: Log error
       return new Config();
@@ -43,4 +43,9 @@ public class ConfigBinding : IBinding
 public class Config
 {
   public bool DarkTheme { set; get; }
+  /**
+   * Meant to keep track of whether the v0 onboarding has been completed or not, separated by host app. E.g.:
+   * { "Rhino" : true, "Revit": false }
+   */
+  public Dictionary<string, bool> OnboardingV0 { get; set; } = new Dictionary<string, bool>();
 }
