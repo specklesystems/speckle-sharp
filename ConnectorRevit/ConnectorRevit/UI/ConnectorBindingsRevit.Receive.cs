@@ -337,7 +337,7 @@ namespace Speckle.ConnectorRevit.UI
               RefreshView();
             }
           }
-          else if (!receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
+          else if (!shouldConvertAsDisplayable && !receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
           {
             shouldConvertAsDisplayable = true;
           }
