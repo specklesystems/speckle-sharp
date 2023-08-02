@@ -23,6 +23,23 @@ namespace RevitSharedResources.Models
 
       return await Run(handler, null, externalEvent).ConfigureAwait(false);
     }
+    
+    public static async Task Run(Action<UIApplication> action)
+    {
+      await Run<object>(app =>
+      {
+        action(app);
+        return null;
+      }).ConfigureAwait(false);
+    }
+    public static async Task Run(Action action)
+    {
+      await Run<object>(_ =>
+      {
+        action();
+        return null;
+      }).ConfigureAwait(false);
+    }
 
     private static async Task<TResult> Run<TParameter, TResult>(
       ExternalEventHandler<TParameter, TResult> handler,
