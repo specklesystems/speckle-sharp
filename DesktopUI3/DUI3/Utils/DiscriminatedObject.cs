@@ -7,5 +7,5 @@
 /// </summary>
 public class DiscriminatedObject
 {
-  public string TypeDiscriminator => this.GetType().Name;
+  public string TypeDiscriminator { get => this.GetType().Name; set { } } 
 }

@@ -33,7 +33,7 @@ namespace DUI3
     private Type BindingType { get; set; }
     private Dictionary<string, MethodInfo> BindingMethodCache { get; set; }
 
-    private JsonSerializerSettings _serializerOptions = DUI3.Utils.Serialization.GetSerializerSettings();
+    private JsonSerializerSettings _serializerOptions = DUI3.Utils.SerializationSettingsFactory.GetSerializerSettings();
 
     /// <summary>
     /// Creates a new bridge.
@@ -173,7 +173,7 @@ namespace DUI3
       {
         System.Diagnostics.Process.Start(url);
       }
-      catch (Exception e)
+      catch (Exception _)
       {
         // TODO: Log. If it ever happens.
       }

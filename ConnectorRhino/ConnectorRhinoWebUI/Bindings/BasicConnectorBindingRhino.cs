@@ -2,8 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using DUI3;
 using DUI3.Bindings;
+using DUI3.Models;
 using Rhino;
 using Speckle.Core.Credentials;
+using Speckle.Newtonsoft.Json;
 
 namespace ConnectorRhinoWebUI.Bindings;
 
@@ -21,15 +23,15 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
     {
       if (e.Merge) return;
       if (e.Document == null) return;
-      Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
       ReadDocState();
+      Parent?.SendToBrowser(BasicConnectorBindingEvents.DocumentChanged);
     };
-
-    var test = new RhinoEverythingFilter();
-
-    var name = test.TypeDiscriminator;
-    var yolo = test.GetType().FullName;
     
+    // NOTE: this fires quite a few times. We should debounce it
+    RhinoDoc.LayerTableEvent += (sender, e) =>
+    {
+      Parent?.SendToBrowser(BasicConnectorBindingEvents.FiltersNeedRefresh);
+    };
     _documentState = new DocumentState();
   }
 
@@ -57,20 +59,7 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
       Id = RhinoDoc.ActiveDoc.RuntimeSerialNumber.ToString()
     };
   }
-  
-  public void SaveDocumentState(DocumentState state)
-  {
-    _documentState = state;
-    WriteDocState();
-  }
-  
-  public void GetAvailableFilters()
-  {
-    // TODO: think and implement, and this should go in the binding defintion.
-    var selectionFilter = new RhinoSelectionFilter();
-    var everythingFilter = new RhinoEverythingFilter();
-  }
-  
+
   public DocumentState GetDocumentState()
   {
     return _documentState;
@@ -79,17 +68,45 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
   public void AddModelToDocumentState(ModelCard model)
   {
     _documentState.Models.Add(model);
+    WriteDocState();
   }
 
   public void UpdateModelInDocumentState(ModelCard model)
   {
+    // var idx = _documentState.Models.FindIndex(m => model.Id == m.Id);
+    // _documentState.Models[idx] = model;
     // TODO: implement
+    WriteDocState();
   }
   
   public void RemoveModelFromDocumentState(ModelCard model)
   {
     var index = _documentState.Models.FindIndex(m => m.Id == model.Id);
     _documentState.Models.RemoveAt(index);
+    WriteDocState();
+  }
+
+  public Dictionary<string, object> GetSendFilters_OLD()
+  {
+    var dict = new Dictionary<string, object>()
+    {
+      { KnownSendFilterTypeKeyNames.Everything, new RhinoEverythingFilter() },
+      { KnownSendFilterTypeKeyNames.Selection, new RhinoSelectionFilter() },
+      { KnownSendFilterTypeKeyNames.Layers, new RhinoLayerFilter() },
+    };
+
+    return dict;
+  }
+
+  public List<SendFilter> GetSendFilters()
+  {
+    return new List<SendFilter>()
+    {
+      new RhinoEverythingFilter() { Name = "Everything" },
+      new RhinoSelectionFilter() { Name = "Selection" },
+      new RhinoLayerFilter() { Name = "Layers" },
+      new RhinoBlocksFilter() { Name = "Test Filter", Summary = "Not usable, do not implement." }
+    };
   }
 
   private const string SpeckleKey = "Speckle_DUI3";
@@ -113,28 +130,5 @@ public class BasicConnectorBindingRhino : IBasicConnectorBinding
     var state = DocumentState.Deserialize(strings[0]);
     _documentState = state;
   }
-}
-
-public class RhinoEverythingFilter : SendFilter
-{
-  public override List<string> GetObjectIds()
-  {
-    // TODO 
-    return new List<string>();
-  }
-}
-
-public class RhinoSelectionFilter : SendFilter
-{
-  public List<string> ObjectIds { get; set; } = new List<string>();
-  public override List<string> GetObjectIds()
-  {
-    return ObjectIds;
-  }
-}
-
-public class RhinoSendSettings : SendSettings
-{
-  public bool CleanBreps { get; set; } = false;
 }
 

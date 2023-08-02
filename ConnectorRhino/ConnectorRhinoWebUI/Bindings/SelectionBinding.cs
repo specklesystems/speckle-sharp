@@ -43,7 +43,7 @@ public class SelectionBinding : ISelectionBinding
     var objectTypes = objects.Select(o => o.ObjectType.ToString()).Distinct().ToList();
     return new SelectionInfo
     {
-      ObjectIds = objectIds,
+      SelectedObjectIds = objectIds,
       Summary = $"Selected {objectIds.Count} objects ({String.Join(", ", objectTypes)}) from {layerCount} layer{(layerCount != 1 ? "s" : "")}."
     };
   }

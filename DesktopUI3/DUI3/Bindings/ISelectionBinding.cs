@@ -15,7 +15,7 @@ public static class SelectionBindingEvents
 
 public class SelectionInfo
 {
-  public List<string> ObjectIds { get; set; }
+  public List<string> SelectedObjectIds { get; set; }
   public string Summary { get; set; }
 }
 

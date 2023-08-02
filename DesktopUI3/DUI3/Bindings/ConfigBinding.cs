@@ -20,7 +20,7 @@ public class ConfigBinding : IBinding
       if (string.IsNullOrEmpty(config)) return new Config();
       return JsonSerializer.Deserialize<Config>(config);
     }
-    catch (Exception e)
+    catch (Exception _)
     {
       // TODO: Log error
       return new Config();
