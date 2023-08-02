@@ -126,7 +126,7 @@ namespace Speckle.ConnectorRevit.UI
           {
             converter.SetContextDocument(t);
 
-            var convertedObjects = ConvertReceivedObjects(converter, progress);
+            var convertedObjects = ConvertReceivedObjects(converter, progress, settings);
 
             if (state.ReceiveMode == ReceiveMode.Update)
               DeleteObjects(previousObjects, convertedObjects);
@@ -243,26 +243,21 @@ namespace Speckle.ConnectorRevit.UI
 
     private IConvertedObjectsCache<Base, Element> ConvertReceivedObjects(
       ISpeckleConverter converter,
-      ProgressViewModel progress
+      ProgressViewModel progress,
+      Dictionary<string, string> settings
     )
     {
       // Retries a conversion using the direct mesh setting.
       // Used in the case of failed conversions
       ApplicationObject RetryConversionAsDisplayable(Base @base)
       {
-        var settings = new Dictionary<string, string>();
         var modifiedSettings = new Dictionary<string, string>();
-
-        var converterSettings = CurrentSettings;
-        foreach (var setting in CurrentSettings)
+        foreach (var setting in settings)
         {
-          settings.Add(setting.Slug, setting.Selection);
-          modifiedSettings.Add(setting.Slug, setting.Selection);
+          var value = setting.Key == "recieve-objects-mesh" ? true.ToString() : setting.Value;
+          modifiedSettings.Add(setting.Key, setting.Value);
         }
-
-        modifiedSettings["recieve-objects-mesh"] = true.ToString();
         converter.SetConverterSettings(modifiedSettings);
-
         var convRes = converter.ConvertToNative(@base) as ApplicationObject;
         converter.SetConverterSettings(settings);
         return convRes;
