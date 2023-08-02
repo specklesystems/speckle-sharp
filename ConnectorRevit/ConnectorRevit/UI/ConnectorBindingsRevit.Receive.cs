@@ -294,6 +294,10 @@ namespace Speckle.ConnectorRevit.UI
 
         var @base = StoredObjects[obj.OriginalId];
 
+        // determine displyable conversion
+        var isConvertibleAndDisplayable = obj.Convertible && DefaultTraversal.HasDisplayValue(@base);
+        var shouldConvertAsDisplayable = !obj.Convertible || receiveDirectMesh;
+
         using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
         try
         {
@@ -312,8 +316,6 @@ namespace Speckle.ConnectorRevit.UI
           )
             continue;
 
-          var isConvertibleAndDisplayable = obj.Convertible && DefaultTraversal.HasDisplayValue(@base);
-          var shouldConvertAsDisplayable = !obj.Convertible || receiveDirectMesh;
           var convRes = shouldConvertAsDisplayable
             ? ConvertAsDisplayable(@base, displayableSettings)
             : converter.ConvertToNative(@base) as ApplicationObject;
@@ -326,7 +328,11 @@ namespace Speckle.ConnectorRevit.UI
               converted: convRes.Converted,
               log: convRes.Log
             );
-            if (convRes.Status == ApplicationObject.State.Failed && isConvertibleAndDisplayable)
+            if (
+              convRes.Status == ApplicationObject.State.Failed
+              && isConvertibleAndDisplayable
+              && !shouldConvertAsDisplayable
+            )
             {
               obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
               convRes = ConvertAsDisplayable(@base, displayableSettings);
@@ -336,7 +342,7 @@ namespace Speckle.ConnectorRevit.UI
               RefreshView();
             }
           }
-          else if (isConvertibleAndDisplayable)
+          else if (isConvertibleAndDisplayable && !shouldConvertAsDisplayable)
           {
             obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
             convRes = ConvertAsDisplayable(@base, displayableSettings);
@@ -383,10 +389,10 @@ namespace Speckle.ConnectorRevit.UI
         catch (Exception ex)
         {
           SpeckleLog.Logger.Warning(ex, "Failed to convert");
-          obj.Log.Add($"First conversion attempt failed: {ex.Message}");
+          obj.Log.Add($"Conversion failed: {ex.Message}");
 
           // reconvert as directShape if possible
-          if (obj.Convertible && !receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
+          if (isConvertibleAndDisplayable && !shouldConvertAsDisplayable)
           {
             var convRes = ConvertAsDisplayable(@base, displayableSettings);
             if (convRes != null)
