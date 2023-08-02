@@ -98,6 +98,17 @@ namespace Objects.Converter.Revit
 #endif
     }
 
+#if REVIT2020    
+    public static DisplayUnitType GetUnitTypeId(this Parameter parameter)
+    {
+      return parameter.DisplayUnitType;
+    }
+#else
+    public static ForgeTypeId GetUnitTypeId(this Parameter parameter)
+    {
+      return parameter.GetUnitTypeId();
+    }
+#endif
 
     public static bool IsCurveClosed(NurbSpline curve)
     {

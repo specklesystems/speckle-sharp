@@ -323,7 +323,7 @@ namespace Objects.Converter.Revit
     {
       var elementType = element.Document.GetElement(element.GetTypeId());
 
-      if (elementType == null || elementType.Parameters == null)
+      if (elementType == null)
       {
         return new Dictionary<string, Parameter>();
       }
@@ -354,7 +354,11 @@ namespace Objects.Converter.Revit
           continue;
         }
 
-        var speckleParam = ParameterToSpeckle(param, isTypeParameter, paramInternalName: internalName);
+        var speckleParam = ParameterToSpeckle(
+          param, 
+          isTypeParameter, 
+          paramInternalName: internalName,
+          cache: revitDocumentAggregateCache);
         paramDict[internalName] = speckleParam;
       }
       return paramDict;
@@ -375,11 +379,11 @@ namespace Objects.Converter.Revit
       if (rp == null || !rp.HasValue)
         return default;
 
-      var value = ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
+      var value = GetParameterValue(rp, rp.Definition, out _, unitsOverride);
       if (typeof(T) == typeof(int) && value.GetType() == typeof(bool))
         return (T)Convert.ChangeType(value, typeof(int));
 
-      return (T)ParameterToSpeckle(rp, unitsOverride: unitsOverride).value;
+      return (T)value;
     }
 
     /// <summary>
@@ -393,7 +397,8 @@ namespace Objects.Converter.Revit
       DB.Parameter rp,
       bool isTypeParameter = false,
       string unitsOverride = null,
-      string paramInternalName = null
+      string paramInternalName = null,
+      IRevitDocumentAggregateCache cache = null
     )
     {
       var definition = rp.Definition;
@@ -407,46 +412,47 @@ namespace Objects.Converter.Revit
         applicationUnitType = definition.GetUnityTypeString() //eg UT_Length
       };
 
+      sp.value = GetParameterValue(rp, definition, out var appUnit, unitsOverride, cache);
+      sp.applicationUnit = appUnit;
+      return sp;
+    }
+
+    private static object GetParameterValue(
+      DB.Parameter rp, 
+      Definition definition,
+      out string unitType,
+      string unitsOverride = null,
+      IRevitDocumentAggregateCache cache = null)
+    {
+      unitType = null;
       switch (rp.StorageType)
       {
         case StorageType.Double:
           // NOTE: do not use p.AsDouble() as direct input for unit utils conversion, it doesn't work.  ¯\_(ツ)_/¯
           var val = rp.AsDouble();
-          try
-          {
-            sp.applicationUnit = rp.GetDisplayUnityTypeString(); //eg DUT_MILLIMITERS, this can throw!
-            sp.value =
-              unitsOverride == null
-                ? RevitVersionHelper.ConvertFromInternalUnits(val, rp)
-                : ScaleToSpeckle(val, unitsOverride);
-          }
-          catch
-          {
-            sp.value = val;
-          }
-          break;
+          var unitTypeId = unitsOverride != null ? UnitsToNative(unitsOverride) : rp.GetUnitTypeId();
+          unitType = UnitsToNativeString(unitTypeId);
+          return cache != null
+            ? ScaleToSpeckle(val, unitTypeId, cache)
+            : ScaleToSpeckleStatic(val, unitTypeId);
         case StorageType.Integer:
           var intVal = rp.AsInteger();
 #if REVIT2020 || REVIT2021 || REVIT2022
           switch (definition.ParameterType)
           {
             case ParameterType.YesNo:
-              sp.value = Convert.ToBoolean(intVal);
-              break;
+              return Convert.ToBoolean(intVal);
             default:
-              sp.value = intVal;
-              break;
+              return intVal;
           }
 #else
           if (definition.GetDataType() == SpecTypeId.Boolean.YesNo)
-            sp.value = Convert.ToBoolean(intVal);
+            return Convert.ToBoolean(intVal);
           else
-            sp.value = intVal;
+            return intVal;
 #endif
-          break;
         case StorageType.String:
-          sp.value = rp.AsString();
-          break;
+          return rp.AsString();
         // case StorageType.ElementId:
         //   // NOTE: if this collects too much garbage, maybe we can ignore it
         //   var id = rp.AsElementId();
@@ -457,7 +463,6 @@ namespace Objects.Converter.Revit
         default:
           return null;
       }
-      return sp;
     }
 
     #endregion
