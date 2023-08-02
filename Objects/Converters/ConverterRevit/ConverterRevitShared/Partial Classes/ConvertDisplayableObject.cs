@@ -20,18 +20,36 @@ public partial class ConverterRevit
   /// <returns>The application object containing the conversion result and info.</returns>
   public ApplicationObject DisplayableObjectToNative(Base obj)
   {
-    if (!obj.IsDisplayableObject())
-      throw new Exception("The provided object is not displayable (has no 'displayValue' property).");
+    if (obj.IsDisplayableObject())
+    {
+      // Extract info from the object dynamically.
+      var name = obj.TryGetName() ?? "speckleDisplayableObject" + obj.id;
+      var displayValue = obj.TryGetDisplayValue() ?? throw new Exception("Display value was empty or null");
 
-    // Extract info from the object dynamically.
-    var name = obj.TryGetName() ?? "speckleDisplayableObject" + obj.id;
-    var displayValue = obj.TryGetDisplayValue() ?? throw new Exception("Display value was empty or null");
-    var parameters = obj.TryGetParameters<Parameter>();
-    var category = GetSpeckleObjectCategory(obj);
-    
-    // Create a temp DirectShape and use the DirectShape conversion routine
-    var ds = new DirectShape(name, category, displayValue.ToList(), parameters?.ToList());
-    return DirectShapeToNative(ds, ToNativeMeshSettingEnum.Default);
+      var parameters = obj.TryGetParameters<Parameter>();
+      var category = GetSpeckleObjectCategory(obj);
+
+      // Create a temp DirectShape and use the DirectShape conversion routine
+      var ds = new DirectShape(name, category, displayValue.ToList(), parameters?.ToList());
+      return DirectShapeToNative(ds, ToNativeMeshSettingEnum.Default);
+    }
+    else if (obj is Other.Instance instance)
+    {
+      // Extract info from the object dynamically.
+      var name = obj.TryGetName() ?? "speckleDisplayableObject" + obj.id;
+      var displayValue = instance.GetTransformedGeometry().Cast<Base>();
+
+      var parameters = obj.TryGetParameters<Parameter>();
+      var category = GetSpeckleObjectCategory(obj);
+
+      // Create a temp DirectShape and use the DirectShape conversion routine
+      var ds = new DirectShape(name, category, displayValue.ToList(), parameters?.ToList());
+      return DirectShapeToNative(ds, ToNativeMeshSettingEnum.Default);
+    }
+    else
+    {
+      throw new Exception("Object is not displayable (is not an instance, has no display value or it was null");
+    }
   }
 
   public RevitCategory GetSpeckleObjectCategory(Base @object)

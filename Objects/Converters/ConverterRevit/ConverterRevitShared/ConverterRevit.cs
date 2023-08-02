@@ -473,7 +473,7 @@ namespace Objects.Converter.Revit
           receivedObjectsCache.AddConvertedObjects(@base, new List<Element> { element });
           break;
       }
-      
+
       return nativeObject;
     }
 
@@ -487,8 +487,10 @@ namespace Objects.Converter.Revit
       // Get settings for receive direct meshes , assumes objects aren't nested like in Tekla Structures
       Settings.TryGetValue("recieve-objects-mesh", out string recieveModelMesh);
       if (bool.Parse(recieveModelMesh ?? "false"))
-        if (@object.IsDisplayableObject() && @object is not BE.Room)
+        if ((@object is Other.Instance || @object.IsDisplayableObject()) && @object is not BE.Room)
           return DisplayableObjectToNative(@object);
+        else
+          return null;
 
       //Family Document
       if (Doc.IsFamilyDocument)
