@@ -314,7 +314,11 @@ namespace Speckle.ConnectorRevit.UI
           RefreshView();
 
           // if the conversion status failed, reconvert as directShape if possible
-          if (convRes.Status == ApplicationObject.State.Failed && !receiveDirectMesh)
+          if (
+            convRes.Status == ApplicationObject.State.Failed
+            && !receiveDirectMesh
+            && DefaultTraversal.HasDisplayValue(@base)
+          )
           {
             obj.Log.Add($"First conversion attempt failed. Reconverting as direct shape.");
             convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
@@ -356,7 +360,7 @@ namespace Speckle.ConnectorRevit.UI
           obj.Log.Add($"First conversion attempt failed: {ex.Message}");
 
           // reconvert as directShape if possible
-          if (!receiveDirectMesh)
+          if (!receiveDirectMesh && DefaultTraversal.HasDisplayValue(@base))
           {
             var convRes = RetryConversionAsDisplayable(@base, fallbackSettings);
             obj.Update(
