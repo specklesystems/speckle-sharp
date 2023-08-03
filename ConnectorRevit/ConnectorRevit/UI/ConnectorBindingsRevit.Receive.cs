@@ -278,12 +278,8 @@ namespace Speckle.ConnectorRevit.UI
       var receiveDirectMeshSetting =
         CurrentSettings.FirstOrDefault(x => x.Slug == "recieve-objects-mesh") as CheckBoxSetting;
       var receiveDirectMesh = receiveDirectMeshSetting != null ? receiveDirectMeshSetting.IsChecked : false;
-      var displayableSettings = new Dictionary<string, string>();
-      foreach (var setting in settings)
-      {
-        var value = setting.Key == "recieve-objects-mesh" ? true.ToString() : setting.Value;
-        displayableSettings.Add(setting.Key, setting.Value);
-      }
+      var displayableSettings = new Dictionary<string, string>(settings);
+      displayableSettings["recieve-objects-mesh"] = true.ToString();
 
       // convert
       var index = -1;
@@ -295,7 +291,9 @@ namespace Speckle.ConnectorRevit.UI
         var @base = StoredObjects[obj.OriginalId];
 
         // determine displyable conversion
-        var isConvertibleAndDisplayable = obj.Convertible && DefaultTraversal.HasDisplayValue(@base);
+        var isConvertibleAndDisplayable =
+          obj.Convertible
+          && (DefaultTraversal.HasDisplayValue(@base) || @base.speckle_type.Contains("Objects.Other.Instance"));
         var shouldConvertAsDisplayable = !obj.Convertible || receiveDirectMesh;
 
         using var _d3 = LogContext.PushProperty("speckleType", @base.speckle_type);
