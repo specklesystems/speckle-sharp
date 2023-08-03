@@ -44,7 +44,7 @@ public class SelectionBinding : ISelectionBinding
     return new SelectionInfo
     {
       SelectedObjectIds = objectIds,
-      Summary = $"Selected {objectIds.Count} objects ({String.Join(", ", objectTypes)}) from {layerCount} layer{(layerCount != 1 ? "s" : "")}."
+      Summary = $"{objectIds.Count} objects ({String.Join(", ", objectTypes)}) from {layerCount} layer{(layerCount != 1 ? "s" : "")}"
     };
   }
 

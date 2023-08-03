@@ -14,6 +14,7 @@ public static class SerializationSettingsFactory
     var serializerOptions = new JsonSerializerSettings 
     {
       ContractResolver = new CamelCasePropertyNamesContractResolver(),
+      NullValueHandling = NullValueHandling.Ignore,
       ReferenceLoopHandling = ReferenceLoopHandling.Ignore
     };
       

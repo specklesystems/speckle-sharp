@@ -15,7 +15,7 @@ namespace DUI3.Utils;
 /// </summary>
 public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
 {
-  private readonly JsonSerializer _localSerializer = new JsonSerializer { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+  private readonly JsonSerializer _localSerializer = new JsonSerializer { ContractResolver = new CamelCasePropertyNamesContractResolver(), NullValueHandling = NullValueHandling.Ignore };
   
   public override void WriteJson(JsonWriter writer, DiscriminatedObject value, JsonSerializer serializer)
   {
@@ -68,4 +68,3 @@ public class DiscriminatedObjectConverter : JsonConverter<DiscriminatedObject>
     return null;
   }
 }
-
